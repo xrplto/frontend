@@ -186,6 +186,7 @@ export default function ExtraDesc({ token }) {
   return (
     <Box
       sx={{
+        display: { xs: 'none', md: 'block' },
         p: 0.5,
         borderRadius: '4px',
         background: `linear-gradient(135deg, ${alpha(

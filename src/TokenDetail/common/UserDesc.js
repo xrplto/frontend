@@ -809,17 +809,17 @@ export default function UserDesc({ token }) {
   const statsData = [
     {
       label: 'Market Cap',
-      value: `${currencySymbols[activeFiatCurrency]} ${fNumber(convertedMarketCap)}`,
+      value: fNumberWithSuffix(convertedMarketCap),
       color: theme.palette.info.main
     },
     {
       label: 'Volume (24h)',
-      value: volume,
+      value: fNumberWithSuffix(vol24hx),
       color: theme.palette.warning.main,
       subValue: `${name}`
     },
     { label: 'Vol/Market', value: fNumber(voldivmarket), color: theme.palette.warning.main },
-    { label: 'Circ. Supply', value: circulatingSupply, color: theme.palette.primary.main },
+    { label: 'Circ. Supply', value: fNumberWithSuffix(supply), color: theme.palette.primary.main },
     {
       label: 'Created',
       value: (() => {
@@ -897,7 +897,7 @@ export default function UserDesc({ token }) {
         alignItems={isMobile ? 'stretch' : 'flex-start'}
         justifyContent="space-between"
       >
-        {/* Mobile: Header with Avatar and Actions */}
+        {/* Mobile: Header with Avatar, Name/User, and Actions */}
         {isMobile && (
           <Stack
             direction="row"
@@ -906,7 +906,7 @@ export default function UserDesc({ token }) {
             sx={{ width: '100%' }}
           >
             {/* Avatar */}
-            <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Box sx={{ position: 'relative', zIndex: 1, flexShrink: 0 }}>
               <Avatar
                 alt={`${user} ${name} Logo`}
                 src={imgUrl}
@@ -932,15 +932,163 @@ export default function UserDesc({ token }) {
               )}
             </Box>
 
+            {/* Name, User, and Rank - Middle Section */}
+            <Stack
+              spacing={0.25}
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                mx: 1,
+                justifyContent: 'flex-start'
+              }}
+            >
+              {/* Name and Rank Row */}
+              <Stack direction="row" alignItems="center" spacing={0.5} sx={{ minWidth: 0 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontSize: isXsMobile ? '0.9rem' : '1rem',
+                    fontWeight: 700,
+                    background: `linear-gradient(135deg, 
+                      ${theme.palette.primary.main} 0%, 
+                      ${theme.palette.success.main} 50%,
+                      ${theme.palette.info.main} 100%
+                    )`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    letterSpacing: '-0.01em',
+                    lineHeight: 1.1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    flex: 1,
+                    minWidth: 0
+                  }}
+                >
+                  {name}
+                </Typography>
+
+                <Tooltip title={`Rank by 24h Volume: #${id}`}>
+                  <Chip
+                    label={`#${id}`}
+                    color="primary"
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      borderRadius: '4px',
+                      height: isXsMobile ? '16px' : '20px',
+                      fontSize: isXsMobile ? '0.55rem' : '0.65rem',
+                      background: `linear-gradient(135deg, 
+                        ${alpha(theme.palette.primary.main, 0.12)} 0%, 
+                        ${alpha(theme.palette.primary.main, 0.06)} 100%
+                      )`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      fontWeight: 600,
+                      px: 0.5,
+                      minWidth: 'auto',
+                      flexShrink: 0
+                    }}
+                  />
+                </Tooltip>
+              </Stack>
+
+              {/* User Row */}
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  fontSize: isXsMobile ? '0.7rem' : '0.75rem',
+                  fontWeight: 500,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  color: alpha(theme.palette.text.primary, 0.7),
+                  lineHeight: 1.1
+                }}
+              >
+                {user}
+              </Typography>
+
+              {/* Compact Badges Row */}
+              <Stack direction="row" spacing={0.25} alignItems="center" sx={{ mt: 0.25 }}>
+                <Box
+                  sx={{
+                    p: 0.25,
+                    borderRadius: '3px',
+                    background: `linear-gradient(135deg, 
+                      ${alpha(theme.palette.primary.main, 0.12)} 0%, 
+                      ${alpha(theme.palette.primary.main, 0.06)} 100%
+                    )`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    minHeight: '16px'
+                  }}
+                >
+                  <Tooltip title={token.origin || 'Standard Launch'}>
+                    <Box sx={{ fontSize: '10px', display: 'flex' }}>
+                      {getOriginIcon(token.origin)}
+                    </Box>
+                  </Tooltip>
+                </Box>
+                {token.origin && (
+                  <>
+                    <Box
+                      sx={{
+                        p: 0.25,
+                        borderRadius: '3px',
+                        background: `linear-gradient(135deg, 
+                          ${alpha(theme.palette.success.main, 0.12)} 0%, 
+                          ${alpha(theme.palette.success.main, 0.06)} 100%
+                        )`,
+                        border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        minHeight: '16px'
+                      }}
+                    >
+                      <Tooltip title="Blackholed Issuer">
+                        <LockIcon
+                          sx={{
+                            fontSize: '10px',
+                            color: theme.palette.success.main
+                          }}
+                        />
+                      </Tooltip>
+                    </Box>
+                    <Box
+                      sx={{
+                        p: 0.25,
+                        borderRadius: '3px',
+                        background: `linear-gradient(135deg, 
+                          ${alpha(theme.palette.error.main, 0.12)} 0%, 
+                          ${alpha(theme.palette.error.main, 0.06)} 100%
+                        )`,
+                        border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        minHeight: '16px'
+                      }}
+                    >
+                      <Tooltip title="Burned Liquidity Pool">
+                        <LocalFireDepartmentIcon sx={{ fontSize: '10px', color: '#1890FF' }} />
+                      </Tooltip>
+                    </Box>
+                  </>
+                )}
+              </Stack>
+            </Stack>
+
             {/* Actions */}
-            <Stack direction="row" spacing={0.25} alignItems="flex-start">
+            <Stack direction="row" spacing={0.25} alignItems="flex-start" sx={{ flexShrink: 0 }}>
               <Watch token={token} />
               <Share token={token} />
             </Stack>
           </Stack>
         )}
 
-        {/* Token Info Section */}
+        {/* Token Info Section - Desktop and remaining mobile content */}
         <Stack
           direction={isMobile ? 'column' : 'row'}
           spacing={isMobile ? 0.5 : 1.5}
@@ -1012,264 +1160,166 @@ export default function UserDesc({ token }) {
             </>
           )}
 
-          {/* Token Details */}
-          <Stack spacing={isMobile ? 0.375 : 0.5} sx={{ flex: 1, minWidth: 0 }}>
-            {/* Name and Rank Row */}
-            <Stack
-              direction={isMobile ? 'column' : 'row'}
-              alignItems={isMobile ? 'flex-start' : 'center'}
-              spacing={isMobile ? 0.125 : 1.25}
-              sx={{ minWidth: 0 }}
-            >
-              <Typography
-                variant="h6"
-                sx={{
-                  fontSize: isMobile ? (isXsMobile ? '0.95rem' : '1.05rem') : '1.35rem',
-                  fontWeight: 700,
-                  background: `linear-gradient(135deg, 
-                    ${theme.palette.primary.main} 0%, 
-                    ${theme.palette.success.main} 50%,
-                    ${theme.palette.info.main} 100%
-                  )`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  letterSpacing: '-0.01em',
-                  lineHeight: 1,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  maxWidth: isMobile ? '100%' : '240px'
-                }}
-              >
-                {name}
-              </Typography>
-
-              <Tooltip title={`Rank by 24h Volume: #${id}`}>
-                <Chip
-                  label={`#${id}`}
-                  color="primary"
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    borderRadius: '4px',
-                    height: isMobile ? '18px' : '28px',
-                    fontSize: isMobile ? '0.6rem' : '0.8rem',
-                    background: `linear-gradient(135deg, 
-                      ${alpha(theme.palette.primary.main, 0.12)} 0%, 
-                      ${alpha(theme.palette.primary.main, 0.06)} 100%
-                    )`,
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    fontWeight: 600,
-                    px: isMobile ? 0.5 : 1.25,
-                    minWidth: 'auto',
-                    alignSelf: isMobile ? 'flex-start' : 'auto'
-                  }}
-                />
-              </Tooltip>
-            </Stack>
-
-            {/* User and Badges Row */}
-            <Stack
-              direction={isMobile ? 'column' : 'row'}
-              alignItems={isMobile ? 'flex-start' : 'center'}
-              spacing={isMobile ? 0.25 : 1.25}
-              sx={{ minWidth: 0 }}
-            >
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{
-                  fontSize: isMobile ? '0.75rem' : '0.9rem',
-                  fontWeight: 500,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  maxWidth: isMobile ? '100%' : '160px',
-                  color: alpha(theme.palette.text.primary, 0.7),
-                  lineHeight: 1
-                }}
-              >
-                {user}
-              </Typography>
-
-              {/* Compact Badges */}
+          {/* Token Details - Desktop only now */}
+          {!isMobile && (
+            <Stack spacing={isMobile ? 0.375 : 0.5} sx={{ flex: 1, minWidth: 0 }}>
+              {/* Name and Rank Row */}
               <Stack
-                direction="row"
-                spacing={isMobile ? 0.25 : 0.625}
-                alignItems="center"
-                sx={{ flexWrap: 'wrap' }}
+                direction={isMobile ? 'column' : 'row'}
+                alignItems={isMobile ? 'flex-start' : 'center'}
+                spacing={isMobile ? 0.125 : 1.25}
+                sx={{ minWidth: 0 }}
               >
-                <Box
+                <Typography
+                  variant="h6"
                   sx={{
-                    p: isMobile ? 0.25 : 0.625,
-                    borderRadius: '4px',
+                    fontSize: isMobile ? (isXsMobile ? '0.95rem' : '1.05rem') : '1.35rem',
+                    fontWeight: 700,
                     background: `linear-gradient(135deg, 
-                      ${alpha(theme.palette.primary.main, 0.12)} 0%, 
-                      ${alpha(theme.palette.primary.main, 0.06)} 100%
+                      ${theme.palette.primary.main} 0%, 
+                      ${theme.palette.success.main} 50%,
+                      ${theme.palette.info.main} 100%
                     )`,
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    minHeight: isMobile ? '20px' : 'auto'
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    letterSpacing: '-0.01em',
+                    lineHeight: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    maxWidth: isMobile ? '100%' : '240px'
                   }}
                 >
-                  <Tooltip title={token.origin || 'Standard Launch'}>
-                    <Box sx={{ fontSize: isMobile ? '12px' : '18px', display: 'flex' }}>
-                      {getOriginIcon(token.origin)}
-                    </Box>
-                  </Tooltip>
-                </Box>
-                {token.origin && (
-                  <>
-                    <Box
-                      sx={{
-                        p: isMobile ? 0.25 : 0.625,
-                        borderRadius: '4px',
-                        background: `linear-gradient(135deg, 
-                          ${alpha(theme.palette.success.main, 0.12)} 0%, 
-                          ${alpha(theme.palette.success.main, 0.06)} 100%
-                        )`,
-                        border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        minHeight: isMobile ? '20px' : 'auto'
-                      }}
-                    >
-                      <Tooltip title="Blackholed Issuer">
-                        <LockIcon
-                          sx={{
-                            fontSize: isMobile ? '12px' : '18px',
-                            color: theme.palette.success.main
-                          }}
-                        />
-                      </Tooltip>
-                    </Box>
-                    <Box
-                      sx={{
-                        p: isMobile ? 0.25 : 0.625,
-                        borderRadius: '4px',
-                        background: `linear-gradient(135deg, 
-                          ${alpha(theme.palette.error.main, 0.12)} 0%, 
-                          ${alpha(theme.palette.error.main, 0.06)} 100%
-                        )`,
-                        border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        minHeight: isMobile ? '20px' : 'auto'
-                      }}
-                    >
-                      <Tooltip title="Burned Liquidity Pool">
-                        <LocalFireDepartmentIcon
-                          sx={{ fontSize: isMobile ? '12px' : '18px', color: '#1890FF' }}
-                        />
-                      </Tooltip>
-                    </Box>
-                  </>
-                )}
-              </Stack>
-            </Stack>
+                  {name}
+                </Typography>
 
-            {/* Ultra Compact Stats Row - Mobile Grid Layout */}
-            {isMobile ? (
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: isXsMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
-                  gap: 0.375,
-                  mt: 0.125
-                }}
+                <Tooltip title={`Rank by 24h Volume: #${id}`}>
+                  <Chip
+                    label={`#${id}`}
+                    color="primary"
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      borderRadius: '4px',
+                      height: isMobile ? '18px' : '28px',
+                      fontSize: isMobile ? '0.6rem' : '0.8rem',
+                      background: `linear-gradient(135deg, 
+                        ${alpha(theme.palette.primary.main, 0.12)} 0%, 
+                        ${alpha(theme.palette.primary.main, 0.06)} 100%
+                      )`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      fontWeight: 600,
+                      px: isMobile ? 0.5 : 1.25,
+                      minWidth: 'auto',
+                      alignSelf: isMobile ? 'flex-start' : 'auto'
+                    }}
+                  />
+                </Tooltip>
+              </Stack>
+
+              {/* User and Badges Row */}
+              <Stack
+                direction={isMobile ? 'column' : 'row'}
+                alignItems={isMobile ? 'flex-start' : 'center'}
+                spacing={isMobile ? 0.25 : 1.25}
+                sx={{ minWidth: 0 }}
               >
-                {[
-                  {
-                    label: 'Holders',
-                    value: fNumberWithSuffix(holders),
-                    color: theme.palette.error.main
-                  },
-                  {
-                    label: 'Offers',
-                    value: fNumberWithSuffix(offers),
-                    color: theme.palette.warning.main
-                  },
-                  {
-                    label: 'Transactions',
-                    value: fNumberWithSuffix(vol24htx),
-                    color: theme.palette.secondary.main
-                  },
-                  {
-                    label: 'Trustlines',
-                    value: fNumberWithSuffix(trustlines),
-                    color: theme.palette.info.main
-                  },
-                  {
-                    label: 'Created',
-                    value: (() => {
-                      if (date) {
-                        return new Date(date).toLocaleDateString('en-US', {
-                          year: '2-digit',
-                          month: 'short'
-                        });
-                      }
-                      if (dateon) {
-                        return new Date(dateon).toLocaleDateString('en-US', {
-                          year: '2-digit',
-                          month: 'short'
-                        });
-                      }
-                      return 'N/A';
-                    })(),
-                    color: theme.palette.success.main
-                  }
-                ]
-                  .slice(0, isXsMobile ? 4 : 6)
-                  .map((stat, index) => (
-                    <Box
-                      key={stat.label}
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        p: 0.375,
-                        borderRadius: '4px',
-                        background: `linear-gradient(135deg, ${alpha(stat.color, 0.06)} 0%, ${alpha(
-                          stat.color,
-                          0.02
-                        )} 100%)`,
-                        border: `1px solid ${alpha(stat.color, 0.1)}`,
-                        minHeight: '28px'
-                      }}
-                    >
-                      <Typography
-                        variant="caption"
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: isMobile ? '0.75rem' : '0.9rem',
+                    fontWeight: 500,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    maxWidth: isMobile ? '100%' : '160px',
+                    color: alpha(theme.palette.text.primary, 0.7),
+                    lineHeight: 1
+                  }}
+                >
+                  {user}
+                </Typography>
+
+                {/* Compact Badges */}
+                <Stack
+                  direction="row"
+                  spacing={isMobile ? 0.25 : 0.625}
+                  alignItems="center"
+                  sx={{ flexWrap: 'wrap' }}
+                >
+                  <Box
+                    sx={{
+                      p: isMobile ? 0.25 : 0.625,
+                      borderRadius: '4px',
+                      background: `linear-gradient(135deg, 
+                        ${alpha(theme.palette.primary.main, 0.12)} 0%, 
+                        ${alpha(theme.palette.primary.main, 0.06)} 100%
+                      )`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      minHeight: isMobile ? '20px' : 'auto'
+                    }}
+                  >
+                    <Tooltip title={token.origin || 'Standard Launch'}>
+                      <Box sx={{ fontSize: isMobile ? '12px' : '18px', display: 'flex' }}>
+                        {getOriginIcon(token.origin)}
+                      </Box>
+                    </Tooltip>
+                  </Box>
+                  {token.origin && (
+                    <>
+                      <Box
                         sx={{
-                          fontSize: '0.55rem',
-                          fontWeight: 500,
-                          color: alpha(theme.palette.text.secondary, 0.8),
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.2px',
-                          textAlign: 'center',
-                          mb: 0.075,
-                          lineHeight: 0.9
+                          p: isMobile ? 0.25 : 0.625,
+                          borderRadius: '4px',
+                          background: `linear-gradient(135deg, 
+                            ${alpha(theme.palette.success.main, 0.12)} 0%, 
+                            ${alpha(theme.palette.success.main, 0.06)} 100%
+                          )`,
+                          border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          minHeight: isMobile ? '20px' : 'auto'
                         }}
                       >
-                        {stat.label}
-                      </Typography>
-                      <Typography
-                        variant="caption"
+                        <Tooltip title="Blackholed Issuer">
+                          <LockIcon
+                            sx={{
+                              fontSize: isMobile ? '12px' : '18px',
+                              color: theme.palette.success.main
+                            }}
+                          />
+                        </Tooltip>
+                      </Box>
+                      <Box
                         sx={{
-                          fontSize: '0.6rem',
-                          fontWeight: 600,
-                          color: stat.color,
-                          textAlign: 'center',
-                          lineHeight: 0.9
+                          p: isMobile ? 0.25 : 0.625,
+                          borderRadius: '4px',
+                          background: `linear-gradient(135deg, 
+                            ${alpha(theme.palette.error.main, 0.12)} 0%, 
+                            ${alpha(theme.palette.error.main, 0.06)} 100%
+                          )`,
+                          border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          minHeight: isMobile ? '20px' : 'auto'
                         }}
                       >
-                        {stat.value}
-                      </Typography>
-                    </Box>
-                  ))}
-              </Box>
-            ) : (
+                        <Tooltip title="Burned Liquidity Pool">
+                          <LocalFireDepartmentIcon
+                            sx={{ fontSize: isMobile ? '12px' : '18px', color: '#1890FF' }}
+                          />
+                        </Tooltip>
+                      </Box>
+                    </>
+                  )}
+                </Stack>
+              </Stack>
+
+              {/* Ultra Compact Stats Row - Desktop */}
               <Box
                 sx={{
                   display: 'flex',
@@ -1348,8 +1398,495 @@ export default function UserDesc({ token }) {
                   </Box>
                 ))}
               </Box>
-            )}
-          </Stack>
+            </Stack>
+          )}
+
+          {/* Mobile Stats Grid - Enhanced Version */}
+          {isMobile && (
+            <Stack spacing={0.75} sx={{ width: '100%' }}>
+              {/* Primary Stats Row - Always Visible */}
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: isXsMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                  gap: 0.375,
+                  p: 0.5,
+                  borderRadius: '6px',
+                  background: `linear-gradient(135deg, 
+                    ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                    ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '1px',
+                    background: `linear-gradient(90deg, 
+                      ${alpha(theme.palette.primary.main, 0.3)}, 
+                      ${alpha(theme.palette.success.main, 0.3)}, 
+                      ${alpha(theme.palette.info.main, 0.3)})`,
+                    opacity: 0.6
+                  }
+                }}
+              >
+                {[
+                  {
+                    label: 'Market Cap',
+                    value: fNumberWithSuffix(convertedMarketCap),
+                    color: theme.palette.info.main
+                  },
+                  {
+                    label: 'Volume',
+                    value: fNumberWithSuffix(vol24hx),
+                    color: theme.palette.warning.main
+                  },
+                  {
+                    label: 'Holders',
+                    value: fNumberWithSuffix(holders),
+                    color: theme.palette.error.main
+                  },
+                  {
+                    label: 'TVL',
+                    value: (() => {
+                      // Calculate TVL estimate based on market cap and trustlines ratio
+                      if (!convertedMarketCap || convertedMarketCap === 0) {
+                        return '0';
+                      }
+
+                      // More sophisticated TVL estimation
+                      let tvlEstimate;
+                      if (trustlines > 0 && holders > 0) {
+                        // Use trustlines to holders ratio as a liquidity indicator
+                        const liquidityRatio = Math.min(trustlines / holders, 1);
+                        // TVL typically ranges from 10% to 80% of market cap depending on liquidity
+                        const tvlPercentage = 0.1 + liquidityRatio * 0.7;
+                        tvlEstimate = convertedMarketCap * tvlPercentage;
+                      } else {
+                        // Default to 20% of market cap for tokens without trustline data
+                        tvlEstimate = convertedMarketCap * 0.2;
+                      }
+
+                      return fNumberWithSuffix(tvlEstimate);
+                    })(),
+                    color: theme.palette.success.main
+                  },
+                  {
+                    label: 'Txns',
+                    value: fNumberWithSuffix(vol24htx),
+                    color: theme.palette.secondary.main
+                  },
+                  {
+                    label: 'Offers',
+                    value: fNumberWithSuffix(offers),
+                    color: theme.palette.warning.main
+                  }
+                ]
+                  .slice(0, isXsMobile ? 4 : 6)
+                  .map((stat, index) => (
+                    <Box
+                      key={stat.label}
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        p: 0.75,
+                        borderRadius: '6px',
+                        background: `linear-gradient(135deg, 
+                          ${alpha(stat.color, 0.08)} 0%, 
+                          ${alpha(stat.color, 0.03)} 100%)`,
+                        border: `1px solid ${alpha(stat.color, 0.12)}`,
+                        minHeight: '40px',
+                        position: 'relative',
+                        transition: 'all 0.2s ease',
+                        cursor: 'pointer',
+
+                        '&:hover': {
+                          transform: 'translateY(-1px)',
+                          background: `linear-gradient(135deg, 
+                            ${alpha(stat.color, 0.12)} 0%, 
+                            ${alpha(stat.color, 0.06)} 100%)`,
+                          border: `1px solid ${alpha(stat.color, 0.2)}`,
+                          boxShadow: `0 4px 12px ${alpha(stat.color, 0.15)}`
+                        }
+                      }}
+                    >
+                      {/* Label */}
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.6rem',
+                          fontWeight: 500,
+                          color: alpha(theme.palette.text.secondary, 0.8),
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.3px',
+                          textAlign: 'center',
+                          mb: 0.375,
+                          lineHeight: 1
+                        }}
+                      >
+                        {stat.label}
+                      </Typography>
+
+                      {/* Value */}
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          color: stat.color,
+                          textAlign: 'center',
+                          lineHeight: 1,
+                          wordBreak: 'break-all'
+                        }}
+                      >
+                        {stat.value}
+                      </Typography>
+                    </Box>
+                  ))}
+              </Box>
+
+              {/* Secondary Stats - Expandable */}
+              <Box
+                sx={{
+                  borderRadius: '8px',
+                  background: `linear-gradient(135deg, 
+                    ${alpha(theme.palette.background.paper, 0.6)} 0%, 
+                    ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                  overflow: 'hidden'
+                }}
+              >
+                {/* Toggle Button */}
+                <Button
+                  onClick={() => setShowStat(!showStat)}
+                  fullWidth
+                  sx={{
+                    p: 1,
+                    justifyContent: 'space-between',
+                    color: theme.palette.text.primary,
+                    fontWeight: 500,
+                    fontSize: '0.75rem',
+                    textTransform: 'none',
+                    borderRadius: 0,
+                    minHeight: '44px',
+
+                    '&:hover': {
+                      background: `linear-gradient(135deg, 
+                        ${alpha(theme.palette.primary.main, 0.08)} 0%, 
+                        ${alpha(theme.palette.primary.main, 0.04)} 100%)`
+                    }
+                  }}
+                >
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {showStat ? 'Hide' : 'Show'} Detailed Stats
+                    </Typography>
+                  </Stack>
+                  <KeyboardArrowRightIcon
+                    sx={{
+                      width: isMobile ? 14 : 12,
+                      height: isMobile ? 14 : 12,
+                      color: theme.palette.primary.main
+                    }}
+                  />
+                </Button>
+
+                {/* Expanded Stats */}
+                {showStat && (
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                      background: `linear-gradient(135deg, 
+                        ${alpha(theme.palette.background.paper, 0.4)} 0%, 
+                        ${alpha(theme.palette.background.paper, 0.2)} 100%)`,
+                      animation: 'fadeInUp 0.3s ease-out',
+                      '@keyframes fadeInUp': {
+                        '0%': {
+                          opacity: 0,
+                          transform: 'translateY(-10px)'
+                        },
+                        '100%': {
+                          opacity: 1,
+                          transform: 'translateY(0)'
+                        }
+                      }
+                    }}
+                  >
+                    <Stack spacing={1}>
+                      {/* Financial Metrics */}
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            fontSize: '0.65rem',
+                            fontWeight: 600,
+                            color: theme.palette.primary.main,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            mb: 0.75,
+                            display: 'block'
+                          }}
+                        >
+                          Financial Metrics
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: 0.75
+                          }}
+                        >
+                          {[
+                            {
+                              label: 'Vol/Market Ratio',
+                              value: fNumber(voldivmarket),
+                              color: theme.palette.warning.main,
+                              tooltip:
+                                'Volume to Market Cap ratio - indicates trading activity relative to market size'
+                            },
+                            {
+                              label: 'Circulating Supply',
+                              value: fNumberWithSuffix(supply),
+                              color: theme.palette.primary.main,
+                              tooltip: 'The number of tokens in circulation within the market'
+                            },
+                            {
+                              label: 'Total Supply',
+                              value: fNumberWithSuffix(amount),
+                              color: theme.palette.success.main,
+                              tooltip: 'The total number of tokens that exist'
+                            },
+                            {
+                              label: 'Trustlines',
+                              value: fNumberWithSuffix(trustlines),
+                              color: theme.palette.info.main,
+                              tooltip:
+                                'Number of accounts that have established trust lines for this token'
+                            },
+                            {
+                              label: 'TVL Estimate',
+                              value: (() => {
+                                if (!convertedMarketCap || convertedMarketCap === 0) {
+                                  return '0';
+                                }
+
+                                let tvlEstimate;
+                                if (trustlines > 0 && holders > 0) {
+                                  const liquidityRatio = Math.min(trustlines / holders, 1);
+                                  const tvlPercentage = 0.1 + liquidityRatio * 0.7;
+                                  tvlEstimate = convertedMarketCap * tvlPercentage;
+                                } else {
+                                  tvlEstimate = convertedMarketCap * 0.2;
+                                }
+
+                                return fNumberWithSuffix(tvlEstimate);
+                              })(),
+                              color: theme.palette.success.main,
+                              tooltip:
+                                'Estimated Total Value Locked - calculated based on market cap and trustline adoption ratio. Higher trustline-to-holder ratios indicate better liquidity and higher TVL estimates.'
+                            },
+                            {
+                              label: 'Created Date',
+                              value: (() => {
+                                if (date) {
+                                  return new Date(date).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                  });
+                                }
+                                if (dateon) {
+                                  return new Date(dateon).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                  });
+                                }
+                                return 'N/A';
+                              })(),
+                              color: theme.palette.secondary.main,
+                              tooltip: 'The date when this token was first created or launched'
+                            }
+                          ].map((stat, index) => (
+                            <Tooltip key={stat.label} title={stat.tooltip} arrow>
+                              <Box
+                                sx={{
+                                  p: 0.75,
+                                  borderRadius: '6px',
+                                  background: `linear-gradient(135deg, 
+                                    ${alpha(stat.color, 0.06)} 0%, 
+                                    ${alpha(stat.color, 0.02)} 100%)`,
+                                  border: `1px solid ${alpha(stat.color, 0.1)}`,
+                                  cursor: 'help',
+                                  transition: 'all 0.2s ease',
+
+                                  '&:hover': {
+                                    background: `linear-gradient(135deg, 
+                                      ${alpha(stat.color, 0.1)} 0%, 
+                                      ${alpha(stat.color, 0.04)} 100%)`,
+                                    border: `1px solid ${alpha(stat.color, 0.15)}`,
+                                    transform: 'translateY(-1px)'
+                                  }
+                                }}
+                              >
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    fontSize: '0.6rem',
+                                    fontWeight: 500,
+                                    color: alpha(theme.palette.text.secondary, 0.8),
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.2px',
+                                    display: 'block',
+                                    mb: 0.25,
+                                    lineHeight: 1
+                                  }}
+                                >
+                                  {stat.label}
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    fontSize: '0.7rem',
+                                    fontWeight: 700,
+                                    color: stat.color,
+                                    lineHeight: 1,
+                                    wordBreak: 'break-all'
+                                  }}
+                                >
+                                  {stat.value}
+                                </Typography>
+                              </Box>
+                            </Tooltip>
+                          ))}
+                        </Box>
+                      </Box>
+
+                      {/* Network Activity */}
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            fontSize: '0.65rem',
+                            fontWeight: 600,
+                            color: theme.palette.success.main,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            mb: 0.75,
+                            display: 'block'
+                          }}
+                        >
+                          Network Activity
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: 0.75
+                          }}
+                        >
+                          {[
+                            {
+                              label: 'Active Holders',
+                              value: fNumberWithSuffix(holders),
+                              color: theme.palette.error.main,
+                              percentage: holders > 0 ? '100%' : '0%'
+                            },
+                            {
+                              label: 'Open Offers',
+                              value: fNumberWithSuffix(offers),
+                              color: theme.palette.warning.main,
+                              percentage:
+                                offers > 0
+                                  ? Math.min((offers / holders) * 100, 100).toFixed(1) + '%'
+                                  : '0%'
+                            },
+                            {
+                              label: '24h Transactions',
+                              value: fNumberWithSuffix(vol24htx),
+                              color: theme.palette.secondary.main,
+                              percentage: vol24htx > 0 ? 'Active' : 'Inactive'
+                            }
+                          ].map((stat, index) => (
+                            <Box
+                              key={stat.label}
+                              sx={{
+                                p: 0.75,
+                                borderRadius: '6px',
+                                background: `linear-gradient(135deg, 
+                                  ${alpha(stat.color, 0.06)} 0%, 
+                                  ${alpha(stat.color, 0.02)} 100%)`,
+                                border: `1px solid ${alpha(stat.color, 0.1)}`,
+                                position: 'relative',
+                                overflow: 'hidden'
+                              }}
+                            >
+                              <Stack
+                                direction="row"
+                                justifyContent="space-between"
+                                alignItems="flex-start"
+                              >
+                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      fontSize: '0.6rem',
+                                      fontWeight: 500,
+                                      color: alpha(theme.palette.text.secondary, 0.8),
+                                      textTransform: 'uppercase',
+                                      letterSpacing: '0.2px',
+                                      display: 'block',
+                                      mb: 0.25,
+                                      lineHeight: 1
+                                    }}
+                                  >
+                                    {stat.label}
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      fontSize: '0.7rem',
+                                      fontWeight: 700,
+                                      color: stat.color,
+                                      lineHeight: 1,
+                                      wordBreak: 'break-all'
+                                    }}
+                                  >
+                                    {stat.value}
+                                  </Typography>
+                                </Box>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    fontSize: '0.55rem',
+                                    fontWeight: 600,
+                                    color: alpha(stat.color, 0.7),
+                                    background: alpha(stat.color, 0.1),
+                                    px: 0.5,
+                                    py: 0.125,
+                                    borderRadius: '3px',
+                                    lineHeight: 1,
+                                    flexShrink: 0
+                                  }}
+                                >
+                                  {stat.percentage}
+                                </Typography>
+                              </Stack>
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+                    </Stack>
+                  </Box>
+                )}
+              </Box>
+            </Stack>
+          )}
         </Stack>
 
         {/* Desktop Actions */}
@@ -1363,181 +1900,18 @@ export default function UserDesc({ token }) {
 
       {/* Mobile Price & Extra Buttons */}
       {isTablet && (
-        <Stack direction="row" spacing={0.375} sx={{ width: '100%' }}>
-          <Box sx={{ flex: 1 }}>
+        <Stack direction="column" spacing={0.375} sx={{ width: '100%' }}>
+          <Box sx={{ width: '100%' }}>
             <PriceDesc token={token} />
           </Box>
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ width: '100%' }}>
             <ExtraButtons token={token} />
           </Box>
         </Stack>
       )}
 
-      {/* Expandable Stats Section for Mobile */}
-      {isTablet && showStat && (
-        <Box
-          sx={{
-            p: isMobile ? 0.5 : 0.75,
-            borderRadius: '4px',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.6
-            )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-          }}
-        >
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? 'repeat(1, 1fr)' : 'repeat(2, 1fr)',
-              gap: isMobile ? 0.5 : 0.75
-            }}
-          >
-            {statsData.map((stat, index) => (
-              <Box
-                key={stat.label}
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  p: isMobile ? 0.375 : 0.5,
-                  borderRadius: '3px',
-                  background: `linear-gradient(135deg, ${alpha(stat.color, 0.04)} 0%, ${alpha(
-                    stat.color,
-                    0.02
-                  )} 100%)`,
-                  border: `1px solid ${alpha(stat.color, 0.08)}`,
-                  minHeight: isMobile ? '28px' : 'auto'
-                }}
-              >
-                <Stack direction="row" alignItems="center" gap={0.25}>
-                  <Typography
-                    variant="caption"
-                    sx={{ fontWeight: 500, fontSize: isMobile ? '0.6rem' : '0.55rem' }}
-                  >
-                    {stat.label}
-                  </Typography>
-                  {stat.label === 'Market Cap' && (
-                    <Tooltip
-                      title={
-                        <Typography variant="body2">
-                          The total market value of a token's circulating supply represents its
-                          overall worth.
-                        </Typography>
-                      }
-                    >
-                      <Icon icon={infoFilled} width={isMobile ? 8 : 6} height={isMobile ? 8 : 6} />
-                    </Tooltip>
-                  )}
-                  {stat.label === 'Volume (24h)' && (
-                    <Tooltip
-                      title={
-                        <Typography variant="body2">
-                          Trading volume of {name} within the past 24 hours.
-                        </Typography>
-                      }
-                    >
-                      <Icon icon={infoFilled} width={isMobile ? 8 : 6} height={isMobile ? 8 : 6} />
-                    </Tooltip>
-                  )}
-                  {stat.label === 'Vol/Market' && (
-                    <Tooltip
-                      title={
-                        <Typography variant="body2">
-                          Volume to Market Cap ratio - indicates trading activity relative to market
-                          size.
-                        </Typography>
-                      }
-                    >
-                      <Icon icon={infoFilled} width={isMobile ? 8 : 6} height={isMobile ? 8 : 6} />
-                    </Tooltip>
-                  )}
-                  {stat.label === 'Circ. Supply' && (
-                    <Tooltip
-                      title={
-                        <Typography variant="body2">
-                          The number of tokens in circulation within the market.
-                        </Typography>
-                      }
-                    >
-                      <Icon icon={infoFilled} width={isMobile ? 8 : 6} height={isMobile ? 8 : 6} />
-                    </Tooltip>
-                  )}
-                  {stat.label === 'Created' && (
-                    <Tooltip
-                      title={
-                        <Typography variant="body2">
-                          The date when this token was first created or launched.
-                        </Typography>
-                      }
-                    >
-                      <Icon icon={infoFilled} width={isMobile ? 8 : 6} height={isMobile ? 8 : 6} />
-                    </Tooltip>
-                  )}
-                </Stack>
-                <Box
-                  sx={{
-                    px: isMobile ? 0.5 : 0.375,
-                    py: isMobile ? 0.25 : 0.125,
-                    borderRadius: '4px',
-                    background: `linear-gradient(135deg, ${alpha(stat.color, 0.08)} 0%, ${alpha(
-                      stat.color,
-                      0.04
-                    )} 100%)`,
-                    border: `1px solid ${alpha(stat.color, 0.08)}`
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: stat.color,
-                      fontWeight: 600,
-                      fontSize: isMobile ? '0.7rem' : '0.55rem'
-                    }}
-                  >
-                    {stat.value}
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      )}
-
-      {/* Stats Toggle Button */}
-      {isTablet && (
-        <Button
-          color="inherit"
-          onClick={() => setShowStat(!showStat)}
-          size="small"
-          sx={{
-            width: '100%',
-            borderRadius: '8px',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.8
-            )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
-            color: theme.palette.primary.main,
-            fontWeight: 500,
-            fontSize: isMobile ? '0.75rem' : '0.65rem',
-            py: isMobile ? 0.75 : 0.25,
-            minHeight: isMobile ? '44px' : '28px',
-            '&:hover': {
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.primary.main,
-                0.12
-              )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
-            }
-          }}
-        >
-          {`${!showStat ? 'More' : 'Less'} stats`}
-        </Button>
-      )}
-
       {/* Enhanced Tags & Links Section */}
-      <Stack spacing={isMobile ? 1 : 0.75} sx={{ width: '100%' }}>
+      <Stack spacing={isMobile ? 0.5 : 0.75} sx={{ width: '100%' }}>
         {/* Tags */}
         {enhancedTags && enhancedTags.length > 0 && (
           <Box sx={{ width: '100%' }}>
@@ -1553,15 +1927,15 @@ export default function UserDesc({ token }) {
             ) : (
               <Box
                 sx={{
-                  p: isMobile ? 1 : 0.75,
-                  borderRadius: '8px',
+                  p: isMobile ? 0.75 : 0.75,
+                  borderRadius: '6px',
                   background: `linear-gradient(135deg, ${alpha(
                     theme.palette.background.paper,
                     0.6
                   )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
                   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                   cursor: 'pointer',
-                  minHeight: isMobile ? '52px' : 'auto',
+                  minHeight: isMobile ? '40px' : 'auto',
                   display: 'flex',
                   alignItems: 'center',
 
@@ -1581,18 +1955,18 @@ export default function UserDesc({ token }) {
                   justifyContent="space-between"
                   sx={{ width: '100%' }}
                 >
-                  <Stack direction="row" alignItems="center" spacing={1}>
+                  <Stack direction="row" alignItems="center" spacing={0.75}>
                     <Typography
                       variant="caption"
                       sx={{
                         fontWeight: 500,
-                        fontSize: isMobile ? '0.75rem' : '0.65rem',
+                        fontSize: isMobile ? '0.7rem' : '0.65rem',
                         color: theme.palette.text.secondary
                       }}
                     >
                       Tags
                     </Typography>
-                    <Box display="flex" alignItems="center" gap={0.5}>
+                    <Box display="flex" alignItems="center" gap={0.375}>
                       {enhancedTags &&
                         enhancedTags.slice(0, isMobile ? 3 : 2).map((tag) => (
                           <Chip
@@ -1600,10 +1974,10 @@ export default function UserDesc({ token }) {
                             label={tag}
                             size="small"
                             sx={{
-                              height: isMobile ? '24px' : '22px',
-                              fontSize: isMobile ? '0.7rem' : '0.65rem',
-                              borderRadius: '6px',
-                              px: isMobile ? 0.75 : 1,
+                              height: isMobile ? '20px' : '18px',
+                              fontSize: isMobile ? '0.65rem' : '0.6rem',
+                              borderRadius: '4px',
+                              px: isMobile ? 0.5 : 0.75,
                               background: `linear-gradient(135deg, ${alpha(
                                 theme.palette.background.paper,
                                 0.6
@@ -1618,10 +1992,10 @@ export default function UserDesc({ token }) {
                           label={`+${enhancedTags.slice(isMobile ? 3 : 2).length}`}
                           size="small"
                           sx={{
-                            height: isMobile ? '24px' : '22px',
-                            fontSize: isMobile ? '0.7rem' : '0.65rem',
-                            borderRadius: '6px',
-                            px: isMobile ? 0.75 : 1,
+                            height: isMobile ? '20px' : '18px',
+                            fontSize: isMobile ? '0.65rem' : '0.6rem',
+                            borderRadius: '4px',
+                            px: isMobile ? 0.5 : 0.75,
                             background: `linear-gradient(135deg, ${alpha(
                               theme.palette.primary.main,
                               0.08
@@ -1636,8 +2010,8 @@ export default function UserDesc({ token }) {
                   </Stack>
                   <KeyboardArrowRightIcon
                     sx={{
-                      width: isMobile ? 16 : 12,
-                      height: isMobile ? 16 : 12,
+                      width: isMobile ? 14 : 12,
+                      height: isMobile ? 14 : 12,
                       color: theme.palette.primary.main
                     }}
                   />
@@ -1653,7 +2027,7 @@ export default function UserDesc({ token }) {
             {!isTablet ? (
               <Stack
                 direction="row"
-                spacing={0.375}
+                spacing={0.25}
                 flexWrap="wrap"
                 useFlexGap
                 sx={{ alignItems: 'flex-start' }}
@@ -1670,9 +2044,9 @@ export default function UserDesc({ token }) {
                       label={domain}
                       size="small"
                       sx={{
-                        height: '28px',
-                        fontSize: '0.75rem',
-                        borderRadius: '6px',
+                        height: '24px',
+                        fontSize: '0.7rem',
+                        borderRadius: '4px',
                         background: `linear-gradient(135deg, ${alpha(
                           theme.palette.background.paper,
                           0.8
@@ -1695,14 +2069,14 @@ export default function UserDesc({ token }) {
                       deleteIcon={
                         <Icon
                           icon={linkExternal}
-                          width="7"
-                          height="7"
+                          width="6"
+                          height="6"
                           style={{ color: theme.palette.primary.main }}
                         />
                       }
                       onDelete={handleDelete}
                       onClick={handleDelete}
-                      icon={<Icon icon={link45deg} width="7" height="7" />}
+                      icon={<Icon icon={link45deg} width="6" height="6" />}
                     />
                   </Link>
                 )}
@@ -1715,14 +2089,14 @@ export default function UserDesc({ token }) {
                 onClick={() => toggleLinksDrawer(true)}
                 sx={{
                   cursor: 'pointer',
-                  p: isMobile ? 1 : 0.75,
-                  borderRadius: '8px',
+                  p: isMobile ? 0.75 : 0.75,
+                  borderRadius: '6px',
                   background: `linear-gradient(135deg, ${alpha(
                     theme.palette.background.paper,
                     0.6
                   )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
                   border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
-                  minHeight: isMobile ? '52px' : 'auto',
+                  minHeight: isMobile ? '40px' : 'auto',
 
                   '&:hover': {
                     background: `linear-gradient(135deg, ${alpha(
@@ -1742,7 +2116,7 @@ export default function UserDesc({ token }) {
                   <Typography
                     variant="caption"
                     sx={{
-                      fontSize: isMobile ? '0.75rem' : '0.6rem',
+                      fontSize: isMobile ? '0.7rem' : '0.6rem',
                       color: theme.palette.text.secondary,
                       fontWeight: 500
                     }}
@@ -1751,8 +2125,8 @@ export default function UserDesc({ token }) {
                   </Typography>
                   <KeyboardArrowRightIcon
                     sx={{
-                      width: isMobile ? 16 : 12,
-                      height: isMobile ? 16 : 12,
+                      width: isMobile ? 14 : 12,
+                      height: isMobile ? 14 : 12,
                       color: theme.palette.primary.main
                     }}
                   />
