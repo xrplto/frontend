@@ -619,26 +619,19 @@ const TradingHistory = ({ tokenId }) => {
                         sx={{
                           color: `${theme.palette.primary.main} !important`,
                           padding: '4px',
-                          borderRadius: '6px',
-                          backgroundColor:
-                            theme.palette.mode === 'dark'
-                              ? `${theme.palette.primary.main}20`
-                              : `${theme.palette.primary.main}15`,
-                          border:
-                            theme.palette.mode === 'dark'
-                              ? `1px solid ${theme.palette.primary.main}40`
-                              : `1px solid ${theme.palette.primary.main}30`,
                           '&:hover': {
-                            color: '#fff !important',
-                            backgroundColor: theme.palette.primary.main,
-                            border: `1px solid ${theme.palette.primary.main}`,
-                            transform: 'scale(1.05)'
+                            color: `${theme.palette.primary.dark} !important`,
+                            backgroundColor:
+                              theme.palette.mode === 'dark'
+                                ? 'rgba(255, 255, 255, 0.08)'
+                                : 'rgba(0, 0, 0, 0.04)',
+                            transform: 'scale(1.1)'
                           },
                           '& .MuiSvgIcon-root': {
                             color: `${theme.palette.primary.main} !important`
                           },
                           '&:hover .MuiSvgIcon-root': {
-                            color: '#fff !important'
+                            color: `${theme.palette.primary.dark} !important`
                           }
                         }}
                       >
