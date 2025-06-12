@@ -24,7 +24,9 @@ import {
   Select,
   MenuItem,
   styled,
-  useTheme
+  useTheme,
+  Card,
+  CardContent
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -32,92 +34,141 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import SmartToy from '@mui/icons-material/SmartToy';
 import { getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 
-// Define the highlight animation
+// Define the highlight animation with softer colors
 const highlightAnimation = keyframes`
   0% {
-    background-color: rgba(51, 102, 255, 0.2);
-    transform: translateY(-3px);
+    background-color: rgba(76, 175, 80, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2);
   }
   50% {
-    background-color: rgba(51, 102, 255, 0.1);
+    background-color: rgba(76, 175, 80, 0.08);
     transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.1);
   }
   100% {
     background-color: transparent;
     transform: translateY(0);
+    box-shadow: none;
   }
 `;
 
-// Styled components
+// Styled components with improved design
 const LiveIndicator = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
-  padding: theme.spacing(0.5, 1),
-  borderRadius: '16px',
+  padding: theme.spacing(0.5, 1.5),
+  borderRadius: '20px',
   backgroundColor:
-    theme.palette.mode === 'dark' ? 'rgba(255, 72, 66, 0.1)' : 'rgba(255, 72, 66, 0.1)'
+    theme.palette.mode === 'dark' ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.1)',
+  border: `1px solid ${
+    theme.palette.mode === 'dark' ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)'
+  }`,
+  boxShadow:
+    theme.palette.mode === 'dark'
+      ? '0 2px 8px rgba(76, 175, 80, 0.1)'
+      : '0 2px 4px rgba(76, 175, 80, 0.08)'
 }));
 
 const LiveCircle = styled('div')(({ theme }) => ({
-  width: '8px',
-  height: '8px',
+  width: '10px',
+  height: '10px',
   borderRadius: '50%',
-  backgroundColor: theme.palette.error.main,
-  animation: 'pulse 1.5s infinite',
+  backgroundColor: '#4CAF50',
+  animation: 'pulse 2s infinite',
+  boxShadow: '0 0 8px rgba(76, 175, 80, 0.4)',
   '@keyframes pulse': {
     '0%': {
-      transform: 'scale(0.9)',
-      opacity: 0.7
+      transform: 'scale(0.95)',
+      opacity: 0.8,
+      boxShadow: '0 0 8px rgba(76, 175, 80, 0.4)'
     },
     '50%': {
       transform: 'scale(1.1)',
-      opacity: 1
+      opacity: 1,
+      boxShadow: '0 0 12px rgba(76, 175, 80, 0.6)'
     },
     '100%': {
-      transform: 'scale(0.9)',
-      opacity: 0.7
+      transform: 'scale(0.95)',
+      opacity: 0.8,
+      boxShadow: '0 0 8px rgba(76, 175, 80, 0.4)'
     }
   }
 }));
 
-const ProgressBarContainer = styled('div')(({ theme }) => ({
+const TradeCard = styled(Card)(({ theme, isNew }) => ({
+  marginBottom: theme.spacing(1),
+  borderRadius: '12px',
+  backgroundColor:
+    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.9)',
+  border: `1px solid ${
+    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
+  }`,
+  transition: 'all 0.3s ease-in-out',
+  position: 'relative',
+  overflow: 'hidden',
+  animation: isNew ? `${highlightAnimation} 1s ease-in-out` : 'none',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow:
+      theme.palette.mode === 'dark'
+        ? '0 8px 25px rgba(0, 0, 0, 0.3)'
+        : '0 8px 25px rgba(0, 0, 0, 0.1)',
+    border: `1px solid ${theme.palette.primary.main}40`
+  }
+}));
+
+const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
+  fontSize: '0.7rem',
+  height: '24px',
+  fontWeight: 'bold',
+  borderRadius: '12px',
+  backgroundColor:
+    tradetype === 'BUY'
+      ? theme.palette.mode === 'dark'
+        ? 'rgba(76, 175, 80, 0.2)'
+        : 'rgba(76, 175, 80, 0.15)'
+      : theme.palette.mode === 'dark'
+      ? 'rgba(244, 67, 54, 0.2)'
+      : 'rgba(244, 67, 54, 0.15)',
+  color: tradetype === 'BUY' ? '#4CAF50' : '#F44336',
+  border: `1px solid ${tradetype === 'BUY' ? '#4CAF50' : '#F44336'}40`
+}));
+
+const VolumeIndicator = styled('div')(({ theme, volume }) => ({
   position: 'absolute',
   left: 0,
   top: 0,
   height: '100%',
-  width: '100%',
-  overflow: 'hidden'
+  width: `${volume}%`,
+  background: `linear-gradient(90deg, 
+    ${theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.08)' : 'rgba(33, 150, 243, 0.05)'} 0%, 
+    ${
+      theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.02)' : 'rgba(33, 150, 243, 0.01)'
+    } 100%)`,
+  transition: 'width 0.3s ease-in-out',
+  borderRadius: '12px'
 }));
 
-const ProgressBar = styled('div')(({ theme, width, color }) => ({
-  position: 'absolute',
-  left: 0,
-  top: 0,
-  height: '100%',
-  width: `${width}%`,
-  backgroundColor: color,
-  opacity: 0.15,
-  transition: 'width 0.3s ease-in-out'
-}));
-
-// Custom styled Pagination component
 const StyledPagination = styled(Pagination)(({ theme }) => ({
   '& .MuiPaginationItem-root': {
     color: theme.palette.text.primary,
-    borderRadius: '4px', // Rounded edges instead of square
+    borderRadius: '8px',
+    margin: '0 2px',
+    fontWeight: '500',
     '&:hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)'
+      backgroundColor:
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
     }
   },
   '& .Mui-selected': {
-    backgroundColor: 'transparent !important', // Completely transparent background
-    color: '#fff', // White text
+    backgroundColor: `${theme.palette.primary.main} !important`,
+    color: '#fff !important',
     fontWeight: 'bold',
-    border: `1px solid ${theme.palette.primary.main}`, // Primary color outline
-    borderRadius: '4px', // Ensure rounded edges on selected item
+    borderRadius: '8px',
     '&:hover': {
-      backgroundColor: 'transparent !important' // Keep transparent on hover
+      backgroundColor: `${theme.palette.primary.dark} !important`
     }
   }
 }));
@@ -260,7 +311,7 @@ const TradingHistory = ({ tokenId }) => {
           previousTradesRef.current = new Set(data.hists.map((trade) => trade._id));
           setTimeout(() => {
             setNewTradeIds(new Set());
-          }, 800);
+          }, 1000);
         }
 
         setTrades(data.hists);
@@ -285,7 +336,6 @@ const TradingHistory = ({ tokenId }) => {
     setPage(newPage);
   };
 
-  // Add new helper function to get price
   const calculatePrice = (trade) => {
     const xrpAmount = trade.got.currency === 'XRP' ? trade.got.value : trade.paid.value;
     const tokenAmount = trade.got.currency === 'XRP' ? trade.paid.value : trade.got.value;
@@ -294,20 +344,22 @@ const TradingHistory = ({ tokenId }) => {
 
   if (loading) {
     return (
-      <Stack spacing={2}>
+      <Stack spacing={3}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h6">Recent Trades</Typography>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Typography variant="h5" fontWeight="600" color="text.primary">
+              Recent Trades
+            </Typography>
             <LiveIndicator>
               <LiveCircle />
-              <Typography variant="body2" color="error.main">
+              <Typography variant="body2" fontWeight="600" sx={{ color: '#4CAF50' }}>
                 LIVE
               </Typography>
             </LiveIndicator>
           </Box>
         </Box>
-        <Box display="flex" justifyContent="center" p={2}>
-          <CircularProgress />
+        <Box display="flex" justifyContent="center" p={4}>
+          <CircularProgress size={40} thickness={4} />
         </Box>
       </Stack>
     );
@@ -315,214 +367,254 @@ const TradingHistory = ({ tokenId }) => {
 
   if (!trades || trades.length === 0) {
     return (
-      <Stack spacing={2}>
+      <Stack spacing={3}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h6">Recent Trades</Typography>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Typography variant="h5" fontWeight="600" color="text.primary">
+              Recent Trades
+            </Typography>
             <LiveIndicator>
               <LiveCircle />
-              <Typography variant="body2" color="error.main">
+              <Typography variant="body2" fontWeight="600" sx={{ color: '#4CAF50' }}>
                 LIVE
               </Typography>
             </LiveIndicator>
           </Box>
         </Box>
-        <Typography variant="body2" color="text.secondary" align="center">
-          No recent trades found
-        </Typography>
+        <Box
+          sx={{
+            textAlign: 'center',
+            py: 6,
+            backgroundColor:
+              theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+            borderRadius: '12px',
+            border: `1px dashed ${theme.palette.divider}`
+          }}
+        >
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No Recent Trades
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Trading activity will appear here when available
+          </Typography>
+        </Box>
       </Stack>
     );
   }
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={3}>
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Box display="flex" alignItems="center" gap={1}>
-          <Typography variant="h6">Recent Trades</Typography>
+        <Box display="flex" alignItems="center" gap={2}>
+          <Typography variant="h5" fontWeight="600" color="text.primary">
+            Recent Trades
+          </Typography>
           <LiveIndicator>
             <LiveCircle />
-            <Typography variant="body2" color="error.main">
+            <Typography variant="body2" fontWeight="600" sx={{ color: '#4CAF50' }}>
               LIVE
             </Typography>
           </LiveIndicator>
         </Box>
       </Box>
 
-      {/* Add table header */}
+      {/* Table Headers */}
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: '2fr 1fr 2fr 2fr 1fr 0.5fr',
-          gap: 1,
-          p: 1,
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: '1fr 1fr',
+            md: '2fr 1fr 2fr 2fr 1.5fr 0.5fr'
+          },
+          gap: 2,
+          p: 2,
           borderBottom: `1px solid ${theme.palette.divider}`,
-          backgroundColor: theme.palette.background.paper,
+          backgroundColor:
+            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+          borderRadius: '8px 8px 0 0',
           '& > *': {
             fontWeight: 'bold',
             color: theme.palette.text.secondary,
-            fontSize: '0.75rem'
+            fontSize: '0.75rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
           }
         }}
       >
-        <Typography>Time / Type</Typography>
-        <Typography>Price</Typography>
-        <Typography>Amount</Typography>
-        <Typography>Total</Typography>
-        <Typography>Maker/Taker</Typography>
-        <Typography></Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Time / Type</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Price</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Amount</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Total</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Maker/Taker</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}></Typography>
       </Box>
 
-      <List sx={{ width: '100%', padding: 0 }}>
-        {trades.map((trade, index) => (
-          <ListItem
-            key={trade._id}
-            sx={{
-              borderBottom: `1px solid ${theme.palette.divider}`,
-              position: 'relative',
-              overflow: 'hidden',
-              padding: '8px 12px',
-              width: '100%',
-              animation: newTradeIds.has(trade._id)
-                ? `${highlightAnimation} 0.8s ease-in-out`
-                : 'none'
-            }}
-          >
-            <ProgressBarContainer>
-              <ProgressBar
-                width={(() => {
-                  const xrpValue = getXRPAmount(trade);
-                  if (xrpValue < 500) return Math.max(5, (xrpValue / 500) * 25);
-                  if (xrpValue < 5000) return Math.max(25, (xrpValue / 5000) * 50);
-                  if (xrpValue < 10000) return Math.max(50, (xrpValue / 10000) * 75);
-                  return Math.min(100, 75 + (xrpValue / 50000) * 25);
-                })()}
-                color={trade.paid.currency === 'XRP' ? theme.palette.primary.main : '#F44336'}
-              />
-            </ProgressBarContainer>
-            <Box
-              sx={{
-                width: '100%',
-                position: 'relative',
-                zIndex: 1,
-                display: 'grid',
-                gridTemplateColumns: '2fr 1fr 2fr 2fr 1fr 0.5fr',
-                gap: 1,
-                alignItems: 'center'
-              }}
-            >
-              {/* Time and Type */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography variant="caption" color="text.secondary">
-                  {formatRelativeTime(trade.time)}
-                </Typography>
-                {trade.paid.currency === 'XRP' ? (
-                  <Typography component="span" variant="caption" color="primary.main">
-                    BUY{' '}
-                  </Typography>
-                ) : (
-                  <Typography component="span" variant="caption" color="error.main">
-                    SELL{' '}
-                  </Typography>
-                )}
-              </Box>
+      <Stack spacing={1.5}>
+        {trades.map((trade, index) => {
+          const isBuy = trade.paid.currency === 'XRP';
+          const xrpAmount = getXRPAmount(trade);
+          const price = calculatePrice(trade);
+          const volumePercentage = Math.min(100, Math.max(5, (xrpAmount / 50000) * 100));
 
-              {/* Price */}
-              <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
-                {formatTradeValue(calculatePrice(trade))} XRP
-              </Typography>
-
-              {/* Amount */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <img
-                  src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
-                  alt={decodeCurrency(trade.paid.currency)}
-                  style={{ width: 14, height: 14, borderRadius: '50%' }}
-                />
-                <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
-                  {formatTradeValue(trade.paid.value)} {decodeCurrency(trade.paid.currency)}
-                </Typography>
-              </Box>
-
-              {/* Total */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <img
-                  src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
-                  alt={decodeCurrency(trade.got.currency)}
-                  style={{ width: 14, height: 14, borderRadius: '50%' }}
-                />
-                <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
-                  {formatTradeValue(trade.got.value)} {decodeCurrency(trade.got.currency)}
-                </Typography>
-              </Box>
-
-              {/* Maker/Taker */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Tooltip title={`Maker: ${trade.maker}\nTaker: ${trade.taker}`}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Link
-                      href={`/profile/${trade.maker}`}
-                      sx={{
-                        textDecoration: 'none',
-                        color: theme.palette.primary.main,
-                        '&:hover': {
-                          textDecoration: 'underline',
-                          color: theme.palette.primary.dark
-                        }
-                      }}
+          return (
+            <TradeCard key={trade._id} isNew={newTradeIds.has(trade._id)}>
+              <VolumeIndicator volume={volumePercentage} />
+              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      sm: '1fr 1fr',
+                      md: '2fr 1fr 2fr 2fr 1.5fr 0.5fr'
+                    },
+                    gap: 2,
+                    alignItems: 'center'
+                  }}
+                >
+                  {/* Time and Type */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      fontWeight="500"
+                      sx={{ minWidth: 'fit-content' }}
                     >
+                      {formatRelativeTime(trade.time)}
+                    </Typography>
+                    <TradeTypeChip
+                      label={isBuy ? 'BUY' : 'SELL'}
+                      tradetype={isBuy ? 'BUY' : 'SELL'}
+                      size="small"
+                    />
+                  </Box>
+
+                  {/* Price */}
+                  <Box sx={{ textAlign: { xs: 'left', md: 'left' } }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '0.75rem', display: { xs: 'block', md: 'none' } }}
+                    >
+                      Price
+                    </Typography>
+                    <Typography variant="body1" fontWeight="600" color="text.primary">
+                      {formatTradeValue(price)} XRP
+                    </Typography>
+                  </Box>
+
+                  {/* Amount */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <img
+                      src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
+                      alt={decodeCurrency(trade.paid.currency)}
+                      style={{ width: 20, height: 20, borderRadius: '50%' }}
+                    />
+                    <Box>
                       <Typography
-                        component="span"
-                        sx={{
-                          fontSize: '0.8rem',
-                          color: theme.palette.primary.main
-                        }}
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontSize: '0.75rem', display: { xs: 'block', md: 'none' } }}
                       >
-                        {`${trade.maker.slice(0, 4)}...${trade.maker.slice(-4)}`}
-                        {getTradeSizeEmoji(getXRPAmount(trade))}
+                        Amount
+                      </Typography>
+                      <Typography variant="body1" fontWeight="600" color="text.primary">
+                        {formatTradeValue(trade.paid.value)} {decodeCurrency(trade.paid.currency)}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Total */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <img
+                      src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
+                      alt={decodeCurrency(trade.got.currency)}
+                      style={{ width: 20, height: 20, borderRadius: '50%' }}
+                    />
+                    <Box>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontSize: '0.75rem', display: { xs: 'block', md: 'none' } }}
+                      >
+                        Total
+                      </Typography>
+                      <Typography variant="body1" fontWeight="600" color="text.primary">
+                        {formatTradeValue(trade.got.value)} {decodeCurrency(trade.got.currency)}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Maker/Taker */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Tooltip title={`Maker: ${trade.maker}\nTaker: ${trade.taker}`} arrow>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Link
+                          href={`/profile/${trade.maker}`}
+                          sx={{
+                            textDecoration: 'none',
+                            color: theme.palette.primary.main,
+                            fontWeight: '500',
+                            '&:hover': {
+                              textDecoration: 'underline',
+                              color: theme.palette.primary.dark
+                            }
+                          }}
+                        >
+                          <Typography variant="body2" fontWeight="500">
+                            {`${trade.maker.slice(0, 4)}...${trade.maker.slice(-4)}`}
+                          </Typography>
+                        </Link>
+                        <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                          {getTradeSizeEmoji(xrpAmount)}
+                        </Typography>
                         {(BOT_ADDRESSES.includes(trade.maker) ||
                           BOT_ADDRESSES.includes(trade.taker)) && (
                           <SmartToy
-                            style={{
+                            sx={{
                               color: theme.palette.warning.main,
-                              fontSize: '0.9rem',
-                              marginLeft: '2px',
-                              verticalAlign: 'middle'
+                              fontSize: '1rem'
                             }}
                           />
                         )}
-                      </Typography>
-                    </Link>
+                      </Box>
+                    </Tooltip>
                   </Box>
-                </Tooltip>
-              </Box>
 
-              {/* Actions */}
-              <Box>
-                <Tooltip title="View on Bithomp">
-                  <IconButton
-                    size="small"
-                    component={Link}
-                    href={`https://bithomp.com/explorer/${trade.hash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      color: `${theme.palette.primary.main} !important`,
-                      '&:hover': {
-                        color: `${theme.palette.primary.dark} !important`
-                      }
-                    }}
-                  >
-                    <OpenInNewIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
-          </ListItem>
-        ))}
-      </List>
+                  {/* Actions */}
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Tooltip title="View on Bithomp" arrow>
+                      <IconButton
+                        size="small"
+                        component={Link}
+                        href={`https://bithomp.com/explorer/${trade.hash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          color: theme.palette.primary.main,
+                          '&:hover': {
+                            color: theme.palette.primary.dark,
+                            backgroundColor:
+                              theme.palette.mode === 'dark'
+                                ? 'rgba(255, 255, 255, 0.08)'
+                                : 'rgba(0, 0, 0, 0.04)'
+                          }
+                        }}
+                      >
+                        <OpenInNewIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
+              </CardContent>
+            </TradeCard>
+          );
+        })}
+      </Stack>
 
       {totalPages > 1 && (
-        <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
+        <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
           <StyledPagination
             count={totalPages}
             page={page}
