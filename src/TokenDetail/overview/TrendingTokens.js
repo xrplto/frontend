@@ -62,21 +62,32 @@ const KYCBadge = styled(Badge)(({ theme }) => ({
 const TrendingCard = styled(Card)(({ theme, darkMode, rank }) => {
   return {
     position: 'relative',
-    backgroundColor:
-      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.9)',
-    backdropFilter: 'blur(20px)',
+    borderRadius: '12px',
+    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.4
+    )} 100%)`,
+    backdropFilter: 'blur(10px)',
     border:
       rank <= 3
         ? `2px solid ${alpha('#FFD700', 0.3)}`
-        : `1px solid ${
-            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
-          }`,
-    borderRadius: '12px',
-    boxShadow: darkMode
-      ? `0 4px 16px ${alpha('#000', 0.4)}, inset 0 1px 0 ${alpha('#fff', 0.1)}`
-      : `0 4px 16px ${alpha('#000', 0.12)}, inset 0 1px 0 ${alpha('#fff', 0.8)}`,
+        : `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
     cursor: 'pointer',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '1px',
+      background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.6)}, ${alpha(
+        theme.palette.success.main,
+        0.6
+      )}, ${alpha(theme.palette.info.main, 0.6)})`,
+      opacity: 0.8
+    }
   };
 });
 
