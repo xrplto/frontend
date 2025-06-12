@@ -159,11 +159,11 @@ export default function PriceStatistics({ token }) {
           left: 0,
           right: 0,
           height: '1px',
-          background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.6)}, ${alpha(
+          background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
             theme.palette.success.main,
-            0.6
-          )}, ${alpha(theme.palette.info.main, 0.6)})`,
-          opacity: 0.8
+            0.4
+          )}, ${alpha(theme.palette.info.main, 0.4)})`,
+          opacity: 0.6
         }
       }}
     >
