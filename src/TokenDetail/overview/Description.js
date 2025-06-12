@@ -116,11 +116,6 @@ const ReadMore = ({ children }) => {
                 : 'linear-gradient(135deg, rgba(51, 102, 255, 0.15) 0%, rgba(77, 121, 255, 0.08) 100%)'
             };
             transform: translateY(-2px);
-            box-shadow: ${
-              theme.palette.mode === 'dark'
-                ? '0 8px 25px rgba(34, 177, 76, 0.15)'
-                : '0 8px 25px rgba(51, 102, 255, 0.15)'
-            };
         }
     `
   );
@@ -171,7 +166,6 @@ const StyledCard = styled(Paper)(({ theme }) => ({
   )} 100%)`,
   backdropFilter: 'blur(10px)',
   border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
-  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -192,8 +186,7 @@ const StyledCard = styled(Paper)(({ theme }) => ({
   },
 
   '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`
+    transform: 'translateY(-2px)'
   }
 }));
 
