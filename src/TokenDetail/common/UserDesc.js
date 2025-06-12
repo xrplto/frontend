@@ -28,8 +28,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions,
-  Collapse
+  DialogActions
 } from '@mui/material';
 import TokenIcon from '@mui/icons-material/Token';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
@@ -91,7 +90,6 @@ const IconCover = styled('div')(
         position: relative;
         overflow: hidden;
         z-index: 1;
-        transition: width 1s ease-in-out, height .5s ease-in-out !important;
         -webkit-tap-highlight-color: transparent;
         &:hover, &.Mui-focusVisible {
             z-index: 1;
@@ -141,8 +139,7 @@ const ImageBackdrop = styled('span')(({ theme }) => ({
   top: 0,
   bottom: 0,
   backgroundColor: theme.palette.common.white,
-  opacity: 0,
-  transition: theme.transitions.create('opacity')
+  opacity: 0
 }));
 
 const CardOverlay = styled('div')(
@@ -469,19 +466,16 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
               theme.palette.primary.main,
               0.08
             )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-            backdropFilter: 'blur(6px)',
             border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
             color: theme.palette.primary.main,
             fontWeight: 500,
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
+
             '&:hover': {
               background: `linear-gradient(135deg, ${alpha(
                 theme.palette.primary.main,
                 0.12
               )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-              transform: 'translateY(-1px)'
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
             }
           }}
         />
@@ -508,20 +502,17 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
               theme.palette.background.paper,
               0.8
             )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-            backdropFilter: 'blur(6px)',
             border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
             color: theme.palette.text.primary,
             fontWeight: 500,
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
+
             '&:hover': {
               background: `linear-gradient(135deg, ${alpha(
                 theme.palette.primary.main,
                 0.08
               )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
               border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-              color: theme.palette.primary.main,
-              transform: 'translateY(-1px)'
+              color: theme.palette.primary.main
             }
           }}
         />
@@ -542,25 +533,23 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
 
         {/* Additional rows when expanded */}
         {expanded && (
-          <Collapse in={expanded} timeout={300}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, mt: 0.25 }}>
-              {/* Split remaining tags into rows of 4 */}
-              {Array.from({ length: Math.ceil((tags.length - 4) / 4) }, (_, rowIndex) => (
-                <Box
-                  key={rowIndex}
-                  sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.375, width: '100%' }}
-                >
-                  {tags.slice(4 + rowIndex * 4, 4 + (rowIndex + 1) * 4).map((tag) => (
-                    <TagChip key={tag} tag={tag} />
-                  ))}
-                </Box>
-              ))}
-              {/* Show less button */}
-              <Box sx={{ display: 'flex', gap: 0.375 }}>
-                <TagChip tag="Show less" isExpand={true} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, mt: 0.25 }}>
+            {/* Split remaining tags into rows of 4 */}
+            {Array.from({ length: Math.ceil((tags.length - 4) / 4) }, (_, rowIndex) => (
+              <Box
+                key={rowIndex}
+                sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.375, width: '100%' }}
+              >
+                {tags.slice(4 + rowIndex * 4, 4 + (rowIndex + 1) * 4).map((tag) => (
+                  <TagChip key={tag} tag={tag} />
+                ))}
               </Box>
+            ))}
+            {/* Show less button */}
+            <Box sx={{ display: 'flex', gap: 0.375 }}>
+              <TagChip tag="Show less" isExpand={true} />
             </Box>
-          </Collapse>
+          </Box>
         )}
       </Box>
     );
@@ -741,7 +730,6 @@ export default function UserDesc({ token }) {
           theme.palette.background.paper,
           0.8
         )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-        backdropFilter: 'blur(8px)',
         border: `1px solid ${alpha(theme.palette.primary.main, 0.06)}`,
         boxShadow: `0 1px 6px ${alpha(theme.palette.common.black, 0.03)}`,
         position: 'relative',
@@ -857,7 +845,6 @@ export default function UserDesc({ token }) {
                       theme.palette.primary.main,
                       0.08
                     )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                    backdropFilter: 'blur(8px)',
                     border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                     fontWeight: 600,
                     px: 1
@@ -970,7 +957,6 @@ export default function UserDesc({ token }) {
               theme.palette.error.main,
               0.08
             )} 0%, ${alpha(theme.palette.error.main, 0.04)} 100%)`,
-            backdropFilter: 'blur(6px)',
             border: `1px solid ${alpha(theme.palette.error.main, 0.12)}`,
             display: 'flex',
             flexDirection: 'column',
@@ -1011,7 +997,6 @@ export default function UserDesc({ token }) {
               theme.palette.warning.main,
               0.08
             )} 0%, ${alpha(theme.palette.warning.main, 0.04)} 100%)`,
-            backdropFilter: 'blur(6px)',
             border: `1px solid ${alpha(theme.palette.warning.main, 0.12)}`,
             display: 'flex',
             flexDirection: 'column',
@@ -1052,7 +1037,6 @@ export default function UserDesc({ token }) {
               theme.palette.secondary.main,
               0.08
             )} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
-            backdropFilter: 'blur(6px)',
             border: `1px solid ${alpha(theme.palette.secondary.main, 0.12)}`,
             display: 'flex',
             flexDirection: 'column',
@@ -1093,7 +1077,6 @@ export default function UserDesc({ token }) {
               theme.palette.info.main,
               0.08
             )} 0%, ${alpha(theme.palette.info.main, 0.04)} 100%)`,
-            backdropFilter: 'blur(6px)',
             border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`,
             display: 'flex',
             flexDirection: 'column',
@@ -1149,7 +1132,6 @@ export default function UserDesc({ token }) {
               theme.palette.background.paper,
               0.6
             )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-            backdropFilter: 'blur(6px)',
             border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
             boxShadow: `0 1px 6px ${alpha(theme.palette.common.black, 0.03)}`
           }}
@@ -1257,7 +1239,6 @@ export default function UserDesc({ token }) {
               theme.palette.background.paper,
               0.8
             )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-            backdropFilter: 'blur(8px)',
             border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
             color: theme.palette.primary.main,
             fontWeight: 500,
@@ -1267,10 +1248,11 @@ export default function UserDesc({ token }) {
             '&:hover': {
               background: `linear-gradient(135deg, ${alpha(
                 theme.palette.primary.main,
-                0.08
-              )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
-            }
+                0.12
+              )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
+            },
+            '&:active': {}
           }}
         >
           {`${!showStat ? 'More' : 'Less'} stats`}
@@ -1381,18 +1363,16 @@ export default function UserDesc({ token }) {
                           theme.palette.background.paper,
                           0.8
                         )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                        backdropFilter: 'blur(6px)',
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                         color: theme.palette.primary.main,
                         fontWeight: 500,
-                        transition: 'all 0.2s ease',
+
                         '&:hover': {
                           background: `linear-gradient(135deg, ${alpha(
                             theme.palette.primary.main,
                             0.08
                           )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-                          transform: 'translateY(-1px)'
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
                         }
                       }}
                       deleteIcon={
@@ -1425,7 +1405,7 @@ export default function UserDesc({ token }) {
                     0.6
                   )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
                   border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
-                  transition: 'all 0.2s ease',
+
                   '&:hover': {
                     background: `linear-gradient(135deg, ${alpha(
                       theme.palette.primary.main,
@@ -1479,7 +1459,6 @@ export default function UserDesc({ token }) {
               ${alpha(theme.palette.background.paper, 0.98)} 0%, 
               ${alpha(theme.palette.background.paper, 0.95)} 50%,
               ${alpha('#ff1744', 0.02)} 100%)`,
-            backdropFilter: 'blur(24px)',
             boxShadow: `
               0 0 0 1px ${alpha('#ff1744', 0.1)},
               0 8px 32px ${alpha('#ff1744', 0.3)},
@@ -1496,19 +1475,13 @@ export default function UserDesc({ token }) {
               right: 0,
               height: '4px',
               background: 'linear-gradient(90deg, #ff1744, #ff5722, #ff9800, #ff5722, #ff1744)',
-              backgroundSize: '200% 100%',
-              animation: 'shimmer 2s ease-in-out infinite'
-            },
-            '@keyframes shimmer': {
-              '0%': { backgroundPosition: '-200% 0' },
-              '100%': { backgroundPosition: '200% 0' }
+              backgroundSize: '200% 100%'
             }
           }
         }}
         BackdropProps={{
           sx: {
-            backgroundColor: alpha('#000', 0.7),
-            backdropFilter: 'blur(8px)'
+            backgroundColor: alpha('#000', 0.7)
           }
         }}
       >
@@ -1541,18 +1514,7 @@ export default function UserDesc({ token }) {
               background: `linear-gradient(135deg, 
                 ${alpha('#ff1744', 0.15)} 0%, 
                 ${alpha('#ff1744', 0.08)} 100%)`,
-              border: `2px solid ${alpha('#ff1744', 0.3)}`,
-              animation: 'pulse 2s ease-in-out infinite',
-              '@keyframes pulse': {
-                '0%, 100%': {
-                  transform: 'scale(1)',
-                  boxShadow: `0 0 0 0 ${alpha('#ff1744', 0.4)}`
-                },
-                '50%': {
-                  transform: 'scale(1.05)',
-                  boxShadow: `0 0 0 8px ${alpha('#ff1744', 0)}`
-                }
-              }
+              border: `2px solid ${alpha('#ff1744', 0.3)}`
             }}
           >
             <WarningIcon
@@ -1635,8 +1597,7 @@ export default function UserDesc({ token }) {
               background: `linear-gradient(135deg, 
                 ${alpha(theme.palette.background.paper, 0.8)} 0%, 
                 ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-              backdropFilter: 'blur(8px)'
+              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`
             }}
           >
             <Typography
@@ -1687,7 +1648,7 @@ export default function UserDesc({ token }) {
                     borderRadius: '8px',
                     background: alpha(theme.palette.background.paper, 0.5),
                     border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                    transition: 'all 0.2s ease',
+
                     '&:hover': {
                       background: alpha(theme.palette.primary.main, 0.04),
                       border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
@@ -1738,19 +1699,16 @@ export default function UserDesc({ token }) {
                 0 2px 8px ${alpha('#ff1744', 0.2)},
                 inset 0 1px 0 ${alpha('#fff', 0.2)}
               `,
-              transition: 'all 0.2s ease',
+
               '&:hover': {
                 background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
-                transform: 'translateY(-2px)',
                 boxShadow: `
                   0 6px 20px ${alpha('#ff1744', 0.4)},
                   0 4px 12px ${alpha('#ff1744', 0.3)},
                   inset 0 1px 0 ${alpha('#fff', 0.2)}
                 `
               },
-              '&:active': {
-                transform: 'translateY(0px)'
-              }
+              '&:active': {}
             }}
           >
             I Understand the Risks
@@ -1773,7 +1731,6 @@ export default function UserDesc({ token }) {
               ${alpha(theme.palette.background.paper, 0.98)} 0%, 
               ${alpha(theme.palette.background.paper, 0.95)} 50%,
               ${alpha('#ff9800', 0.02)} 100%)`,
-            backdropFilter: 'blur(24px)',
             boxShadow: `
               0 0 0 1px ${alpha('#ff9800', 0.1)},
               0 8px 32px ${alpha('#ff9800', 0.3)},
@@ -1790,19 +1747,13 @@ export default function UserDesc({ token }) {
               right: 0,
               height: '4px',
               background: 'linear-gradient(90deg, #ff9800, #ffc107, #ffeb3b, #ffc107, #ff9800)',
-              backgroundSize: '200% 100%',
-              animation: 'shimmer 2s ease-in-out infinite'
-            },
-            '@keyframes shimmer': {
-              '0%': { backgroundPosition: '-200% 0' },
-              '100%': { backgroundPosition: '200% 0' }
+              backgroundSize: '200% 100%'
             }
           }
         }}
         BackdropProps={{
           sx: {
-            backgroundColor: alpha('#000', 0.7),
-            backdropFilter: 'blur(8px)'
+            backgroundColor: alpha('#000', 0.7)
           }
         }}
       >
@@ -1835,18 +1786,7 @@ export default function UserDesc({ token }) {
               background: `linear-gradient(135deg, 
                 ${alpha('#ff9800', 0.15)} 0%, 
                 ${alpha('#ff9800', 0.08)} 100%)`,
-              border: `2px solid ${alpha('#ff9800', 0.3)}`,
-              animation: 'pulse 2s ease-in-out infinite',
-              '@keyframes pulse': {
-                '0%, 100%': {
-                  transform: 'scale(1)',
-                  boxShadow: `0 0 0 0 ${alpha('#ff9800', 0.4)}`
-                },
-                '50%': {
-                  transform: 'scale(1.05)',
-                  boxShadow: `0 0 0 8px ${alpha('#ff9800', 0)}`
-                }
-              }
+              border: `2px solid ${alpha('#ff9800', 0.3)}`
             }}
           >
             <WarningIcon
@@ -1929,8 +1869,7 @@ export default function UserDesc({ token }) {
               background: `linear-gradient(135deg, 
                 ${alpha(theme.palette.background.paper, 0.8)} 0%, 
                 ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-              backdropFilter: 'blur(8px)'
+              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`
             }}
           >
             <Typography
@@ -1981,7 +1920,7 @@ export default function UserDesc({ token }) {
                     borderRadius: '8px',
                     background: alpha(theme.palette.background.paper, 0.5),
                     border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                    transition: 'all 0.2s ease',
+
                     '&:hover': {
                       background: alpha(theme.palette.warning.main, 0.04),
                       border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`
@@ -2032,19 +1971,16 @@ export default function UserDesc({ token }) {
                 0 2px 8px ${alpha('#ff9800', 0.2)},
                 inset 0 1px 0 ${alpha('#fff', 0.2)}
               `,
-              transition: 'all 0.2s ease',
+
               '&:hover': {
                 background: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)',
-                transform: 'translateY(-2px)',
                 boxShadow: `
                   0 6px 20px ${alpha('#ff9800', 0.4)},
                   0 4px 12px ${alpha('#ff9800', 0.3)},
                   inset 0 1px 0 ${alpha('#fff', 0.2)}
                 `
               },
-              '&:active': {
-                transform: 'translateY(0px)'
-              }
+              '&:active': {}
             }}
           >
             I Acknowledge the Risks
