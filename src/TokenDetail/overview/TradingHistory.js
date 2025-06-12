@@ -396,7 +396,7 @@ const TradingHistory = ({ tokenId }) => {
                   if (xrpValue < 10000) return Math.max(50, (xrpValue / 10000) * 75);
                   return Math.min(100, 75 + (xrpValue / 50000) * 25);
                 })()}
-                color={trade.paid.currency === 'XRP' ? '#4CAF50' : '#F44336'}
+                color={trade.paid.currency === 'XRP' ? theme.palette.primary.main : '#F44336'}
               />
             </ProgressBarContainer>
             <Box
@@ -416,7 +416,7 @@ const TradingHistory = ({ tokenId }) => {
                   {formatRelativeTime(trade.time)}
                 </Typography>
                 {trade.paid.currency === 'XRP' ? (
-                  <Typography component="span" variant="caption" color="success.main">
+                  <Typography component="span" variant="caption" color="primary.main">
                     BUY{' '}
                   </Typography>
                 ) : (
@@ -463,17 +463,18 @@ const TradingHistory = ({ tokenId }) => {
                       href={`/profile/${trade.maker}`}
                       sx={{
                         textDecoration: 'none',
-                        color: theme.palette.text.secondary,
+                        color: theme.palette.primary.main,
                         '&:hover': {
                           textDecoration: 'underline',
-                          color: theme.palette.primary.main
+                          color: theme.palette.primary.dark
                         }
                       }}
                     >
                       <Typography
                         component="span"
                         sx={{
-                          fontSize: '0.8rem'
+                          fontSize: '0.8rem',
+                          color: theme.palette.primary.main
                         }}
                       >
                         {`${trade.maker.slice(0, 4)}...${trade.maker.slice(-4)}`}
@@ -505,9 +506,9 @@ const TradingHistory = ({ tokenId }) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     sx={{
-                      color: theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF',
+                      color: `${theme.palette.primary.main} !important`,
                       '&:hover': {
-                        color: theme.palette.mode === 'dark' ? '#2ecc71' : '#4d79ff'
+                        color: `${theme.palette.primary.dark} !important`
                       }
                     }}
                   >
