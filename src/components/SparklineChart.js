@@ -1,14 +1,23 @@
 import axios from 'axios';
 import { useEffect, useState, useMemo, memo } from 'react';
 import ReactECharts from 'echarts-for-react';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, alpha } from '@mui/material/styles';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
+import { Box, Skeleton } from '@mui/material';
 import Decimal from 'decimal.js';
 
-const SparklineChart = ({ url, height = '100%', width = '100%', ...props }) => {
+const SparklineChart = ({
+  url,
+  height = '100%',
+  width = '100%',
+  showGradient = true,
+  lineWidth = 2,
+  ...props
+}) => {
   const theme = useTheme();
   const [chartOption, setChartOption] = useState(null);
   const [isError, setIsError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Memoize the chart options creation function
   const createChartOptions = useMemo(
@@ -19,6 +28,8 @@ const SparklineChart = ({ url, height = '100%', width = '100%', ...props }) => {
       // Then normalize the values for display while preserving the shape
       const priceCoordinates = [];
       const originalPrices = [];
+      let isPositiveTrend = false;
+
       if (chartData?.prices?.length) {
         // Find min and max to normalize values
         let minPrice = new Decimal(chartData.prices[0]);
@@ -34,6 +45,11 @@ const SparklineChart = ({ url, height = '100%', width = '100%', ...props }) => {
         // Calculate range for normalization
         const range = maxPrice.minus(minPrice);
 
+        // Determine trend direction
+        const firstPrice = new Decimal(chartData.prices[0]);
+        const lastPrice = new Decimal(chartData.prices[chartData.prices.length - 1]);
+        isPositiveTrend = lastPrice.gte(firstPrice);
+
         // Create normalized coordinates that preserve the shape
         chartData.prices.forEach((price, index) => {
           const decPrice =
@@ -48,46 +64,89 @@ const SparklineChart = ({ url, height = '100%', width = '100%', ...props }) => {
         });
       }
 
+      // Enhanced color scheme based on trend
+      const baseColor =
+        chartColor || (isPositiveTrend ? theme.palette.success.main : theme.palette.error.main);
+      const gradientColor = isPositiveTrend
+        ? [theme.palette.success.main, theme.palette.success.light]
+        : [theme.palette.error.main, theme.palette.error.light];
+
       return {
         grid: {
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0,
+          left: 2,
+          right: 2,
+          top: 2,
+          bottom: 2,
           containLabel: false
         },
         tooltip: {
           trigger: 'axis',
           axisPointer: {
-            type: 'none'
+            type: 'line',
+            lineStyle: {
+              color: alpha(baseColor, 0.6),
+              width: 1,
+              type: 'dashed'
+            }
           },
-          backgroundColor: 'rgba(32, 32, 32, 0.9)',
-          borderColor: 'rgba(255, 255, 255, 0.1)',
+          backgroundColor:
+            theme.palette.mode === 'dark' ? 'rgba(18, 18, 18, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+          borderColor: alpha(baseColor, 0.3),
           borderWidth: 1,
+          borderRadius: 8,
           textStyle: {
-            color: '#fff',
-            fontSize: 12
+            color: theme.palette.text.primary,
+            fontSize: 12,
+            fontWeight: 500
           },
           formatter: function (params) {
+            if (!params || !params[0]) return '';
+
             // Get the index from the x-value of the data point
             const index = params[0].value[0];
             // Use the original price value from our stored array
             const originalPrice = originalPrices[index];
+
+            if (!chartData?.timestamps || !chartData.timestamps[index]) {
+              return `Price: ${originalPrice}`;
+            }
+
             // Get the timestamp from the data
             const timestamp = chartData.timestamps[index];
             // Format timestamp to readable date/time
             const date = new Date(timestamp);
-            const formattedDate = date.toLocaleTimeString([], {
+            const formattedDate = date.toLocaleString([], {
+              month: 'short',
+              day: 'numeric',
               hour: '2-digit',
               minute: '2-digit'
             });
 
-            // Return only the formatted date and price
-            return `${formattedDate}<br/>Price: ${originalPrice}`;
+            // Enhanced tooltip with trend indicator
+            const trendIcon = isPositiveTrend ? '↗' : '↘';
+            const trendColor = isPositiveTrend ? '#22c55e' : '#ef4444';
+
+            return `
+              <div style="padding: 4px 0;">
+                <div style="color: ${theme.palette.text.secondary}; font-size: 11px; margin-bottom: 2px;">
+                  ${formattedDate}
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="color: ${trendColor}; font-size: 14px;">${trendIcon}</span>
+                  <span style="font-weight: 600; color: ${theme.palette.text.primary};">
+                    ${originalPrice}
+                  </span>
+                </div>
+              </div>
+            `;
           },
-          padding: [8, 12],
-          z: 9999,
-          appendToBody: true
+          padding: [12, 16],
+          extraCssText: `
+            box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.12)};
+            backdrop-filter: blur(8px);
+            border-radius: 8px;
+          `,
+          z: 9999
         },
         xAxis: {
           type: 'category',
@@ -103,23 +162,87 @@ const SparklineChart = ({ url, height = '100%', width = '100%', ...props }) => {
           {
             data: priceCoordinates,
             type: 'line',
-            color: chartColor,
+            color: baseColor,
             showSymbol: false,
             symbolSize: 0,
             lineStyle: {
-              width: 2,
-              shadowColor: chartColor,
-              shadowBlur: 10,
-              shadowOffsetY: 5,
-              cap: 'round'
+              width: lineWidth,
+              shadowColor: alpha(baseColor, 0.4),
+              shadowBlur: 8,
+              shadowOffsetY: 2,
+              cap: 'round',
+              join: 'round'
             },
-            smooth: 0.3,
-            animation: false
+            smooth: 0.4,
+            animation: true,
+            animationDuration: 1000,
+            animationEasing: 'cubicOut',
+            // Add gradient fill if enabled
+            ...(showGradient && {
+              areaStyle: {
+                color: {
+                  type: 'linear',
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [
+                    {
+                      offset: 0,
+                      color: alpha(gradientColor[0], 0.3)
+                    },
+                    {
+                      offset: 0.5,
+                      color: alpha(gradientColor[0], 0.15)
+                    },
+                    {
+                      offset: 1,
+                      color: alpha(gradientColor[1], 0.05)
+                    }
+                  ]
+                },
+                shadowColor: alpha(baseColor, 0.2),
+                shadowBlur: 4
+              }
+            }),
+            // Enhanced hover effects
+            emphasis: {
+              lineStyle: {
+                width: lineWidth + 1,
+                shadowBlur: 12,
+                shadowColor: alpha(baseColor, 0.6)
+              },
+              ...(showGradient && {
+                areaStyle: {
+                  color: {
+                    type: 'linear',
+                    x: 0,
+                    y: 0,
+                    x2: 0,
+                    y2: 1,
+                    colorStops: [
+                      {
+                        offset: 0,
+                        color: alpha(gradientColor[0], 0.4)
+                      },
+                      {
+                        offset: 0.5,
+                        color: alpha(gradientColor[0], 0.2)
+                      },
+                      {
+                        offset: 1,
+                        color: alpha(gradientColor[1], 0.08)
+                      }
+                    ]
+                  }
+                }
+              })
+            }
           }
         ]
       };
     },
-    [theme]
+    [theme, showGradient, lineWidth]
   );
 
   // Memoize the axios request
@@ -128,6 +251,7 @@ const SparklineChart = ({ url, height = '100%', width = '100%', ...props }) => {
 
     return async () => {
       try {
+        setIsLoading(true);
         const response = await axios.get(url, {
           signal: controller.signal,
           // Add caching headers
@@ -144,6 +268,8 @@ const SparklineChart = ({ url, height = '100%', width = '100%', ...props }) => {
           setIsError(true);
         }
         return null;
+      } finally {
+        setIsLoading(false);
       }
     };
   }, [url]);
@@ -167,17 +293,128 @@ const SparklineChart = ({ url, height = '100%', width = '100%', ...props }) => {
     };
   }, [url, fetchChartData, createChartOptions]);
 
-  if (isError) return null;
-  if (!chartOption) return null; // Add this check to prevent rendering with null options
+  // Loading state with skeleton
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: typeof height === 'string' && height.includes('px') ? height : '40px'
+        }}
+      >
+        <Skeleton
+          variant="rectangular"
+          width="100%"
+          height="100%"
+          animation="wave"
+          sx={{
+            borderRadius: 1,
+            bgcolor:
+              theme.palette.mode === 'dark'
+                ? alpha(theme.palette.common.white, 0.05)
+                : alpha(theme.palette.common.black, 0.05)
+          }}
+        />
+      </Box>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: typeof height === 'string' && height.includes('px') ? height : '40px',
+          opacity: 0.3
+        }}
+      >
+        <Box
+          sx={{
+            width: '100%',
+            height: '2px',
+            background: `linear-gradient(90deg, transparent, ${alpha(
+              theme.palette.divider,
+              0.5
+            )}, transparent)`,
+            borderRadius: 1
+          }}
+        />
+      </Box>
+    );
+  }
+
+  // No data state
+  if (!chartOption) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: typeof height === 'string' && height.includes('px') ? height : '40px'
+        }}
+      >
+        <Skeleton
+          variant="rectangular"
+          width="100%"
+          height="100%"
+          animation={false}
+          sx={{
+            borderRadius: 1,
+            bgcolor:
+              theme.palette.mode === 'dark'
+                ? alpha(theme.palette.common.white, 0.02)
+                : alpha(theme.palette.common.black, 0.02)
+          }}
+        />
+      </Box>
+    );
+  }
 
   return (
     <LazyLoadComponent threshold={100}>
-      <ReactECharts
-        option={chartOption}
-        style={{ height, width }}
-        opts={{ renderer: 'svg' }}
-        {...props}
-      />
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: 1,
+          transition: 'all 0.2s ease-in-out',
+          '&:hover': {
+            transform: 'scale(1.02)',
+            '& .echarts-chart': {
+              filter: 'brightness(1.1)'
+            }
+          }
+        }}
+      >
+        <ReactECharts
+          option={chartOption}
+          style={{
+            height,
+            width,
+            transition: 'filter 0.2s ease-in-out'
+          }}
+          opts={{
+            renderer: 'svg',
+            devicePixelRatio: window.devicePixelRatio || 1
+          }}
+          className="echarts-chart"
+          {...props}
+        />
+      </Box>
     </LazyLoadComponent>
   );
 };

@@ -132,10 +132,11 @@ const OverviewWrapper = styled('div')(
       left: -1px;
       right: -1px;
       height: 3px;
-      background: linear-gradient(90deg, ${theme.palette.primary.main}, ${
-    theme.palette.success.main
-  }, ${theme.palette.info.main});
-      opacity: 0.8;
+      background: linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
+    theme.palette.success.main,
+    0.4
+  )}, ${alpha(theme.palette.info.main, 0.4)});
+      opacity: 0.6;
       border-radius: 24px 24px 0 0;
       z-index: 10;
     }
@@ -2494,13 +2495,32 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   mt: '-1px',
                   position: 'relative',
                   zIndex: 10,
-                  overflow: 'visible'
+                  overflow: 'visible',
+                  borderRadius: '6px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.background.paper,
+                    0.4
+                  )} 0%, ${alpha(theme.palette.background.paper, 0.1)} 100%)`,
+                  backdropFilter: 'blur(4px)',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.6
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.2)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    transform: 'translateY(-1px)',
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
+                  }
                 }}
               >
                 <SparklineChart
                   url={`${BASE_URL}/sparkline/${revert ? token2.md5 : token1.md5}?period=24h&${
                     revert ? token2.pro24h : token1.pro24h
                   }`}
+                  showGradient={true}
+                  lineWidth={2.5}
                 />
               </Box>
             </Stack>
@@ -2595,13 +2615,32 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   mt: '-1px',
                   position: 'relative',
                   zIndex: 10,
-                  overflow: 'visible'
+                  overflow: 'visible',
+                  borderRadius: '6px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.background.paper,
+                    0.4
+                  )} 0%, ${alpha(theme.palette.background.paper, 0.1)} 100%)`,
+                  backdropFilter: 'blur(4px)',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.6
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.2)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    transform: 'translateY(-1px)',
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
+                  }
                 }}
               >
                 <SparklineChart
                   url={`${BASE_URL}/sparkline/${revert ? token1.md5 : token2.md5}?period=24h&${
                     revert ? token1.pro24h : token2.pro24h
                   }`}
+                  showGradient={true}
+                  lineWidth={2.5}
                 />
               </Box>
             </Stack>

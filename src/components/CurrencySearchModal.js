@@ -53,7 +53,8 @@ const StyledModalContainer = styled(ModalContainer)`
   max-height: 600px;
   display: flex;
   flex-direction: column;
-  background: #000000;
+  background: ${(props) =>
+    props.theme.colors.background === '#08060B' ? '#000000' : props.theme.colors.backgroundAlt};
   border-radius: 24px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 `;
@@ -72,16 +73,16 @@ const StyledModalBody = styled(ModalBody)`
 const SearchTextField = styled(TextField)`
   & .MuiOutlinedInput-root {
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
+    background: ${(props) => props.theme.colors.input};
     transition: all 0.2s ease;
     height: 44px;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: ${(props) => props.theme.colors.inputSecondary};
     }
 
     & fieldset {
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid ${(props) => props.theme.colors.cardBorder};
     }
 
     &.Mui-focused fieldset {
@@ -90,9 +91,9 @@ const SearchTextField = styled(TextField)`
 
     & input {
       padding: 8px 14px;
-      color: rgba(255, 255, 255, 0.9);
+      color: ${(props) => props.theme.colors.text};
       &::placeholder {
-        color: rgba(255, 255, 255, 0.5);
+        color: ${(props) => props.theme.colors.textSubtle};
       }
     }
   }
@@ -102,11 +103,11 @@ const TokenListItem = styled(Stack)`
   padding: 6px 8px;
   border-radius: 8px;
   transition: all 0.2s ease;
-  background: rgba(255, 255, 255, 0.03);
+  background: ${(props) => props.theme.colors.tertiary};
   margin-bottom: 2px;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: ${(props) => props.theme.colors.dropdown};
     transform: translateY(-1px);
   }
 
@@ -325,15 +326,15 @@ export default function CurrencySearchModal({
   return (
     <ThemeProvider theme={() => theme(darkMode)}>
       <Backdrop
-        sx={{
-          color: '#fff',
-          zIndex: (theme) => theme.zIndex.drawer + 1,
+        sx={(theme) => ({
+          color: theme.colors.text,
+          zIndex: theme.zIndex.drawer + 1,
           backdropFilter: 'blur(3px)',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          backgroundColor: theme.colors.overlay,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
-        }}
+        })}
         open={open}
         onClick={onDismiss}
       >
@@ -341,7 +342,7 @@ export default function CurrencySearchModal({
           <ModalHeader>
             <ModalTitle>
               {config[modalView].onBack && <ModalBackButton onBack={config[modalView].onBack} />}
-              <Heading style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+              <Heading style={{ color: theme(darkMode).colors.text }}>
                 {config[modalView].title}
               </Heading>
             </ModalTitle>
