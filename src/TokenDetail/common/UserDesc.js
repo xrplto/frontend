@@ -717,7 +717,18 @@ export default function UserDesc({ token }) {
       subValue: `${name}`
     },
     { label: 'Vol/Market', value: fNumber(voldivmarket), color: theme.palette.warning.main },
-    { label: 'Circ. Supply', value: circulatingSupply, color: theme.palette.primary.main }
+    { label: 'Circ. Supply', value: circulatingSupply, color: theme.palette.primary.main },
+    {
+      label: 'Created',
+      value: date
+        ? new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          })
+        : 'N/A',
+      color: theme.palette.success.main
+    }
   ];
 
   return (
@@ -1151,6 +1162,50 @@ export default function UserDesc({ token }) {
               {fNumberWithSuffix(trustlines)}
             </Typography>
           </Box>
+
+          <Box
+            sx={{
+              width: '2px',
+              height: '16px',
+              background: `linear-gradient(180deg, 
+              ${alpha(theme.palette.divider, 0.4)}, 
+              ${alpha(theme.palette.divider, 0.1)}
+            )`,
+              borderRadius: '1px'
+            }}
+          />
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                color: alpha(theme.palette.text.secondary, 0.9),
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}
+            >
+              Created:
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: theme.palette.success.main,
+                textShadow: `0 1px 2px ${alpha(theme.palette.success.main, 0.2)}`
+              }}
+            >
+              {date
+                ? new Date(date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })
+                : 'N/A'}
+            </Typography>
+          </Box>
         </Box>
 
         {/* Action Buttons */}
@@ -1244,6 +1299,17 @@ export default function UserDesc({ token }) {
                       title={
                         <Typography variant="body2">
                           The number of tokens in circulation within the market.
+                        </Typography>
+                      }
+                    >
+                      <Icon icon={infoFilled} width={8} height={8} />
+                    </Tooltip>
+                  )}
+                  {stat.label === 'Created' && (
+                    <Tooltip
+                      title={
+                        <Typography variant="body2">
+                          The date when this token was first created or launched.
                         </Typography>
                       }
                     >
