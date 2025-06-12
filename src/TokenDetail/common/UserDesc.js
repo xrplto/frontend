@@ -1154,7 +1154,7 @@ export default function UserDesc({ token }) {
         </Box>
 
         {/* Action Buttons */}
-        <Stack direction="row" spacing={0.5}>
+        <Stack direction="row" spacing={0.375}>
           <Watch token={token} />
           <Share token={token} />
         </Stack>

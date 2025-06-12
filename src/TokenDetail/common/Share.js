@@ -65,7 +65,7 @@ import { currencySymbols } from 'src/utils/constants';
 
 const ShareButton = styled(IconButton)(({ theme }) => ({
   position: 'relative',
-  borderRadius: '12px',
+  borderRadius: '8px',
   border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
   background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
     theme.palette.background.paper,
@@ -76,6 +76,9 @@ const ShareButton = styled(IconButton)(({ theme }) => ({
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   overflow: 'hidden',
   boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+  padding: '6px',
+  minWidth: '36px',
+  minHeight: '36px',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -109,7 +112,7 @@ const ShareButton = styled(IconButton)(({ theme }) => ({
     transform: 'translateY(-2px) scale(0.98)'
   },
   '& .MuiSvgIcon-root': {
-    fontSize: '1.25rem',
+    fontSize: '18px',
     color: alpha(theme.palette.text.primary, 0.8),
     transition: 'color 0.3s ease'
   }
@@ -384,7 +387,7 @@ export default function Share({ token }) {
 
   return (
     <>
-      <ShareButton onClick={handleClickOpen}>
+      <ShareButton size="small" onClick={handleClickOpen}>
         <ShareIcon />
       </ShareButton>
 

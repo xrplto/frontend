@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 
 // Material
-import { useTheme, Chip, Tooltip, IconButton } from '@mui/material';
+import { useTheme, Chip, Tooltip, IconButton, styled, alpha } from '@mui/material';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
 
@@ -10,12 +10,66 @@ import StarRateIcon from '@mui/icons-material/StarRate';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
+const WatchButton = styled(IconButton)(({ theme }) => ({
+  position: 'relative',
+  borderRadius: '8px',
+  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.7
+  )} 100%)`,
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  overflow: 'hidden',
+  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+  padding: '6px',
+  minWidth: '36px',
+  minHeight: '36px',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.08)} 0%, ${alpha(
+      theme.palette.warning.light,
+      0.05
+    )} 100%)`,
+    opacity: 0,
+    transition: 'opacity 0.3s ease',
+    zIndex: -1
+  },
+  '&:hover': {
+    transform: 'translateY(-4px) scale(1.02)',
+    border: `2px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+    boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
+      theme.palette.warning.main,
+      0.1
+    )}`,
+    '&::before': {
+      opacity: 1
+    },
+    '& .MuiSvgIcon-root': {
+      color: theme.palette.warning.main
+    }
+  },
+  '&:active': {
+    transform: 'translateY(-2px) scale(0.98)'
+  },
+  '& .MuiSvgIcon-root': {
+    fontSize: '18px',
+    color: alpha(theme.palette.text.primary, 0.8),
+    transition: 'color 0.3s ease'
+  }
+}));
+
 // ----------------------------------------------------------------------
 export default function Watch({ token }) {
   const BASE_URL = process.env.API_URL;
   const theme = useTheme();
-  const { accountProfile, openSnackbar, setLoading, darkMode } =
-    useContext(AppContext);
+  const { accountProfile, openSnackbar, setLoading, darkMode } = useContext(AppContext);
 
   const [watchList, setWatchList] = useState([]);
 
@@ -103,41 +157,25 @@ export default function Watch({ token }) {
     <>
       {watchList.includes(md5) ? (
         <Tooltip title="Remove from Watchlist">
-          <IconButton
-            sx={{
-              '& .MuiChip-icon': {
-                color: '#F6B87E'
-              },
-              borderRadius: '4px',
-              border: `1px solid ${darkMode ? '#616161' : '#bdbdbd'}`
-            }}
+          <WatchButton
+            size="small"
             onClick={() => {
               onChangeWatchList(md5);
             }}
           >
-            <StarRateIcon fontSize="small" sx={{ color: '#F6B87E' }} />
-          </IconButton>
+            <StarRateIcon sx={{ color: '#F6B87E', fontSize: '18px' }} />
+          </WatchButton>
         </Tooltip>
       ) : (
         <Tooltip title="Add to Watchlist and follow token">
-          <IconButton
-            sx={{
-              // cursor: 'pointer',
-              '&:hover': {
-                // color: '#F6B87E',
-                '& .MuiChip-icon': {
-                  color: '#F6B87E'
-                }
-              },
-              borderRadius: '4px',
-              border: `1px solid ${darkMode ? '#616161' : '#bdbdbd'}`
-            }}
+          <WatchButton
+            size="small"
             onClick={() => {
               onChangeWatchList(md5);
             }}
           >
-            <StarOutlineIcon fontSize="small" />
-          </IconButton>
+            <StarOutlineIcon sx={{ fontSize: '18px' }} />
+          </WatchButton>
         </Tooltip>
       )}
     </>
