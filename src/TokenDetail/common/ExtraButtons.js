@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Icon } from '@iconify/react';
-import calendarIcon from '@iconify/icons-ph/calendar-thin';
 import { alpha } from '@mui/material/styles';
 
 // Material
@@ -240,55 +239,6 @@ export default function ExtraButtons({ token }) {
           </Button>
         </Grid>
       </Grid>
-
-      {token.date && (
-        <Stack
-          direction="row"
-          spacing={0.5}
-          alignItems="center"
-          sx={{
-            backgroundColor: darkMode ? 'rgba(145, 158, 171, 0.08)' : 'rgba(145, 158, 171, 0.08)',
-            borderRadius: '4px',
-            px: isMobile ? 1.5 : 1,
-            py: isMobile ? 0.75 : 0.5,
-            alignSelf: isMobile ? 'stretch' : 'flex-end',
-            width: isMobile ? '100%' : 'auto',
-            justifyContent: isMobile ? 'center' : 'flex-start',
-            mt: isMobile ? 0.5 : 0
-          }}
-        >
-          <Icon
-            icon={calendarIcon}
-            width={isMobile ? 16 : 14}
-            height={isMobile ? 16 : 14}
-            style={{ color: theme.palette.text.secondary }}
-          />
-          <Typography
-            variant={isMobile ? 'body2' : 'caption'}
-            noWrap
-            sx={{
-              fontSize: isMobile ? '0.8rem' : '0.75rem',
-              fontWeight: 500,
-              letterSpacing: '0.2px',
-              color: 'text.secondary',
-              textTransform: 'uppercase'
-            }}
-          >
-            Created:
-          </Typography>
-          <Typography
-            variant={isMobile ? 'body2' : 'caption'}
-            noWrap
-            sx={{
-              fontSize: isMobile ? '0.8rem' : '0.75rem',
-              color: 'text.primary',
-              fontWeight: 400
-            }}
-          >
-            {token.date}
-          </Typography>
-        </Stack>
-      )}
 
       <Stack
         direction="row"
