@@ -250,29 +250,32 @@ const XPMarketIcon = React.forwardRef((props, ref) => {
     <SvgIcon
       {...otherProps}
       ref={ref}
-      viewBox="0 0 56 56"
+      viewBox="0 0 36 36"
       sx={{ borderRadius: '50%', ...otherProps.sx }}
     >
-      <circle
-        cx="26"
-        cy="26"
-        r="26"
-        fill="rgba(109, 31, 238, 0.15)"
-        stroke="rgba(109, 31, 238, 0.3)"
-        strokeWidth="1"
-      />
-      <g transform="translate(10, 10) scale(0.6)">
+      <defs>
+        <linearGradient id="xpmarket-icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style={{ stopColor: '#9333EA', stopOpacity: 1 }} />
+          <stop offset="30%" style={{ stopColor: '#7C3AED', stopOpacity: 1 }} />
+          <stop offset="70%" style={{ stopColor: '#8B5CF6', stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: '#6D28D9', stopOpacity: 1 }} />
+        </linearGradient>
+        <filter id="xpmarket-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="rgba(109, 31, 238, 0.4)" />
+        </filter>
+      </defs>
+      <g transform="translate(2, 2) scale(1.1)" filter="url(#xpmarket-shadow)">
         <path
           d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
-          fill="#6D1FEE"
+          fill="url(#xpmarket-icon-gradient)"
         />
         <path
           d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
-          fill="#6D1FEE"
+          fill="url(#xpmarket-icon-gradient)"
         />
         <path
           d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
-          fill="#6D1FEE"
+          fill="url(#xpmarket-icon-gradient)"
         />
       </g>
     </SvgIcon>
