@@ -465,6 +465,7 @@ function FTokenRow({
     id,
     name,
     dateon,
+    date,
     amount,
     trustlines,
     vol24hxrp,
@@ -696,13 +697,30 @@ function FTokenRow({
         <Typography
           variant="caption"
           sx={{
-            ...dateTypographyStyle,
             fontSize: isMobile ? '11px' : '12px',
             fontWeight: '500',
-            color: darkMode ? '#919EAB' : '#637381'
+            color: theme.palette.success.main
           }}
         >
-          {formatDate(dateon)}
+          {(() => {
+            // Try date first (string format like "2024-10-27")
+            if (date) {
+              return new Date(date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              });
+            }
+            // Fallback to dateon (timestamp format)
+            if (dateon) {
+              return new Date(dateon).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              });
+            }
+            return 'N/A';
+          })()}
         </Typography>
       </TableCell>
       <TableCell

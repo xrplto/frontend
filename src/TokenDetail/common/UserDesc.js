@@ -619,6 +619,7 @@ export default function UserDesc({ token }) {
     issuer_info,
     assessment,
     date,
+    dateon,
     marketcap,
     vol24hx,
     vol24htx,
@@ -720,13 +721,25 @@ export default function UserDesc({ token }) {
     { label: 'Circ. Supply', value: circulatingSupply, color: theme.palette.primary.main },
     {
       label: 'Created',
-      value: date
-        ? new Date(date).toLocaleDateString('en-US', {
+      value: (() => {
+        // Try date first (string format like "2024-10-27")
+        if (date) {
+          return new Date(date).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
-          })
-        : 'N/A',
+          });
+        }
+        // Fallback to dateon (timestamp format)
+        if (dateon) {
+          return new Date(dateon).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+        }
+        return 'N/A';
+      })(),
       color: theme.palette.success.main
     }
   ];
@@ -1177,18 +1190,6 @@ export default function UserDesc({ token }) {
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Typography
-              variant="caption"
-              sx={{
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                color: alpha(theme.palette.text.secondary, 0.9),
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
-              }}
-            >
-              Created:
-            </Typography>
-            <Typography
               variant="body2"
               sx={{
                 fontSize: '0.8rem',
@@ -1197,13 +1198,25 @@ export default function UserDesc({ token }) {
                 textShadow: `0 1px 2px ${alpha(theme.palette.success.main, 0.2)}`
               }}
             >
-              {date
-                ? new Date(date).toLocaleDateString('en-US', {
+              {(() => {
+                // Try date first (string format like "2024-10-27")
+                if (date) {
+                  return new Date(date).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric'
-                  })
-                : 'N/A'}
+                  });
+                }
+                // Fallback to dateon (timestamp format)
+                if (dateon) {
+                  return new Date(dateon).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  });
+                }
+                return 'N/A';
+              })()}
             </Typography>
           </Box>
         </Box>
