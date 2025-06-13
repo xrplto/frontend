@@ -76,35 +76,6 @@ const TABLE_HEAD = [
   },
   {
     no: 3,
-    id: 'dateon',
-    label: (
-      <Tooltip
-        title="Time since token creation"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            Created
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
-    align: 'right',
-    width: '7%',
-    order: true
-  },
-  {
-    no: 4,
     id: 'exch',
     label: (
       <Typography variant="inherit" sx={{ fontWeight: '600' }}>
@@ -116,7 +87,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 5,
+    no: 4,
     id: 'pro5m',
     label: (
       <Tooltip
@@ -145,7 +116,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 6,
+    no: 5,
     id: 'pro1h',
     label: (
       <Tooltip
@@ -174,7 +145,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 7,
+    no: 6,
     id: 'pro24h',
     label: (
       <Tooltip
@@ -203,7 +174,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 8,
+    no: 7,
     id: 'pro7d',
     label: (
       <Tooltip
@@ -232,7 +203,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 9,
+    no: 8,
     id: 'vol24hxrp',
     label: (
       <Tooltip
@@ -258,6 +229,35 @@ const TABLE_HEAD = [
     ),
     align: 'right',
     width: '10%',
+    order: true
+  },
+  {
+    no: 9,
+    id: 'dateon',
+    label: (
+      <Tooltip
+        title="Time since token creation"
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            Created
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
+      </Tooltip>
+    ),
+    align: 'right',
+    width: '7%',
     order: true
   },
   {

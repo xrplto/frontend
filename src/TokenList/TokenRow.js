@@ -659,29 +659,6 @@ function FTokenRow({
       <TableCell
         align="right"
         sx={{
-          padding: isMobile ? '12px 8px' : '16px 12px'
-        }}
-      >
-        <Typography
-          variant="caption"
-          sx={{
-            fontSize: isMobile ? '11px' : '12px',
-            fontWeight: '500',
-            color: theme.palette.success.main
-          }}
-        >
-          {date
-            ? new Date(date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              })
-            : 'N/A'}
-        </Typography>
-      </TableCell>
-      <TableCell
-        align="right"
-        sx={{
           color: priceColor,
           padding: isMobile ? '12px 8px' : '16px 12px'
         }}
@@ -723,6 +700,29 @@ function FTokenRow({
               : fNumber(convertedValues.volume)}
           </Typography>
         </Stack>
+      </TableCell>
+      <TableCell
+        align="right"
+        sx={{
+          padding: isMobile ? '12px 8px' : '16px 12px'
+        }}
+      >
+        <Typography
+          variant="caption"
+          sx={{
+            fontSize: isMobile ? '11px' : '12px',
+            fontWeight: '500',
+            color: theme.palette.success.main
+          }}
+        >
+          {date
+            ? new Date(date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              })
+            : 'N/A'}
+        </Typography>
       </TableCell>
       <TableCell align="right">
         <Typography variant="h4">
