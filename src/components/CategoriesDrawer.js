@@ -183,6 +183,9 @@ export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredTags, setFilteredTags] = useState([]);
 
+  // Categories to highlight
+  const highlightedCategories = ['Magnetic X', 'XPMarket', 'FirstLedger', 'LedgerMeme', 'xrp.fun'];
+
   // Update filtered tags when search term or tags change
   useEffect(() => {
     if (!tags) {
@@ -214,6 +217,11 @@ export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
   // Clear search input
   const handleClearSearch = () => {
     setSearchTerm('');
+  };
+
+  // Check if a category should be highlighted
+  const isHighlighted = (tag) => {
+    return highlightedCategories.includes(tag);
   };
 
   return (
@@ -317,7 +325,55 @@ export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
                 }}
                 rel="noreferrer noopener nofollow"
               >
-                <EnhancedCategoryChip label={tag} size="medium" />
+                <EnhancedCategoryChip
+                  label={tag}
+                  size="medium"
+                  sx={
+                    isHighlighted(tag)
+                      ? {
+                          background: `linear-gradient(135deg, ${alpha(
+                            theme.palette.primary.main,
+                            0.2
+                          )} 0%, ${alpha(theme.palette.secondary.main, 0.2)} 100%)`,
+                          border: `2px solid ${theme.palette.primary.main}`,
+                          color: theme.palette.primary.main,
+                          fontWeight: 700,
+                          boxShadow: `0 4px 16px ${alpha(
+                            theme.palette.primary.main,
+                            0.25
+                          )}, 0 0 0 1px ${alpha(theme.palette.primary.main, 0.1)}`,
+                          animation: 'highlight-pulse 2s ease-in-out infinite',
+                          '@keyframes highlight-pulse': {
+                            '0%, 100%': {
+                              boxShadow: `0 4px 16px ${alpha(
+                                theme.palette.primary.main,
+                                0.25
+                              )}, 0 0 0 1px ${alpha(theme.palette.primary.main, 0.1)}`
+                            },
+                            '50%': {
+                              boxShadow: `0 6px 20px ${alpha(
+                                theme.palette.primary.main,
+                                0.35
+                              )}, 0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`
+                            }
+                          },
+                          '&:hover': {
+                            transform: 'translateY(-4px) scale(1.05)',
+                            boxShadow: `0 8px 32px ${alpha(
+                              theme.palette.primary.main,
+                              0.4
+                            )}, 0 4px 16px ${alpha(theme.palette.secondary.main, 0.2)}`,
+                            background: `linear-gradient(135deg, ${alpha(
+                              theme.palette.primary.main,
+                              0.3
+                            )} 0%, ${alpha(theme.palette.secondary.main, 0.3)} 100%)`,
+                            border: `2px solid ${theme.palette.secondary.main}`,
+                            color: theme.palette.secondary.main
+                          }
+                        }
+                      : {}
+                  }
+                />
               </Link>
             ))
           ) : (
