@@ -985,15 +985,6 @@ const MarketMetricsContent = () => {
     return `Stay updated on the latest XRPL token market trends, including top performers like ${tokenListString}, overall market activity, and DEX-specific insights, all conveniently accessible here.`;
   };
 
-  if (loading) {
-    // Optional: Show a loading indicator or minimal layout
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <Typography>Loading Market Data...</Typography> {/* Or a Spinner */}
-      </Box>
-    );
-  }
-
   const chartConfig = {
     margin: {
       top: 20,
