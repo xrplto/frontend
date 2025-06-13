@@ -23,7 +23,6 @@ import {
   FormControl
 } from '@mui/material';
 import SmartToy from '@mui/icons-material/SmartToy';
-import { Chat as ChatIcon } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -34,7 +33,6 @@ import { fIntNumber, fNumber } from 'src/utils/formatNumber';
 import CurrencySwithcer from './CurrencySwitcher';
 import ThemeSwitcher from './ThemeSwitcher';
 import { currencySymbols, getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
-import { toggleChatOpen } from 'src/redux/chatSlice';
 import useSWR from 'swr';
 import axios from 'axios';
 
@@ -394,43 +392,8 @@ const parseValue = (value) => {
 
 // Remove this function since we're not using different URLs based on filters
 const getTradeApiUrl = () => {
-  return 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=500';
+  return 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=5000';
 };
-
-// Add this styled component with the other styled components
-const ChatButton = styled(IconButton)(({ theme }) => ({
-  marginLeft: theme.spacing(1),
-  padding: theme.spacing(1),
-  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(
-    theme.palette.primary.main,
-    0.05
-  )} 100%)`,
-  backdropFilter: 'blur(10px)',
-  borderRadius: '8px',
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(
-      theme.palette.primary.main,
-      0.1
-    )} 100%)`,
-    transform: 'translateY(-1px)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
-  },
-  position: 'relative'
-}));
-
-// Add this styled component for the notification badge
-const NotificationBadge = styled('span')(({ theme }) => ({
-  position: 'absolute',
-  top: 2,
-  right: 2,
-  width: 8,
-  height: 8,
-  backgroundColor: theme.palette.error.main,
-  borderRadius: '50%',
-  animation: 'pulse 2s infinite'
-}));
 
 // Add this constant before the Topbar component
 const BOT_ADDRESSES = [
@@ -664,11 +627,6 @@ const Topbar = () => {
     [tradeFilter, handleFilterChange]
   );
 
-  const handleChatClick = (e) => {
-    e.preventDefault(); // Prevent default navigation
-    dispatch(toggleChatOpen());
-  };
-
   return (
     <TopWrapper>
       <StyledContainer maxWidth={false}>
@@ -791,18 +749,6 @@ const Topbar = () => {
                 <PulsatingCircle />
                 Global Trades
               </APILabel>
-              <ChatButton
-                onClick={handleChatClick}
-                sx={{
-                  color: theme.palette.text.primary,
-                  '&:hover': {
-                    color: theme.palette.primary.main
-                  }
-                }}
-              >
-                <ChatIcon />
-                <NotificationBadge />
-              </ChatButton>
               {!fullSearch && isDesktop && <Wallet style={{ marginRight: '9px' }} />}
             </Box>
           )}
