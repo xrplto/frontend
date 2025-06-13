@@ -3,22 +3,27 @@ import Decimal from 'decimal.js';
 
 // Material
 import {
-    styled,
-    Box,
-    FormControlLabel,
-    Radio,
-    RadioGroup,
-    Stack,
-    TextField,
-    ToggleButton,
-    ToggleButtonGroup,
-    Typography
+  styled,
+  Box,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+  Chip,
+  Divider
 } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
 import {
-    Token as TokenIcon,
-    PriceChange as PriceChangeIcon,
-    SwapVerticalCircle as SwapVerticalCircleIcon,
+  Token as TokenIcon,
+  PriceChange as PriceChangeIcon,
+  SwapVerticalCircle as SwapVerticalCircleIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon
 } from '@mui/icons-material';
 
 // Components
@@ -26,253 +31,418 @@ import AccountBalance from './AccountBalance';
 import PlaceOrder from './PlaceOrder';
 
 // Context
-import { useContext } from 'react'
-import { AppContext } from 'src/AppContext'
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 import scientificToDecimal from 'scientific-to-decimal';
-import millify from "millify";
+import millify from 'millify';
 
 // Utils
 
 // ----------------------------------------------------------------------
-const StackDexStyle = styled(Stack)(({ theme }) => ({
-    width: '100%',
-    display: 'inline-block',
-    color: '#C4CDD5',
-    fontSize: '11px',
-    fontWeight: '500',
-    lineHeight: '18px',
-    // backgroundColor: '#7A0C2E',
-    borderRadius: '8px',
-    border: `1px solid ${theme.palette.divider}`,
-    padding: '0px 12px'
+const CompactContainer = styled(Box)(({ theme }) => ({
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.3
+  )} 100%)`,
+  backdropFilter: 'blur(10px)',
+  borderRadius: '12px',
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  padding: theme.spacing(2),
+  position: 'relative',
+  overflow: 'hidden'
+}));
+
+const ModernToggleGroup = styled(ToggleButtonGroup)(({ theme }) => ({
+  backgroundColor: alpha(theme.palette.background.paper, 0.4),
+  borderRadius: '8px',
+  padding: '2px',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  '& .MuiToggleButton-root': {
+    border: 'none',
+    borderRadius: '6px !important',
+    fontSize: '0.875rem',
+    fontWeight: 600,
+    textTransform: 'none',
+    padding: theme.spacing(0.5, 2),
+    margin: '2px',
+    minHeight: '32px',
+    transition: 'all 0.2s ease',
+    '&.Mui-selected': {
+      backgroundColor: theme.palette.background.paper,
+      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}`,
+      '&[value="BUY"]': {
+        color: theme.palette.success.main,
+        backgroundColor: alpha(theme.palette.success.main, 0.1)
+      },
+      '&[value="SELL"]': {
+        color: theme.palette.error.main,
+        backgroundColor: alpha(theme.palette.error.main, 0.1)
+      }
+    },
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.background.paper, 0.8)
+    }
+  }
+}));
+
+const CompactTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiInput-root': {
+    fontSize: '0.875rem',
+    '&:before': {
+      borderBottomColor: alpha(theme.palette.divider, 0.3)
+    },
+    '&:hover:not(.Mui-disabled):before': {
+      borderBottomColor: alpha(theme.palette.primary.main, 0.5)
+    },
+    '&:after': {
+      borderBottomColor: theme.palette.primary.main
+    }
+  },
+  '& .MuiInputLabel-root': {
+    fontSize: '0.875rem',
+    color: alpha(theme.palette.text.secondary, 0.7)
+  },
+  '& .MuiInput-input': {
+    padding: theme.spacing(0.5, 0)
+  }
+}));
+
+const InfoRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: theme.spacing(1, 1.5),
+  borderRadius: '8px',
+  background: alpha(theme.palette.background.paper, 0.3),
+  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+  marginTop: theme.spacing(1)
+}));
+
+const CurrencyChip = styled(Chip)(({ theme }) => ({
+  height: '20px',
+  fontSize: '0.75rem',
+  fontWeight: 500,
+  borderRadius: '10px',
+  '& .MuiChip-label': {
+    padding: theme.spacing(0, 0.5)
+  }
 }));
 
 const expo = (x, f) => {
-    return Number.parseFloat(x).toExponential(f);
-}
+  return Number.parseFloat(x).toExponential(f);
+};
 
 const fmNumber = (value, len) => {
-    const amount = new Decimal(value).toNumber();
-    if ((amount.toString().length > 8 && amount < 0.001) || amount > 1000000000)
-        return expo(amount, 2);
-    else
-        return new Decimal(amount).toFixed(len, Decimal.ROUND_DOWN);
-}
+  const amount = new Decimal(value).toNumber();
+  if ((amount.toString().length > 8 && amount < 0.001) || amount > 1000000000)
+    return expo(amount, 2);
+  else return new Decimal(amount).toFixed(len, Decimal.ROUND_DOWN);
+};
 
-export default function TradePanel({pair, bids, asks, bidId, askId}) {
-    const [buySell, setBuySell] = useState('BUY');
-    const [amount, setAmount] = useState('');
-    const [price, setPrice] = useState('');
-    const [value, setValue] = useState('');
-    const [marketLimit, setMarketLimit] = useState('market');
-    const [accountPairBalance, setAccountPairBalance] = useState(null);
-    const { darkMode } = useContext(AppContext);
-    useEffect(() => {
-        if (bidId < 0) return;
-        const idx = bidId;
-        setBuySell('SELL');
-        setMarketLimit('limit');
-        const bid = bids[idx];
+export default function TradePanel({ pair, bids, asks, bidId, askId }) {
+  const theme = useTheme();
+  const [buySell, setBuySell] = useState('BUY');
+  const [amount, setAmount] = useState('');
+  const [price, setPrice] = useState('');
+  const [value, setValue] = useState('');
+  const [marketLimit, setMarketLimit] = useState('market');
+  const [accountPairBalance, setAccountPairBalance] = useState(null);
+  const { darkMode } = useContext(AppContext);
 
-        const sumAmount = fmNumber(bid.sumAmount, 2);
-        const sumValue = fmNumber(bid.sumValue, 5);
-        const price = fmNumber(bid.price, 5);
+  useEffect(() => {
+    if (bidId < 0) return;
+    const idx = bidId;
+    setBuySell('SELL');
+    setMarketLimit('limit');
+    const bid = bids[idx];
 
-        setAmount(scientificToDecimal(sumAmount));
-        setPrice(scientificToDecimal(price));
-        setValue(scientificToDecimal(sumValue));
-    }, [bidId]);
+    const sumAmount = fmNumber(bid.sumAmount, 2);
+    const sumValue = fmNumber(bid.sumValue, 5);
+    const price = fmNumber(bid.price, 5);
 
-    useEffect(() => {
-        if (askId < 0) return;
-        const idx = askId;
-        setBuySell('BUY');
-        setMarketLimit('limit');
-        const ask = asks[idx];
+    setAmount(scientificToDecimal(sumAmount));
+    setPrice(scientificToDecimal(price));
+    setValue(scientificToDecimal(sumValue));
+  }, [bidId]);
 
-        const sumAmount = fmNumber(ask.sumAmount, 2);
-        const sumValue = fmNumber(ask.sumValue, 5);
-        const price = fmNumber(ask.price, 5);
+  useEffect(() => {
+    if (askId < 0) return;
+    const idx = askId;
+    setBuySell('BUY');
+    setMarketLimit('limit');
+    const ask = asks[idx];
 
-        setAmount(scientificToDecimal(sumAmount));
-        setPrice(scientificToDecimal(price));
-        setValue(scientificToDecimal(sumValue));
-    }, [askId]);
+    const sumAmount = fmNumber(ask.sumAmount, 2);
+    const sumValue = fmNumber(ask.sumValue, 5);
+    const price = fmNumber(ask.price, 5);
 
-    useEffect(() => {
-        if (marketLimit !== 'market') return;
-        const amt = new Decimal(amount || 0).toNumber();
-        if (amt === 0) {
-            setValue(0);
-            return;
+    setAmount(scientificToDecimal(sumAmount));
+    setPrice(scientificToDecimal(price));
+    setValue(scientificToDecimal(sumValue));
+  }, [askId]);
+
+  useEffect(() => {
+    if (marketLimit !== 'market') return;
+    const amt = new Decimal(amount || 0).toNumber();
+    if (amt === 0) {
+      setValue(0);
+      return;
+    }
+
+    const val = calcValue(amount, buySell);
+    setValue(val);
+  }, [asks, bids, marketLimit, buySell, amount]);
+
+  const handleChangeBuySell = (event, newValue) => {
+    if (newValue) setBuySell(newValue);
+  };
+
+  const calcValue = (amount, buyorsell) => {
+    let val = 0;
+    let amt;
+
+    try {
+      amt = new Decimal(amount).toNumber();
+      if (amt === 0) return 0;
+      if (buyorsell === 'BUY') {
+        for (var ask of asks) {
+          if (ask.sumAmount >= amt) {
+            val = new Decimal(ask.sumValue).mul(amt).div(ask.sumAmount).toNumber();
+            break;
+          }
         }
-        // if (amt > 0) {}
+      } else {
+        for (var bid of bids) {
+          if (bid.sumAmount >= amt) {
+            val = new Decimal(bid.sumValue).mul(amt).div(bid.sumAmount).toNumber();
+            break;
+          }
+        }
+      }
+      return new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
+    } catch (e) {}
 
-        const val = calcValue(amount, buySell);
-        setValue(val);
+    return 0;
+  };
 
-    }, [asks, bids, marketLimit, buySell, amount]);
+  const handleChangeAmount = (e) => {
+    const amt = e.target.value;
 
-    const handleChangeBuySell = (event, newValue) => {
-        if (newValue)
-            setBuySell(newValue);
-    };
+    if (amt === '.') {
+      setAmount('0.');
+      return;
+    }
 
-    const calcValue = (amount, buyorsell) => {
-        let val = 0;
-        let amt;
+    if (isNaN(Number(amt))) return;
 
-        try {
-            amt = new Decimal(amount).toNumber();
-            if (amt === 0) return 0;
-            if (buyorsell === 'BUY') {
-                for (var ask of asks) {
-                    if (ask.sumAmount >= amt) {
-                        val = new Decimal(ask.sumValue).mul(amt).div(ask.sumAmount).toNumber();
-                        break;
-                    }
+    setAmount(amt);
+    if (marketLimit !== 'market') {
+      const val = (Number(amt) * Number(price)).toFixed(6);
+      setValue(val);
+    }
+  };
+
+  const handleChangePrice = (e) => {
+    const newPrice = e.target.value;
+
+    if (isNaN(Number(newPrice))) return;
+
+    setPrice(newPrice);
+    const val = (amount * newPrice).toFixed(6);
+    setValue(val);
+  };
+
+  const handleChangeMarketLimit = (e) => {
+    setMarketLimit(e.target.value);
+  };
+
+  const curr1 = pair.curr1;
+  const curr2 = pair.curr2;
+
+  return (
+    <CompactContainer>
+      {/* Header */}
+      <Box sx={{ textAlign: 'center', mb: 2 }}>
+        <Typography
+          variant="subtitle2"
+          sx={{
+            color: theme.palette.warning.main,
+            fontWeight: 600,
+            fontSize: '0.9rem',
+            mb: 0.5
+          }}
+        >
+          Quick Trade
+        </Typography>
+      </Box>
+
+      <Stack spacing={2}>
+        {/* Account Balance */}
+        <AccountBalance
+          pair={pair}
+          accountPairBalance={accountPairBalance}
+          setAccountPairBalance={setAccountPairBalance}
+        />
+
+        {/* Buy/Sell Toggle */}
+        <ModernToggleGroup value={buySell} fullWidth exclusive onChange={handleChangeBuySell}>
+          <ToggleButton value="BUY">
+            <TrendingUpIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+            BUY
+          </ToggleButton>
+          <ToggleButton value="SELL">
+            <TrendingDownIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+            SELL
+          </ToggleButton>
+        </ModernToggleGroup>
+
+        {/* Trade Description */}
+        <Box sx={{ textAlign: 'center', py: 1 }}>
+          {buySell === 'BUY' ? (
+            <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
+              Get <CurrencyChip label={curr1.name} size="small" color="error" variant="outlined" />{' '}
+              by selling{' '}
+              <CurrencyChip label={curr2.name} size="small" color="primary" variant="outlined" />
+            </Typography>
+          ) : (
+            <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
+              Sell <CurrencyChip label={curr1.name} size="small" color="error" variant="outlined" />{' '}
+              to get{' '}
+              <CurrencyChip label={curr2.name} size="small" color="primary" variant="outlined" />
+            </Typography>
+          )}
+        </Box>
+
+        {/* Market/Limit Toggle */}
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <RadioGroup
+            row
+            value={marketLimit}
+            onChange={handleChangeMarketLimit}
+            sx={{
+              '& .MuiFormControlLabel-root': {
+                margin: theme.spacing(0, 1),
+                '& .MuiFormControlLabel-label': {
+                  fontSize: '0.75rem',
+                  fontWeight: 500
                 }
-            } else {
-                for (var bid of bids) {
-                    if (bid.sumAmount >= amt) {
-                        val = new Decimal(bid.sumValue).mul(amt).div(bid.sumAmount).toNumber();
-                        break;
-                    }
+              },
+              '& .MuiRadio-root': {
+                padding: theme.spacing(0.5),
+                '&.Mui-checked': {
+                  color: theme.palette.primary.main
                 }
-            }
-            return new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
-        } catch (e) {}
+              }
+            }}
+          >
+            <FormControlLabel value="market" control={<Radio size="small" />} label="MARKET" />
+            <FormControlLabel value="limit" control={<Radio size="small" />} label="LIMIT" />
+          </RadioGroup>
+        </Box>
 
-        return 0;
-    }
+        <Divider sx={{ opacity: 0.3 }} />
 
-    const handleChangeAmount = (e) => {
-        const amt = e.target.value;
-        
-        if (amt === '.') {
-            setAmount('0.');
-            return;
-        }
-        
-        if (isNaN(Number(amt))) return;
+        {/* Amount Input */}
+        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+          <TokenIcon
+            sx={{
+              color: theme.palette.text.secondary,
+              fontSize: '1.2rem',
+              mb: 0.5
+            }}
+          />
+          <CompactTextField
+            fullWidth
+            label="Amount"
+            value={amount}
+            onChange={handleChangeAmount}
+            variant="standard"
+            size="small"
+            inputProps={{
+              inputMode: 'numeric',
+              pattern: '[0-9]*',
+              autoComplete: 'off',
+              name: `amount-${pair.curr1.name}-${pair.curr2.name}`
+            }}
+            autoComplete="off"
+          />
+          <CurrencyChip
+            label={curr1.name}
+            size="small"
+            color="error"
+            variant="filled"
+            sx={{ mb: 0.5 }}
+          />
+        </Box>
 
-        setAmount(amt);
-        if (marketLimit !== 'market') {
-            const val = (Number(amt) * Number(price)).toFixed(6);
-            setValue(val);
-        }
-    }
+        {/* Price Input (only for limit orders) */}
+        {marketLimit === 'limit' && (
+          <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+            <PriceChangeIcon
+              sx={{
+                color: theme.palette.text.secondary,
+                fontSize: '1.2rem',
+                mb: 0.5
+              }}
+            />
+            <CompactTextField
+              fullWidth
+              label="Price"
+              value={price}
+              onChange={handleChangePrice}
+              variant="standard"
+              size="small"
+            />
+            <CurrencyChip
+              label={curr2.name}
+              size="small"
+              color="primary"
+              variant="filled"
+              sx={{ mb: 0.5 }}
+            />
+          </Box>
+        )}
 
-    const handleChangePrice = (e) => {
-        const newPrice = e.target.value;
-        
-        if (isNaN(Number(newPrice))) return;
+        {/* Total Value */}
+        <InfoRow>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <SwapVerticalCircleIcon
+              sx={{
+                color: theme.palette.text.secondary,
+                fontSize: '1rem'
+              }}
+            />
+            <Typography variant="caption" sx={{ fontWeight: 500 }}>
+              Total
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+              ≈
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 600,
+                color: theme.palette.text.primary
+              }}
+            >
+              {value < 1 ? value : millify(value)}
+            </Typography>
+            <CurrencyChip label={curr2.name} size="small" color="primary" variant="outlined" />
+          </Box>
+        </InfoRow>
 
-        setPrice(newPrice);
-        const val = (amount * newPrice).toFixed(6);
-        setValue(val);
-    }
-
-    const handleChangeMarketLimit = (e) => {
-        setMarketLimit(e.target.value);
-    }
-
-    const curr1 = pair.curr1;
-    const curr2 = pair.curr2;
-    
-    // https://mui.com/system/display/
-
-    return (
-        <>
-            <Stack spacing={1} alignItems="center">
-                <Typography variant='subtitle1' sx={{color:'#FFC107', textAlign: 'center', ml:0, mt:2, mb:0}}>Trade Now</Typography>
-            </Stack>
-            <StackDexStyle spacing={2} sx={{ mt:4, pt:2, pb:2 }}>
-                <AccountBalance
-                    pair={pair}
-                    accountPairBalance={accountPairBalance}
-                    setAccountPairBalance={setAccountPairBalance}
-                />
-
-                <ToggleButtonGroup
-                    color="primary"
-                    // orientation="vertical"
-                    value={buySell}
-                    fullWidth
-                    exclusive
-                    onChange={handleChangeBuySell}
-                >
-                    <ToggleButton sx={{pt:0.5,pb:0.5}} value="BUY">BUY</ToggleButton>
-                    <ToggleButton color="error" sx={{pt:0.5, pb:0.5}} value="SELL">SELL</ToggleButton>
-                </ToggleButtonGroup>
-
-                <Stack alignItems="center">
-
-                    {buySell === 'BUY' &&
-                        <Typography variant='caption' alignItems={'center'}>
-                            Get <Typography variant="caption" sx={{ color: '#B72136' }}>{curr1.name}</Typography> by selling <Typography variant="caption" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{curr2.name}</Typography>
-                        </Typography>
-                    }
-
-                    {buySell === 'SELL' &&
-                        <Typography variant='caption' alignItems={'center'}>
-                            Sell <Typography variant="caption" sx={{ color: '#B72136' }}>{curr1.name}</Typography> to get <Typography variant="caption" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{curr2.name}</Typography>
-                        </Typography>
-                    }
-                </Stack>
-
-                <Stack alignItems="center" sx={{mt: 1}}>
-                    <RadioGroup
-                        row
-                        aria-labelledby="demo-row-radio-buttons-group-label"
-                        name="row-radio-buttons-group"
-                        value={marketLimit}
-                        onChange={handleChangeMarketLimit}
-                    >
-                        <FormControlLabel value="market" control={<Radio size="small"/>} label="MARKET" />
-                        <FormControlLabel value="limit" control={<Radio size="small"/>} label="LIMIT" />
-                    </RadioGroup>
-                </Stack>
-
-                <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                    <TokenIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                    <TextField 
-                        fullWidth 
-                        id="input-with-sx1" 
-                        label="Amount" 
-                        value={amount} 
-                        onChange={handleChangeAmount} 
-                        variant="standard"
-                        inputProps={{ 
-                            inputMode: 'numeric', 
-                            pattern: '[0-9]*',
-                            autoComplete: 'off',
-                            name: `amount-${pair.curr1.name}-${pair.curr2.name}` // Unique name
-                        }}
-                        autoComplete="off"
-                    />
-                    <Typography variant="caption" color='#FF4842'>{curr1.name}</Typography>
-                </Box>
-
-                {marketLimit === 'limit' && (
-                    <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                        <PriceChangeIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                        <TextField fullWidth id="input-with-sx2" label="Price" value={price} onChange={handleChangePrice} variant="standard"/>
-                        
-                        <Typography variant="caption" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{curr2.name}</Typography>
-                    </Box>
-                )}
-
-                <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                    <SwapVerticalCircleIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                    <Typography>Total</Typography>
-                    <Box sx={{ flexGrow: 1 }} />
-                    <Typography sx={{mr:1}}>≈</Typography>
-                    <Typography alignItems='right' sx={{mr:2}}>{value < 1 ? value : millify(value)} <Typography variant="caption"> {curr2.name}</Typography></Typography>
-                </Box>
-
-                <PlaceOrder marketLimit={marketLimit} buySell={buySell} pair={pair} amount={amount} value={value} accountPairBalance={accountPairBalance} />
-            </StackDexStyle>
-        </>
-    );
+        {/* Place Order Button */}
+        <PlaceOrder
+          marketLimit={marketLimit}
+          buySell={buySell}
+          pair={pair}
+          amount={amount}
+          value={value}
+          accountPairBalance={accountPairBalance}
+        />
+      </Stack>
+    </CompactContainer>
+  );
 }
