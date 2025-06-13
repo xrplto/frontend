@@ -137,8 +137,13 @@ const HeaderSection = styled(Box)(({ theme, darkMode }) => ({
 }));
 
 const GlowingButton = styled(Button)(({ theme, darkMode }) => ({
-  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
-  color: '#fff',
+  background: darkMode
+    ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(
+        theme.palette.success.main,
+        0.1
+      )} 100%)`,
+  color: darkMode ? '#fff' : theme.palette.primary.main,
   borderRadius: '10px',
   padding: theme.spacing(0.75, 2.5),
   textTransform: 'none',
@@ -146,7 +151,19 @@ const GlowingButton = styled(Button)(({ theme, darkMode }) => ({
   fontSize: '0.8rem',
   position: 'relative',
   overflow: 'hidden',
-  boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.4)}`
+  border: darkMode ? 'none' : `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+  boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.4)}`,
+  '&:hover': {
+    background: darkMode
+      ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`
+      : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(
+          theme.palette.success.main,
+          0.15
+        )} 100%)`,
+    color: darkMode ? '#fff' : theme.palette.primary.dark,
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.5)}`
+  }
 }));
 
 const SkeletonCard = () => (
@@ -309,15 +326,7 @@ const TrendingTokens = () => {
                           <Typography
                             variant="body2"
                             fontWeight="700"
-                            color={
-                              isOMCF !== 'yes'
-                                ? darkMode
-                                  ? '#fff'
-                                  : '#1a1a1a'
-                                : darkMode
-                                ? '#4FC3F7'
-                                : '#1976d2'
-                            }
+                            color={theme.palette.primary.main}
                             noWrap
                             sx={{
                               fontSize: '0.85rem',
