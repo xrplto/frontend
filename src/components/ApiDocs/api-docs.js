@@ -1294,10 +1294,12 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
                 Retrieve sparkline chart data for token price visualization and trend analysis.
+                Supports both 24-hour and 7-day periods with automatic chart coloring, precise
+                formatting, and cross-origin compatibility.
               </Typography>
             </Card>
 
-            <Card sx={{ borderRadius: '12px' }}>
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
@@ -1317,6 +1319,272 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                 <CodeBlock language="http">
                   GET https://api.xrpl.to/api/sparkline/&lt;md5&gt;
                 </CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  Example with 24-hour period:
+                </Typography>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/sparkline/0413ca7cfc258dfaf698c02fe304e607?period=24h
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  Parameters
+                </Typography>
+              </Box>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Parameter
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Type
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Default
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Description
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>md5</TableCell>
+                      <TableCell>Path</TableCell>
+                      <TableCell>Required</TableCell>
+                      <TableCell>MD5 hash of the token identifier</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>period</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>7d</TableCell>
+                      <TableCell>
+                        Time period: "24h" for 24-hour data or "7d" for 7-day data
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>pro24h</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>
+                        Override 24-hour percentage change value (when period=24h)
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>pro7d</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>Override 7-day percentage change value (when period=7d)</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Response Structure
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns formatted sparkline data with automatic chart coloring and
+                  timestamps:
+                </Typography>
+                <CodeBlock language="json">
+                  {`{
+  "chartColor": "#54D62C",           // Green for positive, "#ed5565" for negative
+  "period": "24h",                  // "24h" or "7d" based on request
+  "percentChange": "2.45",          // Percentage change as string
+  "data": {
+    "prices": [                     // Array of price points (formatted decimals)
+      "0.1234",
+      "0.1235", 
+      "0.1240",
+      // ... more price points
+    ],
+    "timestamps": [                 // Corresponding timestamps (milliseconds)
+      1640995200000,
+      1640995800000,
+      1640996400000,
+      // ... more timestamps  
+    ],
+    "max": "0.1250",               // Highest price in period
+    "min": "0.1200"                // Lowest price in period
+  }
+}`}
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Smart Features
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  This endpoint includes several intelligent features:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Automatic Chart Coloring:</strong> Green (#54D62C) for gains, red
+                    (#ed5565) for losses
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Scientific Notation Formatting:</strong> Converts to readable decimal
+                    strings
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Flexible Time Periods:</strong> 15-minute intervals for 24h, 1-hour
+                    for 7d
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Fallback Logic:</strong> Calculated from data or token metadata if
+                    overrides not provided
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Cross-Origin Support:</strong> Includes CORS headers for web
+                    applications
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Data Calculation Logic
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The percentage change is calculated using intelligent fallback logic:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    1. <strong>Query Override:</strong> Uses pro24h/pro7d parameter if provided
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    2. <strong>Price Data Calculation:</strong> Compares first and last price points
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    3. <strong>Token Metadata Fallback:</strong> Uses stored token percentage if
+                    calculation fails
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  Error Responses
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns the following error response on failure:
+                </Typography>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Error message details"
+}`}
+                  </CodeBlock>
+                </Box>
               </CardContent>
             </Card>
           </Box>
@@ -1349,11 +1617,13 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                 variant="body1"
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
-                Retrieve the rich list showing top token holders with their balances.
+                Retrieve the rich list showing top token holders with their balances. Supports
+                pagination, custom sorting, freeze status filtering, and performance timing for
+                comprehensive token holder analysis.
               </Typography>
             </Card>
 
-            <Card sx={{ borderRadius: '12px' }}>
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
@@ -1371,8 +1641,298 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
               </Box>
               <CardContent>
                 <CodeBlock language="http">
-                  GET https://api.xrpl.to/api/richlist/&lt;md5&gt;?start=0&limit=20
+                  GET https://api.xrpl.to/api/richlist/&lt;md5&gt;?start=0&limit=20&sortType=desc
                 </CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  Example with freeze filtering and custom sorting:
+                </Typography>
+                <CodeBlock language="http">
+                  GET
+                  https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=20&freeze=true&sortBy=balance&sortType=desc
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  Parameters
+                </Typography>
+              </Box>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Parameter
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Type
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Default
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Description
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>md5</TableCell>
+                      <TableCell>Path</TableCell>
+                      <TableCell>Required</TableCell>
+                      <TableCell>MD5 hash of the token identifier</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>start</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>0</TableCell>
+                      <TableCell>Starting position for pagination (number)</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>limit</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>20</TableCell>
+                      <TableCell>Maximum number of records to return (number)</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>freeze</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>false</TableCell>
+                      <TableCell>Set to "true" to include freeze status information</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>sortBy</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>balance</TableCell>
+                      <TableCell>Field to sort by (e.g., balance, account, etc.)</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>sortType</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>desc</TableCell>
+                      <TableCell>
+                        Sort direction: "asc" (ascending) or "desc" (descending)
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Response Structure
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns rich list data with performance timing and pagination info:
+                </Typography>
+                <CodeBlock language="json">
+                  {`{
+  "result": "success",
+  "took": "23.45",                  // Response time in milliseconds
+  "holders": [                      // Array of token holders
+    {
+      "account": "rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH",
+      "balance": "1000000.123456",   // Token balance
+      "percentage": "15.25",         // Percentage of total supply
+      "rank": 1,                     // Position in rich list
+      "frozen": false                // Freeze status (if freeze=true)
+    },
+    {
+      "account": "rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w", 
+      "balance": "750000.987654",
+      "percentage": "11.43",
+      "rank": 2,
+      "frozen": false
+    }
+    // ... more holders
+  ],
+  "pagination": {
+    "start": 0,                     // Current start position
+    "limit": 20,                    // Current limit
+    "total": 5000,                  // Total number of holders
+    "hasMore": true                 // Whether more records exist
+  },
+  "summary": {
+    "totalSupply": "6562500.000000", // Total token supply
+    "totalHolders": 5000,           // Total number of holders
+    "topHoldersPercentage": "68.45" // Top holders concentration
+  }
+}`}
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Advanced Features
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The rich list endpoint provides sophisticated analysis capabilities:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Flexible Sorting:</strong> Sort by balance, account, or other fields
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Freeze Status:</strong> Include freeze information for compliance
+                    analysis
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Pagination Support:</strong> Efficient browsing of large holder lists
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Distribution Analysis:</strong> Percentage holdings and concentration
+                    metrics
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Performance Timing:</strong> Response time measurement for
+                    optimization
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Use Cases
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The rich list data is valuable for various analytical purposes:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Distribution Analysis:</strong> Study wealth concentration
+                    patterns
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Whale Tracking:</strong> Monitor large holder movements and behavior
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Compliance Monitoring:</strong> Track frozen accounts and regulatory
+                    status
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Market Research:</strong> Understand token holder demographics and
+                    patterns
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  Error Responses
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns the following error response on failure:
+                </Typography>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Error message details"
+}`}
+                  </CodeBlock>
+                </Box>
               </CardContent>
             </Card>
           </Box>
@@ -1406,11 +1966,13 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                 variant="body1"
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
-                Retrieve historical exchange data and trading activity for a specific token.
+                Retrieve historical exchange data and trading activity for a specific token or
+                account. Supports pagination, account filtering, and performance timing for
+                comprehensive transaction analysis with automatic parameter validation.
               </Typography>
             </Card>
 
-            <Card sx={{ borderRadius: '12px' }}>
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
@@ -1433,6 +1995,324 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                 <CodeBlock language="http">
                   GET https://api.xrpl.to/api/history?md5=&lt;md5&gt;&page=0&limit=10
                 </CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  Example with account filtering:
+                </Typography>
+                <CodeBlock language="http">
+                  GET
+                  https://api.xrpl.to/api/history?md5=c9ac9a6c44763c1bd9ccc6e47572fd26&account=rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH&page=0&limit=50
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  Query Parameters
+                </Typography>
+              </Box>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Parameter
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Type
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Default
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Description
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>md5</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>Required</TableCell>
+                      <TableCell>MD5 hash of the token identifier</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>account</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>Filter history by specific XRPL account address</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>page</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>0</TableCell>
+                      <TableCell>Page number for pagination (minimum: 0)</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>limit</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>50</TableCell>
+                      <TableCell>Records per page (range: 1-5000, default: 50)</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Parameter Validation
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API automatically validates and corrects parameters:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Page Validation:</strong> Negative page values are automatically set
+                    to 0
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Limit Bounds:</strong> Values above 5000 are capped at 5000
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Minimum Limit:</strong> Values below 1 are set to default 50
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Response Structure
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns comprehensive exchange history with performance metrics:
+                </Typography>
+                <CodeBlock language="json">
+                  {`{
+  "result": "success",
+  "took": "45.23ms",                // Response time with unit
+  "recordsReturned": 10,            // Number of records in current response
+  "totalRecords": 15420,            // Total records available
+  "page": 0,                        // Current page number
+  "limit": 10,                      // Records per page limit
+  "count": 15420,                   // Total count (same as totalRecords)
+  "hists": [                        // Array of exchange history records
+    {
+      "txHash": "A1B2C3D4E5F6789...",
+      "ledgerIndex": 75123456,
+      "timestamp": 1640995200,       // Unix timestamp
+      "date": "2023-01-01T00:00:00Z", // ISO date string
+      "type": "Payment",             // Transaction type
+      "account": "rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH",
+      "destination": "rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w",
+      "amount": {
+        "value": "1000.123456",
+        "currency": "USD",
+        "issuer": "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
+      },
+      "fee": "0.000012",             // Transaction fee in XRP
+      "result": "tesSUCCESS",        // Transaction result
+      "exchangeRate": "0.5234",      // Exchange rate if applicable
+      "volume": "1000.123456"        // Transaction volume
+    }
+    // ... more history records
+  ]
+}`}
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Advanced Features
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The exchange history endpoint provides comprehensive transaction analysis:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Account Filtering:</strong> Filter transactions by specific account
+                    addresses
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Flexible Pagination:</strong> Efficient browsing with configurable
+                    page sizes
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Performance Timing:</strong> Response time measurement with
+                    millisecond precision
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Comprehensive Metadata:</strong> Total records, current page, and
+                    limit information
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Transaction Details:</strong> Complete transaction data including
+                    fees, rates, and results
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Use Cases
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  Exchange history data enables various analytical and monitoring applications:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Transaction Analysis:</strong> Study trading patterns and volume
+                    trends
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Account Monitoring:</strong> Track specific account trading activity
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Compliance Auditing:</strong> Review transaction history for
+                    regulatory purposes
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Market Research:</strong> Analyze exchange rates and trading volumes
+                    over time
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Portfolio Tracking:</strong> Monitor token movements and transaction
+                    fees
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  Error Responses
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns the following error response on failure:
+                </Typography>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Error message details"
+}`}
+                  </CodeBlock>
+                </Box>
               </CardContent>
             </Card>
           </Box>
