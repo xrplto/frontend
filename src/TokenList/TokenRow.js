@@ -830,7 +830,7 @@ function FTokenRow({
               minWidth: 160,
               minHeight: 48,
               position: 'relative',
-              zIndex: 99999
+              zIndex: 1
             }}
           >
             <LoadChart
