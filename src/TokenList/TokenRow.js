@@ -836,7 +836,14 @@ function FTokenRow({
             <LoadChart
               url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`}
               style={{ width: '100%', height: '100%' }}
-              opts={{ renderer: 'svg', width: 160, height: 48 }}
+              opts={{
+                renderer: 'svg',
+                width: 160,
+                height: 48,
+                animation: false,
+                transitions: false,
+                duration: 0
+              }}
             />
           </Box>
         </LazyLoadComponent>
