@@ -781,6 +781,7 @@ function FTokenRow({
           componentsProps={{
             tooltip: {
               sx: {
+                zIndex: 9999,
                 maxWidth: '300px',
                 backgroundColor: 'rgba(0, 0, 0, 0.9)',
                 p: 0.5,
@@ -822,7 +823,16 @@ function FTokenRow({
           threshold={100}
           placeholder={<Box sx={{ width: 160, height: 48, minWidth: 160, minHeight: 48 }} />}
         >
-          <Box sx={{ width: 160, height: 48, minWidth: 160, minHeight: 48 }}>
+          <Box
+            sx={{
+              width: 160,
+              height: 48,
+              minWidth: 160,
+              minHeight: 48,
+              position: 'relative',
+              zIndex: 99999
+            }}
+          >
             <LoadChart
               url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`}
               style={{ width: '100%', height: '100%' }}
@@ -842,7 +852,16 @@ function FTokenRow({
         }}
       >
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end">
-          <Tooltip title="Set Trustline">
+          <Tooltip
+            title="Set Trustline"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  zIndex: 9998
+                }
+              }
+            }}
+          >
             <Box
               sx={{
                 p: 1,
@@ -870,7 +889,16 @@ function FTokenRow({
             </Box>
           </Tooltip>
           {isAdmin && (
-            <Tooltip title="Edit Token">
+            <Tooltip
+              title="Edit Token"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    zIndex: 9998
+                  }
+                }
+              }}
+            >
               <Box
                 sx={{
                   p: 1,

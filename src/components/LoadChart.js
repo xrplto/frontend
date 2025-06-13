@@ -74,6 +74,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
         },
         tooltip: {
           trigger: 'axis',
+          appendTo: 'body',
           axisPointer: {
             type: 'line',
             lineStyle: {
@@ -138,8 +139,11 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
             box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.12)};
             backdrop-filter: blur(8px);
             border-radius: 8px;
+            position: fixed !important;
+            z-index: 99999 !important;
+            pointer-events: none;
           `,
-          z: 9999
+          z: 99999
         },
         xAxis: {
           type: 'category',
@@ -382,7 +386,6 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
           width: '100%',
           height: '100%',
           position: 'relative',
-          overflow: 'hidden',
           borderRadius: 1,
           transition: 'all 0.2s ease-in-out',
           '&:hover': {

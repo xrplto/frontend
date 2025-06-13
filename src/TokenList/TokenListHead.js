@@ -440,7 +440,7 @@ export default function TokenListHead({
     <TableHead
       sx={{
         position: 'sticky',
-        zIndex: 1002,
+        zIndex: 999,
         transform: `translateY(${scrollTopLength}px)`,
         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
@@ -478,14 +478,14 @@ export default function TokenListHead({
           },
           '& .MuiTableCell-root:nth-of-type(1)': {
             position: 'sticky',
-            zIndex: 1001,
+            zIndex: 998,
             left: 0,
             background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)'
           },
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
-            zIndex: 1001,
+            zIndex: 998,
             left: (tokens?.length ?? 0) > 0 ? (isMobile ? 32 : 56) : isMobile ? 12 : 32,
             background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
@@ -507,7 +507,7 @@ export default function TokenListHead({
           },
           '& .MuiTableCell-root:nth-of-type(3)': !isMobile && {
             position: 'sticky',
-            zIndex: 1001,
+            zIndex: 998,
             background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
             '&:before': scrollLeft
