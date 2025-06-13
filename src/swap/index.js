@@ -495,26 +495,33 @@ const TrustlineWarning = styled('div')(
   ({ theme }) => `
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
+    gap: 12px;
+    padding: 12px 16px;
     margin: 0 16px 8px;
     border-radius: 8px;
     background: ${alpha(theme.palette.warning.main, 0.1)};
     border: 1px solid ${alpha(theme.palette.warning.main, 0.3)};
-    color: ${theme.palette.warning.main};
-    font-size: 0.875rem;
+    
+    @media (max-width: 600px) {
+      margin: 0 10px 8px;
+      padding: 10px 14px;
+      gap: 10px;
+      flex-direction: column;
+      align-items: flex-start;
+    }
 `
 );
 
 const TrustlineButton = styled(Button)(
   ({ theme }) => `
     padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    min-width: 80px;
-    height: 28px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    min-width: 90px;
+    height: 32px;
     text-transform: none;
+    
     background: ${theme.palette.warning.main};
     color: ${theme.palette.warning.contrastText};
     
@@ -524,6 +531,13 @@ const TrustlineButton = styled(Button)(
     
     &:disabled {
       background: ${alpha(theme.palette.warning.main, 0.5)};
+      color: ${alpha(theme.palette.warning.contrastText, 0.7)};
+    }
+    
+    @media (max-width: 600px) {
+      width: 100%;
+      padding: 8px 12px;
+      height: 36px;
     }
 `
 );
@@ -2308,12 +2322,29 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               {(!hasTrustline1 && curr1.currency !== 'XRP') ||
               (!hasTrustline2 && curr2.currency !== 'XRP') ? (
                 <TrustlineWarning>
-                  <Icon icon={infoFill} width={16} height={16} />
-                  <Typography variant="body2" sx={{ flex: 1 }}>
+                  <Icon
+                    icon={infoFill}
+                    width={16}
+                    height={16}
+                    style={{
+                      color: theme.palette.warning.main,
+                      flexShrink: 0
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      flex: 1,
+                      color: theme.palette.warning.main,
+                      fontSize: '0.85rem'
+                    }}
+                  >
                     Missing trustline for{' '}
-                    {!hasTrustline1 && curr1.currency !== 'XRP'
-                      ? getCurrencyDisplayName(curr1.currency, token1?.name)
-                      : getCurrencyDisplayName(curr2.currency, token2?.name)}
+                    <Typography component="span" sx={{ fontWeight: 600 }}>
+                      {!hasTrustline1 && curr1.currency !== 'XRP'
+                        ? getCurrencyDisplayName(curr1.currency, token1?.name)
+                        : getCurrencyDisplayName(curr2.currency, token2?.name)}
+                    </Typography>
                   </Typography>
                   <TrustlineButton
                     onClick={() => {
