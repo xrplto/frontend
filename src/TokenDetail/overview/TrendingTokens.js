@@ -143,7 +143,7 @@ const GlowingButton = styled(Button)(({ theme, darkMode }) => ({
         theme.palette.success.main,
         0.1
       )} 100%)`,
-  color: darkMode ? '#fff' : theme.palette.primary.main,
+  color: `${darkMode ? '#fff' : theme.palette.primary.main} !important`,
   borderRadius: '10px',
   padding: theme.spacing(0.75, 2.5),
   textTransform: 'none',
@@ -160,7 +160,7 @@ const GlowingButton = styled(Button)(({ theme, darkMode }) => ({
           theme.palette.success.main,
           0.15
         )} 100%)`,
-    color: darkMode ? '#fff' : theme.palette.primary.dark,
+    color: `${darkMode ? '#fff' : theme.palette.primary.dark} !important`,
     transform: 'translateY(-1px)',
     boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.5)}`
   }
