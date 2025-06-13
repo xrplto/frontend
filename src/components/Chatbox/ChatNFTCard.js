@@ -4,15 +4,7 @@ import { Card, CardMedia, CardContent, Typography, CardActionArea, Box } from '@
 const XRPNFT_IMAGE_BASE_URL = 'https://s2.xrpnft.com/d1/';
 
 const ChatNFTCard = ({ nft, onSelect }) => {
-  const handleSelect = () => {
-    if (onSelect) {
-      const nftName = nft.name || nft.meta?.name || 'Unnamed NFT';
-      const nftLink = `[NFT: ${nftName} (${nft.NFTokenID})]`;
-      onSelect(nftLink);
-    }
-  };
-
-  // Determine the image URL
+  // Determine the image URL (moved outside handleSelect to be accessible by JSX)
   let imageUrl = null;
   if (nft.files && nft.files.length > 0) {
     const file = nft.files[0];
@@ -24,6 +16,21 @@ const ChatNFTCard = ({ nft, onSelect }) => {
       imageUrl = XRPNFT_IMAGE_BASE_URL + file.dfile;
     }
   }
+
+  const handleSelect = () => {
+    if (onSelect) {
+      const nftName = nft.name || nft.meta?.name || 'Unnamed NFT';
+      const nftLink = `[NFT: ${nftName} (${nft.NFTokenID})]`;
+
+      // Pass both the link string and the full NFT data including image
+      onSelect({
+        link: nftLink,
+        name: nftName,
+        tokenId: nft.NFTokenID,
+        imageUrl: imageUrl
+      });
+    }
+  };
 
   // Extract number from NFT name
   const nftName = nft.name || nft.meta?.name || 'Unnamed NFT';

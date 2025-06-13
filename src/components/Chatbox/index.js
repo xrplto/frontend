@@ -148,19 +148,33 @@ function EmojiPicker({ onSelect }) {
 }
 
 // Formatted NFT Chip Component
-const FormattedNFT = ({ nftLink, onRemove }) => {
+const FormattedNFT = ({ nftData, onRemove }) => {
   const theme = useTheme();
-  const match = nftLink.match(/\[NFT: (.*?) \((.*?)\)\]/);
 
-  if (!match) return null;
+  // Handle both old string format and new object format for backward compatibility
+  let name, tokenId, imageUrl;
 
-  const [_, name, tokenId] = match;
+  if (typeof nftData === 'string') {
+    // Old format: "[NFT: name (tokenId)]"
+    const match = nftData.match(/\[NFT: (.*?) \((.*?)\)\]/);
+    if (match) {
+      [, name, tokenId] = match;
+      imageUrl = '/static/crossmark.webp'; // fallback to default
+    } else {
+      return null;
+    }
+  } else {
+    // New format: object with name, tokenId, imageUrl
+    name = nftData.name;
+    tokenId = nftData.tokenId;
+    imageUrl = nftData.imageUrl || '/static/crossmark.webp';
+  }
 
   return (
     <Tooltip
       title={
         <Box>
-          <Typography variant="body2">{`${name}`}</Typography>
+          <Typography variant="body2">{name}</Typography>
           <Typography variant="caption" color="textSecondary">
             {tokenId}
           </Typography>
@@ -171,12 +185,16 @@ const FormattedNFT = ({ nftLink, onRemove }) => {
       <Chip
         icon={
           <img
-            src="/static/crossmark.webp"
-            alt={`${name}`}
-            style={{ width: '16px', height: '16px' }}
+            src={imageUrl}
+            alt={name}
+            style={{ width: '16px', height: '16px', borderRadius: '2px' }}
+            onError={(e) => {
+              // Fallback to crossmark if NFT image fails to load
+              e.target.src = '/static/crossmark.webp';
+            }}
           />
         }
-        label={`${name}`}
+        label={name}
         onDelete={onRemove}
         size="small"
         sx={{
@@ -321,7 +339,9 @@ function Chatbox() {
 
   const sendMessage = () => {
     if (accountProfile?.account && (message.trim().length > 0 || nfts.length > 0)) {
-      const fullMessage = nfts.join('') + message.trim();
+      // Extract NFT link text from NFT data for the message
+      const nftLinks = nfts.map((nft) => (typeof nft === 'string' ? nft : nft.link)).join('');
+      const fullMessage = nftLinks + message.trim();
       console.log('Sending message:', { fullMessage, recipient, account: accountProfile.account });
 
       // Create message object to match expected format
@@ -374,8 +394,8 @@ function Chatbox() {
     setMessage((prevMessage) => prevMessage + emoji);
   };
 
-  const addNFT = (nftLink) => {
-    setNfts((prevNfts) => [...prevNfts, nftLink]);
+  const addNFT = (nftData) => {
+    setNfts((prevNfts) => [...prevNfts, nftData]);
     setShowEmojiPicker(false);
   };
 
@@ -497,8 +517,8 @@ function Chatbox() {
               {/* NFT chips displayed above input */}
               {nfts.length > 0 && (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 1, gap: 0.5 }}>
-                  {nfts.map((nftLink, index) => (
-                    <FormattedNFT key={index} nftLink={nftLink} onRemove={() => removeNFT(index)} />
+                  {nfts.map((nftData, index) => (
+                    <FormattedNFT key={index} nftData={nftData} onRemove={() => removeNFT(index)} />
                   ))}
                 </Box>
               )}
