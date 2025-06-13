@@ -382,24 +382,19 @@ const CustomLegendItem = ({ entry, visible, onClick }) => {
     >
       <Box
         sx={{
-          width: 10,
-          height: 10,
-          borderRadius: '50%',
-          backgroundColor: entry.color || entry.stroke,
+          width: 12,
+          height: 12,
+          minWidth: 12,
+          backgroundColor: entry.color,
           mr: 1,
-          boxShadow: visible ? '0 0 10px rgba(0, 0, 0, 0.1)' : 'none'
+          opacity: visible ? 1 : 0.4,
+          transition: 'all 0.2s ease-in-out',
+          '&:hover': {
+            transform: 'scale(1.1)'
+          }
         }}
       />
-      <Typography
-        variant="body2"
-        sx={{
-          color: themeColors.text,
-          fontWeight: visible ? 500 : 400,
-          fontSize: '0.75rem'
-        }}
-      >
-        {entry.value}
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>{entry.value}</Box>
     </Box>
   );
 };
@@ -1558,7 +1553,6 @@ const MarketMetricsContent = () => {
                                   sx={{
                                     width: 24,
                                     height: 24,
-                                    borderRadius: '50%',
                                     mr: 1,
                                     objectFit: 'cover',
                                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -2045,7 +2039,6 @@ const MarketMetricsContent = () => {
                                 sx={{
                                   width: 24,
                                   height: 24,
-                                  borderRadius: '50%',
                                   mr: 1,
                                   objectFit: 'cover',
                                   backgroundColor: 'rgba(255, 255, 255, 0.1)',

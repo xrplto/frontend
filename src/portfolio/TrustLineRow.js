@@ -70,9 +70,7 @@ const getOriginIcon = (origin) => {
           icon={chartLineUp}
           style={{
             fontSize: '16px',
-            color: '#B72136',
-            backgroundColor: '#fff',
-            borderRadius: '2px'
+            color: '#B72136'
           }}
         />
       );

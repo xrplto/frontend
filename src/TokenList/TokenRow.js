@@ -105,34 +105,19 @@ const XPMarketIcon = React.forwardRef((props, ref) => {
   const { width, ...otherProps } = props;
 
   return (
-    <SvgIcon
-      {...otherProps}
-      ref={ref}
-      viewBox="0 0 56 56"
-      sx={{ borderRadius: '50%', ...otherProps.sx }}
-    >
-      <circle
-        cx="26"
-        cy="26"
-        r="26"
-        fill="rgba(109, 31, 238, 0.15)"
-        stroke="rgba(109, 31, 238, 0.3)"
-        strokeWidth="1"
+    <SvgIcon {...otherProps} ref={ref} viewBox="0 0 32 32" sx={{ ...otherProps.sx }}>
+      <path
+        d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
+        fill="inherit"
       />
-      <g transform="translate(10, 10) scale(0.6)">
-        <path
-          d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
-          fill="#6D1FEE"
-        />
-        <path
-          d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
-          fill="#6D1FEE"
-        />
-        <path
-          d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
-          fill="#6D1FEE"
-        />
-      </g>
+      <path
+        d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
+        fill="inherit"
+      />
+      <path
+        d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
+        fill="inherit"
+      />
     </SvgIcon>
   );
 });
@@ -141,16 +126,8 @@ const XPMarketIcon = React.forwardRef((props, ref) => {
 XPMarketIcon.displayName = 'XPMarketIcon';
 
 const LedgerMemeIcon = React.forwardRef((props, ref) => (
-  <SvgIcon {...props} ref={ref} viewBox="0 0 56 56" sx={{ borderRadius: '50%', ...props.sx }}>
-    <circle
-      cx="26"
-      cy="26"
-      r="26"
-      fill="rgba(207, 255, 4, 0.2)"
-      stroke="rgba(207, 255, 4, 0.4)"
-      strokeWidth="1"
-    />
-    <g transform="translate(8, 8) scale(0.75)">
+  <SvgIcon {...props} ref={ref} viewBox="0 0 26 26">
+    <g transform="scale(0.55)">
       <rect fill="#cfff04" width="36" height="36" rx="8" ry="8" x="0" y="0"></rect>
       <g>
         <g>
@@ -164,7 +141,7 @@ const LedgerMemeIcon = React.forwardRef((props, ref) => (
           ></path>
           <path
             fill="#262626"
-            d="M10.22,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
+            d="M10.22,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88-0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
           ></path>
           <path
             fill="#262626"
@@ -185,31 +162,13 @@ LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 const getOriginIcon = (origin) => {
   switch (origin) {
     case 'FirstLedger':
-      return (
-        <Box
-          sx={{
-            width: '18px',
-            height: '18px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginRight: '2px',
-            marginBottom: '2px'
-          }}
-        >
-          <OpenInNewIcon sx={{ fontSize: '16px', color: '#013CFE' }} />
-        </Box>
-      );
+      return <OpenInNewIcon sx={{ fontSize: '16px', color: '#013CFE' }} />;
     case 'XPMarket':
-      return (
-        <XPMarketIcon
-          sx={{ fontSize: '18px', color: '#6D1FEE', marginRight: '2px', marginBottom: '2px' }}
-        />
-      );
+      return <XPMarketIcon sx={{ fontSize: '18px', color: '#6D1FEE', marginRight: '2px' }} />;
     case 'LedgerMeme':
       return (
         <LedgerMemeIcon
-          sx={{ fontSize: '18px', color: '#cfff04', marginRight: '2px', marginBottom: '2px' }}
+          sx={{ fontSize: '18px', color: '#cfff04', marginRight: '2px', marginTop: '2px' }}
         />
       );
     case 'Magnetic X':
@@ -218,15 +177,13 @@ const getOriginIcon = (origin) => {
           sx={{
             width: '18px',
             height: '18px',
-            borderRadius: '50%',
             backgroundColor: 'rgba(255, 255, 255, 0.1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             border: '1px solid rgba(255, 255, 255, 0.2)',
             overflow: 'hidden',
-            marginRight: '2px',
-            marginBottom: '2px'
+            marginRight: '2px'
           }}
         >
           <Box
@@ -247,14 +204,12 @@ const getOriginIcon = (origin) => {
           sx={{
             width: '18px',
             height: '18px',
-            borderRadius: '50%',
             backgroundColor: 'rgba(183, 33, 54, 0.1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             border: '1px solid rgba(183, 33, 54, 0.2)',
-            marginRight: '2px',
-            marginBottom: '2px'
+            marginRight: '2px'
           }}
         >
           <Icon
@@ -267,24 +222,7 @@ const getOriginIcon = (origin) => {
         </Box>
       );
     default:
-      return (
-        <Box
-          sx={{
-            width: '18px',
-            height: '18px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(99, 115, 129, 0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: '1px solid rgba(99, 115, 129, 0.2)',
-            marginRight: '2px',
-            marginBottom: '2px'
-          }}
-        >
-          <AutoAwesomeIcon sx={{ fontSize: '11px', color: '#637381' }} />
-        </Box>
-      );
+      return <AutoAwesomeIcon sx={{ fontSize: '11px', color: '#637381' }} />;
   }
 };
 
