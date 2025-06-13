@@ -193,66 +193,6 @@ const FormattedNFT = ({ nftLink, onRemove }) => {
   );
 };
 
-// Custom Input Component with NFT support
-const CustomInput = ({ value, onChange, onNFTRemove, onKeyPress }) => {
-  const inputRef = useRef(null);
-  const [localValue, setLocalValue] = useState('');
-  const [nftParts, setNftParts] = useState([]);
-
-  useEffect(() => {
-    const newNftParts = value.match(/\[NFT:.*?\]/g) || [];
-    setNftParts(newNftParts);
-    const textParts = value.split(/\[NFT:.*?\]/g);
-    setLocalValue(textParts.join(''));
-  }, [value]);
-
-  const handleChange = (e) => {
-    const newTextValue = e.target.value;
-    setLocalValue(newTextValue);
-
-    const newFullValue = nftParts.join('') + newTextValue;
-    onChange(newFullValue);
-  };
-
-  const handleNFTRemove = (nftLink) => {
-    const newNftParts = nftParts.filter((part) => part !== nftLink);
-    setNftParts(newNftParts);
-    const newFullValue = newNftParts.join('') + localValue;
-    onChange(newFullValue);
-    onNFTRemove && onNFTRemove(nftLink);
-  };
-
-  const renderNFTChips = () => {
-    return nftParts.map((nftLink, index) => (
-      <FormattedNFT key={index} nftLink={nftLink} onRemove={() => handleNFTRemove(nftLink)} />
-    ));
-  };
-
-  return (
-    <TextField
-      fullWidth
-      variant="outlined"
-      size="small"
-      value={localValue}
-      onChange={handleChange}
-      onKeyPress={onKeyPress}
-      placeholder="Type a message..."
-      multiline
-      maxRows={4}
-      InputProps={{
-        startAdornment: (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', mr: 1 }}>{renderNFTChips()}</Box>
-        )
-      }}
-      sx={{
-        '& .MuiOutlinedInput-root': {
-          padding: '8px'
-        }
-      }}
-    />
-  );
-};
-
 function Chatbox() {
   const theme = useTheme();
   const backgroundColor = theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff';
@@ -265,6 +205,7 @@ function Chatbox() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedOption, setSelectedOption] = useState('Chatbox');
   const [message, setMessage] = useState('');
+  const [nfts, setNfts] = useState([]);
   const [chatHistory, setChatHistory] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
@@ -329,21 +270,24 @@ function Chatbox() {
     };
 
     const handleChatMessage = (msg) => {
-      console.log('chat message', msg);
+      console.log('chat message received:', msg);
       setChatHistory((previousHistory) => [...previousHistory, msg]);
     };
 
     const handlePrivateMessage = (msg) => {
-      console.log('private message', msg);
+      console.log('private message received:', msg);
       setChatHistory((previousHistory) => [...previousHistory, msg]);
     };
 
     const handleSocketConnect = () => {
-      console.log('Socket connected');
+      console.log('Socket connected successfully');
+      console.log('Socket ID:', socket.id);
+      console.log('Socket connected status:', socket.connected);
     };
 
     const handleSocketDisconnect = (reason) => {
       console.log('Socket disconnected:', reason);
+      console.log('Socket connected status:', socket.connected);
       if (reason !== 'io client disconnect') {
         console.log('Attempting to reconnect...');
         socket.connect();
@@ -352,6 +296,7 @@ function Chatbox() {
 
     const handleSocketError = (error) => {
       console.error('Socket encountered error:', error);
+      console.log('Socket connected status:', socket.connected);
     };
 
     // Register socket event listeners
@@ -375,18 +320,34 @@ function Chatbox() {
   }, []);
 
   const sendMessage = () => {
-    if (accountProfile?.account && message.trim().length > 0) {
-      const trimmedMessage = message.trim();
+    if (accountProfile?.account && (message.trim().length > 0 || nfts.length > 0)) {
+      const fullMessage = nfts.join('') + message.trim();
+      console.log('Sending message:', { fullMessage, recipient, account: accountProfile.account });
+
+      // Create message object to match expected format
+      const messageObj = {
+        message: fullMessage,
+        username: accountProfile.account,
+        rank: 'Member',
+        group: 'Member',
+        timestamp: new Date().toISOString(),
+        isPrivate: !!recipient,
+        recipient: recipient
+      };
+
+      // Add message immediately to chat history (optimistic update)
+      setChatHistory((previousHistory) => [...previousHistory, messageObj]);
+
       if (recipient) {
         socket.emit('private message', {
           to: recipient,
-          message: trimmedMessage,
+          message: fullMessage,
           username: accountProfile.account,
           isPrivate: true
         });
       } else {
         socket.emit('chat message', {
-          message: trimmedMessage,
+          message: fullMessage,
           username: accountProfile.account,
           rank: 'Member',
           group: 'Member'
@@ -394,7 +355,14 @@ function Chatbox() {
       }
 
       setMessage('');
+      setNfts([]);
       setRecipient(null);
+    } else {
+      console.log('Message not sent - conditions not met:', {
+        hasAccount: !!accountProfile?.account,
+        messageLength: message.trim().length,
+        nftsLength: nfts.length
+      });
     }
   };
 
@@ -407,7 +375,7 @@ function Chatbox() {
   };
 
   const addNFT = (nftLink) => {
-    setMessage((prevMessage) => nftLink + prevMessage);
+    setNfts((prevNfts) => [...prevNfts, nftLink]);
     setShowEmojiPicker(false);
   };
 
@@ -415,12 +383,8 @@ function Chatbox() {
     dispatch(toggleChatOpen());
   };
 
-  const handleNFTRemove = (nftLink) => {
-    // Logic handled within CustomInput
-  };
-
-  const handleMessageChange = (newMessage) => {
-    setMessage(newMessage);
+  const removeNFT = (index) => {
+    setNfts((prevNfts) => prevNfts.filter((_, i) => i !== index));
   };
 
   const handleKeyPress = (event) => {
@@ -530,11 +494,31 @@ function Chatbox() {
 
           <Stack direction="row" spacing={1} alignItems="flex-end">
             <Box sx={{ flexGrow: 1 }}>
-              <CustomInput
+              {/* NFT chips displayed above input */}
+              {nfts.length > 0 && (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 1, gap: 0.5 }}>
+                  {nfts.map((nftLink, index) => (
+                    <FormattedNFT key={index} nftLink={nftLink} onRemove={() => removeNFT(index)} />
+                  ))}
+                </Box>
+              )}
+
+              {/* Simple, fast text input */}
+              <TextField
+                fullWidth
+                variant="outlined"
+                size="small"
                 value={message}
-                onChange={handleMessageChange}
-                onNFTRemove={handleNFTRemove}
+                onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
+                placeholder="Type a message..."
+                multiline
+                maxRows={4}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    padding: '8px'
+                  }
+                }}
               />
             </Box>
             <Stack direction="row" spacing={1}>
@@ -601,9 +585,12 @@ function Chatbox() {
               <IconButton
                 onClick={sendMessage}
                 color="primary"
-                disabled={message.trim().length === 0}
+                disabled={message.trim().length === 0 && nfts.length === 0}
                 sx={{
-                  color: message.trim().length === 0 ? 'action.disabled' : 'primary.main',
+                  color:
+                    message.trim().length === 0 && nfts.length === 0
+                      ? 'action.disabled'
+                      : 'primary.main',
                   '&.Mui-disabled': {
                     color: 'action.disabled'
                   }

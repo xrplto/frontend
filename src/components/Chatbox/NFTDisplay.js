@@ -118,11 +118,18 @@ const NFTDisplay = ({ nftLink }) => {
   const match = nftLink.match(/\[NFT: (.*?) \((.*?)\)\]/);
   const [_, name, tokenId] = match || [null, null, null];
 
+  // Debug logging
+  console.log('NFTDisplay received nftLink:', nftLink);
+  console.log('NFTDisplay match result:', match);
+  console.log('NFTDisplay extracted name:', name, 'tokenId:', tokenId);
+
   useEffect(() => {
     if (tokenId) {
       async function fetchNFT() {
         try {
+          console.log('Fetching NFT data for tokenId:', tokenId);
           const res = await axios.get(`${BASE_URL}/nft/${tokenId}`);
+          console.log('NFT data received:', res.data.nft);
           setNFT(res.data.nft);
           setBurnt(res.data.nft.status === NFToken.BURNT);
         } catch (error) {
@@ -130,6 +137,8 @@ const NFTDisplay = ({ nftLink }) => {
         }
       }
       fetchNFT();
+    } else {
+      console.log('No tokenId found, skipping NFT fetch');
     }
   }, [tokenId]);
 
@@ -195,7 +204,26 @@ const NFTDisplay = ({ nftLink }) => {
    * Prioritizes displaying the small thumbnail if available.
    */
   const getMediaPreview = () => {
-    if (!nft || !nft.files || nft.files.length === 0) return null;
+    if (!nft || !nft.files || nft.files.length === 0) {
+      // Show a placeholder when NFT data hasn't loaded yet
+      return (
+        <Box
+          sx={{
+            width: 24,
+            height: 24,
+            backgroundColor: theme.palette.action.hover,
+            borderRadius: '3px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.7 }}>
+            NFT
+          </Typography>
+        </Box>
+      );
+    }
 
     // Use the first file in the files array (similar to ChatNFTCard)
     const file = nft.files[0];
@@ -505,7 +533,30 @@ const NFTDisplay = ({ nftLink }) => {
     return null;
   };
 
-  if (!match) return null;
+  if (!match) {
+    // Show a fallback display for malformed NFT links
+    console.log('NFT match failed, showing fallback');
+    return (
+      <Box
+        component="span"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+          padding: '1px 4px',
+          borderRadius: 0.75,
+          backgroundColor: theme.palette.error.light,
+          color: theme.palette.error.contrastText,
+          fontSize: '0.7rem',
+          fontWeight: 500,
+          margin: '0 2px',
+          verticalAlign: 'middle'
+        }}
+      >
+        [Invalid NFT Link]
+      </Box>
+    );
+  }
 
   return (
     <>
