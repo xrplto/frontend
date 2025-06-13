@@ -62,10 +62,10 @@ const sections = [
   { id: 'get-all-tokens', title: 'Get All Tokens' },
   { id: 'get-a-specific-token-info', title: 'Get a Specific Token Info' },
   { id: 'get-sparkline-of-a-token', title: 'Get Sparkline of a token' },
+  { id: 'get-graph-data-of-a-token', title: 'Get Graph Data of a Token' },
   { id: 'get-rich-list-of-a-token', title: 'Get Rich List of a Token' },
   { id: 'get-exchange-history-of-a-token', title: 'Get Exchange history of a Token' },
   { id: 'get-the-current-status', title: 'Get the current status' },
-  { id: 'get-account-offers', title: 'Get Account Offers' },
   { id: 'errors', title: 'Errors' }
 ];
 
@@ -1494,24 +1494,23 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                 </Typography>
                 <Box sx={{ ml: 2 }}>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Automatic Chart Coloring:</strong> Green (#54D62C) for gains, red
-                    (#ed5565) for losses
+                    • <strong>Multi-Currency Support:</strong> USD, EUR, JPY, CNH, and XRP
+                    conversion
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Scientific Notation Formatting:</strong> Converts to readable decimal
-                    strings
+                    • <strong>XRP Special Handling:</strong> Automatic inverse calculation for XRP
+                    pairs
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Flexible Time Periods:</strong> 15-minute intervals for 24h, 1-hour
-                    for 7d
+                    • <strong>Intelligent Fallback:</strong> 1D data supplemented with 7D data when
+                    needed
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Fallback Logic:</strong> Calculated from data or token metadata if
-                    overrides not provided
+                    • <strong>Volume Integration:</strong> Volume-weighted price data included
                   </Typography>
                   <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    • <strong>Cross-Origin Support:</strong> Includes CORS headers for web
-                    applications
+                    • <strong>Performance Timing:</strong> Response time measurement for
+                    optimization
                   </Typography>
                 </Box>
               </CardContent>
@@ -1535,18 +1534,22 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The percentage change is calculated using intelligent fallback logic:
+                  The endpoint includes sophisticated logic for XRP and data availability:
                 </Typography>
                 <Box sx={{ ml: 2 }}>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    1. <strong>Query Override:</strong> Uses pro24h/pro7d parameter if provided
+                    • <strong>XRP Detection:</strong> Automatically detects XRP MD5 and applies
+                    inverse calculation
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    2. <strong>Price Data Calculation:</strong> Compares first and last price points
+                    • <strong>1D Fallback:</strong> If only 1 trade exists for 1D range, supplements
+                    with 7D data
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Currency Mapping:</strong> CNH requests automatically map to CNY data
                   </Typography>
                   <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    3. <strong>Token Metadata Fallback:</strong> Uses stored token percentage if
-                    calculation fails
+                    • <strong>Default Fallback:</strong> Unknown currencies default to USD pricing
                   </Typography>
                 </Box>
               </CardContent>
@@ -2192,15 +2195,18 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.info.main,
+                    theme.palette.warning.main,
                     0.08
-                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
                   p: 2,
                   borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
                 }}
               >
-                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
                   Advanced Features
                 </Typography>
               </Box>
@@ -2346,11 +2352,13 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                 variant="body1"
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
-                Retrieve current platform status, XRPL metrics, and exchange rates.
+                Retrieve comprehensive platform status including current exchange rates, total token
+                count, 24-hour metrics, and global platform statistics. This endpoint provides
+                real-time insights into XRPL ecosystem activity with performance timing.
               </Typography>
             </Card>
 
-            <Card sx={{ borderRadius: '12px' }}>
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
@@ -2371,6 +2379,298 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
               </Box>
               <CardContent>
                 <CodeBlock language="http">GET https://api.xrpl.to/api/status</CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  This endpoint requires no query parameters and returns comprehensive platform
+                  metrics.
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Response Structure
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns comprehensive platform status with real-time metrics:
+                </Typography>
+                <CodeBlock language="json">
+                  {`{
+  "res": "success",
+  "took": "83.60ms",               // Response time in milliseconds
+  "total": 16849,                  // Total number of tokens on platform
+  "exch": {                        // Current XRP exchange rates
+    "USD": 0.465408702144082,      // XRP to USD rate
+    "EUR": 0.537035101404056,      // XRP to EUR rate  
+    "JPY": 0.00322407119453461,    // XRP to JPY rate
+    "CNY": 0.0647701776267451      // XRP to CNY rate
+  },
+  "H24": {                         // 24-hour platform metrics
+    "_id": "METRICS_24H",
+    "activeAddresses24H": 21919,   // Active addresses in last 24h
+    "totalAddresses": 6563817,     // Total addresses on XRPL
+    "totalOffers": 11598213,       // Total active offers
+    "totalTrustLines": 6681685,    // Total trustlines
+    "tradedTokens24H": 1384,       // Tokens traded in 24h
+    "tradedXRP24H": 3386907.79963, // XRP volume in 24h
+    "transactions24H": 337795,     // Transactions in 24h
+    "totalTVL": 24956180.4315585,  // Total Value Locked
+    "lastUpdated": "2025-06-13T23:07:31.256Z",
+    "updateStatus": "complete"
+  },
+  "global": {                      // Global platform metrics
+    "_id": "METRICS_GLOBAL",
+    "gDexVolume": 3380879.024549,  // Global DEX volume
+    "gDexVolumePro": -7.00388417359496,  // DEX volume change %
+    "gMarketcap": 265098025.707726,      // Global market cap
+    "gMarketcapPro": -1.36204154630568,  // Market cap change %
+    "gNFTIOUVolume": 5750.87524571821,   // NFT/IOU volume
+    "gNFTIOUVolumePro": 0.17010000073828, // NFT/IOU volume change %
+    "gScamVolume": 34244.6004413518,     // Scam token volume
+    "gScamVolumePro": 1.0128904404061,   // Scam volume change %
+    "gStableVolume": 1841364.50671297,   // Stablecoin volume
+    "gStableVolumePro": 54.464075565632, // Stable volume change %
+    "gXRPdominance": 0,                  // XRP dominance %
+    "gXRPdominancePro": 0,              // XRP dominance change %
+    "totalAddresses": 6563817,          // Total XRPL addresses
+    "totalOffers": 11598225,            // Total platform offers
+    "totalTrustLines": 6681690,         // Total platform trustlines
+    "gMemeVolume": 1469624.08263417,    // Meme token volume
+    "gMemeVolumePro": 43.468697695571   // Meme volume change %
+  }
+}`}
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Metrics Explanation
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The status endpoint provides four main categories of data:
+                </Typography>
+
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.info.main, mb: 1, fontWeight: 600 }}
+                >
+                  Exchange Rates (exch)
+                </Typography>
+                <Box sx={{ ml: 2, mb: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • Current XRP exchange rates against major fiat currencies
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • Updated in real-time from market data sources
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • Used for token value calculations across the platform
+                  </Typography>
+                </Box>
+
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.info.main, mb: 1, fontWeight: 600 }}
+                >
+                  24-Hour Metrics (H24)
+                </Typography>
+                <Box sx={{ ml: 2, mb: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>activeAddresses24H:</strong> Unique addresses that transacted in last
+                    24 hours
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>tradedTokens24H:</strong> Number of different tokens traded
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>tradedXRP24H:</strong> Total XRP volume in 24-hour period
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>transactions24H:</strong> Total transaction count
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>totalTVL:</strong> Total Value Locked across all tokens
+                  </Typography>
+                </Box>
+
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.info.main, mb: 1, fontWeight: 600 }}
+                >
+                  Global Metrics (global)
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Volume Metrics:</strong> DEX, Stablecoin, Meme, NFT, and Scam token
+                    volumes
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Percentage Changes:</strong> All volume metrics include percentage
+                    change indicators
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Market Cap:</strong> Total market capitalization with change
+                    percentage
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Network Stats:</strong> Total addresses, offers, and trustlines across
+                    XRPL
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Performance Features
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The status endpoint includes several performance and reliability features:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Parallel Processing:</strong> All metrics fetched concurrently using
+                    Promise.all
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Performance Timing:</strong> Response time measured and included in
+                    response
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Real-time Data:</strong> All metrics updated continuously from live
+                    XRPL data
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Error Handling:</strong> Comprehensive error logging and graceful
+                    failure handling
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Use Cases
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The status endpoint serves various monitoring and analytical purposes:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>System Health:</strong> Monitor platform performance and availability
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Market Overview:</strong> Get snapshot of XRPL ecosystem activity
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Exchange Rate Feeds:</strong> Current XRP rates for pricing
+                    calculations
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Analytics Dashboards:</strong> Real-time metrics for monitoring tools
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Trading Insights:</strong> Volume trends and market activity
+                    indicators
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  Error Responses
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns the following error response on failure:
+                </Typography>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Error message details"
+}`}
+                  </CodeBlock>
+                </Box>
               </CardContent>
             </Card>
           </Box>
@@ -2617,6 +2917,28 @@ tokens = response.json()`;
 const res = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
 
 const tokens = res.data;`;
+        case 'php':
+          return `<?php
+$url = 'https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=';
+
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Content-Type: application/json'
+]);
+
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($httpCode === 200) {
+    $tokens = json_decode($response, true);
+    print_r($tokens);
+} else {
+    echo "Error: HTTP $httpCode\\n";
+}
+?>`;
         default:
           return '';
       }
@@ -2683,6 +3005,38 @@ issuer = "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
 currency = "USD"
 token_info = get_token_info(issuer, currency)
 puts token_info if token_info`;
+        case 'php':
+          return `<?php
+function getTokenInfo($issuer, $currency) {
+    $url = "https://api.xrpl.to/api/token/{$issuer}_{$currency}";
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json'
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        return json_decode($response, true);
+    } else {
+        echo "Error fetching token info: HTTP $httpCode\\n";
+        return null;
+    }
+}
+
+// Example usage
+$issuer = "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq";
+$currency = "USD";
+$tokenInfo = getTokenInfo($issuer, $currency);
+if ($tokenInfo) {
+    print_r($tokenInfo);
+}
+?>`;
         default:
           return '';
       }
@@ -2743,6 +3097,136 @@ end
 token_id = "0413ca7cfc258dfaf698c02fe304e607"
 sparkline_data = get_token_sparkline(token_id)
 puts sparkline_data if sparkline_data`;
+        case 'php':
+          return `<?php
+function getTokenSparkline($tokenId) {
+    $url = "https://api.xrpl.to/api/sparkline/{$tokenId}";
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json'
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        return json_decode($response, true);
+    } else {
+        echo "Error fetching token sparkline: HTTP $httpCode\\n";
+        return null;
+    }
+}
+
+// Example usage
+$tokenId = "0413ca7cfc258dfaf698c02fe304e607";
+$sparklineData = getTokenSparkline($tokenId);
+if ($sparklineData) {
+    print_r($sparklineData);
+}
+?>`;
+        default:
+          return '';
+      }
+
+    case 'get-graph-data-of-a-token':
+      switch (language) {
+        case 'shell':
+          return `curl -sS "https://api.xrpl.to/api/graph/c9ac9a6c44763c1bd9ccc6e47572fd26?range=1D"`;
+        case 'javascript':
+          return `const axios = require('axios');
+
+async function getGraphData(tokenId, range = '1D') {
+  try {
+    const response = await axios.get(\`https://api.xrpl.to/api/graph/\${tokenId}?range=\${range}\`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching graph data:', error);
+    return null;
+  }
+}
+
+// Example usage
+const tokenId = 'c9ac9a6c44763c1bd9ccc6e47572fd26';
+getGraphData(tokenId, '7D')
+  .then(graphData => {
+    console.log(\`Retrieved \${graphData.length} data points\`);
+    console.log(graphData.history);
+  })
+  .catch(error => console.error(error));`;
+        case 'python':
+          return `import requests
+
+def get_graph_data(token_id, range='1D'):
+    try:
+        response = requests.get(f"https://api.xrpl.to/api/graph/{token_id}?range={range}")
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching graph data: {e}")
+        return None
+
+# Example usage
+token_id = "c9ac9a6c44763c1bd9ccc6e47572fd26"
+graph_data = get_graph_data(token_id, '7D')
+if graph_data:
+    print(f"Retrieved {graph_data['length']} data points")
+    print(graph_data['history'])`;
+        case 'ruby':
+          return `require 'net/http'
+require 'json'
+
+def get_graph_data(token_id, range='1D')
+  uri = URI("https://api.xrpl.to/api/graph/#{token_id}?range=#{range}")
+  response = Net::HTTP.get(uri)
+  JSON.parse(response)
+rescue => e
+  puts "Error fetching graph data: #{e.message}"
+  nil
+end
+
+# Example usage
+token_id = "c9ac9a6c44763c1bd9ccc6e47572fd26"
+graph_data = get_graph_data(token_id, '7D')
+if graph_data
+  puts "Retrieved #{graph_data['length']} data points"
+  puts graph_data['history']
+end`;
+        case 'php':
+          return `<?php
+function getGraphData($tokenId, $range = '1D') {
+    $url = "https://api.xrpl.to/api/graph/{$tokenId}?range={$range}";
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json'
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        return json_decode($response, true);
+    } else {
+        echo "Error fetching graph data: HTTP $httpCode\\n";
+        return null;
+    }
+}
+
+// Example usage
+$tokenId = "c9ac9a6c44763c1bd9ccc6e47572fd26";
+$graphData = getGraphData($tokenId, '7D');
+if ($graphData) {
+    echo "Retrieved {$graphData['length']} data points\\n";
+    print_r($graphData['history']);
+}
+?>`;
         default:
           return '';
       }
@@ -2803,6 +3287,37 @@ end
 token_id = "0413ca7cfc258dfaf698c02fe304e607"
 rich_list = get_rich_list(token_id)
 puts rich_list if rich_list`;
+        case 'php':
+          return `<?php
+function getRichList($tokenId, $start = 0, $limit = 20) {
+    $url = "https://api.xrpl.to/api/richlist/{$tokenId}?start={$start}&limit={$limit}";
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json'
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        return json_decode($response, true);
+    } else {
+        echo "Error fetching rich list: HTTP $httpCode\\n";
+        return null;
+    }
+}
+
+// Example usage
+$tokenId = "0413ca7cfc258dfaf698c02fe304e607";
+$richList = getRichList($tokenId);
+if ($richList) {
+    print_r($richList);
+}
+?>`;
         default:
           return '';
       }
@@ -2863,6 +3378,37 @@ end
 md5 = "0413ca7cfc258dfaf698c02fe304e607"
 history = get_exchange_history(md5)
 puts history if history`;
+        case 'php':
+          return `<?php
+function getExchangeHistory($md5, $page = 0, $limit = 10) {
+    $url = "https://api.xrpl.to/api/history?md5={$md5}&page={$page}&limit={$limit}";
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json'
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        return json_decode($response, true);
+    } else {
+        echo "Error fetching exchange history: HTTP $httpCode\\n";
+        return null;
+    }
+}
+
+// Example usage
+$md5 = "0413ca7cfc258dfaf698c02fe304e607";
+$history = getExchangeHistory($md5);
+if ($history) {
+    print_r($history);
+}
+?>`;
         default:
           return '';
       }
@@ -2920,6 +3466,36 @@ end
 # Example usage
 status = get_current_status
 puts status if status`;
+        case 'php':
+          return `<?php
+function getCurrentStatus() {
+    $url = "https://api.xrpl.to/api/status";
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json'
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        return json_decode($response, true);
+    } else {
+        echo "Error fetching current status: HTTP $httpCode\\n";
+        return null;
+    }
+}
+
+// Example usage
+$status = getCurrentStatus();
+if ($status) {
+    print_r($status);
+}
+?>`;
         default:
           return '';
       }
@@ -2980,6 +3556,37 @@ end
 account = "rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6"
 offers = get_account_offers(account)
 puts offers if offers`;
+        case 'php':
+          return `<?php
+function getAccountOffers($account) {
+    $url = "https://api.xrpl.to/api/account/offers/{$account}";
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json'
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        return json_decode($response, true);
+    } else {
+        echo "Error fetching account offers: HTTP $httpCode\\n";
+        return null;
+    }
+}
+
+// Example usage
+$account = "rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6";
+$offers = getAccountOffers($account);
+if ($offers) {
+    print_r($offers);
+}
+?>`;
         default:
           return '';
       }
@@ -3060,7 +3667,30 @@ echo "MD5 value: $md5_value"
 # Use this MD5 value in your API requests
 # For example:
 # curl -sS "https://api.xrpl.to/api/token/$md5_value"`;
+        case 'php':
+          return `<?php
+function getMD5Value($issuer, $currency) {
+    $combinedString = $issuer . '_' . $currency;
+    return md5($combinedString);
+}
 
+// Example usage
+$issuer = "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq";
+$currency = "USD";
+$md5Value = getMD5Value($issuer, $currency);
+echo "MD5 value: " . $md5Value . "\\n";
+
+// Use this MD5 value in your API requests
+// For example:
+$url = "https://api.xrpl.to/api/token/" . $md5Value;
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+$data = json_decode($response, true);
+curl_close($ch);
+print_r($data);
+?>`;
         default:
           return '';
       }
@@ -3539,6 +4169,7 @@ const ApiDocs = () => {
                   <Tab label="Get All Tokens" value="get-all-tokens" />
                   <Tab label="Get Specific Token" value="get-a-specific-token-info" />
                   <Tab label="Get Sparkline" value="get-sparkline-of-a-token" />
+                  <Tab label="Get Graph Data" value="get-graph-data-of-a-token" />
                   <Tab label="Get MD5 Value" value="get-md5-value-of-the-token" />
                   <Tab label="Get Rich List" value="get-rich-list-of-a-token" />
                   <Tab label="Get Exchange History" value="get-exchange-history-of-a-token" />
@@ -3574,6 +4205,7 @@ const ApiDocs = () => {
                 >
                   <Tab label="JavaScript" value="javascript" />
                   <Tab label="Python" value="python" />
+                  <Tab label="PHP" value="php" />
                   <Tab label="Shell" value="shell" />
                   <Tab label="Ruby" value="ruby" />
                 </Tabs>
