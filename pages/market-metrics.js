@@ -100,6 +100,11 @@ const getChartColors = (theme) => {
       main: theme.palette.warning.main,
       light: alpha(theme.palette.warning.main, 0.1),
       dark: theme.palette.warning.dark
+    },
+    quaternary: {
+      main: theme.palette.info.main,
+      light: alpha(theme.palette.info.main, 0.1),
+      dark: theme.palette.info.dark
     }
   };
 };
@@ -108,6 +113,7 @@ const getChartColors = (theme) => {
 const CustomTooltip = ({ active, payload, label }) => {
   const [tooltipRoot, setTooltipRoot] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const contentRef = useRef(null);
 
   // Create tooltip root element
   useEffect(() => {
@@ -146,12 +152,35 @@ const CustomTooltip = ({ active, payload, label }) => {
   }, []);
 
   // Update tooltip position
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (tooltipRoot) {
-      tooltipRoot.style.top = `${mousePosition.y - 10}px`;
-      tooltipRoot.style.left = `${mousePosition.x + 20}px`;
+      let top = mousePosition.y - 10;
+      let left = mousePosition.x + 20;
+
+      if (contentRef.current) {
+        const { clientWidth: tooltipWidth, clientHeight: tooltipHeight } = contentRef.current;
+        const { innerWidth: windowWidth, innerHeight: windowHeight } = window;
+
+        // Adjust horizontal position
+        if (left + tooltipWidth > windowWidth) {
+          left = mousePosition.x - tooltipWidth - 20;
+        }
+
+        // Adjust vertical position
+        if (top + tooltipHeight > windowHeight) {
+          top = windowHeight - tooltipHeight - 10;
+        }
+
+        // Ensure it doesn't go off the top of the screen
+        if (top < 0) {
+          top = 10;
+        }
+      }
+
+      tooltipRoot.style.left = `${left}px`;
+      tooltipRoot.style.top = `${top}px`;
     }
-  }, [mousePosition, tooltipRoot]);
+  }, [mousePosition, tooltipRoot, active, payload]);
 
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
@@ -163,6 +192,7 @@ const CustomTooltip = ({ active, payload, label }) => {
     return (
       <Portal container={tooltipRoot}>
         <Paper
+          ref={contentRef}
           elevation={6}
           sx={{
             background: `linear-gradient(135deg, ${alpha(
@@ -578,9 +608,11 @@ const MarketMetricsContent = () => {
     firstLedgerMarketcap: true,
     magneticXMarketcap: true,
     xpMarketMarketcap: true,
+    ledgerMemeMarketcap: true,
     firstLedgerTokens: true,
     magneticXTokens: true,
     xpMarketTokens: true,
+    ledgerMemeTokens: true,
     uniqueActiveAddressesAMM: true,
     uniqueActiveAddressesNonAMM: true
   });
@@ -849,6 +881,7 @@ const MarketMetricsContent = () => {
               firstLedgerMarketcap: Number(filteredFirstLedgerMarketcap.toFixed(2)), // Use filtered FirstLedger marketcap
               magneticXMarketcap: Number(item.magneticXMarketcap?.toFixed(2) || 0),
               xpMarketMarketcap: Number(item.xpMarketMarketcap?.toFixed(2) || 0),
+              ledgerMemeMarketcap: Number(item.ledgerMemeMarketcap?.toFixed(2) || 0),
               volumeNonAMM: Number(item.volumeNonAMM.toFixed(2)),
               volumeAMM: Number(item.volumeAMM.toFixed(2)),
               totalVolume: Number((item.volumeAMM + item.volumeNonAMM).toFixed(2)),
@@ -856,6 +889,7 @@ const MarketMetricsContent = () => {
               firstLedgerTokens: Number(item.firstLedgerTokenCount || 0),
               magneticXTokens: Number(item.magneticXTokenCount || 0),
               xpMarketTokens: Number(item.xpMarketTokenCount || 0),
+              ledgerMemeTokens: Number(item.ledgerMemeTokenCount || 0),
               tradesAMM: Number(item.tradesAMM),
               tradesNonAMM: Number(item.tradesNonAMM),
               totalTrades: Number(item.totalTrades),
@@ -1448,6 +1482,23 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.tertiary.main,
+                      fill: themeColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="ledgerMemeMarketcap"
+                    stroke={chartColors.quaternary.main}
+                    name="LedgerMeme"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.ledgerMemeMarketcap}
+                    isAnimationActive={false}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.quaternary.main,
                       fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
@@ -2309,6 +2360,23 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
+                  <Line
+                    type="monotone"
+                    dataKey="ledgerMemeTokens"
+                    stroke={chartColors.quaternary.main}
+                    name="LedgerMeme"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.ledgerMemeTokens}
+                    isAnimationActive={false}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.quaternary.main,
+                      fill: themeColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
+                    }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </Box>
@@ -2644,6 +2712,67 @@ const MarketMetricsContent = () => {
                       {selectedDataPoint.xpMarketTokens.toLocaleString()}
                     </Typography>
                   </Box>
+
+                  <Box
+                    sx={{
+                      p: 3,
+                      borderRadius: '16px',
+                      background: `linear-gradient(135deg, ${alpha(
+                        chartColors.quaternary.main,
+                        0.15
+                      )} 0%, ${alpha(chartColors.quaternary.main, 0.05)} 100%)`,
+                      border: `1px solid ${alpha(chartColors.quaternary.main, 0.2)}`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      textAlign: 'center',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: `0 8px 24px ${alpha(
+                          theme.palette.common.black,
+                          0.1
+                        )}, 0 4px 12px ${alpha(chartColors.quaternary.main, 0.15)}`
+                      },
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: '4px',
+                        background: `linear-gradient(180deg, ${
+                          chartColors.quaternary.main
+                        } 0%, ${alpha(chartColors.quaternary.main, 0.3)} 100%)`,
+                        borderRadius: '0 4px 4px 0'
+                      }
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        mb: 2,
+                        textTransform: 'uppercase',
+                        fontWeight: 500,
+                        fontSize: '0.75rem'
+                      }}
+                    >
+                      LedgerMeme Tokens
+                    </Typography>
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        color: chartColors.quaternary.main,
+                        fontWeight: 700,
+                        fontSize: '2rem'
+                      }}
+                    >
+                      {selectedDataPoint.ledgerMemeTokens.toLocaleString()}
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
             )}
@@ -2851,6 +2980,25 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.secondary.main,
+                      fill: themeColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
+                    }}
+                  />
+                  <Line
+                    yAxisId="ledgerMeme"
+                    type="monotone"
+                    dataKey="ledgerMemeMarketcap"
+                    stroke={`${chartColors.tertiary.main}80`}
+                    name="LedgerMeme Trades"
+                    strokeDasharray="5 5"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.ledgerMemeMarketcap}
+                    isAnimationActive={false}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.tertiary.main,
                       fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
@@ -3299,6 +3447,23 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.secondary.main,
+                      fill: themeColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="ledgerMemeTokens"
+                    stroke={chartColors.quaternary.main}
+                    name="LedgerMeme"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.ledgerMemeTokens}
+                    isAnimationActive={false}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.quaternary.main,
                       fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
