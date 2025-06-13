@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import { memo, useMemo } from 'react';
 import ThemeProvider from 'src/theme/ThemeProvider';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ContextProvider } from 'src/AppContext';
@@ -9,10 +10,36 @@ import './zMain.css';
 import { SnackbarProvider } from 'notistack';
 import NextNProgress from 'nextjs-progressbar';
 
+// Move static schema outside component to prevent recreation
+const jsonLdSchema = {
+  '@context': 'http://schema.org/',
+  '@type': 'Organization',
+  name: 'xrpl.to',
+  logo: 'https://xrpl.to/logo/xrpl-to-logo-white.svg',
+  url: 'https://xrpl.to/',
+  sameAs: [
+    'https://twitter.com/xrplto',
+    'https://www.facebook.com/xrplto',
+    'https://www.instagram.com/xrplto',
+    'https://www.reddit.com/r/xrplto',
+    'https://medium.com/@xrpl.to',
+    'https://www.crunchbase.com/organization/xrpl-to',
+    'https://www.linkedin.com/company/xrplto/'
+  ],
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: '7102 Foster Court',
+    addressRegion: 'Sunnyvale',
+    postalCode: '94087',
+    addressCountry: 'US'
+  }
+};
+
 function XRPLToApp({ Component, pageProps, router }) {
   const isUnderMaintenance = process.env.MAINTENANCE;
   const { isOpen, msg, variant, openSnackbar, closeSnackbar } = useSnackbar();
 
+  // Early return for maintenance mode
   if (isUnderMaintenance && router.pathname !== '/status/maintenance') {
     if (typeof window !== 'undefined') {
       router.push('/status/maintenance');
@@ -20,32 +47,12 @@ function XRPLToApp({ Component, pageProps, router }) {
     return null;
   }
 
-  const ogp = pageProps.ogp || {};
+  // Memoize ogp to prevent unnecessary re-renders
+  const ogp = useMemo(() => pageProps.ogp || {}, [pageProps.ogp]);
   const data = pageProps.data;
 
-  const jsonLdSchema = {
-    '@context': 'http://schema.org/',
-    '@type': 'Organization',
-    name: 'xrpl.to',
-    logo: 'https://xrpl.to/logo/xrpl-to-logo-white.svg',
-    url: 'https://xrpl.to/',
-    sameAs: [
-      'https://twitter.com/xrplto',
-      'https://www.facebook.com/xrplto',
-      'https://www.instagram.com/xrplto',
-      'https://www.reddit.com/r/xrplto',
-      'https://medium.com/@xrpl.to',
-      'https://www.crunchbase.com/organization/xrpl-to',
-      'https://www.linkedin.com/company/xrplto/'
-    ],
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: '7102 Foster Court',
-      addressRegion: 'Sunnyvale',
-      postalCode: '94087',
-      addressCountry: 'US'
-    }
-  };
+  // Memoize JSON-LD script content
+  const jsonLdScript = useMemo(() => JSON.stringify(jsonLdSchema), []);
 
   return (
     <>
@@ -78,7 +85,7 @@ function XRPLToApp({ Component, pageProps, router }) {
         <link rel="shortcut icon" href="/icons/favicon.ico" type="image/x-icon" />
         <link rel="canonical" href={ogp.canonical} />
 
-        <script type="application/ld+json">{JSON.stringify(jsonLdSchema)}</script>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript }} />
 
         <title>{ogp.title}</title>
         <meta name="description" content={ogp.desc} />
@@ -124,4 +131,5 @@ function XRPLToApp({ Component, pageProps, router }) {
   );
 }
 
-export default XRPLToApp;
+// Memoize the component to prevent unnecessary re-renders
+export default memo(XRPLToApp);
