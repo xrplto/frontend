@@ -173,6 +173,7 @@ export async function getStaticProps() {
       'id',
       'user',
       'slug',
+      'date',
       'dateon',
       'tvl',
       'origin',

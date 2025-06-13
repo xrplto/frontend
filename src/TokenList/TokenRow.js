@@ -78,34 +78,6 @@ const getPriceColor = (bearbull) => {
   return '';
 };
 
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  const createdDate = new Date(parseInt(dateString));
-  const now = new Date();
-  const diffInMs = now - createdDate;
-  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-  const diffInMonths = Math.floor(diffInDays / 30);
-
-  if (diffInMinutes < 1) {
-    return 'Just now';
-  }
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes}m ago`;
-  }
-  if (diffInHours < 24) {
-    return `${diffInHours}h ago`;
-  }
-  if (diffInDays < 30) {
-    return `${diffInDays}d ago`;
-  }
-  if (diffInMonths < 12) {
-    return `${diffInMonths}mo ago`;
-  }
-  return `${Math.floor(diffInMonths / 12)}y ago`;
-};
-
 // Update XPMarketIcon to use forwardRef and ensure proper width handling
 const XPMarketIcon = React.forwardRef((props, ref) => {
   // Remove any width="auto" that might be in props
@@ -461,7 +433,6 @@ function FTokenRow({
   const {
     id,
     name,
-    dateon,
     date,
     amount,
     trustlines,
@@ -699,25 +670,13 @@ function FTokenRow({
             color: theme.palette.success.main
           }}
         >
-          {(() => {
-            // Try date first (string format like "2024-10-27")
-            if (date) {
-              return new Date(date).toLocaleDateString('en-US', {
+          {date
+            ? new Date(date).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'
-              });
-            }
-            // Fallback to dateon (timestamp format)
-            if (dateon) {
-              return new Date(dateon).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              });
-            }
-            return 'N/A';
-          })()}
+              })
+            : 'N/A'}
         </Typography>
       </TableCell>
       <TableCell
