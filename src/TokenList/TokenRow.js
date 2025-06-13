@@ -72,6 +72,27 @@ const truncate = (str, n) => {
   return str.length > n ? str.substr(0, n - 1) + '... ' : str;
 };
 
+const formatTimeAgo = (dateString) => {
+  if (!dateString) return 'N/A';
+
+  const date = new Date(dateString);
+  const now = new Date();
+  let seconds = Math.floor((now - date) / 1000);
+
+  if (seconds < 0) return '...';
+
+  if (seconds < 60) return `${seconds}s`;
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ${minutes % 60}m`;
+
+  const days = Math.floor(hours / 24);
+  return `${days}d ${hours % 24}h`;
+};
+
 const getPriceColor = (bearbull) => {
   if (bearbull === -1) return '#FF6C40';
   if (bearbull === 1) return '#54D62C';
@@ -711,17 +732,10 @@ function FTokenRow({
           variant="caption"
           sx={{
             fontSize: isMobile ? '11px' : '12px',
-            fontWeight: '500',
-            color: theme.palette.success.main
+            fontWeight: '500'
           }}
         >
-          {date
-            ? new Date(date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              })
-            : 'N/A'}
+          {date ? formatTimeAgo(date) : 'N/A'}
         </Typography>
       </TableCell>
       <TableCell align="right">
