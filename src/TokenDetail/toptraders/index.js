@@ -527,14 +527,60 @@ export default function TopTraders({ token }) {
               size="small"
               sx={{
                 '& .MuiTableCell-root': {
-                  py: 0.75,
-                  px: 1,
-                  fontSize: '0.75rem',
-                  whiteSpace: 'nowrap'
+                  py: 1,
+                  px: 1.5,
+                  fontSize: '0.875rem',
+                  whiteSpace: 'nowrap',
+                  borderBottom: 'none'
                 },
                 '& .MuiTableCell-head': {
                   fontWeight: 600,
-                  bgcolor: (theme) => theme.palette.background.paper
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.02em',
+                  color: darkMode ? '#919EAB' : '#637381',
+                  bgcolor: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(20px)',
+                  borderBottom: `1px solid ${
+                    darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
+                  }`,
+                  position: 'sticky',
+                  top: 0,
+                  zIndex: 100
+                },
+                '& .MuiTableRow-root': {
+                  borderBottom: '1px solid rgba(145, 158, 171, 0.08)',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    '& .MuiTableCell-root': {
+                      backgroundColor: darkMode
+                        ? 'rgba(255, 255, 255, 0.04)'
+                        : 'rgba(145, 158, 171, 0.04)',
+                      backdropFilter: 'blur(6px)'
+                    },
+                    cursor: 'pointer',
+                    transform: 'translateY(-1px)',
+                    boxShadow: darkMode
+                      ? '0 4px 16px rgba(0, 0, 0, 0.24)'
+                      : '0 4px 16px rgba(145, 158, 171, 0.16)'
+                  }
+                },
+                '& .MuiTableSortLabel-root': {
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  color: 'inherit',
+                  '&:hover': {
+                    color: darkMode ? '#fff' : '#212B36'
+                  },
+                  '&.Mui-active': {
+                    color: darkMode ? '#fff' : '#212B36',
+                    '& .MuiTableSortLabel-icon': {
+                      color: 'inherit'
+                    }
+                  },
+                  '& .MuiTableSortLabel-icon': {
+                    fontSize: '16px'
+                  }
                 }
               }}
             >
@@ -545,6 +591,13 @@ export default function TopTraders({ token }) {
                       key={headCell.id}
                       align={headCell.numeric ? 'right' : 'left'}
                       sortDirection={orderBy === headCell.id ? order : false}
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.02em',
+                        color: darkMode ? '#919EAB' : '#637381'
+                      }}
                     >
                       {headCell.sortable ? (
                         <TableSortLabel
@@ -569,7 +622,21 @@ export default function TopTraders({ token }) {
                           )}
                         </TableSortLabel>
                       ) : (
-                        headCell.label
+                        <>
+                          {headCell.label}
+                          {headCell.tooltip && (
+                            <Tooltip title={headCell.tooltip} placement="top">
+                              <InfoOutlinedIcon
+                                sx={{
+                                  fontSize: 12,
+                                  ml: 0.5,
+                                  verticalAlign: 'middle',
+                                  color: 'text.disabled'
+                                }}
+                              />
+                            </Tooltip>
+                          )}
+                        </>
                       )}
                     </TableCell>
                   ))}
@@ -593,7 +660,11 @@ export default function TopTraders({ token }) {
                         }
                       }}
                     >
-                      <TableCell align="right">{page * rowsPerPage + index + 1}</TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {page * rowsPerPage + index + 1}
+                        </Typography>
+                      </TableCell>
                       <TableCell align="left">
                         <Stack direction="row" alignItems="center" spacing={0.5}>
                           <Link
@@ -602,7 +673,7 @@ export default function TopTraders({ token }) {
                             href={`/profile/${safeTrader.address}`}
                             rel="noreferrer"
                           >
-                            <Typography variant="body2" color="primary">
+                            <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
                               {truncate(safeTrader.address, 20)}
                             </Typography>
                           </Link>
@@ -623,12 +694,12 @@ export default function TopTraders({ token }) {
                         </Stack>
                       </TableCell>
                       <TableCell align="left">
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           {formatDate(safeTrader.firstTradeDate)}
                         </Typography>
                       </TableCell>
                       <TableCell align="left">
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           {formatDate(safeTrader.lastTradeDate)}
                         </Typography>
                       </TableCell>
@@ -648,40 +719,64 @@ export default function TopTraders({ token }) {
                         <ProfitCell value={safeTrader.profit3m} />
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{fNumber(safeTrader.volume24h)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {fNumber(safeTrader.volume24h)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{fNumber(safeTrader.volume7d)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {fNumber(safeTrader.volume7d)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{fNumber(safeTrader.volume1m)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {fNumber(safeTrader.volume1m)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{fNumber(safeTrader.volume2m)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {fNumber(safeTrader.volume2m)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{fNumber(safeTrader.volume3m)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {fNumber(safeTrader.volume3m)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{fNumber(safeTrader.totalVolume)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {fNumber(safeTrader.totalVolume)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{fNumber(safeTrader.trades24h)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {fNumber(safeTrader.trades24h)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{fNumber(safeTrader.trades7d)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {fNumber(safeTrader.trades7d)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{fNumber(safeTrader.trades1m)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {fNumber(safeTrader.trades1m)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{fNumber(safeTrader.trades2m)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {fNumber(safeTrader.trades2m)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{fNumber(safeTrader.trades3m)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {fNumber(safeTrader.trades3m)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{fNumber(safeTrader.totalTrades)}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {fNumber(safeTrader.totalTrades)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -702,7 +797,10 @@ export default function TopTraders({ token }) {
                           )}
                           <Typography
                             variant="body2"
-                            sx={{ color: safeTrader.roi >= 0 ? '#54D62C' : '#FF6C40' }}
+                            sx={{
+                              color: safeTrader.roi >= 0 ? '#54D62C' : '#FF6C40',
+                              fontWeight: 500
+                            }}
                           >
                             {fPercent(safeTrader.roi)}
                           </Typography>
@@ -725,22 +823,24 @@ export default function TopTraders({ token }) {
                               }}
                             />
                           ) : (
-                            <Typography variant="body2">-</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              -
+                            </Typography>
                           )}
                         </Box>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           {formatDuration(safeTrader.avgHoldingTime)}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" sx={{ color: '#54D62C' }}>
+                        <Typography variant="body2" sx={{ color: '#54D62C', fontWeight: 500 }}>
                           {fNumber(safeTrader.maxProfitTrade)}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" sx={{ color: '#FF6C40' }}>
+                        <Typography variant="body2" sx={{ color: '#FF6C40', fontWeight: 500 }}>
                           {fNumber(Math.abs(safeTrader.maxLossTrade))}
                         </Typography>
                       </TableCell>
@@ -759,7 +859,20 @@ export default function TopTraders({ token }) {
                               href={`https://bithomp.com/explorer/${safeTrader.address}`}
                               rel="noreferrer noopener nofollow"
                             >
-                              <IconButton edge="end" aria-label="bithomp" size="small">
+                              <IconButton
+                                edge="end"
+                                aria-label="bithomp"
+                                size="small"
+                                sx={{
+                                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                  '&:hover': {
+                                    backgroundColor: darkMode
+                                      ? 'rgba(255, 255, 255, 0.08)'
+                                      : 'rgba(145, 158, 171, 0.08)',
+                                    transform: 'scale(1.1)'
+                                  }
+                                }}
+                              >
                                 <LinkIcon sx={{ fontSize: 16 }} />
                               </IconButton>
                             </Link>
@@ -770,6 +883,15 @@ export default function TopTraders({ token }) {
                               aria-label="stats"
                               onClick={() => handleOpenStats(safeTrader)}
                               size="small"
+                              sx={{
+                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                '&:hover': {
+                                  backgroundColor: darkMode
+                                    ? 'rgba(255, 255, 255, 0.08)'
+                                    : 'rgba(145, 158, 171, 0.08)',
+                                  transform: 'scale(1.1)'
+                                }
+                              }}
                             >
                               <BarChartIcon sx={{ fontSize: 16 }} />
                             </IconButton>
@@ -780,6 +902,15 @@ export default function TopTraders({ token }) {
                               aria-label="copy-json"
                               onClick={() => handleCopyJson(safeTrader)}
                               size="small"
+                              sx={{
+                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                '&:hover': {
+                                  backgroundColor: darkMode
+                                    ? 'rgba(255, 255, 255, 0.08)'
+                                    : 'rgba(145, 158, 171, 0.08)',
+                                  transform: 'scale(1.1)'
+                                }
+                              }}
                             >
                               {copiedTrader === safeTrader.address ? (
                                 <CheckIcon sx={{ fontSize: 16, color: '#54D62C' }} />
@@ -804,8 +935,13 @@ export default function TopTraders({ token }) {
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               sx={{
+                borderTop: `1px solid ${
+                  darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
+                }`,
+                backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.02)',
                 '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-                  fontSize: '0.75rem'
+                  fontSize: '0.75rem',
+                  fontWeight: 500
                 },
                 '.MuiTablePagination-select': {
                   fontSize: '0.75rem'

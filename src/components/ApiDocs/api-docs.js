@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import { unified } from 'unified';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { tomorrow } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { useRouter } from 'next/router';
 import { ThemeProvider, createTheme, alpha } from '@mui/material/styles';
 import {
@@ -35,7 +29,10 @@ import {
   Modal,
   CircularProgress,
   IconButton,
-  Tooltip
+  Tooltip,
+  Card,
+  CardContent,
+  Avatar
 } from '@mui/material';
 import Logo from 'src/components/Logo';
 import { motion } from 'framer-motion';
@@ -47,9 +44,17 @@ import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import ApiDocumentation from './ApiDocumentation';
-import CodeExamples from './CodeExamples';
 import CryptoJS from 'crypto-js';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import SecurityIcon from '@mui/icons-material/Security';
+import SpeedIcon from '@mui/icons-material/Speed';
+import IntegrationInstructionsIcon from '@mui/icons-material/IntegrationInstructions';
+import DataUsageIcon from '@mui/icons-material/DataUsage';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CodeIcon from '@mui/icons-material/Code';
+import LinkIcon from '@mui/icons-material/Link';
+import SearchIcon from '@mui/icons-material/Search';
 
 const sections = [
   { id: 'introduction', title: 'Introduction' },
@@ -57,7 +62,6 @@ const sections = [
   { id: 'get-all-tokens', title: 'Get All Tokens' },
   { id: 'get-a-specific-token-info', title: 'Get a Specific Token Info' },
   { id: 'get-sparkline-of-a-token', title: 'Get Sparkline of a token' },
-  { id: 'get-md5-value-of-the-token', title: 'Get MD5 value of the token' },
   { id: 'get-rich-list-of-a-token', title: 'Get Rich List of a Token' },
   { id: 'get-exchange-history-of-a-token', title: 'Get Exchange history of a Token' },
   { id: 'get-the-current-status', title: 'Get the current status' },
@@ -69,10 +73,12 @@ const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#25A768' // XRP Ledger green
+      main: '#25A768',
+      light: '#4CAF50',
+      dark: '#1B5E20'
     },
     secondary: {
-      main: '#3E4348' // XRP Ledger dark gray
+      main: '#3E4348'
     },
     background: {
       default: '#000000',
@@ -81,7 +87,24 @@ const theme = createTheme({
     text: {
       primary: '#ffffff',
       secondary: '#B7BDC6'
-    }
+    },
+    success: {
+      main: '#25A768',
+      light: '#4CAF50'
+    },
+    info: {
+      main: '#2196F3',
+      light: '#64B5F6'
+    },
+    warning: {
+      main: '#FF9800',
+      light: '#FFB74D'
+    },
+    error: {
+      main: '#f44336',
+      light: '#ef5350'
+    },
+    divider: 'rgba(255, 255, 255, 0.08)'
   },
   typography: {
     fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -102,45 +125,1728 @@ const theme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          background: 'linear-gradient(90deg, #000000 0%, #000000 60%, #25A768 100%)', // Dark black with XRP Ledger green gradient on the right
-          boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          background: `linear-gradient(135deg, ${alpha('#000000', 0.95)} 0%, ${alpha(
+            '#25A768',
+            0.1
+          )} 100%)`,
+          backdropFilter: 'blur(20px)',
+          borderBottom: `1px solid ${alpha('#25A768', 0.2)}`,
+          boxShadow: `0 8px 32px ${alpha('#000000', 0.3)}`
         }
       }
     },
     MuiPaper: {
       styleOverrides: {
         root: {
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)'
+          background: `linear-gradient(135deg, ${alpha('#1E2329', 0.9)} 0%, ${alpha(
+            '#1E2329',
+            0.7
+          )} 100%)`,
+          backdropFilter: 'blur(20px)',
+          border: `1px solid ${alpha('#25A768', 0.1)}`,
+          boxShadow: `0 8px 32px ${alpha('#000000', 0.08)}, 0 2px 8px ${alpha('#25A768', 0.05)}`
+        }
+      }
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          background: `linear-gradient(135deg, ${alpha('#1E2329', 0.9)} 0%, ${alpha(
+            '#1E2329',
+            0.7
+          )} 100%)`,
+          backdropFilter: 'blur(20px)',
+          border: `1px solid ${alpha('#25A768', 0.1)}`,
+          boxShadow: `0 8px 32px ${alpha('#000000', 0.08)}, 0 2px 8px ${alpha('#25A768', 0.05)}`,
+          borderRadius: '16px'
         }
       }
     }
   }
 });
 
-const createHeadingComponent =
-  (Tag) =>
-  ({ node, ...props }) => {
-    const id = React.Children.toArray(props.children)
-      .filter((child) => typeof child === 'string')
-      .join('')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-    return <Tag id={id} {...props} />;
+// Simple code block component
+const CodeBlock = ({ children, language = 'javascript' }) => (
+  <Paper
+    elevation={3}
+    sx={{
+      my: 2,
+      background: `linear-gradient(135deg, ${alpha('#2d2d2d', 0.95)} 0%, ${alpha(
+        '#1a1a1a',
+        0.9
+      )} 100%)`,
+      backdropFilter: 'blur(20px)',
+      border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+      borderRadius: '12px',
+      overflow: 'hidden',
+      position: 'relative',
+      boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '2px',
+        background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+        opacity: 0.8
+      }
+    }}
+  >
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        p: 2,
+        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+          theme.palette.primary.main,
+          0.03
+        )} 100%)`,
+        borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+      }}
+    >
+      <Chip
+        label={language}
+        size="small"
+        sx={{
+          bgcolor: alpha(theme.palette.primary.main, 0.2),
+          color: theme.palette.primary.main,
+          fontWeight: 600,
+          fontSize: '0.75rem',
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+        }}
+      />
+      <IconButton
+        size="small"
+        onClick={() => navigator.clipboard.writeText(children)}
+        sx={{
+          color: theme.palette.primary.main,
+          bgcolor: alpha(theme.palette.primary.main, 0.1),
+          borderRadius: '8px',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            bgcolor: alpha(theme.palette.primary.main, 0.2),
+            transform: 'scale(1.05)'
+          }
+        }}
+      >
+        <ContentCopyIcon fontSize="small" />
+      </IconButton>
+    </Box>
+    <Box
+      component="pre"
+      sx={{
+        fontFamily: '"Roboto Mono", monospace',
+        fontSize: '0.9rem',
+        color: '#e6e6e6',
+        margin: 0,
+        padding: '16px',
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
+        background: 'transparent'
+      }}
+    >
+      {children}
+    </Box>
+  </Paper>
+);
+
+// Documentation content sections
+const DocumentationContent = ({ activeSection, searchTerm }) => {
+  const highlightText = (text) => {
+    if (!searchTerm || typeof text !== 'string') return text;
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    return text.split(regex).map((part, index) =>
+      regex.test(part) ? (
+        <mark key={`highlight-${part}-${index}`} style={{ backgroundColor: '#FFD54F' }}>
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    );
   };
 
-const highlightText = (text, searchTerm) => {
-  if (!searchTerm || typeof text !== 'string') return text;
-  const regex = new RegExp(`(${searchTerm})`, 'gi');
-  return text.split(regex).map((part, index) =>
-    regex.test(part) ? (
-      <mark key={`highlight-${part}-${index}`} style={{ backgroundColor: '#FFD54F' }}>
-        {part}
-      </mark>
-    ) : (
-      part
-    )
+  const renderSection = (id) => {
+    switch (id) {
+      case 'introduction':
+        return (
+          <Box id="introduction">
+            {/* Hero Section - More Compact */}
+            <Box
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.1
+                )} 0%, ${alpha(theme.palette.success.main, 0.05)} 50%, ${alpha(
+                  theme.palette.info.main,
+                  0.1
+                )} 100%)`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '2px',
+                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                  borderRadius: '16px 16px 0 0'
+                }
+              }}
+            >
+              <Typography
+                variant="h1"
+                sx={{
+                  color: theme.palette.primary.main,
+                  mb: 1,
+                  fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem' },
+                  fontWeight: 700,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textAlign: 'center'
+                }}
+              >
+                XRPL.to API
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  mb: 2,
+                  textAlign: 'center',
+                  fontWeight: 300
+                }}
+              >
+                Comprehensive XRP Ledger Data & Analytics
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  mb: 2,
+                  lineHeight: 1.6,
+                  textAlign: 'center',
+                  color: theme.palette.text.primary,
+                  maxWidth: '700px',
+                  mx: 'auto'
+                }}
+              >
+                Access comprehensive XRP Ledger data, token metrics, and trading insights through
+                our RESTful API.
+              </Typography>
+
+              {/* Quick Stats - More Compact */}
+              <Grid container spacing={1.5} sx={{ mt: 1 }}>
+                {[
+                  { label: '1000+', desc: 'Tokens', color: 'primary' },
+                  { label: '99.9%', desc: 'Uptime', color: 'success' },
+                  { label: 'Real-time', desc: 'Data', color: 'info' },
+                  { label: '4', desc: 'Languages', color: 'warning' }
+                ].map((stat, index) => (
+                  <Grid item xs={6} sm={3} key={index}>
+                    <Card
+                      sx={{
+                        background: alpha(theme.palette[stat.color].main, 0.1),
+                        textAlign: 'center',
+                        border: `1px solid ${alpha(theme.palette[stat.color].main, 0.2)}`,
+                        transition: 'transform 0.2s ease',
+                        py: 1,
+                        '&:hover': { transform: 'scale(1.05)' }
+                      }}
+                    >
+                      <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
+                        <Typography
+                          variant="subtitle1"
+                          color={`${stat.color}.main`}
+                          fontWeight={600}
+                        >
+                          {stat.label}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {stat.desc}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+
+            {/* Key Features - More Compact */}
+            <Typography
+              variant="h4"
+              sx={{
+                color: theme.palette.primary.main,
+                mb: 2,
+                textAlign: 'center',
+                fontWeight: 600
+              }}
+            >
+              Key Features
+            </Typography>
+
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              {[
+                {
+                  icon: <AccountBalanceWalletIcon />,
+                  title: 'Token Support',
+                  description: 'Access data for all XRP Ledger tokens',
+                  color: theme.palette.primary.main
+                },
+                {
+                  icon: <TrendingUpIcon />,
+                  title: 'Price Feeds',
+                  description: 'Multi-currency price data',
+                  color: theme.palette.success.main
+                },
+                {
+                  icon: <DataUsageIcon />,
+                  title: 'Volume Tracking',
+                  description: 'DEX and AMM trading volumes',
+                  color: theme.palette.info.main
+                }
+              ].map((feature, index) => (
+                <Grid item xs={12} sm={4} key={index}>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      background: `linear-gradient(135deg, ${alpha(
+                        feature.color,
+                        0.05
+                      )} 0%, ${alpha(feature.color, 0.02)} 100%)`,
+                      border: `1px solid ${alpha(feature.color, 0.15)}`,
+                      borderRadius: '12px',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        border: `1px solid ${alpha(feature.color, 0.3)}`,
+                        transform: 'translateY(-2px)'
+                      }
+                    }}
+                  >
+                    <CardContent sx={{ p: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <Avatar
+                          sx={{
+                            bgcolor: alpha(feature.color, 0.1),
+                            color: feature.color,
+                            mr: 1.5,
+                            width: 36,
+                            height: 36
+                          }}
+                        >
+                          {feature.icon}
+                        </Avatar>
+                        <Typography variant="h6" sx={{ color: feature.color, fontWeight: 600 }}>
+                          {feature.title}
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                        {feature.description}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+
+            {/* Base URL */}
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha('#2d2d2d', 0.95)} 0%, ${alpha(
+                  '#1a1a1a',
+                  0.9
+                )} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                borderRadius: '12px',
+                p: 2
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  mb: 1
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  Base URL
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={() => navigator.clipboard.writeText('https://api.xrpl.to')}
+                  sx={{ color: theme.palette.primary.main }}
+                >
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+              </Box>
+              <Box
+                sx={{
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                  borderRadius: '6px',
+                  p: 1.5,
+                  fontFamily: '"Roboto Mono", monospace',
+                  color: theme.palette.primary.main,
+                  textAlign: 'center',
+                  fontWeight: 600
+                }}
+              >
+                https://api.xrpl.to
+              </Box>
+            </Card>
+          </Box>
+        );
+
+      case 'tokens':
+        return (
+          <Card
+            id="tokens"
+            sx={{
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.primary.main,
+                0.05
+              )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+              borderRadius: '16px',
+              p: 3
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <AccountBalanceWalletIcon
+                sx={{ color: theme.palette.primary.main, mr: 2, fontSize: 32 }}
+              />
+              <Typography variant="h2" sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>
+                Tokens
+              </Typography>
+            </Box>
+            <Typography
+              variant="body1"
+              sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+            >
+              The Tokens API provides access to comprehensive token data on the XRP Ledger,
+              including real-time prices, trading volumes, and detailed token information.
+            </Typography>
+          </Card>
+        );
+
+      case 'get-all-tokens':
+        return (
+          <Box id="get-all-tokens">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <DataUsageIcon sx={{ color: theme.palette.primary.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  Get All Tokens
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve tokens with pagination and sorting options. Perfect for building token
+                lists and market overviews.
+              </Typography>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">
+                  GET
+                  https://api.xrpl.to/api/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Query Parameters
+                </Typography>
+              </Box>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Parameter
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Default
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Description
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>start</TableCell>
+                      <TableCell>0</TableCell>
+                      <TableCell>Start value for pagination</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>limit</TableCell>
+                      <TableCell>100</TableCell>
+                      <TableCell>Limit count value for pagination (limit &lt; 100)</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>sortBy</TableCell>
+                      <TableCell>vol24hxrp</TableCell>
+                      <TableCell>
+                        Can be: name, exch, pro24h, pro7d, vol24hxrp, vol24htx, marketcap,
+                        trustlines, supply
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>sortType</TableCell>
+                      <TableCell>desc</TableCell>
+                      <TableCell>asc or desc</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Card>
+          </Box>
+        );
+
+      case 'get-a-specific-token-info':
+        return (
+          <Box id="get-a-specific-token-info">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.success.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <SearchIcon sx={{ color: theme.palette.success.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Get a Specific Token Info
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve detailed information about a specific token using three different methods:
+                issuer + currency code, slug, or MD5 hash.
+              </Typography>
+            </Card>
+
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={4}>
+                <Card sx={{ borderRadius: '12px', height: '100%' }}>
+                  <Box
+                    sx={{
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.success.main,
+                        0.08
+                      )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                      p: 2,
+                      borderRadius: '12px 12px 0 0'
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                    >
+                      Method 1: Issuer + Currency
+                    </Typography>
+                  </Box>
+                  <CardContent>
+                    <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                      Recommended method using issuer address and currency code.
+                    </Typography>
+                    <CodeBlock language="http">
+                      GET https://api.xrpl.to/api/token/&lt;issuer&gt;_&lt;currencyCode&gt;
+                    </CodeBlock>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Card sx={{ borderRadius: '12px', height: '100%' }}>
+                  <Box
+                    sx={{
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.info.main,
+                        0.08
+                      )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                      p: 2,
+                      borderRadius: '12px 12px 0 0'
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{ color: theme.palette.info.main, fontWeight: 600 }}
+                    >
+                      Method 2: Slug
+                    </Typography>
+                  </Box>
+                  <CardContent>
+                    <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                      Using URL-friendly token slug identifier.
+                    </Typography>
+                    <CodeBlock language="http">
+                      GET https://api.xrpl.to/api/token/&lt;slug&gt;?desc=yes
+                    </CodeBlock>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Card sx={{ borderRadius: '12px', height: '100%' }}>
+                  <Box
+                    sx={{
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.warning.main,
+                        0.08
+                      )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                      p: 2,
+                      borderRadius: '12px 12px 0 0'
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                    >
+                      Method 3: MD5 Hash
+                    </Typography>
+                  </Box>
+                  <CardContent>
+                    <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                      Using MD5 hash of issuer_currency combination.
+                    </Typography>
+                    <CodeBlock language="http">
+                      GET https://api.xrpl.to/api/token/&lt;md5&gt;
+                    </CodeBlock>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            <Card sx={{ borderRadius: '12px', mb: 3 }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  How to Generate MD5 Hash
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  To generate the MD5 hash, combine the issuer address and currency code with an
+                  underscore, then calculate the MD5 hash.
+                </Typography>
+                <CodeBlock language="javascript">
+                  {`const CryptoJS = require('crypto-js');
+
+// Example: Generate MD5 for a token
+const issuer = 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq';
+const currency = 'USD';
+const md5 = CryptoJS.MD5(issuer + '_' + currency).toString();
+
+// Use the MD5 in your API request
+const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  Query Parameters
+                </Typography>
+              </Box>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Parameter
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Default
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Description
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>issuer_currencyCode</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>
+                        The issuer address followed by an underscore and the currency code. This is
+                        the recommended method.
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>slug</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>
+                        Alternatively, you can use the URL slug of the token to retrieve token
+                        information.
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>md5</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>
+                        MD5 hash of the issuer_currency combination for programmatic access.
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>desc</TableCell>
+                      <TableCell>no</TableCell>
+                      <TableCell>
+                        yes or no, if yes, returns the description of the token in markdown
+                        language.
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Card>
+          </Box>
+        );
+
+      case 'get-sparkline-of-a-token':
+        return (
+          <Box id="get-sparkline-of-a-token">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.info.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.info.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <TrendingUpIcon sx={{ color: theme.palette.info.main, mr: 2, fontSize: 32 }} />
+                <Typography variant="h2" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Get Token Sparkline
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve sparkline chart data for token price visualization and trend analysis.
+              </Typography>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/sparkline/&lt;md5&gt;
+                </CodeBlock>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      case 'get-rich-list-of-a-token':
+        return (
+          <Box id="get-rich-list-of-a-token">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.error.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.error.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <AccountBalanceWalletIcon
+                  sx={{ color: theme.palette.error.main, mr: 2, fontSize: 32 }}
+                />
+                <Typography variant="h2" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  Get Rich List of Token
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve the rich list showing top token holders with their balances.
+              </Typography>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/richlist/&lt;md5&gt;?start=0&limit=20
+                </CodeBlock>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      case 'get-exchange-history-of-a-token':
+        return (
+          <Box id="get-exchange-history-of-a-token">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.secondary.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <SpeedIcon sx={{ color: theme.palette.secondary.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.secondary.main, fontWeight: 600 }}
+                >
+                  Get Exchange History
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve historical exchange data and trading activity for a specific token.
+              </Typography>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.secondary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.secondary.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/history?md5=&lt;md5&gt;&page=0&limit=10
+                </CodeBlock>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      case 'get-the-current-status':
+        return (
+          <Box id="get-the-current-status">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <DataUsageIcon sx={{ color: theme.palette.primary.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  Get Current Status
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve current platform status, XRPL metrics, and exchange rates.
+              </Typography>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">GET https://api.xrpl.to/api/status</CodeBlock>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      case 'get-account-offers':
+        return (
+          <Box id="get-account-offers">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.success.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <AccountBalanceWalletIcon
+                  sx={{ color: theme.palette.success.main, mr: 2, fontSize: 32 }}
+                />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Get Account Offers
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve all active offers for a specific XRPL account address.
+              </Typography>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/account/offers/&lt;account&gt;
+                </CodeBlock>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      case 'errors':
+        return (
+          <Box id="errors">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.error.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.error.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <ErrorOutlineIcon sx={{ color: theme.palette.error.main, mr: 2, fontSize: 32 }} />
+                <Typography variant="h2" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  Error Codes
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary, mb: 3 }}
+              >
+                The XRPL.to API uses standard HTTP error codes to indicate the success or failure of
+                requests.
+              </Typography>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  HTTP Status Codes
+                </Typography>
+              </Box>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.error.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Error Code
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.error.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Meaning
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>400</TableCell>
+                      <TableCell>Bad Request -- Your request is invalid.</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>401</TableCell>
+                      <TableCell>Unauthorized -- Your API key is wrong.</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>403</TableCell>
+                      <TableCell>
+                        Forbidden -- The token requested is hidden for administrators only.
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>404</TableCell>
+                      <TableCell>Not Found -- The specified token could not be found.</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>405</TableCell>
+                      <TableCell>
+                        Method Not Allowed -- You tried to access a token with an invalid method.
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>410</TableCell>
+                      <TableCell>
+                        Gone -- The token requested has been removed from our servers.
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>418</TableCell>
+                      <TableCell>I'm a teapot.</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>429</TableCell>
+                      <TableCell>
+                        Too Many Requests -- You're requesting too many tokens! Slow down!
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>500</TableCell>
+                      <TableCell>
+                        Internal Server Error -- We had a problem with our server. Try again later.
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>503</TableCell>
+                      <TableCell>
+                        Service Unavailable -- We're temporarily offline for maintenance. Please try
+                        again later.
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Card>
+          </Box>
+        );
+
+      default:
+        return (
+          <Box id={id}>
+            <Typography variant="h2" sx={{ color: theme.palette.primary.main, mb: 3 }}>
+              {sections.find((s) => s.id === id)?.title || 'Section'}
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.8 }}>
+              Documentation for this section is coming soon.
+            </Typography>
+          </Box>
+        );
+    }
+  };
+
+  return (
+    <Box>
+      {sections.map((section) => (
+        <Box key={section.id} sx={{ mb: 6 }}>
+          {renderSection(section.id)}
+        </Box>
+      ))}
+    </Box>
   );
+};
+
+// Code examples
+const getCodeExample = (language, section) => {
+  switch (section) {
+    case 'get-all-tokens':
+      switch (language) {
+        case 'shell':
+          return `curl -sS "https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter="`;
+        case 'ruby':
+          return `require 'net/http'
+require 'json'
+
+uri = URI('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=')
+response = Net::HTTP.get(uri)
+tokens = JSON.parse(response)`;
+        case 'python':
+          return `import requests
+
+response = requests.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=')
+tokens = response.json()`;
+        case 'javascript':
+          return `const axios = require('axios');
+
+const res = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
+
+const tokens = res.data;`;
+        default:
+          return '';
+      }
+
+    case 'get-specific-token-info':
+      switch (language) {
+        case 'shell':
+          return `# Using issuer_currencyCode (recommended)
+curl -sS "https://api.xrpl.to/api/token/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD"
+
+# Alternatively, you can use a slug or md5 value
+slug="your_slug_here"
+curl -sS "https://api.xrpl.to/api/token/$slug?desc=no"`;
+        case 'javascript':
+          return `const axios = require('axios');
+
+async function getTokenInfo(issuer, currency) {
+  try {
+    const response = await axios.get(\`https://api.xrpl.to/api/token/\${issuer}_\${currency}\`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching token info:', error);
+    return null;
+  }
+}
+
+// Example usage
+getTokenInfo('rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq', 'USD')
+  .then(tokenInfo => console.log(tokenInfo))
+  .catch(error => console.error(error));`;
+        case 'python':
+          return `import requests
+
+def get_token_info(issuer, currency):
+    try:
+        response = requests.get(f"https://api.xrpl.to/api/token/{issuer}_{currency}")
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching token info: {e}")
+        return None
+
+# Example usage
+issuer = "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
+currency = "USD"
+token_info = get_token_info(issuer, currency)
+if token_info:
+    print(token_info)`;
+        case 'ruby':
+          return `require 'net/http'
+require 'json'
+
+def get_token_info(issuer, currency)
+  uri = URI("https://api.xrpl.to/api/token/#{issuer}_#{currency}")
+  response = Net::HTTP.get(uri)
+  JSON.parse(response)
+rescue => e
+  puts "Error fetching token info: #{e.message}"
+  nil
+end
+
+# Example usage
+issuer = "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
+currency = "USD"
+token_info = get_token_info(issuer, currency)
+puts token_info if token_info`;
+        default:
+          return '';
+      }
+
+    case 'get-sparkline-of-a-token':
+      switch (language) {
+        case 'shell':
+          return `curl -sS "https://api.xrpl.to/api/sparkline/0413ca7cfc258dfaf698c02fe304e607"`;
+        case 'javascript':
+          return `const axios = require('axios');
+
+async function getTokenSparkline(tokenId) {
+  try {
+    const response = await axios.get(\`https://api.xrpl.to/api/sparkline/\${tokenId}\`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching token sparkline:', error);
+    return null;
+  }
+}
+
+// Example usage
+const tokenId = '0413ca7cfc258dfaf698c02fe304e607';
+getTokenSparkline(tokenId)
+  .then(sparklineData => console.log(sparklineData))
+  .catch(error => console.error(error));`;
+        case 'python':
+          return `import requests
+
+def get_token_sparkline(token_id):
+    try:
+        response = requests.get(f"https://api.xrpl.to/api/sparkline/{token_id}")
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching token sparkline: {e}")
+        return None
+
+# Example usage
+token_id = "0413ca7cfc258dfaf698c02fe304e607"
+sparkline_data = get_token_sparkline(token_id)
+if sparkline_data:
+    print(sparkline_data)`;
+        case 'ruby':
+          return `require 'net/http'
+require 'json'
+
+def get_token_sparkline(token_id)
+  uri = URI("https://api.xrpl.to/api/sparkline/#{token_id}")
+  response = Net::HTTP.get(uri)
+  JSON.parse(response)
+rescue => e
+  puts "Error fetching token sparkline: #{e.message}"
+  nil
+end
+
+# Example usage
+token_id = "0413ca7cfc258dfaf698c02fe304e607"
+sparkline_data = get_token_sparkline(token_id)
+puts sparkline_data if sparkline_data`;
+        default:
+          return '';
+      }
+
+    case 'get-rich-list-of-a-token':
+      switch (language) {
+        case 'shell':
+          return `curl -sS "https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=20"`;
+        case 'javascript':
+          return `const axios = require('axios');
+
+async function getRichList(tokenId, start = 0, limit = 20) {
+  try {
+    const response = await axios.get(\`https://api.xrpl.to/api/richlist/\${tokenId}?start=\${start}&limit=\${limit}\`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching rich list:', error);
+    return null;
+  }
+}
+
+// Example usage
+const tokenId = '0413ca7cfc258dfaf698c02fe304e607';
+getRichList(tokenId)
+  .then(richList => console.log(richList))
+  .catch(error => console.error(error));`;
+        case 'python':
+          return `import requests
+
+def get_rich_list(token_id, start=0, limit=20):
+    try:
+        response = requests.get(f"https://api.xrpl.to/api/richlist/{token_id}?start={start}&limit={limit}")
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching rich list: {e}")
+        return None
+
+# Example usage
+token_id = "0413ca7cfc258dfaf698c02fe304e607"
+rich_list = get_rich_list(token_id)
+if rich_list:
+    print(rich_list)`;
+        case 'ruby':
+          return `require 'net/http'
+require 'json'
+
+def get_rich_list(token_id, start=0, limit=20)
+  uri = URI("https://api.xrpl.to/api/richlist/#{token_id}?start=#{start}&limit=#{limit}")
+  response = Net::HTTP.get(uri)
+  JSON.parse(response)
+rescue => e
+  puts "Error fetching rich list: #{e.message}"
+  nil
+end
+
+# Example usage
+token_id = "0413ca7cfc258dfaf698c02fe304e607"
+rich_list = get_rich_list(token_id)
+puts rich_list if rich_list`;
+        default:
+          return '';
+      }
+
+    case 'get-exchange-history-of-a-token':
+      switch (language) {
+        case 'shell':
+          return `curl -sS "https://api.xrpl.to/api/history?md5=0413ca7cfc258dfaf698c02fe304e607&page=0&limit=10"`;
+        case 'javascript':
+          return `const axios = require('axios');
+
+async function getExchangeHistory(md5, page = 0, limit = 10) {
+  try {
+    const response = await axios.get(\`https://api.xrpl.to/api/history?md5=\${md5}&page=\${page}&limit=\${limit}\`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching exchange history:', error);
+    return null;
+  }
+}
+
+// Example usage
+const md5 = '0413ca7cfc258dfaf698c02fe304e607';
+getExchangeHistory(md5)
+  .then(history => console.log(history))
+  .catch(error => console.error(error));`;
+        case 'python':
+          return `import requests
+
+def get_exchange_history(md5, page=0, limit=10):
+    try:
+        response = requests.get(f"https://api.xrpl.to/api/history?md5={md5}&page={page}&limit={limit}")
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching exchange history: {e}")
+        return None
+
+# Example usage
+md5 = "0413ca7cfc258dfaf698c02fe304e607"
+history = get_exchange_history(md5)
+if history:
+    print(history)`;
+        case 'ruby':
+          return `require 'net/http'
+require 'json'
+
+def get_exchange_history(md5, page=0, limit=10)
+  uri = URI("https://api.xrpl.to/api/history?md5=#{md5}&page=#{page}&limit=#{limit}")
+  response = Net::HTTP.get(uri)
+  JSON.parse(response)
+rescue => e
+  puts "Error fetching exchange history: #{e.message}"
+  nil
+end
+
+# Example usage
+md5 = "0413ca7cfc258dfaf698c02fe304e607"
+history = get_exchange_history(md5)
+puts history if history`;
+        default:
+          return '';
+      }
+
+    case 'get-the-current-status':
+      switch (language) {
+        case 'shell':
+          return `curl -sS "https://api.xrpl.to/api/status"`;
+        case 'javascript':
+          return `const axios = require('axios');
+
+async function getCurrentStatus() {
+  try {
+    const response = await axios.get('https://api.xrpl.to/api/status');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching current status:', error);
+    return null;
+  }
+}
+
+// Example usage
+getCurrentStatus()
+  .then(status => console.log(status))
+  .catch(error => console.error(error));`;
+        case 'python':
+          return `import requests
+
+def get_current_status():
+    try:
+        response = requests.get("https://api.xrpl.to/api/status")
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching current status: {e}")
+        return None
+
+# Example usage
+status = get_current_status()
+if status:
+    print(status)`;
+        case 'ruby':
+          return `require 'net/http'
+require 'json'
+
+def get_current_status
+  uri = URI("https://api.xrpl.to/api/status")
+  response = Net::HTTP.get(uri)
+  JSON.parse(response)
+rescue => e
+  puts "Error fetching current status: #{e.message}"
+  nil
+end
+
+# Example usage
+status = get_current_status
+puts status if status`;
+        default:
+          return '';
+      }
+
+    case 'get-account-offers':
+      switch (language) {
+        case 'shell':
+          return `curl -sS "https://api.xrpl.to/api/account/offers/rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6"`;
+        case 'javascript':
+          return `const axios = require('axios');
+
+async function getAccountOffers(account) {
+  try {
+    const response = await axios.get(\`https://api.xrpl.to/api/account/offers/\${account}\`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching account offers:', error);
+    return null;
+  }
+}
+
+// Example usage
+const account = 'rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6';
+getAccountOffers(account)
+  .then(offers => console.log(offers))
+  .catch(error => console.error(error));`;
+        case 'python':
+          return `import requests
+
+def get_account_offers(account):
+    try:
+        response = requests.get(f"https://api.xrpl.to/api/account/offers/{account}")
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching account offers: {e}")
+        return None
+
+# Example usage
+account = "rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6"
+offers = get_account_offers(account)
+if offers:
+    print(offers)`;
+        case 'ruby':
+          return `require 'net/http'
+require 'json'
+
+def get_account_offers(account)
+  uri = URI("https://api.xrpl.to/api/account/offers/#{account}")
+  response = Net::HTTP.get(uri)
+  JSON.parse(response)
+rescue => e
+  puts "Error fetching account offers: #{e.message}"
+  nil
+end
+
+# Example usage
+account = "rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6"
+offers = get_account_offers(account)
+puts offers if offers`;
+        default:
+          return '';
+      }
+
+    case 'get-md5-value-of-the-token':
+      switch (language) {
+        case 'javascript':
+          return `const CryptoJS = require('crypto-js');
+
+function getMD5Value(issuer, currency) {
+  const combinedString = \`\${issuer}_\${currency}\`;
+  return CryptoJS.MD5(combinedString).toString();
+}
+
+// Example usage
+const issuer = 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq';
+const currency = 'USD';
+const md5Value = getMD5Value(issuer, currency);
+console.log('MD5 value:', md5Value);
+
+// Use this MD5 value in your API requests
+// For example:
+// fetch(\`https://api.xrpl.to/api/token/\${md5Value}\`)
+//   .then(response => response.json())
+//   .then(data => console.log(data))
+//   .catch(error => console.error('Error:', error));`;
+
+        case 'python':
+          return `import hashlib
+
+def get_md5_value(issuer, currency):
+    combined_string = f"{issuer}_{currency}"
+    return hashlib.md5(combined_string.encode()).hexdigest()
+
+# Example usage
+issuer = "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
+currency = "USD"
+md5_value = get_md5_value(issuer, currency)
+print("MD5 value:", md5_value)
+
+# Use this MD5 value in your API requests
+# For example:
+# import requests
+# response = requests.get(f"https://api.xrpl.to/api/token/{md5_value}")
+# data = response.json()
+# print(data)`;
+
+        case 'ruby':
+          return `require 'digest'
+
+def get_md5_value(issuer, currency)
+  combined_string = "#{issuer}_#{currency}"
+  Digest::MD5.hexdigest(combined_string)
+end
+
+# Example usage
+issuer = "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
+currency = "USD"
+md5_value = get_md5_value(issuer, currency)
+puts "MD5 value: #{md5_value}"
+
+# Use this MD5 value in your API requests
+# For example:
+# require 'net/http'
+# require 'json'
+# uri = URI("https://api.xrpl.to/api/token/#{md5_value}")
+# response = Net::HTTP.get(uri)
+# data = JSON.parse(response)
+# puts data`;
+
+        case 'shell':
+          return `# Using OpenSSL to generate MD5 hash
+issuer="rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
+currency="USD"
+md5_value=$(echo -n "${issuer}_${currency}" | openssl dgst -md5 | awk '{print $2}')
+echo "MD5 value: $md5_value"
+
+# Use this MD5 value in your API requests
+# For example:
+# curl -sS "https://api.xrpl.to/api/token/$md5_value"`;
+
+        default:
+          return '';
+      }
+
+    default:
+      return `// Example code for ${section} in ${language} coming soon...`;
+  }
 };
 
 const MotionListItem = motion(ListItem);
@@ -150,8 +1856,6 @@ const ApiDocs = () => {
   const [activeSection, setActiveSection] = useState('introduction');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [highlightedSection, setHighlightedSection] = useState(null);
-  const [fullTextSearchResults, setFullTextSearchResults] = useState([]);
   const [codeLanguage, setCodeLanguage] = useState('javascript');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [apiResponse, setApiResponse] = useState(null);
@@ -159,11 +1863,6 @@ const ApiDocs = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [currentSection, setCurrentSection] = useState('get-all-tokens');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [codeSampleRef, setCodeSampleRef] = useState(null);
-  const [markdownError, setMarkdownError] = useState(null);
-
-  const apiDocumentation = ApiDocumentation();
-  const { getCodeExample } = CodeExamples();
 
   const handleCodeLanguageChange = (event, newValue) => {
     setCodeLanguage(newValue);
@@ -175,7 +1874,6 @@ const ApiDocs = () => {
         .map((section) => document.getElementById(section.id))
         .filter(Boolean);
 
-      // Find the current section
       let currentSection = null;
       for (let i = sectionElements.length - 1; i >= 0; i--) {
         const element = sectionElements[i];
@@ -197,22 +1895,12 @@ const ApiDocs = () => {
 
   useEffect(() => {
     if (searchTerm.length > 2) {
-      const headingResults = sections.filter((section) =>
+      const results = sections.filter((section) =>
         section.title.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setSearchResults(headingResults);
-
-      const fullTextResults = [];
-      const lines = apiDocumentation.split('\n');
-      lines.forEach((line, index) => {
-        if (line.toLowerCase().includes(searchTerm.toLowerCase())) {
-          fullTextResults.push({ line, lineNumber: index + 1 });
-        }
-      });
-      setFullTextSearchResults(fullTextResults);
+      setSearchResults(results);
     } else {
       setSearchResults([]);
-      setFullTextSearchResults([]);
     }
   }, [searchTerm]);
 
@@ -222,56 +1910,23 @@ const ApiDocs = () => {
 
   const handleSearchResultClick = (sectionId) => {
     setSearchTerm('');
-    setHighlightedSection(sectionId);
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth'
-      });
-      // Remove highlight after 3 seconds
-      setTimeout(() => setHighlightedSection(null), 3000);
-    } else {
-      console.warn(`Element with id "${sectionId}" not found`);
+      element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
   const handleSectionClick = (sectionId) => {
-    setHighlightedSection(sectionId);
     const element = document.getElementById(sectionId);
     if (element) {
-      const appBarHeight = 64; // Adjust this value if you've changed the AppBar height
+      const appBarHeight = 64;
       const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - appBarHeight - 16; // Added extra 16px for padding
+      const offsetPosition = elementPosition + window.pageYOffset - appBarHeight - 16;
 
       window.scrollTo({
         top: offsetPosition,
         behavior: 'smooth'
       });
-
-      // Remove highlight after 3 seconds
-      setTimeout(() => setHighlightedSection(null), 3000);
-    } else {
-      console.warn(`Element with id "${sectionId}" not found`);
-    }
-  };
-
-  const handleFullTextResultClick = (lineNumber) => {
-    setSearchTerm('');
-    const element = document.querySelector(`[data-line="${lineNumber}"]`);
-    if (element) {
-      // Scroll to the element with an offset
-      const offset = 100; // Adjust this value as needed
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-
-      // Highlight the element
-      element.classList.add('bg-yellow-200');
-      setTimeout(() => element.classList.remove('bg-yellow-200'), 3000);
     }
   };
 
@@ -343,17 +1998,9 @@ const ApiDocs = () => {
 
   const handleSectionChange = (section) => {
     setCurrentSection(section);
-    // If the section is "get-md5-value-of-the-token", generate an example MD5
-    if (section === 'get-md5-value-of-the-token') {
-      const issuer = 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq';
-      const currency = 'USD';
-      const md5 = CryptoJS.MD5(issuer + '_' + currency).toString();
-      console.log('Example MD5:', md5);
-    }
-    // Scroll to the corresponding section in the documentation
     const sectionElement = document.getElementById(section);
     if (sectionElement) {
-      const appBarHeight = 64; // Adjust this value if you've changed the AppBar height
+      const appBarHeight = 64;
       const elementPosition = sectionElement.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - appBarHeight - 16;
 
@@ -362,161 +2009,10 @@ const ApiDocs = () => {
         behavior: 'smooth'
       });
     }
-
-    // Scroll the code sample section to the top
-    if (codeSampleRef) {
-      codeSampleRef.scrollTop = 0;
-    }
   };
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  // Add this new component for section headers
-  const SectionHeader = ({ children }) => (
-    <Typography
-      variant="h2"
-      sx={{
-        mt: 6,
-        mb: 3,
-        pb: 2,
-        borderBottom: `2px solid ${theme.palette.primary.main}`,
-        color: theme.palette.primary.main
-      }}
-    >
-      {children}
-    </Typography>
-  );
-
-  // Update the components object to include the new SectionHeader
-  const components = {
-    h1: createHeadingComponent(motion.h1),
-    h2: ({ node, ...props }) => <SectionHeader {...props} />,
-    h3: createHeadingComponent(({ children, ...props }) => (
-      <Typography
-        variant="h3"
-        sx={{
-          mt: 4,
-          mb: 2,
-          color: theme.palette.secondary.main
-        }}
-        {...props}
-      >
-        {children}
-      </Typography>
-    )),
-    code: ({ node, inline, className, children, ...props }) => {
-      const match = /language-(\w+)/.exec(className || '');
-      return !inline && match ? (
-        <Paper elevation={3} sx={{ my: 2, bgcolor: '#2d2d2d' }}>
-          <SyntaxHighlighter style={tomorrow} language={match[1]} PreTag="div" {...props}>
-            {typeof children === 'string' ? highlightText(children, searchTerm) : children}
-          </SyntaxHighlighter>
-        </Paper>
-      ) : (
-        <code
-          className={className}
-          {...props}
-          style={{
-            backgroundColor: '#2d2d2d',
-            color: '#e6e6e6',
-            padding: '2px 4px',
-            borderRadius: '4px',
-            fontFamily: '"Roboto Mono", monospace',
-            fontSize: '0.9em'
-          }}
-        >
-          {typeof children === 'string' ? highlightText(children, searchTerm) : children}
-        </code>
-      );
-    },
-    p: ({ node, ...props }) => (
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        component={Typography}
-        variant="body1"
-        {...props}
-        data-line={node.position?.start.line}
-        id={`line-${node.position?.start.line}`}
-        sx={{ my: 2, lineHeight: 1.8 }}
-      >
-        {typeof props.children === 'string'
-          ? highlightText(props.children, searchTerm)
-          : props.children}
-      </motion.p>
-    ),
-    li: ({ node, ...props }) => (
-      <ListItem
-        {...props}
-        data-line={node.position?.start.line}
-        id={`line-${node.position?.start.line}`}
-        disableGutters
-      >
-        <ListItemText
-          primary={
-            typeof props.children === 'string'
-              ? highlightText(props.children, searchTerm)
-              : props.children
-          }
-        />
-      </ListItem>
-    ),
-    table: ({ node, ...props }) => (
-      <TableContainer component={Paper} sx={{ my: 2 }}>
-        <Table {...props} aria-label="documentation table">
-          {props.children}
-        </Table>
-      </TableContainer>
-    ),
-    thead: ({ node, ...props }) => <TableHead {...props} />,
-    tbody: ({ node, ...props }) => <TableBody {...props} />,
-    tr: ({ node, ...props }) => <TableRow {...props} />,
-    th: ({ node, ...props }) => (
-      <TableCell
-        variant="head"
-        sx={{
-          backgroundColor: alpha(theme.palette.primary.main, 0.1),
-          fontWeight: 'bold'
-        }}
-        {...props}
-      />
-    ),
-    td: ({ node, ...props }) => <TableCell {...props} />,
-    blockquote: ({ node, ...props }) => (
-      <Box
-        component="blockquote"
-        sx={{
-          borderLeft: `4px solid ${theme.palette.primary.main}`,
-          pl: 2,
-          my: 2,
-          color: theme.palette.text.secondary
-        }}
-        {...props}
-      />
-    ),
-    hr: ({ node, ...props }) => <Divider sx={{ my: 4 }} {...props} />
-  };
-
-  const safeRemarkGfm = () => {
-    try {
-      return remarkGfm();
-    } catch (error) {
-      console.error('Error in remarkGfm:', error);
-      return [];
-    }
-  };
-
-  const safeParse = (content) => {
-    try {
-      return unified().use(remarkParse).use(safeRemarkGfm).parse(content);
-    } catch (error) {
-      console.error('Error parsing markdown:', error);
-      setMarkdownError('There was an error parsing the documentation. Please try again later.');
-      return null;
-    }
   };
 
   return (
@@ -569,10 +2065,26 @@ const ApiDocs = () => {
               height: '100vh',
               overflowY: 'auto',
               zIndex: 1200,
-              bgcolor: 'background.paper',
-              borderRight: 1,
-              borderColor: 'divider',
-              p: 3
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.95
+              )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+              backdropFilter: 'blur(20px)',
+              borderRight: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
+              p: 3,
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '2px',
+                height: '100%',
+                background: `linear-gradient(180deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.2
+                )} 0%, transparent 50%, ${alpha(theme.palette.primary.main, 0.2)} 100%)`
+              }
             }}
           >
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
@@ -590,51 +2102,54 @@ const ApiDocs = () => {
               onChange={handleSearch}
               sx={{ mb: 2 }}
             />
-            {(searchResults.length > 0 || fullTextSearchResults.length > 0) && (
-              <Paper elevation={1} sx={{ mb: 2, maxHeight: 400, overflow: 'auto' }}>
-                {searchResults.length > 0 && (
-                  <Box>
-                    <Typography variant="subtitle1" sx={{ p: 1, bgcolor: 'grey.100' }}>
-                      Sections
-                    </Typography>
-                    <List>
-                      {searchResults.map((result) => (
-                        <ListItem
-                          key={result.id}
-                          button
-                          onClick={() => handleSearchResultClick(result.id)}
-                        >
-                          <ListItemText primary={result.title} />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Box>
-                )}
-                {fullTextSearchResults.length > 0 && (
-                  <Box>
-                    <Typography variant="subtitle1" sx={{ p: 1, bgcolor: 'grey.100' }}>
-                      Content
-                    </Typography>
-                    <List>
-                      {fullTextSearchResults.map((result) => (
-                        <ListItem
-                          key={`line-${result.lineNumber}`}
-                          button
-                          onClick={() => handleFullTextResultClick(result.lineNumber)}
-                        >
-                          <ListItemText
-                            primary={`Line ${result.lineNumber}: ${result.line.substring(
-                              0,
-                              50
-                            )}...`}
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Box>
-                )}
+
+            {searchResults.length > 0 && (
+              <Paper
+                elevation={1}
+                sx={{
+                  mb: 2,
+                  maxHeight: 400,
+                  overflow: 'auto',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.background.paper,
+                    0.9
+                  )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                  backdropFilter: 'blur(20px)',
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                  borderRadius: '12px',
+                  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    p: 2,
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.primary.main,
+                      0.08
+                    )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                    color: theme.palette.primary.main,
+                    fontWeight: 600,
+                    borderRadius: '12px 12px 0 0',
+                    borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                  }}
+                >
+                  Search Results
+                </Typography>
+                <List>
+                  {searchResults.map((result) => (
+                    <ListItem
+                      key={result.id}
+                      button
+                      onClick={() => handleSearchResultClick(result.id)}
+                    >
+                      <ListItemText primary={result.title} />
+                    </ListItem>
+                  ))}
+                </List>
               </Paper>
             )}
+
             <List>
               {sections.map((section) => (
                 <MotionListItem
@@ -642,15 +2157,61 @@ const ApiDocs = () => {
                   button
                   selected={activeSection === section.id}
                   onClick={() => handleSectionClick(section.id)}
-                  whileHover={{ scale: 1.03 }}
+                  whileHover={{ scale: 1.02, x: 4 }}
                   whileTap={{ scale: 0.98 }}
                   sx={{
-                    borderRadius: 1,
+                    borderRadius: '12px',
                     mb: 1,
+                    p: 1.5,
+                    background:
+                      activeSection === section.id
+                        ? `linear-gradient(135deg, ${alpha(
+                            theme.palette.primary.main,
+                            0.15
+                          )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`
+                        : 'transparent',
+                    border:
+                      activeSection === section.id
+                        ? `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
+                        : `1px solid transparent`,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
+                    overflow: 'hidden',
                     '&.Mui-selected': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      backgroundColor: 'transparent',
                       color: theme.palette.primary.main,
-                      fontWeight: 600
+                      fontWeight: 600,
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: '3px',
+                        background: `linear-gradient(180deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
+                        borderRadius: '0 2px 2px 0'
+                      }
+                    },
+                    '&:hover': {
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.primary.main,
+                        0.08
+                      )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
+                      '& .MuiListItemText-primary': {
+                        color: theme.palette.primary.main
+                      }
+                    },
+                    '& .MuiListItemText-primary': {
+                      fontSize: '0.9rem',
+                      fontWeight: activeSection === section.id ? 600 : 500,
+                      color:
+                        activeSection === section.id
+                          ? theme.palette.primary.main
+                          : theme.palette.text.primary,
+                      transition: 'color 0.2s ease'
                     }
                   }}
                 >
@@ -666,29 +2227,53 @@ const ApiDocs = () => {
               p: { xs: 2, sm: 4 },
               width: { xs: '100%', md: '50%' },
               overflowY: 'auto',
-              borderRight: { xs: 'none', md: `1px solid ${theme.palette.divider}` }
+              borderRight: {
+                xs: 'none',
+                md: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+              },
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.default,
+                0.8
+              )} 0%, ${alpha(theme.palette.background.paper, 0.1)} 100%)`,
+              position: 'relative',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                right: { xs: 'auto', md: 0 },
+                width: { xs: '100%', md: '2px' },
+                height: { xs: '2px', md: '100%' },
+                background: `linear-gradient(${
+                  theme.breakpoints.down('md') ? '90deg' : '180deg'
+                }, ${alpha(theme.palette.primary.main, 0.2)} 0%, transparent 50%, ${alpha(
+                  theme.palette.primary.main,
+                  0.2
+                )} 100%)`
+              }
             }}
           >
-            {markdownError ? (
-              <Typography color="error">{markdownError}</Typography>
-            ) : (
-              <ReactMarkdown
-                components={components}
-                remarkPlugins={[safeRemarkGfm]}
-                parserOptions={{ parse: safeParse }}
-              >
-                {apiDocumentation}
-              </ReactMarkdown>
-            )}
+            <DocumentationContent activeSection={activeSection} searchTerm={searchTerm} />
           </Box>
 
-          <Divider sx={{ display: { xs: 'block', md: 'none' }, my: 2 }} />
+          <Divider
+            sx={{
+              display: { xs: 'block', md: 'none' },
+              my: 2,
+              borderColor: alpha(theme.palette.primary.main, 0.1)
+            }}
+          />
 
           <Box
             sx={{
               flexGrow: 1,
               p: 2,
-              bgcolor: '#2d2d2d',
+              background: `linear-gradient(135deg, ${alpha('#2d2d2d', 0.95)} 0%, ${alpha(
+                '#1a1a1a',
+                0.9
+              )} 100%)`,
+              backdropFilter: 'blur(20px)',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+              borderRadius: { xs: '12px', md: '0' },
               color: 'white',
               display: 'flex',
               flexDirection: 'column',
@@ -696,9 +2281,19 @@ const ApiDocs = () => {
               width: { xs: '100%', md: '50%' },
               position: { md: 'sticky' },
               top: { md: 64 },
-              alignSelf: { md: 'flex-start' }
+              alignSelf: { md: 'flex-start' },
+              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '2px',
+                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                borderRadius: '12px 12px 0 0'
+              }
             }}
-            ref={setCodeSampleRef}
           >
             <Typography variant="h6" gutterBottom>
               Code Examples
@@ -721,7 +2316,7 @@ const ApiDocs = () => {
                   }}
                 >
                   <Tab label="Get All Tokens" value="get-all-tokens" />
-                  <Tab label="Get Specific Token Info" value="get-specific-token-info" />
+                  <Tab label="Get Specific Token" value="get-specific-token-info" />
                   <Tab label="Get Sparkline" value="get-sparkline-of-a-token" />
                   <Tab label="Get MD5 Value" value="get-md5-value-of-the-token" />
                   <Tab label="Get Rich List" value="get-rich-list-of-a-token" />
@@ -762,24 +2357,18 @@ const ApiDocs = () => {
                   <Tab label="Ruby" value="ruby" />
                 </Tabs>
                 <Box sx={{ flexGrow: 1, overflow: 'auto', maxHeight: { xs: '300px', md: 'none' } }}>
-                  <SyntaxHighlighter
-                    language={codeLanguage}
-                    style={tomorrow}
-                    customStyle={{ fontSize: '0.9rem' }}
-                  >
+                  <CodeBlock language={codeLanguage}>
                     {getCodeExample(codeLanguage, currentSection)}
-                  </SyntaxHighlighter>
+                  </CodeBlock>
                 </Box>
-                {currentSection !== 'get-md5-value-of-the-token' && (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleOpenModal}
-                    sx={{ mt: 2, alignSelf: 'flex-start' }}
-                  >
-                    Try it out
-                  </Button>
-                )}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleOpenModal}
+                  sx={{ mt: 2, alignSelf: 'flex-start' }}
+                >
+                  Try it out
+                </Button>
               </TabPanel>
             </TabContext>
           </Box>
@@ -799,11 +2388,30 @@ const ApiDocs = () => {
               transform: 'translate(-50%, -50%)',
               width: { xs: '90%', sm: '80%' },
               maxHeight: '80%',
-              bgcolor: 'background.paper',
-              border: '2px solid #000',
-              boxShadow: 24,
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.95
+              )} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
+              backdropFilter: 'blur(20px)',
+              border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+              borderRadius: '16px',
+              boxShadow: `0 24px 64px ${alpha(theme.palette.common.black, 0.2)}, 0 8px 32px ${alpha(
+                theme.palette.primary.main,
+                0.1
+              )}`,
               p: { xs: 2, sm: 4 },
-              overflowY: 'auto'
+              overflowY: 'auto',
+              position: 'relative',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '3px',
+                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                borderRadius: '16px 16px 0 0'
+              }
             }}
           >
             <Typography
@@ -824,15 +2432,36 @@ const ApiDocs = () => {
             {isLoading ? (
               <CircularProgress />
             ) : (
-              <SyntaxHighlighter language="json" style={tomorrow}>
-                {JSON.stringify(apiResponse, null, 2)}
-              </SyntaxHighlighter>
+              <CodeBlock language="json">{JSON.stringify(apiResponse, null, 2)}</CodeBlock>
             )}
             <Button onClick={handleCloseModal}>Close</Button>
           </Box>
         </Modal>
 
-        <Box component="footer" sx={{ bgcolor: 'background.paper', color: 'text.primary', py: 3 }}>
+        <Box
+          component="footer"
+          sx={{
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.95
+            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+            backdropFilter: 'blur(20px)',
+            borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            color: theme.palette.text.primary,
+            py: 3,
+            position: 'relative',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '2px',
+              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+              opacity: 0.6
+            }
+          }}
+        >
           <Container maxWidth="lg">
             <Typography variant="body2" align="center">
               &copy; {new Date().getFullYear()} XRPL.to. All rights reserved.
