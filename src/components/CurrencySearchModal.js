@@ -46,6 +46,7 @@ const CurrencyModalView = {
 };
 
 const StyledModalContainer = styled(ModalContainer)`
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   width: 100%;
   min-width: 320px;
   max-width: 420px !important;
@@ -53,14 +54,31 @@ const StyledModalContainer = styled(ModalContainer)`
   max-height: 600px;
   display: flex;
   flex-direction: column;
-  background: ${(props) =>
-    props.theme.colors.background === '#08060B' ? '#000000' : props.theme.colors.backgroundAlt};
-  border-radius: 24px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  background: #000;
+  border-radius: 28px;
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 8px;
+  border: none;
+  box-shadow: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    background: linear-gradient(90deg, #1db954 0%, #00c6fb 100%);
+    z-index: 10;
+    pointer-events: none;
+  }
 `;
 
 const StyledModalBody = styled(ModalBody)`
-  padding: 16px;
+  padding: 28px 22px 22px 22px;
   flex: 1;
   overflow-y: auto;
   -ms-overflow-style: none;
@@ -68,32 +86,42 @@ const StyledModalBody = styled(ModalBody)`
   &::-webkit-scrollbar {
     display: none;
   }
+  background: ${(props) =>
+    props.theme.colors.background === '#08060B'
+      ? '#000'
+      : 'linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.9) 100%)'};
+  border-radius: 0 0 28px 28px;
+  border: 1px solid #222;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 `;
 
 const SearchTextField = styled(TextField)`
   & .MuiOutlinedInput-root {
-    border-radius: 12px;
-    background: ${(props) => props.theme.colors.input};
-    transition: all 0.2s ease;
-    height: 44px;
-
-    &:hover {
-      background: ${(props) => props.theme.colors.inputSecondary};
+    border-radius: 18px;
+    background: ${(props) =>
+      props.theme.colors.background === '#08060B'
+        ? '#181818'
+        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)'};
+    border: 1px solid #232;
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.12) inset;
+    height: 52px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    &:hover,
+    &.Mui-focused {
+      border-color: #1db954;
+      box-shadow: 0 0 0 2px #1db95433;
     }
-
     & fieldset {
-      border: 1px solid ${(props) => props.theme.colors.cardBorder};
+      border: none;
     }
-
-    &.Mui-focused fieldset {
-      border-color: ${(props) => props.theme.colors.primary};
-    }
-
     & input {
-      padding: 8px 14px;
-      color: ${(props) => props.theme.colors.text};
+      padding: 16px 20px;
+      color: #fff;
+      font-weight: 500;
+      font-size: 1.05rem;
       &::placeholder {
-        color: ${(props) => props.theme.colors.textSubtle};
+        color: #aaa;
+        opacity: 1;
       }
     }
   }
@@ -101,18 +129,26 @@ const SearchTextField = styled(TextField)`
 
 const TokenListItem = styled(Stack)`
   padding: 6px 8px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  background: ${(props) => props.theme.colors.tertiary};
-  margin-bottom: 2px;
-
+  border-radius: 10px;
+  background: ${(props) =>
+    props.theme.colors.background === '#08060B'
+      ? '#101010'
+      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.6) 100%)'};
+  margin-bottom: 4px;
+  border: 1px solid #232;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1.5px 8px 0 rgba(29, 185, 84, 0.04);
   &:hover {
-    background: ${(props) => props.theme.colors.dropdown};
-    transform: translateY(-1px);
+    background: #181818;
+    border-color: #1db954;
+    box-shadow: 0 2px 16px 0 #1db95422;
+    transform: translateY(-2px) scale(1.03);
   }
-
   &:active {
-    transform: translateY(0);
+    transform: translateY(-1px) scale(1.01);
   }
 `;
 
@@ -127,30 +163,56 @@ const KYCBadge = styled('div')`
   top: -2px;
   right: -2px;
   z-index: 2;
-  background: ${(props) => props.theme.colors.backgroundAlt};
+  background: transparent;
   border-radius: 50%;
+  padding: 0;
+  border: none;
+  box-shadow: none;
 `;
 
 const TokenImage = styled(LazyLoadImage)`
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   overflow: hidden;
-  transition: transform 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid
+    ${(props) =>
+      props.theme.colors.background === '#08060B'
+        ? 'rgba(71, 85, 105, 0.4)'
+        : 'rgba(226, 232, 240, 0.6)'};
+  box-shadow: ${(props) =>
+    props.theme.colors.background === '#08060B'
+      ? '0 4px 12px rgba(0, 0, 0, 0.3)'
+      : '0 4px 12px rgba(0, 0, 0, 0.1)'};
+
   ${TokenListItem}:hover & {
-    transform: scale(1.05);
+    transform: scale(1.1) rotate(5deg);
+    border-color: ${(props) =>
+      props.theme.colors.background === '#08060B'
+        ? 'rgba(99, 102, 241, 0.6)'
+        : 'rgba(99, 102, 241, 0.4)'};
+    box-shadow: ${(props) =>
+      props.theme.colors.background === '#08060B'
+        ? '0 8px 20px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(99, 102, 241, 0.3)'
+        : '0 8px 20px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(99, 102, 241, 0.2)'};
   }
 `;
 
 const RecentSearchesSection = styled(Stack)`
-  margin-top: 16px;
-  margin-bottom: 12px;
+  margin-top: 20px;
+  margin-bottom: 16px;
 `;
 
 const RecentSearchesHeader = styled(Stack)`
   flex-direction: row;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  padding: 10px 16px;
+  background: #111;
+  border-radius: 14px;
+  border: 1px solid #222;
+  color: #1db954;
 `;
 
 function truncate(str, n) {
@@ -159,6 +221,39 @@ function truncate(str, n) {
 }
 
 const MAX_RECENT_SEARCHES = 4;
+
+// Accent line under header
+const ModalAccentLine = styled('div')`
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #1db954 0%, #00c6fb 100%);
+  opacity: 0.7;
+  margin-bottom: 8px;
+`;
+
+const ModalHeaderStyled = styled(ModalHeader)`
+  position: relative;
+  z-index: 3;
+  background: transparent;
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  padding-top: 18px;
+  padding-bottom: 10px;
+  padding-left: 28px;
+  padding-right: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ModalCloseButtonStyled = styled(ModalCloseButton)`
+  transition: transform 0.15s, box-shadow 0.15s;
+  &:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 2px #1db95444;
+    color: #1db954;
+  }
+`;
 
 export default function CurrencySearchModal({
   onDismiss = () => null,
@@ -224,7 +319,7 @@ export default function CurrencySearchModal({
             {kyc && (
               <KYCBadge>
                 <Tooltip title="KYC Verified">
-                  <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 14 }} />
+                  <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 11 }} />
                 </Tooltip>
               </KYCBadge>
             )}
@@ -232,16 +327,16 @@ export default function CurrencySearchModal({
           <Stack spacing={0}>
             <Typography
               variant="subtitle2"
-              color={isOMCF !== 'yes' ? 'text.primary' : 'primary'}
-              sx={{ fontWeight: 600, fontSize: '0.8rem', lineHeight: 1.2 }}
+              color={isOMCF !== 'yes' ? '#fff' : '#1db954'}
+              sx={{ fontWeight: 700, fontSize: '0.85rem', lineHeight: 1.05 }}
               noWrap
             >
               {truncate(name, 12)}
             </Typography>
             <Typography
               variant="caption"
-              color="text.secondary"
-              sx={{ fontSize: '0.65rem', lineHeight: 1 }}
+              color="#aaa"
+              sx={{ fontSize: '0.62rem', lineHeight: 1 }}
               noWrap
             >
               {truncate(user, 16)}
@@ -329,25 +424,39 @@ export default function CurrencySearchModal({
         sx={(theme) => ({
           color: theme.colors.text,
           zIndex: theme.zIndex.drawer + 1,
-          backdropFilter: 'blur(3px)',
-          backgroundColor: theme.colors.overlay,
+          backdropFilter: 'blur(8px)',
+          backgroundColor:
+            theme.colors.background === '#08060B' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.4)',
+          background:
+            theme.colors.background === '#08060B'
+              ? 'radial-gradient(circle at center, rgba(16, 16, 24, 0.9) 0%, rgba(0, 0, 0, 0.95) 100%)'
+              : 'radial-gradient(circle at center, rgba(248, 250, 252, 0.3) 0%, rgba(0, 0, 0, 0.5) 100%)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         })}
         open={open}
         onClick={onDismiss}
       >
         <StyledModalContainer ref={wrapperRef} onClick={(event) => event.stopPropagation()}>
-          <ModalHeader>
+          <ModalHeaderStyled>
             <ModalTitle>
               {config[modalView].onBack && <ModalBackButton onBack={config[modalView].onBack} />}
-              <Heading style={{ color: theme(darkMode).colors.text }}>
+              <Heading
+                style={{
+                  color: theme(darkMode).colors.text,
+                  fontWeight: 700,
+                  fontSize: '1.45rem',
+                  letterSpacing: '-0.5px'
+                }}
+              >
                 {config[modalView].title}
               </Heading>
             </ModalTitle>
-            <ModalCloseButton onDismiss={onDismiss} />
-          </ModalHeader>
+            <ModalCloseButtonStyled onDismiss={onDismiss} />
+          </ModalHeaderStyled>
+          <ModalAccentLine />
           <StyledModalBody>
             <SearchTextField
               fullWidth

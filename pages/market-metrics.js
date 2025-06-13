@@ -749,6 +749,7 @@ const MarketMetricsContent = () => {
     'a75642e117c7e85b35a9f03ea90c6ef1', // Added new token ID
     '0ecd5784928aaaf81aa713c12965a271', // Added new token ID
     '670c423b61a765804c6c8f2c1a68aa63', // Added new token ID
+    'de5789574e9d3248e14689bba1082db3', // Added new token ID
     '33d41a287177d13f69da580dde9b968b' // Added new token ID
   ]);
   // Specify which token should be deducted from FirstLedger
