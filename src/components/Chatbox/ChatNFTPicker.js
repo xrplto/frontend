@@ -81,7 +81,7 @@ const NFTs = ({ account, collection, type = 'collected', limit, onSelect, smallS
       }}
     >
       {selectedCollection && (
-        <Box display="flex" justifyContent="start" mb={0.25}>
+        <Box display="flex" justifyContent="start" mb={1.5}>
           <Button
             size="small"
             onClick={handleBack}

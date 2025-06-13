@@ -75,11 +75,6 @@ const socket = io(chatURL, {
 function EmojiPicker({ onSelect }) {
   const theme = useTheme();
 
-  // Updated colors for dark theme appearance
-  const backgroundColor = '#000000';
-  const hoverColor = '#333333';
-  const emojiColor = '#ffffff';
-
   const emojis = [
     '😀',
     '😂',
@@ -112,28 +107,34 @@ function EmojiPicker({ onSelect }) {
       sx={{
         display: 'grid',
         gridTemplateColumns: 'repeat(6, 1fr)',
-        gap: '4px', // Further reduced from 6px to 4px
-        backgroundColor: backgroundColor,
-        boxShadow: '0px 0px 10px rgba(0,0,0,0.3)',
+        gap: '4px',
+        backgroundColor: theme.palette.background.paper,
         borderRadius: '8px',
-        padding: '8px', // Reduced from 10px to 8px
-        maxWidth: '260px', // Increased from 240px to 260px
-        zIndex: 1000,
-        border: '1px solid #333333'
+        padding: '8px',
+        width: '290px',
+        height: '300px',
+        overflow: 'auto',
+        '&::-webkit-scrollbar': {
+          width: '4px'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          borderRadius: '4px',
+          backgroundColor: theme.palette.primary.main
+        }
       }}
     >
       {emojis.map((emoji, index) => (
         <Box
           key={index}
           sx={{
-            fontSize: '18px', // Reduced from 22px to 18px
-            padding: '3px', // Reduced from 4px to 3px
+            fontSize: '18px',
+            padding: '3px',
             cursor: 'pointer',
             userSelect: 'none',
             textAlign: 'center',
-            color: emojiColor,
+            color: theme.palette.text.primary,
             '&:hover': {
-              backgroundColor: hoverColor,
+              backgroundColor: theme.palette.action.hover,
               borderRadius: '4px'
             }
           }}
@@ -559,31 +560,41 @@ function Chatbox() {
                       right: 0,
                       zIndex: 1000,
                       backgroundColor: theme.palette.background.paper,
-                      borderRadius: '4px',
+                      borderRadius: '8px',
                       border: '1px solid',
                       borderColor: 'divider',
                       boxShadow: 3,
-                      p: 1,
-                      mt: 1
+                      mb: 1
                     }}
                   >
                     <Tabs
                       value={pickerType}
                       onChange={(e, newValue) => setPickerType(newValue)}
-                      sx={{ minHeight: 32 }}
+                      sx={{
+                        minHeight: 32,
+                        '& .MuiTabs-flexContainer': {
+                          justifyContent: 'center'
+                        }
+                      }}
                     >
                       <Tab
                         label="Emoji"
                         value="emoji"
-                        sx={{ minHeight: 32, fontSize: '0.75rem' }}
+                        sx={{ minHeight: 32, fontSize: '0.75rem', minWidth: 80 }}
                       />
-                      <Tab label="NFT" value="nft" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
+                      <Tab
+                        label="NFT"
+                        value="nft"
+                        sx={{ minHeight: 32, fontSize: '0.75rem', minWidth: 80 }}
+                      />
                     </Tabs>
-                    {pickerType === 'emoji' ? (
-                      <EmojiPicker onSelect={addEmoji} />
-                    ) : (
-                      <ChatNFTPicker onSelect={addNFT} />
-                    )}
+                    <Box sx={{ p: 1 }}>
+                      {pickerType === 'emoji' ? (
+                        <EmojiPicker onSelect={addEmoji} />
+                      ) : (
+                        <ChatNFTPicker onSelect={addNFT} />
+                      )}
+                    </Box>
                   </Box>
                 )}
               </Box>

@@ -10,7 +10,8 @@ import {
   tooltipClasses,
   IconButton,
   Link,
-  alpha
+  alpha,
+  Fade
 } from '@mui/material';
 import { parseISO } from 'date-fns';
 import {
@@ -56,18 +57,26 @@ const formatTimeAgo = (date) => {
 
 const CustomScrollBox = styled(Stack)(({ theme }) => ({
   '&::-webkit-scrollbar': {
-    width: '6px'
+    width: '8px'
   },
   '&::-webkit-scrollbar-track': {
-    background: alpha(theme.palette.divider, 0.1),
-    borderRadius: '10px'
+    background: alpha(theme.palette.background.paper, 0.5),
+    borderRadius: '12px',
+    margin: '4px'
   },
   '&::-webkit-scrollbar-thumb': {
-    background: alpha(theme.palette.divider, 0.5),
-    borderRadius: '10px'
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.6)}, ${alpha(
+      theme.palette.secondary.main,
+      0.6
+    )})`,
+    borderRadius: '12px',
+    border: `2px solid ${theme.palette.background.default}`
   },
   '&::-webkit-scrollbar-thumb:hover': {
-    background: alpha(theme.palette.divider, 0.8),
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.8)}, ${alpha(
+      theme.palette.secondary.main,
+      0.8
+    )})`,
     cursor: 'pointer'
   }
 }));
@@ -204,15 +213,15 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   return (
     <CustomScrollBox
       ref={chatContainerRef}
-      gap={0.75}
+      gap={0.5}
       onScroll={handleScroll}
       sx={{
         height: '100%',
         overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        padding: '0.75rem',
-        backgroundColor: alpha(theme.palette.background.default, 0.8)
+        padding: '0.5rem',
+        backgroundColor: alpha(theme.palette.background.default, 0.95)
       }}
     >
       {Array.isArray(chats) && chats.length > 0 ? (
@@ -255,26 +264,31 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
             return (
               <Paper
                 key={index}
-                elevation={0}
+                elevation={isCurrentUser ? 2 : 1}
                 sx={{
-                  backgroundColor: isCurrentUser
-                    ? alpha(theme.palette.primary.main, 0.08)
+                  background: isCurrentUser
+                    ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)}, ${alpha(
+                        theme.palette.primary.light,
+                        0.08
+                      )})`
                     : alpha(theme.palette.background.paper, 0.9),
                   borderRadius: '0.75rem',
                   p: 0.75,
-                  transition: 'all 0.2s ease',
+                  transition: 'all 0.3s ease',
                   border: `1px solid ${alpha(
                     isCurrentUser ? theme.palette.primary.main : theme.palette.divider,
-                    0.1
+                    isCurrentUser ? 0.2 : 0.1
                   )}`,
                   '&:hover': {
                     transform: 'translateY(-1px)',
-                    boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.05)}`,
+                    boxShadow: isCurrentUser
+                      ? `0 6px 24px ${alpha(theme.palette.primary.main, 0.15)}`
+                      : `0 6px 18px ${alpha(theme.palette.common.black, 0.06)}`,
                     backgroundColor: isCurrentUser
-                      ? alpha(theme.palette.primary.main, 0.12)
+                      ? alpha(theme.palette.primary.main, 0.15)
                       : alpha(theme.palette.background.paper, 1)
                   },
-                  marginBottom: '8px' // Add spacing between messages
+                  marginBottom: '6px'
                 }}
               >
                 <Stack direction="row" spacing={0.75} alignItems="flex-start">
@@ -289,13 +303,16 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                       }`,
                       boxShadow: `0 0 10px ${alpha(
                         activeRankColors[activeRanks[chat.username]] || '#808080',
-                        0.5
+                        0.3
                       )}`,
-                      mr: 0.25
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'scale(1.05)'
+                      }
                     }}
                   />
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                    <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.25 }}>
                       <CustomWidthTooltip
                         title={
                           <UserSummary
@@ -324,14 +341,18 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                             textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
                             cursor: 'pointer',
                             display: 'flex',
-                            alignItems: 'center'
+                            alignItems: 'center',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              filter: 'brightness(1.2)'
+                            }
                           }}
                         >
                           {displayUsername}
                           {isVerified && (
                             <VerifiedIcon
                               sx={{
-                                fontSize: '0.8rem',
+                                fontSize: '0.9rem',
                                 ml: 0.25,
                                 color: '#1DA1F2'
                               }}
@@ -339,8 +360,25 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                           )}
                           {chat.isPrivate && (
                             <>
-                              <span style={{ margin: '0 0.25rem', opacity: 0.7 }}>→</span>
-                              <span style={{ color: recipientRankColor }}>{displayRecipient}</span>
+                              <Typography
+                                component="span"
+                                sx={{
+                                  mx: 0.25,
+                                  opacity: 0.7,
+                                  fontSize: '0.7rem'
+                                }}
+                              >
+                                →
+                              </Typography>
+                              <Typography
+                                component="span"
+                                sx={{
+                                  color: recipientRankColor,
+                                  fontWeight: 500
+                                }}
+                              >
+                                {displayRecipient}
+                              </Typography>
                             </>
                           )}
                         </Typography>
@@ -351,53 +389,119 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                             size="small"
                             onClick={() => onStartPrivateMessage(privateMessageRecipient)}
                             sx={{
-                              padding: 0,
-                              color: theme.palette.text.secondary,
-                              fontSize: '0.75rem',
+                              padding: '2px',
+                              color: alpha(theme.palette.text.secondary, 0.7),
+                              backgroundColor: alpha(theme.palette.background.paper, 0.5),
+                              borderRadius: '6px',
+                              width: '20px',
+                              height: '20px',
+                              transition: 'all 0.2s ease',
                               '&:hover': {
-                                color: theme.palette.primary.main
+                                color: theme.palette.primary.main,
+                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                transform: 'scale(1.1)'
                               }
                             }}
                           >
-                            <ChatBubbleOutlineIcon fontSize="inherit" />
+                            <ChatBubbleOutlineIcon sx={{ fontSize: '0.7rem' }} />
                           </IconButton>
                         </Tooltip>
                       )}
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: alpha(theme.palette.text.secondary, 0.8),
+                          fontStyle: 'italic',
+                          fontSize: '0.65rem',
+                          fontWeight: 500
+                        }}
+                      >
+                        {timeAgo}
+                      </Typography>
                     </Stack>
                     {newsData ? (
-                      <Box sx={{ mt: 0.5 }}>
+                      <Box
+                        sx={{
+                          mt: 0.5,
+                          p: 1,
+                          backgroundColor: alpha(theme.palette.info.main, 0.05),
+                          borderRadius: '8px',
+                          border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                        }}
+                      >
                         <Typography
                           variant="subtitle2"
-                          sx={{ fontWeight: 600, fontSize: '0.8rem' }}
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: '0.8rem',
+                            color: theme.palette.info.main,
+                            mb: 0.25
+                          }}
                         >
                           {newsData.title}
                         </Typography>
-                        <Typography variant="body2" sx={{ mt: 0.25, fontSize: '0.75rem' }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            mt: 0.25,
+                            fontSize: '0.75rem',
+                            lineHeight: 1.4,
+                            color: theme.palette.text.secondary
+                          }}
+                        >
                           {newsData.summary !== 'No summary available'
                             ? newsData.summary
                             : 'No summary available.'}
                         </Typography>
-                        <Link href={newsData.sourceUrl} target="_blank" rel="noopener noreferrer">
-                          <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
-                            Read more at {newsData.sourceName}
-                          </Typography>
-                        </Link>
-                        {newsData.sentiment !== 'Unknown' && (
-                          <Typography
-                            variant="caption"
+                        <Box sx={{ mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Link
+                            href={newsData.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             sx={{
-                              ml: 0.5,
-                              color:
-                                newsData.sentiment === 'Bullish'
-                                  ? 'green'
-                                  : newsData.sentiment === 'Bearish'
-                                  ? 'red'
-                                  : 'inherit'
+                              textDecoration: 'none',
+                              '&:hover': { textDecoration: 'underline' }
                             }}
                           >
-                            • {newsData.sentiment}
-                          </Typography>
-                        )}
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: theme.palette.primary.main,
+                                fontWeight: 500,
+                                fontSize: '0.65rem'
+                              }}
+                            >
+                              Read more at {newsData.sourceName}
+                            </Typography>
+                          </Link>
+                          {newsData.sentiment !== 'Unknown' && (
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color:
+                                  newsData.sentiment === 'Bullish'
+                                    ? theme.palette.success.main
+                                    : newsData.sentiment === 'Bearish'
+                                    ? theme.palette.error.main
+                                    : 'inherit',
+                                fontWeight: 500,
+                                fontSize: '0.6rem',
+                                backgroundColor: alpha(
+                                  newsData.sentiment === 'Bullish'
+                                    ? theme.palette.success.main
+                                    : newsData.sentiment === 'Bearish'
+                                    ? theme.palette.error.main
+                                    : theme.palette.grey[500],
+                                  0.1
+                                ),
+                                padding: '1px 6px',
+                                borderRadius: '8px'
+                              }}
+                            >
+                              {newsData.sentiment}
+                            </Typography>
+                          )}
+                        </Box>
                       </Box>
                     ) : (
                       <Typography
@@ -407,14 +511,14 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                           color: chat.isPrivate
                             ? theme.palette.secondary.main
                             : theme.palette.text.primary,
-                          lineHeight: 1.3,
+                          lineHeight: 1.4,
                           fontSize: '0.8rem',
-                          wordBreak: 'break-word'
+                          wordBreak: 'break-word',
+                          fontWeight: 400
                         }}
                       >
                         {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
                           if (part.startsWith('[NFT:')) {
-                            // Extract the name from the NFT link format [NFT: name (tokenId)]
                             const match = part.match(/\[NFT: (.*?) \((.*?)\)\]/);
                             if (match) {
                               const [_, name, tokenId] = match;
@@ -426,40 +530,50 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                       </Typography>
                     )}
                   </Box>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      opacity: 0.6,
-                      fontStyle: 'italic',
-                      fontSize: '0.65rem',
-                      ml: 0.5
-                    }}
-                  >
-                    {timeAgo}
-                  </Typography>
                 </Stack>
               </Paper>
             );
           })
       ) : (
-        <Typography
-          variant="body2"
-          sx={{ textAlign: 'center', py: 1.5, fontStyle: 'italic', opacity: 0.7 }}
+        <Box
+          sx={{
+            textAlign: 'center',
+            py: 2,
+            opacity: 0.7
+          }}
         >
-          No messages to display.
-        </Typography>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontStyle: 'italic',
+              color: theme.palette.text.secondary,
+              mb: 0.5,
+              fontSize: '0.9rem'
+            }}
+          >
+            No messages yet
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: alpha(theme.palette.text.secondary, 0.7),
+              fontSize: '0.75rem'
+            }}
+          >
+            Start a conversation to see messages here
+          </Typography>
+        </Box>
       )}
       {!autoScroll && (
         <Box
           sx={{
-            position: 'sticky',
-            bottom: 16,
-            alignSelf: 'center',
+            position: 'fixed',
+            bottom: 70,
+            right: 20,
             zIndex: 10
           }}
         >
-          <Tooltip title="Scroll to latest messages">
+          <Tooltip title="Scroll to latest messages" arrow>
             <IconButton
               onClick={() => {
                 setAutoScroll(true);
@@ -468,14 +582,20 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                 }
               }}
               sx={{
-                backgroundColor: theme.palette.background.paper,
-                boxShadow: theme.shadows[3],
+                backgroundColor: theme.palette.primary.main,
+                color: theme.palette.primary.contrastText,
+                boxShadow: `0 3px 16px ${alpha(theme.palette.primary.main, 0.3)}`,
+                width: 40,
+                height: 40,
+                transition: 'all 0.3s ease',
                 '&:hover': {
-                  backgroundColor: theme.palette.background.default
+                  backgroundColor: theme.palette.primary.dark,
+                  transform: 'scale(1.1)',
+                  boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.4)}`
                 }
               }}
             >
-              <ArrowDownwardIcon />
+              <ArrowDownwardIcon sx={{ fontSize: '1.1rem' }} />
             </IconButton>
           </Tooltip>
         </Box>

@@ -25,6 +25,11 @@ const ChatNFTCard = ({ nft, onSelect }) => {
     }
   }
 
+  // Extract number from NFT name
+  const nftName = nft.name || nft.meta?.name || 'Unnamed NFT';
+  const numberMatch = nftName.match(/#(\d+)/);
+  const displayText = numberMatch ? `#${numberMatch[1]}` : nftName;
+
   return (
     <Box
       onClick={handleSelect}
@@ -52,20 +57,18 @@ const ChatNFTCard = ({ nft, onSelect }) => {
       <Typography
         variant="caption"
         sx={{
-          display: '-webkit-box',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          WebkitLineClamp: 1,
-          WebkitBoxOrient: 'vertical',
           fontSize: '0.7rem',
           mt: 0.5,
           lineHeight: 1.2,
           textAlign: 'center',
           width: '70%',
-          margin: '0 auto'
+          margin: '0.5rem auto 0',
+          display: 'block',
+          fontWeight: 500,
+          color: 'text.secondary'
         }}
       >
-        {nft.name}
+        {displayText}
       </Typography>
     </Box>
   );
