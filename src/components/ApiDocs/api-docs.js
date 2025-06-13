@@ -569,8 +569,9 @@ const DocumentationContent = ({ activeSection, searchTerm }) => {
                 variant="body1"
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
-                Retrieve tokens with pagination and sorting options. Perfect for building token
-                lists and market overviews.
+                Retrieve tokens with advanced pagination, sorting, and filtering options. Supports
+                tag-based filtering, watchlist queries, and customizable response formatting with
+                compression for optimal performance.
               </Typography>
             </Card>
 
@@ -596,12 +597,19 @@ const DocumentationContent = ({ activeSection, searchTerm }) => {
               <CardContent>
                 <CodeBlock language="http">
                   GET
-                  https://api.xrpl.to/api/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=
+                  https://api.xrpl.to/api/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false&showDate=false
+                </CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  Example with tag filtering:
+                </Typography>
+                <CodeBlock language="http">
+                  GET
+                  https://api.xrpl.to/api/tokens?tag=collectables-and-nfts&start=0&limit=20&sortBy=vol24hxrp&sortType=desc
                 </CodeBlock>
               </CardContent>
             </Card>
 
-            <Card sx={{ borderRadius: '12px' }}>
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
@@ -651,12 +659,12 @@ const DocumentationContent = ({ activeSection, searchTerm }) => {
                     <TableRow>
                       <TableCell>start</TableCell>
                       <TableCell>0</TableCell>
-                      <TableCell>Start value for pagination</TableCell>
+                      <TableCell>Start value for pagination (minimum: 0)</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>limit</TableCell>
                       <TableCell>100</TableCell>
-                      <TableCell>Limit count value for pagination (limit &lt; 100)</TableCell>
+                      <TableCell>Limit count value for pagination (1-100, default: 100)</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>sortBy</TableCell>
@@ -669,11 +677,201 @@ const DocumentationContent = ({ activeSection, searchTerm }) => {
                     <TableRow>
                       <TableCell>sortType</TableCell>
                       <TableCell>desc</TableCell>
-                      <TableCell>asc or desc</TableCell>
+                      <TableCell>asc or desc (ascending or descending)</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>tag</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>
+                        Filter tokens by category tag (e.g., "collectables-and-nfts")
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>watchlist</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>Filter tokens by watchlist identifier</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>filter</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>General filter parameter for token search</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>filterNe</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>Filter to exclude tokens (not equal filter)</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>showNew</TableCell>
+                      <TableCell>false</TableCell>
+                      <TableCell>
+                        Set to "true" to include new token indicators in response
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>showSlug</TableCell>
+                      <TableCell>false</TableCell>
+                      <TableCell>Set to "true" to include token slug in response</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>showDate</TableCell>
+                      <TableCell>false</TableCell>
+                      <TableCell>Set to "true" to include date information in response</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>tags</TableCell>
+                      <TableCell>no</TableCell>
+                      <TableCell>Set to "yes" to include tag information in response</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               </TableContainer>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Response Structure
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns compressed data with performance timing and platform metrics:
+                </Typography>
+                <CodeBlock language="json">
+                  {`{
+  "result": "success",
+  "took": "45.20",      // Response time in milliseconds
+  "exch": {             // Current exchange rates
+    "xrp": {
+      "usd": 0.5234,
+      "eur": 0.4891,
+      // ... other fiat rates
+    }
+  },
+  "H24": {              // 24-hour platform metrics
+    "volume": "1234567.89",
+    "trades": 8765,
+    // ... other 24h metrics
+  },
+  "global": {           // Global platform metrics
+    "totalSupply": "99999999999",
+    "marketCap": "12345678.90",
+    // ... other global metrics
+  },
+  // Token data fields (spread from tokens object):
+  "tokens": [           // Array of token objects
+    {
+      "issuer": "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq",
+      "currency": "USD",
+      "name": "USD",
+      "slug": "gatehub-usd",        // (if showSlug=true)
+      "tags": ["stablecoin"],       // (if tags=yes)
+      "isNew": false,               // (if showNew=true)
+      "created": "2023-01-01",      // (if showDate=true)
+      // ... other token properties
+    }
+    // ... more tokens
+  ],
+  "total": 12543,       // Total number of tokens matching criteria
+  "start": 0,           // Pagination start value
+  "limit": 100          // Pagination limit value
+}`}
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Performance Features
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  This endpoint includes several performance optimizations:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Compression:</strong> Automatic response compression for faster data
+                    transfer
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Parallel Processing:</strong> Uses Promise.all for concurrent data
+                    fetching
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Performance Timing:</strong> Includes response time measurement in
+                    "took" field
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Smart Defaults:</strong> Automatic parameter validation and fallback
+                    values
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  Error Responses
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns the following error response on failure:
+                </Typography>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Error message details"
+}`}
+                  </CodeBlock>
+                </Box>
+              </CardContent>
             </Card>
           </Box>
         );
@@ -707,7 +905,8 @@ const DocumentationContent = ({ activeSection, searchTerm }) => {
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
                 Retrieve detailed information about a specific token using three different methods:
-                issuer + currency code, slug, or MD5 hash.
+                issuer + currency code, slug, or MD5 hash. The API uses intelligent fallback logic
+                and returns comprehensive token data along with platform metrics.
               </Typography>
             </Card>
 
@@ -805,6 +1004,40 @@ const DocumentationContent = ({ activeSection, searchTerm }) => {
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Fallback Logic
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API uses intelligent fallback logic to find tokens:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    1. First attempts to get token by slug (which includes MD5)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    2. If not found, tries to get token by issuer_currency combination
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    3. Returns 404 if token is not found using either method
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px', mb: 3 }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
                     theme.palette.warning.main,
                     0.08
                   )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
@@ -839,7 +1072,7 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
               </CardContent>
             </Card>
 
-            <Card sx={{ borderRadius: '12px' }}>
+            <Card sx={{ borderRadius: '12px', mb: 3 }}>
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
@@ -917,12 +1150,120 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                       <TableCell>no</TableCell>
                       <TableCell>
                         yes or no, if yes, returns the description of the token in markdown
-                        language.
+                        language. Only works when token has MD5 hash.
                       </TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               </TableContainer>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px', mb: 3 }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Response Structure
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns a comprehensive response with token data and platform metrics:
+                </Typography>
+                <CodeBlock language="json">
+                  {`{
+  "res": "success",
+  "took": "45.20",  // Response time in milliseconds
+  "total": 12543,   // Total number of tokens on the platform
+  "exch": {         // Current exchange rates
+    "xrp": {
+      "usd": 0.5234,
+      "eur": 0.4891,
+      // ... other fiat rates
+    }
+  },
+  "H24": {          // 24-hour platform metrics
+    "volume": "1234567.89",
+    "trades": 8765,
+    // ... other 24h metrics
+  },
+  "global": {       // Global platform metrics
+    "totalSupply": "99999999999",
+    "marketCap": "12345678.90",
+    // ... other global metrics
+  },
+  "token": {        // Detailed token information
+    "issuer": "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq",
+    "currency": "USD",
+    "md5": "0413ca7cfc258dfaf698c02fe304e607",
+    "slug": "gatehub-usd",
+    "name": "USD",
+    "description": "Token description (if desc=yes and MD5 exists)",
+    // ... other token properties
+  }
+}`}
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  Error Responses
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns the following error responses:
+                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    404 Not Found
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Token not found"
+}`}
+                  </CodeBlock>
+                </Box>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Error message details"
+}`}
+                  </CodeBlock>
+                </Box>
+              </CardContent>
             </Card>
           </Box>
         );
@@ -1400,7 +1741,7 @@ const tokens = res.data;`;
           return '';
       }
 
-    case 'get-specific-token-info':
+    case 'get-a-specific-token-info':
       switch (language) {
         case 'shell':
           return `# Using issuer_currencyCode (recommended)
@@ -1938,10 +2279,10 @@ const ApiDocs = () => {
       switch (currentSection) {
         case 'get-all-tokens':
           response = await axios.get(
-            'https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter='
+            'https://api.xrpl.to/api/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false&showDate=false'
           );
           break;
-        case 'get-specific-token-info':
+        case 'get-a-specific-token-info':
           response = await axios.get(
             'https://api.xrpl.to/api/token/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD'
           );
@@ -2316,7 +2657,7 @@ const ApiDocs = () => {
                   }}
                 >
                   <Tab label="Get All Tokens" value="get-all-tokens" />
-                  <Tab label="Get Specific Token" value="get-specific-token-info" />
+                  <Tab label="Get Specific Token" value="get-a-specific-token-info" />
                   <Tab label="Get Sparkline" value="get-sparkline-of-a-token" />
                   <Tab label="Get MD5 Value" value="get-md5-value-of-the-token" />
                   <Tab label="Get Rich List" value="get-rich-list-of-a-token" />
