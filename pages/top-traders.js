@@ -1357,31 +1357,68 @@ export default function Analytics() {
                             padding: '12px 16px',
                             fontSize: '0.875rem',
                             lineHeight: 1.4,
-                            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`
+                            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                            fontWeight: '500'
+                          },
+                          '& .MuiTableHead-root': {
+                            position: 'sticky',
+                            top: 0,
+                            zIndex: 999,
+                            background: `linear-gradient(135deg, ${alpha(
+                              theme.palette.background.paper,
+                              0.95
+                            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                            backdropFilter: 'blur(20px)',
+                            '&::after': {
+                              content: '""',
+                              position: 'absolute',
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              height: '1px',
+                              background: `linear-gradient(90deg, transparent, ${alpha(
+                                theme.palette.divider,
+                                0.24
+                              )}, transparent)`
+                            }
                           },
                           '& .MuiTableHead-root .MuiTableCell-root': {
                             fontWeight: 700,
-                            background: `linear-gradient(135deg, ${alpha(
-                              theme.palette.background.paper,
-                              0.9
-                            )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                            backdropFilter: 'blur(10px)',
                             fontSize: '0.8rem',
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px',
-                            padding: '16px',
+                            padding: '20px 16px',
                             color: theme.palette.text.primary,
-                            borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                            borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                            '& .MuiTableSortLabel-root': {
+                              fontSize: '0.8rem',
+                              fontWeight: '700',
+                              color: 'inherit',
+                              '&:hover': {
+                                color: theme.palette.primary.main
+                              },
+                              '&.Mui-active': {
+                                color: theme.palette.primary.main,
+                                '& .MuiTableSortLabel-icon': {
+                                  color: 'inherit'
+                                }
+                              },
+                              '& .MuiTableSortLabel-icon': {
+                                fontSize: '16px'
+                              }
+                            }
                           },
                           '& .MuiTableRow-root': {
-                            transition: 'all 0.2s ease',
+                            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                             '&:hover': {
-                              background: `linear-gradient(135deg, ${alpha(
-                                theme.palette.primary.main,
-                                0.04
-                              )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                              '& .MuiTableCell-root': {
+                                backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                                backdropFilter: 'blur(6px)'
+                              },
+                              cursor: 'pointer',
                               transform: 'translateY(-1px)',
-                              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
+                              boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`
                             }
                           },
                           '& .MuiIconButton-root': {
@@ -1390,7 +1427,7 @@ export default function Analytics() {
                             transition: 'all 0.2s ease',
                             '&:hover': {
                               background: alpha(theme.palette.primary.main, 0.1),
-                              transform: 'scale(1.1)'
+                              transform: 'scale(1.05)'
                             }
                           }
                         }}
