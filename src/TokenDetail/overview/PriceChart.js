@@ -306,7 +306,7 @@ function PriceChart({ token }) {
     chart: {
       backgroundColor: 'transparent',
       type: 'areaspline',
-      height: '500px',
+      height: '350px',
       events: {
         render: function () {
           const chart = this;
@@ -318,22 +318,21 @@ function PriceChart({ token }) {
             chart.watermark.destroy();
           }
 
-          const xPos = chart.plotWidth - imgWidth - 10; // 10px margin from right edge
-          const yPos = chart.plotHeight - imgHeight - 10; // 10px margin from bottom edge
+          const xPos = chart.plotWidth - imgWidth - 10;
+          const yPos = chart.plotHeight - imgHeight - 10;
 
-          // Add watermark as an SVG image
           chart.watermark = chart.renderer
             .image(imgUrl, xPos, yPos, imgWidth, imgHeight)
             .attr({
-              zIndex: 5, // Ensure it's above other elements
-              opacity: 0.4, // Reduced opacity for subtlety
+              zIndex: 5,
+              opacity: 0.4,
               width: '100px'
             })
             .add();
         }
       },
-      zoomType: 'x', // Enable horizontal zooming
-      marginBottom: 60, // Reduced from 100 to make bottom more compact
+      zoomType: 'x',
+      marginBottom: 40,
       animation: {
         duration: 1200,
         easing: 'easeOutCubic'
@@ -358,7 +357,7 @@ function PriceChart({ token }) {
         style: {
           color: theme.palette.text.primary,
           fontWeight: 500,
-          fontSize: '11px'
+          fontSize: '10px'
         },
         formatter: function () {
           const date = new Date(this.value);
@@ -374,18 +373,17 @@ function PriceChart({ token }) {
     },
     yAxis: [
       {
-        // Main price axis
         title: {
           text: null
         },
-        tickAmount: 8,
+        tickAmount: 6,
         tickWidth: 1,
         gridLineColor: alpha(theme.palette.divider, 0.1),
         labels: {
           style: {
             color: theme.palette.text.primary,
             fontWeight: 500,
-            fontSize: '11px'
+            fontSize: '10px'
           },
           formatter: function () {
             return fCurrency5(this.value);
@@ -394,7 +392,7 @@ function PriceChart({ token }) {
         events: {
           afterSetExtremes: handleAfterSetExtremes
         },
-        height: '85%', // Increased from 80% to give more space to main chart
+        height: '85%',
         plotLines: [
           {
             width: 1,
@@ -412,15 +410,14 @@ function PriceChart({ token }) {
         }
       },
       {
-        // Volume axis
         title: {
           text: null
         },
         labels: {
           enabled: false
         },
-        top: '85%', // Adjusted from 82% to move volume chart down slightly
-        height: '15%', // Reduced from 18% to make volume chart more compact
+        top: '85%',
+        height: '15%',
         offset: 0,
         lineWidth: 0,
         gridLineWidth: 0,
@@ -553,7 +550,7 @@ function PriceChart({ token }) {
       },
       style: {
         color: theme.palette.text.primary,
-        fontSize: '12px',
+        fontSize: '11px',
         fontWeight: 500
       },
       formatter: function () {
@@ -622,7 +619,7 @@ function PriceChart({ token }) {
     },
     chart: {
       backgroundColor: 'transparent',
-      height: '500px',
+      height: '350px',
       events: {
         render: function () {
           const chart = this;
@@ -634,15 +631,14 @@ function PriceChart({ token }) {
             chart.watermark.destroy();
           }
 
-          const xPos = chart.plotWidth - imgWidth - 10; // 10px margin from right edge
-          const yPos = chart.plotHeight - imgHeight - 10; // 10px margin from bottom edge
+          const xPos = chart.plotWidth - imgWidth - 10;
+          const yPos = chart.plotHeight - imgHeight - 10;
 
-          // Add watermark as an SVG image
           chart.watermark = chart.renderer
             .image(imgUrl, xPos, yPos, imgWidth, imgHeight)
             .attr({
-              zIndex: 5, // Ensure it's above other elements
-              opacity: 0.4, // Reduced opacity for subtlety
+              zIndex: 5,
+              opacity: 0.4,
               width: '100px'
             })
             .add();
@@ -671,7 +667,7 @@ function PriceChart({ token }) {
         style: {
           color: theme.palette.text.primary,
           fontWeight: 500,
-          fontSize: '11px'
+          fontSize: '10px'
         },
         formatter: function () {
           const date = new Date(this.value);
@@ -698,7 +694,7 @@ function PriceChart({ token }) {
         style: {
           color: theme.palette.text.primary,
           fontWeight: 500,
-          fontSize: '11px'
+          fontSize: '10px'
         },
         formatter: function () {
           return fCurrency5(this.value);
@@ -744,7 +740,7 @@ function PriceChart({ token }) {
       },
       style: {
         color: theme.palette.text.primary,
-        fontSize: '12px',
+        fontSize: '11px',
         fontWeight: 500
       },
       formatter: function () {
@@ -830,18 +826,18 @@ function PriceChart({ token }) {
 
   return (
     <>
-      <Grid container rowSpacing={2} alignItems="center" sx={{ mt: 0, mb: 2 }}>
+      <Grid container rowSpacing={1} alignItems="center" sx={{ mt: 0, mb: 1.5 }}>
         <Grid container item xs={12} alignItems="center" justifyContent="space-between">
-          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
             <Box
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1
+                gap: 0.75
               }}
             >
               <Typography
-                variant="h5"
+                variant="h6"
                 sx={{
                   fontWeight: 700,
                   background:
@@ -861,7 +857,7 @@ function PriceChart({ token }) {
                 {`${user} ${name}`}
               </Typography>
               <Typography
-                variant="subtitle1"
+                variant="body2"
                 sx={{
                   color: theme.palette.text.secondary,
                   fontWeight: 500,
@@ -891,17 +887,17 @@ function PriceChart({ token }) {
                   bgcolor: alpha(getRangeColor(range), 0.1),
                   color: getRangeColor(range),
                   fontWeight: 600,
-                  fontSize: '0.75rem',
-                  height: '24px',
+                  fontSize: '0.7rem',
+                  height: '20px',
                   '& .MuiChip-label': {
-                    px: 1
+                    px: 0.75
                   }
                 }}
                 icon={
                   <Box
                     sx={{
-                      width: '6px',
-                      height: '6px',
+                      width: '5px',
+                      height: '5px',
                       borderRadius: '50%',
                       bgcolor: getRangeColor(range),
                       boxShadow: `0 0 8px ${alpha(getRangeColor(range), 0.5)}`
@@ -920,6 +916,8 @@ function PriceChart({ token }) {
                   color: theme.palette.primary.main,
                   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  width: '28px',
+                  height: '28px',
                   '&:hover': {
                     bgcolor: alpha(theme.palette.primary.main, 0.15),
                     transform: 'translateY(-1px)',
@@ -937,11 +935,11 @@ function PriceChart({ token }) {
                 sx={{
                   display: 'flex',
                   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                  borderRadius: 2,
+                  borderRadius: 1.5,
                   background: alpha(theme.palette.background.paper, 0.8),
                   backdropFilter: 'blur(10px)',
                   flexWrap: 'wrap',
-                  p: 0.25,
+                  p: 0.2,
                   boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, 0.08)}`
                 }}
               >
@@ -956,10 +954,10 @@ function PriceChart({ token }) {
                   <EnhancedToggleButton
                     value={0}
                     sx={{
-                      p: 0.75,
-                      minWidth: '36px',
-                      height: '32px',
-                      borderRadius: 1.5
+                      p: 0.5,
+                      minWidth: '28px',
+                      height: '28px',
+                      borderRadius: 1
                     }}
                     aria-label="line chart"
                   >
@@ -968,10 +966,10 @@ function PriceChart({ token }) {
                   <EnhancedToggleButton
                     value={1}
                     sx={{
-                      p: 0.75,
-                      minWidth: '36px',
-                      height: '32px',
-                      borderRadius: 1.5
+                      p: 0.5,
+                      minWidth: '28px',
+                      height: '28px',
+                      borderRadius: 1
                     }}
                     aria-label="candlestick chart"
                   >
@@ -988,11 +986,11 @@ function PriceChart({ token }) {
               sx={{
                 display: 'flex',
                 border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                borderRadius: 2,
+                borderRadius: 1.5,
                 background: alpha(theme.palette.background.paper, 0.8),
                 backdropFilter: 'blur(10px)',
                 flexWrap: 'wrap',
-                p: 0.25,
+                p: 0.2,
                 boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, 0.08)}`
               }}
             >
@@ -1006,70 +1004,70 @@ function PriceChart({ token }) {
               >
                 <Tooltip title={getIntervalTooltip('1MIN')} arrow placement="top">
                   <EnhancedToggleButton
-                    sx={{ minWidth: '42px', p: 0.75, height: '32px', borderRadius: 1.5 }}
+                    sx={{ minWidth: '38px', p: 0.5, height: '28px', borderRadius: 1 }}
                     value="1MIN"
                   >
-                    <Typography variant="caption" fontWeight={600}>
+                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
                       1MIN
                     </Typography>
                   </EnhancedToggleButton>
                 </Tooltip>
                 <Tooltip title={getIntervalTooltip('1D')} arrow placement="top">
                   <EnhancedToggleButton
-                    sx={{ minWidth: '36px', p: 0.75, height: '32px', borderRadius: 1.5 }}
+                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
                     value="1D"
                   >
-                    <Typography variant="caption" fontWeight={600}>
+                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
                       1D
                     </Typography>
                   </EnhancedToggleButton>
                 </Tooltip>
                 <Tooltip title={getIntervalTooltip('7D')} arrow placement="top">
                   <EnhancedToggleButton
-                    sx={{ minWidth: '36px', p: 0.75, height: '32px', borderRadius: 1.5 }}
+                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
                     value="7D"
                   >
-                    <Typography variant="caption" fontWeight={600}>
+                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
                       7D
                     </Typography>
                   </EnhancedToggleButton>
                 </Tooltip>
                 <Tooltip title={getIntervalTooltip('1M')} arrow placement="top">
                   <EnhancedToggleButton
-                    sx={{ minWidth: '36px', p: 0.75, height: '32px', borderRadius: 1.5 }}
+                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
                     value="1M"
                   >
-                    <Typography variant="caption" fontWeight={600}>
+                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
                       1M
                     </Typography>
                   </EnhancedToggleButton>
                 </Tooltip>
                 <Tooltip title={getIntervalTooltip('3M')} arrow placement="top">
                   <EnhancedToggleButton
-                    sx={{ minWidth: '36px', p: 0.75, height: '32px', borderRadius: 1.5 }}
+                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
                     value="3M"
                   >
-                    <Typography variant="caption" fontWeight={600}>
+                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
                       3M
                     </Typography>
                   </EnhancedToggleButton>
                 </Tooltip>
                 <Tooltip title={getIntervalTooltip('1Y')} arrow placement="top">
                   <EnhancedToggleButton
-                    sx={{ minWidth: '36px', p: 0.75, height: '32px', borderRadius: 1.5 }}
+                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
                     value="1Y"
                   >
-                    <Typography variant="caption" fontWeight={600}>
+                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
                       1Y
                     </Typography>
                   </EnhancedToggleButton>
                 </Tooltip>
                 <Tooltip title={getIntervalTooltip('ALL')} arrow placement="top">
                   <EnhancedToggleButton
-                    sx={{ minWidth: '38px', p: 0.75, height: '32px', borderRadius: 1.5 }}
+                    sx={{ minWidth: '34px', p: 0.5, height: '28px', borderRadius: 1 }}
                     value="ALL"
                   >
-                    <Typography variant="caption" fontWeight={600}>
+                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
                       ALL
                     </Typography>
                   </EnhancedToggleButton>
@@ -1084,18 +1082,18 @@ function PriceChart({ token }) {
         {isLoading ? (
           <Box
             sx={{
-              height: '500px',
-              p: 3
+              height: '350px',
+              p: 2
             }}
           >
             <Fade in={isLoading}>
               <Box>
-                <LoadingSkeleton sx={{ height: '60px', mb: 2 }} />
-                <LoadingSkeleton sx={{ height: '320px', mb: 2 }} />
+                <LoadingSkeleton sx={{ height: '40px', mb: 1.5 }} />
+                <LoadingSkeleton sx={{ height: '240px', mb: 1.5 }} />
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  <LoadingSkeleton sx={{ height: '40px', flex: 1 }} />
-                  <LoadingSkeleton sx={{ height: '40px', flex: 1 }} />
-                  <LoadingSkeleton sx={{ height: '40px', flex: 1 }} />
+                  <LoadingSkeleton sx={{ height: '30px', flex: 1 }} />
+                  <LoadingSkeleton sx={{ height: '30px', flex: 1 }} />
+                  <LoadingSkeleton sx={{ height: '30px', flex: 1 }} />
                 </Box>
               </Box>
             </Fade>
@@ -1116,18 +1114,18 @@ function PriceChart({ token }) {
           ) : (
             <Box
               sx={{
-                height: '500px',
+                height: '350px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 2
+                gap: 1.5
               }}
             >
               <Box
                 sx={{
-                  width: '64px',
-                  height: '64px',
+                  width: '48px',
+                  height: '48px',
                   borderRadius: '50%',
                   bgcolor: alpha(theme.palette.warning.main, 0.1),
                   display: 'flex',
@@ -1135,9 +1133,9 @@ function PriceChart({ token }) {
                   justifyContent: 'center'
                 }}
               >
-                <ShowChartIcon sx={{ fontSize: '32px', color: theme.palette.warning.main }} />
+                <ShowChartIcon sx={{ fontSize: '24px', color: theme.palette.warning.main }} />
               </Box>
-              <Typography variant="h6" color="text.secondary" fontWeight={600}>
+              <Typography variant="subtitle1" color="text.secondary" fontWeight={600}>
                 No data available
               </Typography>
               <Typography variant="body2" color="text.secondary" textAlign="center">
@@ -1162,18 +1160,18 @@ function PriceChart({ token }) {
         ) : (
           <Box
             sx={{
-              height: '500px',
+              height: '350px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 2
+              gap: 1.5
             }}
           >
             <Box
               sx={{
-                width: '64px',
-                height: '64px',
+                width: '48px',
+                height: '48px',
                 borderRadius: '50%',
                 bgcolor: alpha(theme.palette.warning.main, 0.1),
                 display: 'flex',
@@ -1181,9 +1179,9 @@ function PriceChart({ token }) {
                 justifyContent: 'center'
               }}
             >
-              <CandlestickChartIcon sx={{ fontSize: '32px', color: theme.palette.warning.main }} />
+              <CandlestickChartIcon sx={{ fontSize: '24px', color: theme.palette.warning.main }} />
             </Box>
-            <Typography variant="h6" color="text.secondary" fontWeight={600}>
+            <Typography variant="subtitle1" color="text.secondary" fontWeight={600}>
               No data available
             </Typography>
             <Typography variant="body2" color="text.secondary" textAlign="center">

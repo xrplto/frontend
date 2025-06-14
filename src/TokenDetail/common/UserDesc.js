@@ -250,67 +250,6 @@ const OriginStatusIndicator = ({ origin, isBlackholed, isBurned, size = 'normal'
           <Box sx={{ fontSize: isCompact ? '14px' : '16px', display: 'flex' }}>
             {getOriginIcon(origin)}
           </Box>
-
-          {/* Status indicators overlay */}
-          {(isBlackholed || isBurned) && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: -6,
-                right: -6,
-                display: 'flex',
-                gap: 0.25
-              }}
-            >
-              {isBlackholed && (
-                <Tooltip title="Blackholed Issuer">
-                  <Box
-                    sx={{
-                      width: 14,
-                      height: 14,
-                      borderRadius: '50%',
-                      background: theme.palette.success.main,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: `1px solid ${theme.palette.background.paper}`
-                    }}
-                  >
-                    <LockIcon
-                      sx={{
-                        fontSize: '8px',
-                        color: 'white'
-                      }}
-                    />
-                  </Box>
-                </Tooltip>
-              )}
-              {isBurned && (
-                <Tooltip title="Burned Liquidity Pool">
-                  <Box
-                    sx={{
-                      width: 14,
-                      height: 14,
-                      borderRadius: '50%',
-                      background: '#1890FF',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: `1px solid ${theme.palette.background.paper}`,
-                      ml: isBlackholed ? -0.5 : 0
-                    }}
-                  >
-                    <LocalFireDepartmentIcon
-                      sx={{
-                        fontSize: '8px',
-                        color: 'white'
-                      }}
-                    />
-                  </Box>
-                </Tooltip>
-              )}
-            </Box>
-          )}
         </Box>
       </Tooltip>
     </Stack>
@@ -1252,6 +1191,88 @@ export default function UserDesc({ token }) {
                     isBurned={!!token.origin}
                     size="compact"
                   />
+
+                  {/* Burned Liquidity Status */}
+                  {token.origin && token.origin !== 'xrp.fun' && (
+                    <Tooltip title="Burned Liquidity Pool">
+                      <Box
+                        sx={{
+                          p: 0.375,
+                          borderRadius: '6px',
+                          background: `linear-gradient(135deg, 
+                            ${alpha(theme.palette.primary.main, 0.12)} 0%, 
+                            ${alpha(theme.palette.primary.main, 0.06)} 100%
+                          )`,
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          minHeight: '22px'
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: '18px',
+                            height: '18px',
+                            backgroundColor: 'rgba(24, 144, 255, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid rgba(24, 144, 255, 0.2)',
+                            marginRight: '2px',
+                            marginBottom: '2px'
+                          }}
+                        >
+                          <LocalFireDepartmentIcon
+                            sx={{
+                              fontSize: '13px',
+                              color: '#1890FF'
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    </Tooltip>
+                  )}
+
+                  {/* Blackholed Status */}
+                  {(info.blackholed || token.origin) && (
+                    <Tooltip title="Blackholed Issuer">
+                      <Box
+                        sx={{
+                          p: 0.375,
+                          borderRadius: '6px',
+                          background: `linear-gradient(135deg, 
+                            ${alpha(theme.palette.primary.main, 0.12)} 0%, 
+                            ${alpha(theme.palette.primary.main, 0.06)} 100%
+                          )`,
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          minHeight: '22px'
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: '18px',
+                            height: '18px',
+                            backgroundColor: 'rgba(0, 171, 85, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid rgba(0, 171, 85, 0.2)',
+                            marginRight: '2px',
+                            marginBottom: '2px'
+                          }}
+                        >
+                          <LockIcon
+                            sx={{
+                              fontSize: '13px',
+                              color: '#00AB55'
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    </Tooltip>
+                  )}
                 </Stack>
               </Stack>
 
@@ -1423,6 +1444,88 @@ export default function UserDesc({ token }) {
                     isBurned={!!token.origin}
                     size="normal"
                   />
+
+                  {/* Burned Liquidity Status */}
+                  {token.origin && token.origin !== 'xrp.fun' && (
+                    <Tooltip title="Burned Liquidity Pool">
+                      <Box
+                        sx={{
+                          p: 0.5,
+                          borderRadius: '6px',
+                          background: `linear-gradient(135deg, 
+                            ${alpha(theme.palette.primary.main, 0.12)} 0%, 
+                            ${alpha(theme.palette.primary.main, 0.06)} 100%
+                          )`,
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          minHeight: '28px'
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: '18px',
+                            height: '18px',
+                            backgroundColor: 'rgba(24, 144, 255, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid rgba(24, 144, 255, 0.2)',
+                            marginRight: '2px',
+                            marginBottom: '2px'
+                          }}
+                        >
+                          <LocalFireDepartmentIcon
+                            sx={{
+                              fontSize: '13px',
+                              color: '#1890FF'
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    </Tooltip>
+                  )}
+
+                  {/* Blackholed Status */}
+                  {(info.blackholed || token.origin) && (
+                    <Tooltip title="Blackholed Issuer">
+                      <Box
+                        sx={{
+                          p: 0.5,
+                          borderRadius: '6px',
+                          background: `linear-gradient(135deg, 
+                            ${alpha(theme.palette.primary.main, 0.12)} 0%, 
+                            ${alpha(theme.palette.primary.main, 0.06)} 100%
+                          )`,
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          minHeight: '28px'
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: '18px',
+                            height: '18px',
+                            backgroundColor: 'rgba(0, 171, 85, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid rgba(0, 171, 85, 0.2)',
+                            marginRight: '2px',
+                            marginBottom: '2px'
+                          }}
+                        >
+                          <LockIcon
+                            sx={{
+                              fontSize: '13px',
+                              color: '#00AB55'
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    </Tooltip>
+                  )}
                 </Stack>
               </Stack>
 
