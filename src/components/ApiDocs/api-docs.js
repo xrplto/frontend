@@ -2867,6 +2867,467 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
           </Box>
         );
 
+      case 'get-graph-data-of-a-token':
+        return (
+          <Box id="get-graph-data-of-a-token">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.warning.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.warning.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <TrendingUpIcon sx={{ color: theme.palette.warning.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Get Graph Data of a Token
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve comprehensive historical price and trading data for detailed chart
+                visualization and technical analysis. Supports multiple time ranges from 1 day to
+                all-time data with precise timestamps and volume information.
+              </Typography>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/graph/&lt;md5&gt;?range=1D
+                </CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  Example with 7-day range:
+                </Typography>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/graph/c9ac9a6c44763c1bd9ccc6e47572fd26?range=7D
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  Parameters
+                </Typography>
+              </Box>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Parameter
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Type
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Default
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Description
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>md5</TableCell>
+                      <TableCell>Path</TableCell>
+                      <TableCell>Required</TableCell>
+                      <TableCell>MD5 hash of the token identifier</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>range</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>1D</TableCell>
+                      <TableCell>
+                        Time range for historical data: 1D, 7D, 1M, 3M, 1Y, or ALL
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Time Ranges
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API supports the following time ranges for historical data:
+                </Typography>
+                <Grid container spacing={2}>
+                  {[
+                    { range: '1D', desc: '1 Day - Last 24 hours', color: 'primary' },
+                    { range: '7D', desc: '7 Days - Last week', color: 'success' },
+                    { range: '1M', desc: '1 Month - Last 30 days', color: 'info' },
+                    { range: '3M', desc: '3 Months - Last quarter', color: 'warning' },
+                    { range: '1Y', desc: '1 Year - Last 12 months', color: 'error' },
+                    { range: 'ALL', desc: 'All Time - Complete history', color: 'secondary' }
+                  ].map((item, index) => (
+                    <Grid item xs={12} sm={6} md={4} key={index}>
+                      <Card
+                        sx={{
+                          background: alpha(theme.palette[item.color].main, 0.08),
+                          border: `1px solid ${alpha(theme.palette[item.color].main, 0.2)}`,
+                          borderRadius: '8px',
+                          p: 2,
+                          textAlign: 'center',
+                          transition: 'transform 0.2s ease',
+                          '&:hover': { transform: 'scale(1.02)' }
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          sx={{ color: `${item.color}.main`, fontWeight: 600, mb: 1 }}
+                        >
+                          {item.range}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          {item.desc}
+                        </Typography>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Response Structure
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns detailed historical data with performance timing:
+                </Typography>
+                <CodeBlock language="json">
+                  {`{
+  "res": "success",
+  "took": "45.23",                  // Response time in milliseconds
+  "length": 288,                    // Number of data points returned
+  "history": [                      // Array of historical data points
+    {
+      "timestamp": 1640995200000,    // Unix timestamp in milliseconds
+      "date": "2023-01-01T00:00:00Z", // ISO 8601 date string
+      "open": "0.1234",              // Opening price
+      "high": "0.1250",              // Highest price in period
+      "low": "0.1200",               // Lowest price in period
+      "close": "0.1245",             // Closing price
+      "volume": "15000.567890",      // Trading volume
+      "volumeXRP": "12500.123456",   // Volume in XRP
+      "trades": 45,                  // Number of trades
+      "priceUSD": "0.0647",          // Price in USD
+      "priceEUR": "0.0591",          // Price in EUR
+      "priceJPY": "9.234",           // Price in JPY
+      "priceCNY": "0.4123",          // Price in CNY
+      "marketCap": "8123456.78"      // Market capitalization
+    },
+    {
+      "timestamp": 1640998800000,
+      "date": "2023-01-01T01:00:00Z",
+      "open": "0.1245",
+      "high": "0.1260",
+      "low": "0.1230",
+      "close": "0.1255",
+      "volume": "18500.123456",
+      "volumeXRP": "14750.987654",
+      "trades": 52,
+      "priceUSD": "0.0657",
+      "priceEUR": "0.0601",
+      "priceJPY": "9.456",
+      "priceCNY": "0.4198",
+      "marketCap": "8245123.45"
+    }
+    // ... more historical data points
+  ]
+}`}
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Data Features
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The graph data endpoint provides comprehensive market data:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>OHLC Data:</strong> Open, High, Low, Close prices for each time period
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Multi-Currency Pricing:</strong> USD, EUR, JPY, and CNY price
+                    conversions
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Volume Metrics:</strong> Both token volume and XRP volume tracking
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Trade Count:</strong> Number of individual transactions per period
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Market Cap:</strong> Real-time market capitalization calculations
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Performance Timing:</strong> Response time measurement for
+                    optimization
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Use Cases
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The graph data is ideal for various analytical and visualization purposes:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Chart Visualization:</strong> Create candlestick, line, and area
+                    charts
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Technical Analysis:</strong> Calculate moving averages, RSI, and other
+                    indicators
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Historical Research:</strong> Study long-term price trends and
+                    patterns
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Volume Analysis:</strong> Correlate price movements with trading
+                    activity
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Market Research:</strong> Compare performance across different time
+                    periods
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Portfolio Tracking:</strong> Monitor asset performance over time
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Data Resolution
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  Data resolution varies by time range for optimal performance:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>1D:</strong> 5-minute intervals (288 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>7D:</strong> 30-minute intervals (336 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>1M:</strong> 4-hour intervals (180 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>3M:</strong> 12-hour intervals (180 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>1Y:</strong> Daily intervals (365 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>ALL:</strong> Weekly intervals (variable count)
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  Error Responses
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns the following error responses:
+                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error (Invalid MD5)
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Invalid md5"
+}`}
+                  </CodeBlock>
+                </Box>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error (Other)
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Error message details"
+}`}
+                  </CodeBlock>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
       default:
         return (
           <Box id={id}>
@@ -3322,7 +3783,7 @@ if ($richList) {
           return '';
       }
 
-    case 'get-exchange-history-of-a-token':
+      case 'get-exchange-history-of-a-token':
       switch (language) {
         case 'shell':
           return `curl -sS "https://api.xrpl.to/api/history?md5=0413ca7cfc258dfaf698c02fe304e607&page=0&limit=10"`;
@@ -3866,7 +4327,7 @@ const ApiDocs = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  return (
+        return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -3916,7 +4377,7 @@ const ApiDocs = () => {
               height: '100vh',
               overflowY: 'auto',
               zIndex: 1200,
-              background: `linear-gradient(135deg, ${alpha(
+                background: `linear-gradient(135deg, ${alpha(
                 theme.palette.background.paper,
                 0.95
               )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
