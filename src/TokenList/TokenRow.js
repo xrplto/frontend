@@ -72,14 +72,26 @@ const truncate = (str, n) => {
   return str.length > n ? str.substr(0, n - 1) + '... ' : str;
 };
 
-const formatTimeAgo = (dateString) => {
-  if (!dateString) return 'N/A';
+const formatTimeAgo = (dateValue, fallbackValue) => {
+  if (!dateValue) return 'N/A';
 
-  const date = new Date(dateString);
+  // Handle both timestamp (number) and date string
+  const date = typeof dateValue === 'number' ? new Date(dateValue) : new Date(dateValue);
   const now = new Date();
   let seconds = Math.floor((now - date) / 1000);
 
-  if (seconds < 0) return '...';
+  // If the main date is in the future, try using fallback
+  if (seconds < 0 && fallbackValue) {
+    const fallbackDate =
+      typeof fallbackValue === 'number' ? new Date(fallbackValue) : new Date(fallbackValue);
+    seconds = Math.floor((now - fallbackDate) / 1000);
+
+    // If fallback is also in the future, return a fallback
+    if (seconds < 0) return 'Just now';
+  }
+
+  // If still negative (future date), return fallback
+  if (seconds < 0) return 'Just now';
 
   if (seconds < 60) return `${seconds}s`;
 
@@ -413,7 +425,9 @@ function FTokenRow({
     isOMCF,
     tvl,
     origin,
-    holders
+    holders,
+    lastUpdated,
+    dateon
   } = memoizedToken;
 
   const handleWatchlistClick = useCallback(
@@ -673,7 +687,7 @@ function FTokenRow({
             fontWeight: '500'
           }}
         >
-          {date ? formatTimeAgo(date) : 'N/A'}
+          {formatTimeAgo(dateon, date)}
         </Typography>
       </TableCell>
       <TableCell align="right">
