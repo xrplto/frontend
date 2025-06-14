@@ -84,9 +84,9 @@ import { alpha } from '@mui/material/styles';
 
 const IconCover = styled('div')(
   ({ theme }) => `
-        width: 70px;
-        height: 70px;
-        border-radius: 18px;
+        width: 90px;
+        height: 90px;
+        border-radius: 20px;
         position: relative;
         overflow: hidden;
         z-index: 1;
@@ -108,8 +108,8 @@ const IconWrapper = styled('div')(
         box-sizing: border-box;
         display: inline-block;
         position: relative;
-        width: 70px;
-        height: 70px;
+        width: 90px;
+        height: 90px;
   `
 );
 
@@ -362,40 +362,35 @@ const markWarningShownForToken = (tokenId) => {
 };
 
 // Add XPMarket icon component
-const XPMarketIcon = React.forwardRef((props, ref) => {
-  // Remove any width="auto" that might be in props
-  const { width, ...otherProps } = props;
-
-  return (
-    <SvgIcon {...otherProps} ref={ref} viewBox="0 0 36 36" sx={{ ...otherProps.sx }}>
-      <defs>
-        <linearGradient id="xpmarket-icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{ stopColor: '#9333EA', stopOpacity: 1 }} />
-          <stop offset="30%" style={{ stopColor: '#7C3AED', stopOpacity: 1 }} />
-          <stop offset="70%" style={{ stopColor: '#8B5CF6', stopOpacity: 1 }} />
-          <stop offset="100%" style={{ stopColor: '#6D28D9', stopOpacity: 1 }} />
-        </linearGradient>
-        <filter id="xpmarket-shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="rgba(109, 31, 238, 0.4)" />
-        </filter>
-      </defs>
-      <g transform="translate(2, 2) scale(1.1)" filter="url(#xpmarket-shadow)">
-        <path
-          d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
-          fill="url(#xpmarket-icon-gradient)"
-        />
-        <path
-          d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
-          fill="url(#xpmarket-icon-gradient)"
-        />
-        <path
-          d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
-          fill="url(#xpmarket-icon-gradient)"
-        />
-      </g>
-    </SvgIcon>
-  );
-});
+const XPMarketIcon = React.forwardRef((props, ref) => (
+  <SvgIcon {...props} ref={ref} viewBox="0 0 36 36" sx={{ ...otherProps.sx }}>
+    <defs>
+      <linearGradient id="xpmarket-icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style={{ stopColor: '#9333EA', stopOpacity: 1 }} />
+        <stop offset="30%" style={{ stopColor: '#7C3AED', stopOpacity: 1 }} />
+        <stop offset="70%" style={{ stopColor: '#8B5CF6', stopOpacity: 1 }} />
+        <stop offset="100%" style={{ stopColor: '#6D28D9', stopOpacity: 1 }} />
+      </linearGradient>
+      <filter id="xpmarket-shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="rgba(109, 31, 238, 0.4)" />
+      </filter>
+    </defs>
+    <g transform="translate(2, 2) scale(1.1)" filter="url(#xpmarket-shadow)">
+      <path
+        d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
+        fill="url(#xpmarket-icon-gradient)"
+      />
+      <path
+        d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
+        fill="url(#xpmarket-icon-gradient)"
+      />
+      <path
+        d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
+        fill="url(#xpmarket-icon-gradient)"
+      />
+    </g>
+  </SvgIcon>
+));
 
 // Add display name for better debugging
 XPMarketIcon.displayName = 'XPMarketIcon';
@@ -534,8 +529,8 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           label={tag}
           onClick={handleToggleExpand}
           sx={{
-            height: isMobile ? '18px' : '22px',
-            fontSize: isMobile ? '0.55rem' : '0.65rem',
+            height: isMobile ? '26px' : '30px',
+            fontSize: isMobile ? '0.75rem' : '0.85rem',
             borderRadius: '3px',
             px: isMobile ? 0.5 : 1,
             background: `linear-gradient(135deg, ${alpha(
@@ -546,7 +541,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
             color: theme.palette.primary.main,
             fontWeight: 500,
             cursor: 'pointer',
-            minHeight: isMobile ? '26px' : 'auto',
+            minHeight: isMobile ? '34px' : 'auto',
 
             '&:hover': {
               background: `linear-gradient(135deg, ${alpha(
@@ -577,8 +572,8 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           label={tag}
           onClick={handleDelete}
           sx={{
-            height: isMobile ? '18px' : '22px',
-            fontSize: isMobile ? '0.55rem' : '0.65rem',
+            height: isMobile ? '26px' : '30px',
+            fontSize: isMobile ? '0.75rem' : '0.85rem',
             borderRadius: '3px',
             px: isMobile ? 0.5 : 1,
             background: `linear-gradient(135deg, ${alpha(
@@ -589,7 +584,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
             color: theme.palette.text.primary,
             fontWeight: 500,
             cursor: 'pointer',
-            minHeight: isMobile ? '26px' : 'auto',
+            minHeight: isMobile ? '34px' : 'auto',
 
             '&:hover': {
               background: `linear-gradient(135deg, ${alpha(
@@ -693,8 +688,8 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           size="small"
           onClick={() => toggleTagsDrawer(true)}
           sx={{
-            height: isMobile ? '18px' : '22px',
-            fontSize: isMobile ? '0.55rem' : '0.65rem',
+            height: isMobile ? '26px' : '30px',
+            fontSize: isMobile ? '0.75rem' : '0.85rem',
             borderRadius: '3px',
             px: isMobile ? 0.5 : 1,
             background: `linear-gradient(135deg, ${alpha(
@@ -705,7 +700,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
             color: theme.palette.primary.main,
             fontWeight: 500,
             cursor: 'pointer',
-            minHeight: isMobile ? '26px' : 'auto',
+            minHeight: isMobile ? '34px' : 'auto',
 
             '&:hover': {
               background: `linear-gradient(135deg, ${alpha(
@@ -1168,9 +1163,9 @@ export default function UserDesc({ token }) {
                 alt={`${user} ${name} Logo`}
                 src={imgUrl}
                 sx={{
-                  width: isXsMobile ? 44 : 52,
-                  height: isXsMobile ? 44 : 52,
-                  borderRadius: '10px',
+                  width: isXsMobile ? 64 : 72,
+                  height: isXsMobile ? 64 : 72,
+                  borderRadius: '12px',
                   border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`
                 }}
               />
@@ -1180,7 +1175,7 @@ export default function UserDesc({ token }) {
                     <CheckCircleIcon
                       sx={{
                         color: '#00AB55',
-                        fontSize: isXsMobile ? 16 : 18,
+                        fontSize: isXsMobile ? 20 : 24,
                         filter: 'drop-shadow(0 2px 4px rgba(0, 171, 85, 0.3))'
                       }}
                     />
@@ -1230,7 +1225,7 @@ export default function UserDesc({ token }) {
                 <Typography
                   variant="h6"
                   sx={{
-                    fontSize: isXsMobile ? '0.9rem' : '1rem',
+                    fontSize: isXsMobile ? '1.3rem' : '1.4rem',
                     fontWeight: 700,
                     background: `linear-gradient(135deg, 
                       ${theme.palette.primary.main} 0%, 
@@ -1261,8 +1256,8 @@ export default function UserDesc({ token }) {
                       size="small"
                       sx={{
                         borderRadius: '4px',
-                        height: isXsMobile ? '16px' : '20px',
-                        fontSize: isXsMobile ? '0.55rem' : '0.65rem',
+                        height: isXsMobile ? '24px' : '28px',
+                        fontSize: isXsMobile ? '0.8rem' : '0.9rem',
                         background: `linear-gradient(135deg, 
                           ${alpha(theme.palette.primary.main, 0.12)} 0%, 
                           ${alpha(theme.palette.primary.main, 0.06)} 100%
@@ -1291,7 +1286,7 @@ export default function UserDesc({ token }) {
                 variant="body2"
                 color="text.secondary"
                 sx={{
-                  fontSize: isXsMobile ? '0.7rem' : '0.75rem',
+                  fontSize: isXsMobile ? '1rem' : '1.1rem',
                   fontWeight: 500,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -1396,9 +1391,9 @@ export default function UserDesc({ token }) {
                     alt={`${user} ${name} Logo`}
                     src={imgUrl}
                     sx={{
-                      width: 70,
-                      height: 70,
-                      borderRadius: '18px',
+                      width: 90,
+                      height: 90,
+                      borderRadius: '20px',
                       border: `3px solid ${alpha(theme.palette.primary.main, 0.15)}`
                     }}
                   />
@@ -1408,7 +1403,7 @@ export default function UserDesc({ token }) {
                         <CheckCircleIcon
                           sx={{
                             color: '#00AB55',
-                            fontSize: 26,
+                            fontSize: 32,
                             filter: 'drop-shadow(0 2px 4px rgba(0, 171, 85, 0.3))'
                           }}
                         />
@@ -1454,7 +1449,7 @@ export default function UserDesc({ token }) {
                 <Typography
                   variant="h6"
                   sx={{
-                    fontSize: '1.35rem',
+                    fontSize: '1.7rem',
                     fontWeight: 700,
                     background: `linear-gradient(135deg, 
                       ${theme.palette.primary.main} 0%, 
@@ -1484,8 +1479,8 @@ export default function UserDesc({ token }) {
                       size="small"
                       sx={{
                         borderRadius: '4px',
-                        height: '28px',
-                        fontSize: '0.8rem',
+                        height: '36px',
+                        fontSize: '1rem',
                         background: `linear-gradient(135deg, 
                           ${alpha(theme.palette.primary.main, 0.12)} 0%, 
                           ${alpha(theme.palette.primary.main, 0.06)} 100%
@@ -1519,7 +1514,7 @@ export default function UserDesc({ token }) {
                   variant="body2"
                   color="text.secondary"
                   sx={{
-                    fontSize: '0.9rem',
+                    fontSize: '1.1rem',
                     fontWeight: 500,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -1596,7 +1591,7 @@ export default function UserDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.7rem',
+                        fontSize: '0.8rem',
                         fontWeight: 500,
                         color: alpha(theme.palette.text.secondary, 0.8),
                         textTransform: 'uppercase',
@@ -1608,7 +1603,7 @@ export default function UserDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.75rem',
+                        fontSize: '0.95rem',
                         fontWeight: 600,
                         color: stat.color
                       }}
@@ -1802,7 +1797,7 @@ export default function UserDesc({ token }) {
                   }}
                 >
                   <Stack direction="row" alignItems="center" spacing={1}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
                       {showStat ? 'Hide' : 'Show'} Detailed Stats
                     </Typography>
                   </Stack>
@@ -1843,7 +1838,7 @@ export default function UserDesc({ token }) {
                         <Typography
                           variant="caption"
                           sx={{
-                            fontSize: '0.65rem',
+                            fontSize: '0.75rem',
                             fontWeight: 600,
                             color: theme.palette.primary.main,
                             textTransform: 'uppercase',
@@ -1992,7 +1987,7 @@ export default function UserDesc({ token }) {
                         <Typography
                           variant="caption"
                           sx={{
-                            fontSize: '0.65rem',
+                            fontSize: '0.75rem',
                             fontWeight: 600,
                             color: theme.palette.success.main,
                             textTransform: 'uppercase',
@@ -2164,7 +2159,7 @@ export default function UserDesc({ token }) {
             }}
           >
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
                 {showStat ? 'Hide' : 'Show'} Market Stats
               </Typography>
             </Stack>

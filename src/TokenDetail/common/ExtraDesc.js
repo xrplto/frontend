@@ -130,7 +130,7 @@ export default function ExtraDesc({ token }) {
           : '(Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'
       }.`,
       admin: isAdmin && (
-        <FormGroup sx={{ ml: 0.0625 }}>
+        <FormGroup sx={{ ml: 0.03125 }}>
           <FormControlLabel
             control={
               <Checkbox
@@ -139,7 +139,7 @@ export default function ExtraDesc({ token }) {
                 onClick={onChangeMarketCalculation}
                 inputProps={{ 'aria-label': 'controlled' }}
                 sx={{
-                  p: 0.03125,
+                  p: 0.015625,
                   color: theme.palette.success.main,
                   '&.Mui-checked': {
                     color: theme.palette.success.main
@@ -151,7 +151,7 @@ export default function ExtraDesc({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontSize: '0.5rem',
+                  fontSize: '0.4rem',
                   color: alpha(theme.palette.text.secondary, 0.8)
                 }}
               >
@@ -187,8 +187,8 @@ export default function ExtraDesc({ token }) {
     <Box
       sx={{
         display: { xs: 'none', md: 'block' },
-        p: 0.5,
-        borderRadius: '4px',
+        p: 0.25,
+        borderRadius: '3px',
         background: `linear-gradient(135deg, ${alpha(
           theme.palette.background.paper,
           0.8
@@ -217,15 +217,15 @@ export default function ExtraDesc({ token }) {
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-          gap: 0.5
+          gap: 0.25
         }}
       >
         {metrics_data.map((metric, index) => (
           <Box
             key={metric.title}
             sx={{
-              p: 0.5,
-              borderRadius: '3px',
+              p: 0.25,
+              borderRadius: '2px',
               background: `linear-gradient(135deg, ${alpha(metric.color, 0.08)} 0%, ${alpha(
                 metric.color,
                 0.04
@@ -244,11 +244,11 @@ export default function ExtraDesc({ token }) {
               }
             }}
           >
-            <Stack direction="row" alignItems="center" gap={0.0625} sx={{ mb: 0.15 }}>
+            <Stack direction="row" alignItems="center" gap={0.03125} sx={{ mb: 0.0625 }}>
               <Typography
                 variant="body2"
                 sx={{
-                  fontSize: '0.5rem',
+                  fontSize: '0.4rem',
                   color: alpha(theme.palette.text.secondary, 0.9),
                   fontWeight: 500
                 }}
@@ -257,7 +257,7 @@ export default function ExtraDesc({ token }) {
               </Typography>
               <Tooltip
                 title={
-                  <Typography variant="body2" sx={{ fontSize: '0.575rem' }}>
+                  <Typography variant="body2" sx={{ fontSize: '0.5rem' }}>
                     {metric.tooltip}
                   </Typography>
                 }
@@ -272,7 +272,7 @@ export default function ExtraDesc({ token }) {
                       border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
                       borderRadius: '3px',
                       boxShadow: `0 1px 8px ${alpha(theme.palette.common.black, 0.1)}`,
-                      p: 0.5,
+                      p: 0.25,
                       '& .MuiTooltip-arrow': {
                         color: alpha(theme.palette.background.paper, 0.9)
                       }
@@ -280,7 +280,7 @@ export default function ExtraDesc({ token }) {
                   }
                 }}
               >
-                <Icon icon={infoFilled} width={7} height={7} style={{ color: metric.color }} />
+                <Icon icon={infoFilled} width={5} height={5} style={{ color: metric.color }} />
               </Tooltip>
               {metric.admin}
             </Stack>
@@ -289,7 +289,7 @@ export default function ExtraDesc({ token }) {
               {metric.subValue ? (
                 <Tooltip
                   title={
-                    <Typography variant="body2" sx={{ fontSize: '0.575rem' }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.5rem' }}>
                       {metric.subValue}
                     </Typography>
                   }
@@ -304,7 +304,7 @@ export default function ExtraDesc({ token }) {
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
                         borderRadius: '3px',
                         boxShadow: `0 1px 8px ${alpha(theme.palette.common.black, 0.1)}`,
-                        p: 0.5,
+                        p: 0.25,
                         '& .MuiTooltip-arrow': {
                           color: alpha(theme.palette.background.paper, 0.9)
                         }
@@ -315,7 +315,7 @@ export default function ExtraDesc({ token }) {
                   <Typography
                     variant="h6"
                     sx={{
-                      fontSize: '0.65rem',
+                      fontSize: '0.55rem',
                       fontWeight: 700,
                       background: `linear-gradient(135deg, ${metric.color} 0%, ${alpha(
                         metric.color,
@@ -327,7 +327,7 @@ export default function ExtraDesc({ token }) {
                       letterSpacing: '0.01em',
                       textAlign: 'center',
                       cursor: 'pointer',
-                      lineHeight: 1.05
+                      lineHeight: 1
                     }}
                   >
                     {metric.value}
@@ -337,7 +337,7 @@ export default function ExtraDesc({ token }) {
                 <Typography
                   variant="h6"
                   sx={{
-                    fontSize: '0.65rem',
+                    fontSize: '0.55rem',
                     fontWeight: 700,
                     background: `linear-gradient(135deg, ${metric.color} 0%, ${alpha(
                       metric.color,
@@ -348,7 +348,7 @@ export default function ExtraDesc({ token }) {
                     WebkitTextFillColor: 'transparent',
                     letterSpacing: '0.01em',
                     textAlign: 'center',
-                    lineHeight: 1.05
+                    lineHeight: 1
                   }}
                 >
                   {metric.value}
