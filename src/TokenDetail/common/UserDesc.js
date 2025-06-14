@@ -1182,32 +1182,6 @@ export default function UserDesc({ token }) {
                   </Tooltip>
                 </KYCBadge>
               )}
-
-              {/* Status badges on avatar */}
-              {token.origin && (
-                <StatusBadgeContainer>
-                  <StatusBadge bgcolor={theme.palette.success.main}>
-                    <Tooltip title="Blackholed Issuer">
-                      <LockIcon
-                        sx={{
-                          fontSize: '10px',
-                          color: theme.palette.success.main
-                        }}
-                      />
-                    </Tooltip>
-                  </StatusBadge>
-                  <StatusBadge bgcolor="#1890FF">
-                    <Tooltip title="Burned Liquidity Pool">
-                      <LocalFireDepartmentIcon
-                        sx={{
-                          fontSize: '10px',
-                          color: '#1890FF'
-                        }}
-                      />
-                    </Tooltip>
-                  </StatusBadge>
-                </StatusBadgeContainer>
-              )}
             </Box>
 
             {/* Name, User, Tags, Social - Middle Section */}
@@ -1358,31 +1332,6 @@ export default function UserDesc({ token }) {
                         </Tooltip>
                       </KYCBadge>
                     )}
-                    {/* Status badges on desktop avatar */}
-                    {token.origin && (
-                      <StatusBadgeContainer>
-                        <StatusBadge bgcolor={theme.palette.success.main}>
-                          <Tooltip title="Blackholed Issuer">
-                            <LockIcon
-                              sx={{
-                                fontSize: '12px',
-                                color: theme.palette.success.main
-                              }}
-                            />
-                          </Tooltip>
-                        </StatusBadge>
-                        <StatusBadge bgcolor="#1890FF">
-                          <Tooltip title="Burned Liquidity Pool">
-                            <LocalFireDepartmentIcon
-                              sx={{
-                                fontSize: '12px',
-                                color: '#1890FF'
-                              }}
-                            />
-                          </Tooltip>
-                        </StatusBadge>
-                      </StatusBadgeContainer>
-                    )}
                   </IconCover>
                 </div>
               ) : (
@@ -1409,32 +1358,6 @@ export default function UserDesc({ token }) {
                         />
                       </Tooltip>
                     </KYCBadge>
-                  )}
-
-                  {/* Status badges on desktop avatar */}
-                  {token.origin && (
-                    <StatusBadgeContainer>
-                      <StatusBadge bgcolor={theme.palette.success.main}>
-                        <Tooltip title="Blackholed Issuer">
-                          <LockIcon
-                            sx={{
-                              fontSize: '12px',
-                              color: theme.palette.success.main
-                            }}
-                          />
-                        </Tooltip>
-                      </StatusBadge>
-                      <StatusBadge bgcolor="#1890FF">
-                        <Tooltip title="Burned Liquidity Pool">
-                          <LocalFireDepartmentIcon
-                            sx={{
-                              fontSize: '12px',
-                              color: '#1890FF'
-                            }}
-                          />
-                        </Tooltip>
-                      </StatusBadge>
-                    </StatusBadgeContainer>
                   )}
                 </Box>
               )}
