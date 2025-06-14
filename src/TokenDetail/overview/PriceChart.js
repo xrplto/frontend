@@ -333,7 +333,7 @@ function PriceChart({ token }) {
         }
       },
       zoomType: 'x', // Enable horizontal zooming
-      marginBottom: 100, // Add margin for volume chart
+      marginBottom: 60, // Reduced from 100 to make bottom more compact
       animation: {
         duration: 1200,
         easing: 'easeOutCubic'
@@ -394,7 +394,7 @@ function PriceChart({ token }) {
         events: {
           afterSetExtremes: handleAfterSetExtremes
         },
-        height: '80%',
+        height: '85%', // Increased from 80% to give more space to main chart
         plotLines: [
           {
             width: 1,
@@ -419,8 +419,8 @@ function PriceChart({ token }) {
         labels: {
           enabled: false
         },
-        top: '82%',
-        height: '18%',
+        top: '85%', // Adjusted from 82% to move volume chart down slightly
+        height: '15%', // Reduced from 18% to make volume chart more compact
         offset: 0,
         lineWidth: 0,
         gridLineWidth: 0,
