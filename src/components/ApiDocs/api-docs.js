@@ -58,7 +58,6 @@ import SearchIcon from '@mui/icons-material/Search';
 
 const sections = [
   { id: 'introduction', title: 'Introduction' },
-  { id: 'tokens', title: 'Tokens' },
   { id: 'get-all-tokens', title: 'Get All Tokens' },
   { id: 'get-a-specific-token-info', title: 'Get a Specific Token Info' },
   { id: 'get-sparkline-of-a-token', title: 'Get Sparkline of a token' },
@@ -507,38 +506,6 @@ const DocumentationContent = ({ activeSection, searchTerm }) => {
               </Box>
             </Card>
           </Box>
-        );
-
-      case 'tokens':
-        return (
-          <Card
-            id="tokens"
-            sx={{
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.primary.main,
-                0.05
-              )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-              borderRadius: '16px',
-              p: 3
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <AccountBalanceWalletIcon
-                sx={{ color: theme.palette.primary.main, mr: 2, fontSize: 32 }}
-              />
-              <Typography variant="h2" sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>
-                Tokens
-              </Typography>
-            </Box>
-            <Typography
-              variant="body1"
-              sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
-            >
-              The Tokens API provides access to comprehensive token data on the XRP Ledger,
-              including real-time prices, trading volumes, and detailed token information.
-            </Typography>
-          </Card>
         );
 
       case 'get-all-tokens':
@@ -3783,7 +3750,7 @@ if ($richList) {
           return '';
       }
 
-      case 'get-exchange-history-of-a-token':
+    case 'get-exchange-history-of-a-token':
       switch (language) {
         case 'shell':
           return `curl -sS "https://api.xrpl.to/api/history?md5=0413ca7cfc258dfaf698c02fe304e607&page=0&limit=10"`;
@@ -4327,7 +4294,7 @@ const ApiDocs = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-        return (
+  return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -4377,7 +4344,7 @@ const ApiDocs = () => {
               height: '100vh',
               overflowY: 'auto',
               zIndex: 1200,
-                background: `linear-gradient(135deg, ${alpha(
+              background: `linear-gradient(135deg, ${alpha(
                 theme.palette.background.paper,
                 0.95
               )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
