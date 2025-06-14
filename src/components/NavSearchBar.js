@@ -12,6 +12,7 @@ const NavSearchBar = ({ id, placeholder, fullSearch, setFullSearch, ...props }) 
   const { darkMode } = useContext(AppContext);
   const theme = useTheme();
   const [open, setOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   useKeypress('/', () => {
     setOpen(true);
@@ -27,45 +28,33 @@ const NavSearchBar = ({ id, placeholder, fullSearch, setFullSearch, ...props }) 
       <Stack
         direction="row"
         alignItems="center"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         sx={{
-          borderRadius: '12px',
+          borderRadius: '14px',
           cursor: 'pointer',
-          p: 1,
-          height: '40px',
-          width: '240px',
-          background: `linear-gradient(135deg, ${alpha(
-            theme.palette.background.paper,
-            0.8
-          )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-          backdropFilter: 'blur(10px)',
-          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          px: 2.5,
+          py: 1.5,
+          height: '46px',
+          width: '270px',
+          backgroundColor: darkMode
+            ? alpha(theme.palette.background.paper, 0.12)
+            : alpha(theme.palette.background.paper, 0.95),
+          border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.12 : 0.18)}`,
+          boxShadow: 'none',
+          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
           position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: '-100%',
-            width: '100%',
-            height: '100%',
-            background: `linear-gradient(90deg, transparent, ${alpha(
-              theme.palette.primary.main,
-              0.1
-            )}, transparent)`,
-            transition: 'left 0.5s ease'
-          },
           '&:hover': {
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.primary.main,
-              0.08
-            )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-            transform: 'translateY(-2px)',
-            boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.15)}`,
-            '&::before': {
-              left: '100%'
-            }
+            backgroundColor: darkMode
+              ? alpha(theme.palette.background.paper, 0.16)
+              : alpha(theme.palette.background.paper, 1),
+            border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.25 : 0.35)}`,
+            boxShadow: 'none',
+            transform: 'translateY(-1px)'
+          },
+          '&:active': {
+            transform: 'translateY(0)',
+            transition: 'all 0.1s ease'
           }
         }}
         onClick={openModal}
@@ -73,18 +62,25 @@ const NavSearchBar = ({ id, placeholder, fullSearch, setFullSearch, ...props }) 
       >
         <SearchIcon
           sx={{
-            fontSize: '1.2rem',
-            mr: 1,
-            color: theme.palette.text.secondary,
-            transition: 'color 0.2s ease'
+            fontSize: '1.3rem',
+            mr: 2,
+            color: isHovered
+              ? alpha(theme.palette.primary.main, 0.8)
+              : alpha(theme.palette.primary.main, 0.6),
+            transition: 'all 0.25s ease',
+            transform: isHovered ? 'scale(1.05)' : 'scale(1)'
           }}
         />
         <Typography
           sx={{
-            fontSize: '0.9rem',
-            width: '160px',
-            color: theme.palette.text.secondary,
+            fontSize: '0.96rem',
+            flex: 1,
+            color: darkMode
+              ? alpha(theme.palette.text.primary, 0.85)
+              : alpha(theme.palette.text.secondary, 0.9),
             fontWeight: 500,
+            letterSpacing: '0.02em',
+            lineHeight: 1.2,
             transition: 'color 0.2s ease'
           }}
         >
@@ -95,18 +91,18 @@ const NavSearchBar = ({ id, placeholder, fullSearch, setFullSearch, ...props }) 
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '22px',
-            height: '22px',
-            borderRadius: '6px',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.primary.main,
-              0.1
-            )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-            color: theme.palette.text.secondary,
-            fontSize: '11px',
-            fontWeight: 'bold',
-            transition: 'all 0.2s ease'
+            width: '26px',
+            height: '26px',
+            borderRadius: '7px',
+            backgroundColor: alpha(theme.palette.primary.main, darkMode ? 0.08 : 0.12),
+            border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.15 : 0.2)}`,
+            color: alpha(theme.palette.primary.main, darkMode ? 0.7 : 0.8),
+            fontSize: '12px',
+            fontWeight: '600',
+            fontFamily: 'SF Mono, Monaco, Consolas, monospace',
+            boxShadow: 'none',
+            transition: 'all 0.2s ease',
+            transform: isHovered ? 'scale(1.05)' : 'scale(1)'
           }}
         >
           /
