@@ -24,9 +24,12 @@ import {
   TableRow,
   Typography,
   CircularProgress,
-  Modal
+  Modal,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
+import { withStyles } from '@mui/styles';
 
 // Context
 import { useContext } from 'react';
@@ -138,6 +141,37 @@ function truncate(str, n) {
   if (!str) return '';
   //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
   return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
+}
+
+// Add modern color scheme matching Donut.js
+function getModernColors(darkMode) {
+  return darkMode
+    ? [
+        '#FF6B8A',
+        '#FF8F6B',
+        '#FFB366',
+        '#FFD93D',
+        '#BCEB5F',
+        '#7ED957',
+        '#4ECDC4',
+        '#45B7D1',
+        '#96CEB4',
+        '#FFEAA7',
+        '#6C5CE7'
+      ]
+    : [
+        '#FF6B8A',
+        '#FF8F6B',
+        '#FFB366',
+        '#FFD93D',
+        '#BCEB5F',
+        '#7ED957',
+        '#4ECDC4',
+        '#45B7D1',
+        '#96CEB4',
+        '#FFEAA7',
+        '#6C5CE7'
+      ];
 }
 
 // Add DailyVolumeChart component
@@ -290,43 +324,98 @@ const StatsModal = ({ open, onClose, account, traderStats }) => {
           width: '90%',
           maxWidth: 1000,
           bgcolor: 'background.paper',
-          boxShadow: 24,
-          p: 1.5,
-          borderRadius: 2,
+          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.16)',
+          borderRadius: '16px',
+          border: '1px solid rgba(145, 158, 171, 0.12)',
+          p: 3,
           maxHeight: '90vh',
-          overflow: 'auto'
+          overflow: 'auto',
+          backdropFilter: 'blur(20px)',
+          '&::-webkit-scrollbar': {
+            width: '8px'
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'rgba(145, 158, 171, 0.08)',
+            borderRadius: '4px'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(145, 158, 171, 0.24)',
+            borderRadius: '4px',
+            '&:hover': {
+              background: 'rgba(145, 158, 171, 0.4)'
+            }
+          }
         }}
       >
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
-          <Typography variant="subtitle1">Trader Statistics for {truncate(account, 20)}</Typography>
-          <Link
-            underline="none"
-            color="inherit"
-            target="_blank"
-            href={`https://bithomp.com/explorer/${account}`}
-            rel="noreferrer noopener nofollow"
-          >
-            <IconButton size="small" sx={{ p: 0.5 }}>
-              <LinkIcon fontSize="small" />
-            </IconButton>
-          </Link>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h5" sx={{ fontWeight: '700', fontSize: '20px' }}>
+            Trader Statistics for {truncate(account, 20)}
+          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Tooltip title="View on Bithomp" placement="bottom">
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderRadius: '12px',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  border: '1px solid rgba(145, 158, 171, 0.12)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(145, 158, 171, 0.08)',
+                    transform: 'scale(1.05)',
+                    borderColor: 'rgba(145, 158, 171, 0.24)'
+                  }
+                }}
+              >
+                <Link
+                  underline="none"
+                  color="inherit"
+                  target="_blank"
+                  href={`https://bithomp.com/explorer/${account}`}
+                  rel="noreferrer noopener nofollow"
+                >
+                  <LinkIcon sx={{ fontSize: '20px', color: 'primary.main' }} />
+                </Link>
+              </Box>
+            </Tooltip>
+            <CopyButton text={account} />
+          </Stack>
         </Stack>
 
         {/* Grid layout for all stats */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1.5, mt: 1 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 3, mt: 2 }}>
           {/* Performance Overview */}
-          <Box>
+          <Box
+            sx={{
+              p: 2.5,
+              borderRadius: '12px',
+              border: '1px solid rgba(145, 158, 171, 0.12)',
+              backgroundColor: 'rgba(145, 158, 171, 0.04)',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                borderColor: 'rgba(145, 158, 171, 0.24)',
+                backgroundColor: 'rgba(145, 158, 171, 0.08)'
+              }
+            }}
+          >
             <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+              variant="subtitle1"
+              sx={{
+                mb: 2,
+                fontWeight: '700',
+                fontSize: '14px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                color: 'text.secondary'
+              }}
             >
               PERFORMANCE OVERVIEW
             </Typography>
-            <Stack spacing={0.25}>
+            <Stack spacing={1.5}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Win Rate:</Typography>
-                <Typography variant="caption">
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  Win Rate:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600' }}>
                   {(
                     (stats.profitableTrades / (stats.profitableTrades + stats.losingTrades)) *
                     100
@@ -335,22 +424,29 @@ const StatsModal = ({ open, onClose, account, traderStats }) => {
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Total Trades:</Typography>
-                <Typography variant="caption">
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  Total Trades:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600' }}>
                   {fNumber(stats.profitableTrades + stats.losingTrades)}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Total Volume:</Typography>
-                <Typography variant="caption">
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  Total Volume:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600' }}>
                   {fNumber(stats.totalVolume)} {name}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">ROI:</Typography>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  ROI:
+                </Typography>
                 <Typography
-                  variant="caption"
+                  variant="body2"
                   sx={{
+                    fontWeight: '600',
                     color: stats.roi * 100 >= 0 ? '#54D62C' : '#FF6C40'
                   }}
                 >
@@ -358,14 +454,18 @@ const StatsModal = ({ open, onClose, account, traderStats }) => {
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Best Trade:</Typography>
-                <Typography variant="caption" sx={{ color: '#54D62C' }}>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  Best Trade:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600', color: '#54D62C' }}>
                   {fNumber(stats.maxProfitTrade)}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Worst Trade:</Typography>
-                <Typography variant="caption" sx={{ color: '#FF6C40' }}>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  Worst Trade:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600', color: '#FF6C40' }}>
                   {fNumber(Math.abs(stats.maxLossTrade))}
                 </Typography>
               </Box>
@@ -373,73 +473,136 @@ const StatsModal = ({ open, onClose, account, traderStats }) => {
           </Box>
 
           {/* Trade Breakdown */}
-          <Box>
+          <Box
+            sx={{
+              p: 2.5,
+              borderRadius: '12px',
+              border: '1px solid rgba(145, 158, 171, 0.12)',
+              backgroundColor: 'rgba(145, 158, 171, 0.04)',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                borderColor: 'rgba(145, 158, 171, 0.24)',
+                backgroundColor: 'rgba(145, 158, 171, 0.08)'
+              }
+            }}
+          >
             <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+              variant="subtitle1"
+              sx={{
+                mb: 2,
+                fontWeight: '700',
+                fontSize: '14px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                color: 'text.secondary'
+              }}
             >
               TRADE BREAKDOWN
             </Typography>
-            <Stack spacing={0.25}>
+            <Stack spacing={1.5}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Buy Volume:</Typography>
-                <Typography variant="caption" sx={{ color: '#54D62C' }}>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  Buy Volume:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600', color: '#54D62C' }}>
                   {fNumber(stats.buyVolume)}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Sell Volume:</Typography>
-                <Typography variant="caption" sx={{ color: '#FF6C40' }}>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  Sell Volume:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600', color: '#FF6C40' }}>
                   {fNumber(stats.sellVolume)}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Profitable Trades:</Typography>
-                <Typography variant="caption" sx={{ color: '#54D62C' }}>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  Profitable Trades:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600', color: '#54D62C' }}>
                   {fNumber(stats.profitableTrades)}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Losing Trades:</Typography>
-                <Typography variant="caption" sx={{ color: '#FF6C40' }}>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  Losing Trades:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600', color: '#FF6C40' }}>
                   {fNumber(stats.losingTrades)}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">24h Volume:</Typography>
-                <Typography variant="caption">{fNumber(stats.volume24h)}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  24h Volume:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600' }}>
+                  {fNumber(stats.volume24h)}
+                </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">7d Volume:</Typography>
-                <Typography variant="caption">{fNumber(stats.volume7d)}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  7d Volume:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600' }}>
+                  {fNumber(stats.volume7d)}
+                </Typography>
               </Box>
             </Stack>
           </Box>
 
           {/* Activity Metrics */}
-          <Box>
+          <Box
+            sx={{
+              p: 2.5,
+              borderRadius: '12px',
+              border: '1px solid rgba(145, 158, 171, 0.12)',
+              backgroundColor: 'rgba(145, 158, 171, 0.04)',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                borderColor: 'rgba(145, 158, 171, 0.24)',
+                backgroundColor: 'rgba(145, 158, 171, 0.08)'
+              }
+            }}
+          >
             <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+              variant="subtitle1"
+              sx={{
+                mb: 2,
+                fontWeight: '700',
+                fontSize: '14px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                color: 'text.secondary'
+              }}
             >
               ACTIVITY METRICS
             </Typography>
-            <Stack spacing={0.25}>
+            <Stack spacing={1.5}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">24h Trades:</Typography>
-                <Typography variant="caption">{fNumber(stats.trades24h)}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  24h Trades:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600' }}>
+                  {fNumber(stats.trades24h)}
+                </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">7d Trades:</Typography>
-                <Typography variant="caption">{fNumber(stats.trades7d)}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  7d Trades:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600' }}>
+                  {fNumber(stats.trades7d)}
+                </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">24h Profit:</Typography>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  24h Profit:
+                </Typography>
                 <Typography
-                  variant="caption"
+                  variant="body2"
                   sx={{
+                    fontWeight: '600',
                     color: stats.profit24h >= 0 ? '#54D62C' : '#FF6C40'
                   }}
                 >
@@ -447,10 +610,13 @@ const StatsModal = ({ open, onClose, account, traderStats }) => {
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">7d Profit:</Typography>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  7d Profit:
+                </Typography>
                 <Typography
-                  variant="caption"
+                  variant="body2"
                   sx={{
+                    fontWeight: '600',
                     color: stats.profit7d >= 0 ? '#54D62C' : '#FF6C40'
                   }}
                 >
@@ -459,35 +625,57 @@ const StatsModal = ({ open, onClose, account, traderStats }) => {
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="caption">Avg Holding Time:</Typography>
-                <Typography variant="caption">
+                <Typography variant="body2" sx={{ fontWeight: '600' }}>
                   {Math.round(stats.avgHoldingTime / 3600)}h
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Trade Frequency:</Typography>
-                <Typography variant="caption">{Math.round(stats.trades24h / 24)} /hr</Typography>
+                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                  Trade Frequency:
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: '600' }}>
+                  {Math.round(stats.trades24h / 24)} /hr
+                </Typography>
               </Box>
             </Stack>
           </Box>
         </Box>
 
         {/* Trading History */}
-        <Box sx={{ mt: 1.5, pt: 0.5, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <Box
+          sx={{
+            mt: 3,
+            pt: 3,
+            borderTop: '1px solid rgba(145, 158, 171, 0.12)',
+            p: 2.5,
+            borderRadius: '12px',
+            border: '1px solid rgba(145, 158, 171, 0.12)',
+            backgroundColor: 'rgba(145, 158, 171, 0.04)'
+          }}
+        >
           <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+            variant="subtitle1"
+            sx={{
+              mb: 2,
+              fontWeight: '700',
+              fontSize: '14px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              color: 'text.secondary'
+            }}
           >
             TRADING HISTORY
           </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             <Stack direction="row" spacing={2}>
               <Box sx={{ flex: 1 }}>
                 <Box
                   sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
-                  <Typography variant="caption">First Trade:</Typography>
-                  <Typography variant="caption">
+                  <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                    First Trade:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: '600' }}>
                     {new Date(stats.firstTradeDate).toLocaleDateString()}
                   </Typography>
                 </Box>
@@ -496,11 +684,13 @@ const StatsModal = ({ open, onClose, account, traderStats }) => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    mt: 0.25
+                    mt: 1
                   }}
                 >
-                  <Typography variant="caption">Last Trade:</Typography>
-                  <Typography variant="caption">
+                  <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                    Last Trade:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: '600' }}>
                     {new Date(stats.lastTradeDate).toLocaleDateString()}
                   </Typography>
                 </Box>
@@ -509,8 +699,10 @@ const StatsModal = ({ open, onClose, account, traderStats }) => {
                 <Box
                   sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
-                  <Typography variant="caption">Avg Holding:</Typography>
-                  <Typography variant="caption">
+                  <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                    Avg Holding:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: '600' }}>
                     {Math.round(stats.avgHoldingTime / 3600)}h
                   </Typography>
                 </Box>
@@ -519,11 +711,15 @@ const StatsModal = ({ open, onClose, account, traderStats }) => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    mt: 0.25
+                    mt: 1
                   }}
                 >
-                  <Typography variant="caption">Trade Frequency:</Typography>
-                  <Typography variant="caption">{Math.round(stats.trades24h / 24)} /hr</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                    Trade Frequency:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: '600' }}>
+                    {Math.round(stats.trades24h / 24)} /hr
+                  </Typography>
                 </Box>
               </Box>
             </Stack>
@@ -531,19 +727,39 @@ const StatsModal = ({ open, onClose, account, traderStats }) => {
         </Box>
 
         {/* Volume Chart */}
-        <Box sx={{ mt: 1.5, pt: 0.5, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <Box
+          sx={{
+            mt: 3,
+            pt: 3,
+            borderTop: '1px solid rgba(145, 158, 171, 0.12)',
+            p: 2.5,
+            borderRadius: '12px',
+            border: '1px solid rgba(145, 158, 171, 0.12)',
+            backgroundColor: 'rgba(145, 158, 171, 0.04)'
+          }}
+        >
           <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+            variant="subtitle1"
+            sx={{
+              mb: 2,
+              fontWeight: '700',
+              fontSize: '14px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              color: 'text.secondary'
+            }}
           >
             TRADING HISTORY
           </Typography>
           {stats.dailyVolumes && stats.dailyVolumes.length > 0 && (
             <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: 'block', mb: 0.25, fontSize: '0.7rem' }}
+              variant="body2"
+              sx={{
+                display: 'block',
+                mb: 2,
+                fontWeight: '500',
+                color: 'text.secondary'
+              }}
             >
               {new Date(stats.firstTradeDate).toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -596,9 +812,39 @@ const CopyButton = ({ text }) => {
   );
 };
 
+// Add styled components after imports
+const StickyTableCell = withStyles((theme) => ({
+  head: {
+    position: 'sticky',
+    zIndex: 1000,
+    top: 0,
+    fontWeight: '600',
+    fontSize: '13px',
+    letterSpacing: '0.02em',
+    textTransform: 'uppercase'
+  }
+}))(TableCell);
+
+const SmallInfoIcon = (props) => (
+  <InfoIcon
+    {...props}
+    sx={{
+      fontSize: '14px',
+      ml: 0.5,
+      opacity: 0.7,
+      transition: 'opacity 0.2s ease',
+      '&:hover': {
+        opacity: 1
+      }
+    }}
+  />
+);
+
 export default function RichListData({ token }) {
   const BASE_URL = process.env.API_URL;
   const metrics = useSelector(selectMetrics);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const { accountProfile, setLoading, openSnackbar, darkMode, activeFiatCurrency } =
     useContext(AppContext);
@@ -615,20 +861,6 @@ export default function RichListData({ token }) {
   const [orderBy, setOrderBy] = useState('');
 
   const { name, exch } = token;
-
-  const badge24hStyle = {
-    display: 'inline-block',
-    marginLeft: '4px',
-    marginRight: '4px',
-    // color: '#C4CDD5',
-    fontSize: '11px',
-    fontWeight: '500',
-    lineHeight: '18px',
-    //backgroundColor: '#323546',
-    borderRadius: '4px',
-    border: '1px solid #323546',
-    padding: '1px 4px'
-  };
 
   const [traderStats, setTraderStats] = useState({});
   const [selectedAccount, setSelectedAccount] = useState(null);
@@ -778,8 +1010,10 @@ export default function RichListData({ token }) {
     };
   }, []);
 
-  const vars = {};
   const [hoveredHeader, setHoveredHeader] = useState(null);
+
+  // Get modern colors for top 10 indicators
+  const modernColors = getModernColors(darkMode);
 
   const handleOpenStats = (account) => {
     if (!traderStats[account]?.isLoaded) {
@@ -814,23 +1048,80 @@ export default function RichListData({ token }) {
             '& .MuiTableCell-root': {
               borderBottom: 'none',
               boxShadow: darkMode
-                ? 'inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)'
-                : 'inset 0 -1px 0 #dadee3'
+                ? 'inset 0 -1px 0 rgba(145, 158, 171, 0.12)'
+                : 'inset 0 -1px 0 rgba(145, 158, 171, 0.24)'
             }
           }}
         >
-          <TableHead>
-            <TableRow>
-              <TableCell
+          <TableHead
+            sx={{
+              position: 'sticky',
+              zIndex: 999,
+              background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderBottom: `1px solid ${
+                darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
+              }`,
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: '1px',
+                background: `linear-gradient(90deg, transparent, ${
+                  darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
+                }, transparent)`
+              }
+            }}
+          >
+            <TableRow
+              sx={{
+                '& .MuiTableCell-root': {
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  padding: '20px 12px',
+                  height: 'auto',
+                  whiteSpace: 'nowrap',
+                  color: darkMode ? '#919EAB' : '#637381',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.02em',
+                  borderBottom: 'none',
+                  '&:not(:first-of-type)': {
+                    paddingLeft: '8px'
+                  }
+                },
+                '& .MuiTableSortLabel-root': {
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: 'inherit',
+                  '&:hover': {
+                    color: darkMode ? '#fff' : '#212B36'
+                  },
+                  '&.Mui-active': {
+                    color: darkMode ? '#fff' : '#212B36',
+                    '& .MuiTableSortLabel-icon': {
+                      color: 'inherit'
+                    }
+                  },
+                  '& .MuiTableSortLabel-icon': {
+                    fontSize: '16px'
+                  }
+                }
+              }}
+            >
+              <StickyTableCell
                 align="left"
                 sx={{
                   position: 'sticky',
+                  zIndex: 998,
                   left: 0,
-                  background: darkMode ? '#000000' : '#FFFFFF',
+                  background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(20px)',
                   '&:before': scrollLeft
                     ? {
                         content: "''",
-                        boxShadow: 'inset 10px 0 8px -8px #00000026',
+                        boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
                         position: 'absolute',
                         top: '0',
                         right: '0',
@@ -844,101 +1135,136 @@ export default function RichListData({ token }) {
                 }}
               >
                 #
-              </TableCell>
+              </StickyTableCell>
 
-              <TableCell align="left">Address</TableCell>
+              <StickyTableCell align="left">
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+                    Address
+                  </Typography>
+                </Box>
+              </StickyTableCell>
 
-              <TableCell align="left">
-                {/*<Tooltip title="Indicates whether the account's tokens are frozen." placement="top">*/}
-                {(() => {
-                  vars.cellId = 'frozen';
-                })()}
+              <StickyTableCell align="left">
                 <TableSortLabel
                   hideSortIcon
-                  active={orderBy === vars.cellId}
-                  direction={orderBy === vars.cellId ? order : 'desc'}
+                  active={orderBy === 'frozen'}
+                  direction={orderBy === 'frozen' ? order : 'desc'}
                   onClick={onChangeFrozen}
                 >
-                  <InfoIcon fontSize="smaller" />
-                  Frozen ({frozen ? 'YES' : 'ALL'})
-                  {orderBy === vars.cellId ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <SmallInfoIcon />
+                    <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5 }}>
+                      Frozen ({frozen ? 'YES' : 'ALL'})
+                    </Typography>
+                  </Box>
+                  {orderBy === 'frozen' ? (
                     <Box sx={{ ...visuallyHidden }}>
                       {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                     </Box>
                   ) : null}
                 </TableSortLabel>
-                {/*</Tooltip>                           */}
-              </TableCell>
+              </StickyTableCell>
 
-              <TableCell align="left">
-                {/*<Tooltip title="Total account token balance."  placement="top">*/}
-                {(() => {
-                  vars.cellId = 'balance';
-                })()}
+              <StickyTableCell align="left">
                 <TableSortLabel
                   hideSortIcon
-                  active={orderBy === vars.cellId}
-                  direction={orderBy === vars.cellId ? order : 'desc'}
-                  onClick={true ? createSortHandler(vars.cellId) : undefined}
+                  active={orderBy === 'balance'}
+                  direction={orderBy === 'balance' ? order : 'desc'}
+                  onClick={createSortHandler('balance')}
                 >
-                  <InfoIcon fontSize="smaller" />
-                  Balance({name})
-                  {orderBy === vars.cellId ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <SmallInfoIcon />
+                    <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5 }}>
+                      Balance({name})
+                    </Typography>
+                  </Box>
+                  {orderBy === 'balance' ? (
                     <Box sx={{ ...visuallyHidden }}>
                       {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                     </Box>
                   ) : null}
                 </TableSortLabel>
-                {/*</Tooltip>                           */}
-              </TableCell>
+              </StickyTableCell>
 
-              <TableCell align="left">
-                {/*<Tooltip title="Balance change within 24 hours." placement="top">*/}
-                {(() => {
-                  vars.cellId = 'balance24h';
-                })()}
+              <StickyTableCell align="left">
                 <TableSortLabel
                   hideSortIcon
-                  active={orderBy === vars.cellId}
-                  direction={orderBy === vars.cellId ? order : 'desc'}
-                  onClick={true ? createSortHandler(vars.cellId) : undefined}
+                  active={orderBy === 'balance24h'}
+                  direction={orderBy === 'balance24h' ? order : 'desc'}
+                  onClick={createSortHandler('balance24h')}
                 >
-                  <InfoIcon fontSize="smaller" />
-                  Change<span style={badge24hStyle}>24h</span>
-                  {orderBy === vars.cellId ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <SmallInfoIcon />
+                    <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5 }}>
+                      Change
+                    </Typography>
+                    <Box
+                      component="span"
+                      sx={{
+                        display: 'inline-block',
+                        marginLeft: '4px',
+                        fontSize: '10px',
+                        fontWeight: '600',
+                        lineHeight: '16px',
+                        backgroundColor: 'rgba(99, 115, 129, 0.12)',
+                        backdropFilter: 'blur(6px)',
+                        borderRadius: '6px',
+                        padding: '2px 6px',
+                        border: '1px solid rgba(145, 158, 171, 0.08)'
+                      }}
+                    >
+                      24h
+                    </Box>
+                  </Box>
+                  {orderBy === 'balance24h' ? (
                     <Box sx={{ ...visuallyHidden }}>
                       {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                     </Box>
                   ) : null}
                 </TableSortLabel>
-                {/*</Tooltip>*/}
-              </TableCell>
+              </StickyTableCell>
 
-              <TableCell align="left">
-                {/*<Tooltip title="Percent of total token holdings." placement="top">*/}
-                {(() => {
-                  vars.cellId = 'holding';
-                })()}
+              <StickyTableCell align="left">
                 <TableSortLabel
                   hideSortIcon
-                  active={orderBy === vars.cellId}
-                  direction={orderBy === vars.cellId ? order : 'desc'}
-                  onClick={true ? createSortHandler(vars.cellId) : undefined}
+                  active={orderBy === 'holding'}
+                  direction={orderBy === 'holding' ? order : 'desc'}
+                  onClick={createSortHandler('holding')}
                 >
-                  <InfoIcon fontSize="smaller" />
-                  Holding
-                  {orderBy === vars.cellId ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <SmallInfoIcon />
+                    <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5 }}>
+                      Holding
+                    </Typography>
+                  </Box>
+                  {orderBy === 'holding' ? (
                     <Box sx={{ ...visuallyHidden }}>
                       {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                     </Box>
                   ) : null}
                 </TableSortLabel>
-                {/*</Tooltip>*/}
-              </TableCell>
+              </StickyTableCell>
 
-              <TableCell align="left">Value</TableCell>
-              {isAdmin && <TableCell align="left">Team Wallet</TableCell>}
-              <TableCell align="left"></TableCell>
+              <StickyTableCell align="left">
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+                    Value
+                  </Typography>
+                </Box>
+              </StickyTableCell>
+
+              {isAdmin && (
+                <StickyTableCell align="left">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+                      Team Wallet
+                    </Typography>
+                  </Box>
+                </StickyTableCell>
+              )}
+
+              <StickyTableCell align="left"></StickyTableCell>
             </TableRow>
           </TableHead>
 
@@ -966,15 +1292,32 @@ export default function RichListData({ token }) {
                 return (
                   <TableRow
                     key={id}
-                    // sx={{
-                    //     [`& .${tableCellClasses.root}`]: {
-                    //         color: (/*buy*/dir === 'sell' ? '#007B55' : '#B72136')
-                    //     }
-                    // }}
                     sx={{
+                      borderBottom: '1px solid rgba(145, 158, 171, 0.08)',
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
                         '& .MuiTableCell-root': {
-                          backgroundColor: darkMode ? '#232326 !important' : '#D9DCE0 !important'
+                          backgroundColor: darkMode
+                            ? 'rgba(255, 255, 255, 0.04)'
+                            : 'rgba(145, 158, 171, 0.04)',
+                          backdropFilter: 'blur(6px)'
+                        },
+                        cursor: 'pointer',
+                        transform: 'translateY(-1px)',
+                        boxShadow: darkMode
+                          ? '0 4px 16px rgba(0, 0, 0, 0.24)'
+                          : '0 4px 16px rgba(145, 158, 171, 0.16)'
+                      },
+                      '& .MuiTypography-root': {
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      },
+                      '& .MuiTableCell-root': {
+                        padding: '16px 12px',
+                        whiteSpace: 'nowrap',
+                        borderBottom: 'none',
+                        '&:not(:first-of-type)': {
+                          paddingLeft: '8px'
                         }
                       }
                     }}
@@ -983,13 +1326,14 @@ export default function RichListData({ token }) {
                       align="left"
                       sx={{
                         position: 'sticky',
-                        //zIndex: 1001,
+                        zIndex: 998,
                         left: 0,
-                        background: darkMode ? '#000000' : '#FFFFFF',
+                        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(20px)',
                         '&:before': scrollLeft
                           ? {
                               content: "''",
-                              boxShadow: 'inset 10px 0 8px -8px #00000026',
+                              boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
                               position: 'absolute',
                               top: '0',
                               right: '0',
@@ -1002,7 +1346,26 @@ export default function RichListData({ token }) {
                           : {}
                       }}
                     >
-                      <Typography variant="subtitle1">{id}</Typography>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        {id <= 10 && (
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
+                              backgroundColor: modernColors[id - 1],
+                              boxShadow: `0 2px 8px ${modernColors[id - 1]}40`,
+                              flexShrink: 0
+                            }}
+                          />
+                        )}
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: '600', fontSize: '14px' }}
+                        >
+                          {id}
+                        </Typography>
+                      </Stack>
                     </TableCell>
                     <TableCell align="left">
                       <Stack direction="row" alignItems="center">
@@ -1367,7 +1730,11 @@ export default function RichListData({ token }) {
                             href={`https://bithomp.com/explorer/${account}`}
                             rel="noreferrer noopener nofollow"
                           >
-                            <Typography variant="subtitle1" color="primary">
+                            <Typography
+                              variant="subtitle1"
+                              color="primary"
+                              sx={{ fontWeight: '500', fontSize: '14px' }}
+                            >
                               {truncate(account, 20)}
                               {EXCHANGE_ADDRESSES[account] && (
                                 <Box
@@ -1393,13 +1760,18 @@ export default function RichListData({ token }) {
                     </TableCell>
                     <TableCell align="left">{freeze && <Icon icon={checkIcon} />}</TableCell>
                     <TableCell align="left">
-                      <Typography variant="subtitle1">{fNumber(balance)}</Typography>
+                      <Typography variant="subtitle1" sx={{ fontWeight: '500', fontSize: '14px' }}>
+                        {fNumber(balance)}
+                      </Typography>
                     </TableCell>
                     <TableCell align="left">
                       {balance24h && (
                         <Stack direction="row" spacing={0.1} alignItems="center">
                           <Icon icon={icon24h} color={color24h} />
-                          <Typography sx={{ color: color24h }} variant="subtitle1">
+                          <Typography
+                            sx={{ color: color24h, fontWeight: '500', fontSize: '14px' }}
+                            variant="subtitle1"
+                          >
                             <NumberTooltip number={Math.abs(change)} /> (
                             <NumberTooltip append="%" number={percentChange} />)
                           </Typography>
@@ -1407,11 +1779,17 @@ export default function RichListData({ token }) {
                       )}
                     </TableCell>
                     <TableCell align="left">
-                      <Typography variant="subtitle1">{holding} %</Typography>
+                      <Typography variant="subtitle1" sx={{ fontWeight: '500', fontSize: '14px' }}>
+                        {holding} %
+                      </Typography>
                     </TableCell>
                     <TableCell align="left">
                       <Stack>
-                        <Typography variant="h4" noWrap>
+                        <Typography
+                          variant="h4"
+                          noWrap
+                          sx={{ fontWeight: '600', fontSize: '16px' }}
+                        >
                           {currencySymbols[activeFiatCurrency]}{' '}
                           {fNumber((exch * balance) / metrics[activeFiatCurrency])}
                         </Typography>
@@ -1433,25 +1811,59 @@ export default function RichListData({ token }) {
 
                     <TableCell align="left">
                       <Stack direction="row" alignItems="center" spacing={2}>
-                        <Link
-                          underline="none"
-                          color="inherit"
-                          target="_blank"
-                          href={`https://bithomp.com/explorer/${account}`}
-                          rel="noreferrer noopener nofollow"
-                        >
-                          <IconButton edge="end" aria-label="bithomp">
-                            <LinkIcon />
-                          </IconButton>
-                        </Link>
-                        <Tooltip title="View Trader Statistics">
-                          <IconButton
-                            edge="end"
-                            aria-label="stats"
-                            onClick={() => handleOpenStats(account)}
+                        <Tooltip title="View on Bithomp">
+                          <Box
+                            sx={{
+                              p: 1,
+                              borderRadius: '8px',
+                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                              '&:hover': {
+                                backgroundColor: darkMode
+                                  ? 'rgba(255, 255, 255, 0.08)'
+                                  : 'rgba(145, 158, 171, 0.08)',
+                                transform: 'scale(1.1)'
+                              }
+                            }}
                           >
-                            <BarChartIcon />
-                          </IconButton>
+                            <Link
+                              underline="none"
+                              color="inherit"
+                              target="_blank"
+                              href={`https://bithomp.com/explorer/${account}`}
+                              rel="noreferrer noopener nofollow"
+                            >
+                              <LinkIcon
+                                sx={{ fontSize: '20px', color: darkMode ? '#919EAB' : '#637381' }}
+                              />
+                            </Link>
+                          </Box>
+                        </Tooltip>
+                        <Tooltip title="View Trader Statistics">
+                          <Box
+                            sx={{
+                              p: 1,
+                              borderRadius: '8px',
+                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                              '&:hover': {
+                                backgroundColor: darkMode
+                                  ? 'rgba(255, 255, 255, 0.08)'
+                                  : 'rgba(145, 158, 171, 0.08)',
+                                transform: 'scale(1.1)'
+                              }
+                            }}
+                          >
+                            <BarChartIcon
+                              onClick={() => handleOpenStats(account)}
+                              sx={{
+                                cursor: 'pointer',
+                                fontSize: '20px',
+                                color: darkMode ? '#919EAB' : '#637381',
+                                '&:hover': {
+                                  color: 'primary.main'
+                                }
+                              }}
+                            />
+                          </Box>
                         </Tooltip>
                       </Stack>
                     </TableCell>
