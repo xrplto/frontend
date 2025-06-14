@@ -1102,8 +1102,8 @@ export default function UserDesc({ token }) {
                 alt={`${user} ${name} Logo`}
                 src={imgUrl}
                 sx={{
-                  width: isXsMobile ? 64 : 72,
-                  height: isXsMobile ? 64 : 72,
+                  width: isXsMobile ? 72 : 80,
+                  height: isXsMobile ? 72 : 80,
                   borderRadius: '12px',
                   border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`
                 }}
@@ -1361,8 +1361,8 @@ export default function UserDesc({ token }) {
                     alt={`${user} ${name} Logo`}
                     src={imgUrl}
                     sx={{
-                      width: 90,
-                      height: 90,
+                      width: 110,
+                      height: 110,
                       borderRadius: '20px',
                       border: `3px solid ${alpha(theme.palette.primary.main, 0.15)}`
                     }}
@@ -1613,15 +1613,34 @@ export default function UserDesc({ token }) {
                     color: theme.palette.success.main
                   }
                 ].map((stat, index) => (
-                  <Box key={stat.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box
+                    key={stat.label}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: '8px',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                      background: alpha(theme.palette.background.paper, 0.6),
+                      transition: 'all 0.2s ease',
+
+                      '&:hover': {
+                        border: `1px solid ${alpha(stat.color, 0.3)}`,
+                        background: alpha(stat.color, 0.04),
+                        transform: 'translateY(-1px)'
+                      }
+                    }}
+                  >
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.8rem',
+                        fontSize: '0.75rem',
                         fontWeight: 500,
                         color: alpha(theme.palette.text.secondary, 0.8),
                         textTransform: 'uppercase',
-                        letterSpacing: '0.3px'
+                        letterSpacing: '0.5px'
                       }}
                     >
                       {stat.label}:
@@ -1629,7 +1648,7 @@ export default function UserDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.95rem',
+                        fontSize: '0.875rem',
                         fontWeight: 600,
                         color: stat.color
                       }}
@@ -1678,17 +1697,23 @@ export default function UserDesc({ token }) {
                   {
                     label: 'Market Cap',
                     value: fNumberWithSuffix(convertedMarketCap),
-                    color: theme.palette.info.main
+                    color: theme.palette.info.main,
+                    gradientFrom: '#2196F3',
+                    gradientTo: '#64B5F6'
                   },
                   {
                     label: 'Volume',
                     value: fNumberWithSuffix(vol24hx),
-                    color: theme.palette.warning.main
+                    color: theme.palette.warning.main,
+                    gradientFrom: '#FF9800',
+                    gradientTo: '#FFB74D'
                   },
                   {
                     label: 'Holders',
                     value: fNumberWithSuffix(holders),
-                    color: theme.palette.error.main
+                    color: theme.palette.error.main,
+                    gradientFrom: '#FF1744',
+                    gradientTo: '#FF6B6B'
                   },
                   {
                     label: 'TVL',
@@ -1713,17 +1738,23 @@ export default function UserDesc({ token }) {
 
                       return fNumberWithSuffix(tvlEstimate);
                     })(),
-                    color: theme.palette.success.main
+                    color: theme.palette.success.main,
+                    gradientFrom: '#4CAF50',
+                    gradientTo: '#81C784'
                   },
                   {
                     label: 'Txns',
                     value: fNumberWithSuffix(vol24htx),
-                    color: theme.palette.secondary.main
+                    color: theme.palette.secondary.main,
+                    gradientFrom: '#9C27B0',
+                    gradientTo: '#BA68C8'
                   },
                   {
                     label: 'Offers',
                     value: fNumberWithSuffix(offers),
-                    color: theme.palette.warning.main
+                    color: theme.palette.warning.main,
+                    gradientFrom: '#FF9800',
+                    gradientTo: '#FFB74D'
                   }
                 ]
                   .slice(0, isXsMobile ? 4 : 6)
@@ -1734,54 +1765,44 @@ export default function UserDesc({ token }) {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        p: 0.5,
-                        borderRadius: '6px',
-                        background: `linear-gradient(135deg, 
-                          ${alpha(stat.color, 0.08)} 0%, 
-                          ${alpha(stat.color, 0.03)} 100%)`,
-                        border: `1px solid ${alpha(stat.color, 0.12)}`,
-                        minHeight: '32px',
-                        position: 'relative',
+                        p: 1,
+                        borderRadius: '8px',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                        background: alpha(theme.palette.background.paper, 0.6),
+                        minHeight: '60px',
                         transition: 'all 0.2s ease',
                         cursor: 'pointer',
 
                         '&:hover': {
-                          transform: 'translateY(-1px)',
-                          background: `linear-gradient(135deg, 
-                            ${alpha(stat.color, 0.12)} 0%, 
-                            ${alpha(stat.color, 0.06)} 100%)`,
-                          border: `1px solid ${alpha(stat.color, 0.2)}`,
-                          boxShadow: `0 4px 12px ${alpha(stat.color, 0.15)}`
+                          border: `1px solid ${alpha(stat.color, 0.3)}`,
+                          background: alpha(stat.color, 0.04),
+                          transform: 'translateY(-2px)'
+                        },
+
+                        '&:active': {
+                          transform: isMobile ? 'scale(0.98)' : 'none'
                         }
                       }}
                     >
-                      {/* Label */}
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.6rem',
+                          fontSize: '0.8rem',
                           fontWeight: 500,
                           color: alpha(theme.palette.text.secondary, 0.8),
                           textTransform: 'uppercase',
-                          letterSpacing: '0.3px',
-                          textAlign: 'center',
-                          mb: 0.375,
-                          lineHeight: 1
+                          letterSpacing: '0.3px'
                         }}
                       >
-                        {stat.label}
+                        {stat.label}:
                       </Typography>
-
-                      {/* Value */}
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.7rem',
+                          fontSize: '0.95rem',
                           fontWeight: 700,
                           color: stat.color,
-                          textAlign: 'center',
-                          lineHeight: 1,
-                          wordBreak: 'break-all'
+                          textShadow: `0 1px 2px ${alpha(stat.color, 0.3)}`
                         }}
                       >
                         {stat.value}
@@ -1929,7 +1950,9 @@ export default function UserDesc({ token }) {
                               })(),
                               color: theme.palette.success.main,
                               tooltip:
-                                'Estimated Total Value Locked - calculated based on market cap and trustline adoption ratio. Higher trustline-to-holder ratios indicate better liquidity and higher TVL estimates.'
+                                'Estimated Total Value Locked - calculated based on market cap and trustline adoption ratio. Higher trustline-to-holder ratios indicate better liquidity and higher TVL estimates.',
+                              gradientFrom: '#4CAF50',
+                              gradientTo: '#81C784'
                             },
                             {
                               label: 'Created Date',
@@ -1951,27 +1974,76 @@ export default function UserDesc({ token }) {
                                 return 'N/A';
                               })(),
                               color: theme.palette.secondary.main,
-                              tooltip: 'The date when this token was first created or launched'
+                              tooltip: 'The date when this token was first created or launched',
+                              gradientFrom: '#9C27B0',
+                              gradientTo: '#BA68C8'
                             }
                           ].map((stat, index) => (
                             <Tooltip key={stat.label} title={stat.tooltip} arrow>
                               <Box
                                 sx={{
                                   p: 0.75,
-                                  borderRadius: '6px',
-                                  background: `linear-gradient(135deg, 
-                                    ${alpha(stat.color, 0.06)} 0%, 
-                                    ${alpha(stat.color, 0.02)} 100%)`,
-                                  border: `1px solid ${alpha(stat.color, 0.1)}`,
+                                  borderRadius: '12px',
+                                  background: `linear-gradient(135deg, ${alpha(
+                                    stat.color,
+                                    0.08
+                                  )} 0%, ${alpha(stat.color, 0.04)} 100%)`,
+                                  border: '2px solid transparent',
                                   cursor: 'help',
-                                  transition: 'all 0.2s ease',
+                                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                  position: 'relative',
+                                  overflow: 'hidden',
+
+                                  // Consistent gradient border for all stats
+                                  '&::before': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    inset: 0,
+                                    padding: '2px',
+                                    background: `linear-gradient(135deg, ${stat.gradientFrom}, ${stat.gradientTo})`,
+                                    borderRadius: '12px',
+                                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                                    maskComposite: 'subtract',
+                                    WebkitMask:
+                                      'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                                    WebkitMaskComposite: 'xor',
+                                    zIndex: -1
+                                  },
+
+                                  // Subtle glow effect
+                                  '&::after': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    inset: 0,
+                                    background: `radial-gradient(circle at center, ${alpha(
+                                      stat.color,
+                                      0.15
+                                    )} 0%, transparent 70%)`,
+                                    borderRadius: '12px',
+                                    opacity: 0.6,
+                                    zIndex: -1
+                                  },
 
                                   '&:hover': {
-                                    background: `linear-gradient(135deg, 
-                                      ${alpha(stat.color, 0.1)} 0%, 
-                                      ${alpha(stat.color, 0.04)} 100%)`,
-                                    border: `1px solid ${alpha(stat.color, 0.15)}`,
-                                    transform: 'translateY(-1px)'
+                                    background: `linear-gradient(135deg, ${alpha(
+                                      stat.color,
+                                      0.15
+                                    )} 0%, ${alpha(stat.color, 0.08)} 100%)`,
+                                    transform: 'translateY(-2px) scale(1.02)',
+                                    boxShadow: `
+                                      0 6px 20px ${alpha(stat.color, 0.25)},
+                                      0 0 0 1px ${alpha(stat.color, 0.1)},
+                                      inset 0 1px 0 ${alpha('#fff', 0.1)}
+                                    `,
+
+                                    '&::before': {
+                                      padding: '3px',
+                                      background: `linear-gradient(135deg, ${stat.gradientFrom}, ${stat.gradientTo}, ${stat.gradientFrom})`
+                                    },
+
+                                    '&::after': {
+                                      opacity: 1
+                                    }
                                   }
                                 }}
                               >
@@ -2057,67 +2129,44 @@ export default function UserDesc({ token }) {
                             <Box
                               key={stat.label}
                               sx={{
-                                p: 0.75,
-                                borderRadius: '6px',
-                                background: `linear-gradient(135deg, 
-                                  ${alpha(stat.color, 0.06)} 0%, 
-                                  ${alpha(stat.color, 0.02)} 100%)`,
-                                border: `1px solid ${alpha(stat.color, 0.1)}`,
-                                position: 'relative',
-                                overflow: 'hidden'
+                                p: 1,
+                                borderRadius: '8px',
+                                border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                                background: alpha(theme.palette.background.paper, 0.6),
+                                transition: 'all 0.2s ease',
+
+                                '&:hover': {
+                                  border: `1px solid ${alpha(stat.color, 0.3)}`,
+                                  background: alpha(stat.color, 0.04),
+                                  transform: 'translateY(-1px)'
+                                }
                               }}
                             >
-                              <Stack
-                                direction="row"
-                                justifyContent="space-between"
-                                alignItems="flex-start"
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  fontSize: '0.75rem',
+                                  fontWeight: 500,
+                                  color: alpha(theme.palette.text.secondary, 0.8),
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.2px',
+                                  display: 'block',
+                                  mb: 0.25,
+                                  lineHeight: 1
+                                }}
                               >
-                                <Box sx={{ flex: 1, minWidth: 0 }}>
-                                  <Typography
-                                    variant="caption"
-                                    sx={{
-                                      fontSize: '0.6rem',
-                                      fontWeight: 500,
-                                      color: alpha(theme.palette.text.secondary, 0.8),
-                                      textTransform: 'uppercase',
-                                      letterSpacing: '0.2px',
-                                      display: 'block',
-                                      mb: 0.25,
-                                      lineHeight: 1
-                                    }}
-                                  >
-                                    {stat.label}
-                                  </Typography>
-                                  <Typography
-                                    variant="caption"
-                                    sx={{
-                                      fontSize: '0.7rem',
-                                      fontWeight: 700,
-                                      color: stat.color,
-                                      lineHeight: 1,
-                                      wordBreak: 'break-all'
-                                    }}
-                                  >
-                                    {stat.value}
-                                  </Typography>
-                                </Box>
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    fontSize: '0.55rem',
-                                    fontWeight: 600,
-                                    color: alpha(stat.color, 0.7),
-                                    background: alpha(stat.color, 0.1),
-                                    px: 0.5,
-                                    py: 0.125,
-                                    borderRadius: '3px',
-                                    lineHeight: 1,
-                                    flexShrink: 0
-                                  }}
-                                >
-                                  {stat.percentage}
-                                </Typography>
-                              </Stack>
+                                {stat.label}:
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  fontSize: '0.875rem',
+                                  fontWeight: 600,
+                                  color: stat.color
+                                }}
+                              >
+                                {stat.value}
+                              </Typography>
                             </Box>
                           ))}
                         </Box>
