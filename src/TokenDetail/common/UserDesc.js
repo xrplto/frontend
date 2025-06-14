@@ -84,9 +84,9 @@ import { alpha } from '@mui/material/styles';
 
 const IconCover = styled('div')(
   ({ theme }) => `
-        width: 90px;
-        height: 90px;
-        border-radius: 22px;
+        width: 70px;
+        height: 70px;
+        border-radius: 18px;
         position: relative;
         overflow: hidden;
         z-index: 1;
@@ -108,8 +108,8 @@ const IconWrapper = styled('div')(
         box-sizing: border-box;
         display: inline-block;
         position: relative;
-        width: 90px;
-        height: 90px;
+        width: 70px;
+        height: 70px;
   `
 );
 
@@ -196,6 +196,126 @@ const KYCBadge = styled('div')(
         border-radius: 50%;
     `
 );
+
+// Add status badge container for multiple status indicators
+const StatusBadgeContainer = styled('div')(
+  ({ theme }) => `
+        position: absolute;
+        bottom: -4px;
+        left: -4px;
+        z-index: 2;
+        display: flex;
+        gap: 2px;
+    `
+);
+
+const StatusBadge = styled('div')(
+  ({ theme, bgcolor = theme.palette.success.main }) => `
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: ${theme.palette.background.paper};
+        border: 2px solid ${bgcolor};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    `
+);
+
+// Compact origin and status indicator component
+const OriginStatusIndicator = ({ origin, isBlackholed, isBurned, size = 'normal' }) => {
+  const theme = useTheme();
+  const isCompact = size === 'compact';
+
+  return (
+    <Stack direction="row" spacing={0.25} alignItems="center">
+      {/* Origin indicator */}
+      <Tooltip title={origin || 'Standard Launch'}>
+        <Box
+          sx={{
+            p: isCompact ? 0.375 : 0.5,
+            borderRadius: '6px',
+            background: `linear-gradient(135deg, 
+              ${alpha(theme.palette.primary.main, 0.12)} 0%, 
+              ${alpha(theme.palette.primary.main, 0.06)} 100%
+            )`,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+            display: 'flex',
+            alignItems: 'center',
+            minHeight: isCompact ? '22px' : '28px',
+            position: 'relative'
+          }}
+        >
+          <Box sx={{ fontSize: isCompact ? '14px' : '16px', display: 'flex' }}>
+            {getOriginIcon(origin)}
+          </Box>
+
+          {/* Status indicators overlay */}
+          {(isBlackholed || isBurned) && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: -6,
+                right: -6,
+                display: 'flex',
+                gap: 0.25
+              }}
+            >
+              {isBlackholed && (
+                <Tooltip title="Blackholed Issuer">
+                  <Box
+                    sx={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: '50%',
+                      background: theme.palette.success.main,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: `1px solid ${theme.palette.background.paper}`
+                    }}
+                  >
+                    <LockIcon
+                      sx={{
+                        fontSize: '8px',
+                        color: 'white'
+                      }}
+                    />
+                  </Box>
+                </Tooltip>
+              )}
+              {isBurned && (
+                <Tooltip title="Burned Liquidity Pool">
+                  <Box
+                    sx={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: '50%',
+                      background: '#1890FF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: `1px solid ${theme.palette.background.paper}`,
+                      ml: isBlackholed ? -0.5 : 0
+                    }}
+                  >
+                    <LocalFireDepartmentIcon
+                      sx={{
+                        fontSize: '8px',
+                        color: 'white'
+                      }}
+                    />
+                  </Box>
+                </Tooltip>
+              )}
+            </Box>
+          )}
+        </Box>
+      </Tooltip>
+    </Stack>
+  );
+};
 
 function truncate(str, n) {
   if (!str) return '';
@@ -496,13 +616,13 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          gap: isMobile ? 0.5 : 0.625,
+          gap: isMobile ? 0.375 : 0.5,
           width: '100%'
         }}
       >
         {/* Primary row */}
         <Box
-          sx={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.375, width: '100%' }}
+          sx={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 0.125 : 0.25, width: '100%' }}
         >
           {tags.slice(0, isMobile ? (isXsMobile ? 2 : 4) : 6).map((tag) => (
             <TagChip key={tag} tag={tag} />
@@ -518,7 +638,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
         {/* Additional rows when expanded */}
         {expanded && (
           <Box
-            sx={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 0.5 : 0.625, mt: 0.25 }}
+            sx={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 0.375 : 0.5, mt: 0.25 }}
           >
             {/* Split remaining tags into rows */}
             {Array.from(
@@ -534,7 +654,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
                   sx={{
                     display: 'flex',
                     flexWrap: 'wrap',
-                    gap: isMobile ? 0.25 : 0.375,
+                    gap: isMobile ? 0.125 : 0.25,
                     width: '100%'
                   }}
                 >
@@ -552,7 +672,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
               )
             )}
             {/* Show less button */}
-            <Box sx={{ display: 'flex', gap: isMobile ? 0.25 : 0.375 }}>
+            <Box sx={{ display: 'flex', gap: isMobile ? 0.125 : 0.25 }}>
               <TagChip tag="Show less" isExpand={true} />
             </Box>
           </Box>
@@ -563,7 +683,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
 
   // Standard horizontal layout for fewer tags
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.375, width: '100%' }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 0.125 : 0.25, width: '100%' }}>
       {tags.slice(0, maxVisibleTags).map((tag) => (
         <TagChip key={tag} tag={tag} />
       ))}
@@ -799,11 +919,194 @@ export default function UserDesc({ token }) {
     }
   ];
 
+  // Compact social links component for header integration
+  const CompactSocialLinks = ({ size = 'small' }) => {
+    if (!social) return null;
+
+    const socialEntries = Object.entries(social).filter(([key, value]) => value);
+    if (socialEntries.length === 0) return null;
+
+    const iconSize = size === 'small' ? 14 : 16;
+
+    return (
+      <Stack direction="row" spacing={0.25} alignItems="center">
+        {socialEntries.slice(0, isMobile ? 3 : 4).map(([platform, url]) => (
+          <Tooltip key={platform} title={`${platform}: ${url}`} arrow>
+            <IconButton
+              component="a"
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              size="small"
+              sx={{
+                width: isMobile ? 20 : 24,
+                height: isMobile ? 20 : 24,
+                p: 0.25,
+                borderRadius: '4px',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.08
+                )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                color: theme.palette.primary.main,
+
+                '&:hover': {
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.15
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  transform: 'scale(1.05)'
+                }
+              }}
+            >
+              {platform === 'twitter' && (
+                <Icon icon="mdi:twitter" width={iconSize} height={iconSize} />
+              )}
+              {platform === 'telegram' && (
+                <Icon icon="mdi:telegram" width={iconSize} height={iconSize} />
+              )}
+              {platform === 'discord' && (
+                <Icon icon="mdi:discord" width={iconSize} height={iconSize} />
+              )}
+              {platform === 'website' && <Icon icon="mdi:web" width={iconSize} height={iconSize} />}
+              {platform === 'github' && (
+                <Icon icon="mdi:github" width={iconSize} height={iconSize} />
+              )}
+              {platform === 'reddit' && (
+                <Icon icon="mdi:reddit" width={iconSize} height={iconSize} />
+              )}
+              {!['twitter', 'telegram', 'discord', 'website', 'github', 'reddit'].includes(
+                platform
+              ) && <Icon icon="mdi:link" width={iconSize} height={iconSize} />}
+            </IconButton>
+          </Tooltip>
+        ))}
+        {socialEntries.length > (isMobile ? 3 : 4) && (
+          <Tooltip title="View all links" arrow>
+            <IconButton
+              onClick={() => toggleLinksDrawer(true)}
+              size="small"
+              sx={{
+                width: isMobile ? 20 : 24,
+                height: isMobile ? 20 : 24,
+                p: 0.25,
+                borderRadius: '4px',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.secondary.main,
+                  0.08
+                )} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.12)}`,
+                color: theme.palette.secondary.main,
+
+                '&:hover': {
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.secondary.main,
+                    0.15
+                  )} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`
+                }
+              }}
+            >
+              <Typography sx={{ fontSize: '0.6rem', fontWeight: 600 }}>
+                +{socialEntries.length - (isMobile ? 3 : 4)}
+              </Typography>
+            </IconButton>
+          </Tooltip>
+        )}
+      </Stack>
+    );
+  };
+
+  // Compact tags component for inline integration
+  const CompactTags = ({ maxTags = 3 }) => {
+    if (!enhancedTags || enhancedTags.length === 0) return null;
+
+    return (
+      <Stack
+        direction="row"
+        spacing={0.25}
+        alignItems="center"
+        sx={{ flexWrap: 'wrap', gap: 0.25 }}
+      >
+        {enhancedTags.slice(0, maxTags).map((tag) => (
+          <Link
+            key={tag}
+            href={`/view/${normalizeTag(tag)}`}
+            sx={{ display: 'inline-flex' }}
+            underline="none"
+            rel="noreferrer noopener nofollow"
+          >
+            <Chip
+              size="small"
+              label={tag}
+              sx={{
+                height: isMobile ? '16px' : '18px',
+                fontSize: isMobile ? '0.55rem' : '0.6rem',
+                borderRadius: '3px',
+                px: isMobile ? 0.375 : 0.5,
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.background.paper,
+                  0.8
+                )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                color: theme.palette.text.primary,
+                fontWeight: 500,
+                cursor: 'pointer',
+                minHeight: 'auto',
+
+                '&:hover': {
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                  color: theme.palette.primary.main,
+                  transform: isMobile ? 'scale(1.02)' : 'none'
+                }
+              }}
+            />
+          </Link>
+        ))}
+        {enhancedTags.length > maxTags && (
+          <Chip
+            label={`+${enhancedTags.length - maxTags}`}
+            size="small"
+            onClick={() => toggleTagsDrawer(true)}
+            sx={{
+              height: isMobile ? '16px' : '18px',
+              fontSize: isMobile ? '0.55rem' : '0.6rem',
+              borderRadius: '3px',
+              px: isMobile ? 0.375 : 0.5,
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.primary.main,
+                0.08
+              )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+              color: theme.palette.primary.main,
+              fontWeight: 500,
+              cursor: 'pointer',
+              minHeight: 'auto',
+
+              '&:hover': {
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.12
+                )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
+              }
+            }}
+          />
+        )}
+      </Stack>
+    );
+  };
+
   return (
     <Stack
-      spacing={isMobile ? 0.5 : 1.25}
+      spacing={isMobile ? 0.25 : 0.5}
       sx={{
-        p: isMobile ? 0.75 : 2,
+        p: isMobile ? 0.5 : 1.25,
         borderRadius: isMobile ? '6px' : '12px',
         background: `linear-gradient(135deg, 
           ${alpha(theme.palette.background.paper, 0.95)} 0%, 
@@ -847,7 +1150,7 @@ export default function UserDesc({ token }) {
       {/* Main Content Row */}
       <Stack
         direction={isMobile ? 'column' : 'row'}
-        spacing={isMobile ? 0.75 : 1.5}
+        spacing={isMobile ? 0.375 : 1}
         alignItems={isMobile ? 'stretch' : 'flex-start'}
         justifyContent="space-between"
       >
@@ -865,9 +1168,9 @@ export default function UserDesc({ token }) {
                 alt={`${user} ${name} Logo`}
                 src={imgUrl}
                 sx={{
-                  width: isXsMobile ? 50 : 60,
-                  height: isXsMobile ? 50 : 60,
-                  borderRadius: '12px',
+                  width: isXsMobile ? 44 : 52,
+                  height: isXsMobile ? 44 : 52,
+                  borderRadius: '10px',
                   border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`
                 }}
               />
@@ -884,15 +1187,41 @@ export default function UserDesc({ token }) {
                   </Tooltip>
                 </KYCBadge>
               )}
+
+              {/* Status badges on avatar */}
+              {token.origin && (
+                <StatusBadgeContainer>
+                  <StatusBadge bgcolor={theme.palette.success.main}>
+                    <Tooltip title="Blackholed Issuer">
+                      <LockIcon
+                        sx={{
+                          fontSize: '10px',
+                          color: theme.palette.success.main
+                        }}
+                      />
+                    </Tooltip>
+                  </StatusBadge>
+                  <StatusBadge bgcolor="#1890FF">
+                    <Tooltip title="Burned Liquidity Pool">
+                      <LocalFireDepartmentIcon
+                        sx={{
+                          fontSize: '10px',
+                          color: '#1890FF'
+                        }}
+                      />
+                    </Tooltip>
+                  </StatusBadge>
+                </StatusBadgeContainer>
+              )}
             </Box>
 
-            {/* Name, User, and Rank - Middle Section */}
+            {/* Name, User, Tags, Social - Middle Section */}
             <Stack
-              spacing={0.25}
+              spacing={0.125}
               sx={{
                 flex: 1,
                 minWidth: 0,
-                mx: 1,
+                mx: 0.75,
                 justifyContent: 'flex-start'
               }}
             >
@@ -923,28 +1252,38 @@ export default function UserDesc({ token }) {
                   {name}
                 </Typography>
 
-                <Tooltip title={`Rank by 24h Volume: #${id}`}>
-                  <Chip
-                    label={`#${id}`}
-                    color="primary"
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      borderRadius: '4px',
-                      height: isXsMobile ? '16px' : '20px',
-                      fontSize: isXsMobile ? '0.55rem' : '0.65rem',
-                      background: `linear-gradient(135deg, 
-                        ${alpha(theme.palette.primary.main, 0.12)} 0%, 
-                        ${alpha(theme.palette.primary.main, 0.06)} 100%
-                      )`,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                      fontWeight: 600,
-                      px: 0.5,
-                      minWidth: 'auto',
-                      flexShrink: 0
-                    }}
+                <Stack direction="row" spacing={0.25} alignItems="center">
+                  <Tooltip title={`Rank by 24h Volume: #${id}`}>
+                    <Chip
+                      label={`#${id}`}
+                      color="primary"
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        borderRadius: '4px',
+                        height: isXsMobile ? '16px' : '20px',
+                        fontSize: isXsMobile ? '0.55rem' : '0.65rem',
+                        background: `linear-gradient(135deg, 
+                          ${alpha(theme.palette.primary.main, 0.12)} 0%, 
+                          ${alpha(theme.palette.primary.main, 0.06)} 100%
+                        )`,
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                        fontWeight: 600,
+                        px: 0.5,
+                        minWidth: 'auto',
+                        flexShrink: 0
+                      }}
+                    />
+                  </Tooltip>
+
+                  {/* Origin status indicator next to rank */}
+                  <OriginStatusIndicator
+                    origin={token.origin}
+                    isBlackholed={!!token.origin}
+                    isBurned={!!token.origin}
+                    size="compact"
                   />
-                </Tooltip>
+                </Stack>
               </Stack>
 
               {/* User Row */}
@@ -964,73 +1303,15 @@ export default function UserDesc({ token }) {
                 {user}
               </Typography>
 
-              {/* Compact Badges Row */}
-              <Stack direction="row" spacing={0.25} alignItems="center" sx={{ mt: 0.25 }}>
-                <Box
-                  sx={{
-                    p: 0.25,
-                    borderRadius: '3px',
-                    background: `linear-gradient(135deg, 
-                      ${alpha(theme.palette.primary.main, 0.12)} 0%, 
-                      ${alpha(theme.palette.primary.main, 0.06)} 100%
-                    )`,
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    minHeight: '16px'
-                  }}
-                >
-                  <Tooltip title={token.origin || 'Standard Launch'}>
-                    <Box sx={{ fontSize: '10px', display: 'flex' }}>
-                      {getOriginIcon(token.origin)}
-                    </Box>
-                  </Tooltip>
-                </Box>
-                {token.origin && (
-                  <>
-                    <Box
-                      sx={{
-                        p: 0.25,
-                        borderRadius: '3px',
-                        background: `linear-gradient(135deg, 
-                          ${alpha(theme.palette.success.main, 0.12)} 0%, 
-                          ${alpha(theme.palette.success.main, 0.06)} 100%
-                        )`,
-                        border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        minHeight: '16px'
-                      }}
-                    >
-                      <Tooltip title="Blackholed Issuer">
-                        <LockIcon
-                          sx={{
-                            fontSize: '10px',
-                            color: theme.palette.success.main
-                          }}
-                        />
-                      </Tooltip>
-                    </Box>
-                    <Box
-                      sx={{
-                        p: 0.25,
-                        borderRadius: '3px',
-                        background: `linear-gradient(135deg, 
-                          ${alpha(theme.palette.error.main, 0.12)} 0%, 
-                          ${alpha(theme.palette.error.main, 0.06)} 100%
-                        )`,
-                        border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        minHeight: '16px'
-                      }}
-                    >
-                      <Tooltip title="Burned Liquidity Pool">
-                        <LocalFireDepartmentIcon sx={{ fontSize: '10px', color: '#1890FF' }} />
-                      </Tooltip>
-                    </Box>
-                  </>
-                )}
+              {/* Compact Tags and Social Row */}
+              <Stack
+                direction="row"
+                spacing={0.5}
+                alignItems="center"
+                sx={{ mt: 0.25, flexWrap: 'wrap', gap: 0.25 }}
+              >
+                <CompactTags maxTags={isXsMobile ? 2 : 3} />
+                <CompactSocialLinks size="small" />
               </Stack>
             </Stack>
 
@@ -1067,8 +1348,8 @@ export default function UserDesc({ token }) {
                         top: '0vh',
                         opacity: 0,
                         zIndex: 1,
-                        width: '90px',
-                        height: '90px'
+                        width: '70px',
+                        height: '70px'
                       }}
                       onClick={() => setEditToken(token)}
                     >
@@ -1082,6 +1363,31 @@ export default function UserDesc({ token }) {
                         </Tooltip>
                       </KYCBadge>
                     )}
+                    {/* Status badges on desktop avatar */}
+                    {token.origin && (
+                      <StatusBadgeContainer>
+                        <StatusBadge bgcolor={theme.palette.success.main}>
+                          <Tooltip title="Blackholed Issuer">
+                            <LockIcon
+                              sx={{
+                                fontSize: '12px',
+                                color: theme.palette.success.main
+                              }}
+                            />
+                          </Tooltip>
+                        </StatusBadge>
+                        <StatusBadge bgcolor="#1890FF">
+                          <Tooltip title="Burned Liquidity Pool">
+                            <LocalFireDepartmentIcon
+                              sx={{
+                                fontSize: '12px',
+                                color: '#1890FF'
+                              }}
+                            />
+                          </Tooltip>
+                        </StatusBadge>
+                      </StatusBadgeContainer>
+                    )}
                   </IconCover>
                 </div>
               ) : (
@@ -1090,9 +1396,9 @@ export default function UserDesc({ token }) {
                     alt={`${user} ${name} Logo`}
                     src={imgUrl}
                     sx={{
-                      width: 90,
-                      height: 90,
-                      borderRadius: '22px',
+                      width: 70,
+                      height: 70,
+                      borderRadius: '18px',
                       border: `3px solid ${alpha(theme.palette.primary.main, 0.15)}`
                     }}
                   />
@@ -1109,25 +1415,46 @@ export default function UserDesc({ token }) {
                       </Tooltip>
                     </KYCBadge>
                   )}
+
+                  {/* Status badges on desktop avatar */}
+                  {token.origin && (
+                    <StatusBadgeContainer>
+                      <StatusBadge bgcolor={theme.palette.success.main}>
+                        <Tooltip title="Blackholed Issuer">
+                          <LockIcon
+                            sx={{
+                              fontSize: '12px',
+                              color: theme.palette.success.main
+                            }}
+                          />
+                        </Tooltip>
+                      </StatusBadge>
+                      <StatusBadge bgcolor="#1890FF">
+                        <Tooltip title="Burned Liquidity Pool">
+                          <LocalFireDepartmentIcon
+                            sx={{
+                              fontSize: '12px',
+                              color: '#1890FF'
+                            }}
+                          />
+                        </Tooltip>
+                      </StatusBadge>
+                    </StatusBadgeContainer>
+                  )}
                 </Box>
               )}
             </>
           )}
 
-          {/* Token Details - Desktop only now */}
+          {/* Token Details - Desktop with integrated tags and social */}
           {!isMobile && (
-            <Stack spacing={isMobile ? 0.375 : 0.5} sx={{ flex: 1, minWidth: 0 }}>
+            <Stack spacing={0.25} sx={{ flex: 1, minWidth: 0 }}>
               {/* Name and Rank Row */}
-              <Stack
-                direction={isMobile ? 'column' : 'row'}
-                alignItems={isMobile ? 'flex-start' : 'center'}
-                spacing={isMobile ? 0.125 : 1.25}
-                sx={{ minWidth: 0 }}
-              >
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
                 <Typography
                   variant="h6"
                   sx={{
-                    fontSize: isMobile ? (isXsMobile ? '0.95rem' : '1.05rem') : '1.35rem',
+                    fontSize: '1.35rem',
                     fontWeight: 700,
                     background: `linear-gradient(135deg, 
                       ${theme.palette.primary.main} 0%, 
@@ -1142,53 +1469,62 @@ export default function UserDesc({ token }) {
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
-                    maxWidth: isMobile ? '100%' : '240px'
+                    maxWidth: '240px'
                   }}
                 >
                   {name}
                 </Typography>
 
-                <Tooltip title={`Rank by 24h Volume: #${id}`}>
-                  <Chip
-                    label={`#${id}`}
-                    color="primary"
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      borderRadius: '4px',
-                      height: isMobile ? '18px' : '28px',
-                      fontSize: isMobile ? '0.6rem' : '0.8rem',
-                      background: `linear-gradient(135deg, 
-                        ${alpha(theme.palette.primary.main, 0.12)} 0%, 
-                        ${alpha(theme.palette.primary.main, 0.06)} 100%
-                      )`,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                      fontWeight: 600,
-                      px: isMobile ? 0.5 : 1.25,
-                      minWidth: 'auto',
-                      alignSelf: isMobile ? 'flex-start' : 'auto'
-                    }}
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Tooltip title={`Rank by 24h Volume: #${id}`}>
+                    <Chip
+                      label={`#${id}`}
+                      color="primary"
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        borderRadius: '4px',
+                        height: '28px',
+                        fontSize: '0.8rem',
+                        background: `linear-gradient(135deg, 
+                          ${alpha(theme.palette.primary.main, 0.12)} 0%, 
+                          ${alpha(theme.palette.primary.main, 0.06)} 100%
+                        )`,
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                        fontWeight: 600,
+                        px: 1.25,
+                        minWidth: 'auto'
+                      }}
+                    />
+                  </Tooltip>
+
+                  {/* Origin status indicator next to rank */}
+                  <OriginStatusIndicator
+                    origin={token.origin}
+                    isBlackholed={!!token.origin}
+                    isBurned={!!token.origin}
+                    size="normal"
                   />
-                </Tooltip>
+                </Stack>
               </Stack>
 
-              {/* User and Badges Row */}
+              {/* User, Tags, and Social Row */}
               <Stack
-                direction={isMobile ? 'column' : 'row'}
-                alignItems={isMobile ? 'flex-start' : 'center'}
-                spacing={isMobile ? 0.25 : 1.25}
-                sx={{ minWidth: 0 }}
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                sx={{ minWidth: 0, flexWrap: 'wrap', gap: 0.5 }}
               >
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   sx={{
-                    fontSize: isMobile ? '0.75rem' : '0.9rem',
+                    fontSize: '0.9rem',
                     fontWeight: 500,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
-                    maxWidth: isMobile ? '100%' : '160px',
+                    maxWidth: '160px',
                     color: alpha(theme.palette.text.primary, 0.7),
                     lineHeight: 1
                   }}
@@ -1196,81 +1532,11 @@ export default function UserDesc({ token }) {
                   {user}
                 </Typography>
 
-                {/* Compact Badges */}
-                <Stack
-                  direction="row"
-                  spacing={isMobile ? 0.25 : 0.625}
-                  alignItems="center"
-                  sx={{ flexWrap: 'wrap' }}
-                >
-                  <Box
-                    sx={{
-                      p: isMobile ? 0.25 : 0.625,
-                      borderRadius: '4px',
-                      background: `linear-gradient(135deg, 
-                        ${alpha(theme.palette.primary.main, 0.12)} 0%, 
-                        ${alpha(theme.palette.primary.main, 0.06)} 100%
-                      )`,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      minHeight: isMobile ? '20px' : 'auto'
-                    }}
-                  >
-                    <Tooltip title={token.origin || 'Standard Launch'}>
-                      <Box sx={{ fontSize: isMobile ? '12px' : '18px', display: 'flex' }}>
-                        {getOriginIcon(token.origin)}
-                      </Box>
-                    </Tooltip>
-                  </Box>
-                  {token.origin && (
-                    <>
-                      <Box
-                        sx={{
-                          p: isMobile ? 0.25 : 0.625,
-                          borderRadius: '4px',
-                          background: `linear-gradient(135deg, 
-                            ${alpha(theme.palette.success.main, 0.12)} 0%, 
-                            ${alpha(theme.palette.success.main, 0.06)} 100%
-                          )`,
-                          border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          minHeight: isMobile ? '20px' : 'auto'
-                        }}
-                      >
-                        <Tooltip title="Blackholed Issuer">
-                          <LockIcon
-                            sx={{
-                              fontSize: isMobile ? '12px' : '18px',
-                              color: theme.palette.success.main
-                            }}
-                          />
-                        </Tooltip>
-                      </Box>
-                      <Box
-                        sx={{
-                          p: isMobile ? 0.25 : 0.625,
-                          borderRadius: '4px',
-                          background: `linear-gradient(135deg, 
-                            ${alpha(theme.palette.error.main, 0.12)} 0%, 
-                            ${alpha(theme.palette.error.main, 0.06)} 100%
-                          )`,
-                          border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          minHeight: isMobile ? '20px' : 'auto'
-                        }}
-                      >
-                        <Tooltip title="Burned Liquidity Pool">
-                          <LocalFireDepartmentIcon
-                            sx={{ fontSize: isMobile ? '12px' : '18px', color: '#1890FF' }}
-                          />
-                        </Tooltip>
-                      </Box>
-                    </>
-                  )}
-                </Stack>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <CompactTags maxTags={4} />
+                </Box>
+
+                <CompactSocialLinks />
               </Stack>
 
               {/* Ultra Compact Stats Row - Desktop */}
@@ -1278,9 +1544,9 @@ export default function UserDesc({ token }) {
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 1.25,
+                  gap: 1,
                   flexWrap: 'wrap',
-                  mt: 0.5
+                  mt: 0.25
                 }}
               >
                 {[
@@ -1357,14 +1623,14 @@ export default function UserDesc({ token }) {
 
           {/* Mobile Stats Grid - Enhanced Version */}
           {isMobile && (
-            <Stack spacing={0.75} sx={{ width: '100%' }}>
+            <Stack spacing={0.5} sx={{ width: '100%' }}>
               {/* Primary Stats Row - Always Visible */}
               <Box
                 sx={{
                   display: 'grid',
                   gridTemplateColumns: isXsMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
-                  gap: 0.375,
-                  p: 0.5,
+                  gap: 0.25,
+                  p: 0.375,
                   borderRadius: '6px',
                   background: `linear-gradient(135deg, 
                     ${alpha(theme.palette.background.paper, 0.8)} 0%, 
@@ -1447,13 +1713,13 @@ export default function UserDesc({ token }) {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        p: 0.75,
+                        p: 0.5,
                         borderRadius: '6px',
                         background: `linear-gradient(135deg, 
                           ${alpha(stat.color, 0.08)} 0%, 
                           ${alpha(stat.color, 0.03)} 100%)`,
                         border: `1px solid ${alpha(stat.color, 0.12)}`,
-                        minHeight: '40px',
+                        minHeight: '32px',
                         position: 'relative',
                         transition: 'all 0.2s ease',
                         cursor: 'pointer',
@@ -1854,7 +2120,7 @@ export default function UserDesc({ token }) {
 
       {/* Mobile Price & Extra Buttons */}
       {isTablet && (
-        <Stack direction="column" spacing={0.375} sx={{ width: '100%' }}>
+        <Stack direction="column" spacing={0.25} sx={{ width: '100%' }}>
           <Box sx={{ width: '100%' }}>
             <PriceDesc token={token} />
           </Box>
@@ -1864,232 +2130,170 @@ export default function UserDesc({ token }) {
         </Stack>
       )}
 
-      {/* Enhanced Tags & Links Section */}
-      <Stack spacing={isMobile ? 0.5 : 0.75} sx={{ width: '100%' }}>
-        {/* Tags */}
-        {enhancedTags && enhancedTags.length > 0 && (
-          <Box sx={{ width: '100%' }}>
-            {!isTablet ? (
-              <TagsSection
-                tags={enhancedTags}
-                md5={md5}
-                normalizeTag={normalizeTag}
-                theme={theme}
-                handleDelete={handleDelete}
-                toggleTagsDrawer={toggleTagsDrawer}
-              />
-            ) : (
+      {/* Mobile Expanded Stats - Only for detailed view */}
+      {isMobile && (
+        <Box
+          sx={{
+            borderRadius: '8px',
+            background: `linear-gradient(135deg, 
+              ${alpha(theme.palette.background.paper, 0.6)} 0%, 
+              ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+            overflow: 'hidden'
+          }}
+        >
+          {/* Toggle Button */}
+          <Button
+            onClick={() => setShowStat(!showStat)}
+            fullWidth
+            sx={{
+              p: 1,
+              justifyContent: 'space-between',
+              color: theme.palette.text.primary,
+              fontWeight: 500,
+              fontSize: '0.75rem',
+              textTransform: 'none',
+              borderRadius: 0,
+              minHeight: '44px',
+
+              '&:hover': {
+                background: `linear-gradient(135deg, 
+                  ${alpha(theme.palette.primary.main, 0.08)} 0%, 
+                  ${alpha(theme.palette.primary.main, 0.04)} 100%)`
+              }
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {showStat ? 'Hide' : 'Show'} Market Stats
+              </Typography>
+            </Stack>
+            <KeyboardArrowRightIcon
+              sx={{
+                width: 14,
+                height: 14,
+                color: theme.palette.primary.main,
+                transform: showStat ? 'rotate(90deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s ease'
+              }}
+            />
+          </Button>
+
+          {/* Expanded Stats */}
+          {showStat && (
+            <Box
+              sx={{
+                p: 1,
+                borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                background: `linear-gradient(135deg, 
+                  ${alpha(theme.palette.background.paper, 0.4)} 0%, 
+                  ${alpha(theme.palette.background.paper, 0.2)} 100%)`,
+                animation: 'fadeInUp 0.3s ease-out',
+                '@keyframes fadeInUp': {
+                  '0%': {
+                    opacity: 0,
+                    transform: 'translateY(-10px)'
+                  },
+                  '100%': {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  }
+                }
+              }}
+            >
               <Box
                 sx={{
-                  p: isMobile ? 0.75 : 0.75,
-                  borderRadius: '6px',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.background.paper,
-                    0.6
-                  )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                  cursor: 'pointer',
-                  minHeight: isMobile ? '40px' : 'auto',
-                  display: 'flex',
-                  alignItems: 'center',
-
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.primary.main,
-                      0.08
-                    )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
-                  }
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: 0.75
                 }}
-                onClick={() => toggleTagsDrawer(true)}
               >
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  sx={{ width: '100%' }}
-                >
-                  <Stack direction="row" alignItems="center" spacing={0.75}>
+                {[
+                  {
+                    label: 'Market Cap',
+                    value: fNumberWithSuffix(convertedMarketCap),
+                    color: theme.palette.info.main
+                  },
+                  {
+                    label: 'Volume (24h)',
+                    value: fNumberWithSuffix(vol24hx),
+                    color: theme.palette.warning.main
+                  },
+                  {
+                    label: 'Vol/Market Ratio',
+                    value: fNumber(voldivmarket),
+                    color: theme.palette.warning.main
+                  },
+                  {
+                    label: 'Circulating Supply',
+                    value: fNumberWithSuffix(supply),
+                    color: theme.palette.primary.main
+                  },
+                  {
+                    label: 'Total Supply',
+                    value: fNumberWithSuffix(amount),
+                    color: theme.palette.success.main
+                  },
+                  {
+                    label: 'Trustlines',
+                    value: fNumberWithSuffix(trustlines),
+                    color: theme.palette.info.main
+                  }
+                ].map((stat, index) => (
+                  <Box
+                    key={stat.label}
+                    sx={{
+                      p: 0.75,
+                      borderRadius: '6px',
+                      background: `linear-gradient(135deg, 
+                        ${alpha(stat.color, 0.06)} 0%, 
+                        ${alpha(stat.color, 0.02)} 100%)`,
+                      border: `1px solid ${alpha(stat.color, 0.1)}`,
+                      transition: 'all 0.2s ease',
+
+                      '&:hover': {
+                        background: `linear-gradient(135deg, 
+                          ${alpha(stat.color, 0.1)} 0%, 
+                          ${alpha(stat.color, 0.04)} 100%)`,
+                        border: `1px solid ${alpha(stat.color, 0.15)}`,
+                        transform: 'translateY(-1px)'
+                      }
+                    }}
+                  >
                     <Typography
                       variant="caption"
                       sx={{
+                        fontSize: '0.6rem',
                         fontWeight: 500,
-                        fontSize: isMobile ? '0.7rem' : '0.65rem',
-                        color: theme.palette.text.secondary
+                        color: alpha(theme.palette.text.secondary, 0.8),
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.2px',
+                        display: 'block',
+                        mb: 0.25,
+                        lineHeight: 1
                       }}
                     >
-                      Tags
+                      {stat.label}
                     </Typography>
-                    <Box display="flex" alignItems="center" gap={0.375}>
-                      {enhancedTags &&
-                        enhancedTags.slice(0, isMobile ? 3 : 2).map((tag) => (
-                          <Chip
-                            key={`${md5}-${tag}`}
-                            label={tag}
-                            size="small"
-                            sx={{
-                              height: isMobile ? '20px' : '18px',
-                              fontSize: isMobile ? '0.65rem' : '0.6rem',
-                              borderRadius: '4px',
-                              px: isMobile ? 0.5 : 0.75,
-                              background: `linear-gradient(135deg, ${alpha(
-                                theme.palette.background.paper,
-                                0.6
-                              )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-                              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                              fontWeight: 500
-                            }}
-                          />
-                        ))}
-                      {enhancedTags && enhancedTags.length > (isMobile ? 3 : 2) && (
-                        <Chip
-                          label={`+${enhancedTags.slice(isMobile ? 3 : 2).length}`}
-                          size="small"
-                          sx={{
-                            height: isMobile ? '20px' : '18px',
-                            fontSize: isMobile ? '0.65rem' : '0.6rem',
-                            borderRadius: '4px',
-                            px: isMobile ? 0.5 : 0.75,
-                            background: `linear-gradient(135deg, ${alpha(
-                              theme.palette.primary.main,
-                              0.08
-                            )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                            border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                            color: theme.palette.primary.main,
-                            fontWeight: 500
-                          }}
-                        />
-                      )}
-                    </Box>
-                  </Stack>
-                  <KeyboardArrowRightIcon
-                    sx={{
-                      width: isMobile ? 14 : 12,
-                      height: isMobile ? 14 : 12,
-                      color: theme.palette.primary.main
-                    }}
-                  />
-                </Stack>
-              </Box>
-            )}
-          </Box>
-        )}
-
-        {/* Links */}
-        {(domain || issuer || isChat || isCommunity) && (
-          <Box sx={{ width: '100%' }}>
-            {!isTablet ? (
-              <Stack
-                direction="row"
-                spacing={0.25}
-                flexWrap="wrap"
-                useFlexGap
-                sx={{ alignItems: 'flex-start' }}
-              >
-                {domain && (
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://${domain}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Chip
-                      label={domain}
-                      size="small"
+                    <Typography
+                      variant="caption"
                       sx={{
-                        height: '24px',
                         fontSize: '0.7rem',
-                        borderRadius: '4px',
-                        background: `linear-gradient(135deg, ${alpha(
-                          theme.palette.background.paper,
-                          0.8
-                        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                        color: theme.palette.primary.main,
-                        fontWeight: 500,
-                        transition: 'all 0.2s ease',
-
-                        '&:hover': {
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.primary.main,
-                            0.08
-                          )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                          transform: 'translateY(-1px)',
-                          cursor: 'pointer'
-                        }
+                        fontWeight: 700,
+                        color: stat.color,
+                        lineHeight: 1,
+                        wordBreak: 'break-all'
                       }}
-                      deleteIcon={
-                        <Icon
-                          icon={linkExternal}
-                          width="6"
-                          height="6"
-                          style={{ color: theme.palette.primary.main }}
-                        />
-                      }
-                      onDelete={handleDelete}
-                      onClick={handleDelete}
-                      icon={<Icon icon={link45deg} width="6" height="6" />}
-                    />
-                  </Link>
-                )}
-                <SocialLinksMenu token={token} issuer={issuer} />
-              </Stack>
-            ) : (
-              <Box
-                display="flex"
-                alignItems="center"
-                onClick={() => toggleLinksDrawer(true)}
-                sx={{
-                  cursor: 'pointer',
-                  p: isMobile ? 0.75 : 0.75,
-                  borderRadius: '6px',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.background.paper,
-                    0.6
-                  )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
-                  minHeight: isMobile ? '40px' : 'auto',
-
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.primary.main,
-                      0.08
-                    )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
-                  }
-                }}
-              >
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  sx={{ width: '100%' }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: isMobile ? '0.7rem' : '0.6rem',
-                      color: theme.palette.text.secondary,
-                      fontWeight: 500
-                    }}
-                  >
-                    Links & Social
-                  </Typography>
-                  <KeyboardArrowRightIcon
-                    sx={{
-                      width: isMobile ? 14 : 12,
-                      height: isMobile ? 14 : 12,
-                      color: theme.palette.primary.main
-                    }}
-                  />
-                </Stack>
+                    >
+                      {stat.value}
+                    </Typography>
+                  </Box>
+                ))}
               </Box>
-            )}
-          </Box>
-        )}
-      </Stack>
+            </Box>
+          )}
+        </Box>
+      )}
 
       <TagsDrawer
         isOpen={openTagsDrawer}
