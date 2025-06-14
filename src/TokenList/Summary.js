@@ -75,9 +75,12 @@ const MetricBox = styled(Paper)(({ theme }) => ({
     top: 0,
     left: 0,
     right: 0,
-    height: '3px',
-    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-    opacity: 0.8,
+    height: '1px',
+    background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
+      theme.palette.success.main,
+      0.4
+    )}, ${alpha(theme.palette.info.main, 0.4)})`,
+    opacity: 0.6,
     borderRadius: '20px 20px 0 0'
   }
 }));
@@ -113,12 +116,8 @@ const PercentageChange = styled(Typography, {
   fontWeight: 600,
   padding: '2px 6px',
   borderRadius: '6px',
-  background: isPositive
-    ? alpha(theme.palette.success.main, 0.08)
-    : alpha(theme.palette.error.main, 0.08),
-  border: `1px solid ${
-    isPositive ? alpha(theme.palette.success.main, 0.15) : alpha(theme.palette.error.main, 0.15)
-  }`
+  background: 'transparent',
+  border: 'none'
 }));
 
 // Enhanced VolumePercentage with portfolio styling
@@ -130,8 +129,8 @@ const VolumePercentage = styled(Typography)(({ theme }) => ({
   fontWeight: 500,
   padding: '2px 6px',
   borderRadius: '6px',
-  background: alpha(theme.palette.info.main, 0.06),
-  border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`
+  background: 'transparent',
+  border: 'none'
 }));
 
 function Rate(num, exch) {
@@ -358,9 +357,13 @@ export default function Summary() {
                       fontSize: '0.75rem',
                       padding: '2px 6px',
                       borderRadius: '6px',
-                      background: (theme) => alpha(theme.palette.primary.main, 0.06),
-                      border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                      display: 'inline-block'
+                      background: 'transparent',
+                      border: 'none',
+                      display: 'inline-block',
+                      color: (theme) =>
+                        theme.palette.mode === 'dark'
+                          ? alpha('#FFFFFF', 0.7)
+                          : alpha('#637381', 0.9)
                     }}
                   >
                     {activeFiatCurrency === 'XRP' ? 'USD Value' : 'Native XRPL'}

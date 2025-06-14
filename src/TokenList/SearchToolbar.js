@@ -115,8 +115,8 @@ const RootStyle = styled(Box)(({ theme }) => ({
     bottom: 0,
     left: 0,
     right: 0,
-    height: '2px',
-    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+    height: '1px',
+    background: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.1) : alpha('#000000', 0.08),
     opacity: 0.6
   }
 }));
@@ -159,16 +159,13 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     },
     '&:hover': {
       transform: 'translateY(-1px)',
-      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
     },
     '&.Mui-selected': {
-      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(
-        theme.palette.primary.main,
-        0.08
-      )} 100%)`,
+      background: 'transparent',
       color: theme.palette.primary.main,
-      boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}`,
-      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)} !important`
+      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.06)}`,
+      border: `1px solid ${alpha(theme.palette.divider, 0.15)} !important`
     }
   },
   [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]: {
@@ -193,33 +190,24 @@ const getEnhancedChipStyles = (theme, isActive, color, isLoading) => ({
   letterSpacing: '-0.01em',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   background: isActive
-    ? `linear-gradient(135deg, ${alpha(color || theme.palette.primary.main, 0.15)} 0%, ${alpha(
-        color || theme.palette.primary.main,
-        0.08
-      )} 100%)`
+    ? 'transparent'
     : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
         theme.palette.background.paper,
         0.4
       )} 100%)`,
   backdropFilter: 'blur(10px)',
   border: `1px solid ${
-    isActive ? alpha(color || theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.08)
+    isActive ? alpha(theme.palette.divider, 0.15) : alpha(theme.palette.divider, 0.08)
   }`,
   color: isActive ? color || theme.palette.primary.main : theme.palette.text.primary,
   boxShadow: isActive
-    ? `0 4px 12px ${alpha(color || theme.palette.primary.main, 0.15)}`
+    ? `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
     : `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
   '&:hover': {
     transform: 'translateY(-2px)',
-    boxShadow: `0 8px 24px ${alpha(color || theme.palette.primary.main, 0.2)}, 0 4px 12px ${alpha(
-      theme.palette.common.black,
-      0.08
-    )}`,
-    background: `linear-gradient(135deg, ${alpha(
-      color || theme.palette.primary.main,
-      0.2
-    )} 0%, ${alpha(color || theme.palette.primary.main, 0.12)} 100%)`,
-    border: `1px solid ${alpha(color || theme.palette.primary.main, 0.3)}`
+    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.12)}`,
+    background: 'transparent',
+    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
   },
   '& .MuiChip-label': {
     px: 2,
@@ -911,11 +899,9 @@ export default function SearchToolbar({
                 margin: '4px 8px',
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.primary.main,
-                    0.1
-                  )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
-                  transform: 'translateX(4px)'
+                  background: 'transparent',
+                  transform: 'translateX(4px)',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`
                 }
               }
             }
@@ -926,15 +912,13 @@ export default function SearchToolbar({
               key={period}
               onClick={() => handleGainersPeriodSelect(period)}
               sx={{
-                backgroundColor:
-                  currentPeriod === period
-                    ? `linear-gradient(135deg, ${alpha('#00AB55', 0.15)} 0%, ${alpha(
-                        '#00AB55',
-                        0.08
-                      )} 100%)`
-                    : 'transparent',
+                backgroundColor: currentPeriod === period ? 'transparent' : 'transparent',
                 color: currentPeriod === period ? '#00AB55' : 'inherit',
-                fontWeight: currentPeriod === period ? 600 : 400
+                fontWeight: currentPeriod === period ? 600 : 400,
+                border:
+                  currentPeriod === period
+                    ? `1px solid ${alpha(theme.palette.divider, 0.15)}`
+                    : 'none'
               }}
             >
               {`${label} Gainers`}
@@ -979,11 +963,9 @@ export default function SearchToolbar({
                 margin: '4px 8px',
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.primary.main,
-                    0.1
-                  )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
-                  transform: 'translateX(4px)'
+                  background: 'transparent',
+                  transform: 'translateX(4px)',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`
                 }
               }
             }
@@ -992,14 +974,12 @@ export default function SearchToolbar({
           <MenuItem
             onClick={() => handleTokenOptionSelect('/')}
             sx={{
-              backgroundColor: !router.query.view
-                ? `linear-gradient(135deg, ${alpha('#00AB55', 0.15)} 0%, ${alpha(
-                    '#00AB55',
-                    0.08
-                  )} 100%)`
-                : 'transparent',
+              backgroundColor: !router.query.view ? 'transparent' : 'transparent',
               color: !router.query.view ? '#00AB55' : 'inherit',
-              fontWeight: !router.query.view ? 600 : 400
+              fontWeight: !router.query.view ? 600 : 400,
+              border: !router.query.view
+                ? `1px solid ${alpha(theme.palette.divider, 0.15)}`
+                : 'none'
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
@@ -1010,15 +990,13 @@ export default function SearchToolbar({
           <MenuItem
             onClick={() => handleTokenOptionSelect('/view/firstledger')}
             sx={{
-              backgroundColor:
-                router.query.view === 'firstledger'
-                  ? `linear-gradient(135deg, ${alpha('#00AB55', 0.15)} 0%, ${alpha(
-                      '#00AB55',
-                      0.08
-                    )} 100%)`
-                  : 'transparent',
+              backgroundColor: router.query.view === 'firstledger' ? 'transparent' : 'transparent',
               color: router.query.view === 'firstledger' ? '#00AB55' : 'inherit',
-              fontWeight: router.query.view === 'firstledger' ? 600 : 400
+              fontWeight: router.query.view === 'firstledger' ? 600 : 400,
+              border:
+                router.query.view === 'firstledger'
+                  ? `1px solid ${alpha(theme.palette.divider, 0.15)}`
+                  : 'none'
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
@@ -1029,15 +1007,13 @@ export default function SearchToolbar({
           <MenuItem
             onClick={() => handleTokenOptionSelect('/view/magnetic-x')}
             sx={{
-              backgroundColor:
-                router.query.view === 'magnetic-x'
-                  ? `linear-gradient(135deg, ${alpha('#00AB55', 0.15)} 0%, ${alpha(
-                      '#00AB55',
-                      0.08
-                    )} 100%)`
-                  : 'transparent',
+              backgroundColor: router.query.view === 'magnetic-x' ? 'transparent' : 'transparent',
               color: router.query.view === 'magnetic-x' ? '#00AB55' : 'inherit',
-              fontWeight: router.query.view === 'magnetic-x' ? 600 : 400
+              fontWeight: router.query.view === 'magnetic-x' ? 600 : 400,
+              border:
+                router.query.view === 'magnetic-x'
+                  ? `1px solid ${alpha(theme.palette.divider, 0.15)}`
+                  : 'none'
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
@@ -1057,15 +1033,13 @@ export default function SearchToolbar({
           <MenuItem
             onClick={() => handleTokenOptionSelect('/view/xpmarket')}
             sx={{
-              backgroundColor:
-                router.query.view === 'xpmarket'
-                  ? `linear-gradient(135deg, ${alpha('#00AB55', 0.15)} 0%, ${alpha(
-                      '#00AB55',
-                      0.08
-                    )} 100%)`
-                  : 'transparent',
+              backgroundColor: router.query.view === 'xpmarket' ? 'transparent' : 'transparent',
               color: router.query.view === 'xpmarket' ? '#00AB55' : 'inherit',
-              fontWeight: router.query.view === 'xpmarket' ? 600 : 400
+              fontWeight: router.query.view === 'xpmarket' ? 600 : 400,
+              border:
+                router.query.view === 'xpmarket'
+                  ? `1px solid ${alpha(theme.palette.divider, 0.15)}`
+                  : 'none'
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
@@ -1076,15 +1050,13 @@ export default function SearchToolbar({
           <MenuItem
             onClick={() => handleTokenOptionSelect('/view/xrpfun')}
             sx={{
-              backgroundColor:
-                router.query.view === 'xrpfun'
-                  ? `linear-gradient(135deg, ${alpha('#00AB55', 0.15)} 0%, ${alpha(
-                      '#00AB55',
-                      0.08
-                    )} 100%)`
-                  : 'transparent',
+              backgroundColor: router.query.view === 'xrpfun' ? 'transparent' : 'transparent',
               color: router.query.view === 'xrpfun' ? '#00AB55' : 'inherit',
-              fontWeight: router.query.view === 'xrpfun' ? 600 : 400
+              fontWeight: router.query.view === 'xrpfun' ? 600 : 400,
+              border:
+                router.query.view === 'xrpfun'
+                  ? `1px solid ${alpha(theme.palette.divider, 0.15)}`
+                  : 'none'
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
