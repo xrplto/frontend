@@ -21,7 +21,6 @@ import WhatshotIcon from '@mui/icons-material/Whatshot';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import StarIcon from '@mui/icons-material/Star';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import StackStyle from 'src/components/StackStyle';
@@ -106,9 +105,9 @@ const RankChip = styled(Chip)(({ theme, rank }) => {
     background: getGradient(rank),
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: '0.6rem',
-    height: '20px',
-    minWidth: '24px',
+    fontSize: '0.7rem',
+    height: '22px',
+    minWidth: '26px',
     boxShadow: `0 1px 4px ${alpha('#000', 0.3)}`,
     border: '1px solid rgba(255,255,255,0.2)',
     '& .MuiChip-label': {
@@ -336,17 +335,6 @@ const TrendingTokens = () => {
                           >
                             {user}
                           </Typography>
-                          {isOMCF === 'yes' && (
-                            <Tooltip title="OMCF Premium Token" arrow placement="top">
-                              <StarIcon
-                                sx={{
-                                  color: '#FFD700',
-                                  fontSize: 12,
-                                  filter: 'drop-shadow(0 0 4px rgba(255, 215, 0, 0.6))'
-                                }}
-                              />
-                            </Tooltip>
-                          )}
                           {rank <= 3 && (
                             <Tooltip title="Top Performer" arrow placement="top">
                               <TrendingUpIcon
