@@ -30,6 +30,8 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { Icon } from '@iconify/react';
 import exchangeIcon from '@iconify/icons-uil/exchange';
 import infoFill from '@iconify/icons-eva/info-fill';
+import shareIcon from '@iconify/icons-uil/share-alt';
+import copyIcon from '@iconify/icons-uil/copy';
 
 // Context
 import { useContext } from 'react';
@@ -52,6 +54,9 @@ import { currencySymbols } from 'src/utils/constants';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
+
+// Router
+import { useRouter } from 'next/router';
 
 const CurrencyContent = styled('div')(
   ({ theme }) => `
@@ -542,10 +547,60 @@ const TrustlineButton = styled(Button)(
 `
 );
 
+const ShareButton = styled(Button)(
+  ({ theme }) => `
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 60px;
+    height: 32px;
+    text-transform: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    background: ${alpha(theme.palette.info.main, 0.08)};
+    color: ${theme.palette.info.main};
+    border: 1px solid ${alpha(theme.palette.info.main, 0.2)};
+    
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, ${alpha(
+        theme.palette.info.main,
+        0.2
+      )}, transparent);
+      transition: left 0.5s;
+    }
+    
+    &:hover {
+      background: ${alpha(theme.palette.info.main, 0.12)};
+      border-color: ${alpha(theme.palette.info.main, 0.3)};
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px ${alpha(theme.palette.info.main, 0.15)};
+      
+      &::before {
+        left: 100%;
+      }
+    }
+    
+    &:active {
+      transform: translateY(0);
+      transition: transform 0.1s;
+    }
+`
+);
+
 export default function Swap({ pair, setPair, revert, setRevert }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
   const QR_BLUR = '/static/blurqr.webp';
+  const router = useRouter();
 
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
@@ -1750,6 +1805,11 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
       curr2: tempToken1
     });
 
+    // Update URL with switched tokens - only if we're not loading from URL
+    if (urlParsed && !isLoadingFromUrl && typeof window !== 'undefined') {
+      updateUrl(tempToken2, tempToken1);
+    }
+
     // Complete the switching animation without restoring amounts
     setTimeout(() => {
       setIsSwitching(false);
@@ -1912,6 +1972,289 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
     setLoading(false);
   };
 
+  // Add URL parsing and token loading state
+  const [isLoadingFromUrl, setIsLoadingFromUrl] = useState(false);
+  const [urlParsed, setUrlParsed] = useState(false);
+
+  // Helper function to create URL-friendly currency string
+  const createCurrencyUrlString = (token) => {
+    if (!token) return '';
+
+    if (token.currency === 'XRP') {
+      return 'xrp';
+    }
+
+    // For other currencies, use format: CURRENCY-ISSUER
+    return `${token.currency}-${token.issuer}`;
+  };
+
+  // Helper function to parse currency from URL string
+  const parseCurrencyFromUrl = (currencyString) => {
+    if (!currencyString) return null;
+
+    if (currencyString.toLowerCase() === 'xrp') {
+      return {
+        currency: 'XRP',
+        issuer: ''
+      };
+    }
+
+    // Split by last dash to handle currency codes that might contain dashes
+    const lastDashIndex = currencyString.lastIndexOf('-');
+    if (lastDashIndex === -1) return null;
+
+    const currency = currencyString.substring(0, lastDashIndex);
+    const issuer = currencyString.substring(lastDashIndex + 1);
+
+    return {
+      currency,
+      issuer
+    };
+  };
+
+  // Function to update URL based on current tokens
+  const updateUrl = (token1, token2) => {
+    if (!token1 || !token2) return;
+
+    const currency1String = createCurrencyUrlString(token1);
+    const currency2String = createCurrencyUrlString(token2);
+
+    if (currency1String && currency2String) {
+      const newPath = `/swap/${currency1String}/${currency2String}`;
+      // Only update URL if it's different from current path
+      // For Next.js dynamic routes, we need to check both pathname and query
+      const currentCurrency1 = router.query.currencies?.[0];
+      const currentCurrency2 = router.query.currencies?.[1];
+
+      if (currentCurrency1 !== currency1String || currentCurrency2 !== currency2String) {
+        router.push(newPath, undefined, { shallow: true });
+      }
+    }
+  };
+
+  // Function to find token by currency and issuer
+  const findTokenByCurrencyAndIssuer = async (currency, issuer) => {
+    try {
+      // For XRP, return a standard XRP token object
+      if (currency === 'XRP') {
+        return {
+          currency: 'XRP',
+          issuer: '',
+          name: 'XRP',
+          md5: '84e5efeb89c4eae8f68188982dc290d8', // Standard XRP md5
+          pro24h: 'pro24h'
+        };
+      }
+
+      // 1. Try main tokens endpoint with currency filter
+      try {
+        const tokensResponse = await axios.get(`${BASE_URL}/tokens`, {
+          params: {
+            filter: currency,
+            limit: 100,
+            start: 0,
+            sortBy: 'vol24hxrp',
+            sortType: 'desc'
+          }
+        });
+
+        if (tokensResponse.data && tokensResponse.data.tokens) {
+          const foundToken = tokensResponse.data.tokens.find(
+            (token) => token.currency === currency && token.issuer === issuer
+          );
+
+          if (foundToken) {
+            console.log('Found token via /tokens endpoint:', foundToken);
+            return foundToken;
+          }
+        }
+      } catch (e) {
+        console.log('Main tokens search failed:', e.message);
+      }
+
+      // 2. Try xrpnft tokens endpoint (used by CurrencySearchModal)
+      try {
+        const nftResponse = await axios.get(`${BASE_URL}/xrpnft/tokens`, {
+          params: {
+            filter: currency
+          }
+        });
+
+        if (nftResponse.data && nftResponse.data.tokens) {
+          const foundToken = nftResponse.data.tokens.find(
+            (token) => token.currency === currency && token.issuer === issuer
+          );
+
+          if (foundToken) {
+            console.log('Found token via /xrpnft/tokens endpoint:', foundToken);
+            return foundToken;
+          }
+        }
+      } catch (e) {
+        console.log('NFT tokens search failed:', e.message);
+      }
+
+      // 3. Try direct token lookup by issuer_currency format
+      try {
+        const directResponse = await axios.get(`${BASE_URL}/token/${issuer}_${currency}`);
+
+        if (directResponse.data && directResponse.data.token) {
+          console.log('Found token via direct lookup:', directResponse.data.token);
+          return directResponse.data.token;
+        }
+      } catch (e) {
+        console.log('Direct token lookup failed:', e.message);
+      }
+
+      // 4. Fallback - create basic token object
+      console.log(`Creating fallback token for ${currency}:${issuer}`);
+      return {
+        currency,
+        issuer,
+        name: currency,
+        md5: `${currency}_${issuer}`.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(),
+        pro24h: 'pro24h'
+      };
+    } catch (error) {
+      console.log('Error finding token:', error);
+      // Return a basic token object as final fallback
+      return {
+        currency,
+        issuer,
+        name: currency,
+        md5: `${currency}_${issuer}`.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(),
+        pro24h: 'pro24h'
+      };
+    }
+  };
+
+  // Function to load tokens from URL parameters
+  const loadTokensFromUrl = async () => {
+    const currencies = router.query.currencies;
+    const currency1 = currencies?.[0];
+    const currency2 = currencies?.[1];
+
+    if (!currency1 || !currency2) {
+      setUrlParsed(true);
+      return;
+    }
+
+    setIsLoadingFromUrl(true);
+
+    try {
+      const parsedCurrency1 = parseCurrencyFromUrl(currency1);
+      const parsedCurrency2 = parseCurrencyFromUrl(currency2);
+
+      if (!parsedCurrency1 || !parsedCurrency2) {
+        setUrlParsed(true);
+        setIsLoadingFromUrl(false);
+        return;
+      }
+
+      // Load both tokens
+      const [token1Data, token2Data] = await Promise.all([
+        findTokenByCurrencyAndIssuer(parsedCurrency1.currency, parsedCurrency1.issuer),
+        findTokenByCurrencyAndIssuer(parsedCurrency2.currency, parsedCurrency2.issuer)
+      ]);
+
+      if (token1Data && token2Data) {
+        // Ensure tokens are different
+        if (
+          token1Data.currency === token2Data.currency &&
+          token1Data.issuer === token2Data.issuer
+        ) {
+          console.log('Cannot set same token for both currencies');
+          setUrlParsed(true);
+          setIsLoadingFromUrl(false);
+          return;
+        }
+
+        setToken1(token1Data);
+        setToken2(token2Data);
+
+        // Update pair
+        setPair({
+          curr1: token1Data,
+          curr2: token2Data
+        });
+
+        console.log('Loaded tokens from URL:', {
+          token1: token1Data.name,
+          token2: token2Data.name
+        });
+      }
+    } catch (error) {
+      console.log('Error loading tokens from URL:', error);
+    }
+
+    setUrlParsed(true);
+    setIsLoadingFromUrl(false);
+  };
+
+  // Load tokens from URL on component mount
+  useEffect(() => {
+    if (!urlParsed && router.query.currencies) {
+      loadTokensFromUrl();
+    }
+  }, [router.query.currencies, urlParsed]);
+
+  // Update URL when tokens change (but not during initial URL parsing)
+  useEffect(() => {
+    // Only update URL when:
+    // 1. URL has been parsed (not initial load from URL)
+    // 2. Not currently loading from URL (not setting tokens from URL)
+    // 3. Both tokens exist
+    // 4. We're in a browser environment
+    if (urlParsed && !isLoadingFromUrl && token1 && token2 && typeof window !== 'undefined') {
+      updateUrl(token1, token2);
+    }
+  }, [token1, token2, urlParsed, isLoadingFromUrl]);
+
+  // Add function to generate shareable URL
+  const getShareableUrl = () => {
+    if (!token1 || !token2) return '';
+
+    const currency1String = createCurrencyUrlString(token1);
+    const currency2String = createCurrencyUrlString(token2);
+
+    if (currency1String && currency2String) {
+      // Use window.location.origin in client-side context
+      if (typeof window !== 'undefined') {
+        return `${window.location.origin}/swap/${currency1String}/${currency2String}`;
+      }
+      // Fallback for server-side rendering
+      return `/swap/${currency1String}/${currency2String}`;
+    }
+    return '';
+  };
+
+  // Add copy to clipboard function
+  const handleShareUrl = async () => {
+    try {
+      const shareUrl = getShareableUrl();
+      if (shareUrl) {
+        await navigator.clipboard.writeText(shareUrl);
+        enqueueSnackbar('Swap link copied to clipboard!', { variant: 'success' });
+      } else {
+        enqueueSnackbar('Unable to generate share link', { variant: 'error' });
+      }
+    } catch (err) {
+      // Fallback for browsers that don't support clipboard API
+      try {
+        const shareUrl = getShareableUrl();
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        enqueueSnackbar('Swap link copied to clipboard!', { variant: 'success' });
+      } catch (fallbackErr) {
+        enqueueSnackbar('Failed to copy link to clipboard', { variant: 'error' });
+      }
+    }
+  };
+
   return (
     <Stack
       alignItems="center"
@@ -1935,26 +2278,37 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
         <OverviewWrapper sx={{ width: '100%', mb: 3 }}>
           <ConverterFrame>
-            {isLoggedIn && (
-              <Stack
-                direction="row"
-                justifyContent="flex-end"
-                spacing={1}
-                sx={{
-                  px: { xs: 2, sm: 3, md: 4 },
-                  pt: 2,
-                  pb: 1,
-                  position: 'relative'
-                }}
-              >
-                <AllowButton variant="outlined" onClick={onFillHalf}>
-                  Half
-                </AllowButton>
-                <AllowButton variant="outlined" onClick={onFillMax}>
-                  Max
-                </AllowButton>
-              </Stack>
-            )}
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              spacing={1}
+              sx={{
+                px: { xs: 2, sm: 3, md: 4 },
+                pt: 2,
+                pb: 1,
+                position: 'relative'
+              }}
+            >
+              <Tooltip title="Copy shareable link with current token pair" arrow>
+                <ShareButton
+                  variant="outlined"
+                  onClick={handleShareUrl}
+                  startIcon={<Icon icon={shareIcon} width={14} height={14} />}
+                >
+                  Share
+                </ShareButton>
+              </Tooltip>
+              {isLoggedIn && (
+                <Stack direction="row" spacing={1}>
+                  <AllowButton variant="outlined" onClick={onFillHalf}>
+                    Half
+                  </AllowButton>
+                  <AllowButton variant="outlined" onClick={onFillMax}>
+                    Max
+                  </AllowButton>
+                </Stack>
+              )}
+            </Stack>
             <CurrencyContent
               style={{
                 order: 1,

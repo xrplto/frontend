@@ -14,7 +14,6 @@ import { PersistGate } from 'redux-persist/integration/react';
 export const AppContext = createContext({});
 
 export function ContextProvider({ children, data, openSnackbar }) {
-
   const BASE_URL = process.env.API_URL;
 
   const [sync, setSync] = useState(0);
@@ -99,10 +98,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
       newProfiles.push(profile);
     }
 
-    window.localStorage.setItem(
-      KEY_ACCOUNT_PROFILES,
-      JSON.stringify(newProfiles)
-    );
+    window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(newProfiles));
     setProfiles(newProfiles);
   };
 
@@ -117,13 +113,9 @@ export function ContextProvider({ children, data, openSnackbar }) {
     const newProfiles = profiles.filter(function (obj) {
       return obj.account !== account;
     });
-    window.localStorage.setItem(
-      KEY_ACCOUNT_PROFILES,
-      JSON.stringify(newProfiles)
-    );
+    window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(newProfiles));
     setProfiles(newProfiles);
   };
-
 
   useEffect(() => {
     var timer = null;
@@ -142,7 +134,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
             // setOpen(true);
             setOpenLogin(false);
             setOpenWalletModal(false);
-            doLogIn({...profile, wallet_type: "xaman"});
+            doLogIn({ ...profile, wallet_type: 'xaman' });
             return;
           }
         } catch (err) {}
@@ -184,9 +176,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
   const onCancelLoginXumm = async (xuuid) => {
     setConnecting(true);
     try {
-      const res = await axios.delete(
-        `${BASE_URL}/account/cancellogin/${xuuid}`
-      );
+      const res = await axios.delete(`${BASE_URL}/account/cancellogin/${xuuid}`);
       if (res.status === 200) {
       }
     } catch (err) {}
@@ -200,10 +190,9 @@ export function ContextProvider({ children, data, openSnackbar }) {
     try {
       const accountToken = accountProfile?.token;
       const accountUuid = accountProfile?.xuuid;
-      const res = await axios.delete(
-        `${BASE_URL}/account/logout/${accountLogin}/${accountUuid}`,
-        { headers: { 'x-access-token': accountToken } }
-      );
+      const res = await axios.delete(`${BASE_URL}/account/logout/${accountLogin}/${accountUuid}`, {
+        headers: { 'x-access-token': accountToken }
+      });
       if (res.status === 200) {
       }
     } catch (err) {}
@@ -266,61 +255,72 @@ export function ContextProvider({ children, data, openSnackbar }) {
     getAccountInfo();
   }, [accountProfile, sync]);
 
-  const contextValue = useMemo(() => ({
-    toggleTheme,
-    darkMode,
-    setDarkMode,
-    accountProfile,
-    setActiveProfile,
-    profiles,
-    removeProfile,
-    doLogIn,
-    doLogOut,
-    setLoading,
-    openSnackbar,
-    sync,
-    setSync,
-    activeFiatCurrency,
-    toggleFiatCurrency,
-    open,
-    setOpen,
-    openLogin,
-    setOpenLogin,
-    openWalletModal,
-    setOpenWalletModal,
-    uuid,
-    setUuid,
-    qrUrl,
-    setQrUrl,
-    nextUrl,
-    setNextUrl,
-    accountBalance,
-    setAccountBalance,
-    onConnectXumm, 
-    onCancelLoginXumm, 
-    onLogoutXumm, 
-    handleOpen,
-    handleClose,
-    handleLogin,
-    handleLogout,
-    handleLoginClose,
-    connecting,
-    setConnecting,
-    deletingNfts,
-    setDeletingNfts
-  }), [
-    darkMode, accountProfile, profiles, sync, activeFiatCurrency,
-    open, openLogin, openWalletModal, uuid, qrUrl, nextUrl,
-    accountBalance, connecting, deletingNfts
-    // Add any other dependencies that should trigger a re-creation of the context value
-  ]);
+  const contextValue = useMemo(
+    () => ({
+      toggleTheme,
+      darkMode,
+      setDarkMode,
+      accountProfile,
+      setActiveProfile,
+      profiles,
+      removeProfile,
+      doLogIn,
+      doLogOut,
+      setLoading,
+      openSnackbar,
+      sync,
+      setSync,
+      activeFiatCurrency,
+      toggleFiatCurrency,
+      open,
+      setOpen,
+      openLogin,
+      setOpenLogin,
+      openWalletModal,
+      setOpenWalletModal,
+      uuid,
+      setUuid,
+      qrUrl,
+      setQrUrl,
+      nextUrl,
+      setNextUrl,
+      accountBalance,
+      setAccountBalance,
+      onConnectXumm,
+      onCancelLoginXumm,
+      onLogoutXumm,
+      handleOpen,
+      handleClose,
+      handleLogin,
+      handleLogout,
+      handleLoginClose,
+      connecting,
+      setConnecting,
+      deletingNfts,
+      setDeletingNfts
+    }),
+    [
+      darkMode,
+      accountProfile,
+      profiles,
+      sync,
+      activeFiatCurrency,
+      open,
+      openLogin,
+      openWalletModal,
+      uuid,
+      qrUrl,
+      nextUrl,
+      accountBalance,
+      connecting,
+      deletingNfts
+      // Add any other dependencies that should trigger a re-creation of the context value
+    ]
+  );
 
   return (
     <AppContext.Provider value={contextValue}>
-      <Backdrop
-        sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 202 }}
-        open={loading}
-      >
+      <Backdrop sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 202 }} open={loading}>
         <PuffLoader color={'#00AB55'} size={50} />
       </Backdrop>
 

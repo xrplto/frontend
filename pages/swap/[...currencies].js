@@ -2,7 +2,6 @@ import axios from 'axios';
 import { performance } from 'perf_hooks';
 import { useState, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
-import { useRouter } from 'next/router';
 
 // Material
 import { styled, Box, Container, Stack, Toolbar, Typography } from '@mui/material';
@@ -168,51 +167,6 @@ function Overview({ data }) {
     }
   };
 
-  const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
-    const data = [];
-    if (offers && offers.length > 0)
-      offers.forEach((offer) => {
-        const direction = offer.Direction === 'sell' ? 'sell' : 'buy';
-        let price = parseFloat(offer.quality) || 1;
-        let quantity = parseFloat(offer.TakerGets) || 1;
-        let total = parseFloat(offer.TakerPays) || 1;
-
-        if (orderType === ORDER_TYPE_ASKS) {
-          if (direction === 'sell') {
-            if (typeof offer.TakerGets === 'object') {
-              quantity = parseFloat(offer.TakerGets.value) || 0;
-            }
-
-            if (typeof offer.TakerPays === 'object') {
-              total = parseFloat(offer.TakerPays.value) || 0;
-            }
-
-            price = total / quantity;
-          }
-        } else {
-          if (direction === 'buy') {
-            if (typeof offer.TakerGets === 'object') {
-              total = parseFloat(offer.TakerGets.value) || 0;
-            }
-
-            if (typeof offer.TakerPays === 'object') {
-              quantity = parseFloat(offer.TakerPays.value) || 0;
-            }
-
-            price = total / quantity;
-          }
-        }
-
-        data.push({
-          price: isNaN(price) ? 0 : price,
-          quantity: isNaN(quantity) ? 0 : quantity,
-          total: isNaN(total) ? 0 : total
-        });
-      });
-
-    return data;
-  };
-
   return (
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
@@ -221,29 +175,85 @@ function Overview({ data }) {
 
       <Container maxWidth="sm">
         <Stack
-          direction="row"
-          justifyContent="center"
-          alignItems={{ xs: 'flex-start', sm: 'center' }}
-          sx={{
-            mt: { xs: 4, sm: -10 }
-          }}
-          style={{
-            height: '100%',
-            minHeight: '100vh'
-          }}
+          direction="column"
+          justifyContent="space-between"
+          alignItems="center"
+          spacing={3}
+          sx={{ mb: 5 }}
         >
-          <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
+          <Stack direction="column" justifyContent="center" alignItems="center" spacing={3}>
+            <Typography variant="h3" component="h1" paragraph>
+              Swap
+            </Typography>
+          </Stack>
         </Stack>
-      </Container>
 
+        <SwapWrapper>
+          <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
+        </SwapWrapper>
+      </Container>
       <Footer />
+      <ScrollToTop />
     </OverviewWrapper>
   );
 }
 
+const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
+  const data = [];
+  if (offers && offers.length > 0)
+    offers.forEach((offer) => {
+      const direction = offer.Direction === 'sell' ? 'sell' : 'buy';
+      let price = parseFloat(offer.quality) || 1;
+      let quantity = parseFloat(offer.TakerGets) || 1;
+      let total = parseFloat(offer.TakerPays) || 1;
+
+      if (orderType === ORDER_TYPE_ASKS) {
+        if (direction === 'sell') {
+          if (typeof offer.TakerGets === 'object') {
+            quantity = parseFloat(offer.TakerGets.value) || 0;
+          }
+
+          if (typeof offer.TakerPays === 'object') {
+            total = parseFloat(offer.TakerPays.value) || 0;
+          }
+
+          price = total / quantity;
+        }
+      } else {
+        if (direction === 'buy') {
+          if (typeof offer.TakerGets === 'object') {
+            total = parseFloat(offer.TakerGets.value) || 0;
+          }
+
+          if (typeof offer.TakerPays === 'object') {
+            quantity = parseFloat(offer.TakerPays.value) || 0;
+          }
+
+          price = total / quantity;
+        }
+      }
+
+      data.push({
+        price: isNaN(price) ? 0 : price,
+        quantity: isNaN(quantity) ? 0 : quantity,
+        total: isNaN(total) ? 0 : total
+      });
+    });
+
+  return data;
+};
+
 export default Overview;
 
-export async function getStaticProps() {
+export async function getStaticPaths() {
+  // Return empty paths for now - we'll generate them on demand
+  return {
+    paths: [],
+    fallback: 'blocking'
+  };
+}
+
+export async function getStaticProps({ params }) {
   const startTime = performance.now();
   const BASE_URL = 'https://api.xrpl.to/api';
 
