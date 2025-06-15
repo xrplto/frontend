@@ -28,15 +28,16 @@ const fadeIn = keyframes`
   }
 `;
 
-const pulse = keyframes`
+// Create a function that returns keyframes based on theme
+const createPulseAnimation = (theme) => keyframes`
   0% {
-    box-shadow: 0 0 0 0 ${(props) => alpha(props.theme?.palette?.primary?.main || '#1976d2', 0.7)};
+    box-shadow: 0 0 0 0 ${alpha(theme?.palette?.primary?.main || '#1976d2', 0.7)};
   }
   70% {
-    box-shadow: 0 0 0 4px ${(props) => alpha(props.theme?.palette?.primary?.main || '#1976d2', 0)};
+    box-shadow: 0 0 0 4px ${alpha(theme?.palette?.primary?.main || '#1976d2', 0)};
   }
   100% {
-    box-shadow: 0 0 0 0 ${(props) => alpha(props.theme?.palette?.primary?.main || '#1976d2', 0)};
+    box-shadow: 0 0 0 0 ${alpha(theme?.palette?.primary?.main || '#1976d2', 0)};
   }
 `;
 
@@ -397,7 +398,7 @@ export default function CustomQRDialog({ open, type, qrUrl, nextUrl, onClose }) 
                   height: 8,
                   borderRadius: '50%',
                   bgcolor: theme.palette.warning.main,
-                  animation: `${pulse} 2s infinite`
+                  animation: `${createPulseAnimation(theme)} 2s infinite`
                 }}
               />
               Didn't receive a notification? Click here to scan QR!
