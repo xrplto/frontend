@@ -125,40 +125,25 @@ const theme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          background: `linear-gradient(135deg, ${alpha('#000000', 0.95)} 0%, ${alpha(
-            '#25A768',
-            0.1
-          )} 100%)`,
-          backdropFilter: 'blur(20px)',
-          borderBottom: `1px solid ${alpha('#25A768', 0.2)}`,
-          boxShadow: `0 8px 32px ${alpha('#000000', 0.3)}`
+          backgroundColor: '#1E2329',
+          borderBottom: `1px solid ${alpha('#25A768', 0.2)}`
         }
       }
     },
     MuiPaper: {
       styleOverrides: {
         root: {
-          background: `linear-gradient(135deg, ${alpha('#1E2329', 0.9)} 0%, ${alpha(
-            '#1E2329',
-            0.7
-          )} 100%)`,
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${alpha('#25A768', 0.1)}`,
-          boxShadow: `0 8px 32px ${alpha('#000000', 0.08)}, 0 2px 8px ${alpha('#25A768', 0.05)}`
+          backgroundColor: '#1E2329',
+          border: `1px solid ${alpha('#25A768', 0.1)}`
         }
       }
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          background: `linear-gradient(135deg, ${alpha('#1E2329', 0.9)} 0%, ${alpha(
-            '#1E2329',
-            0.7
-          )} 100%)`,
-          backdropFilter: 'blur(20px)',
+          backgroundColor: '#1E2329',
           border: `1px solid ${alpha('#25A768', 0.1)}`,
-          boxShadow: `0 8px 32px ${alpha('#000000', 0.08)}, 0 2px 8px ${alpha('#25A768', 0.05)}`,
-          borderRadius: '16px'
+          borderRadius: '8px'
         }
       }
     }
@@ -168,29 +153,13 @@ const theme = createTheme({
 // Simple code block component
 const CodeBlock = ({ children, language = 'javascript' }) => (
   <Paper
-    elevation={3}
+    elevation={1}
     sx={{
       my: 2,
-      background: `linear-gradient(135deg, ${alpha('#2d2d2d', 0.95)} 0%, ${alpha(
-        '#1a1a1a',
-        0.9
-      )} 100%)`,
-      backdropFilter: 'blur(20px)',
+      backgroundColor: '#2d2d2d',
       border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-      borderRadius: '12px',
-      overflow: 'hidden',
-      position: 'relative',
-      boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
-      '&::before': {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '2px',
-        background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-        opacity: 0.8
-      }
+      borderRadius: '8px',
+      overflow: 'hidden'
     }}
   >
     <Box
@@ -199,10 +168,7 @@ const CodeBlock = ({ children, language = 'javascript' }) => (
         justifyContent: 'space-between',
         alignItems: 'center',
         p: 2,
-        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-          theme.palette.primary.main,
-          0.03
-        )} 100%)`,
+        backgroundColor: alpha(theme.palette.primary.main, 0.08),
         borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
       }}
     >
@@ -213,8 +179,7 @@ const CodeBlock = ({ children, language = 'javascript' }) => (
           bgcolor: alpha(theme.palette.primary.main, 0.2),
           color: theme.palette.primary.main,
           fontWeight: 600,
-          fontSize: '0.75rem',
-          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+          fontSize: '0.75rem'
         }}
       />
       <IconButton
@@ -222,12 +187,8 @@ const CodeBlock = ({ children, language = 'javascript' }) => (
         onClick={() => navigator.clipboard.writeText(children)}
         sx={{
           color: theme.palette.primary.main,
-          bgcolor: alpha(theme.palette.primary.main, 0.1),
-          borderRadius: '8px',
-          transition: 'all 0.2s ease',
           '&:hover': {
-            bgcolor: alpha(theme.palette.primary.main, 0.2),
-            transform: 'scale(1.05)'
+            backgroundColor: alpha(theme.palette.primary.main, 0.1)
           }
         }}
       >
@@ -4327,13 +4288,6 @@ const ApiDocs = () => {
                 Developer
               </Typography>
             </Box>
-            <Box
-              sx={{
-                width: '30%',
-                height: 4,
-                background: 'linear-gradient(90deg, transparent 0%, #25A768 100%)'
-              }}
-            />
           </Toolbar>
         </AppBar>
 
@@ -4350,26 +4304,9 @@ const ApiDocs = () => {
               height: '100vh',
               overflowY: 'auto',
               zIndex: 1200,
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.background.paper,
-                0.95
-              )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-              backdropFilter: 'blur(20px)',
+              backgroundColor: theme.palette.background.paper,
               borderRight: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
-              p: 3,
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                width: '2px',
-                height: '100%',
-                background: `linear-gradient(180deg, ${alpha(
-                  theme.palette.primary.main,
-                  0.2
-                )} 0%, transparent 50%, ${alpha(theme.palette.primary.main, 0.2)} 100%)`
-              }
+              p: 3
             }}
           >
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
@@ -4395,27 +4332,19 @@ const ApiDocs = () => {
                   mb: 2,
                   maxHeight: 400,
                   overflow: 'auto',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.background.paper,
-                    0.9
-                  )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                  backdropFilter: 'blur(20px)',
+                  backgroundColor: theme.palette.background.paper,
                   border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                  borderRadius: '12px',
-                  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`
+                  borderRadius: '8px'
                 }}
               >
                 <Typography
                   variant="subtitle1"
                   sx={{
                     p: 2,
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.primary.main,
-                      0.08
-                    )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
                     color: theme.palette.primary.main,
                     fontWeight: 600,
-                    borderRadius: '12px 12px 0 0',
+                    borderRadius: '8px 8px 0 0',
                     borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
                   }}
                 >
@@ -4516,25 +4445,7 @@ const ApiDocs = () => {
                 xs: 'none',
                 md: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
               },
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.background.default,
-                0.8
-              )} 0%, ${alpha(theme.palette.background.paper, 0.1)} 100%)`,
-              position: 'relative',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                right: { xs: 'auto', md: 0 },
-                width: { xs: '100%', md: '2px' },
-                height: { xs: '2px', md: '100%' },
-                background: `linear-gradient(${
-                  theme.breakpoints.down('md') ? '90deg' : '180deg'
-                }, ${alpha(theme.palette.primary.main, 0.2)} 0%, transparent 50%, ${alpha(
-                  theme.palette.primary.main,
-                  0.2
-                )} 100%)`
-              }
+              backgroundColor: theme.palette.background.default
             }}
           >
             <DocumentationContent activeSection={activeSection} searchTerm={searchTerm} />
@@ -4552,13 +4463,9 @@ const ApiDocs = () => {
             sx={{
               flexGrow: 1,
               p: 2,
-              background: `linear-gradient(135deg, ${alpha('#2d2d2d', 0.95)} 0%, ${alpha(
-                '#1a1a1a',
-                0.9
-              )} 100%)`,
-              backdropFilter: 'blur(20px)',
+              backgroundColor: '#2d2d2d',
               border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-              borderRadius: { xs: '12px', md: '0' },
+              borderRadius: { xs: '8px', md: '0' },
               color: 'white',
               display: 'flex',
               flexDirection: 'column',
@@ -4566,18 +4473,7 @@ const ApiDocs = () => {
               width: { xs: '100%', md: '50%' },
               position: { md: 'sticky' },
               top: { md: 64 },
-              alignSelf: { md: 'flex-start' },
-              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '2px',
-                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-                borderRadius: '12px 12px 0 0'
-              }
+              alignSelf: { md: 'flex-start' }
             }}
           >
             <Typography variant="h6" gutterBottom>
@@ -4675,30 +4571,11 @@ const ApiDocs = () => {
               transform: 'translate(-50%, -50%)',
               width: { xs: '90%', sm: '80%' },
               maxHeight: '80%',
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.background.paper,
-                0.95
-              )} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
-              backdropFilter: 'blur(20px)',
+              backgroundColor: theme.palette.background.paper,
               border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-              borderRadius: '16px',
-              boxShadow: `0 24px 64px ${alpha(theme.palette.common.black, 0.2)}, 0 8px 32px ${alpha(
-                theme.palette.primary.main,
-                0.1
-              )}`,
+              borderRadius: '8px',
               p: { xs: 2, sm: 4 },
-              overflowY: 'auto',
-              position: 'relative',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '3px',
-                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-                borderRadius: '16px 16px 0 0'
-              }
+              overflowY: 'auto'
             }}
           >
             <Typography
@@ -4728,25 +4605,10 @@ const ApiDocs = () => {
         <Box
           component="footer"
           sx={{
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.95
-            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-            backdropFilter: 'blur(20px)',
+            backgroundColor: theme.palette.background.paper,
             borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
             color: theme.palette.text.primary,
-            py: 3,
-            position: 'relative',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '2px',
-              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-              opacity: 0.6
-            }
+            py: 3
           }}
         >
           <Container maxWidth="lg">
