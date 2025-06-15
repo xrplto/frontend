@@ -26,11 +26,22 @@ export function formatDateTime(time) {
   try {
     const nDate = new Date(time);
     const year = nDate.getFullYear();
-    const month = (nDate.getMonth() + 1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});;
-    const day = nDate.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});;
-    const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
-    const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
-    const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+    const month = (nDate.getMonth() + 1).toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    });
+    const day = nDate
+      .getDate()
+      .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+    const hour = nDate
+      .getHours()
+      .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+    const min = nDate
+      .getMinutes()
+      .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+    const sec = nDate
+      .getSeconds()
+      .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
 
     //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
     //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
@@ -44,22 +55,55 @@ export function formatDateTime(time) {
 export function formatMonthYear(time) {
   if (!time) return '';
 
-  const longMonthNames = ["January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+  const longMonthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
   ];
 
-  const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  const shortMonthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
   ];
 
   try {
     const nDate = new Date(time);
     const year = nDate.getFullYear();
-    const month = (nDate.getMonth() + 1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});;
-    const day = nDate.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});;
-    const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
-    const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
-    const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+    const month = (nDate.getMonth() + 1).toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    });
+    const day = nDate
+      .getDate()
+      .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+    const hour = nDate
+      .getHours()
+      .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+    const min = nDate
+      .getMinutes()
+      .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+    const sec = nDate
+      .getSeconds()
+      .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
 
     //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
     //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
@@ -72,22 +116,55 @@ export function formatMonthYear(time) {
 export function formatMonthYearDate(time) {
   if (!time) return '';
 
-  const longMonthNames = ["January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+  const longMonthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
   ];
 
-  const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  const shortMonthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
   ];
 
   try {
     const nDate = new Date(time);
     const year = nDate.getFullYear();
-    const month = (nDate.getMonth() + 1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});;
-    const day = nDate.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});;
-    const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
-    const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
-    const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+    const month = (nDate.getMonth() + 1).toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    });
+    const day = nDate
+      .getDate()
+      .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+    const hour = nDate
+      .getHours()
+      .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+    const min = nDate
+      .getMinutes()
+      .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+    const sec = nDate
+      .getSeconds()
+      .toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
 
     //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
     //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");

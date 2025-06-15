@@ -22,7 +22,8 @@ const useStyles = makeStyles({
   tableContainer: {
     display: 'flex',
     gap: 0,
-    py: 0.5,
+    paddingTop: '4px',
+    paddingBottom: '4px',
     overflow: 'auto',
     width: '100%',
     '& > *': {
