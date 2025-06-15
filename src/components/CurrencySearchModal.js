@@ -54,13 +54,20 @@ const StyledModalContainer = styled(ModalContainer)`
   max-height: 600px;
   display: flex;
   flex-direction: column;
-  background: #000;
+  background: ${(props) =>
+    props.theme.colors.background === '#08060B'
+      ? '#000'
+      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)'};
   border-radius: 28px;
   position: relative;
   overflow: hidden;
   padding-bottom: 8px;
-  border: none;
-  box-shadow: none;
+  border: ${(props) =>
+    props.theme.colors.background === '#08060B' ? 'none' : '1px solid rgba(226, 232, 240, 0.8)'};
+  box-shadow: ${(props) =>
+    props.theme.colors.background === '#08060B'
+      ? 'none'
+      : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'};
 
   &::before {
     content: '';
@@ -89,10 +96,16 @@ const StyledModalBody = styled(ModalBody)`
   background: ${(props) =>
     props.theme.colors.background === '#08060B'
       ? '#000'
-      : 'linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.9) 100%)'};
+      : 'linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%)'};
   border-radius: 0 0 28px 28px;
-  border: 1px solid #222;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  border: ${(props) =>
+    props.theme.colors.background === '#08060B'
+      ? '1px solid #222'
+      : '1px solid rgba(226, 232, 240, 0.6)'};
+  box-shadow: ${(props) =>
+    props.theme.colors.background === '#08060B'
+      ? '0 2px 8px rgba(0, 0, 0, 0.12)'
+      : '0 -1px 3px 0 rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.7)'};
 `;
 
 const SearchTextField = styled(TextField)`
@@ -101,26 +114,35 @@ const SearchTextField = styled(TextField)`
     background: ${(props) =>
       props.theme.colors.background === '#08060B'
         ? '#181818'
-        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)'};
-    border: 1px solid #232;
-    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.12) inset;
+        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)'};
+    border: ${(props) =>
+      props.theme.colors.background === '#08060B'
+        ? '1px solid #232'
+        : '1px solid rgba(203, 213, 225, 0.8)'};
+    box-shadow: ${(props) =>
+      props.theme.colors.background === '#08060B'
+        ? '0 1px 4px 0 rgba(0, 0, 0, 0.12) inset'
+        : '0 1px 3px 0 rgba(0, 0, 0, 0.08), inset 0 1px 2px 0 rgba(255, 255, 255, 0.9)'};
     height: 52px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     &:hover,
     &.Mui-focused {
       border-color: #1db954;
-      box-shadow: 0 0 0 2px #1db95433;
+      box-shadow: ${(props) =>
+        props.theme.colors.background === '#08060B'
+          ? '0 0 0 2px #1db95433'
+          : '0 0 0 3px rgba(29, 185, 84, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.08)'};
     }
     & fieldset {
       border: none;
     }
     & input {
       padding: 16px 20px;
-      color: #fff;
+      color: ${(props) => (props.theme.colors.background === '#08060B' ? '#fff' : '#1a202c')};
       font-weight: 500;
       font-size: 1.05rem;
       &::placeholder {
-        color: #aaa;
+        color: ${(props) => (props.theme.colors.background === '#08060B' ? '#aaa' : '#64748b')};
         opacity: 1;
       }
     }
@@ -133,18 +155,30 @@ const TokenListItem = styled(Stack)`
   background: ${(props) =>
     props.theme.colors.background === '#08060B'
       ? '#101010'
-      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.6) 100%)'};
+      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.8) 100%)'};
   margin-bottom: 4px;
-  border: 1px solid #232;
+  border: ${(props) =>
+    props.theme.colors.background === '#08060B'
+      ? '1px solid #232'
+      : '1px solid rgba(226, 232, 240, 0.6)'};
   cursor: pointer;
   position: relative;
   overflow: hidden;
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1.5px 8px 0 rgba(29, 185, 84, 0.04);
+  box-shadow: ${(props) =>
+    props.theme.colors.background === '#08060B'
+      ? '0 1.5px 8px 0 rgba(29, 185, 84, 0.04)'
+      : '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.7) inset'};
   &:hover {
-    background: #181818;
+    background: ${(props) =>
+      props.theme.colors.background === '#08060B'
+        ? '#181818'
+        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 249, 255, 0.9) 100%)'};
     border-color: #1db954;
-    box-shadow: 0 2px 16px 0 #1db95422;
+    box-shadow: ${(props) =>
+      props.theme.colors.background === '#08060B'
+        ? '0 2px 16px 0 #1db95422'
+        : '0 4px 12px 0 rgba(29, 185, 84, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.08)'};
     transform: translateY(-2px) scale(1.03);
   }
   &:active {
@@ -209,9 +243,15 @@ const RecentSearchesHeader = styled(Stack)`
   align-items: center;
   margin-bottom: 12px;
   padding: 10px 16px;
-  background: #111;
+  background: ${(props) =>
+    props.theme.colors.background === '#08060B'
+      ? '#111'
+      : 'linear-gradient(135deg, rgba(29, 185, 84, 0.08) 0%, rgba(0, 198, 251, 0.05) 100%)'};
   border-radius: 14px;
-  border: 1px solid #222;
+  border: ${(props) =>
+    props.theme.colors.background === '#08060B'
+      ? '1px solid #222'
+      : '1px solid rgba(29, 185, 84, 0.2)'};
   color: #1db954;
 `;
 
@@ -227,14 +267,17 @@ const ModalAccentLine = styled('div')`
   width: 100%;
   height: 2px;
   background: linear-gradient(90deg, #1db954 0%, #00c6fb 100%);
-  opacity: 0.7;
+  opacity: ${(props) => (props.theme.colors.background === '#08060B' ? '0.7' : '0.4')};
   margin-bottom: 8px;
 `;
 
 const ModalHeaderStyled = styled(ModalHeader)`
   position: relative;
   z-index: 3;
-  background: transparent;
+  background: ${(props) =>
+    props.theme.colors.background === '#08060B'
+      ? 'transparent'
+      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)'};
   border-top-left-radius: 28px;
   border-top-right-radius: 28px;
   padding-top: 18px;
@@ -327,7 +370,7 @@ export default function CurrencySearchModal({
           <Stack spacing={0}>
             <Typography
               variant="subtitle2"
-              color={isOMCF !== 'yes' ? '#fff' : '#1db954'}
+              color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#1a202c') : '#1db954'}
               sx={{ fontWeight: 700, fontSize: '0.85rem', lineHeight: 1.05 }}
               noWrap
             >
@@ -335,7 +378,7 @@ export default function CurrencySearchModal({
             </Typography>
             <Typography
               variant="caption"
-              color="#aaa"
+              color={darkMode ? '#aaa' : '#64748b'}
               sx={{ fontSize: '0.62rem', lineHeight: 1 }}
               noWrap
             >
@@ -445,7 +488,10 @@ export default function CurrencySearchModal({
               {config[modalView].onBack && <ModalBackButton onBack={config[modalView].onBack} />}
               <Heading
                 style={{
-                  color: theme(darkMode).colors.text,
+                  color:
+                    theme(darkMode).colors.background === '#08060B'
+                      ? theme(darkMode).colors.text
+                      : '#1a202c',
                   fontWeight: 700,
                   fontSize: '1.45rem',
                   letterSpacing: '-0.5px'
@@ -473,7 +519,10 @@ export default function CurrencySearchModal({
                     <Box
                       component={Icon}
                       icon={searchFill}
-                      sx={{ color: 'text.disabled', fontSize: 20 }}
+                      sx={{
+                        color: darkMode ? 'text.disabled' : '#64748b',
+                        fontSize: 20
+                      }}
                     />
                   </InputAdornment>
                 )
@@ -483,8 +532,14 @@ export default function CurrencySearchModal({
             {!filter && recentSearches.length > 0 && (
               <RecentSearchesSection>
                 <RecentSearchesHeader>
-                  <HistoryIcon sx={{ color: 'text.secondary', fontSize: 20, mr: 1 }} />
-                  <Typography variant="subtitle2" color="text.secondary">
+                  <HistoryIcon
+                    sx={{
+                      color: darkMode ? 'text.secondary' : '#1db954',
+                      fontSize: 20,
+                      mr: 1
+                    }}
+                  />
+                  <Typography variant="subtitle2" color={darkMode ? 'text.secondary' : '#1db954'}>
                     Recent Searches
                   </Typography>
                 </RecentSearchesHeader>
