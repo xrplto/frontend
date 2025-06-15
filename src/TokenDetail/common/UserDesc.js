@@ -301,70 +301,80 @@ const markWarningShownForToken = (tokenId) => {
 };
 
 // Add XPMarket icon component
-const XPMarketIcon = React.forwardRef((props, ref) => (
-  <SvgIcon {...props} ref={ref} viewBox="0 0 36 36" sx={{ ...otherProps.sx }}>
-    <defs>
-      <linearGradient id="xpmarket-icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{ stopColor: '#9333EA', stopOpacity: 1 }} />
-        <stop offset="30%" style={{ stopColor: '#7C3AED', stopOpacity: 1 }} />
-        <stop offset="70%" style={{ stopColor: '#8B5CF6', stopOpacity: 1 }} />
-        <stop offset="100%" style={{ stopColor: '#6D28D9', stopOpacity: 1 }} />
-      </linearGradient>
-      <filter id="xpmarket-shadow" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="rgba(109, 31, 238, 0.4)" />
-      </filter>
-    </defs>
-    <g transform="translate(2, 2) scale(1.1)" filter="url(#xpmarket-shadow)">
-      <path
-        d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
-        fill="url(#xpmarket-icon-gradient)"
-      />
-      <path
-        d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
-        fill="url(#xpmarket-icon-gradient)"
-      />
-      <path
-        d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
-        fill="url(#xpmarket-icon-gradient)"
-      />
-    </g>
-  </SvgIcon>
-));
+const XPMarketIcon = React.forwardRef((props, ref) => {
+  // Filter out non-DOM props that might cause warnings
+  const { darkMode, ...otherProps } = props;
+
+  return (
+    <SvgIcon {...otherProps} ref={ref} viewBox="0 0 36 36">
+      <defs>
+        <linearGradient id="xpmarket-icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style={{ stopColor: '#9333EA', stopOpacity: 1 }} />
+          <stop offset="30%" style={{ stopColor: '#7C3AED', stopOpacity: 1 }} />
+          <stop offset="70%" style={{ stopColor: '#8B5CF6', stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: '#6D28D9', stopOpacity: 1 }} />
+        </linearGradient>
+        <filter id="xpmarket-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="rgba(109, 31, 238, 0.4)" />
+        </filter>
+      </defs>
+      <g transform="translate(2, 2) scale(1.1)" filter="url(#xpmarket-shadow)">
+        <path
+          d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
+          fill="url(#xpmarket-icon-gradient)"
+        />
+        <path
+          d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
+          fill="url(#xpmarket-icon-gradient)"
+        />
+        <path
+          d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
+          fill="url(#xpmarket-icon-gradient)"
+        />
+      </g>
+    </SvgIcon>
+  );
+});
 
 // Add display name for better debugging
 XPMarketIcon.displayName = 'XPMarketIcon';
 
-const LedgerMemeIcon = React.forwardRef((props, ref) => (
-  <SvgIcon {...props} ref={ref} viewBox="0 0 26 26">
-    <g transform="scale(0.75)">
-      <rect fill="#cfff04" width="36" height="36" rx="8" ry="8" x="0" y="0"></rect>
-      <g>
+const LedgerMemeIcon = React.forwardRef((props, ref) => {
+  // Filter out non-DOM props that might cause warnings
+  const { darkMode, ...otherProps } = props;
+
+  return (
+    <SvgIcon {...otherProps} ref={ref} viewBox="0 0 26 26">
+      <g transform="scale(0.75)">
+        <rect fill="#cfff04" width="36" height="36" rx="8" ry="8" x="0" y="0"></rect>
         <g>
+          <g>
+            <path
+              fill="#262626"
+              d="M25.74,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88-0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
+            ></path>
+            <path
+              fill="#262626"
+              d="M27.43,10.62c-0.45-0.46-1.05-0.72-1.69-0.72s-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78Z"
+            ></path>
+            <path
+              fill="#262626"
+              d="M10.22,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88-0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
+            ></path>
+            <path
+              fill="#262626"
+              d="M10.22,9.90c-0.64,0-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78c-0.45-0.46-1.05-0.72-1.69-0.72Z"
+            ></path>
+          </g>
           <path
             fill="#262626"
-            d="M25.74,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88-0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
-          ></path>
-          <path
-            fill="#262626"
-            d="M27.43,10.62c-0.45-0.46-1.05-0.72-1.69-0.72s-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78Z"
-          ></path>
-          <path
-            fill="#262626"
-            d="M10.22,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88-0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
-          ></path>
-          <path
-            fill="#262626"
-            d="M10.22,9.90c-0.64,0-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78c-0.45-0.46-1.05-0.72-1.69-0.72Z"
+            d="M5.81,17.4c0,6.73,5.45,12.18,12.18,12.18s12.18-5.45,12.18-12.18H5.81Z"
           ></path>
         </g>
-        <path
-          fill="#262626"
-          d="M5.81,17.4c0,6.73,5.45,12.18,12.18,12.18s12.18-5.45,12.18-12.18H5.81Z"
-        ></path>
       </g>
-    </g>
-  </SvgIcon>
-));
+    </SvgIcon>
+  );
+});
 
 LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 

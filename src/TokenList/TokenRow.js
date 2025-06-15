@@ -113,8 +113,8 @@ const getPriceColor = (bearbull) => {
 
 // Update XPMarketIcon to use forwardRef and ensure proper width handling
 const XPMarketIcon = React.forwardRef((props, ref) => {
-  // Remove any width="auto" that might be in props
-  const { width, ...otherProps } = props;
+  // Remove any non-DOM props that might cause warnings
+  const { width, darkMode, ...otherProps } = props;
 
   return (
     <SvgIcon {...otherProps} ref={ref} viewBox="0 0 32 32" sx={{ ...otherProps.sx }}>
@@ -137,37 +137,42 @@ const XPMarketIcon = React.forwardRef((props, ref) => {
 // Add display name for better debugging
 XPMarketIcon.displayName = 'XPMarketIcon';
 
-const LedgerMemeIcon = React.forwardRef((props, ref) => (
-  <SvgIcon {...props} ref={ref} viewBox="0 0 26 26">
-    <g transform="scale(0.55)">
-      <rect fill="#cfff04" width="36" height="36" rx="8" ry="8" x="0" y="0"></rect>
-      <g>
+const LedgerMemeIcon = React.forwardRef((props, ref) => {
+  // Filter out any non-DOM props that might cause warnings
+  const { width, darkMode, ...otherProps } = props;
+
+  return (
+    <SvgIcon {...otherProps} ref={ref} viewBox="0 0 26 26">
+      <g transform="scale(0.55)">
+        <rect fill="#cfff04" width="36" height="36" rx="8" ry="8" x="0" y="0"></rect>
         <g>
+          <g>
+            <path
+              fill="#262626"
+              d="M25.74,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
+            ></path>
+            <path
+              fill="#262626"
+              d="M27.43,10.62c-0.45-0.46-1.05-0.72-1.69-0.72s-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78Z"
+            ></path>
+            <path
+              fill="#262626"
+              d="M10.22,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88-0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
+            ></path>
+            <path
+              fill="#262626"
+              d="M10.22,9.90c-0.64,0-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78c-0.45-0.46-1.05-0.72-1.69-0.72Z"
+            ></path>
+          </g>
           <path
             fill="#262626"
-            d="M25.74,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
-          ></path>
-          <path
-            fill="#262626"
-            d="M27.43,10.62c-0.45-0.46-1.05-0.72-1.69-0.72s-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78Z"
-          ></path>
-          <path
-            fill="#262626"
-            d="M10.22,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88-0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
-          ></path>
-          <path
-            fill="#262626"
-            d="M10.22,9.90c-0.64,0-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78c-0.45-0.46-1.05-0.72-1.69-0.72Z"
+            d="M5.81,17.4c0,6.73,5.45,12.18,12.18,12.18s12.18-5.45,12.18-12.18H5.81Z"
           ></path>
         </g>
-        <path
-          fill="#262626"
-          d="M5.81,17.4c0,6.73,5.45,12.18,12.18,12.18s12.18-5.45,12.18-12.18H5.81Z"
-        ></path>
       </g>
-    </g>
-  </SvgIcon>
-));
+    </SvgIcon>
+  );
+});
 
 LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 
