@@ -55,6 +55,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CodeIcon from '@mui/icons-material/Code';
 import LinkIcon from '@mui/icons-material/Link';
 import SearchIcon from '@mui/icons-material/Search';
+import { AppContext } from 'src/AppContext';
 
 const sections = [
   { id: 'introduction', title: 'Introduction' },
@@ -3389,8 +3390,8 @@ async function getTokenInfo(issuer, currency) {
     return response.data;
   } catch (error) {
     console.error('Error fetching token info:', error);
-    return null;
-  }
+        return null;
+    }
 }
 
 // Example usage
@@ -4316,9 +4317,14 @@ const ApiDocs = () => {
               >
                 <MenuIcon />
               </IconButton>
-              <Logo style={{ height: 28, marginRight: 2 }} />
+              <Logo style={{ height: 40, marginRight: 8 }} />
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ mx: 2, backgroundColor: 'rgba(255, 255, 255, 0.3)' }}
+              />
               <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600 }}>
-                API Docs
+                Developer
               </Typography>
             </Box>
             <Box
@@ -4754,4 +4760,19 @@ const ApiDocs = () => {
   );
 };
 
-export default ApiDocs;
+// Wrapper component to provide AppContext for Logo component
+const ApiDocsWithContext = () => {
+  const contextValue = {
+    darkMode: true, // API docs uses dark theme
+    openSnackbar: () => {}, // Mock function for context completeness
+    accountProfile: null
+  };
+
+  return (
+    <AppContext.Provider value={contextValue}>
+      <ApiDocs />
+    </AppContext.Provider>
+  );
+};
+
+export default ApiDocsWithContext;
