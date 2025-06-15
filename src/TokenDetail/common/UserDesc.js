@@ -782,6 +782,7 @@ export default function UserDesc({ token }) {
 
   const [openScamWarning, setOpenScamWarning] = useState(false);
   const [openHighRiskWarning, setOpenHighRiskWarning] = useState(false);
+  const [openLedgerMemeWarning, setOpenLedgerMemeWarning] = useState(false);
 
   // Move the session initialization useEffect inside the component
   useEffect(() => {
@@ -813,6 +814,18 @@ export default function UserDesc({ token }) {
       markWarningShownForToken(`${id}-highrisk`);
     }
   }, [enhancedTags, id]);
+
+  // LedgerMeme graduation warning
+  useEffect(() => {
+    if (
+      token.origin === 'LedgerMeme' &&
+      holders === 1 &&
+      !hasShownWarningForToken(`${id}-ledgermeme`)
+    ) {
+      setOpenLedgerMemeWarning(true);
+      markWarningShownForToken(`${id}-ledgermeme`);
+    }
+  }, [token.origin, holders, id]);
 
   const statsData = [
     {
@@ -1192,12 +1205,18 @@ export default function UserDesc({ token }) {
                     size="compact"
                   />
 
-                  {/* Burned Liquidity Status */}
+                  {/* Liquidity Status */}
                   {token.origin && token.origin !== 'xrp.fun' && (
-                    <Tooltip title="Burned Liquidity Pool">
+                    <Tooltip
+                      title={
+                        token.origin === 'LedgerMeme' && holders === 1
+                          ? 'Liquidity Not Burned'
+                          : 'Burned Liquidity Pool'
+                      }
+                    >
                       <Box
                         sx={{
-                          p: 0.375,
+                          p: 0.5,
                           borderRadius: '6px',
                           background: `linear-gradient(135deg, 
                             ${alpha(theme.palette.primary.main, 0.12)} 0%, 
@@ -1206,28 +1225,44 @@ export default function UserDesc({ token }) {
                           border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                           display: 'flex',
                           alignItems: 'center',
-                          minHeight: '22px'
+                          minHeight: '28px'
                         }}
                       >
                         <Box
                           sx={{
                             width: '18px',
                             height: '18px',
-                            backgroundColor: 'rgba(24, 144, 255, 0.1)',
+                            backgroundColor:
+                              token.origin === 'LedgerMeme' && holders === 1
+                                ? 'rgba(255, 193, 7, 0.1)'
+                                : 'rgba(24, 144, 255, 0.1)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            border: '1px solid rgba(24, 144, 255, 0.2)',
+                            border:
+                              token.origin === 'LedgerMeme' && holders === 1
+                                ? '1px solid rgba(255, 193, 7, 0.2)'
+                                : '1px solid rgba(24, 144, 255, 0.2)',
                             marginRight: '2px',
                             marginBottom: '2px'
                           }}
                         >
-                          <LocalFireDepartmentIcon
-                            sx={{
-                              fontSize: '13px',
-                              color: '#1890FF'
-                            }}
-                          />
+                          {token.origin === 'LedgerMeme' && holders === 1 ? (
+                            <Icon
+                              icon="mdi:water-outline"
+                              style={{
+                                fontSize: '13px',
+                                color: '#FFC107'
+                              }}
+                            />
+                          ) : (
+                            <LocalFireDepartmentIcon
+                              sx={{
+                                fontSize: '13px',
+                                color: '#1890FF'
+                              }}
+                            />
+                          )}
                         </Box>
                       </Box>
                     </Tooltip>
@@ -1446,45 +1481,47 @@ export default function UserDesc({ token }) {
                   />
 
                   {/* Burned Liquidity Status */}
-                  {token.origin && token.origin !== 'xrp.fun' && (
-                    <Tooltip title="Burned Liquidity Pool">
-                      <Box
-                        sx={{
-                          p: 0.5,
-                          borderRadius: '6px',
-                          background: `linear-gradient(135deg, 
+                  {token.origin &&
+                    token.origin !== 'xrp.fun' &&
+                    !(token.origin === 'LedgerMeme' && holders === 1) && (
+                      <Tooltip title="Burned Liquidity Pool">
+                        <Box
+                          sx={{
+                            p: 0.5,
+                            borderRadius: '6px',
+                            background: `linear-gradient(135deg, 
                             ${alpha(theme.palette.primary.main, 0.12)} 0%, 
                             ${alpha(theme.palette.primary.main, 0.06)} 100%
                           )`,
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          minHeight: '28px'
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            width: '18px',
-                            height: '18px',
-                            backgroundColor: 'rgba(24, 144, 255, 0.1)',
+                            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid rgba(24, 144, 255, 0.2)',
-                            marginRight: '2px',
-                            marginBottom: '2px'
+                            minHeight: '28px'
                           }}
                         >
-                          <LocalFireDepartmentIcon
+                          <Box
                             sx={{
-                              fontSize: '13px',
-                              color: '#1890FF'
+                              width: '18px',
+                              height: '18px',
+                              backgroundColor: 'rgba(24, 144, 255, 0.1)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              border: '1px solid rgba(24, 144, 255, 0.2)',
+                              marginRight: '2px',
+                              marginBottom: '2px'
                             }}
-                          />
+                          >
+                            <LocalFireDepartmentIcon
+                              sx={{
+                                fontSize: '13px',
+                                color: '#1890FF'
+                              }}
+                            />
+                          </Box>
                         </Box>
-                      </Box>
-                    </Tooltip>
-                  )}
+                      </Tooltip>
+                    )}
 
                   {/* Blackholed Status */}
                   {(info.blackholed || token.origin) && (
@@ -2883,6 +2920,97 @@ export default function UserDesc({ token }) {
             }}
           >
             I Acknowledge the Risks
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openLedgerMemeWarning}
+        onClose={() => setOpenLedgerMemeWarning(false)}
+        aria-labelledby="ledgermeme-warning-dialog"
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            maxWidth: '400px',
+            border: `2px solid ${theme.palette.info.main}`,
+            borderRadius: '12px',
+            background: theme.palette.background.paper
+          }
+        }}
+      >
+        <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 600,
+              color: theme.palette.info.main,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1
+            }}
+          >
+            <LedgerMemeIcon sx={{ fontSize: '24px' }} />
+            LedgerMeme Token
+          </Typography>
+        </DialogTitle>
+
+        <DialogContent sx={{ textAlign: 'center', py: 2 }}>
+          <Typography
+            variant="body1"
+            sx={{
+              color: theme.palette.text.primary,
+              fontWeight: 500,
+              lineHeight: 1.5,
+              mb: 1.5
+            }}
+          >
+            This token has yet to graduated from LedgerMeme and a liquidity pool has not been
+            deployed on-chain.
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontWeight: 400,
+              lineHeight: 1.4
+            }}
+          >
+            You can trade this token off-chain at{' '}
+            <Link
+              href={`https://ledger.meme/${issuer}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                color: theme.palette.info.main,
+                fontWeight: 600,
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline'
+                }
+              }}
+            >
+              Ledger.Meme
+            </Link>
+          </Typography>
+        </DialogContent>
+
+        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+          <Button
+            onClick={() => setOpenLedgerMemeWarning(false)}
+            variant="contained"
+            sx={{
+              borderRadius: '8px',
+              fontWeight: 600,
+              px: 3,
+              background: theme.palette.info.main,
+              '&:hover': {
+                background: theme.palette.info.dark
+              }
+            }}
+          >
+            Understood
           </Button>
         </DialogActions>
       </Dialog>
