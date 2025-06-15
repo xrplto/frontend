@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { update_filteredCount } from 'src/redux/statusSlice';
 
@@ -181,7 +181,7 @@ function getTagValue(tags, tagName) {
   return idx + 1;
 }
 
-// Enhanced Chip styling function
+// Enhanced Chip styling function - moved outside component to prevent recreation
 const getEnhancedChipStyles = (theme, isActive, color, isLoading) => ({
   borderRadius: '12px',
   height: '32px',
@@ -224,7 +224,7 @@ const getEnhancedChipStyles = (theme, isActive, color, isLoading) => ({
   opacity: isLoading ? 0.7 : 1
 });
 
-// Enhanced mobile chip styles
+// Enhanced mobile chip styles - moved outside component
 const getMobileChipStyles = (theme) => ({
   borderRadius: '12px',
   height: '36px',
@@ -242,6 +242,29 @@ const getMobileChipStyles = (theme) => ({
     boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`
   }
 });
+
+// ShadowContent styled component - moved outside to prevent recreation
+const ShadowContent = styled('div')(
+  ({ theme }) => `
+      -webkit-box-flex: 1;
+      flex-grow: 1;
+      height: 1em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      position: relative;
+  
+      &::before {
+          content: "";
+          position: absolute;
+          left: 0px;
+          top: 0px;
+          width: 8em;
+          height: 100%;
+          background: linear-gradient(270deg, ${theme.palette.background.default}, rgba(255,255,255,0));
+          z-index: 1000;
+      }
+  `
+);
 
 // ----------------------------------------------------------------------
 export default function SearchToolbar({
@@ -270,7 +293,7 @@ export default function SearchToolbar({
   const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
   const theme = useTheme();
 
-  const [tagValue, setTagValue] = useState(getTagValue(tags, tagName));
+  const [tagValue, setTagValue] = useState(0);
   const [openCategoriesDrawer, setOpenCategoriesDrawer] = useState(false);
   const [gainersAnchorEl, setGainersAnchorEl] = useState(null);
   const [tokensAnchorEl, setTokensAnchorEl] = useState(null);
@@ -284,6 +307,11 @@ export default function SearchToolbar({
     trendingCategories: false
   });
 
+  // Update tagValue only when tags or tagName changes to prevent unnecessary re-renders
+  useEffect(() => {
+    setTagValue(getTagValue(tags, tagName));
+  }, [tags, tagName]);
+
   // Get current sorting period from URL
   const currentPeriod = router.query.sort;
   const periodLabels = {
@@ -293,47 +321,56 @@ export default function SearchToolbar({
     pro7d: '7d'
   };
 
-  const handleChangeRows = (e) => {
-    setRows(parseInt(e.target.value, 10));
-  };
+  const handleChangeRows = useCallback(
+    (e) => {
+      setRows(parseInt(e.target.value, 10));
+    },
+    [setRows]
+  );
 
-  const handleDelete = () => {};
+  const handleDelete = useCallback(() => {}, []);
 
-  const handleGainersClick = (event) => {
+  const handleGainersClick = useCallback((event) => {
     setGainersAnchorEl(event.currentTarget);
-  };
-
-  const handleGainersClose = () => {
-    setGainersAnchorEl(null);
-  };
-
-  const handleGainersPeriodSelect = useCallback(async (period) => {
-    setIsLoading((prev) => ({ ...prev, gainers: true }));
-    try {
-      window.location.href = `/?sort=${period}&order=desc`;
-    } finally {
-      setIsLoading((prev) => ({ ...prev, gainers: false }));
-      handleGainersClose();
-    }
   }, []);
 
-  const handleTokensClick = (event) => {
+  const handleGainersClose = useCallback(() => {
+    setGainersAnchorEl(null);
+  }, []);
+
+  const handleGainersPeriodSelect = useCallback(
+    async (period) => {
+      setIsLoading((prev) => ({ ...prev, gainers: true }));
+      try {
+        window.location.href = `/?sort=${period}&order=desc`;
+      } finally {
+        setIsLoading((prev) => ({ ...prev, gainers: false }));
+        handleGainersClose();
+      }
+    },
+    [handleGainersClose]
+  );
+
+  const handleTokensClick = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
     setTokensAnchorEl(event.currentTarget);
-  };
+  }, []);
 
-  const handleTokensClose = () => {
+  const handleTokensClose = useCallback(() => {
     setTokensAnchorEl(null);
-  };
+  }, []);
 
-  const handleTokenOptionSelect = async (path) => {
-    try {
-      window.location.href = path;
-    } finally {
-      handleTokensClose();
-    }
-  };
+  const handleTokenOptionSelect = useCallback(
+    async (path) => {
+      try {
+        window.location.href = path;
+      } finally {
+        handleTokensClose();
+      }
+    },
+    [handleTokensClose]
+  );
 
   // Memoize the handlers to prevent recreating on each render
   const handleNewClick = useCallback(async (e) => {
@@ -380,56 +417,36 @@ export default function SearchToolbar({
     }
   }, []);
 
-  const handleTrendingCategoriesClick = (event) => {
+  const handleTrendingCategoriesClick = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
     setTrendingCategoriesAnchorEl(event.currentTarget);
-  };
-
-  const handleTrendingCategoriesClose = () => {
-    setTrendingCategoriesAnchorEl(null);
-  };
-
-  const handleCategorySelect = useCallback(async (category) => {
-    setIsLoading((prev) => ({ ...prev, trendingCategories: true }));
-    try {
-      // Use the view path format with lowercase category
-      window.location.href = `/view/${category.toLowerCase()}`;
-    } finally {
-      setIsLoading((prev) => ({ ...prev, trendingCategories: false }));
-      handleTrendingCategoriesClose();
-    }
   }, []);
+
+  const handleTrendingCategoriesClose = useCallback(() => {
+    setTrendingCategoriesAnchorEl(null);
+  }, []);
+
+  const handleCategorySelect = useCallback(
+    async (category) => {
+      setIsLoading((prev) => ({ ...prev, trendingCategories: true }));
+      try {
+        // Use the view path format with lowercase category
+        window.location.href = `/view/${category.toLowerCase()}`;
+      } finally {
+        setIsLoading((prev) => ({ ...prev, trendingCategories: false }));
+        handleTrendingCategoriesClose();
+      }
+    },
+    [handleTrendingCategoriesClose]
+  );
 
   const toggleCategoriesDrawer = useCallback((isOpen = true) => {
     setOpenCategoriesDrawer(isOpen);
   }, []);
 
-  const ShadowContent = styled('div')(
-    ({ theme }) => `
-        -webkit-box-flex: 1;
-        flex-grow: 1;
-        height: 1em;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        position: relative;
-    
-        &::before {
-            content: "";
-            position: absolute;
-            left: 0px;
-            top: 0px;
-            width: 8em;
-            height: 100%;
-            background: linear-gradient(270deg, ${theme.palette.background.default}, rgba(255,255,255,0));
-            z-index: 1000;
-        }
-    `
-  );
-
-  // Define trending categories from the existing tags
-  // These would typically be determined by popularity metrics
-  const getTrendingCategories = useCallback(() => {
+  // Memoize trending categories to prevent recalculation on every render
+  const trendingCategories = useMemo(() => {
     if (!tags || tags.length === 0) return [];
 
     // Map colors to categories
@@ -467,7 +484,92 @@ export default function SearchToolbar({
     }));
   }, [tags]);
 
-  const trendingCategories = getTrendingCategories();
+  // Memoize style objects to prevent recreation
+  const mobileChipStyles = useMemo(() => getMobileChipStyles(theme), [theme]);
+
+  // Memoize chip styles to prevent recalculation
+  const tokensChipStyles = useMemo(
+    () =>
+      getEnhancedChipStyles(
+        theme,
+        tagValue === 0 && !currentPeriod,
+        theme.palette.primary.main,
+        false
+      ),
+    [theme, tagValue, currentPeriod]
+  );
+
+  const nftsChipStyles = useMemo(
+    () => getEnhancedChipStyles(theme, tagValue === 1, theme.palette.success.main, false),
+    [theme, tagValue]
+  );
+
+  const trendingChipStyles = useMemo(
+    () =>
+      getEnhancedChipStyles(
+        theme,
+        currentPeriod === 'trendingScore',
+        '#FF5630',
+        isLoading.trending
+      ),
+    [theme, currentPeriod, isLoading.trending]
+  );
+
+  const spotlightChipStyles = useMemo(
+    () =>
+      getEnhancedChipStyles(
+        theme,
+        currentPeriod === 'assessmentScore',
+        '#2499EF',
+        isLoading.spotlight
+      ),
+    [theme, currentPeriod, isLoading.spotlight]
+  );
+
+  const mostViewedChipStyles = useMemo(
+    () => getEnhancedChipStyles(theme, currentPeriod === 'views', '#9155FD', isLoading.mostViewed),
+    [theme, currentPeriod, isLoading.mostViewed]
+  );
+
+  const gainersChipStyles = useMemo(
+    () =>
+      getEnhancedChipStyles(
+        theme,
+        currentPeriod && ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentPeriod),
+        '#00AB55',
+        isLoading.gainers
+      ),
+    [theme, currentPeriod, isLoading.gainers]
+  );
+
+  const newChipStyles = useMemo(
+    () => getEnhancedChipStyles(theme, currentPeriod === 'dateon', '#FFAB00', isLoading.new),
+    [theme, currentPeriod, isLoading.new]
+  );
+
+  const categoriesChipStyles = useMemo(
+    () => getEnhancedChipStyles(theme, false, '#5569ff', false),
+    [theme]
+  );
+
+  // Memoize trending category chip styles
+  const getTrendingCategoryChipStyles = useCallback(
+    (category) => getEnhancedChipStyles(theme, false, category.color, false),
+    [theme]
+  );
+
+  // Memoize the category click handler
+  const handleCategoryClick = useCallback(
+    (categoryTag) => {
+      handleCategorySelect(categoryTag);
+    },
+    [handleCategorySelect]
+  );
+
+  // Memoize the categories drawer handler
+  const handleCategoriesDrawerOpen = useCallback(() => {
+    setOpenCategoriesDrawer(true);
+  }, []);
 
   return (
     <>
@@ -488,7 +590,7 @@ export default function SearchToolbar({
             icon={<StarOutlineIcon fontSize="small" />}
             label={'Watchlist'}
             onClick={() => {}}
-            sx={getMobileChipStyles(theme)}
+            sx={mobileChipStyles}
           />
         </Link>
 
@@ -499,7 +601,7 @@ export default function SearchToolbar({
           onClick={() => {
             openSnackbar('Coming soon!', 'success');
           }}
-          sx={getMobileChipStyles(theme)}
+          sx={mobileChipStyles}
         />
       </Stack>
 
@@ -575,12 +677,7 @@ export default function SearchToolbar({
                 icon={<AppsIcon sx={{ fontSize: '18px' }} />}
                 label={'Tokens'}
                 onClick={handleTokensClick}
-                sx={getEnhancedChipStyles(
-                  theme,
-                  tagValue === 0 && !currentPeriod,
-                  theme.palette.primary.main,
-                  false
-                )}
+                sx={tokensChipStyles}
               />
             }
             style={{
@@ -604,12 +701,7 @@ export default function SearchToolbar({
                   icon={<CollectionsIcon sx={{ fontSize: '18px' }} />}
                   label={'NFTs'}
                   onClick={handleDelete}
-                  sx={getEnhancedChipStyles(
-                    theme,
-                    tagValue === 1,
-                    theme.palette.success.main,
-                    false
-                  )}
+                  sx={nftsChipStyles}
                 />
               </Link>
             }
@@ -636,12 +728,7 @@ export default function SearchToolbar({
                 label={'Trending'}
                 onClick={handleTrendingClick}
                 disabled={isLoading.trending}
-                sx={getEnhancedChipStyles(
-                  theme,
-                  currentPeriod === 'trendingScore',
-                  '#FF5630',
-                  isLoading.trending
-                )}
+                sx={trendingChipStyles}
               />
             }
             style={{
@@ -667,12 +754,7 @@ export default function SearchToolbar({
                 label={'Spotlight'}
                 onClick={handleSpotlightClick}
                 disabled={isLoading.spotlight}
-                sx={getEnhancedChipStyles(
-                  theme,
-                  currentPeriod === 'assessmentScore',
-                  '#2499EF',
-                  isLoading.spotlight
-                )}
+                sx={spotlightChipStyles}
               />
             }
             style={{
@@ -698,12 +780,7 @@ export default function SearchToolbar({
                 label={'Most Viewed'}
                 onClick={handleMostViewedClick}
                 disabled={isLoading.mostViewed}
-                sx={getEnhancedChipStyles(
-                  theme,
-                  currentPeriod === 'views',
-                  '#9155FD',
-                  isLoading.mostViewed
-                )}
+                sx={mostViewedChipStyles}
               />
             }
             style={{
@@ -733,12 +810,7 @@ export default function SearchToolbar({
                 }
                 onClick={handleGainersClick}
                 disabled={isLoading.gainers}
-                sx={getEnhancedChipStyles(
-                  theme,
-                  currentPeriod && ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentPeriod),
-                  '#00AB55',
-                  isLoading.gainers
-                )}
+                sx={gainersChipStyles}
               />
             }
             style={{
@@ -764,12 +836,7 @@ export default function SearchToolbar({
                 label={'New'}
                 onClick={handleNewClick}
                 disabled={isLoading.new}
-                sx={getEnhancedChipStyles(
-                  theme,
-                  currentPeriod === 'dateon',
-                  '#FFAB00',
-                  isLoading.new
-                )}
+                sx={newChipStyles}
               />
             }
             style={{
@@ -788,8 +855,8 @@ export default function SearchToolbar({
                   size="small"
                   icon={<WhatshotIcon sx={{ fontSize: '18px' }} />}
                   label={category.name}
-                  onClick={() => handleCategorySelect(category.tag)}
-                  sx={getEnhancedChipStyles(theme, false, category.color, false)}
+                  onClick={() => handleCategoryClick(category.tag)}
+                  sx={getTrendingCategoryChipStyles(category)}
                 />
               }
               style={{
@@ -809,8 +876,8 @@ export default function SearchToolbar({
                 size="small"
                 icon={<CategoryIcon sx={{ fontSize: '18px' }} />}
                 label={'Categories'}
-                onClick={() => setOpenCategoriesDrawer(true)}
-                sx={getEnhancedChipStyles(theme, false, '#5569ff', false)}
+                onClick={handleCategoriesDrawerOpen}
+                sx={categoriesChipStyles}
               />
             }
             style={{
