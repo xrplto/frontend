@@ -307,10 +307,10 @@ const DocumentationContent = ({ activeSection, searchTerm }) => {
               {/* Quick Stats - More Compact */}
               <Grid container spacing={1.5} sx={{ mt: 1 }}>
                 {[
-                  { label: '1000+', desc: 'Tokens', color: 'primary' },
+                  { label: '16000+', desc: 'Tokens', color: 'primary' },
                   { label: '99.9%', desc: 'Uptime', color: 'success' },
                   { label: 'Real-time', desc: 'Data', color: 'info' },
-                  { label: '4', desc: 'Languages', color: 'warning' }
+                  { label: '5', desc: 'Languages', color: 'warning' }
                 ].map((stat, index) => (
                   <Grid item xs={6} sm={3} key={index}>
                     <Card
