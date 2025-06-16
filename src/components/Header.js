@@ -96,7 +96,9 @@ const HeaderWrapper = styled(Box)(
 `
 );
 
-const StyledLink = styled(Link)(
+const StyledLink = styled(Link, {
+  shouldForwardProp: (prop) => prop !== 'darkMode'
+})(
   ({ darkMode, theme }) => `
     font-weight: 600;
     margin-right: 20px;
@@ -155,7 +157,9 @@ const StyledLink = styled(Link)(
 `
 );
 
-const StyledMenuItem = styled(MenuItem)(
+const StyledMenuItem = styled(MenuItem, {
+  shouldForwardProp: (prop) => prop !== 'darkMode'
+})(
   ({ darkMode, theme }) => `
     color: ${darkMode ? 'white' : theme.palette.text.primary};
     margin: 4px 8px;

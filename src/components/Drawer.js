@@ -4,7 +4,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import { AppContext } from 'src/AppContext';
 
 // Enhanced DrawerHeader with portfolio-style design
-const DrawerHeader = styled('div')(({ theme, darkMode }) => ({
+const DrawerHeader = styled('div', {
+  shouldForwardProp: (prop) => prop !== 'darkMode'
+})(({ theme, darkMode }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',

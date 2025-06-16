@@ -80,7 +80,9 @@ const badgeDEXStyle = {
   border: '1px solid rgba(183, 129, 3, 0.24)'
 };
 
-const StyledTableHead = styled(TableHead)(({ theme, darkMode }) => ({
+const StyledTableHead = styled(TableHead, {
+  shouldForwardProp: (prop) => prop !== 'darkMode'
+})(({ theme, darkMode }) => ({
   position: 'sticky',
   zIndex: 999,
   top: 0,
@@ -100,7 +102,9 @@ const StyledTableHead = styled(TableHead)(({ theme, darkMode }) => ({
   }
 }));
 
-const StyledTableRow = styled(TableRow)(({ theme, darkMode }) => ({
+const StyledTableRow = styled(TableRow, {
+  shouldForwardProp: (prop) => prop !== 'darkMode'
+})(({ theme, darkMode }) => ({
   borderBottom: '1px solid rgba(145, 158, 171, 0.08)',
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {

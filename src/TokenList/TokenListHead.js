@@ -15,20 +15,25 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import InfoIcon from '@mui/icons-material/Info';
 
-const SmallInfoIcon = (props) => (
-  <InfoIcon
-    {...props}
-    sx={{
-      fontSize: '14px',
-      ml: 0.5,
-      opacity: 0.7,
-      transition: 'opacity 0.2s ease',
-      '&:hover': {
-        opacity: 1
-      }
-    }}
-  />
-);
+const SmallInfoIcon = (props) => {
+  // Filter out darkMode prop to prevent React warning
+  const { darkMode, ...otherProps } = props;
+
+  return (
+    <InfoIcon
+      {...otherProps}
+      sx={{
+        fontSize: '14px',
+        ml: 0.5,
+        opacity: 0.7,
+        transition: 'opacity 0.2s ease',
+        '&:hover': {
+          opacity: 1
+        }
+      }}
+    />
+  );
+};
 
 const StickyTableCell = withStyles((theme) => ({
   head: {
