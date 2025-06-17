@@ -32,7 +32,8 @@ import {
   Tooltip,
   Card,
   CardContent,
-  Avatar
+  Avatar,
+  Alert
 } from '@mui/material';
 import Logo from 'src/components/Logo';
 import { motion } from 'framer-motion';
@@ -55,12 +56,14 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CodeIcon from '@mui/icons-material/Code';
 import LinkIcon from '@mui/icons-material/Link';
 import SearchIcon from '@mui/icons-material/Search';
+import ImageIcon from '@mui/icons-material/Image';
 import { AppContext } from 'src/AppContext';
 
 const sections = [
   { id: 'introduction', title: 'Introduction' },
   { id: 'get-all-tokens', title: 'Get All Tokens' },
   { id: 'get-a-specific-token-info', title: 'Get a Specific Token Info' },
+  { id: 'get-token-image', title: 'Get Token Image' },
   { id: 'get-sparkline-of-a-token', title: 'Get Sparkline of a token' },
   { id: 'get-graph-data-of-a-token', title: 'Get Graph Data of a Token' },
   { id: 'get-rich-list-of-a-token', title: 'Get Rich List of a Token' },
@@ -214,7 +217,7 @@ const CodeBlock = ({ children, language = 'javascript' }) => (
 );
 
 // Documentation content sections
-const DocumentationContent = ({ activeSection, searchTerm }) => {
+const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) => {
   const highlightText = (text) => {
     if (!searchTerm || typeof text !== 'string') return text;
     const regex = new RegExp(`(${searchTerm})`, 'gi');
@@ -673,53 +676,29 @@ const DocumentationContent = ({ activeSection, searchTerm }) => {
                   variant="h6"
                   sx={{ color: theme.palette.success.main, fontWeight: 600 }}
                 >
-                  Response Structure
+                  Try It Now
                 </Typography>
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The API returns compressed data with performance timing and platform metrics:
+                  Test this endpoint directly and see the live response structure:
                 </Typography>
-                <CodeBlock language="json">
-                  {`{
-  "result": "success",
-  "took": "45.20",      // Response time in milliseconds
-  "exch": {             // Current exchange rates
-    "xrp": {
-      "usd": 0.5234,
-      "eur": 0.4891,
-      // ... other fiat rates
-    }
-  },
-  "H24": {              // 24-hour platform metrics
-    "volume": "1234567.89",
-    "trades": 8765,
-    // ... other 24h metrics
-  },
-  "global": {           // Global platform metrics
-    "totalSupply": "99999999999",
-    "marketCap": "12345678.90",
-    // ... other global metrics
-  },
-  // Token data fields (spread from tokens object):
-  "tokens": [           // Array of token objects
-    {
-      "issuer": "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq",
-      "currency": "USD",
-      "name": "USD",
-      "slug": "gatehub-usd",        // (if showSlug=true)
-      "tags": ["stablecoin"],       // (if tags=yes)
-      "isNew": false,               // (if showNew=true)
-      "created": "2023-01-01",      // (if showDate=true)
-      // ... other token properties
-    }
-    // ... more tokens
-  ],
-  "total": 12543,       // Total number of tokens matching criteria
-  "start": 0,           // Pagination start value
-  "limit": 100          // Pagination limit value
-}`}
-                </CodeBlock>
+
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => handleOpenModal('get-all-tokens')}
+                  sx={{
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1.5,
+                    fontWeight: 600,
+                    mt: 2
+                  }}
+                >
+                  Try API Call
+                </Button>
               </CardContent>
             </Card>
 
@@ -942,61 +921,34 @@ const DocumentationContent = ({ activeSection, searchTerm }) => {
                 }}
               >
                 <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
-                  Fallback Logic
+                  HTTP Request Examples
                 </Typography>
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The API uses intelligent fallback logic to find tokens:
+                  Using different methods to retrieve token information:
                 </Typography>
-                <Box sx={{ ml: 2 }}>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    1. First attempts to get token by slug (which includes MD5)
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    2. If not found, tries to get token by issuer_currency combination
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    3. Returns 404 if token is not found using either method
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ borderRadius: '12px', mb: 3 }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.warning.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
-                }}
-              >
+                <CodeBlock language="http">
+                  GET
+                  https://api.xrpl.to/api/token/rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00000000000000000000000000000000
+                </CodeBlock>
                 <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                  variant="body2"
+                  sx={{ mt: 1, mb: 1, color: theme.palette.text.secondary }}
                 >
-                  How to Generate MD5 Hash
+                  Using slug:
                 </Typography>
-              </Box>
-              <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  To generate the MD5 hash, combine the issuer address and currency code with an
-                  underscore, then calculate the MD5 hash.
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/token/sologenic?desc=yes
+                </CodeBlock>
+                <Typography
+                  variant="body2"
+                  sx={{ mt: 1, mb: 1, color: theme.palette.text.secondary }}
+                >
+                  Using MD5 hash:
                 </Typography>
-                <CodeBlock language="javascript">
-                  {`const CryptoJS = require('crypto-js');
-
-// Example: Generate MD5 for a token
-const issuer = 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq';
-const currency = 'USD';
-const md5 = CryptoJS.MD5(issuer + '_' + currency).toString();
-
-// Use the MD5 in your API request
-const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/token/0413ca7cfc258dfaf698c02fe304e607
                 </CodeBlock>
               </CardContent>
             </Card>
@@ -1005,86 +957,64 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.primary.main,
+                    theme.palette.info.main,
                     0.08
-                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
                   p: 2,
                   borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
                 }}
               >
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
-                >
-                  Query Parameters
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Request Parameters
                 </Typography>
               </Box>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell
-                        sx={{
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Parameter
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Default
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Description
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>issuer_currencyCode</TableCell>
-                      <TableCell>-</TableCell>
-                      <TableCell>
-                        The issuer address followed by an underscore and the currency code. This is
-                        the recommended method.
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>slug</TableCell>
-                      <TableCell>-</TableCell>
-                      <TableCell>
-                        Alternatively, you can use the URL slug of the token to retrieve token
-                        information.
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>md5</TableCell>
-                      <TableCell>-</TableCell>
-                      <TableCell>
-                        MD5 hash of the issuer_currency combination for programmatic access.
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>desc</TableCell>
-                      <TableCell>no</TableCell>
-                      <TableCell>
-                        yes or no, if yes, returns the description of the token in markdown
-                        language. Only works when token has MD5 hash.
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <CardContent>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Parameter</TableCell>
+                        <TableCell>Default</TableCell>
+                        <TableCell>Description</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>issuer_currencyCode</TableCell>
+                        <TableCell>-</TableCell>
+                        <TableCell>
+                          The issuer address followed by an underscore and the currency code. This
+                          is the recommended method.
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>slug</TableCell>
+                        <TableCell>-</TableCell>
+                        <TableCell>
+                          Alternatively, you can use the URL slug of the token to retrieve token
+                          information.
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>md5</TableCell>
+                        <TableCell>-</TableCell>
+                        <TableCell>
+                          MD5 hash of the issuer_currency combination for programmatic access.
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>desc</TableCell>
+                        <TableCell>no</TableCell>
+                        <TableCell>
+                          yes or no, if yes, returns the description of the token in markdown
+                          language. Only works when token has MD5 hash.
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
             </Card>
 
             <Card sx={{ borderRadius: '12px', mb: 3 }}>
@@ -1103,44 +1033,998 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                   variant="h6"
                   sx={{ color: theme.palette.success.main, fontWeight: 600 }}
                 >
-                  Response Structure
+                  Try It Now
                 </Typography>
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The API returns a comprehensive response with token data and platform metrics:
+                  Test this endpoint directly and see the live response structure:
                 </Typography>
-                <CodeBlock language="json">
-                  {`{
-  "res": "success",
-  "took": "45.20",  // Response time in milliseconds
-  "total": 12543,   // Total number of tokens on the platform
-  "exch": {         // Current exchange rates
-    "xrp": {
-      "usd": 0.5234,
-      "eur": 0.4891,
-      // ... other fiat rates
-    }
-  },
-  "H24": {          // 24-hour platform metrics
-    "volume": "1234567.89",
-    "trades": 8765,
-    // ... other 24h metrics
-  },
-  "global": {       // Global platform metrics
-    "totalSupply": "99999999999",
-    "marketCap": "12345678.90",
-    // ... other global metrics
-  },
-  "token": {        // Detailed token information
-    "issuer": "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq",
-    "currency": "USD",
-    "md5": "0413ca7cfc258dfaf698c02fe304e607",
-    "slug": "gatehub-usd",
-    "name": "USD",
-    "description": "Token description (if desc=yes and MD5 exists)",
-    // ... other token properties
-  }
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => handleOpenModal('get-a-specific-token-info')}
+                  sx={{
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1.5,
+                    fontWeight: 600
+                  }}
+                >
+                  Try API Call
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* New section for comprehensive field explanations */}
+            <Card sx={{ borderRadius: '12px', mb: 3 }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Numeric Fields Explained
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 3, color: theme.palette.text.secondary }}>
+                  Comprehensive explanation of all numeric fields in the token response:
+                </Typography>
+
+                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
+                  Price & Exchange Rate Fields
+                </Typography>
+                <TableContainer sx={{ mb: 3 }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          <code>exch</code>
+                        </TableCell>
+                        <TableCell>
+                          XRP exchange rate per token - derived from TxDB price collection,
+                          represents current market price in XRP
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>usd</code>
+                        </TableCell>
+                        <TableCell>
+                          USD price value calculated from XRP exchange rate and XRP/USD conversion
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>time</code>
+                        </TableCell>
+                        <TableCell>
+                          Unix timestamp (milliseconds) of last price update - updated whenever exch
+                          field changes from transaction data
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>marketcap</code>
+                        </TableCell>
+                        <TableCell>
+                          Market capitalization = supply × exch rate (only calculated for
+                          isOMCF="yes" tokens, 0 otherwise)
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>maxMin24h</code>
+                        </TableCell>
+                        <TableCell>
+                          Array [max, min] of highest and lowest USD prices in the last 24 hours
+                          from PriceDB 1D collection
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
+                  Volume & Trading Fields
+                </Typography>
+                <TableContainer sx={{ mb: 3 }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          <code>vol24h</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour raw trading volume in token units - sum of unique transaction
+                          volumes from HistoryDB 1D collection
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>vol24htx</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour transaction count - number of unique transactions (deduplicated by
+                          ledger+hash) divided by 2
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>vol24hxrp</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour XRP equivalent volume - calculated as vol24h × exch rate,
+                          represents total XRP value traded
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>vol24hxrpAMM</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour XRP volume through AMM pools only - vol24hAMM × exch rate for AMM
+                          transactions
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>vol24hAMM</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour AMM volume in token units - filtered from isAMM=true transactions
+                          only
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>vol24htxAMM</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour AMM transaction count - unique AMM transactions (isAMM=true)
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>vol24hx</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour extended volume - from XRP trading pairs in volex24h collection,
+                          token amount traded with XRP
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>vol24hxAMM</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour extended AMM volume - AMM portion of vol24hx from trading pair
+                          data
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
+                  Price Change Percentages
+                </Typography>
+                <TableContainer sx={{ mb: 3 }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          <code>pro5m</code>
+                        </TableCell>
+                        <TableCell>
+                          5-minute price change percentage - calculated using getPriceChange()
+                          against PriceDB 7D collection
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>pro1h</code>
+                        </TableCell>
+                        <TableCell>
+                          1-hour price change percentage - compares current USD price with price
+                          from 1 hour ago
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>pro24h</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour price change percentage - compares current USD price with price
+                          from 24 hours ago
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>pro7d</code>
+                        </TableCell>
+                        <TableCell>
+                          7-day price change percentage - compares current USD price with price from
+                          7 days ago
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>p5m</code>
+                        </TableCell>
+                        <TableCell>
+                          5-minute price difference (absolute USD value) - Decimal.sub(newPrice,
+                          oldPrice)
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>p1h</code>
+                        </TableCell>
+                        <TableCell>
+                          1-hour price difference (absolute USD value) - absolute change over 1 hour
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>p24h</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour price difference (absolute USD value) - absolute change over 24
+                          hours
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>p7d</code>
+                        </TableCell>
+                        <TableCell>
+                          7-day price difference (absolute USD value) - absolute change over 7 days
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
+                  Token Metrics & Supply
+                </Typography>
+                <TableContainer sx={{ mb: 3 }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          <code>amount</code>
+                        </TableCell>
+                        <TableCell>
+                          Total circulating supply - for XRP: calculated from accounts collection
+                          balance sum
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>supply</code>
+                        </TableCell>
+                        <TableCell>
+                          Total token supply - for XRP: sum of all account balances divided by
+                          1,000,000 (drops to XRP)
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>holders</code>
+                        </TableCell>
+                        <TableCell>
+                          Current number of unique addresses with balance &gt; 0 - counted from
+                          accounts collection
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>trustlines</code>
+                        </TableCell>
+                        <TableCell>
+                          Number of trustlines - for XRP: total address count; for tokens: trust
+                          relationships count
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>offers</code>
+                        </TableCell>
+                        <TableCell>
+                          Active buy/sell offers on XRPL DEX - aggregated count from offers
+                          collection by trading pair
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>holders24h</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour change in holders count - current holders minus holders from
+                          tokens24h collection
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>trustlines24h</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour change in trustlines - current trustlines minus trustlines from
+                          tokens24h collection
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>marketcap24h</code>
+                        </TableCell>
+                        <TableCell>
+                          24-hour change in market cap - current marketcap minus marketcap from
+                          tokens24h collection
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
+                  AMM & Liquidity Fields
+                </Typography>
+                <TableContainer sx={{ mb: 3 }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          <code>tvl</code>
+                        </TableCell>
+                        <TableCell>
+                          Total Value Locked in XRP equivalent - calculated from AMM pool analysis
+                          combining XRP + token pool values
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>AMM</code>
+                        </TableCell>
+                        <TableCell>
+                          AMM account address for the liquidity pool - validated AMM account with
+                          minimum 40 XRP liquidity requirement
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
+                  Ranking & Scoring Fields
+                </Typography>
+                <TableContainer sx={{ mb: 3 }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          <code>id</code>
+                        </TableCell>
+                        <TableCell>
+                          Ranking position based on vol24hxrp descending sort order
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>dom</code>
+                        </TableCell>
+                        <TableCell>
+                          Market dominance percentage - (token marketcap × 100) ÷ total market cap
+                          of all qualified tokens
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>trendingScore</code>
+                        </TableCell>
+                        <TableCell>
+                          Weighted trending score: volume(10%) + pro24h(10%) + marketcap24h(10%) +
+                          trustlines24h(7.5%) + holders24h(7.5%) + trades(20%) + offers(15%) +
+                          nginxScore(15%) + searchScore(5%)
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>assessmentScore</code>
+                        </TableCell>
+                        <TableCell>
+                          Quality assessment score: vol24hxrp(20%) + marketcap(20%) +
+                          trustlines(15%) + holders(15%) + vol24htx(15%) + offers(15%) - normalized
+                          against global metrics
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>nginxScore</code>
+                        </TableCell>
+                        <TableCell>
+                          Web traffic popularity score from nginx access logs analysis via
+                          tokentrends.sh script
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>searchScore</code>
+                        </TableCell>
+                        <TableCell>
+                          Search-related traffic score - search requests per unique IP from nginx
+                          logs
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
+                  Timestamp Fields
+                </Typography>
+                <TableContainer sx={{ mb: 3 }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          <code>dateon</code>
+                        </TableCell>
+                        <TableCell>
+                          Token creation/first discovery timestamp (Unix milliseconds) from initial
+                          transaction
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>date</code>
+                        </TableCell>
+                        <TableCell>
+                          Token registration date (ISO format string) - when token was first indexed
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>lastUpdated</code>
+                        </TableCell>
+                        <TableCell>
+                          Last metadata update timestamp - when token information was last modified
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>updatedAt</code>
+                        </TableCell>
+                        <TableCell>
+                          Last price/market data update timestamp - updated during metrics
+                          calculations
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>trustlinesUpdatedAt</code>
+                        </TableCell>
+                        <TableCell>
+                          Last trustlines count update timestamp from CalcXRPTokenInfo() function
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>lastModified</code>
+                        </TableCell>
+                        <TableCell>Last token record modification timestamp in database</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
+                  Global Metrics Fields (Available in H24 and global objects)
+                </Typography>
+                <TableContainer sx={{ mb: 3 }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          <code>gDexVolume</code>
+                        </TableCell>
+                        <TableCell>
+                          Global DEX volume - sum of all tradedXRP24H across all qualified tokens
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>gMarketcap</code>
+                        </TableCell>
+                        <TableCell>
+                          Global market capitalization - sum of all token market caps (excluding
+                          XRP, scam, and defunct tokens)
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>gScamVolume</code>
+                        </TableCell>
+                        <TableCell>
+                          Volume from tokens tagged as 'Scam' or 'Defunct' - excluded from main
+                          market calculations
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>gNFTIOUVolume</code>
+                        </TableCell>
+                        <TableCell>
+                          Volume from tokens tagged as 'NFT', 'IOU', or 'NFT IOU'
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>gStableVolume</code>
+                        </TableCell>
+                        <TableCell>Volume from tokens tagged as 'Stablecoin'</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>gMemeVolume</code>
+                        </TableCell>
+                        <TableCell>Volume from tokens tagged as 'Memes'</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>gXRPdominance</code>
+                        </TableCell>
+                        <TableCell>
+                          XRP market dominance percentage - (XRP marketcap × 100) ÷ (total marketcap
+                          + XRP marketcap)
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>transactions24H</code>
+                        </TableCell>
+                        <TableCell>
+                          Total XRPL transactions in last 24 hours - calculated from HistoryDB 1D
+                          collection
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>activeAddresses24H</code>
+                        </TableCell>
+                        <TableCell>
+                          Unique addresses that had transactions in the last 24 hours - from TxDB
+                          accounts24h collection
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>totalAddresses</code>
+                        </TableCell>
+                        <TableCell>
+                          Total number of XRPL addresses - count from accounts collection
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>totalOffers</code>
+                        </TableCell>
+                        <TableCell>
+                          Total active offers on XRPL DEX - count from offers collection
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <code>totalTrustLines</code>
+                        </TableCell>
+                        <TableCell>
+                          Total trustlines on XRPL - count from trusts collection
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <Alert severity="info" sx={{ mt: 3 }}>
+                  <Typography variant="body2">
+                    <strong>Important Notes:</strong>
+                    <br />• All volume calculations use unique transaction deduplication (by ledger
+                    + hash)
+                    <br />• Only tokens with isOMCF="yes" are included in market cap and ranking
+                    calculations
+                    <br />• AMM volumes require minimum 40 XRP liquidity and proper account
+                    validation
+                    <br />• Price changes use fallback logic when historical data is insufficient
+                    <br />• Global metrics exclude scam/defunct tokens to maintain data quality
+                    <br />• All timestamps are in Unix milliseconds unless specified otherwise
+                  </Typography>
+                </Alert>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px', mb: 3 }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  Error Responses
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns the following error response on failure:
+                </Typography>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Error message details"
+}`}
+                  </CodeBlock>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      case 'get-token-image':
+        return (
+          <Box id="get-token-image">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.info.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.info.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <ImageIcon sx={{ color: theme.palette.info.main, mr: 2, fontSize: 32 }} />
+                <Typography variant="h2" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Get Token Image
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve the image associated with a specific token using its MD5 hash. Token images
+                are hosted on the XRPL.to CDN and can be accessed directly for display in
+                applications, websites, or other interfaces.
+              </Typography>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">GET https://s1.xrpl.to/token/&lt;md5&gt;</CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  Example with specific token MD5:
+                </Typography>
+                <CodeBlock language="http">
+                  GET https://s1.xrpl.to/token/0dd550278b74cb6690fdae351e8e0df3
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  Parameters
+                </Typography>
+              </Box>
+              <CardContent>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell
+                          sx={{
+                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          Parameter
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          Type
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          Required
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          Description
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>md5</TableCell>
+                        <TableCell>Path</TableCell>
+                        <TableCell>Yes</TableCell>
+                        <TableCell>
+                          MD5 hash of the token identifier (issuer_currency combination)
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  How to Get MD5 Hash
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The MD5 hash is calculated from the token's issuer address and currency code:
+                </Typography>
+                <CodeBlock language="javascript">
+                  {`// Example: Calculate MD5 for a token
+const crypto = require('crypto');
+
+const issuer = 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz';
+const currency = 'SOLO';
+const tokenString = \`\${issuer}_\${currency}\`;
+const md5Hash = crypto.createHash('md5').update(tokenString).digest('hex');
+
+console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
+                </CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  You can also get the MD5 hash from the token info API response.
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Response Format
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  This endpoint returns the token image directly as a binary response. Common
+                  formats include:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Content-Type:</strong> image/png, image/jpeg, image/webp, or
+                    image/svg+xml
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Response:</strong> Binary image data
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Cache Headers:</strong> Includes cache-control headers for
+                    optimization
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>CORS Enabled:</strong> Can be accessed from web applications
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Usage Examples
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  Here are common ways to use token images in your applications:
+                </Typography>
+
+                <Typography
+                  variant="subtitle2"
+                  sx={{ mb: 1, color: theme.palette.text.primary, fontWeight: 600 }}
+                >
+                  HTML Image Tag:
+                </Typography>
+                <CodeBlock language="html">
+                  {`<img src="https://s1.xrpl.to/token/0dd550278b74cb6690fdae351e8e0df3" 
+     alt="SOLO Token" 
+     width="32" 
+     height="32" />`}
+                </CodeBlock>
+
+                <Typography
+                  variant="subtitle2"
+                  sx={{ mb: 1, mt: 2, color: theme.palette.text.primary, fontWeight: 600 }}
+                >
+                  CSS Background Image:
+                </Typography>
+                <CodeBlock language="css">
+                  {`.token-icon {
+  background-image: url('https://s1.xrpl.to/token/0dd550278b74cb6690fdae351e8e0df3');
+  background-size: cover;
+  width: 32px;
+  height: 32px;
+}`}
+                </CodeBlock>
+
+                <Typography
+                  variant="subtitle2"
+                  sx={{ mb: 1, mt: 2, color: theme.palette.text.primary, fontWeight: 600 }}
+                >
+                  React Component:
+                </Typography>
+                <CodeBlock language="jsx">
+                  {`function TokenIcon({ md5, alt, size = 32 }) {
+  return (
+    <img 
+      src={\`https://s1.xrpl.to/token/\${md5}\`}
+      alt={alt}
+      width={size}
+      height={size}
+      onError={(e) => {
+        e.target.src = '/fallback-token-icon.png';
+      }}
+    />
+  );
 }`}
                 </CodeBlock>
               </CardContent>
@@ -1159,38 +2043,26 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                 }}
               >
                 <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
-                  Error Responses
+                  Error Handling
                 </Typography>
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The API returns the following error responses:
+                  When a token image is not found or unavailable, the endpoint will return:
                 </Typography>
-                <Box sx={{ mb: 2 }}>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
-                  >
-                    404 Not Found
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>404 Not Found:</strong> When the MD5 hash doesn't correspond to any
+                    token image
                   </Typography>
-                  <CodeBlock language="json">
-                    {`{
-  "message": "Token not found"
-}`}
-                  </CodeBlock>
-                </Box>
-                <Box>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
-                  >
-                    500 Internal Server Error
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Image Fallback:</strong> Some applications may show a default token
+                    icon
                   </Typography>
-                  <CodeBlock language="json">
-                    {`{
-  "message": "Error message details"
-}`}
-                  </CodeBlock>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>CORS Errors:</strong> Ensure your application handles cross-origin
+                    requests properly
+                  </Typography>
                 </Box>
               </CardContent>
             </Card>
@@ -1364,37 +2236,27 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                   variant="h6"
                   sx={{ color: theme.palette.success.main, fontWeight: 600 }}
                 >
-                  Response Structure
+                  Try It Now
                 </Typography>
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The API returns formatted sparkline data with automatic chart coloring and
-                  timestamps:
+                  Test this endpoint directly and see the live response structure:
                 </Typography>
-                <CodeBlock language="json">
-                  {`{
-  "chartColor": "#54D62C",           // Green for positive, "#ed5565" for negative
-  "period": "24h",                  // "24h" or "7d" based on request
-  "percentChange": "2.45",          // Percentage change as string
-  "data": {
-    "prices": [                     // Array of price points (formatted decimals)
-      "0.1234",
-      "0.1235", 
-      "0.1240",
-      // ... more price points
-    ],
-    "timestamps": [                 // Corresponding timestamps (milliseconds)
-      1640995200000,
-      1640995800000,
-      1640996400000,
-      // ... more timestamps  
-    ],
-    "max": "0.1250",               // Highest price in period
-    "min": "0.1200"                // Lowest price in period
-  }
-}`}
-                </CodeBlock>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => handleOpenModal('get-sparkline-of-a-token')}
+                  sx={{
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1.5,
+                    fontWeight: 600
+                  }}
+                >
+                  Try API Call
+                </Button>
               </CardContent>
             </Card>
 
@@ -1702,12 +2564,12 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                   variant="h6"
                   sx={{ color: theme.palette.success.main, fontWeight: 600 }}
                 >
-                  Response Structure
+                  Try It Now
                 </Typography>
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The API returns rich list data with performance timing and pagination info:
+                  Test this endpoint directly and see the live response structure:
                 </Typography>
                 <CodeBlock language="json">
                   {`{
@@ -2078,45 +2940,27 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                   variant="h6"
                   sx={{ color: theme.palette.success.main, fontWeight: 600 }}
                 >
-                  Response Structure
+                  Try It Now
                 </Typography>
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The API returns comprehensive exchange history with performance metrics:
+                  Test this endpoint directly and see the live response structure:
                 </Typography>
-                <CodeBlock language="json">
-                  {`{
-  "result": "success",
-  "took": "45.23ms",                // Response time with unit
-  "recordsReturned": 10,            // Number of records in current response
-  "totalRecords": 15420,            // Total records available
-  "page": 0,                        // Current page number
-  "limit": 10,                      // Records per page limit
-  "count": 15420,                   // Total count (same as totalRecords)
-  "hists": [                        // Array of exchange history records
-    {
-      "txHash": "A1B2C3D4E5F6789...",
-      "ledgerIndex": 75123456,
-      "timestamp": 1640995200,       // Unix timestamp
-      "date": "2023-01-01T00:00:00Z", // ISO date string
-      "type": "Payment",             // Transaction type
-      "account": "rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH",
-      "destination": "rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w",
-      "amount": {
-        "value": "1000.123456",
-        "currency": "USD",
-        "issuer": "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
-      },
-      "fee": "0.000012",             // Transaction fee in XRP
-      "result": "tesSUCCESS",        // Transaction result
-      "exchangeRate": "0.5234",      // Exchange rate if applicable
-      "volume": "1000.123456"        // Transaction volume
-    }
-    // ... more history records
-  ]
-}`}
-                </CodeBlock>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleOpenModal('get-exchange-history-of-a-token')}
+                  sx={{
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1.5,
+                    fontWeight: 600
+                  }}
+                >
+                  Try API Call
+                </Button>
               </CardContent>
             </Card>
 
@@ -2331,59 +3175,27 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                   variant="h6"
                   sx={{ color: theme.palette.success.main, fontWeight: 600 }}
                 >
-                  Response Structure
+                  Try It Now
                 </Typography>
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The API returns comprehensive platform status with real-time metrics:
+                  Test this endpoint directly and see the live response structure:
                 </Typography>
-                <CodeBlock language="json">
-                  {`{
-  "res": "success",
-  "took": "83.60ms",               // Response time in milliseconds
-  "total": 16849,                  // Total number of tokens on platform
-  "exch": {                        // Current XRP exchange rates
-    "USD": 0.465408702144082,      // XRP to USD rate
-    "EUR": 0.537035101404056,      // XRP to EUR rate  
-    "JPY": 0.00322407119453461,    // XRP to JPY rate
-    "CNY": 0.0647701776267451      // XRP to CNY rate
-  },
-  "H24": {                         // 24-hour platform metrics
-    "_id": "METRICS_24H",
-    "activeAddresses24H": 21919,   // Active addresses in last 24h
-    "totalAddresses": 6563817,     // Total addresses on XRPL
-    "totalOffers": 11598213,       // Total active offers
-    "totalTrustLines": 6681685,    // Total trustlines
-    "tradedTokens24H": 1384,       // Tokens traded in 24h
-    "tradedXRP24H": 3386907.79963, // XRP volume in 24h
-    "transactions24H": 337795,     // Transactions in 24h
-    "totalTVL": 24956180.4315585,  // Total Value Locked
-    "lastUpdated": "2025-06-13T23:07:31.256Z",
-    "updateStatus": "complete"
-  },
-  "global": {                      // Global platform metrics
-    "_id": "METRICS_GLOBAL",
-    "gDexVolume": 3380879.024549,  // Global DEX volume
-    "gDexVolumePro": -7.00388417359496,  // DEX volume change %
-    "gMarketcap": 265098025.707726,      // Global market cap
-    "gMarketcapPro": -1.36204154630568,  // Market cap change %
-    "gNFTIOUVolume": 5750.87524571821,   // NFT/IOU volume
-    "gNFTIOUVolumePro": 0.17010000073828, // NFT/IOU volume change %
-    "gScamVolume": 34244.6004413518,     // Scam token volume
-    "gScamVolumePro": 1.0128904404061,   // Scam volume change %
-    "gStableVolume": 1841364.50671297,   // Stablecoin volume
-    "gStableVolumePro": 54.464075565632, // Stable volume change %
-    "gXRPdominance": 0,                  // XRP dominance %
-    "gXRPdominancePro": 0,              // XRP dominance change %
-    "totalAddresses": 6563817,          // Total XRPL addresses
-    "totalOffers": 11598225,            // Total platform offers
-    "totalTrustLines": 6681690,         // Total platform trustlines
-    "gMemeVolume": 1469624.08263417,    // Meme token volume
-    "gMemeVolumePro": 43.468697695571   // Meme volume change %
-  }
-}`}
-                </CodeBlock>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleOpenModal('get-the-current-status')}
+                  sx={{
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1.5,
+                    fontWeight: 600
+                  }}
+                >
+                  Try API Call
+                </Button>
               </CardContent>
             </Card>
 
@@ -3012,55 +3824,27 @@ const response = await fetch(\`https://api.xrpl.to/api/token/\${md5}\`);`}
                   variant="h6"
                   sx={{ color: theme.palette.success.main, fontWeight: 600 }}
                 >
-                  Response Structure
+                  Try It Now
                 </Typography>
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The API returns detailed historical data with performance timing:
+                  Test this endpoint directly and see the live response structure:
                 </Typography>
-                <CodeBlock language="json">
-                  {`{
-  "res": "success",
-  "took": "45.23",                  // Response time in milliseconds
-  "length": 288,                    // Number of data points returned
-  "history": [                      // Array of historical data points
-    {
-      "timestamp": 1640995200000,    // Unix timestamp in milliseconds
-      "date": "2023-01-01T00:00:00Z", // ISO 8601 date string
-      "open": "0.1234",              // Opening price
-      "high": "0.1250",              // Highest price in period
-      "low": "0.1200",               // Lowest price in period
-      "close": "0.1245",             // Closing price
-      "volume": "15000.567890",      // Trading volume
-      "volumeXRP": "12500.123456",   // Volume in XRP
-      "trades": 45,                  // Number of trades
-      "priceUSD": "0.0647",          // Price in USD
-      "priceEUR": "0.0591",          // Price in EUR
-      "priceJPY": "9.234",           // Price in JPY
-      "priceCNY": "0.4123",          // Price in CNY
-      "marketCap": "8123456.78"      // Market capitalization
-    },
-    {
-      "timestamp": 1640998800000,
-      "date": "2023-01-01T01:00:00Z",
-      "open": "0.1245",
-      "high": "0.1260",
-      "low": "0.1230",
-      "close": "0.1255",
-      "volume": "18500.123456",
-      "volumeXRP": "14750.987654",
-      "trades": 52,
-      "priceUSD": "0.0657",
-      "priceEUR": "0.0601",
-      "priceJPY": "9.456",
-      "priceCNY": "0.4198",
-      "marketCap": "8245123.45"
-    }
-    // ... more historical data points
-  ]
-}`}
-                </CodeBlock>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleOpenModal('get-graph-data-of-a-token')}
+                  sx={{
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1.5,
+                    fontWeight: 600
+                  }}
+                >
+                  Try API Call
+                </Button>
               </CardContent>
             </Card>
 
@@ -3426,6 +4210,125 @@ $tokenInfo = getTokenInfo($issuer, $currency);
 if ($tokenInfo) {
     print_r($tokenInfo);
 }
+?>`;
+        default:
+          return '';
+      }
+
+    case 'get-token-image':
+      switch (language) {
+        case 'shell':
+          return `curl -sS "https://s1.xrpl.to/token/0dd550278b74cb6690fdae351e8e0df3"`;
+        case 'javascript':
+          return `// Direct image URL usage
+const tokenMd5 = '0dd550278b74cb6690fdae351e8e0df3';
+const imageUrl = \`https://s1.xrpl.to/token/\${tokenMd5}\`;
+
+// Use in HTML
+const img = document.createElement('img');
+img.src = imageUrl;
+img.alt = 'Token Image';
+img.width = 32;
+img.height = 32;
+
+// Add error handling
+img.onerror = function() {
+  this.src = '/fallback-token-icon.png';
+};
+
+document.body.appendChild(img);`;
+        case 'python':
+          return `import requests
+from PIL import Image
+from io import BytesIO
+
+def get_token_image(token_md5):
+    """
+    Fetch token image and return as PIL Image object
+    """
+    try:
+        url = f"https://s1.xrpl.to/token/{token_md5}"
+        response = requests.get(url)
+        response.raise_for_status()
+        
+        # Convert to PIL Image
+        image = Image.open(BytesIO(response.content))
+        return image
+    except requests.RequestException as e:
+        print(f"Error fetching token image: {e}")
+        return None
+
+# Example usage
+token_md5 = "0dd550278b74cb6690fdae351e8e0df3"
+token_image = get_token_image(token_md5)
+if token_image:
+    token_image.show()  # Display the image
+    token_image.save("token_image.png")  # Save locally`;
+        case 'ruby':
+          return `require 'net/http'
+require 'uri'
+
+def get_token_image_url(token_md5)
+  "https://s1.xrpl.to/token/#{token_md5}"
+end
+
+def download_token_image(token_md5, save_path)
+  uri = URI(get_token_image_url(token_md5))
+  
+  Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+    response = http.get(uri.path)
+    
+    if response.code == '200'
+      File.open(save_path, 'wb') do |file|
+        file.write(response.body)
+      end
+      puts "Token image saved to #{save_path}"
+    else
+      puts "Error: HTTP #{response.code}"
+    end
+  end
+rescue => e
+  puts "Error downloading token image: #{e.message}"
+end
+
+# Example usage
+token_md5 = "0dd550278b74cb6690fdae351e8e0df3"
+download_token_image(token_md5, "token_image.png")`;
+        case 'php':
+          return `<?php
+function getTokenImageUrl($tokenMd5) {
+    return "https://s1.xrpl.to/token/{$tokenMd5}";
+}
+
+function downloadTokenImage($tokenMd5, $savePath) {
+    $url = getTokenImageUrl($tokenMd5);
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    
+    $imageData = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200 && $imageData !== false) {
+        file_put_contents($savePath, $imageData);
+        echo "Token image saved to {$savePath}\\n";
+        return true;
+    } else {
+        echo "Error fetching token image: HTTP {$httpCode}\\n";
+        return false;
+    }
+}
+
+// Example usage
+$tokenMd5 = "0dd550278b74cb6690fdae351e8e0df3";
+downloadTokenImage($tokenMd5, "token_image.png");
+
+// Or just use the URL directly in HTML
+echo '<img src="' . getTokenImageUrl($tokenMd5) . '" alt="Token Image" width="32" height="32">';
 ?>`;
         default:
           return '';
@@ -4171,12 +5074,12 @@ const ApiDocs = () => {
     }
   };
 
-  const handleOpenModal = async () => {
+  const handleOpenModal = async (section = currentSection) => {
     setIsModalOpen(true);
     setIsLoading(true);
     try {
       let response;
-      switch (currentSection) {
+      switch (section) {
         case 'get-all-tokens':
           response = await axios.get(
             'https://api.xrpl.to/api/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false&showDate=false'
@@ -4187,6 +5090,21 @@ const ApiDocs = () => {
             'https://api.xrpl.to/api/token/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD'
           );
           break;
+        case 'get-token-image':
+          // For token images, we'll show metadata instead of the binary image data
+          setApiResponse({
+            message: 'Token image endpoint returns binary image data',
+            url: 'https://s1.xrpl.to/token/0dd550278b74cb6690fdae351e8e0df3',
+            note: 'This endpoint returns the actual image file, not JSON data. Open the URL directly to view the image.',
+            contentType: 'image/png, image/jpeg, image/webp, or image/svg+xml',
+            example: {
+              html: '<img src="https://s1.xrpl.to/token/0dd550278b74cb6690fdae351e8e0df3" alt="Token Image" width="32" height="32" />',
+              css: "background-image: url('https://s1.xrpl.to/token/0dd550278b74cb6690fdae351e8e0df3');",
+              react: 'src={`https://s1.xrpl.to/token/${md5}`}'
+            }
+          });
+          setIsLoading(false);
+          return;
         case 'get-sparkline-of-a-token':
           response = await axios.get(
             'https://api.xrpl.to/api/sparkline/0413ca7cfc258dfaf698c02fe304e607'
@@ -4210,13 +5128,18 @@ const ApiDocs = () => {
             'https://api.xrpl.to/api/account/offers/rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6'
           );
           break;
+        case 'get-graph-data-of-a-token':
+          response = await axios.get(
+            'https://api.xrpl.to/api/graph/c9ac9a6c44763c1bd9ccc6e47572fd26?range=1D'
+          );
+          break;
         default:
           throw new Error('Invalid section');
       }
       setApiResponse(response.data);
     } catch (error) {
       console.error('Error fetching API data:', error);
-      setApiResponse({ error: 'Failed to fetch data' });
+      setApiResponse({ error: 'Failed to fetch data', details: error.message });
     } finally {
       setIsLoading(false);
     }
@@ -4266,7 +5189,7 @@ const ApiDocs = () => {
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </Head>
 
-        <AppBar position="sticky">
+        <AppBar position="sticky" sx={{ zIndex: 1300 }}>
           <Toolbar sx={{ justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <IconButton
@@ -4288,6 +5211,32 @@ const ApiDocs = () => {
                 Developer
               </Typography>
             </Box>
+            <TextField
+              size="small"
+              variant="outlined"
+              placeholder="Search documentation..."
+              value={searchTerm}
+              onChange={handleSearch}
+              sx={{
+                width: { xs: 200, sm: 300 },
+                '& .MuiOutlinedInput-root': {
+                  color: 'white',
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.3)'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.5)'
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'white'
+                  }
+                },
+                '& .MuiInputBase-input::placeholder': {
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  opacity: 1
+                }
+              }}
+            />
           </Toolbar>
         </AppBar>
 
@@ -4299,11 +5248,11 @@ const ApiDocs = () => {
               flexShrink: 0,
               display: { xs: isSidebarOpen ? 'block' : 'none', sm: 'block' },
               position: { xs: 'fixed', sm: 'sticky' },
-              top: 0,
+              top: { xs: 64, sm: 0 },
               left: 0,
-              height: '100vh',
+              height: { xs: 'calc(100vh - 64px)', sm: '100vh' },
               overflowY: 'auto',
-              zIndex: 1200,
+              zIndex: 1100,
               backgroundColor: theme.palette.background.paper,
               borderRight: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
               p: 3
@@ -4448,7 +5397,11 @@ const ApiDocs = () => {
               backgroundColor: theme.palette.background.default
             }}
           >
-            <DocumentationContent activeSection={activeSection} searchTerm={searchTerm} />
+            <DocumentationContent
+              activeSection={activeSection}
+              searchTerm={searchTerm}
+              handleOpenModal={handleOpenModal}
+            />
           </Box>
 
           <Divider
@@ -4463,9 +5416,9 @@ const ApiDocs = () => {
             sx={{
               flexGrow: 1,
               p: 2,
-              backgroundColor: '#2d2d2d',
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-              borderRadius: { xs: '8px', md: '0' },
+              backgroundColor: '#1a1a1a',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+              borderRadius: { xs: '12px', md: '0' },
               color: 'white',
               display: 'flex',
               flexDirection: 'column',
@@ -4473,87 +5426,260 @@ const ApiDocs = () => {
               width: { xs: '100%', md: '50%' },
               position: { md: 'sticky' },
               top: { md: 64 },
-              alignSelf: { md: 'flex-start' }
+              alignSelf: { md: 'flex-start' },
+              overflow: 'hidden'
             }}
           >
-            <Typography variant="h6" gutterBottom>
-              Code Examples
-            </Typography>
-            <TabContext value={currentSection}>
-              <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <TabList
-                  onChange={(event, newValue) => handleSectionChange(newValue)}
-                  aria-label="code section tabs"
-                  variant="scrollable"
-                  scrollButtons="auto"
-                  allowScrollButtonsMobile
-                  sx={{
-                    maxWidth: '100%',
-                    '& .MuiTab-root': {
-                      minHeight: '48px',
-                      fontSize: '0.8rem',
-                      textTransform: 'none'
-                    }
-                  }}
-                >
-                  <Tab label="Get All Tokens" value="get-all-tokens" />
-                  <Tab label="Get Specific Token" value="get-a-specific-token-info" />
-                  <Tab label="Get Sparkline" value="get-sparkline-of-a-token" />
-                  <Tab label="Get Graph Data" value="get-graph-data-of-a-token" />
-                  <Tab label="Get MD5 Value" value="get-md5-value-of-the-token" />
-                  <Tab label="Get Rich List" value="get-rich-list-of-a-token" />
-                  <Tab label="Get Exchange History" value="get-exchange-history-of-a-token" />
-                  <Tab label="Get Current Status" value="get-the-current-status" />
-                  <Tab label="Get Account Offers" value="get-account-offers" />
-                </TabList>
-              </Box>
-              <TabPanel
-                value={currentSection}
+            {/* Header */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 2,
+                pb: 2,
+                borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+              }}
+            >
+              <Typography
+                variant="h6"
                 sx={{
-                  p: 0,
-                  flexGrow: 1,
+                  fontWeight: 600,
+                  color: theme.palette.primary.main,
                   display: 'flex',
-                  flexDirection: 'column',
-                  overflow: 'auto'
+                  alignItems: 'center',
+                  gap: 1
                 }}
               >
-                <Tabs
-                  value={codeLanguage}
-                  onChange={handleCodeLanguageChange}
-                  aria-label="code language tabs"
+                <CodeIcon />
+                Code Examples
+              </Typography>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => handleOpenModal(currentSection)}
+                sx={{
+                  borderRadius: '20px',
+                  textTransform: 'none',
+                  px: 2,
+                  py: 0.5,
+                  fontSize: '0.8rem',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.success.dark})`
+                  }
+                }}
+              >
+                Try Live
+              </Button>
+            </Box>
+
+            {/* API Endpoint Tabs */}
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  mb: 1,
+                  display: 'block',
+                  textTransform: 'uppercase',
+                  fontWeight: 600,
+                  letterSpacing: 1
+                }}
+              >
+                API Endpoint
+              </Typography>
+              <TabContext value={currentSection}>
+                <TabList
+                  onChange={(event, newValue) => handleSectionChange(newValue)}
+                  aria-label="api endpoint tabs"
                   variant="scrollable"
                   scrollButtons="auto"
                   allowScrollButtonsMobile
                   sx={{
-                    mb: 2,
+                    minHeight: 'auto',
+                    '& .MuiTabs-indicator': {
+                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
+                      height: '2px',
+                      borderRadius: '1px'
+                    },
                     '& .MuiTab-root': {
                       minHeight: '36px',
-                      fontSize: '0.8rem',
-                      textTransform: 'none'
+                      fontSize: '0.75rem',
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      minWidth: 'auto',
+                      px: 2,
+                      py: 1,
+                      color: theme.palette.text.secondary,
+                      transition: 'all 0.2s ease',
+                      '&.Mui-selected': {
+                        color: theme.palette.primary.main,
+                        fontWeight: 600
+                      },
+                      '&:hover': {
+                        color: theme.palette.primary.light,
+                        backgroundColor: alpha(theme.palette.primary.main, 0.05)
+                      }
                     }
                   }}
                 >
-                  <Tab label="JavaScript" value="javascript" />
-                  <Tab label="Python" value="python" />
-                  <Tab label="PHP" value="php" />
-                  <Tab label="Shell" value="shell" />
-                  <Tab label="Ruby" value="ruby" />
-                </Tabs>
-                <Box sx={{ flexGrow: 1, overflow: 'auto', maxHeight: { xs: '300px', md: 'none' } }}>
-                  <CodeBlock language={codeLanguage}>
-                    {getCodeExample(codeLanguage, currentSection)}
-                  </CodeBlock>
-                </Box>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleOpenModal}
-                  sx={{ mt: 2, alignSelf: 'flex-start' }}
+                  <Tab label="All Tokens" value="get-all-tokens" />
+                  <Tab label="Token Info" value="get-a-specific-token-info" />
+                  <Tab label="Token Image" value="get-token-image" />
+                  <Tab label="Sparkline" value="get-sparkline-of-a-token" />
+                  <Tab label="Graph Data" value="get-graph-data-of-a-token" />
+                  <Tab label="MD5 Value" value="get-md5-value-of-the-token" />
+                  <Tab label="Rich List" value="get-rich-list-of-a-token" />
+                  <Tab label="History" value="get-exchange-history-of-a-token" />
+                  <Tab label="Status" value="get-the-current-status" />
+                  <Tab label="Offers" value="get-account-offers" />
+                </TabList>
+              </TabContext>
+            </Box>
+
+            {/* Language Tabs */}
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  mb: 1,
+                  display: 'block',
+                  textTransform: 'uppercase',
+                  fontWeight: 600,
+                  letterSpacing: 1
+                }}
+              >
+                Language
+              </Typography>
+              <Tabs
+                value={codeLanguage}
+                onChange={handleCodeLanguageChange}
+                aria-label="programming language tabs"
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+                sx={{
+                  minHeight: 'auto',
+                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                  borderRadius: '8px',
+                  p: 0.5,
+                  '& .MuiTabs-indicator': {
+                    display: 'none'
+                  },
+                  '& .MuiTab-root': {
+                    minHeight: '32px',
+                    fontSize: '0.75rem',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    minWidth: 'auto',
+                    px: 2,
+                    py: 0.5,
+                    m: 0.25,
+                    borderRadius: '6px',
+                    color: theme.palette.text.secondary,
+                    transition: 'all 0.2s ease',
+                    '&.Mui-selected': {
+                      color: 'white',
+                      backgroundColor: theme.palette.primary.main,
+                      fontWeight: 600,
+                      boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.3)}`
+                    },
+                    '&:hover': {
+                      color: theme.palette.primary.light,
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                    }
+                  }
+                }}
+              >
+                <Tab label="JavaScript" value="javascript" />
+                <Tab label="Python" value="python" />
+                <Tab label="PHP" value="php" />
+                <Tab label="Shell" value="shell" />
+                <Tab label="Ruby" value="ruby" />
+              </Tabs>
+            </Box>
+
+            {/* Code Block */}
+            <Box
+              sx={{
+                flexGrow: 1,
+                overflow: 'hidden',
+                borderRadius: '8px',
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                backgroundColor: '#0d1117'
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  p: 1.5,
+                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+                }}
+              >
+                <Chip
+                  label={codeLanguage}
+                  size="small"
+                  sx={{
+                    bgcolor: alpha(theme.palette.primary.main, 0.2),
+                    color: theme.palette.primary.main,
+                    fontWeight: 600,
+                    fontSize: '0.7rem',
+                    height: '24px'
+                  }}
+                />
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    navigator.clipboard.writeText(getCodeExample(codeLanguage, currentSection))
+                  }
+                  sx={{
+                    color: theme.palette.primary.main,
+                    padding: '4px',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                    }
+                  }}
                 >
-                  Try it out
-                </Button>
-              </TabPanel>
-            </TabContext>
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+              </Box>
+              <Box
+                component="pre"
+                sx={{
+                  fontFamily: '"JetBrains Mono", "Roboto Mono", monospace',
+                  fontSize: '0.8rem',
+                  lineHeight: 1.5,
+                  color: '#e6edf3',
+                  margin: 0,
+                  padding: '16px',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  background: 'transparent',
+                  overflow: 'auto',
+                  height: { xs: '300px', md: 'calc(100vh - 400px)' },
+                  '&::-webkit-scrollbar': {
+                    width: '8px'
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    background: alpha(theme.palette.primary.main, 0.05)
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    background: alpha(theme.palette.primary.main, 0.3),
+                    borderRadius: '4px',
+                    '&:hover': {
+                      background: alpha(theme.palette.primary.main, 0.5)
+                    }
+                  }
+                }}
+              >
+                {getCodeExample(codeLanguage, currentSection)}
+              </Box>
+            </Box>
           </Box>
         </Box>
 
