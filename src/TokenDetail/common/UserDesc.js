@@ -459,10 +459,10 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           label={tag}
           onClick={handleToggleExpand}
           sx={{
-            height: isMobile ? '26px' : '30px',
+            height: isMobile ? '28px' : '32px',
             fontSize: isMobile ? '0.75rem' : '0.85rem',
-            borderRadius: '3px',
-            px: isMobile ? 0.5 : 1,
+            borderRadius: '4px',
+            px: isMobile ? 0.75 : 1.25,
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.primary.main,
               0.08
@@ -471,7 +471,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
             color: theme.palette.primary.main,
             fontWeight: 500,
             cursor: 'pointer',
-            minHeight: isMobile ? '34px' : 'auto',
+            minHeight: isMobile ? '36px' : 'auto',
 
             '&:hover': {
               background: `linear-gradient(135deg, ${alpha(
@@ -501,7 +501,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           size="small"
           label={
             tag === 'aigent.run' ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Box
                   component="img"
                   src="/static/aigentrun.gif"
@@ -520,10 +520,10 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           }
           onClick={handleDelete}
           sx={{
-            height: isMobile ? '26px' : '30px',
+            height: isMobile ? '28px' : '32px',
             fontSize: isMobile ? '0.75rem' : '0.85rem',
-            borderRadius: '3px',
-            px: isMobile ? 0.5 : 1,
+            borderRadius: '4px',
+            px: isMobile ? 0.75 : 1.25,
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.8
@@ -532,7 +532,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
             color: theme.palette.text.primary,
             fontWeight: 500,
             cursor: 'pointer',
-            minHeight: isMobile ? '34px' : 'auto',
+            minHeight: isMobile ? '36px' : 'auto',
 
             '&:hover': {
               background: `linear-gradient(135deg, ${alpha(
@@ -559,14 +559,12 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          gap: isMobile ? 0.375 : 0.5,
+          gap: isMobile ? 0.75 : 1,
           width: '100%'
         }}
       >
         {/* Primary row */}
-        <Box
-          sx={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 0.125 : 0.25, width: '100%' }}
-        >
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 0.5 : 0.75, width: '100%' }}>
           {tags.slice(0, isMobile ? (isXsMobile ? 2 : 4) : 6).map((tag) => (
             <TagChip key={tag} tag={tag} />
           ))}
@@ -580,9 +578,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
 
         {/* Additional rows when expanded */}
         {expanded && (
-          <Box
-            sx={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 0.375 : 0.5, mt: 0.25 }}
-          >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 0.75 : 1, mt: 0.5 }}>
             {/* Split remaining tags into rows */}
             {Array.from(
               {
@@ -597,7 +593,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
                   sx={{
                     display: 'flex',
                     flexWrap: 'wrap',
-                    gap: isMobile ? 0.125 : 0.25,
+                    gap: isMobile ? 0.5 : 0.75,
                     width: '100%'
                   }}
                 >
@@ -615,7 +611,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
               )
             )}
             {/* Show less button */}
-            <Box sx={{ display: 'flex', gap: isMobile ? 0.125 : 0.25 }}>
+            <Box sx={{ display: 'flex', gap: isMobile ? 0.5 : 0.75 }}>
               <TagChip tag="Show less" isExpand={true} />
             </Box>
           </Box>
@@ -626,7 +622,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
 
   // Standard horizontal layout for fewer tags
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 0.125 : 0.25, width: '100%' }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 0.5 : 0.75, width: '100%' }}>
       {tags.slice(0, maxVisibleTags).map((tag) => (
         <TagChip key={tag} tag={tag} />
       ))}
@@ -636,10 +632,10 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           size="small"
           onClick={() => toggleTagsDrawer(true)}
           sx={{
-            height: isMobile ? '26px' : '30px',
+            height: isMobile ? '28px' : '32px',
             fontSize: isMobile ? '0.75rem' : '0.85rem',
-            borderRadius: '3px',
-            px: isMobile ? 0.5 : 1,
+            borderRadius: '4px',
+            px: isMobile ? 0.75 : 1.25,
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.primary.main,
               0.08
@@ -648,7 +644,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
             color: theme.palette.primary.main,
             fontWeight: 500,
             cursor: 'pointer',
-            minHeight: isMobile ? '34px' : 'auto',
+            minHeight: isMobile ? '36px' : 'auto',
 
             '&:hover': {
               background: `linear-gradient(135deg, ${alpha(
@@ -885,7 +881,7 @@ export default function UserDesc({ token }) {
     const iconSize = size === 'small' ? 14 : 16;
 
     return (
-      <Stack direction="row" spacing={0.25} alignItems="center">
+      <Stack direction="row" spacing={0.5} alignItems="center">
         {socialEntries.slice(0, isMobile ? 3 : 4).map(([platform, url]) => (
           <Tooltip key={platform} title={`${platform}: ${url}`} arrow>
             <IconButton
@@ -895,10 +891,10 @@ export default function UserDesc({ token }) {
               rel="noopener noreferrer"
               size="small"
               sx={{
-                width: isMobile ? 20 : 24,
-                height: isMobile ? 20 : 24,
-                p: 0.25,
-                borderRadius: '4px',
+                width: isMobile ? 24 : 28,
+                height: isMobile ? 24 : 28,
+                p: 0.5,
+                borderRadius: '6px',
                 background: `linear-gradient(135deg, ${alpha(
                   theme.palette.primary.main,
                   0.08
@@ -944,10 +940,10 @@ export default function UserDesc({ token }) {
               onClick={() => toggleLinksDrawer(true)}
               size="small"
               sx={{
-                width: isMobile ? 20 : 24,
-                height: isMobile ? 20 : 24,
-                p: 0.25,
-                borderRadius: '4px',
+                width: isMobile ? 24 : 28,
+                height: isMobile ? 24 : 28,
+                p: 0.5,
+                borderRadius: '6px',
                 background: `linear-gradient(135deg, ${alpha(
                   theme.palette.secondary.main,
                   0.08
@@ -964,7 +960,7 @@ export default function UserDesc({ token }) {
                 }
               }}
             >
-              <Typography sx={{ fontSize: '0.6rem', fontWeight: 600 }}>
+              <Typography sx={{ fontSize: '0.65rem', fontWeight: 600 }}>
                 +{socialEntries.length - (isMobile ? 3 : 4)}
               </Typography>
             </IconButton>
@@ -979,12 +975,7 @@ export default function UserDesc({ token }) {
     if (!enhancedTags || enhancedTags.length === 0) return null;
 
     return (
-      <Stack
-        direction="row"
-        spacing={0.25}
-        alignItems="center"
-        sx={{ flexWrap: 'wrap', gap: 0.25 }}
-      >
+      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexWrap: 'wrap', gap: 0.5 }}>
         {enhancedTags.slice(0, maxTags).map((tag) => (
           <Link
             key={tag}
@@ -997,7 +988,7 @@ export default function UserDesc({ token }) {
               size="small"
               label={
                 tag === 'aigent.run' ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Box
                       component="img"
                       src="/static/aigentrun.gif"
@@ -1015,10 +1006,10 @@ export default function UserDesc({ token }) {
                 )
               }
               sx={{
-                height: isMobile ? '16px' : '18px',
-                fontSize: isMobile ? '0.55rem' : '0.6rem',
-                borderRadius: '3px',
-                px: isMobile ? 0.375 : 0.5,
+                height: isMobile ? '20px' : '22px',
+                fontSize: isMobile ? '0.6rem' : '0.65rem',
+                borderRadius: '4px',
+                px: isMobile ? 0.5 : 0.75,
                 background: `linear-gradient(135deg, ${alpha(
                   theme.palette.background.paper,
                   0.8
@@ -1048,10 +1039,10 @@ export default function UserDesc({ token }) {
             size="small"
             onClick={() => toggleTagsDrawer(true)}
             sx={{
-              height: isMobile ? '16px' : '18px',
-              fontSize: isMobile ? '0.55rem' : '0.6rem',
-              borderRadius: '3px',
-              px: isMobile ? 0.375 : 0.5,
+              height: isMobile ? '20px' : '22px',
+              fontSize: isMobile ? '0.6rem' : '0.65rem',
+              borderRadius: '4px',
+              px: isMobile ? 0.5 : 0.75,
               background: `linear-gradient(135deg, ${alpha(
                 theme.palette.primary.main,
                 0.08
@@ -1078,10 +1069,10 @@ export default function UserDesc({ token }) {
 
   return (
     <Stack
-      spacing={isMobile ? 0.25 : 0.5}
+      spacing={isMobile ? 0.5 : 0.75}
       sx={{
-        p: isMobile ? 0.5 : 1.25,
-        borderRadius: isMobile ? '6px' : '12px',
+        p: isMobile ? 1 : 1.5,
+        borderRadius: isMobile ? '8px' : '16px',
         background: `linear-gradient(135deg, 
           ${alpha(theme.palette.background.paper, 0.95)} 0%, 
           ${alpha(theme.palette.background.paper, 0.85)} 50%,
@@ -1124,7 +1115,7 @@ export default function UserDesc({ token }) {
       {/* Main Content Row */}
       <Stack
         direction={isMobile ? 'column' : 'row'}
-        spacing={isMobile ? 0.375 : 1}
+        spacing={isMobile ? 0.75 : 1.5}
         alignItems={isMobile ? 'stretch' : 'flex-start'}
         justifyContent="space-between"
       >
@@ -1134,6 +1125,7 @@ export default function UserDesc({ token }) {
             direction="row"
             alignItems="flex-start"
             justifyContent="space-between"
+            spacing={1}
             sx={{ width: '100%' }}
           >
             {/* Avatar */}
@@ -1142,9 +1134,9 @@ export default function UserDesc({ token }) {
                 alt={`${user} ${name} Logo`}
                 src={imgUrl}
                 sx={{
-                  width: isXsMobile ? 72 : 80,
-                  height: isXsMobile ? 72 : 80,
-                  borderRadius: '12px',
+                  width: isXsMobile ? 76 : 84,
+                  height: isXsMobile ? 76 : 84,
+                  borderRadius: '14px',
                   border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`
                 }}
               />
@@ -1154,7 +1146,7 @@ export default function UserDesc({ token }) {
                     <CheckCircleIcon
                       sx={{
                         color: '#00AB55',
-                        fontSize: isXsMobile ? 20 : 24,
+                        fontSize: isXsMobile ? 22 : 26,
                         filter: 'drop-shadow(0 2px 4px rgba(0, 171, 85, 0.3))'
                       }}
                     />
@@ -1165,20 +1157,20 @@ export default function UserDesc({ token }) {
 
             {/* Name, User, Tags, Social - Middle Section */}
             <Stack
-              spacing={0.125}
+              spacing={0.5}
               sx={{
                 flex: 1,
                 minWidth: 0,
-                mx: 0.75,
+                mx: 1,
                 justifyContent: 'flex-start'
               }}
             >
               {/* Name and Rank Row */}
-              <Stack direction="row" alignItems="center" spacing={0.5} sx={{ minWidth: 0 }}>
+              <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
                 <Typography
                   variant="h6"
                   sx={{
-                    fontSize: isXsMobile ? '1.3rem' : '1.4rem',
+                    fontSize: isXsMobile ? '1.35rem' : '1.45rem',
                     fontWeight: 700,
                     background: `linear-gradient(135deg, 
                       ${theme.palette.primary.main} 0%, 
@@ -1200,7 +1192,7 @@ export default function UserDesc({ token }) {
                   {name}
                 </Typography>
 
-                <Stack direction="row" spacing={0.25} alignItems="center">
+                <Stack direction="row" spacing={0.5} alignItems="center">
                   <Tooltip title={`Rank by 24h Volume: #${id}`}>
                     <Chip
                       label={`#${id}`}
@@ -1208,8 +1200,8 @@ export default function UserDesc({ token }) {
                       variant="outlined"
                       size="small"
                       sx={{
-                        borderRadius: '4px',
-                        height: isXsMobile ? '24px' : '28px',
+                        borderRadius: '6px',
+                        height: isXsMobile ? '26px' : '30px',
                         fontSize: isXsMobile ? '0.8rem' : '0.9rem',
                         background: `linear-gradient(135deg, 
                           ${alpha(theme.palette.primary.main, 0.12)} 0%, 
@@ -1217,7 +1209,7 @@ export default function UserDesc({ token }) {
                         )`,
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                         fontWeight: 600,
-                        px: 0.5,
+                        px: 0.75,
                         minWidth: 'auto',
                         flexShrink: 0
                       }}
@@ -1291,7 +1283,8 @@ export default function UserDesc({ token }) {
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   color: alpha(theme.palette.text.primary, 0.7),
-                  lineHeight: 1.1
+                  lineHeight: 1.1,
+                  mb: 0.25
                 }}
               >
                 {user}
@@ -1300,9 +1293,9 @@ export default function UserDesc({ token }) {
               {/* Compact Tags and Social Row */}
               <Stack
                 direction="row"
-                spacing={0.5}
+                spacing={0.75}
                 alignItems="center"
-                sx={{ mt: 0.25, flexWrap: 'wrap', gap: 0.25 }}
+                sx={{ mt: 0.5, flexWrap: 'wrap', gap: 0.5 }}
               >
                 <CompactTags maxTags={isXsMobile ? 2 : 3} />
                 <CompactSocialLinks size="small" />
@@ -1310,7 +1303,7 @@ export default function UserDesc({ token }) {
             </Stack>
 
             {/* Actions */}
-            <Stack direction="row" spacing={0.25} alignItems="flex-start" sx={{ flexShrink: 0 }}>
+            <Stack direction="row" spacing={0.5} alignItems="flex-start" sx={{ flexShrink: 0 }}>
               <Watch token={token} />
               <Share token={token} />
             </Stack>
@@ -1320,7 +1313,7 @@ export default function UserDesc({ token }) {
         {/* Token Info Section - Desktop and remaining mobile content */}
         <Stack
           direction={isMobile ? 'column' : 'row'}
-          spacing={isMobile ? 0.5 : 1.5}
+          spacing={isMobile ? 1 : 2}
           alignItems={isMobile ? 'stretch' : 'flex-start'}
           sx={{ flex: 1, minWidth: 0 }}
         >
@@ -1365,9 +1358,9 @@ export default function UserDesc({ token }) {
                     alt={`${user} ${name} Logo`}
                     src={imgUrl}
                     sx={{
-                      width: 110,
-                      height: 110,
-                      borderRadius: '20px',
+                      width: 120,
+                      height: 120,
+                      borderRadius: '22px',
                       border: `3px solid ${alpha(theme.palette.primary.main, 0.15)}`
                     }}
                   />
@@ -1377,7 +1370,7 @@ export default function UserDesc({ token }) {
                         <CheckCircleIcon
                           sx={{
                             color: '#00AB55',
-                            fontSize: 32,
+                            fontSize: 34,
                             filter: 'drop-shadow(0 2px 4px rgba(0, 171, 85, 0.3))'
                           }}
                         />
@@ -1391,13 +1384,13 @@ export default function UserDesc({ token }) {
 
           {/* Token Details - Desktop with integrated tags and social */}
           {!isMobile && (
-            <Stack spacing={0.25} sx={{ flex: 1, minWidth: 0 }}>
+            <Stack spacing={0.75} sx={{ flex: 1, minWidth: 0 }}>
               {/* Name and Rank Row */}
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
+              <Stack direction="row" alignItems="center" spacing={1.25} sx={{ minWidth: 0 }}>
                 <Typography
                   variant="h6"
                   sx={{
-                    fontSize: '1.7rem',
+                    fontSize: '1.8rem',
                     fontWeight: 700,
                     background: `linear-gradient(135deg, 
                       ${theme.palette.primary.main} 0%, 
@@ -1412,13 +1405,13 @@ export default function UserDesc({ token }) {
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
-                    maxWidth: '240px'
+                    maxWidth: '280px'
                   }}
                 >
                   {name}
                 </Typography>
 
-                <Stack direction="row" spacing={0.5} alignItems="center">
+                <Stack direction="row" spacing={0.75} alignItems="center">
                   <Tooltip title={`Rank by 24h Volume: #${id}`}>
                     <Chip
                       label={`#${id}`}
@@ -1426,16 +1419,16 @@ export default function UserDesc({ token }) {
                       variant="outlined"
                       size="small"
                       sx={{
-                        borderRadius: '4px',
-                        height: '36px',
-                        fontSize: '1rem',
+                        borderRadius: '6px',
+                        height: '38px',
+                        fontSize: '1.05rem',
                         background: `linear-gradient(135deg, 
                           ${alpha(theme.palette.primary.main, 0.12)} 0%, 
                           ${alpha(theme.palette.primary.main, 0.06)} 100%
                         )`,
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                         fontWeight: 600,
-                        px: 1.25,
+                        px: 1.5,
                         minWidth: 'auto'
                       }}
                     />
@@ -1456,7 +1449,7 @@ export default function UserDesc({ token }) {
                       <Tooltip title="Burned Liquidity Pool">
                         <LocalFireDepartmentIcon
                           sx={{
-                            fontSize: '18px',
+                            fontSize: '20px',
                             color: '#1890FF',
                             marginRight: '2px',
                             marginBottom: '2px'
@@ -1470,7 +1463,7 @@ export default function UserDesc({ token }) {
                     <Tooltip title="Blackholed Issuer">
                       <LockIcon
                         sx={{
-                          fontSize: '18px',
+                          fontSize: '20px',
                           color: '#00AB55',
                           marginRight: '2px',
                           marginBottom: '2px'
@@ -1485,19 +1478,19 @@ export default function UserDesc({ token }) {
               <Stack
                 direction="row"
                 alignItems="center"
-                spacing={1}
-                sx={{ minWidth: 0, flexWrap: 'wrap', gap: 0.5 }}
+                spacing={1.25}
+                sx={{ minWidth: 0, flexWrap: 'wrap', gap: 0.75 }}
               >
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   sx={{
-                    fontSize: '1.1rem',
+                    fontSize: '1.15rem',
                     fontWeight: 500,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
-                    maxWidth: '160px',
+                    maxWidth: '180px',
                     color: alpha(theme.palette.text.primary, 0.7),
                     lineHeight: 1
                   }}
@@ -1505,7 +1498,7 @@ export default function UserDesc({ token }) {
                   {user}
                 </Typography>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                   <CompactTags maxTags={4} />
                 </Box>
 
@@ -1517,9 +1510,9 @@ export default function UserDesc({ token }) {
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 1,
+                  gap: 1.25,
                   flexWrap: 'wrap',
-                  mt: 0.25
+                  mt: 0.5
                 }}
               >
                 {[
@@ -1570,10 +1563,10 @@ export default function UserDesc({ token }) {
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 0.5,
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: '8px',
+                      gap: 0.75,
+                      px: 1.25,
+                      py: 0.75,
+                      borderRadius: '10px',
                       border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
                       background: alpha(theme.palette.background.paper, 0.6),
                       transition: 'all 0.2s ease',
@@ -1588,7 +1581,7 @@ export default function UserDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.75rem',
+                        fontSize: '0.8rem',
                         fontWeight: 500,
                         color: alpha(theme.palette.text.secondary, 0.8),
                         textTransform: 'uppercase',
@@ -1600,7 +1593,7 @@ export default function UserDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.875rem',
+                        fontSize: '0.9rem',
                         fontWeight: 600,
                         color: stat.color
                       }}
@@ -1615,15 +1608,15 @@ export default function UserDesc({ token }) {
 
           {/* Mobile Stats Grid - Enhanced Version */}
           {isMobile && (
-            <Stack spacing={0.5} sx={{ width: '100%' }}>
+            <Stack spacing={0.75} sx={{ width: '100%' }}>
               {/* Primary Stats Row - Always Visible */}
               <Box
                 sx={{
                   display: 'grid',
                   gridTemplateColumns: isXsMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
-                  gap: 0.25,
-                  p: 0.375,
-                  borderRadius: '6px',
+                  gap: 0.5,
+                  p: 0.75,
+                  borderRadius: '10px',
                   background: `linear-gradient(135deg, 
                     ${alpha(theme.palette.background.paper, 0.8)} 0%, 
                     ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
@@ -1717,11 +1710,11 @@ export default function UserDesc({ token }) {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        p: 1,
-                        borderRadius: '8px',
+                        p: 1.25,
+                        borderRadius: '10px',
                         border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
                         background: alpha(theme.palette.background.paper, 0.6),
-                        minHeight: '60px',
+                        minHeight: '68px',
                         transition: 'all 0.2s ease',
                         cursor: 'pointer',
 
@@ -1743,7 +1736,8 @@ export default function UserDesc({ token }) {
                           fontWeight: 500,
                           color: alpha(theme.palette.text.secondary, 0.8),
                           textTransform: 'uppercase',
-                          letterSpacing: '0.3px'
+                          letterSpacing: '0.3px',
+                          mb: 0.5
                         }}
                       >
                         {stat.label}:
@@ -1766,7 +1760,7 @@ export default function UserDesc({ token }) {
               {/* Secondary Stats - Expandable */}
               <Box
                 sx={{
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   background: `linear-gradient(135deg, 
                     ${alpha(theme.palette.background.paper, 0.6)} 0%, 
                     ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
@@ -1837,12 +1831,12 @@ export default function UserDesc({ token }) {
                         <Typography
                           variant="caption"
                           sx={{
-                            fontSize: '0.75rem',
+                            fontSize: '0.8rem',
                             fontWeight: 600,
                             color: theme.palette.primary.main,
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px',
-                            mb: 0.75,
+                            mb: 1,
                             display: 'block'
                           }}
                         >
@@ -1852,7 +1846,7 @@ export default function UserDesc({ token }) {
                           sx={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(2, 1fr)',
-                            gap: 0.75
+                            gap: 1
                           }}
                         >
                           {[
@@ -1934,7 +1928,7 @@ export default function UserDesc({ token }) {
                             <Tooltip key={stat.label} title={stat.tooltip} arrow>
                               <Box
                                 sx={{
-                                  p: 0.75,
+                                  p: 1,
                                   borderRadius: '12px',
                                   background: `linear-gradient(135deg, ${alpha(
                                     stat.color,
@@ -2002,13 +1996,13 @@ export default function UserDesc({ token }) {
                                 <Typography
                                   variant="caption"
                                   sx={{
-                                    fontSize: '0.6rem',
+                                    fontSize: '0.7rem',
                                     fontWeight: 500,
                                     color: alpha(theme.palette.text.secondary, 0.8),
                                     textTransform: 'uppercase',
                                     letterSpacing: '0.2px',
                                     display: 'block',
-                                    mb: 0.25,
+                                    mb: 0.5,
                                     lineHeight: 1
                                   }}
                                 >
@@ -2017,7 +2011,7 @@ export default function UserDesc({ token }) {
                                 <Typography
                                   variant="caption"
                                   sx={{
-                                    fontSize: '0.7rem',
+                                    fontSize: '0.8rem',
                                     fontWeight: 700,
                                     color: stat.color,
                                     lineHeight: 1,
@@ -2037,12 +2031,12 @@ export default function UserDesc({ token }) {
                         <Typography
                           variant="caption"
                           sx={{
-                            fontSize: '0.75rem',
+                            fontSize: '0.8rem',
                             fontWeight: 600,
                             color: theme.palette.success.main,
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px',
-                            mb: 0.75,
+                            mb: 1,
                             display: 'block'
                           }}
                         >
@@ -2052,7 +2046,7 @@ export default function UserDesc({ token }) {
                           sx={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(2, 1fr)',
-                            gap: 0.75
+                            gap: 1
                           }}
                         >
                           {[
@@ -2081,8 +2075,8 @@ export default function UserDesc({ token }) {
                             <Box
                               key={stat.label}
                               sx={{
-                                p: 1,
-                                borderRadius: '8px',
+                                p: 1.25,
+                                borderRadius: '10px',
                                 border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
                                 background: alpha(theme.palette.background.paper, 0.6),
                                 transition: 'all 0.2s ease',
@@ -2097,13 +2091,13 @@ export default function UserDesc({ token }) {
                               <Typography
                                 variant="caption"
                                 sx={{
-                                  fontSize: '0.75rem',
+                                  fontSize: '0.8rem',
                                   fontWeight: 500,
                                   color: alpha(theme.palette.text.secondary, 0.8),
                                   textTransform: 'uppercase',
                                   letterSpacing: '0.2px',
                                   display: 'block',
-                                  mb: 0.25,
+                                  mb: 0.5,
                                   lineHeight: 1
                                 }}
                               >
@@ -2112,7 +2106,7 @@ export default function UserDesc({ token }) {
                               <Typography
                                 variant="caption"
                                 sx={{
-                                  fontSize: '0.875rem',
+                                  fontSize: '0.9rem',
                                   fontWeight: 600,
                                   color: stat.color
                                 }}
@@ -2133,7 +2127,7 @@ export default function UserDesc({ token }) {
 
         {/* Desktop Actions */}
         {!isMobile && (
-          <Stack direction="row" spacing={0.5} alignItems="flex-start">
+          <Stack direction="row" spacing={0.75} alignItems="flex-start">
             <Watch token={token} />
             <Share token={token} />
           </Stack>
@@ -2142,7 +2136,7 @@ export default function UserDesc({ token }) {
 
       {/* Mobile Price & Extra Buttons */}
       {isTablet && (
-        <Stack direction="column" spacing={0.25} sx={{ width: '100%' }}>
+        <Stack direction="column" spacing={0.75} sx={{ width: '100%', mt: 0.5 }}>
           <Box sx={{ width: '100%' }}>
             <PriceDesc token={token} />
           </Box>
@@ -2265,8 +2259,8 @@ export default function UserDesc({ token }) {
                   <Box
                     key={stat.label}
                     sx={{
-                      p: 0.75,
-                      borderRadius: '6px',
+                      p: 1,
+                      borderRadius: '8px',
                       background: `linear-gradient(135deg, 
                         ${alpha(stat.color, 0.06)} 0%, 
                         ${alpha(stat.color, 0.02)} 100%)`,
@@ -2285,13 +2279,13 @@ export default function UserDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.6rem',
+                        fontSize: '0.7rem',
                         fontWeight: 500,
                         color: alpha(theme.palette.text.secondary, 0.8),
                         textTransform: 'uppercase',
                         letterSpacing: '0.2px',
                         display: 'block',
-                        mb: 0.25,
+                        mb: 0.5,
                         lineHeight: 1
                       }}
                     >
@@ -2300,7 +2294,7 @@ export default function UserDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.7rem',
+                        fontSize: '0.8rem',
                         fontWeight: 700,
                         color: stat.color,
                         lineHeight: 1,
