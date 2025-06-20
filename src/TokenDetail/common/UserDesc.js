@@ -46,6 +46,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { SvgIcon } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -197,6 +198,18 @@ const KYCBadge = styled('div')(
     `
 );
 
+// Add Google Lens badge container
+const GoogleLensBadge = styled('div')(
+  ({ theme }) => `
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        z-index: 2;
+        background: ${theme.palette.background.paper};
+        border-radius: 50%;
+    `
+);
+
 // Add status badge container for multiple status indicators
 const StatusBadgeContainer = styled('div')(
   ({ theme }) => `
@@ -291,6 +304,13 @@ const markWarningShownForToken = (tokenId) => {
     session.scamWarnings.push(tokenId);
     sessionStorage.setItem('currentSession', JSON.stringify(session));
   }
+};
+
+// Add Google Lens search function
+const openGoogleLens = (imageUrl) => {
+  const encodedImageUrl = encodeURIComponent(imageUrl);
+  const googleLensUrl = `https://lens.google.com/uploadbyurl?url=${encodedImageUrl}`;
+  window.open(googleLensUrl, '_blank', 'noopener,noreferrer');
 };
 
 // Add XPMarket icon component
@@ -1153,6 +1173,27 @@ export default function UserDesc({ token }) {
                   </Tooltip>
                 </KYCBadge>
               )}
+              <GoogleLensBadge>
+                <Tooltip title="Search image with Google Lens">
+                  <IconButton
+                    onClick={() => openGoogleLens(imgUrl)}
+                    size="small"
+                    sx={{
+                      width: isXsMobile ? 20 : 24,
+                      height: isXsMobile ? 20 : 24,
+                      p: 0,
+                      background: `linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)`,
+                      color: 'white',
+                      '&:hover': {
+                        background: `linear-gradient(135deg, #3367d6 0%, #2d8f47 50%, #f9ab00 75%, #d33b01 100%)`,
+                        transform: 'scale(1.1)'
+                      }
+                    }}
+                  >
+                    <SearchIcon sx={{ fontSize: isXsMobile ? 12 : 14 }} />
+                  </IconButton>
+                </Tooltip>
+              </GoogleLensBadge>
             </Box>
 
             {/* Name, User, Tags, Social - Middle Section */}
@@ -1350,6 +1391,27 @@ export default function UserDesc({ token }) {
                         </Tooltip>
                       </KYCBadge>
                     )}
+                    <GoogleLensBadge>
+                      <Tooltip title="Search image with Google Lens">
+                        <IconButton
+                          onClick={() => openGoogleLens(imgUrl)}
+                          size="small"
+                          sx={{
+                            width: 28,
+                            height: 28,
+                            p: 0,
+                            background: `linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)`,
+                            color: 'white',
+                            '&:hover': {
+                              background: `linear-gradient(135deg, #3367d6 0%, #2d8f47 50%, #f9ab00 75%, #d33b01 100%)`,
+                              transform: 'scale(1.1)'
+                            }
+                          }}
+                        >
+                          <SearchIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Tooltip>
+                    </GoogleLensBadge>
                   </IconCover>
                 </div>
               ) : (
@@ -1377,6 +1439,27 @@ export default function UserDesc({ token }) {
                       </Tooltip>
                     </KYCBadge>
                   )}
+                  <GoogleLensBadge>
+                    <Tooltip title="Search image with Google Lens">
+                      <IconButton
+                        onClick={() => openGoogleLens(imgUrl)}
+                        size="small"
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          p: 0,
+                          background: `linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)`,
+                          color: 'white',
+                          '&:hover': {
+                            background: `linear-gradient(135deg, #3367d6 0%, #2d8f47 50%, #f9ab00 75%, #d33b01 100%)`,
+                            transform: 'scale(1.1)'
+                          }
+                        }}
+                      >
+                        <SearchIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </Tooltip>
+                  </GoogleLensBadge>
                 </Box>
               )}
             </>
