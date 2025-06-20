@@ -401,7 +401,7 @@ export default function Wallet({ style }) {
                 underline="none"
                 color="inherit"
                 // target="_blank"
-                href={`/account/${accountLogin}`}
+                href={`/profile/${accountLogin}`}
                 rel="noreferrer noopener nofollow"
               >
                 <Button

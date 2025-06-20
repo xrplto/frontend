@@ -468,9 +468,9 @@ export default function TokenListHead({
       <TableRow
         sx={{
           '& .MuiTableCell-root': {
-            fontSize: isMobile ? '12px' : '13px',
+            fontSize: isMobile ? '11px' : '13px',
             fontWeight: '600',
-            padding: isMobile ? '16px 8px' : '20px 12px',
+            padding: isMobile ? '8px 4px' : '20px 12px',
             height: 'auto',
             whiteSpace: 'nowrap',
             color: darkMode ? '#919EAB' : '#637381',
@@ -478,7 +478,7 @@ export default function TokenListHead({
             letterSpacing: '0.02em',
             borderBottom: 'none',
             '&:not(:first-of-type)': {
-              paddingLeft: '8px'
+              paddingLeft: isMobile ? '4px' : '8px'
             }
           },
           '& .MuiTableCell-root:nth-of-type(1)': {
@@ -486,14 +486,20 @@ export default function TokenListHead({
             zIndex: 998,
             left: 0,
             background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)'
+            backdropFilter: 'blur(20px)',
+            width: isMobile ? '20px' : 'auto',
+            minWidth: isMobile ? '20px' : 'auto',
+            padding: isMobile ? '6px 4px' : '20px 12px'
           },
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
             zIndex: 998,
-            left: (tokens?.length ?? 0) > 0 ? (isMobile ? 32 : 56) : isMobile ? 12 : 32,
+            left: isMobile ? '20px' : (tokens?.length ?? 0) > 0 ? 56 : 32,
             background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
+            width: isMobile ? '28px' : 'auto',
+            minWidth: isMobile ? '28px' : 'auto',
+            padding: isMobile ? '6px 4px' : '20px 12px',
             '&:before':
               isMobile && scrollLeft
                 ? {
@@ -510,11 +516,13 @@ export default function TokenListHead({
                   }
                 : {}
           },
-          '& .MuiTableCell-root:nth-of-type(3)': !isMobile && {
+          '& .MuiTableCell-root:nth-of-type(3)': {
             position: 'sticky',
             zIndex: 998,
+            left: isMobile ? '20px' : 56,
             background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
+            padding: isMobile ? '6px 4px' : '20px 12px',
             '&:before': scrollLeft
               ? {
                   content: "''",
@@ -531,7 +539,7 @@ export default function TokenListHead({
               : {}
           },
           '& .MuiTableSortLabel-root': {
-            fontSize: isMobile ? '12px' : '13px',
+            fontSize: isMobile ? '11px' : '13px',
             fontWeight: '600',
             color: 'inherit',
             '&:hover': {
@@ -544,7 +552,7 @@ export default function TokenListHead({
               }
             },
             '& .MuiTableSortLabel-icon': {
-              fontSize: '16px'
+              fontSize: isMobile ? '14px' : '16px'
             }
           }
         }}

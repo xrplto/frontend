@@ -19,6 +19,13 @@ const OverviewWrapper = styled(Box)(
   ({ theme }) => `
     overflow: hidden;
     flex: 1;
+    margin: 0;
+    padding: 0;
+    
+    ${theme.breakpoints.down('md')} {
+      margin: 0;
+      padding: 0;
+    }
 `
 );
 
@@ -97,12 +104,25 @@ function Overview({ data }) {
 
   return (
     <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+      {/* Only show Toolbar on desktop - remove on mobile to eliminate spacing */}
+      {!isMobile && <Toolbar id="back-to-top-anchor" />}
       {!isMobile ? <Topbar /> : ''}
       <Header />
       {isMobile ? <Topbar /> : ''}
 
-      <Box sx={{ width: '100%', px: { xs: 1, sm: 2, md: 3 } }}>
+      <Box
+        sx={{
+          width: '100%',
+          px: { xs: 0, sm: 2, md: 3 },
+          py: { xs: 0, sm: 0, md: 0 },
+          mt: { xs: 0, sm: 0, md: 0 },
+          mb: { xs: 0, sm: 0, md: 0 },
+          // Add negative margin on mobile to close any remaining gap
+          [(theme) => theme.breakpoints.down('md')]: {
+            marginTop: '-1px' // Pulls Summary closer to header
+          }
+        }}
+      >
         <Summary />
       </Box>
 

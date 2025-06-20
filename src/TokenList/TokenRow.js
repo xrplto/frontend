@@ -179,13 +179,13 @@ LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 const getOriginIcon = (origin) => {
   switch (origin) {
     case 'FirstLedger':
-      return <OpenInNewIcon sx={{ fontSize: '16px', color: '#013CFE' }} />;
+      return <OpenInNewIcon sx={{ fontSize: '12px', color: '#013CFE' }} />;
     case 'XPMarket':
-      return <XPMarketIcon sx={{ fontSize: '18px', color: '#6D1FEE', marginRight: '2px' }} />;
+      return <XPMarketIcon sx={{ fontSize: '14px', color: '#6D1FEE', marginRight: '2px' }} />;
     case 'LedgerMeme':
       return (
         <LedgerMemeIcon
-          sx={{ fontSize: '18px', color: '#cfff04', marginRight: '2px', marginTop: '2px' }}
+          sx={{ fontSize: '14px', color: '#cfff04', marginRight: '2px', marginTop: '2px' }}
         />
       );
     case 'aigent.run':
@@ -195,8 +195,8 @@ const getOriginIcon = (origin) => {
           src="/static/aigentrun.gif"
           alt="Aigent.Run"
           sx={{
-            width: '18px',
-            height: '18px',
+            width: '14px',
+            height: '14px',
             objectFit: 'contain',
             marginRight: '2px'
           }}
@@ -206,8 +206,8 @@ const getOriginIcon = (origin) => {
       return (
         <Box
           sx={{
-            width: '18px',
-            height: '18px',
+            width: '14px',
+            height: '14px',
             backgroundColor: 'rgba(255, 255, 255, 0.1)',
             display: 'flex',
             alignItems: 'center',
@@ -222,8 +222,8 @@ const getOriginIcon = (origin) => {
             src="/magneticx-logo.webp"
             alt="Magnetic X"
             sx={{
-              width: '13px',
-              height: '13px',
+              width: '10px',
+              height: '10px',
               objectFit: 'contain'
             }}
           />
@@ -233,8 +233,8 @@ const getOriginIcon = (origin) => {
       return (
         <Box
           sx={{
-            width: '18px',
-            height: '18px',
+            width: '14px',
+            height: '14px',
             backgroundColor: 'rgba(183, 33, 54, 0.1)',
             display: 'flex',
             alignItems: 'center',
@@ -246,14 +246,14 @@ const getOriginIcon = (origin) => {
           <Icon
             icon={chartLineUp}
             style={{
-              fontSize: '11px',
+              fontSize: '9px',
               color: '#B72136'
             }}
           />
         </Box>
       );
     default:
-      return <AutoAwesomeIcon sx={{ fontSize: '11px', color: '#637381' }} />;
+      return <AutoAwesomeIcon sx={{ fontSize: '9px', color: '#637381' }} />;
   }
 };
 
@@ -277,6 +277,14 @@ const AdminImageWrapper = styled(Box)(({ theme }) => ({
     '& > img': {
       opacity: 0.8
     }
+  },
+  [theme.breakpoints.down('md')]: {
+    width: '24px',
+    height: '24px',
+    padding: '2px',
+    margin: '2px',
+    borderRadius: '6px',
+    border: '1px solid rgba(145, 158, 171, 0.08)'
   }
 }));
 
@@ -290,7 +298,15 @@ const TokenImageWrapper = styled(Box)(({ theme }) => ({
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   padding: '3px',
   margin: '4px',
-  backgroundColor: 'rgba(255, 255, 255, 0.02)'
+  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+  [theme.breakpoints.down('md')]: {
+    width: '24px',
+    height: '24px',
+    padding: '2px',
+    margin: '2px',
+    borderRadius: '6px',
+    border: '1px solid rgba(145, 158, 171, 0.08)'
+  }
 }));
 
 function FTokenRow({
@@ -317,9 +333,9 @@ function FTokenRow({
 
   const percentageCellStyle = useMemo(
     () => ({
-      width: '70px',
-      minWidth: '70px',
-      padding: isMobile ? '1px 2px' : '2px 3px',
+      width: isMobile ? '60px' : '70px',
+      minWidth: isMobile ? '60px' : '70px',
+      padding: isMobile ? '4px 3px' : '2px 3px',
       '& .MuiTypography-root': {
         textAlign: 'right',
         width: '100%'
@@ -344,15 +360,15 @@ function FTokenRow({
           : '0 4px 16px rgba(145, 158, 171, 0.16)'
       },
       '& .MuiTypography-root': {
-        fontSize: isMobile ? '12px' : '14px',
+        fontSize: isMobile ? '11px' : '14px',
         fontWeight: '500'
       },
       '& .MuiTableCell-root': {
-        padding: isMobile ? '12px 8px' : '16px 12px',
+        padding: isMobile ? '6px 4px' : '16px 12px',
         whiteSpace: 'nowrap',
         borderBottom: 'none',
         '&:not(:first-of-type)': {
-          paddingLeft: '8px'
+          paddingLeft: isMobile ? '4px' : '8px'
         }
       }
     }),
@@ -367,25 +383,15 @@ function FTokenRow({
         left: 0,
         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
-        width: '24px',
-        minWidth: '24px',
-        padding: '16px 8px'
+        width: isMobile ? '20px' : '24px',
+        minWidth: isMobile ? '20px' : '24px',
+        padding: isMobile ? '6px 4px' : '16px 8px'
       },
       second: {
+        p: isMobile ? '6px 4px' : '16px 12px',
         position: 'sticky',
         zIndex: 1001,
-        left: '24px',
-        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
-        width: '32px',
-        minWidth: '32px',
-        padding: '16px 8px'
-      },
-      third: {
-        p: isMobile ? '12px 8px' : '16px 12px',
-        position: 'sticky',
-        zIndex: 1001,
-        left: isMobile ? '24px' : '56px',
+        left: isMobile ? '20px' : '24px',
         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
         '&:before': scrollLeft
@@ -409,12 +415,12 @@ function FTokenRow({
 
   const dateTypographyStyle = useMemo(
     () => ({
-      fontSize: isMobile ? '0.5rem' : '0.65rem',
+      fontSize: isMobile ? '0.45rem' : '0.65rem',
       color: darkMode ? '#666' : '#888',
       lineHeight: 1,
       display: 'flex',
       alignItems: 'center',
-      gap: '4px',
+      gap: isMobile ? '3px' : '4px',
       justifyContent: 'flex-end'
     }),
     [darkMode, isMobile]
@@ -520,17 +526,24 @@ function FTokenRow({
           </Tooltip>
         )}
       </TableCell>
-      {!isMobile && (
-        <TableCell align="left" sx={stickyCellStyles.second}>
-          {idx + 1}
-        </TableCell>
-      )}
-      <TableCell align="left" sx={stickyCellStyles.third}>
-        <Stack direction="row" alignItems="center" spacing={0.5}>
+      <TableCell align="left" sx={stickyCellStyles.second}>
+        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: '600',
+              fontSize: isMobile ? '12px' : '16px',
+              color: darkMode ? '#919EAB' : '#637381',
+              minWidth: isMobile ? '20px' : '30px',
+              textAlign: 'center'
+            }}
+          >
+            {idx + 1}
+          </Typography>
           <Box
             sx={{
-              width: 56,
-              height: 56,
+              width: isMobile ? 30 : 56,
+              height: isMobile ? 30 : 56,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -541,10 +554,10 @@ function FTokenRow({
                 <Image
                   src={imgSrc}
                   alt={`${user} ${name} Logo`}
-                  width={38}
-                  height={38}
+                  width={isMobile ? 20 : 38}
+                  height={isMobile ? 20 : 38}
                   priority
-                  style={{ objectFit: 'cover', borderRadius: '8px' }}
+                  style={{ objectFit: 'cover', borderRadius: isMobile ? '4px' : '8px' }}
                   onError={handleImgError}
                 />
               </AdminImageWrapper>
@@ -553,10 +566,10 @@ function FTokenRow({
                 <Image
                   src={imgSrc}
                   alt={`${user} ${name} Logo`}
-                  width={38}
-                  height={38}
+                  width={isMobile ? 20 : 38}
+                  height={isMobile ? 20 : 38}
                   priority
-                  style={{ objectFit: 'cover', borderRadius: '8px' }}
+                  style={{ objectFit: 'cover', borderRadius: isMobile ? '4px' : '8px' }}
                   onError={handleImgError}
                 />
               </TokenImageWrapper>
@@ -568,15 +581,15 @@ function FTokenRow({
             href={`/token/${slug}`}
             rel="noreferrer noopener nofollow"
           >
-            <Stack direction="column" spacing={0.5}>
+            <Stack direction="column" spacing={isMobile ? 0.2 : 0.5}>
               <Typography
                 variant="token"
                 sx={{
                   fontWeight: '700',
-                  fontSize: isMobile ? '14px' : '16px',
+                  fontSize: isMobile ? '12px' : '16px',
                   lineHeight: 1.2,
-                  width: isMobile ? '100px' : '140px',
-                  minWidth: isMobile ? '100px' : '140px',
+                  width: isMobile ? '80px' : '140px',
+                  minWidth: isMobile ? '80px' : '140px',
                   letterSpacing: '-0.02em'
                 }}
                 color={
@@ -592,57 +605,45 @@ function FTokenRow({
                 }
                 noWrap={!isMobile}
               >
-                {truncate(name, isMobile ? 12 : 16)}
+                {truncate(name, isMobile ? 10 : 16)}
               </Typography>
-              <Stack
-                direction={isMobile ? 'column' : 'row'}
-                spacing={0.5}
-                alignItems={isMobile ? 'flex-start' : 'center'}
-              >
+              <Stack direction="row" spacing={isMobile ? 0.3 : 0.5} alignItems="center">
                 <Typography
                   variant="p2"
                   sx={{
                     fontWeight: '500',
-                    fontSize: isMobile ? '12px' : '13px',
+                    fontSize: isMobile ? '10px' : '13px',
                     lineHeight: 1.2,
                     color: darkMode ? '#919EAB' : '#637381',
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
+                    alignItems: 'center'
                   }}
                   color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#212B36') : ''}
                   noWrap={!isMobile}
                 >
-                  {isMobile && (
-                    <span style={{ ...badge24hStyle, fontSize: '10px', padding: '2px 6px' }}>
-                      {id}
-                    </span>
-                  )}
-                  {truncate(user, isMobile ? 14 : 18)}
+                  {truncate(user, isMobile ? 8 : 18)}
                 </Typography>
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
-                  {origin && (
-                    <>
-                      <Tooltip title="Blackholed Issuer">
-                        <LockIcon sx={{ fontSize: isMobile ? '14px' : '16px', color: '#00AB55' }} />
+                <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
+                {origin && (
+                  <>
+                    <Tooltip title="Blackholed Issuer">
+                      <LockIcon sx={{ fontSize: isMobile ? '10px' : '12px', color: '#00AB55' }} />
+                    </Tooltip>
+                    {origin === 'xrp.fun' ? (
+                      <Tooltip title="Liquidity Pool Not Burned">
+                        <ElectricBoltIcon
+                          sx={{ fontSize: isMobile ? '10px' : '12px', color: '#FF5630' }}
+                        />
                       </Tooltip>
-                      {origin === 'xrp.fun' ? (
-                        <Tooltip title="Liquidity Pool Not Burned">
-                          <ElectricBoltIcon
-                            sx={{ fontSize: isMobile ? '14px' : '16px', color: '#FF5630' }}
-                          />
-                        </Tooltip>
-                      ) : (
-                        <Tooltip title="Burned Liquidity Pool">
-                          <LocalFireDepartmentIcon
-                            sx={{ fontSize: isMobile ? '14px' : '16px', color: '#1890FF' }}
-                          />
-                        </Tooltip>
-                      )}
-                    </>
-                  )}
-                </Stack>
+                    ) : (
+                      <Tooltip title="Burned Liquidity Pool">
+                        <LocalFireDepartmentIcon
+                          sx={{ fontSize: isMobile ? '10px' : '12px', color: '#1890FF' }}
+                        />
+                      </Tooltip>
+                    )}
+                  </>
+                )}
               </Stack>
             </Stack>
           </Link>
@@ -652,7 +653,8 @@ function FTokenRow({
         align="right"
         sx={{
           color: priceColor,
-          padding: isMobile ? '12px 8px' : '16px 12px'
+          padding: isMobile ? '6px 4px' : '16px 12px',
+          marginLeft: isMobile ? '12px' : '0px'
         }}
       >
         <TransitionTypo
@@ -660,7 +662,7 @@ function FTokenRow({
           noWrap={!isMobile}
           sx={{
             fontWeight: '600',
-            fontSize: isMobile ? '14px' : '16px'
+            fontSize: isMobile ? '12px' : '16px'
           }}
         >
           <NumberTooltip
@@ -696,13 +698,13 @@ function FTokenRow({
       <TableCell
         align="right"
         sx={{
-          padding: isMobile ? '12px 8px' : '16px 12px'
+          padding: isMobile ? '9px 4px' : '16px 12px'
         }}
       >
         <Typography
           variant="caption"
           sx={{
-            fontSize: isMobile ? '11px' : '12px',
+            fontSize: isMobile ? '9px' : '12px',
             fontWeight: '500'
           }}
         >
@@ -845,23 +847,32 @@ function FTokenRow({
         align="right"
         sx={{
           px: '0 !important',
-          width: '160px',
-          minWidth: '160px',
-          pr: '24px !important',
-          pl: '24px !important',
-          py: '12px !important'
+          width: isMobile ? '120px' : '160px',
+          minWidth: isMobile ? '120px' : '160px',
+          pr: isMobile ? '12px !important' : '24px !important',
+          pl: isMobile ? '12px !important' : '24px !important',
+          py: isMobile ? '6px !important' : '12px !important'
         }}
       >
         <LazyLoadComponent
           threshold={100}
-          placeholder={<Box sx={{ width: 160, height: 48, minWidth: 160, minHeight: 48 }} />}
+          placeholder={
+            <Box
+              sx={{
+                width: isMobile ? 120 : 160,
+                height: isMobile ? 34 : 48,
+                minWidth: isMobile ? 120 : 160,
+                minHeight: isMobile ? 34 : 48
+              }}
+            />
+          }
         >
           <Box
             sx={{
-              width: 160,
-              height: 48,
-              minWidth: 160,
-              minHeight: 48,
+              width: isMobile ? 120 : 160,
+              height: isMobile ? 34 : 48,
+              minWidth: isMobile ? 120 : 160,
+              minHeight: isMobile ? 34 : 48,
               position: 'relative',
               zIndex: 1
             }}
@@ -871,8 +882,8 @@ function FTokenRow({
               style={{ width: '100%', height: '100%' }}
               opts={{
                 renderer: 'svg',
-                width: 160,
-                height: 48,
+                width: isMobile ? 120 : 160,
+                height: isMobile ? 34 : 48,
                 animation: false,
                 transitions: false,
                 duration: 0
@@ -884,14 +895,19 @@ function FTokenRow({
       <TableCell
         align="right"
         sx={{
-          width: '80px',
-          minWidth: '80px',
-          pl: '24px !important',
-          pr: '16px !important',
-          py: '12px !important'
+          width: isMobile ? '60px' : '80px',
+          minWidth: isMobile ? '60px' : '80px',
+          pl: isMobile ? '12px !important' : '24px !important',
+          pr: isMobile ? '8px !important' : '16px !important',
+          py: isMobile ? '6px !important' : '12px !important'
         }}
       >
-        <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end">
+        <Stack
+          direction="row"
+          spacing={isMobile ? 0.4 : 1}
+          alignItems="center"
+          justifyContent="flex-end"
+        >
           <Tooltip
             title="Set Trustline"
             componentsProps={{
@@ -904,8 +920,8 @@ function FTokenRow({
           >
             <Box
               sx={{
-                p: 1,
-                borderRadius: '8px',
+                p: isMobile ? 0.4 : 1,
+                borderRadius: isMobile ? '6px' : '8px',
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
                   backgroundColor: darkMode
@@ -919,7 +935,7 @@ function FTokenRow({
                 onClick={handleSetTrustline}
                 sx={{
                   cursor: 'pointer',
-                  fontSize: '20px',
+                  fontSize: isMobile ? '16px' : '20px',
                   color: darkMode ? '#919EAB' : '#637381',
                   '&:hover': {
                     color: theme.palette.primary.main
@@ -941,8 +957,8 @@ function FTokenRow({
             >
               <Box
                 sx={{
-                  p: 1,
-                  borderRadius: '8px',
+                  p: isMobile ? 0.4 : 1,
+                  borderRadius: isMobile ? '6px' : '8px',
                   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
                     backgroundColor: darkMode
@@ -959,7 +975,7 @@ function FTokenRow({
                   }}
                   sx={{
                     cursor: 'pointer',
-                    fontSize: '20px',
+                    fontSize: isMobile ? '16px' : '20px',
                     color: darkMode ? '#919EAB' : '#637381',
                     '&:hover': {
                       color: theme.palette.warning.main

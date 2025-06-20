@@ -114,6 +114,13 @@ const RootStyle = styled(Box)(({ theme }) => ({
   backdropFilter: 'blur(20px)',
   padding: theme.spacing(1, 0),
   position: 'relative',
+  // Mobile compact styling
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(0.5, 0)
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(0.25, 0)
+  },
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -159,18 +166,38 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     borderRadius: '8px',
     height: '28px',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    // Mobile compact styling
+    [theme.breakpoints.down('md')]: {
+      margin: theme.spacing(0.2),
+      height: '24px',
+      borderRadius: '6px'
+    },
+    [theme.breakpoints.down('sm')]: {
+      margin: theme.spacing(0.1),
+      height: '22px',
+      borderRadius: '4px'
+    },
     [`&.${toggleButtonGroupClasses.disabled}`]: {
       border: 0
     },
     '&:hover': {
       transform: 'translateY(-1px)',
-      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
+      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
+      // Reduce hover effects on mobile
+      [theme.breakpoints.down('sm')]: {
+        transform: 'none',
+        boxShadow: `0 2px 6px ${alpha(theme.palette.common.black, 0.06)}`
+      }
     },
     '&.Mui-selected': {
       background: 'transparent',
       color: theme.palette.primary.main,
       boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.06)}`,
-      border: `1px solid ${alpha(theme.palette.divider, 0.15)} !important`
+      border: `1px solid ${alpha(theme.palette.divider, 0.15)} !important`,
+      // Mobile selected state
+      [theme.breakpoints.down('sm')]: {
+        boxShadow: `0 1px 4px ${alpha(theme.palette.common.black, 0.04)}`
+      }
     }
   },
   [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]: {
@@ -194,6 +221,17 @@ const getEnhancedChipStyles = (theme, isActive, color, isLoading) => ({
   fontSize: '0.875rem',
   letterSpacing: '-0.01em',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  // Mobile compact styling
+  [theme.breakpoints.down('md')]: {
+    height: '28px',
+    fontSize: '0.8125rem',
+    borderRadius: '10px'
+  },
+  [theme.breakpoints.down('sm')]: {
+    height: '26px',
+    fontSize: '0.75rem',
+    borderRadius: '8px'
+  },
   background: isActive
     ? 'transparent'
     : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
@@ -212,15 +250,30 @@ const getEnhancedChipStyles = (theme, isActive, color, isLoading) => ({
     transform: 'translateY(-2px)',
     boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.12)}`,
     background: 'transparent',
-    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
+    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+    // Reduce hover effects on mobile
+    [theme.breakpoints.down('sm')]: {
+      transform: 'translateY(-1px)',
+      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
+    }
   },
   '& .MuiChip-label': {
     px: 2,
-    fontWeight: 600
+    fontWeight: 600,
+    // Mobile compact label
+    [theme.breakpoints.down('sm')]: {
+      px: 1.5,
+      fontWeight: 500
+    }
   },
   '& .MuiChip-icon': {
     fontSize: '18px',
-    marginLeft: '8px'
+    marginLeft: '8px',
+    // Mobile compact icon
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '16px',
+      marginLeft: '6px'
+    }
   },
   '@keyframes spin': {
     '0%': { transform: 'rotate(0deg)' },
@@ -312,10 +365,61 @@ export default function SearchToolbar({
     trendingCategories: false
   });
 
+  // Add ref for tabs to control scroll position
+  const tabsRef = useRef(null);
+
   // Update tagValue only when tags or tagName changes to prevent unnecessary re-renders
   useEffect(() => {
     setTagValue(getTagValue(tags, tagName));
   }, [tags, tagName]);
+
+  // Ensure tabs scroll to beginning to show Tokens tab on mount and when tagValue is 0
+  useEffect(() => {
+    if (tabsRef.current && (tagValue === 0 || !tagName)) {
+      // Small delay to ensure tabs are rendered
+      setTimeout(() => {
+        // Try multiple approaches to ensure the first tab is visible
+        const tabsContainer = tabsRef.current.querySelector('.MuiTabs-scroller');
+        const firstTab = tabsRef.current.querySelector('.MuiTab-root');
+
+        if (tabsContainer) {
+          tabsContainer.scrollLeft = 0;
+          tabsContainer.scrollTo({ left: 0, behavior: 'smooth' });
+        }
+
+        // Also try using the first tab's scrollIntoView
+        if (firstTab) {
+          firstTab.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'start'
+          });
+        }
+      }, 100);
+    }
+  }, [tagValue, tagName]);
+
+  // Also ensure scroll to beginning on initial mount
+  useEffect(() => {
+    if (tabsRef.current) {
+      setTimeout(() => {
+        const tabsContainer = tabsRef.current.querySelector('.MuiTabs-scroller');
+        const firstTab = tabsRef.current.querySelector('.MuiTab-root');
+
+        if (tabsContainer) {
+          tabsContainer.scrollLeft = 0;
+        }
+
+        if (firstTab) {
+          firstTab.scrollIntoView({
+            behavior: 'auto',
+            block: 'nearest',
+            inline: 'start'
+          });
+        }
+      }, 200);
+    }
+  }, []);
 
   // Get current sorting period from URL
   const currentPeriod = router.query.sort;
@@ -578,38 +682,6 @@ export default function SearchToolbar({
 
   return (
     <>
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={1}
-        sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}
-      >
-        <Link
-          underline="none"
-          color="inherit"
-          href={`/watchlist`}
-          rel="noreferrer noopener nofollow"
-        >
-          <Chip
-            variant={'outlined'}
-            icon={<StarOutlineIcon fontSize="small" />}
-            label={'Watchlist'}
-            onClick={() => {}}
-            sx={mobileChipStyles}
-          />
-        </Link>
-
-        <Chip
-          variant={'outlined'}
-          icon={<TroubleshootIcon fontSize="small" />}
-          label={'Portfolio'}
-          onClick={() => {
-            openSnackbar('Coming soon!', 'success');
-          }}
-          sx={mobileChipStyles}
-        />
-      </Stack>
-
       <RootStyle>
         {/* Enhanced Toggle Button Group */}
         <Paper
@@ -620,6 +692,15 @@ export default function SearchToolbar({
             flexWrap: 'wrap',
             borderRadius: '16px',
             padding: '4px',
+            // Mobile compact styling
+            [theme.breakpoints.down('md')]: {
+              borderRadius: '12px',
+              padding: '3px'
+            },
+            [theme.breakpoints.down('sm')]: {
+              borderRadius: '8px',
+              padding: '2px'
+            },
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.9
@@ -659,12 +740,28 @@ export default function SearchToolbar({
             },
             '& .MuiTabs-flexContainer': {
               justifyContent: 'flex-start',
-              gap: '8px'
+              gap: '8px',
+              // Mobile compact gap
+              [theme.breakpoints.down('md')]: {
+                gap: '6px'
+              },
+              [theme.breakpoints.down('sm')]: {
+                gap: '4px'
+              }
             },
             '& .MuiTab-root': {
               minHeight: '36px',
               padding: '0 6px',
-              minWidth: 'unset'
+              minWidth: 'unset',
+              // Mobile compact tab
+              [theme.breakpoints.down('md')]: {
+                minHeight: '32px',
+                padding: '0 4px'
+              },
+              [theme.breakpoints.down('sm')]: {
+                minHeight: '28px',
+                padding: '0 3px'
+              }
             },
             '& .MuiTabs-scrollButtons': {
               '&.Mui-disabled': {
@@ -672,6 +769,7 @@ export default function SearchToolbar({
               }
             }
           }}
+          ref={tabsRef}
         >
           {/* Tokens Tab */}
           <Tab
@@ -906,6 +1004,11 @@ export default function SearchToolbar({
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             padding: '8px 12px',
+            // Compact styling for medium screens
+            [theme.breakpoints.down('lg')]: {
+              borderRadius: '10px',
+              padding: '6px 10px'
+            },
             border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
             boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.06)}`
           }}
@@ -954,6 +1057,15 @@ export default function SearchToolbar({
               mt: 1,
               minWidth: '160px',
               borderRadius: '16px',
+              // Mobile compact menu
+              [theme.breakpoints.down('md')]: {
+                borderRadius: '12px',
+                minWidth: '140px'
+              },
+              [theme.breakpoints.down('sm')]: {
+                borderRadius: '8px',
+                minWidth: '120px'
+              },
               background: `linear-gradient(135deg, ${alpha(
                 theme.palette.background.paper,
                 0.95
@@ -970,10 +1082,27 @@ export default function SearchToolbar({
                 borderRadius: '8px',
                 margin: '4px 8px',
                 transition: 'all 0.2s ease',
+                // Mobile compact menu items
+                [theme.breakpoints.down('md')]: {
+                  fontSize: '0.8125rem',
+                  minHeight: '36px',
+                  margin: '3px 6px',
+                  borderRadius: '6px'
+                },
+                [theme.breakpoints.down('sm')]: {
+                  fontSize: '0.75rem',
+                  minHeight: '32px',
+                  margin: '2px 4px',
+                  borderRadius: '4px'
+                },
                 '&:hover': {
                   background: 'transparent',
                   transform: 'translateX(4px)',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`
+                  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                  // Reduce hover effects on mobile
+                  [theme.breakpoints.down('sm')]: {
+                    transform: 'translateX(2px)'
+                  }
                 }
               }
             }
@@ -1017,6 +1146,15 @@ export default function SearchToolbar({
               mt: 1,
               minWidth: '180px',
               borderRadius: '16px',
+              // Mobile compact menu
+              [theme.breakpoints.down('md')]: {
+                borderRadius: '12px',
+                minWidth: '160px'
+              },
+              [theme.breakpoints.down('sm')]: {
+                borderRadius: '8px',
+                minWidth: '140px'
+              },
               background: `linear-gradient(135deg, ${alpha(
                 theme.palette.background.paper,
                 0.95
@@ -1034,10 +1172,27 @@ export default function SearchToolbar({
                 borderRadius: '8px',
                 margin: '4px 8px',
                 transition: 'all 0.2s ease',
+                // Mobile compact menu items
+                [theme.breakpoints.down('md')]: {
+                  fontSize: '0.8125rem',
+                  minHeight: '36px',
+                  margin: '3px 6px',
+                  borderRadius: '6px'
+                },
+                [theme.breakpoints.down('sm')]: {
+                  fontSize: '0.75rem',
+                  minHeight: '32px',
+                  margin: '2px 4px',
+                  borderRadius: '4px'
+                },
                 '&:hover': {
                   background: 'transparent',
                   transform: 'translateX(4px)',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`
+                  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                  // Reduce hover effects on mobile
+                  [theme.breakpoints.down('sm')]: {
+                    transform: 'translateX(2px)'
+                  }
                 }
               }
             }
