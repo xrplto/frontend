@@ -1131,19 +1131,6 @@ export default function UserDesc({ token }) {
         position: 'relative',
         overflow: 'hidden',
         backdropFilter: 'blur(8px)',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '1px',
-          background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
-            theme.palette.success.main,
-            0.4
-          )}, ${alpha(theme.palette.info.main, 0.4)})`,
-          opacity: 0.6
-        },
         '&::after': {
           content: '""',
           position: 'absolute',
@@ -1739,18 +1726,19 @@ export default function UserDesc({ token }) {
                   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                   position: 'relative',
                   overflow: 'hidden',
-                  '&::before': {
+                  backdropFilter: 'blur(8px)',
+                  '&::after': {
                     content: '""',
                     position: 'absolute',
                     top: 0,
                     left: 0,
                     right: 0,
-                    height: '1px',
-                    background: `linear-gradient(90deg, 
-                      ${alpha(theme.palette.primary.main, 0.3)}, 
-                      ${alpha(theme.palette.success.main, 0.3)}, 
-                      ${alpha(theme.palette.info.main, 0.3)})`,
-                    opacity: 0.6
+                    bottom: 0,
+                    background: `radial-gradient(circle at top right, 
+                      ${alpha(theme.palette.primary.main, 0.03)} 0%, 
+                      transparent 50%
+                    )`,
+                    pointerEvents: 'none'
                   }
                 }}
               >

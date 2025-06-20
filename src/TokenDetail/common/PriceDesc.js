@@ -165,20 +165,7 @@ export default function PriceDesc({ token }) {
         border: `1px solid ${alpha(theme.palette.primary.main, 0.05)}`,
         boxShadow: `0 1px 4px ${alpha(theme.palette.common.black, 0.02)}`,
         position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '1px',
-          background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
-            theme.palette.success.main,
-            0.4
-          )}, ${alpha(theme.palette.info.main, 0.4)})`,
-          opacity: 0.6
-        }
+        overflow: 'hidden'
       }}
       role="region"
       aria-label="Token price information"
@@ -199,7 +186,7 @@ export default function PriceDesc({ token }) {
               <Typography
                 component="h1"
                 sx={{
-                  fontSize: { xs: '0.5rem', sm: '0.525rem' },
+                  fontSize: { xs: '0.75rem', sm: '0.85rem' },
                   fontWeight: 600,
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
                   backgroundClip: 'text',
@@ -217,7 +204,7 @@ export default function PriceDesc({ token }) {
                 <Typography
                   component="span"
                   sx={{
-                    fontSize: { xs: '0.45rem', sm: '0.475rem' },
+                    fontSize: { xs: '0.65rem', sm: '0.75rem' },
                     fontWeight: 500,
                     color: alpha(theme.palette.text.secondary, 0.7),
                     background: 'none',
@@ -233,9 +220,9 @@ export default function PriceDesc({ token }) {
                 noWrap
                 component="h2"
                 sx={{
-                  fontSize: { xs: '1.65rem', sm: '1.9rem', md: '2.15rem' },
+                  fontSize: { xs: '1.85rem', sm: '2.2rem', md: '2.5rem' },
                   fontWeight: 800,
-                  letterSpacing: '-0.02em',
+                  letterSpacing: '-0.03em',
                   background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${alpha(
                     theme.palette.success.main,
                     0.8
@@ -243,7 +230,7 @@ export default function PriceDesc({ token }) {
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  lineHeight: 1.1
+                  lineHeight: 1
                 }}
               >
                 <NumberTooltip
