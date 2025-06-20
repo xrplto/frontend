@@ -1,11 +1,33 @@
 import { useState } from 'react';
-import { Box, Typography, Modal, Stack, Link, IconButton } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Modal,
+  Stack,
+  Link,
+  IconButton,
+  Divider,
+  Chip,
+  Paper,
+  useTheme
+} from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
 // Icons
 import LinkIcon from '@mui/icons-material/Link';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import StarIcon from '@mui/icons-material/Star';
+import HistoryIcon from '@mui/icons-material/History';
+import CloseIcon from '@mui/icons-material/Close';
 
 // Utils
 import { fNumber, fPercent } from 'src/utils/formatNumber';
+import { format } from 'date-fns';
 
 // Recharts
 import {
@@ -22,6 +44,7 @@ import {
 } from 'recharts';
 
 export const DailyVolumeChart = ({ data }) => {
+  const theme = useTheme();
   const [interval, setInterval] = useState('all');
 
   // Filter data based on selected interval
@@ -90,155 +113,414 @@ export const DailyVolumeChart = ({ data }) => {
     return Math.ceil(chartData.length / 10);
   };
 
+  const intervalOptions = [
+    { value: '24h', label: '24H', color: theme.palette.error.main },
+    { value: '7d', label: '7D', color: theme.palette.success.main },
+    { value: '30d', label: '30D', color: theme.palette.primary.main },
+    { value: 'all', label: 'ALL', color: theme.palette.info.main }
+  ];
+
   return (
-    <>
-      <Box sx={{ display: 'flex', gap: 0.5, mb: 1 }}>
-        {['24h', '7d', '30d', 'all'].map((option) => (
+    <Box>
+      {/* Enhanced Time Interval Selector */}
+      <Box sx={{ display: 'flex', gap: 0.75, mb: 2, justifyContent: 'center' }}>
+        {intervalOptions.map((option) => (
           <Box
-            key={option}
-            onClick={() => setInterval(option)}
+            key={option.value}
+            onClick={() => setInterval(option.value)}
             sx={{
-              px: 1.5,
-              py: 0.25,
-              borderRadius: 1,
+              px: 2,
+              py: 1,
+              borderRadius: 2,
               cursor: 'pointer',
-              bgcolor: interval === option ? 'primary.main' : 'action.hover',
-              color: interval === option ? 'primary.contrastText' : 'text.primary',
+              position: 'relative',
+              background:
+                interval === option.value
+                  ? `linear-gradient(135deg, ${alpha(option.color, 0.15)} 0%, ${alpha(
+                      option.color,
+                      0.08
+                    )} 100%)`
+                  : `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.8
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+              backdropFilter: 'blur(10px)',
+              border: '2px solid',
+              borderColor:
+                interval === option.value ? option.color : alpha(theme.palette.divider, 0.2),
+              color: interval === option.value ? option.color : theme.palette.text.secondary,
+              fontWeight: interval === option.value ? 700 : 500,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              transform: interval === option.value ? 'scale(1.05)' : 'scale(1)',
+              boxShadow:
+                interval === option.value
+                  ? `0 4px 16px ${alpha(option.color, 0.25)}`
+                  : `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
               '&:hover': {
-                bgcolor: interval === option ? 'primary.dark' : 'action.selected'
+                transform: 'scale(1.05)',
+                borderColor: option.color,
+                color: option.color,
+                background: `linear-gradient(135deg, ${alpha(option.color, 0.12)} 0%, ${alpha(
+                  option.color,
+                  0.06
+                )} 100%)`,
+                boxShadow: `0 4px 16px ${alpha(option.color, 0.2)}`
+              },
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                borderRadius: 2,
+                background:
+                  interval === option.value
+                    ? `linear-gradient(135deg, ${alpha(option.color, 0.08)} 0%, transparent 100%)`
+                    : 'transparent',
+                zIndex: -1
               }
             }}
           >
-            <Typography variant="caption" sx={{ textTransform: 'uppercase', fontSize: '0.7rem' }}>
-              {option === 'all' ? 'All Time' : option}
+            <Typography
+              variant="caption"
+              sx={{
+                textTransform: 'uppercase',
+                fontSize: '0.75rem',
+                fontWeight: 'inherit',
+                letterSpacing: '0.5px'
+              }}
+            >
+              {option.label}
             </Typography>
           </Box>
         ))}
       </Box>
-      <Box sx={{ width: '100%', height: 250 }}>
+
+      {/* Enhanced Chart Container */}
+      <Box
+        sx={{
+          width: '100%',
+          height: 260,
+          background: `linear-gradient(135deg, ${alpha(
+            theme.palette.background.paper,
+            0.8
+          )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+          backdropFilter: 'blur(20px)',
+          borderRadius: 2,
+          padding: 2,
+          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`
+        }}
+      >
         <ResponsiveContainer>
-          <ComposedChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" />
+          <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+            {/* Enhanced Grid */}
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={alpha(theme.palette.divider, 0.15)}
+              strokeWidth={1}
+            />
+
+            {/* Enhanced X-Axis */}
             <XAxis
               dataKey="date"
               angle={-45}
               textAnchor="end"
-              height={60}
+              height={80}
               interval={calculateInterval()}
               tickFormatter={formatDate}
-              tick={{ fontSize: 9 }}
+              tick={{
+                fontSize: 10,
+                fill: alpha(theme.palette.text.secondary, 0.8),
+                fontWeight: 500
+              }}
+              axisLine={{ stroke: alpha(theme.palette.text.secondary, 0.8), strokeWidth: 1 }}
+              tickLine={{ stroke: alpha(theme.palette.text.secondary, 0.8), strokeWidth: 1 }}
             />
+
+            {/* Enhanced Y-Axes */}
             <YAxis
               yAxisId="left"
-              tick={{ fontSize: 9 }}
-              tickFormatter={(value) => `${value.toFixed(0)} XRP`}
-              width={70}
+              tick={{
+                fontSize: 10,
+                fill: alpha(theme.palette.text.secondary, 0.8),
+                fontWeight: 500
+              }}
+              tickFormatter={(value) => `${fNumber(value)}`}
+              width={80}
+              axisLine={{ stroke: alpha(theme.palette.text.secondary, 0.8), strokeWidth: 1 }}
+              tickLine={{ stroke: alpha(theme.palette.text.secondary, 0.8), strokeWidth: 1 }}
               label={{
                 value: 'Volume (XRP)',
                 angle: -90,
                 position: 'insideLeft',
                 offset: 10,
-                style: { fontSize: '10px' }
+                style: {
+                  fontSize: '11px',
+                  fill: alpha(theme.palette.text.secondary, 0.9),
+                  fontWeight: 600
+                }
               }}
             />
+
             <YAxis
               yAxisId="right"
               orientation="right"
-              tick={{ fontSize: 9 }}
-              tickFormatter={(value) => `${value.toFixed(0)} XRP`}
-              width={70}
+              tick={{
+                fontSize: 10,
+                fill: alpha(theme.palette.text.secondary, 0.8),
+                fontWeight: 500
+              }}
+              tickFormatter={(value) => `${fNumber(value)}`}
+              width={80}
+              axisLine={{ stroke: alpha(theme.palette.text.secondary, 0.8), strokeWidth: 1 }}
+              tickLine={{ stroke: alpha(theme.palette.text.secondary, 0.8), strokeWidth: 1 }}
               label={{
                 value: 'Profit (XRP)',
                 angle: 90,
                 position: 'insideRight',
                 offset: 10,
-                style: { fontSize: '10px' }
+                style: {
+                  fontSize: '11px',
+                  fill: alpha(theme.palette.text.secondary, 0.9),
+                  fontWeight: 600
+                }
               }}
             />
+
             <YAxis
               yAxisId="price"
               orientation="right"
-              tick={{ fontSize: 9 }}
-              tickFormatter={(value) => `${value.toFixed(6)} XRP`}
+              tick={{
+                fontSize: 10,
+                fill: alpha(theme.palette.text.secondary, 0.8),
+                fontWeight: 500
+              }}
+              tickFormatter={(value) => `${fNumber(value, 6)}`}
               width={90}
+              axisLine={{ stroke: alpha(theme.palette.text.secondary, 0.8), strokeWidth: 1 }}
+              tickLine={{ stroke: alpha(theme.palette.text.secondary, 0.8), strokeWidth: 1 }}
               label={{
                 value: 'Price (XRP)',
                 angle: 90,
                 position: 'insideRight',
                 offset: 25,
-                style: { fontSize: '10px' }
+                style: {
+                  fontSize: '11px',
+                  fill: alpha(theme.palette.text.secondary, 0.9),
+                  fontWeight: 600
+                }
               }}
             />
+
+            {/* Enhanced Tooltip */}
             <RechartsTooltip
               contentStyle={{
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                border: 'none',
-                borderRadius: '4px',
-                fontSize: '11px',
-                padding: '4px 8px'
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.background.paper,
+                  0.95
+                )} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                borderRadius: '12px',
+                fontSize: '12px',
+                padding: '16px',
+                boxShadow: `0 20px 40px ${alpha(theme.palette.common.black, 0.15)}`,
+                backdropFilter: 'blur(20px)',
+                color: theme.palette.text.primary
               }}
-              formatter={(value, name, props) => [
-                `${
-                  name === 'avgPrice'
-                    ? fNumber(value, 6)
-                    : name === 'cumulativeProfit'
-                    ? fNumber(value, 2)
-                    : fNumber(value)
-                } XRP`,
-                name === 'cumulativeProfit' ? 'Cumulative Profit' : name,
-                `Date: ${props.payload.fullDate.toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}`
-              ]}
+              labelStyle={{
+                color: theme.palette.text.primary,
+                fontWeight: 600,
+                marginBottom: '8px',
+                fontSize: '13px'
+              }}
+              formatter={(value, name, props) => {
+                const colors = {
+                  Buy: theme.palette.success.main,
+                  Sell: theme.palette.error.main,
+                  Profit: value >= 0 ? theme.palette.success.main : theme.palette.error.main,
+                  cumulativeProfit: theme.palette.info.main,
+                  avgPrice: theme.palette.primary.main
+                };
+
+                return [
+                  <span
+                    style={{
+                      color: colors[name] || theme.palette.text.primary,
+                      fontWeight: 600,
+                      fontSize: '12px'
+                    }}
+                  >
+                    {name === 'avgPrice' ? fNumber(value, 6) : fNumber(value)} XRP
+                  </span>,
+                  <span
+                    style={{
+                      color: colors[name] || theme.palette.text.primary,
+                      fontWeight: 500,
+                      fontSize: '11px'
+                    }}
+                  >
+                    {name === 'cumulativeProfit' ? 'Cumulative P&L' : name}
+                  </span>
+                ];
+              }}
+              labelFormatter={(label) => (
+                <div
+                  style={{
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    paddingBottom: '4px',
+                    marginBottom: '8px',
+                    color: theme.palette.text.primary
+                  }}
+                >
+                  📅{' '}
+                  {new Date(label).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </div>
+              )}
             />
+
+            {/* Enhanced Legend */}
             <Legend
-              wrapperStyle={{ fontSize: '9px' }}
+              wrapperStyle={{
+                fontSize: '11px',
+                paddingTop: '20px',
+                color: theme.palette.text.primary
+              }}
+              iconType="rect"
               payload={[
-                { value: 'Buy Volume (XRP)', type: 'rect', color: '#54D62C' },
-                { value: 'Sell Volume (XRP)', type: 'rect', color: '#FF6C40' },
-                { value: 'Daily Profit (XRP)', type: 'rect', color: '#8884d8' },
-                { value: 'Cumulative Profit (XRP)', type: 'line', color: '#82ca9d' },
-                { value: 'Avg Price (XRP)', type: 'line', color: '#2196F3' }
+                {
+                  value: 'Buy Volume',
+                  type: 'rect',
+                  color: theme.palette.success.main,
+                  payload: { strokeDasharray: '0' }
+                },
+                {
+                  value: 'Sell Volume',
+                  type: 'rect',
+                  color: theme.palette.error.main,
+                  payload: { strokeDasharray: '0' }
+                },
+                {
+                  value: 'Daily P&L',
+                  type: 'rect',
+                  color: theme.palette.warning.main,
+                  payload: { strokeDasharray: '0' }
+                },
+                {
+                  value: 'Cumulative P&L',
+                  type: 'line',
+                  color: theme.palette.info.main,
+                  payload: { strokeDasharray: '5 5' }
+                },
+                {
+                  value: 'Avg Price',
+                  type: 'line',
+                  color: theme.palette.primary.main,
+                  payload: { strokeDasharray: '3 3' }
+                }
               ]}
             />
-            <Bar dataKey="Buy" fill="#54D62C" stackId="stack" yAxisId="left" />
-            <Bar dataKey="Sell" fill="#FF6C40" stackId="stack" yAxisId="left" />
+
+            {/* Enhanced Bars with Gradients */}
+            <defs>
+              <linearGradient id="buyGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={theme.palette.success.main} stopOpacity={0.8} />
+                <stop offset="100%" stopColor={theme.palette.success.main} stopOpacity={0.3} />
+              </linearGradient>
+              <linearGradient id="sellGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={theme.palette.error.main} stopOpacity={0.8} />
+                <stop offset="100%" stopColor={theme.palette.error.main} stopOpacity={0.3} />
+              </linearGradient>
+              <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={theme.palette.warning.main} stopOpacity={0.8} />
+                <stop offset="100%" stopColor={theme.palette.warning.main} stopOpacity={0.3} />
+              </linearGradient>
+            </defs>
+
+            <Bar
+              dataKey="Buy"
+              fill="url(#buyGradient)"
+              stackId="stack"
+              yAxisId="left"
+              radius={[2, 2, 0, 0]}
+            />
+            <Bar
+              dataKey="Sell"
+              fill="url(#sellGradient)"
+              stackId="stack"
+              yAxisId="left"
+              radius={[2, 2, 0, 0]}
+            />
             <Bar
               dataKey="Profit"
-              fill={chartData.map((entry) => (entry.Profit >= 0 ? '#54D62C' : '#FF6C40'))}
+              fill="url(#profitGradient)"
               yAxisId="right"
               opacity={0.7}
+              radius={[2, 2, 2, 2]}
             />
+
+            {/* Enhanced Lines */}
             <Line
               type="monotone"
               dataKey="cumulativeProfit"
-              stroke="#82ca9d"
-              strokeWidth={2}
-              dot={false}
+              stroke={theme.palette.info.main}
+              strokeWidth={3}
+              dot={{
+                fill: theme.palette.info.main,
+                strokeWidth: 2,
+                stroke: theme.palette.background.paper,
+                r: 4
+              }}
+              activeDot={{
+                r: 6,
+                fill: theme.palette.info.main,
+                stroke: theme.palette.background.paper,
+                strokeWidth: 2,
+                filter: `drop-shadow(0 2px 4px ${alpha(theme.palette.info.main, 0.3)})`
+              }}
               yAxisId="right"
             />
             <Line
               type="monotone"
               dataKey="avgPrice"
-              stroke="#2196F3"
-              strokeWidth={1}
-              dot={false}
+              stroke={theme.palette.primary.main}
+              strokeWidth={2}
+              strokeDasharray="3 3"
+              dot={{
+                fill: theme.palette.primary.main,
+                strokeWidth: 2,
+                stroke: theme.palette.background.paper,
+                r: 3
+              }}
+              activeDot={{
+                r: 5,
+                fill: theme.palette.primary.main,
+                stroke: theme.palette.background.paper,
+                strokeWidth: 2,
+                filter: `drop-shadow(0 2px 4px ${alpha(theme.palette.primary.main, 0.3)})`
+              }}
               yAxisId="price"
             />
           </ComposedChart>
         </ResponsiveContainer>
       </Box>
-    </>
+    </Box>
   );
 };
 
 export const StatsModal = ({ open, onClose, account, traderStats }) => {
+  const theme = useTheme();
+
   if (!traderStats || !traderStats[account]) return null;
   const stats = traderStats[account];
 
   const formatDuration = (seconds) => {
+    if (seconds === 0 || seconds === null || seconds === undefined) return '-';
     const hours = Math.floor(seconds / 3600);
     const days = Math.floor(hours / 24);
     const months = Math.floor(days / 30);
@@ -247,10 +529,130 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
       return `${months}m`;
     } else if (days > 0) {
       return `${days}d`;
-    } else {
+    } else if (hours > 0) {
       return `${hours}h`;
+    } else {
+      const minutes = Math.floor((seconds % 3600) / 60);
+      if (minutes > 0) {
+        return `${minutes}min`;
+      } else {
+        return `<1min`;
+      }
     }
   };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    try {
+      return format(new Date(dateString), 'MMM d, yyyy');
+    } catch (error) {
+      return 'Invalid Date';
+    }
+  };
+
+  const StatCard = ({ title, icon, children, gradient = false }) => (
+    <Paper
+      elevation={2}
+      sx={{
+        p: 1.5,
+        borderRadius: 2,
+        background: gradient
+          ? `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(
+              theme.palette.success.main,
+              0.03
+            )} 100%)`
+          : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+              theme.palette.background.paper,
+              0.7
+            )} 100%)`,
+        backdropFilter: 'blur(20px)',
+        border: '1px solid',
+        borderColor: alpha(theme.palette.divider, 0.1),
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+        }
+      }}
+    >
+      <Stack direction="row" alignItems="center" spacing={0.75} mb={1.5}>
+        {icon}
+        <Typography
+          variant="subtitle2"
+          sx={{
+            fontWeight: 600,
+            color: theme.palette.text.primary,
+            textTransform: 'uppercase',
+            letterSpacing: '0.3px',
+            fontSize: '0.75rem'
+          }}
+        >
+          {title}
+        </Typography>
+      </Stack>
+      <Stack spacing={1}>{children}</Stack>
+    </Paper>
+  );
+
+  const StatRow = ({ label, value, color, isPercentage = false, isCurrency = true }) => (
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+        {label}
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          fontWeight: 600,
+          fontSize: '0.8rem',
+          color: color || theme.palette.text.primary
+        }}
+      >
+        {isCurrency ? fNumber(value) : isPercentage ? fPercent(value) : value}
+      </Typography>
+    </Box>
+  );
+
+  const ProfitChip = ({ value, label }) => (
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+        {label}
+      </Typography>
+      <Chip
+        label={fNumber(value)}
+        size="small"
+        icon={
+          value >= 0 ? (
+            <TrendingUpIcon sx={{ fontSize: 14 }} />
+          ) : (
+            <TrendingDownIcon sx={{ fontSize: 14 }} />
+          )
+        }
+        sx={{
+          bgcolor:
+            value >= 0
+              ? alpha(theme.palette.success.main, 0.1)
+              : alpha(theme.palette.error.main, 0.1),
+          color: value >= 0 ? theme.palette.success.main : theme.palette.error.main,
+          fontWeight: 600,
+          height: 22,
+          fontSize: '0.7rem',
+          border: `1px solid ${alpha(
+            value >= 0 ? theme.palette.success.main : theme.palette.error.main,
+            0.2
+          )}`,
+          '& .MuiChip-icon': {
+            color: value >= 0 ? theme.palette.success.main : theme.palette.error.main
+          }
+        }}
+      />
+    </Box>
+  );
+
+  const winRate =
+    stats.profitableTrades + stats.losingTrades > 0
+      ? (stats.profitableTrades / (stats.profitableTrades + stats.losingTrades)) * 100
+      : 0;
 
   return (
     <Modal
@@ -265,290 +667,428 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '90%',
-          maxWidth: 1000,
-          bgcolor: 'background.paper',
-          boxShadow: 24,
-          p: 1.5,
-          borderRadius: 2,
-          maxHeight: '90vh',
-          overflow: 'auto'
+          width: '95%',
+          maxWidth: 1200,
+          bgcolor: theme.palette.background.paper,
+          boxShadow: `0 24px 48px ${alpha(theme.palette.common.black, 0.2)}`,
+          borderRadius: 3,
+          maxHeight: '95vh',
+          overflow: 'auto',
+          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
         }}
       >
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
-          <Typography variant="subtitle1">
-            Trader Statistics for {account.substring(0, 20)}...
-          </Typography>
-          <Link
-            underline="none"
-            color="inherit"
-            target="_blank"
-            href={`https://bithomp.com/explorer/${account}`}
-            rel="noreferrer noopener nofollow"
-          >
-            <IconButton size="small" sx={{ p: 0.5 }}>
-              <LinkIcon fontSize="small" />
-            </IconButton>
-          </Link>
-        </Stack>
-
-        {/* Grid layout for all stats */}
+        {/* Compact Header */}
         <Box
           sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: 2,
-            mb: 2
+            p: 2,
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.info.main} 100%)`,
+            color: 'white',
+            borderRadius: '12px 12px 0 0',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `linear-gradient(135deg, ${alpha(
+                'rgb(255,255,255)',
+                0.1
+              )} 0%, transparent 50%, ${alpha('rgb(255,255,255)', 0.05)} 100%)`,
+              pointerEvents: 'none'
+            }
           }}
         >
-          {/* Performance Overview */}
-          <Box>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.25 }}>
+                Trader Analytics
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  opacity: 0.9,
+                  fontFamily: 'monospace',
+                  fontSize: '0.75rem',
+                  wordBreak: 'break-all'
+                }}
+              >
+                {account}
+              </Typography>
+            </Box>
+            <Stack direction="row" spacing={0.5}>
+              <Link
+                underline="none"
+                color="inherit"
+                target="_blank"
+                href={`https://bithomp.com/explorer/${account}`}
+                rel="noreferrer noopener nofollow"
+              >
+                <IconButton
+                  size="small"
+                  sx={{
+                    color: 'white',
+                    bgcolor: alpha('rgb(255,255,255)', 0.15),
+                    backdropFilter: 'blur(10px)',
+                    border: `1px solid ${alpha('rgb(255,255,255)', 0.2)}`,
+                    '&:hover': {
+                      bgcolor: alpha('rgb(255,255,255)', 0.25),
+                      transform: 'scale(1.05)'
+                    }
+                  }}
+                >
+                  <LinkIcon fontSize="small" />
+                </IconButton>
+              </Link>
+              <IconButton
+                onClick={onClose}
+                size="small"
+                sx={{
+                  color: 'white',
+                  bgcolor: alpha('rgb(255,255,255)', 0.15),
+                  backdropFilter: 'blur(10px)',
+                  border: `1px solid ${alpha('rgb(255,255,255)', 0.2)}`,
+                  '&:hover': {
+                    bgcolor: alpha('rgb(255,255,255)', 0.25),
+                    transform: 'scale(1.05)'
+                  }
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Stack>
+          </Stack>
+        </Box>
+
+        <Box sx={{ p: 2 }}>
+          {/* Compact KPI Cards */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+              gap: 1.5,
+              mb: 2
+            }}
+          >
+            <Paper
+              elevation={2}
+              sx={{
+                p: 1.5,
+                borderRadius: 2,
+                background:
+                  stats.roi >= 0
+                    ? `linear-gradient(135deg, ${alpha(
+                        theme.palette.success.main,
+                        0.15
+                      )} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`
+                    : `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.15)} 0%, ${alpha(
+                        theme.palette.error.main,
+                        0.08
+                      )} 100%)`,
+                backdropFilter: 'blur(20px)',
+                border: '1px solid',
+                borderColor:
+                  stats.roi >= 0
+                    ? alpha(theme.palette.success.main, 0.2)
+                    : alpha(theme.palette.error.main, 0.2),
+                boxShadow: `0 8px 32px ${alpha(
+                  stats.roi >= 0 ? theme.palette.success.main : theme.palette.error.main,
+                  0.12
+                )}`
+              }}
             >
-              PERFORMANCE OVERVIEW
-            </Typography>
-            <Stack spacing={0.25}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Win Rate:</Typography>
-                <Typography variant="caption">
-                  {(
-                    (stats.profitableTrades / (stats.profitableTrades + stats.losingTrades)) *
-                    100
-                  ).toFixed(1)}
-                  %
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Total Trades:</Typography>
-                <Typography variant="caption">{fNumber(stats.totalTrades)}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Total Volume:</Typography>
-                <Typography variant="caption">{fNumber(stats.totalVolume)}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">ROI:</Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ fontWeight: 600, fontSize: '0.65rem' }}
+              >
+                ROI
+              </Typography>
+              <Stack direction="row" alignItems="center" spacing={0.5} mt={0.5}>
+                {stats.roi >= 0 ? (
+                  <TrendingUpIcon sx={{ color: theme.palette.success.main, fontSize: 18 }} />
+                ) : (
+                  <TrendingDownIcon sx={{ color: theme.palette.error.main, fontSize: 18 }} />
+                )}
                 <Typography
-                  variant="caption"
-                  sx={{ color: stats.roi >= 0 ? '#54D62C' : '#FF6C40' }}
+                  variant="h6"
+                  sx={{
+                    fontWeight: 700,
+                    color: stats.roi >= 0 ? theme.palette.success.main : theme.palette.error.main,
+                    fontSize: '1.1rem'
+                  }}
                 >
                   {fPercent(stats.roi)}
                 </Typography>
-              </Box>
-            </Stack>
-          </Box>
+              </Stack>
+            </Paper>
 
-          {/* Trade Breakdown */}
-          <Box>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+            <Paper
+              elevation={2}
+              sx={{
+                p: 1.5,
+                borderRadius: 2,
+                background:
+                  winRate >= 50
+                    ? `linear-gradient(135deg, ${alpha(
+                        theme.palette.success.main,
+                        0.15
+                      )} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`
+                    : `linear-gradient(135deg, ${alpha(
+                        theme.palette.warning.main,
+                        0.15
+                      )} 0%, ${alpha(theme.palette.warning.main, 0.08)} 100%)`,
+                backdropFilter: 'blur(20px)',
+                border: '1px solid',
+                borderColor:
+                  winRate >= 50
+                    ? alpha(theme.palette.success.main, 0.2)
+                    : alpha(theme.palette.warning.main, 0.2),
+                boxShadow: `0 8px 32px ${alpha(
+                  winRate >= 50 ? theme.palette.success.main : theme.palette.warning.main,
+                  0.12
+                )}`
+              }}
             >
-              TRADE BREAKDOWN
-            </Typography>
-            <Stack spacing={0.25}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Buy Volume:</Typography>
-                <Typography variant="caption" sx={{ color: '#54D62C' }}>
-                  {fNumber(stats.buyVolume)}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Sell Volume:</Typography>
-                <Typography variant="caption" sx={{ color: '#FF6C40' }}>
-                  {fNumber(stats.sellVolume)}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Profitable Trades:</Typography>
-                <Typography variant="caption" sx={{ color: '#54D62C' }}>
-                  {fNumber(stats.profitableTrades)}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Losing Trades:</Typography>
-                <Typography variant="caption" sx={{ color: '#FF6C40' }}>
-                  {fNumber(stats.losingTrades)}
-                </Typography>
-              </Box>
-            </Stack>
-          </Box>
-
-          {/* Activity Metrics */}
-          <Box>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
-            >
-              ACTIVITY METRICS
-            </Typography>
-            <Stack spacing={0.25}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">24h Volume:</Typography>
-                <Typography variant="caption">{fNumber(stats.volume24h)}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">7d Volume:</Typography>
-                <Typography variant="caption">{fNumber(stats.volume7d)}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">2m Volume:</Typography>
-                <Typography variant="caption">{fNumber(stats.volume2m)}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Avg Hold Time:</Typography>
-                <Typography variant="caption">{formatDuration(stats.avgHoldingTime)}</Typography>
-              </Box>
-            </Stack>
-          </Box>
-
-          {/* Profit Metrics */}
-          <Box>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
-            >
-              PROFIT METRICS
-            </Typography>
-            <Stack spacing={0.25}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">24h Profit:</Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ fontWeight: 600, fontSize: '0.65rem' }}
+              >
+                WIN RATE
+              </Typography>
+              <Stack direction="row" alignItems="center" spacing={0.5} mt={0.5}>
+                <StarIcon
+                  sx={{
+                    color: winRate >= 50 ? theme.palette.success.main : theme.palette.warning.main,
+                    fontSize: 18
+                  }}
+                />
                 <Typography
-                  variant="caption"
-                  sx={{ color: stats.profit24h >= 0 ? '#54D62C' : '#FF6C40' }}
+                  variant="h6"
+                  sx={{
+                    fontWeight: 700,
+                    color: winRate >= 50 ? theme.palette.success.main : theme.palette.warning.main,
+                    fontSize: '1.1rem'
+                  }}
                 >
-                  {fNumber(stats.profit24h)}
+                  {winRate > 0 ? winRate.toFixed(1) + '%' : '-'}
                 </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">7d Profit:</Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: stats.profit7d >= 0 ? '#54D62C' : '#FF6C40' }}
-                >
-                  {fNumber(stats.profit7d)}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">2m Profit:</Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: stats.profit2m >= 0 ? '#54D62C' : '#FF6C40' }}
-                >
-                  {fNumber(stats.profit2m)}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Best Trade:</Typography>
-                <Typography variant="caption" sx={{ color: '#54D62C' }}>
-                  {fNumber(stats.maxProfitTrade)}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Worst Trade:</Typography>
-                <Typography variant="caption" sx={{ color: '#FF6C40' }}>
-                  {fNumber(Math.abs(stats.maxLossTrade))}
-                </Typography>
-              </Box>
-            </Stack>
-          </Box>
+              </Stack>
+            </Paper>
 
-          {/* Trade Activity */}
-          <Box>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+            <Paper
+              elevation={2}
+              sx={{
+                p: 1.5,
+                borderRadius: 2,
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.15
+                )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.12)}`
+              }}
             >
-              TRADE ACTIVITY
-            </Typography>
-            <Stack spacing={0.25}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">24h Trades:</Typography>
-                <Typography variant="caption">{fNumber(stats.trades24h)}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">7d Trades:</Typography>
-                <Typography variant="caption">{fNumber(stats.trades7d)}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">2m Trades:</Typography>
-                <Typography variant="caption">{fNumber(stats.trades2m)}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Market Share:</Typography>
-                <Typography variant="caption">{fPercent(stats.tradePercentage)}</Typography>
-              </Box>
-            </Stack>
-          </Box>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ fontWeight: 600, fontSize: '0.65rem' }}
+              >
+                VOLUME
+              </Typography>
+              <Stack direction="row" alignItems="center" spacing={0.5} mt={0.5}>
+                <ShowChartIcon sx={{ color: theme.palette.primary.main, fontSize: 18 }} />
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: '1.1rem' }}
+                >
+                  {fNumber(stats.totalVolume)}
+                </Typography>
+              </Stack>
+            </Paper>
 
-          {/* Trading History */}
-          <Box>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+            <Paper
+              elevation={2}
+              sx={{
+                p: 1.5,
+                borderRadius: 2,
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.info.main,
+                  0.15
+                )} 0%, ${alpha(theme.palette.info.main, 0.08)} 100%)`,
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                boxShadow: `0 8px 32px ${alpha(theme.palette.info.main, 0.12)}`
+              }}
             >
-              TRADING HISTORY
-            </Typography>
-            <Stack spacing={0.25}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">First Trade:</Typography>
-                <Typography variant="caption">
-                  {new Date(stats.firstTradeDate).toLocaleDateString()}
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ fontWeight: 600, fontSize: '0.65rem' }}
+              >
+                MARKET SHARE
+              </Typography>
+              <Stack direction="row" alignItems="center" spacing={0.5} mt={0.5}>
+                <AssessmentIcon sx={{ color: theme.palette.info.main, fontSize: 18 }} />
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 700, color: theme.palette.info.main, fontSize: '1.1rem' }}
+                >
+                  {fPercent(stats.tradePercentage)}
                 </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Last Trade:</Typography>
-                <Typography variant="caption">
-                  {new Date(stats.lastTradeDate).toLocaleDateString()}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Updated:</Typography>
-                <Typography variant="caption">
-                  {new Date(stats.updatedAt).toLocaleDateString()}
-                </Typography>
-              </Box>
-            </Stack>
+              </Stack>
+            </Paper>
           </Box>
-        </Box>
 
-        {/* Volume Chart */}
-        <Box>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+          {/* Compact Statistics Grid */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: 1.5,
+              mb: 2
+            }}
           >
-            TRADING HISTORY
-          </Typography>
-          {stats.dailyVolumes && stats.dailyVolumes.length > 0 && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: 'block', mb: 0.25, fontSize: '0.7rem' }}
+            <StatCard
+              title="Trade Summary"
+              icon={<AssessmentIcon sx={{ color: theme.palette.primary.main, fontSize: 16 }} />}
             >
-              {new Date(stats.firstTradeDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-              {' - '}
-              {new Date(stats.lastTradeDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </Typography>
-          )}
-          <DailyVolumeChart data={stats.dailyVolumes || []} />
+              <StatRow label="Total Trades" value={stats.totalTrades} isCurrency={false} />
+              <StatRow
+                label="Profitable"
+                value={stats.profitableTrades}
+                color={theme.palette.success.main}
+                isCurrency={false}
+              />
+              <StatRow
+                label="Losing"
+                value={stats.losingTrades}
+                color={theme.palette.error.main}
+                isCurrency={false}
+              />
+              <StatRow
+                label="Avg Hold"
+                value={formatDuration(stats.avgHoldingTime)}
+                isCurrency={false}
+              />
+            </StatCard>
+
+            <StatCard
+              title="P&L Analysis"
+              icon={<TrendingUpIcon sx={{ color: theme.palette.success.main, fontSize: 16 }} />}
+            >
+              <ProfitChip value={stats.profit24h} label="24h" />
+              <ProfitChip value={stats.profit7d} label="7d" />
+              <ProfitChip value={stats.profit1m || 0} label="1m" />
+              <ProfitChip value={stats.profit2m || 0} label="2m" />
+              <ProfitChip value={stats.profit3m || 0} label="3m" />
+            </StatCard>
+
+            <StatCard
+              title="Volume"
+              icon={<ShowChartIcon sx={{ color: theme.palette.info.main, fontSize: 16 }} />}
+            >
+              <StatRow label="24h" value={stats.volume24h} />
+              <StatRow label="7d" value={stats.volume7d} />
+              <StatRow label="1m" value={stats.volume1m || 0} />
+              <StatRow label="2m" value={stats.volume2m || 0} />
+              <StatRow label="Total" value={stats.totalVolume} />
+            </StatCard>
+
+            <StatCard
+              title="Activity"
+              icon={<TimelineIcon sx={{ color: theme.palette.warning.main, fontSize: 16 }} />}
+            >
+              <StatRow label="24h Trades" value={stats.trades24h} isCurrency={false} />
+              <StatRow label="7d Trades" value={stats.trades7d} isCurrency={false} />
+              <StatRow label="1m Trades" value={stats.trades1m || 0} isCurrency={false} />
+              <StatRow label="2m Trades" value={stats.trades2m || 0} isCurrency={false} />
+              <StatRow label="Total" value={stats.totalTrades} isCurrency={false} />
+            </StatCard>
+
+            <StatCard
+              title="Extremes"
+              icon={<StarIcon sx={{ color: theme.palette.warning.main, fontSize: 16 }} />}
+            >
+              <StatRow
+                label="Best Trade"
+                value={stats.maxProfitTrade}
+                color={theme.palette.success.main}
+              />
+              <StatRow
+                label="Worst Trade"
+                value={Math.abs(stats.maxLossTrade)}
+                color={theme.palette.error.main}
+              />
+              <StatRow
+                label="Buy Volume"
+                value={stats.buyVolume}
+                color={theme.palette.success.main}
+              />
+              <StatRow
+                label="Sell Volume"
+                value={stats.sellVolume}
+                color={theme.palette.error.main}
+              />
+            </StatCard>
+
+            <StatCard
+              title="Timeline"
+              icon={<HistoryIcon sx={{ color: theme.palette.text.secondary, fontSize: 16 }} />}
+            >
+              <StatRow
+                label="First Trade"
+                value={formatDate(stats.firstTradeDate)}
+                isCurrency={false}
+              />
+              <StatRow
+                label="Last Trade"
+                value={formatDate(stats.lastTradeDate)}
+                isCurrency={false}
+              />
+              <StatRow label="Updated" value={formatDate(stats.updatedAt)} isCurrency={false} />
+            </StatCard>
+          </Box>
+
+          {/* Compact Chart */}
+          <Paper
+            elevation={2}
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.9
+              )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+              backdropFilter: 'blur(20px)',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
+              <ShowChartIcon sx={{ color: theme.palette.primary.main, fontSize: 20 }} />
+              <Typography
+                variant="subtitle1"
+                sx={{ fontWeight: 600, color: theme.palette.text.primary }}
+              >
+                Trading History
+              </Typography>
+            </Stack>
+            {stats.dailyVolumes && stats.dailyVolumes.length > 0 && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mb: 1.5, fontSize: '0.75rem', display: 'block' }}
+              >
+                📅 {formatDate(stats.firstTradeDate)} → {formatDate(stats.lastTradeDate)}
+              </Typography>
+            )}
+            <DailyVolumeChart data={stats.dailyVolumes || []} />
+          </Paper>
         </Box>
       </Box>
     </Modal>

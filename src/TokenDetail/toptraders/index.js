@@ -118,95 +118,32 @@ function getComparator(order, orderBy) {
 }
 
 const headCells = [
-  { id: 'rank', label: 'Rank', numeric: true, sortable: false },
-  { id: 'address', label: 'Address', numeric: false, sortable: false },
-  {
-    id: 'firstTradeDate',
-    label: 'First Trade',
-    numeric: false,
-    sortable: true,
-    tooltip: 'Date of the first recorded trade for this token'
-  },
-  {
-    id: 'lastTradeDate',
-    label: 'Last Trade',
-    numeric: false,
-    sortable: true,
-    tooltip: 'Date of the last recorded trade for this token'
-  },
+  { id: 'rank', label: '#', numeric: true, sortable: false },
+  { id: 'address', label: 'Trader', numeric: false, sortable: false },
   {
     id: 'profit24h',
-    label: 'Profit (24h)',
+    label: 'P&L (24h)',
     numeric: true,
     sortable: true,
-    tooltip: "Trader's profit in the last 24 hours"
+    tooltip: "Trader's profit/loss in the last 24 hours"
   },
   {
     id: 'profit7d',
-    label: 'Profit (7d)',
+    label: 'P&L (7d)',
     numeric: true,
     sortable: true,
-    tooltip: "Trader's profit in the last 7 days"
-  },
-  {
-    id: 'profit1m',
-    label: 'Profit (1m)',
-    numeric: true,
-    sortable: true,
-    tooltip: "Trader's profit in the last 1 month"
-  },
-  {
-    id: 'profit2m',
-    label: 'Profit (2m)',
-    numeric: true,
-    sortable: true,
-    tooltip: "Trader's profit in the last 2 months"
-  },
-  {
-    id: 'profit3m',
-    label: 'Profit (3m)',
-    numeric: true,
-    sortable: true,
-    tooltip: "Trader's profit in the last 3 months"
+    tooltip: "Trader's profit/loss in the last 7 days"
   },
   {
     id: 'volume24h',
-    label: 'Volume (24h)',
+    label: 'Vol (24h)',
     numeric: true,
     sortable: true,
     tooltip: "Trader's trade volume in the last 24 hours"
   },
   {
-    id: 'volume7d',
-    label: 'Volume (7d)',
-    numeric: true,
-    sortable: true,
-    tooltip: "Trader's trade volume in the last 7 days"
-  },
-  {
-    id: 'volume1m',
-    label: 'Volume (1m)',
-    numeric: true,
-    sortable: true,
-    tooltip: "Trader's trade volume in the last 1 month"
-  },
-  {
-    id: 'volume2m',
-    label: 'Volume (2m)',
-    numeric: true,
-    sortable: true,
-    tooltip: "Trader's trade volume in the last 2 months"
-  },
-  {
-    id: 'volume3m',
-    label: 'Volume (3m)',
-    numeric: true,
-    sortable: true,
-    tooltip: "Trader's trade volume in the last 3 months"
-  },
-  {
     id: 'totalVolume',
-    label: 'Total Volume',
+    label: 'Total Vol',
     numeric: true,
     sortable: true,
     tooltip: "Trader's total trade volume for this token"
@@ -219,46 +156,11 @@ const headCells = [
     tooltip: 'Number of trades in the last 24 hours'
   },
   {
-    id: 'trades7d',
-    label: 'Trades (7d)',
-    numeric: true,
-    sortable: true,
-    tooltip: 'Number of trades in the last 7 days'
-  },
-  {
-    id: 'trades1m',
-    label: 'Trades (1m)',
-    numeric: true,
-    sortable: true,
-    tooltip: 'Number of trades in the last 1 month'
-  },
-  {
-    id: 'trades2m',
-    label: 'Trades (2m)',
-    numeric: true,
-    sortable: true,
-    tooltip: 'Number of trades in the last 2 months'
-  },
-  {
-    id: 'trades3m',
-    label: 'Trades (3m)',
-    numeric: true,
-    sortable: true,
-    tooltip: 'Number of trades in the last 3 months'
-  },
-  {
     id: 'totalTrades',
     label: 'Total Trades',
     numeric: true,
     sortable: true,
     tooltip: 'Total number of trades for this token'
-  },
-  {
-    id: 'tradePercentage',
-    label: 'Market Share',
-    numeric: true,
-    sortable: true,
-    tooltip: "Trader's share of total market volume"
   },
   { id: 'roi', label: 'ROI', numeric: true, sortable: true, tooltip: 'Return on Investment' },
   {
@@ -269,25 +171,11 @@ const headCells = [
     tooltip: 'Percentage of profitable trades'
   },
   {
-    id: 'avgHoldingTime',
-    label: 'Avg Hold',
-    numeric: true,
+    id: 'lastTradeDate',
+    label: 'Last Trade',
+    numeric: false,
     sortable: true,
-    tooltip: 'Average time tokens are held before selling'
-  },
-  {
-    id: 'maxProfitTrade',
-    label: 'Best Trade',
-    numeric: true,
-    sortable: true,
-    tooltip: 'Largest profit from a single trade'
-  },
-  {
-    id: 'maxLossTrade',
-    label: 'Worst Trade',
-    numeric: true,
-    sortable: true,
-    tooltip: 'Largest loss from a single trade'
+    tooltip: 'Date of the last recorded trade for this token'
   },
   { id: 'actions', label: 'Actions', numeric: false, sortable: false }
 ];
@@ -693,16 +581,6 @@ export default function TopTraders({ token }) {
                           )}
                         </Stack>
                       </TableCell>
-                      <TableCell align="left">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {formatDate(safeTrader.firstTradeDate)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="left">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {formatDate(safeTrader.lastTradeDate)}
-                        </Typography>
-                      </TableCell>
                       <TableCell align="right">
                         <ProfitCell value={safeTrader.profit24h} />
                       </TableCell>
@@ -710,37 +588,8 @@ export default function TopTraders({ token }) {
                         <ProfitCell value={safeTrader.profit7d} />
                       </TableCell>
                       <TableCell align="right">
-                        <ProfitCell value={safeTrader.profit1m} />
-                      </TableCell>
-                      <TableCell align="right">
-                        <ProfitCell value={safeTrader.profit2m} />
-                      </TableCell>
-                      <TableCell align="right">
-                        <ProfitCell value={safeTrader.profit3m} />
-                      </TableCell>
-                      <TableCell align="right">
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           {fNumber(safeTrader.volume24h)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {fNumber(safeTrader.volume7d)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {fNumber(safeTrader.volume1m)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {fNumber(safeTrader.volume2m)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {fNumber(safeTrader.volume3m)}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
@@ -755,33 +604,8 @@ export default function TopTraders({ token }) {
                       </TableCell>
                       <TableCell align="right">
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {fNumber(safeTrader.trades7d)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {fNumber(safeTrader.trades1m)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {fNumber(safeTrader.trades2m)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {fNumber(safeTrader.trades3m)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           {fNumber(safeTrader.totalTrades)}
                         </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <MarketShareCell value={safeTrader.tradePercentage} />
-                        </Box>
                       </TableCell>
                       <TableCell align="right">
                         <Stack
@@ -831,17 +655,7 @@ export default function TopTraders({ token }) {
                       </TableCell>
                       <TableCell align="right">
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {formatDuration(safeTrader.avgHoldingTime)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" sx={{ color: '#54D62C', fontWeight: 500 }}>
-                          {fNumber(safeTrader.maxProfitTrade)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" sx={{ color: '#FF6C40', fontWeight: 500 }}>
-                          {fNumber(Math.abs(safeTrader.maxLossTrade))}
+                          {formatDate(safeTrader.lastTradeDate)}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
@@ -851,32 +665,6 @@ export default function TopTraders({ token }) {
                           spacing={0.5}
                           justifyContent="flex-end"
                         >
-                          <Tooltip title="View on Bithomp">
-                            <Link
-                              underline="none"
-                              color="inherit"
-                              target="_blank"
-                              href={`https://bithomp.com/explorer/${safeTrader.address}`}
-                              rel="noreferrer noopener nofollow"
-                            >
-                              <IconButton
-                                edge="end"
-                                aria-label="bithomp"
-                                size="small"
-                                sx={{
-                                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                  '&:hover': {
-                                    backgroundColor: darkMode
-                                      ? 'rgba(255, 255, 255, 0.08)'
-                                      : 'rgba(145, 158, 171, 0.08)',
-                                    transform: 'scale(1.1)'
-                                  }
-                                }}
-                              >
-                                <LinkIcon sx={{ fontSize: 16 }} />
-                              </IconButton>
-                            </Link>
-                          </Tooltip>
                           <Tooltip title="View Trader Statistics">
                             <IconButton
                               edge="end"
