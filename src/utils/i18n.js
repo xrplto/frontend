@@ -15,16 +15,19 @@ const resources = {
   }
 };
 
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    debug: true,
-    fallbackLng: 'en',
-    interpolation: {
-      escapeValue: false // not needed for react as it escapes by default
-    }
-  });
+// Only initialize if not already initialized
+if (!i18n.isInitialized) {
+  i18n
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+      resources,
+      debug: false, // Disable debug to reduce console noise
+      fallbackLng: 'en',
+      interpolation: {
+        escapeValue: false // not needed for react as it escapes by default
+      }
+    });
+}
 
 export default i18n;

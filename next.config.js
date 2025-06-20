@@ -16,7 +16,6 @@ module.exports = {
     MAINTENANCE: process.env.MAINTENANCE
   },
   images: {
-    domains: ['s1.xrpl.to', 'xrpl.to', 's1.xrpnft.com'],
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
@@ -62,7 +61,5 @@ module.exports = {
   },
   // Add performance optimizations
   reactStrictMode: true,
-  compress: true,
-  optimizeFonts: true,
-  swcMinify: true
+  compress: true
 };
