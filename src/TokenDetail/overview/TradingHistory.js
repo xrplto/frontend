@@ -350,20 +350,7 @@ const TradingHistory = ({ tokenId }) => {
 
   if (loading) {
     return (
-      <Stack spacing={3}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box display="flex" alignItems="center" gap={2}>
-            <Typography variant="h5" fontWeight="600" color="text.primary">
-              Recent Trades
-            </Typography>
-            <LiveIndicator>
-              <LiveCircle />
-              <Typography variant="body2" fontWeight="600" sx={{ color: 'primary.main' }}>
-                LIVE
-              </Typography>
-            </LiveIndicator>
-          </Box>
-        </Box>
+      <Stack spacing={1}>
         <Box display="flex" justifyContent="center" p={4}>
           <CircularProgress size={40} thickness={4} />
         </Box>
@@ -373,20 +360,7 @@ const TradingHistory = ({ tokenId }) => {
 
   if (!trades || trades.length === 0) {
     return (
-      <Stack spacing={3}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box display="flex" alignItems="center" gap={2}>
-            <Typography variant="h5" fontWeight="600" color="text.primary">
-              Recent Trades
-            </Typography>
-            <LiveIndicator>
-              <LiveCircle />
-              <Typography variant="body2" fontWeight="600" sx={{ color: 'primary.main' }}>
-                LIVE
-              </Typography>
-            </LiveIndicator>
-          </Box>
-        </Box>
+      <Stack spacing={1}>
         <Box
           sx={{
             textAlign: 'center',
@@ -409,22 +383,8 @@ const TradingHistory = ({ tokenId }) => {
   }
 
   return (
-    <Stack spacing={3}>
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Box display="flex" alignItems="center" gap={2}>
-          <Typography variant="h5" fontWeight="600" color="text.primary">
-            Recent Trades
-          </Typography>
-          <LiveIndicator>
-            <LiveCircle />
-            <Typography variant="body2" fontWeight="600" sx={{ color: 'primary.main' }}>
-              LIVE
-            </Typography>
-          </LiveIndicator>
-        </Box>
-      </Box>
-
-      {/* Table Headers */}
+    <Stack spacing={1}>
+      {/* Table Headers with integrated title */}
       <Box
         sx={{
           display: 'grid',
@@ -448,7 +408,19 @@ const TradingHistory = ({ tokenId }) => {
           }
         }}
       >
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Time / Type</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Time / Type</Typography>
+          <LiveIndicator sx={{ display: { xs: 'none', md: 'flex' }, ml: 1 }}>
+            <LiveCircle />
+            <Typography
+              variant="caption"
+              fontWeight="600"
+              sx={{ color: 'primary.main', fontSize: '0.6rem' }}
+            >
+              LIVE
+            </Typography>
+          </LiveIndicator>
+        </Box>
         <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Price</Typography>
         <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Amount</Typography>
         <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Total</Typography>
