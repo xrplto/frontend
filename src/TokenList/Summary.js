@@ -57,18 +57,6 @@ const MetricBox = styled(Paper)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
-      theme.palette.primary.main,
-      0.1
-    )}`,
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.9
-    )} 100%)`
-  },
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -81,7 +69,8 @@ const MetricBox = styled(Paper)(({ theme }) => ({
       0.4
     )}, ${alpha(theme.palette.info.main, 0.4)})`,
     opacity: 0.6,
-    borderRadius: '20px 20px 0 0'
+    borderRadius: '20px 20px 0 0',
+    zIndex: 1
   }
 }));
 
