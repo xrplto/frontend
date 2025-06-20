@@ -538,6 +538,12 @@ export default function TokenListHead({
                 }
               : {}
           },
+          '& .MuiTableCell-root:nth-of-type(4)': {
+            paddingLeft: isMobile ? '20px' : '8px'
+          },
+          '& .MuiTableCell-root:nth-of-type(5)': {
+            paddingLeft: isMobile ? '20px' : '8px'
+          },
           '& .MuiTableSortLabel-root': {
             fontSize: isMobile ? '11px' : '13px',
             fontWeight: '600',
