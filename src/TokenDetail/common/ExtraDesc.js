@@ -248,7 +248,7 @@ export default function ExtraDesc({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontSize: '0.4rem',
+                  fontSize: '0.65rem',
                   color: alpha(theme.palette.text.secondary, 0.9),
                   fontWeight: 500
                 }}
@@ -315,7 +315,7 @@ export default function ExtraDesc({ token }) {
                   <Typography
                     variant="h6"
                     sx={{
-                      fontSize: '0.55rem',
+                      fontSize: '1.3rem',
                       fontWeight: 700,
                       background: `linear-gradient(135deg, ${metric.color} 0%, ${alpha(
                         metric.color,
@@ -337,7 +337,7 @@ export default function ExtraDesc({ token }) {
                 <Typography
                   variant="h6"
                   sx={{
-                    fontSize: '0.55rem',
+                    fontSize: '1.3rem',
                     fontWeight: 700,
                     background: `linear-gradient(135deg, ${metric.color} 0%, ${alpha(
                       metric.color,

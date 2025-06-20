@@ -233,7 +233,7 @@ export default function PriceDesc({ token }) {
                 noWrap
                 component="h2"
                 sx={{
-                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+                  fontSize: { xs: '1.65rem', sm: '1.9rem', md: '2.15rem' },
                   fontWeight: 800,
                   letterSpacing: '-0.02em',
                   background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${alpha(
@@ -311,7 +311,7 @@ export default function PriceDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: { xs: '0.525rem', sm: '0.55rem' },
+                        fontSize: { xs: '0.75rem', sm: '0.8rem' },
                         fontWeight: 600,
                         color: theme.palette.success.main,
                         lineHeight: 1
@@ -367,7 +367,7 @@ export default function PriceDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: { xs: '0.525rem', sm: '0.55rem' },
+                        fontSize: { xs: '0.75rem', sm: '0.8rem' },
                         fontWeight: 600,
                         color: theme.palette.info.main,
                         lineHeight: 1
@@ -523,7 +523,7 @@ export default function PriceDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                        fontSize: { xs: '0.95rem', sm: '1rem' },
                         fontWeight: 800,
                         color: item.color,
                         lineHeight: 1
