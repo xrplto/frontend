@@ -202,11 +202,13 @@ const KYCBadge = styled('div')(
 const GoogleLensBadge = styled('div')(
   ({ theme }) => `
         position: absolute;
-        top: -2px;
-        left: -2px;
+        top: -6px;
+        left: -6px;
         z-index: 2;
         background: ${theme.palette.background.paper};
         border-radius: 50%;
+        padding: 2px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     `
 );
 
@@ -237,7 +239,7 @@ const StatusBadge = styled('div')(
 );
 
 // Compact origin and status indicator component
-const OriginStatusIndicator = ({ origin, isBlackholed, isBurned, size = 'normal' }) => {
+const OriginStatusIndicator = ({ origin, isBlackholed, isBurned, kyc, size = 'normal' }) => {
   const theme = useTheme();
   const isCompact = size === 'compact';
 
@@ -258,6 +260,35 @@ const OriginStatusIndicator = ({ origin, isBlackholed, isBurned, size = 'normal'
           </Box>
         </Box>
       </Tooltip>
+
+      {/* KYC indicator */}
+      {kyc && (
+        <Tooltip title="KYC Verified">
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: isCompact ? '18px' : '20px',
+              height: isCompact ? '18px' : '20px',
+              borderRadius: '50%',
+              background: 'transparent',
+              color: '#00AB55',
+              fontSize: isCompact ? '12px' : '14px',
+              fontWeight: 'bold',
+              marginRight: '2px',
+              marginBottom: '2px',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                background: 'rgba(0, 171, 85, 0.1)',
+                transform: 'scale(1.1)'
+              }
+            }}
+          >
+            ✓
+          </Box>
+        </Tooltip>
+      )}
     </Stack>
   );
 };
@@ -1149,7 +1180,7 @@ export default function UserDesc({ token }) {
             sx={{ width: '100%' }}
           >
             {/* Avatar */}
-            <Box sx={{ position: 'relative', zIndex: 1, flexShrink: 0 }}>
+            <Box sx={{ position: 'relative', zIndex: 1, flexShrink: 0, p: 0.75 }}>
               <Avatar
                 alt={`${user} ${name} Logo`}
                 src={imgUrl}
@@ -1160,27 +1191,25 @@ export default function UserDesc({ token }) {
                   border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`
                 }}
               />
-              {kyc && (
-                <KYCBadge>
-                  <Tooltip title="KYC Verified">
-                    <CheckCircleIcon
-                      sx={{
-                        color: '#00AB55',
-                        fontSize: isXsMobile ? 22 : 26,
-                        filter: 'drop-shadow(0 2px 4px rgba(0, 171, 85, 0.3))'
-                      }}
-                    />
-                  </Tooltip>
-                </KYCBadge>
-              )}
-              <GoogleLensBadge>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  zIndex: 2,
+                  background: theme.palette.background.paper,
+                  borderRadius: '50%',
+                  padding: '2px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                }}
+              >
                 <Tooltip title="Search image with Google Lens">
                   <IconButton
                     onClick={() => openGoogleLens(imgUrl)}
                     size="small"
                     sx={{
-                      width: isXsMobile ? 20 : 24,
-                      height: isXsMobile ? 20 : 24,
+                      width: isXsMobile ? 18 : 22,
+                      height: isXsMobile ? 18 : 22,
                       p: 0,
                       background: `linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)`,
                       color: 'white',
@@ -1190,10 +1219,10 @@ export default function UserDesc({ token }) {
                       }
                     }}
                   >
-                    <SearchIcon sx={{ fontSize: isXsMobile ? 12 : 14 }} />
+                    <SearchIcon sx={{ fontSize: isXsMobile ? 10 : 12 }} />
                   </IconButton>
                 </Tooltip>
-              </GoogleLensBadge>
+              </Box>
             </Box>
 
             {/* Name, User, Tags, Social - Middle Section */}
@@ -1262,6 +1291,7 @@ export default function UserDesc({ token }) {
                     origin={token.origin}
                     isBlackholed={!!token.origin}
                     isBurned={!!token.origin}
+                    kyc={kyc}
                     size="compact"
                   />
 
@@ -1362,7 +1392,7 @@ export default function UserDesc({ token }) {
           {!isMobile && (
             <>
               {isAdmin ? (
-                <div>
+                <div style={{ padding: '8px' }}>
                   <IconCover>
                     <IconWrapper>
                       <IconImage src={imgUrl} />
@@ -1384,38 +1414,42 @@ export default function UserDesc({ token }) {
                       <EditIcon sx={{ width: 40, height: 40 }} />
                     </IconButton>
                     <ImageBackdrop className="MuiImageBackdrop-root" />
-                    {kyc && (
-                      <KYCBadge>
-                        <Tooltip title="KYC Verified">
-                          <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 26 }} />
-                        </Tooltip>
-                      </KYCBadge>
-                    )}
-                    <GoogleLensBadge>
-                      <Tooltip title="Search image with Google Lens">
-                        <IconButton
-                          onClick={() => openGoogleLens(imgUrl)}
-                          size="small"
-                          sx={{
-                            width: 28,
-                            height: 28,
-                            p: 0,
-                            background: `linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)`,
-                            color: 'white',
-                            '&:hover': {
-                              background: `linear-gradient(135deg, #3367d6 0%, #2d8f47 50%, #f9ab00 75%, #d33b01 100%)`,
-                              transform: 'scale(1.1)'
-                            }
-                          }}
-                        >
-                          <SearchIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
-                      </Tooltip>
-                    </GoogleLensBadge>
                   </IconCover>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      zIndex: 2,
+                      background: theme.palette.background.paper,
+                      borderRadius: '50%',
+                      padding: '2px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                    }}
+                  >
+                    <Tooltip title="Search image with Google Lens">
+                      <IconButton
+                        onClick={() => openGoogleLens(imgUrl)}
+                        size="small"
+                        sx={{
+                          width: 26,
+                          height: 26,
+                          p: 0,
+                          background: `linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)`,
+                          color: 'white',
+                          '&:hover': {
+                            background: `linear-gradient(135deg, #3367d6 0%, #2d8f47 50%, #f9ab00 75%, #d33b01 100%)`,
+                            transform: 'scale(1.1)'
+                          }
+                        }}
+                      >
+                        <SearchIcon sx={{ fontSize: 14 }} />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </div>
               ) : (
-                <Box sx={{ position: 'relative', zIndex: 1 }}>
+                <Box sx={{ position: 'relative', zIndex: 1, p: 1 }}>
                   <Avatar
                     alt={`${user} ${name} Logo`}
                     src={imgUrl}
@@ -1426,27 +1460,25 @@ export default function UserDesc({ token }) {
                       border: `3px solid ${alpha(theme.palette.primary.main, 0.15)}`
                     }}
                   />
-                  {kyc && (
-                    <KYCBadge>
-                      <Tooltip title="KYC Verified">
-                        <CheckCircleIcon
-                          sx={{
-                            color: '#00AB55',
-                            fontSize: 34,
-                            filter: 'drop-shadow(0 2px 4px rgba(0, 171, 85, 0.3))'
-                          }}
-                        />
-                      </Tooltip>
-                    </KYCBadge>
-                  )}
-                  <GoogleLensBadge>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      zIndex: 2,
+                      background: theme.palette.background.paper,
+                      borderRadius: '50%',
+                      padding: '2px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                    }}
+                  >
                     <Tooltip title="Search image with Google Lens">
                       <IconButton
                         onClick={() => openGoogleLens(imgUrl)}
                         size="small"
                         sx={{
-                          width: 32,
-                          height: 32,
+                          width: 30,
+                          height: 30,
                           p: 0,
                           background: `linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)`,
                           color: 'white',
@@ -1456,10 +1488,10 @@ export default function UserDesc({ token }) {
                           }
                         }}
                       >
-                        <SearchIcon sx={{ fontSize: 18 }} />
+                        <SearchIcon sx={{ fontSize: 16 }} />
                       </IconButton>
                     </Tooltip>
-                  </GoogleLensBadge>
+                  </Box>
                 </Box>
               )}
             </>
@@ -1522,6 +1554,7 @@ export default function UserDesc({ token }) {
                     origin={token.origin}
                     isBlackholed={!!token.origin}
                     isBurned={!!token.origin}
+                    kyc={kyc}
                     size="normal"
                   />
 
