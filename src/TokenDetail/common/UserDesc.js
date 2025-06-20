@@ -234,13 +234,6 @@ const OriginStatusIndicator = ({ origin, isBlackholed, isBurned, size = 'normal'
       <Tooltip title={origin || 'Standard Launch'}>
         <Box
           sx={{
-            p: isCompact ? 0.375 : 0.5,
-            borderRadius: '6px',
-            background: `linear-gradient(135deg, 
-              ${alpha(theme.palette.primary.main, 0.12)} 0%, 
-              ${alpha(theme.palette.primary.main, 0.06)} 100%
-            )`,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
             display: 'flex',
             alignItems: 'center',
             minHeight: isCompact ? '22px' : '28px',
@@ -394,57 +387,45 @@ const getOriginIcon = (origin) => {
           sx={{ fontSize: '18px', color: '#cfff04', marginRight: '2px', marginBottom: '2px' }}
         />
       );
+    case 'aigent.run':
+      return (
+        <Box
+          component="img"
+          src="/static/aigentrun.gif"
+          alt="Aigent.Run"
+          sx={{
+            width: '16px',
+            height: '16px',
+            objectFit: 'contain'
+          }}
+        />
+      );
     case 'Magnetic X':
       return (
         <Box
+          component="img"
+          src="/magneticx-logo.webp"
+          alt="Magnetic X"
           sx={{
             width: '18px',
             height: '18px',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            overflow: 'hidden',
+            objectFit: 'contain',
             marginRight: '2px',
             marginBottom: '2px'
           }}
-        >
-          <Box
-            component="img"
-            src="/magneticx-logo.webp"
-            alt="Magnetic X"
-            sx={{
-              width: '13px',
-              height: '13px',
-              objectFit: 'contain'
-            }}
-          />
-        </Box>
+        />
       );
     case 'xrp.fun':
       return (
-        <Box
-          sx={{
-            width: '18px',
-            height: '18px',
-            backgroundColor: 'rgba(183, 33, 54, 0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: '1px solid rgba(183, 33, 54, 0.2)',
+        <Icon
+          icon={chartLineUp}
+          style={{
+            fontSize: '18px',
+            color: '#B72136',
             marginRight: '2px',
             marginBottom: '2px'
           }}
-        >
-          <Icon
-            icon={chartLineUp}
-            style={{
-              fontSize: '11px',
-              color: '#B72136'
-            }}
-          />
-        </Box>
+        />
       );
     default:
       return <AutoAwesomeIcon sx={{ fontSize: '11px', color: '#637381' }} />;
@@ -518,7 +499,25 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
       >
         <Chip
           size="small"
-          label={tag}
+          label={
+            tag === 'aigent.run' ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                <Box
+                  component="img"
+                  src="/static/aigentrun.gif"
+                  alt="Aigent.Run"
+                  sx={{
+                    width: '12px',
+                    height: '12px',
+                    objectFit: 'contain'
+                  }}
+                />
+                {tag}
+              </Box>
+            ) : (
+              tag
+            )
+          }
           onClick={handleDelete}
           sx={{
             height: isMobile ? '26px' : '30px',
@@ -996,7 +995,25 @@ export default function UserDesc({ token }) {
           >
             <Chip
               size="small"
-              label={tag}
+              label={
+                tag === 'aigent.run' ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                    <Box
+                      component="img"
+                      src="/static/aigentrun.gif"
+                      alt="Aigent.Run"
+                      sx={{
+                        width: '12px',
+                        height: '12px',
+                        objectFit: 'contain'
+                      }}
+                    />
+                    {tag}
+                  </Box>
+                ) : (
+                  tag
+                )
+              }
               sx={{
                 height: isMobile ? '16px' : '18px',
                 fontSize: isMobile ? '0.55rem' : '0.6rem',
@@ -1224,98 +1241,40 @@ export default function UserDesc({ token }) {
                           : 'Burned Liquidity Pool'
                       }
                     >
-                      <Box
-                        sx={{
-                          p: 0.5,
-                          borderRadius: '6px',
-                          background: `linear-gradient(135deg, 
-                            ${alpha(theme.palette.primary.main, 0.12)} 0%, 
-                            ${alpha(theme.palette.primary.main, 0.06)} 100%
-                          )`,
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          minHeight: '28px'
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            width: '18px',
-                            height: '18px',
-                            backgroundColor:
-                              token.origin === 'LedgerMeme' && holders === 1
-                                ? 'rgba(255, 193, 7, 0.1)'
-                                : 'rgba(24, 144, 255, 0.1)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border:
-                              token.origin === 'LedgerMeme' && holders === 1
-                                ? '1px solid rgba(255, 193, 7, 0.2)'
-                                : '1px solid rgba(24, 144, 255, 0.2)',
+                      {token.origin === 'LedgerMeme' && holders === 1 ? (
+                        <Icon
+                          icon="mdi:water-outline"
+                          style={{
+                            fontSize: '18px',
+                            color: '#FFC107',
                             marginRight: '2px',
                             marginBottom: '2px'
                           }}
-                        >
-                          {token.origin === 'LedgerMeme' && holders === 1 ? (
-                            <Icon
-                              icon="mdi:water-outline"
-                              style={{
-                                fontSize: '13px',
-                                color: '#FFC107'
-                              }}
-                            />
-                          ) : (
-                            <LocalFireDepartmentIcon
-                              sx={{
-                                fontSize: '13px',
-                                color: '#1890FF'
-                              }}
-                            />
-                          )}
-                        </Box>
-                      </Box>
+                        />
+                      ) : (
+                        <LocalFireDepartmentIcon
+                          sx={{
+                            fontSize: '18px',
+                            color: '#1890FF',
+                            marginRight: '2px',
+                            marginBottom: '2px'
+                          }}
+                        />
+                      )}
                     </Tooltip>
                   )}
 
                   {/* Blackholed Status */}
                   {(info.blackholed || token.origin) && (
                     <Tooltip title="Blackholed Issuer">
-                      <Box
+                      <LockIcon
                         sx={{
-                          p: 0.375,
-                          borderRadius: '6px',
-                          background: `linear-gradient(135deg, 
-                            ${alpha(theme.palette.primary.main, 0.12)} 0%, 
-                            ${alpha(theme.palette.primary.main, 0.06)} 100%
-                          )`,
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          minHeight: '22px'
+                          fontSize: '18px',
+                          color: '#00AB55',
+                          marginRight: '2px',
+                          marginBottom: '2px'
                         }}
-                      >
-                        <Box
-                          sx={{
-                            width: '18px',
-                            height: '18px',
-                            backgroundColor: 'rgba(0, 171, 85, 0.1)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid rgba(0, 171, 85, 0.2)',
-                            marginRight: '2px',
-                            marginBottom: '2px'
-                          }}
-                        >
-                          <LockIcon
-                            sx={{
-                              fontSize: '13px',
-                              color: '#00AB55'
-                            }}
-                          />
-                        </Box>
-                      </Box>
+                      />
                     </Tooltip>
                   )}
                 </Stack>
@@ -1495,82 +1454,28 @@ export default function UserDesc({ token }) {
                     token.origin !== 'xrp.fun' &&
                     !(token.origin === 'LedgerMeme' && holders === 1) && (
                       <Tooltip title="Burned Liquidity Pool">
-                        <Box
+                        <LocalFireDepartmentIcon
                           sx={{
-                            p: 0.5,
-                            borderRadius: '6px',
-                            background: `linear-gradient(135deg, 
-                            ${alpha(theme.palette.primary.main, 0.12)} 0%, 
-                            ${alpha(theme.palette.primary.main, 0.06)} 100%
-                          )`,
-                            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            minHeight: '28px'
+                            fontSize: '18px',
+                            color: '#1890FF',
+                            marginRight: '2px',
+                            marginBottom: '2px'
                           }}
-                        >
-                          <Box
-                            sx={{
-                              width: '18px',
-                              height: '18px',
-                              backgroundColor: 'rgba(24, 144, 255, 0.1)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              border: '1px solid rgba(24, 144, 255, 0.2)',
-                              marginRight: '2px',
-                              marginBottom: '2px'
-                            }}
-                          >
-                            <LocalFireDepartmentIcon
-                              sx={{
-                                fontSize: '13px',
-                                color: '#1890FF'
-                              }}
-                            />
-                          </Box>
-                        </Box>
+                        />
                       </Tooltip>
                     )}
 
                   {/* Blackholed Status */}
                   {(info.blackholed || token.origin) && (
                     <Tooltip title="Blackholed Issuer">
-                      <Box
+                      <LockIcon
                         sx={{
-                          p: 0.5,
-                          borderRadius: '6px',
-                          background: `linear-gradient(135deg, 
-                            ${alpha(theme.palette.primary.main, 0.12)} 0%, 
-                            ${alpha(theme.palette.primary.main, 0.06)} 100%
-                          )`,
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          minHeight: '28px'
+                          fontSize: '18px',
+                          color: '#00AB55',
+                          marginRight: '2px',
+                          marginBottom: '2px'
                         }}
-                      >
-                        <Box
-                          sx={{
-                            width: '18px',
-                            height: '18px',
-                            backgroundColor: 'rgba(0, 171, 85, 0.1)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid rgba(0, 171, 85, 0.2)',
-                            marginRight: '2px',
-                            marginBottom: '2px'
-                          }}
-                        >
-                          <LockIcon
-                            sx={{
-                              fontSize: '13px',
-                              color: '#00AB55'
-                            }}
-                          />
-                        </Box>
-                      </Box>
+                      />
                     </Tooltip>
                   )}
                 </Stack>

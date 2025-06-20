@@ -683,66 +683,20 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
                   Test this endpoint directly and see the live response structure:
                 </Typography>
-
                 <Button
                   variant="contained"
-                  color="success"
+                  color="primary"
                   onClick={() => handleOpenModal('get-all-tokens')}
                   sx={{
                     borderRadius: '8px',
                     textTransform: 'none',
                     px: 3,
                     py: 1.5,
-                    fontWeight: 600,
-                    mt: 2
+                    fontWeight: 600
                   }}
                 >
                   Try API Call
                 </Button>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.warning.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
-                >
-                  Performance Features
-                </Typography>
-              </Box>
-              <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  This endpoint includes several performance optimizations:
-                </Typography>
-                <Box sx={{ ml: 2 }}>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Compression:</strong> Automatic response compression for faster data
-                    transfer
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Parallel Processing:</strong> Uses Promise.all for concurrent data
-                    fetching
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Performance Timing:</strong> Includes response time measurement in
-                    "took" field
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    • <strong>Smart Defaults:</strong> Automatic parameter validation and fallback
-                    values
-                  </Typography>
-                </Box>
               </CardContent>
             </Card>
 
@@ -790,20 +744,20 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
             <Card
               sx={{
                 background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.success.main,
+                  theme.palette.primary.main,
                   0.05
-                )} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                 borderRadius: '16px',
                 p: 3,
                 mb: 3
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <SearchIcon sx={{ color: theme.palette.success.main, mr: 2, fontSize: 32 }} />
+                <DataUsageIcon sx={{ color: theme.palette.primary.main, mr: 2, fontSize: 32 }} />
                 <Typography
                   variant="h2"
-                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
                 >
                   Get a Specific Token Info
                 </Typography>
@@ -812,103 +766,44 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                 variant="body1"
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
-                Retrieve detailed information about a specific token using three different methods:
-                issuer + currency code, slug, or MD5 hash. The API uses intelligent fallback logic
-                and returns comprehensive token data along with platform metrics.
+                Retrieve detailed information about a specific token, including its issuer,
+                description, and other relevant details.
               </Typography>
             </Card>
 
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid item xs={12} md={4}>
-                <Card sx={{ borderRadius: '12px', height: '100%' }}>
-                  <Box
-                    sx={{
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.success.main,
-                        0.08
-                      )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
-                      p: 2,
-                      borderRadius: '12px 12px 0 0'
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{ color: theme.palette.success.main, fontWeight: 600 }}
-                    >
-                      Method 1: Issuer + Currency
-                    </Typography>
-                  </Box>
-                  <CardContent>
-                    <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                      Recommended method using issuer address and currency code.
-                    </Typography>
-                    <CodeBlock language="http">
-                      GET https://api.xrpl.to/api/token/&lt;issuer&gt;_&lt;currencyCode&gt;
-                    </CodeBlock>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Card sx={{ borderRadius: '12px', height: '100%' }}>
-                  <Box
-                    sx={{
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.info.main,
-                        0.08
-                      )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
-                      p: 2,
-                      borderRadius: '12px 12px 0 0'
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{ color: theme.palette.info.main, fontWeight: 600 }}
-                    >
-                      Method 2: Slug
-                    </Typography>
-                  </Box>
-                  <CardContent>
-                    <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                      Using URL-friendly token slug identifier.
-                    </Typography>
-                    <CodeBlock language="http">
-                      GET https://api.xrpl.to/api/token/&lt;slug&gt;?desc=yes
-                    </CodeBlock>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Card sx={{ borderRadius: '12px', height: '100%' }}>
-                  <Box
-                    sx={{
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.warning.main,
-                        0.08
-                      )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
-                      p: 2,
-                      borderRadius: '12px 12px 0 0'
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
-                    >
-                      Method 3: MD5 Hash
-                    </Typography>
-                  </Box>
-                  <CardContent>
-                    <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                      Using MD5 hash of issuer_currency combination.
-                    </Typography>
-                    <CodeBlock language="http">
-                      GET https://api.xrpl.to/api/token/&lt;md5&gt;
-                    </CodeBlock>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/token/&lt;issuer&gt;_&lt;currency&gt;
+                </CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  Example usage:
+                </Typography>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/token/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD
+                </CodeBlock>
+              </CardContent>
+            </Card>
 
-            <Card sx={{ borderRadius: '12px', mb: 3 }}>
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
@@ -921,103 +816,66 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                 }}
               >
                 <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
-                  HTTP Request Examples
+                  Query Parameters
                 </Typography>
               </Box>
-              <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  Using different methods to retrieve token information:
-                </Typography>
-                <CodeBlock language="http">
-                  GET
-                  https://api.xrpl.to/api/token/rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00000000000000000000000000000000
-                </CodeBlock>
-                <Typography
-                  variant="body2"
-                  sx={{ mt: 1, mb: 1, color: theme.palette.text.secondary }}
-                >
-                  Using slug:
-                </Typography>
-                <CodeBlock language="http">
-                  GET https://api.xrpl.to/api/token/sologenic?desc=yes
-                </CodeBlock>
-                <Typography
-                  variant="body2"
-                  sx={{ mt: 1, mb: 1, color: theme.palette.text.secondary }}
-                >
-                  Using MD5 hash:
-                </Typography>
-                <CodeBlock language="http">
-                  GET https://api.xrpl.to/api/token/0413ca7cfc258dfaf698c02fe304e607
-                </CodeBlock>
-              </CardContent>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Parameter
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Type
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Default
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Description
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>issuer</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>Required</TableCell>
+                      <TableCell>Issuer address of the token</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>currency</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>Required</TableCell>
+                      <TableCell>Currency code of the token</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </Card>
 
-            <Card sx={{ borderRadius: '12px', mb: 3 }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.info.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-                }}
-              >
-                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
-                  Request Parameters
-                </Typography>
-              </Box>
-              <CardContent>
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Parameter</TableCell>
-                        <TableCell>Default</TableCell>
-                        <TableCell>Description</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>issuer_currencyCode</TableCell>
-                        <TableCell>-</TableCell>
-                        <TableCell>
-                          The issuer address followed by an underscore and the currency code. This
-                          is the recommended method.
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>slug</TableCell>
-                        <TableCell>-</TableCell>
-                        <TableCell>
-                          Alternatively, you can use the URL slug of the token to retrieve token
-                          information.
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>md5</TableCell>
-                        <TableCell>-</TableCell>
-                        <TableCell>
-                          MD5 hash of the issuer_currency combination for programmatic access.
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>desc</TableCell>
-                        <TableCell>no</TableCell>
-                        <TableCell>
-                          yes or no, if yes, returns the description of the token in markdown
-                          language. Only works when token has MD5 hash.
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ borderRadius: '12px', mb: 3 }}>
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
@@ -1042,7 +900,7 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                 </Typography>
                 <Button
                   variant="contained"
-                  color="success"
+                  color="primary"
                   onClick={() => handleOpenModal('get-a-specific-token-info')}
                   sx={{
                     borderRadius: '8px',
@@ -1057,8 +915,7 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
               </CardContent>
             </Card>
 
-            {/* New section for comprehensive field explanations */}
-            <Card sx={{ borderRadius: '12px', mb: 3 }}>
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
@@ -1074,635 +931,91 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                   variant="h6"
                   sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
                 >
-                  Numeric Fields Explained
+                  Advanced Features
                 </Typography>
               </Box>
               <CardContent>
-                <Typography variant="body2" sx={{ mb: 3, color: theme.palette.text.secondary }}>
-                  Comprehensive explanation of all numeric fields in the token response:
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The token info endpoint provides comprehensive token metadata:
                 </Typography>
-
-                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
-                  Price & Exchange Rate Fields
-                </Typography>
-                <TableContainer sx={{ mb: 3 }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          <code>exch</code>
-                        </TableCell>
-                        <TableCell>
-                          XRP exchange rate per token - derived from TxDB price collection,
-                          represents current market price in XRP
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>usd</code>
-                        </TableCell>
-                        <TableCell>
-                          USD price value calculated from XRP exchange rate and XRP/USD conversion
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>time</code>
-                        </TableCell>
-                        <TableCell>
-                          Unix timestamp (milliseconds) of last price update - updated whenever exch
-                          field changes from transaction data
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>marketcap</code>
-                        </TableCell>
-                        <TableCell>
-                          Market capitalization = supply × exch rate (only calculated for
-                          isOMCF="yes" tokens, 0 otherwise)
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>maxMin24h</code>
-                        </TableCell>
-                        <TableCell>
-                          Array [max, min] of highest and lowest USD prices in the last 24 hours
-                          from PriceDB 1D collection
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-
-                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
-                  Volume & Trading Fields
-                </Typography>
-                <TableContainer sx={{ mb: 3 }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          <code>vol24h</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour raw trading volume in token units - sum of unique transaction
-                          volumes from HistoryDB 1D collection
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>vol24htx</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour transaction count - number of unique transactions (deduplicated by
-                          ledger+hash) divided by 2
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>vol24hxrp</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour XRP equivalent volume - calculated as vol24h × exch rate,
-                          represents total XRP value traded
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>vol24hxrpAMM</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour XRP volume through AMM pools only - vol24hAMM × exch rate for AMM
-                          transactions
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>vol24hAMM</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour AMM volume in token units - filtered from isAMM=true transactions
-                          only
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>vol24htxAMM</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour AMM transaction count - unique AMM transactions (isAMM=true)
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>vol24hx</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour extended volume - from XRP trading pairs in volex24h collection,
-                          token amount traded with XRP
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>vol24hxAMM</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour extended AMM volume - AMM portion of vol24hx from trading pair
-                          data
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-
-                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
-                  Price Change Percentages
-                </Typography>
-                <TableContainer sx={{ mb: 3 }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          <code>pro5m</code>
-                        </TableCell>
-                        <TableCell>
-                          5-minute price change percentage - calculated using getPriceChange()
-                          against PriceDB 7D collection
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>pro1h</code>
-                        </TableCell>
-                        <TableCell>
-                          1-hour price change percentage - compares current USD price with price
-                          from 1 hour ago
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>pro24h</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour price change percentage - compares current USD price with price
-                          from 24 hours ago
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>pro7d</code>
-                        </TableCell>
-                        <TableCell>
-                          7-day price change percentage - compares current USD price with price from
-                          7 days ago
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>p5m</code>
-                        </TableCell>
-                        <TableCell>
-                          5-minute price difference (absolute USD value) - Decimal.sub(newPrice,
-                          oldPrice)
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>p1h</code>
-                        </TableCell>
-                        <TableCell>
-                          1-hour price difference (absolute USD value) - absolute change over 1 hour
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>p24h</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour price difference (absolute USD value) - absolute change over 24
-                          hours
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>p7d</code>
-                        </TableCell>
-                        <TableCell>
-                          7-day price difference (absolute USD value) - absolute change over 7 days
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-
-                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
-                  Token Metrics & Supply
-                </Typography>
-                <TableContainer sx={{ mb: 3 }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          <code>amount</code>
-                        </TableCell>
-                        <TableCell>
-                          Total circulating supply - for XRP: calculated from accounts collection
-                          balance sum
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>supply</code>
-                        </TableCell>
-                        <TableCell>
-                          Total token supply - for XRP: sum of all account balances divided by
-                          1,000,000 (drops to XRP)
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>holders</code>
-                        </TableCell>
-                        <TableCell>
-                          Current number of unique addresses with balance &gt; 0 - counted from
-                          accounts collection
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>trustlines</code>
-                        </TableCell>
-                        <TableCell>
-                          Number of trustlines - for XRP: total address count; for tokens: trust
-                          relationships count
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>offers</code>
-                        </TableCell>
-                        <TableCell>
-                          Active buy/sell offers on XRPL DEX - aggregated count from offers
-                          collection by trading pair
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>holders24h</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour change in holders count - current holders minus holders from
-                          tokens24h collection
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>trustlines24h</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour change in trustlines - current trustlines minus trustlines from
-                          tokens24h collection
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>marketcap24h</code>
-                        </TableCell>
-                        <TableCell>
-                          24-hour change in market cap - current marketcap minus marketcap from
-                          tokens24h collection
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-
-                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
-                  AMM & Liquidity Fields
-                </Typography>
-                <TableContainer sx={{ mb: 3 }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          <code>tvl</code>
-                        </TableCell>
-                        <TableCell>
-                          Total Value Locked in XRP equivalent - calculated from AMM pool analysis
-                          combining XRP + token pool values
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>AMM</code>
-                        </TableCell>
-                        <TableCell>
-                          AMM account address for the liquidity pool - validated AMM account with
-                          minimum 40 XRP liquidity requirement
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-
-                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
-                  Ranking & Scoring Fields
-                </Typography>
-                <TableContainer sx={{ mb: 3 }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          <code>id</code>
-                        </TableCell>
-                        <TableCell>
-                          Ranking position based on vol24hxrp descending sort order
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>dom</code>
-                        </TableCell>
-                        <TableCell>
-                          Market dominance percentage - (token marketcap × 100) ÷ total market cap
-                          of all qualified tokens
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>trendingScore</code>
-                        </TableCell>
-                        <TableCell>
-                          Weighted trending score: volume(10%) + pro24h(10%) + marketcap24h(10%) +
-                          trustlines24h(7.5%) + holders24h(7.5%) + trades(20%) + offers(15%) +
-                          nginxScore(15%) + searchScore(5%)
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>assessmentScore</code>
-                        </TableCell>
-                        <TableCell>
-                          Quality assessment score: vol24hxrp(20%) + marketcap(20%) +
-                          trustlines(15%) + holders(15%) + vol24htx(15%) + offers(15%) - normalized
-                          against global metrics
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>nginxScore</code>
-                        </TableCell>
-                        <TableCell>
-                          Web traffic popularity score from nginx access logs analysis via
-                          tokentrends.sh script
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>searchScore</code>
-                        </TableCell>
-                        <TableCell>
-                          Search-related traffic score - search requests per unique IP from nginx
-                          logs
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-
-                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
-                  Timestamp Fields
-                </Typography>
-                <TableContainer sx={{ mb: 3 }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          <code>dateon</code>
-                        </TableCell>
-                        <TableCell>
-                          Token creation/first discovery timestamp (Unix milliseconds) from initial
-                          transaction
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>date</code>
-                        </TableCell>
-                        <TableCell>
-                          Token registration date (ISO format string) - when token was first indexed
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>lastUpdated</code>
-                        </TableCell>
-                        <TableCell>
-                          Last metadata update timestamp - when token information was last modified
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>updatedAt</code>
-                        </TableCell>
-                        <TableCell>
-                          Last price/market data update timestamp - updated during metrics
-                          calculations
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>trustlinesUpdatedAt</code>
-                        </TableCell>
-                        <TableCell>
-                          Last trustlines count update timestamp from CalcXRPTokenInfo() function
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>lastModified</code>
-                        </TableCell>
-                        <TableCell>Last token record modification timestamp in database</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-
-                <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.main }}>
-                  Global Metrics Fields (Available in H24 and global objects)
-                </Typography>
-                <TableContainer sx={{ mb: 3 }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Field</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          <code>gDexVolume</code>
-                        </TableCell>
-                        <TableCell>
-                          Global DEX volume - sum of all tradedXRP24H across all qualified tokens
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>gMarketcap</code>
-                        </TableCell>
-                        <TableCell>
-                          Global market capitalization - sum of all token market caps (excluding
-                          XRP, scam, and defunct tokens)
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>gScamVolume</code>
-                        </TableCell>
-                        <TableCell>
-                          Volume from tokens tagged as 'Scam' or 'Defunct' - excluded from main
-                          market calculations
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>gNFTIOUVolume</code>
-                        </TableCell>
-                        <TableCell>
-                          Volume from tokens tagged as 'NFT', 'IOU', or 'NFT IOU'
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>gStableVolume</code>
-                        </TableCell>
-                        <TableCell>Volume from tokens tagged as 'Stablecoin'</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>gMemeVolume</code>
-                        </TableCell>
-                        <TableCell>Volume from tokens tagged as 'Memes'</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>gXRPdominance</code>
-                        </TableCell>
-                        <TableCell>
-                          XRP market dominance percentage - (XRP marketcap × 100) ÷ (total marketcap
-                          + XRP marketcap)
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>transactions24H</code>
-                        </TableCell>
-                        <TableCell>
-                          Total XRPL transactions in last 24 hours - calculated from HistoryDB 1D
-                          collection
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>activeAddresses24H</code>
-                        </TableCell>
-                        <TableCell>
-                          Unique addresses that had transactions in the last 24 hours - from TxDB
-                          accounts24h collection
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>totalAddresses</code>
-                        </TableCell>
-                        <TableCell>
-                          Total number of XRPL addresses - count from accounts collection
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>totalOffers</code>
-                        </TableCell>
-                        <TableCell>
-                          Total active offers on XRPL DEX - count from offers collection
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>totalTrustLines</code>
-                        </TableCell>
-                        <TableCell>
-                          Total trustlines on XRPL - count from trusts collection
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-
-                <Alert severity="info" sx={{ mt: 3 }}>
-                  <Typography variant="body2">
-                    <strong>Important Notes:</strong>
-                    <br />• All volume calculations use unique transaction deduplication (by ledger
-                    + hash)
-                    <br />• Only tokens with isOMCF="yes" are included in market cap and ranking
-                    calculations
-                    <br />• AMM volumes require minimum 40 XRP liquidity and proper account
-                    validation
-                    <br />• Price changes use fallback logic when historical data is insufficient
-                    <br />• Global metrics exclude scam/defunct tokens to maintain data quality
-                    <br />• All timestamps are in Unix milliseconds unless specified otherwise
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Details:</strong> Full token information including issuer,
+                    description, and other relevant details
                   </Typography>
-                </Alert>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Metadata:</strong> Additional information about the token
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Images:</strong> Token images and metadata for visual
+                    representation
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Supply:</strong> Total supply of the token
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Trustlines:</strong> Number of trustlines for the token
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Market Cap:</strong> Real-time market capitalization of the
+                    token
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Volume:</strong> Trading volume of the token
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Transactions:</strong> Total number of transactions for the
+                    token
+                  </Typography>
+                </Box>
               </CardContent>
             </Card>
 
-            <Card sx={{ borderRadius: '12px', mb: 3 }}>
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Use Cases
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The token info endpoint is useful for various applications:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Research:</strong> Analyze token details for market research
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Portfolio Tracking:</strong> Monitor token movements and
+                    transactions
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Compliance Auditing:</strong> Review token details for
+                    regulatory compliance
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Market Analysis:</strong> Analyze token market trends and
+                    performance
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Trading Insights:</strong> Gain insights into token trading
+                    patterns
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
@@ -1746,18 +1059,21 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
             <Card
               sx={{
                 background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.info.main,
+                  theme.palette.primary.main,
                   0.05
-                )} 0%, ${alpha(theme.palette.info.main, 0.02)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
+                )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                 borderRadius: '16px',
                 p: 3,
                 mb: 3
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <ImageIcon sx={{ color: theme.palette.info.main, mr: 2, fontSize: 32 }} />
-                <Typography variant="h2" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                <DataUsageIcon sx={{ color: theme.palette.primary.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
                   Get Token Image
                 </Typography>
               </Box>
@@ -1765,110 +1081,9 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                 variant="body1"
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
-                Retrieve the image associated with a specific token using its MD5 hash. Token images
-                are hosted on the XRPL.to CDN and can be accessed directly for display in
-                applications, websites, or other interfaces.
+                Retrieve the image associated with a specific token. This endpoint provides
+                high-quality images for tokens, including PNG, JPEG, WebP, and SVG formats.
               </Typography>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.info.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-                }}
-              >
-                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
-                  HTTP Request
-                </Typography>
-              </Box>
-              <CardContent>
-                <CodeBlock language="http">GET https://s1.xrpl.to/token/&lt;md5&gt;</CodeBlock>
-                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
-                  Example with specific token MD5:
-                </Typography>
-                <CodeBlock language="http">
-                  GET https://s1.xrpl.to/token/0dd550278b74cb6690fdae351e8e0df3
-                </CodeBlock>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.primary.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
-                >
-                  Parameters
-                </Typography>
-              </Box>
-              <CardContent>
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell
-                          sx={{
-                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          Parameter
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          Type
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          Required
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          Description
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>md5</TableCell>
-                        <TableCell>Path</TableCell>
-                        <TableCell>Yes</TableCell>
-                        <TableCell>
-                          MD5 hash of the token identifier (issuer_currency combination)
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </CardContent>
             </Card>
 
             <Card sx={{ mb: 3, borderRadius: '12px' }}>
@@ -1887,217 +1102,20 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                   variant="h6"
                   sx={{ color: theme.palette.success.main, fontWeight: 600 }}
                 >
-                  How to Get MD5 Hash
+                  HTTP Request
                 </Typography>
               </Box>
               <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The MD5 hash is calculated from the token's issuer address and currency code:
-                </Typography>
-                <CodeBlock language="javascript">
-                  {`// Example: Calculate MD5 for a token
-const crypto = require('crypto');
-
-const issuer = 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz';
-const currency = 'SOLO';
-const tokenString = \`\${issuer}_\${currency}\`;
-const md5Hash = crypto.createHash('md5').update(tokenString).digest('hex');
-
-console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/token-image/&lt;issuer&gt;_&lt;currency&gt;
                 </CodeBlock>
                 <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
-                  You can also get the MD5 hash from the token info API response.
+                  Example usage:
                 </Typography>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.warning.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
-                >
-                  Response Format
-                </Typography>
-              </Box>
-              <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  This endpoint returns the token image directly as a binary response. Common
-                  formats include:
-                </Typography>
-                <Box sx={{ ml: 2 }}>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Content-Type:</strong> image/png, image/jpeg, image/webp, or
-                    image/svg+xml
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Response:</strong> Binary image data
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Cache Headers:</strong> Includes cache-control headers for
-                    optimization
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    • <strong>CORS Enabled:</strong> Can be accessed from web applications
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.success.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
-                >
-                  Usage Examples
-                </Typography>
-              </Box>
-              <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  Here are common ways to use token images in your applications:
-                </Typography>
-
-                <Typography
-                  variant="subtitle2"
-                  sx={{ mb: 1, color: theme.palette.text.primary, fontWeight: 600 }}
-                >
-                  HTML Image Tag:
-                </Typography>
-                <CodeBlock language="html">
-                  {`<img src="https://s1.xrpl.to/token/0dd550278b74cb6690fdae351e8e0df3" 
-     alt="SOLO Token" 
-     width="32" 
-     height="32" />`}
-                </CodeBlock>
-
-                <Typography
-                  variant="subtitle2"
-                  sx={{ mb: 1, mt: 2, color: theme.palette.text.primary, fontWeight: 600 }}
-                >
-                  CSS Background Image:
-                </Typography>
-                <CodeBlock language="css">
-                  {`.token-icon {
-  background-image: url('https://s1.xrpl.to/token/0dd550278b74cb6690fdae351e8e0df3');
-  background-size: cover;
-  width: 32px;
-  height: 32px;
-}`}
-                </CodeBlock>
-
-                <Typography
-                  variant="subtitle2"
-                  sx={{ mb: 1, mt: 2, color: theme.palette.text.primary, fontWeight: 600 }}
-                >
-                  React Component:
-                </Typography>
-                <CodeBlock language="jsx">
-                  {`function TokenIcon({ md5, alt, size = 32 }) {
-  return (
-    <img 
-      src={\`https://s1.xrpl.to/token/\${md5}\`}
-      alt={alt}
-      width={size}
-      height={size}
-      onError={(e) => {
-        e.target.src = '/fallback-token-icon.png';
-      }}
-    />
-  );
-}`}
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/token-image/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD
                 </CodeBlock>
               </CardContent>
-            </Card>
-
-            <Card sx={{ borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.error.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
-                }}
-              >
-                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
-                  Error Handling
-                </Typography>
-              </Box>
-              <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  When a token image is not found or unavailable, the endpoint will return:
-                </Typography>
-                <Box sx={{ ml: 2 }}>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>404 Not Found:</strong> When the MD5 hash doesn't correspond to any
-                    token image
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Image Fallback:</strong> Some applications may show a default token
-                    icon
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    • <strong>CORS Errors:</strong> Ensure your application handles cross-origin
-                    requests properly
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-        );
-
-      case 'get-sparkline-of-a-token':
-        return (
-          <Box id="get-sparkline-of-a-token">
-            <Card
-              sx={{
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.info.main,
-                  0.05
-                )} 0%, ${alpha(theme.palette.info.main, 0.02)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
-                borderRadius: '16px',
-                p: 3,
-                mb: 3
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <TrendingUpIcon sx={{ color: theme.palette.info.main, mr: 2, fontSize: 32 }} />
-                <Typography variant="h2" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
-                  Get Token Sparkline
-                </Typography>
-              </Box>
-              <Typography
-                variant="body1"
-                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
-              >
-                Retrieve sparkline chart data for token price visualization and trend analysis.
-                Supports both 24-hour and 7-day periods with automatic chart coloring, precise
-                formatting, and cross-origin compatibility.
-              </Typography>
             </Card>
 
             <Card sx={{ mb: 3, borderRadius: '12px' }}>
@@ -2113,39 +1131,7 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
                 }}
               >
                 <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
-                  HTTP Request
-                </Typography>
-              </Box>
-              <CardContent>
-                <CodeBlock language="http">
-                  GET https://api.xrpl.to/api/sparkline/&lt;md5&gt;
-                </CodeBlock>
-                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
-                  Example with 24-hour period:
-                </Typography>
-                <CodeBlock language="http">
-                  GET https://api.xrpl.to/api/sparkline/0413ca7cfc258dfaf698c02fe304e607?period=24h
-                </CodeBlock>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.primary.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
-                >
-                  Parameters
+                  Query Parameters
                 </Typography>
               </Box>
               <TableContainer>
@@ -2188,32 +1174,16 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
                   </TableHead>
                   <TableBody>
                     <TableRow>
-                      <TableCell>md5</TableCell>
-                      <TableCell>Path</TableCell>
+                      <TableCell>issuer</TableCell>
+                      <TableCell>Query</TableCell>
                       <TableCell>Required</TableCell>
-                      <TableCell>MD5 hash of the token identifier</TableCell>
+                      <TableCell>Issuer address of the token</TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell>period</TableCell>
+                      <TableCell>currency</TableCell>
                       <TableCell>Query</TableCell>
-                      <TableCell>7d</TableCell>
-                      <TableCell>
-                        Time period: "24h" for 24-hour data or "7d" for 7-day data
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>pro24h</TableCell>
-                      <TableCell>Query</TableCell>
-                      <TableCell>-</TableCell>
-                      <TableCell>
-                        Override 24-hour percentage change value (when period=24h)
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>pro7d</TableCell>
-                      <TableCell>Query</TableCell>
-                      <TableCell>-</TableCell>
-                      <TableCell>Override 7-day percentage change value (when period=7d)</TableCell>
+                      <TableCell>Required</TableCell>
+                      <TableCell>Currency code of the token</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -2245,8 +1215,8 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
                 </Typography>
                 <Button
                   variant="contained"
-                  color="success"
-                  onClick={() => handleOpenModal('get-sparkline-of-a-token')}
+                  color="primary"
+                  onClick={() => handleOpenModal('get-token-image')}
                   sx={{
                     borderRadius: '8px',
                     textTransform: 'none',
@@ -2276,32 +1246,28 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
                   variant="h6"
                   sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
                 >
-                  Smart Features
+                  Advanced Features
                 </Typography>
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  This endpoint includes several intelligent features:
+                  The token image endpoint supports various image formats and sizes:
                 </Typography>
                 <Box sx={{ ml: 2 }}>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Multi-Currency Support:</strong> USD, EUR, JPY, CNH, and XRP
-                    conversion
+                    • <strong>PNG:</strong> High-quality PNG images
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>XRP Special Handling:</strong> Automatic inverse calculation for XRP
-                    pairs
+                    • <strong>JPEG:</strong> Lossy compression JPEG images
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Intelligent Fallback:</strong> 1D data supplemented with 7D data when
-                    needed
+                    • <strong>WebP:</strong> Lossless compression WebP images
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Volume Integration:</strong> Volume-weighted price data included
+                    • <strong>SVG:</strong> Scalable Vector Graphics (SVG) images
                   </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    • <strong>Performance Timing:</strong> Response time measurement for
-                    optimization
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Metadata:</strong> Token metadata for image descriptions
                   </Typography>
                 </Box>
               </CardContent>
@@ -2320,27 +1286,31 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
                 }}
               >
                 <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
-                  Data Calculation Logic
+                  Use Cases
                 </Typography>
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The endpoint includes sophisticated logic for XRP and data availability:
+                  The token image endpoint is useful for various applications:
                 </Typography>
                 <Box sx={{ ml: 2 }}>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>XRP Detection:</strong> Automatically detects XRP MD5 and applies
-                    inverse calculation
+                    • <strong>Token Visualization:</strong> Display token images in applications
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>1D Fallback:</strong> If only 1 trade exists for 1D range, supplements
-                    with 7D data
+                    • <strong>Token Marketing:</strong> Create promotional materials with token
+                    images
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Currency Mapping:</strong> CNH requests automatically map to CNY data
+                    • <strong>Token Compliance:</strong> Ensure token images are compliant with
+                    regulations
                   </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    • <strong>Default Fallback:</strong> Unknown currencies default to USD pricing
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Research:</strong> Analyze token images for market research
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Portfolio Tracking:</strong> Monitor token images and
+                    descriptions
                   </Typography>
                 </Box>
               </CardContent>
@@ -2384,40 +1354,327 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
           </Box>
         );
 
-      case 'get-rich-list-of-a-token':
+      case 'get-sparkline-of-a-token':
         return (
-          <Box id="get-rich-list-of-a-token">
+          <Box id="get-sparkline-of-a-token">
             <Card
               sx={{
                 background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.error.main,
+                  theme.palette.primary.main,
                   0.05
-                )} 0%, ${alpha(theme.palette.error.main, 0.02)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
+                )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                 borderRadius: '16px',
                 p: 3,
                 mb: 3
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <AccountBalanceWalletIcon
-                  sx={{ color: theme.palette.error.main, mr: 2, fontSize: 32 }}
-                />
-                <Typography variant="h2" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
-                  Get Rich List of Token
+                <TrendingUpIcon sx={{ color: theme.palette.primary.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  Get Sparkline of a Token
                 </Typography>
               </Box>
               <Typography
                 variant="body1"
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
-                Retrieve the rich list showing top token holders with their balances. Supports
-                pagination, custom sorting, freeze status filtering, and performance timing for
-                comprehensive token holder analysis.
+                Retrieve a sparkline chart for a specific token. This endpoint provides a visual
+                representation of token price movements over a specified time range.
               </Typography>
             </Card>
 
             <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/sparkline/&lt;tokenId&gt;
+                </CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  Example usage:
+                </Typography>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/sparkline/0413ca7cfc258dfaf698c02fe304e607
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Query Parameters
+                </Typography>
+              </Box>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Parameter
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Type
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Default
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Description
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>tokenId</TableCell>
+                      <TableCell>Path</TableCell>
+                      <TableCell>Required</TableCell>
+                      <TableCell>Token ID or slug</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>range</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>1D</TableCell>
+                      <TableCell>
+                        Time range for historical data: 1D, 7D, 1M, 3M, 1Y, or ALL
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Try It Now
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  Test this endpoint directly and see the live response structure:
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleOpenModal('get-sparkline-of-a-token')}
+                  sx={{
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1.5,
+                    fontWeight: 600
+                  }}
+                >
+                  Try API Call
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Data Features
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The sparkline data endpoint provides comprehensive market data:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>OHLC Data:</strong> Open, High, Low, Close prices for each time period
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Multi-Currency Pricing:</strong> USD, EUR, JPY, and CNY price
+                    conversions
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Volume Metrics:</strong> Both token volume and XRP volume tracking
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Trade Count:</strong> Number of individual transactions per period
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Market Cap:</strong> Real-time market capitalization calculations
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Performance Timing:</strong> Response time measurement for
+                    optimization
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Use Cases
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The sparkline data is ideal for various analytical and visualization purposes:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Chart Visualization:</strong> Create line, area, or bar charts
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Technical Analysis:</strong> Calculate moving averages, RSI, and other
+                    indicators
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Historical Research:</strong> Study long-term price trends and
+                    patterns
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Volume Analysis:</strong> Correlate price movements with trading
+                    activity
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Market Research:</strong> Compare performance across different time
+                    periods
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Portfolio Tracking:</strong> Monitor asset performance over time
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Data Resolution
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  Data resolution varies by time range for optimal performance:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>1D:</strong> 5-minute intervals (288 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>7D:</strong> 30-minute intervals (336 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>1M:</strong> 4-hour intervals (180 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>3M:</strong> 12-hour intervals (180 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>1Y:</strong> Daily intervals (365 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>ALL:</strong> Weekly intervals (variable count)
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
@@ -2430,19 +1687,106 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
                 }}
               >
                 <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  Error Responses
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns the following error responses:
+                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error (Invalid Token ID)
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Invalid token ID"
+}`}
+                  </CodeBlock>
+                </Box>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error (Other)
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Error message details"
+}`}
+                  </CodeBlock>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      case 'get-graph-data-of-a-token':
+        return (
+          <Box id="get-graph-data-of-a-token">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.warning.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.warning.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <TrendingUpIcon sx={{ color: theme.palette.warning.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Get Graph Data of a Token
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve comprehensive historical price and trading data for detailed chart
+                visualization and technical analysis. Supports multiple time ranges from 1 day to
+                all-time data with precise timestamps and volume information.
+              </Typography>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
                   HTTP Request
                 </Typography>
               </Box>
               <CardContent>
                 <CodeBlock language="http">
-                  GET https://api.xrpl.to/api/richlist/&lt;md5&gt;?start=0&limit=20&sortType=desc
+                  GET https://api.xrpl.to/api/graph/&lt;md5&gt;?range=1D
                 </CodeBlock>
                 <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
-                  Example with freeze filtering and custom sorting:
+                  Example with 7-day range:
                 </Typography>
                 <CodeBlock language="http">
-                  GET
-                  https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=20&freeze=true&sortBy=balance&sortType=desc
+                  GET https://api.xrpl.to/api/graph/c9ac9a6c44763c1bd9ccc6e47572fd26?range=7D
                 </CodeBlock>
               </CardContent>
             </Card>
@@ -2512,36 +1856,446 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
                       <TableCell>MD5 hash of the token identifier</TableCell>
                     </TableRow>
                     <TableRow>
+                      <TableCell>range</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>1D</TableCell>
+                      <TableCell>
+                        Time range for historical data: 1D, 7D, 1M, 3M, 1Y, or ALL
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Time Ranges
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API supports the following time ranges for historical data:
+                </Typography>
+                <Grid container spacing={2}>
+                  {[
+                    { range: '1D', desc: '1 Day - Last 24 hours', color: 'primary' },
+                    { range: '7D', desc: '7 Days - Last week', color: 'success' },
+                    { range: '1M', desc: '1 Month - Last 30 days', color: 'info' },
+                    { range: '3M', desc: '3 Months - Last quarter', color: 'warning' },
+                    { range: '1Y', desc: '1 Year - Last 12 months', color: 'error' },
+                    { range: 'ALL', desc: 'All Time - Complete history', color: 'secondary' }
+                  ].map((item, index) => (
+                    <Grid item xs={12} sm={6} md={4} key={index}>
+                      <Card
+                        sx={{
+                          background: alpha(theme.palette[item.color].main, 0.08),
+                          border: `1px solid ${alpha(theme.palette[item.color].main, 0.2)}`,
+                          borderRadius: '8px',
+                          p: 2,
+                          textAlign: 'center',
+                          transition: 'transform 0.2s ease',
+                          '&:hover': { transform: 'scale(1.02)' }
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          sx={{ color: `${item.color}.main`, fontWeight: 600, mb: 1 }}
+                        >
+                          {item.range}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          {item.desc}
+                        </Typography>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Try It Now
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  Test this endpoint directly and see the live response structure:
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleOpenModal('get-graph-data-of-a-token')}
+                  sx={{
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1.5,
+                    fontWeight: 600
+                  }}
+                >
+                  Try API Call
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Data Features
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The graph data endpoint provides comprehensive market data:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>OHLC Data:</strong> Open, High, Low, Close prices for each time period
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Multi-Currency Pricing:</strong> USD, EUR, JPY, and CNY price
+                    conversions
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Volume Metrics:</strong> Both token volume and XRP volume tracking
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Trade Count:</strong> Number of individual transactions per period
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Market Cap:</strong> Real-time market capitalization calculations
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Performance Timing:</strong> Response time measurement for
+                    optimization
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Use Cases
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The graph data is ideal for various analytical and visualization purposes:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Chart Visualization:</strong> Create candlestick, line, and area
+                    charts
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Technical Analysis:</strong> Calculate moving averages, RSI, and other
+                    indicators
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Historical Research:</strong> Study long-term price trends and
+                    patterns
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Volume Analysis:</strong> Correlate price movements with trading
+                    activity
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Market Research:</strong> Compare performance across different time
+                    periods
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Portfolio Tracking:</strong> Monitor asset performance over time
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Data Resolution
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  Data resolution varies by time range for optimal performance:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>1D:</strong> 5-minute intervals (288 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>7D:</strong> 30-minute intervals (336 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>1M:</strong> 4-hour intervals (180 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>3M:</strong> 12-hour intervals (180 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>1Y:</strong> Daily intervals (365 data points)
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>ALL:</strong> Weekly intervals (variable count)
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                  Error Responses
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API returns the following error responses:
+                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error (Invalid MD5)
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Invalid md5"
+}`}
+                  </CodeBlock>
+                </Box>
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
+                  >
+                    500 Internal Server Error (Other)
+                  </Typography>
+                  <CodeBlock language="json">
+                    {`{
+  "message": "Error message details"
+}`}
+                  </CodeBlock>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      case 'get-rich-list-of-a-token':
+        return (
+          <Box id="get-rich-list-of-a-token">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <DataUsageIcon sx={{ color: theme.palette.primary.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  Get Rich List of a Token
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve a list of top holders of a specific token. This endpoint provides
+                comprehensive information about token distribution and ownership.
+              </Typography>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/richlist/&lt;tokenId&gt;?start=0&limit=20
+                </CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  Example usage:
+                </Typography>
+                <CodeBlock language="http">
+                  GET
+                  https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=20
+                </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
+                  Query Parameters
+                </Typography>
+              </Box>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Parameter
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Type
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Default
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Description
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>tokenId</TableCell>
+                      <TableCell>Path</TableCell>
+                      <TableCell>Required</TableCell>
+                      <TableCell>Token ID or slug</TableCell>
+                    </TableRow>
+                    <TableRow>
                       <TableCell>start</TableCell>
                       <TableCell>Query</TableCell>
                       <TableCell>0</TableCell>
-                      <TableCell>Starting position for pagination (number)</TableCell>
+                      <TableCell>Start value for pagination (minimum: 0)</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>limit</TableCell>
                       <TableCell>Query</TableCell>
                       <TableCell>20</TableCell>
-                      <TableCell>Maximum number of records to return (number)</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>freeze</TableCell>
-                      <TableCell>Query</TableCell>
-                      <TableCell>false</TableCell>
-                      <TableCell>Set to "true" to include freeze status information</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>sortBy</TableCell>
-                      <TableCell>Query</TableCell>
-                      <TableCell>balance</TableCell>
-                      <TableCell>Field to sort by (e.g., balance, account, etc.)</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>sortType</TableCell>
-                      <TableCell>Query</TableCell>
-                      <TableCell>desc</TableCell>
-                      <TableCell>
-                        Sort direction: "asc" (ascending) or "desc" (descending)
-                      </TableCell>
+                      <TableCell>Limit count value for pagination (1-100, default: 20)</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -2571,40 +2325,20 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
                   Test this endpoint directly and see the live response structure:
                 </Typography>
-                <CodeBlock language="json">
-                  {`{
-  "result": "success",
-  "took": "23.45",                  // Response time in milliseconds
-  "holders": [                      // Array of token holders
-    {
-      "account": "rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH",
-      "balance": "1000000.123456",   // Token balance
-      "percentage": "15.25",         // Percentage of total supply
-      "rank": 1,                     // Position in rich list
-      "frozen": false                // Freeze status (if freeze=true)
-    },
-    {
-      "account": "rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w", 
-      "balance": "750000.987654",
-      "percentage": "11.43",
-      "rank": 2,
-      "frozen": false
-    }
-    // ... more holders
-  ],
-  "pagination": {
-    "start": 0,                     // Current start position
-    "limit": 20,                    // Current limit
-    "total": 5000,                  // Total number of holders
-    "hasMore": true                 // Whether more records exist
-  },
-  "summary": {
-    "totalSupply": "6562500.000000", // Total token supply
-    "totalHolders": 5000,           // Total number of holders
-    "topHoldersPercentage": "68.45" // Top holders concentration
-  }
-}`}
-                </CodeBlock>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleOpenModal('get-rich-list-of-a-token')}
+                  sx={{
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1.5,
+                    fontWeight: 600
+                  }}
+                >
+                  Try API Call
+                </Button>
               </CardContent>
             </Card>
 
@@ -2629,26 +2363,36 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The rich list endpoint provides sophisticated analysis capabilities:
+                  The rich list endpoint provides comprehensive token distribution data:
                 </Typography>
                 <Box sx={{ ml: 2 }}>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Flexible Sorting:</strong> Sort by balance, account, or other fields
+                    • <strong>Token Details:</strong> Full token information including issuer,
+                    description, and other relevant details
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Freeze Status:</strong> Include freeze information for compliance
-                    analysis
+                    • <strong>Token Metadata:</strong> Additional information about the token
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Pagination Support:</strong> Efficient browsing of large holder lists
+                    • <strong>Token Images:</strong> Token images and metadata for visual
+                    representation
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Distribution Analysis:</strong> Percentage holdings and concentration
-                    metrics
+                    • <strong>Token Supply:</strong> Total supply of the token
                   </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    • <strong>Performance Timing:</strong> Response time measurement for
-                    optimization
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Trustlines:</strong> Number of trustlines for the token
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Market Cap:</strong> Real-time market capitalization of the
+                    token
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Volume:</strong> Trading volume of the token
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Transactions:</strong> Total number of transactions for the
+                    token
                   </Typography>
                 </Box>
               </CardContent>
@@ -2672,22 +2416,27 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
               </Box>
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The rich list data is valuable for various analytical purposes:
+                  The rich list endpoint is useful for various applications:
                 </Typography>
                 <Box sx={{ ml: 2 }}>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Token Distribution Analysis:</strong> Study wealth concentration
-                    patterns
+                    • <strong>Token Research:</strong> Analyze token distribution for market
+                    research
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Whale Tracking:</strong> Monitor large holder movements and behavior
+                    • <strong>Token Portfolio Tracking:</strong> Monitor token ownership and
+                    distribution
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Compliance Monitoring:</strong> Track frozen accounts and regulatory
-                    status
+                    • <strong>Token Compliance Auditing:</strong> Review token distribution for
+                    regulatory compliance
                   </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    • <strong>Market Research:</strong> Understand token holder demographics and
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Market Analysis:</strong> Analyze token market trends and
+                    performance
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Token Trading Insights:</strong> Gain insights into token trading
                     patterns
                   </Typography>
                 </Box>
@@ -2748,21 +2497,21 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <SpeedIcon sx={{ color: theme.palette.secondary.main, mr: 2, fontSize: 32 }} />
+                <TrendingUpIcon sx={{ color: theme.palette.secondary.main, mr: 2, fontSize: 32 }} />
                 <Typography
                   variant="h2"
                   sx={{ color: theme.palette.secondary.main, fontWeight: 600 }}
                 >
-                  Get Exchange History
+                  Get Exchange History of a Token
                 </Typography>
               </Box>
               <Typography
                 variant="body1"
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
-                Retrieve historical exchange data and trading activity for a specific token or
-                account. Supports pagination, account filtering, and performance timing for
-                comprehensive transaction analysis with automatic parameter validation.
+                Retrieve detailed transaction history for a specific token, including trade data,
+                volumes, prices, and participant information. Supports pagination and
+                account-specific filtering for comprehensive transaction analysis.
               </Typography>
             </Card>
 
@@ -3016,18 +2765,15 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.warning.main,
+                    theme.palette.info.main,
                     0.08
-                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
                   p: 2,
                   borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
                 }}
               >
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
-                >
+                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
                   Use Cases
                 </Typography>
               </Box>
@@ -3604,439 +3350,6 @@ console.log(md5Hash); // Output: 0dd550278b74cb6690fdae351e8e0df3`}
                   </TableBody>
                 </Table>
               </TableContainer>
-            </Card>
-          </Box>
-        );
-
-      case 'get-graph-data-of-a-token':
-        return (
-          <Box id="get-graph-data-of-a-token">
-            <Card
-              sx={{
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.warning.main,
-                  0.05
-                )} 0%, ${alpha(theme.palette.warning.main, 0.02)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`,
-                borderRadius: '16px',
-                p: 3,
-                mb: 3
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <TrendingUpIcon sx={{ color: theme.palette.warning.main, mr: 2, fontSize: 32 }} />
-                <Typography
-                  variant="h2"
-                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
-                >
-                  Get Graph Data of a Token
-                </Typography>
-              </Box>
-              <Typography
-                variant="body1"
-                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
-              >
-                Retrieve comprehensive historical price and trading data for detailed chart
-                visualization and technical analysis. Supports multiple time ranges from 1 day to
-                all-time data with precise timestamps and volume information.
-              </Typography>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.warning.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
-                >
-                  HTTP Request
-                </Typography>
-              </Box>
-              <CardContent>
-                <CodeBlock language="http">
-                  GET https://api.xrpl.to/api/graph/&lt;md5&gt;?range=1D
-                </CodeBlock>
-                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
-                  Example with 7-day range:
-                </Typography>
-                <CodeBlock language="http">
-                  GET https://api.xrpl.to/api/graph/c9ac9a6c44763c1bd9ccc6e47572fd26?range=7D
-                </CodeBlock>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.primary.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
-                >
-                  Parameters
-                </Typography>
-              </Box>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell
-                        sx={{
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Parameter
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Type
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Default
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Description
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>md5</TableCell>
-                      <TableCell>Path</TableCell>
-                      <TableCell>Required</TableCell>
-                      <TableCell>MD5 hash of the token identifier</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>range</TableCell>
-                      <TableCell>Query</TableCell>
-                      <TableCell>1D</TableCell>
-                      <TableCell>
-                        Time range for historical data: 1D, 7D, 1M, 3M, 1Y, or ALL
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.info.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-                }}
-              >
-                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
-                  Time Ranges
-                </Typography>
-              </Box>
-              <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The API supports the following time ranges for historical data:
-                </Typography>
-                <Grid container spacing={2}>
-                  {[
-                    { range: '1D', desc: '1 Day - Last 24 hours', color: 'primary' },
-                    { range: '7D', desc: '7 Days - Last week', color: 'success' },
-                    { range: '1M', desc: '1 Month - Last 30 days', color: 'info' },
-                    { range: '3M', desc: '3 Months - Last quarter', color: 'warning' },
-                    { range: '1Y', desc: '1 Year - Last 12 months', color: 'error' },
-                    { range: 'ALL', desc: 'All Time - Complete history', color: 'secondary' }
-                  ].map((item, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={index}>
-                      <Card
-                        sx={{
-                          background: alpha(theme.palette[item.color].main, 0.08),
-                          border: `1px solid ${alpha(theme.palette[item.color].main, 0.2)}`,
-                          borderRadius: '8px',
-                          p: 2,
-                          textAlign: 'center',
-                          transition: 'transform 0.2s ease',
-                          '&:hover': { transform: 'scale(1.02)' }
-                        }}
-                      >
-                        <Typography
-                          variant="h6"
-                          sx={{ color: `${item.color}.main`, fontWeight: 600, mb: 1 }}
-                        >
-                          {item.range}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                          {item.desc}
-                        </Typography>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.success.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
-                >
-                  Try It Now
-                </Typography>
-              </Box>
-              <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  Test this endpoint directly and see the live response structure:
-                </Typography>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleOpenModal('get-graph-data-of-a-token')}
-                  sx={{
-                    borderRadius: '8px',
-                    textTransform: 'none',
-                    px: 3,
-                    py: 1.5,
-                    fontWeight: 600
-                  }}
-                >
-                  Try API Call
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.warning.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
-                >
-                  Data Features
-                </Typography>
-              </Box>
-              <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The graph data endpoint provides comprehensive market data:
-                </Typography>
-                <Box sx={{ ml: 2 }}>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>OHLC Data:</strong> Open, High, Low, Close prices for each time period
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Multi-Currency Pricing:</strong> USD, EUR, JPY, and CNY price
-                    conversions
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Volume Metrics:</strong> Both token volume and XRP volume tracking
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Trade Count:</strong> Number of individual transactions per period
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Market Cap:</strong> Real-time market capitalization calculations
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    • <strong>Performance Timing:</strong> Response time measurement for
-                    optimization
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.info.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-                }}
-              >
-                <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
-                  Use Cases
-                </Typography>
-              </Box>
-              <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The graph data is ideal for various analytical and visualization purposes:
-                </Typography>
-                <Box sx={{ ml: 2 }}>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Chart Visualization:</strong> Create candlestick, line, and area
-                    charts
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Technical Analysis:</strong> Calculate moving averages, RSI, and other
-                    indicators
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Historical Research:</strong> Study long-term price trends and
-                    patterns
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Volume Analysis:</strong> Correlate price movements with trading
-                    activity
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>Market Research:</strong> Compare performance across different time
-                    periods
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    • <strong>Portfolio Tracking:</strong> Monitor asset performance over time
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ mb: 3, borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.success.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
-                >
-                  Data Resolution
-                </Typography>
-              </Box>
-              <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  Data resolution varies by time range for optimal performance:
-                </Typography>
-                <Box sx={{ ml: 2 }}>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>1D:</strong> 5-minute intervals (288 data points)
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>7D:</strong> 30-minute intervals (336 data points)
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>1M:</strong> 4-hour intervals (180 data points)
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>3M:</strong> 12-hour intervals (180 data points)
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
-                    • <strong>1Y:</strong> Daily intervals (365 data points)
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    • <strong>ALL:</strong> Weekly intervals (variable count)
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-
-            <Card sx={{ borderRadius: '12px' }}>
-              <Box
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.error.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
-                  p: 2,
-                  borderRadius: '12px 12px 0 0',
-                  borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
-                }}
-              >
-                <Typography variant="h6" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
-                  Error Responses
-                </Typography>
-              </Box>
-              <CardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                  The API returns the following error responses:
-                </Typography>
-                <Box sx={{ mb: 2 }}>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
-                  >
-                    500 Internal Server Error (Invalid MD5)
-                  </Typography>
-                  <CodeBlock language="json">
-                    {`{
-  "message": "Invalid md5"
-}`}
-                  </CodeBlock>
-                </Box>
-                <Box>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 'bold', color: theme.palette.error.main }}
-                  >
-                    500 Internal Server Error (Other)
-                  </Typography>
-                  <CodeBlock language="json">
-                    {`{
-  "message": "Error message details"
-}`}
-                  </CodeBlock>
-                </Box>
-              </CardContent>
             </Card>
           </Box>
         );

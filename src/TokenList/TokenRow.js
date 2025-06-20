@@ -188,6 +188,20 @@ const getOriginIcon = (origin) => {
           sx={{ fontSize: '18px', color: '#cfff04', marginRight: '2px', marginTop: '2px' }}
         />
       );
+    case 'aigent.run':
+      return (
+        <Box
+          component="img"
+          src="/static/aigentrun.gif"
+          alt="Aigent.Run"
+          sx={{
+            width: '18px',
+            height: '18px',
+            objectFit: 'contain',
+            marginRight: '2px'
+          }}
+        />
+      );
     case 'Magnetic X':
       return (
         <Box
