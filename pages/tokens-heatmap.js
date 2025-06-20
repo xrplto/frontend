@@ -1,55 +1,244 @@
-import { useContext } from "react";
-import { useSelector } from "react-redux";
+import { useContext } from 'react';
+import { useSelector } from 'react-redux';
 import { AppContext } from 'src/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
-import { Box, Container, Grid, styled, Toolbar, useMediaQuery } from "@mui/material";
-import CryptoHeatmap from "src/components/CryptoHeatmap";
+import {
+  Box,
+  Container,
+  Grid,
+  styled,
+  Toolbar,
+  useMediaQuery,
+  Paper,
+  alpha,
+  Stack,
+  Fade,
+  useTheme
+} from '@mui/material';
+import CryptoHeatmap from 'src/components/CryptoHeatmap';
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Summary from 'src/TokenList/Summary';
 
 const OverviewWrapper = styled(Box)(
-    ({ theme }) => `
-      overflow: hidden;
-      flex: 1;
+  ({ theme }) => `
+    overflow: hidden;
+    flex: 1;
+    background: ${
+      theme.palette.mode === 'dark'
+        ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${alpha(
+            theme.palette.background.paper,
+            0.8
+          )} 100%)`
+        : `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.9)} 0%, ${alpha(
+            theme.palette.background.paper,
+            0.95
+          )} 100%)`
+    };
+    min-height: 100vh;
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: ${
+        theme.palette.mode === 'dark'
+          ? `radial-gradient(circle at 20% 20%, ${alpha(
+              theme.palette.primary.main,
+              0.08
+            )} 0%, transparent 60%),
+           radial-gradient(circle at 80% 80%, ${alpha(
+             theme.palette.secondary.main,
+             0.08
+           )} 0%, transparent 60%),
+           radial-gradient(circle at 40% 40%, ${alpha(
+             theme.palette.success.main,
+             0.05
+           )} 0%, transparent 50%)`
+          : `radial-gradient(circle at 20% 20%, ${alpha(
+              theme.palette.primary.main,
+              0.04
+            )} 0%, transparent 60%),
+           radial-gradient(circle at 80% 80%, ${alpha(
+             theme.palette.secondary.main,
+             0.04
+           )} 0%, transparent 60%),
+           radial-gradient(circle at 40% 40%, ${alpha(
+             theme.palette.success.main,
+             0.03
+           )} 0%, transparent 50%)`
+      };
+      pointer-events: none;
+      z-index: -1;
+    }
+  `
+);
+
+const MainContent = styled(Container)(
+  ({ theme }) => `
+    position: relative;
+    z-index: 1;
+    padding-top: ${theme.spacing(3)};
+    padding-bottom: ${theme.spacing(6)};
+    
+    ${theme.breakpoints.down('md')} {
+      padding-top: ${theme.spacing(2)};
+      padding-bottom: ${theme.spacing(4)};
+    }
+  `
+);
+
+const SummaryWrapper = styled(Paper)(
+  ({ theme }) => `
+    background: ${
+      theme.palette.mode === 'dark'
+        ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+            theme.palette.background.paper,
+            0.8
+          )} 100%)`
+        : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
+            theme.palette.background.paper,
+            0.9
+          )} 100%)`
+    };
+    backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 24px;
+    padding: ${theme.spacing(3, 4)};
+    border: ${
+      theme.palette.mode === 'dark'
+        ? `1px solid ${alpha(theme.palette.divider, 0.08)}`
+        : `1px solid ${alpha(theme.palette.divider, 0.06)}`
+    };
+    box-shadow: ${
+      theme.palette.mode === 'dark'
+        ? `0 12px 40px ${alpha(theme.palette.common.black, 0.4)}, 
+           0 4px 12px ${alpha(theme.palette.primary.main, 0.1)},
+           inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
+        : `0 12px 40px ${alpha(theme.palette.common.black, 0.1)}, 
+           0 4px 12px ${alpha(theme.palette.primary.main, 0.05)},
+           inset 0 1px 0 ${alpha(theme.palette.common.white, 0.6)}`
+    };
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, 
+        ${alpha(theme.palette.primary.main, 0.8)}, 
+        ${alpha(theme.palette.success.main, 0.8)}, 
+        ${alpha(theme.palette.info.main, 0.8)},
+        ${alpha(theme.palette.warning.main, 0.8)}
+      );
+      border-radius: 24px 24px 0 0;
+    }
+    
+    ${theme.breakpoints.down('md')} {
+      padding: ${theme.spacing(2.5, 3)};
+      border-radius: 20px;
+    }
+  `
+);
+
+const HeatmapWrapper = styled(Paper)(
+  ({ theme }) => `
+    background: ${
+      theme.palette.mode === 'dark'
+        ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+            theme.palette.background.paper,
+            0.8
+          )} 100%)`
+        : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
+            theme.palette.background.paper,
+            0.9
+          )} 100%)`
+    };
+    backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 24px;
+    padding: ${theme.spacing(4)};
+    border: ${
+      theme.palette.mode === 'dark'
+        ? `1px solid ${alpha(theme.palette.divider, 0.08)}`
+        : `1px solid ${alpha(theme.palette.divider, 0.06)}`
+    };
+    box-shadow: ${
+      theme.palette.mode === 'dark'
+        ? `0 12px 40px ${alpha(theme.palette.common.black, 0.4)}, 
+           0 4px 12px ${alpha(theme.palette.primary.main, 0.1)},
+           inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
+        : `0 12px 40px ${alpha(theme.palette.common.black, 0.1)}, 
+           0 4px 12px ${alpha(theme.palette.primary.main, 0.05)},
+           inset 0 1px 0 ${alpha(theme.palette.common.white, 0.6)}`
+    };
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, 
+        ${alpha(theme.palette.error.main, 0.8)}, 
+        ${alpha(theme.palette.warning.main, 0.8)}, 
+        ${alpha(theme.palette.success.main, 0.8)}
+      );
+      border-radius: 24px 24px 0 0;
+    }
+    
+    ${theme.breakpoints.down('md')} {
+      padding: ${theme.spacing(3)};
+      border-radius: 20px;
+    }
   `
 );
 
 const CryptoHeatmapPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { activeFiatCurrency } = useContext(AppContext);
+  const metrics = useSelector(selectMetrics);
+  const exchRate = metrics[activeFiatCurrency];
 
-    const isMobile = useMediaQuery('(max-width:600px)');
-    const { activeFiatCurrency } = useContext(AppContext);
-    const metrics = useSelector(selectMetrics);
-    const exchRate = metrics[activeFiatCurrency];
+  return (
+    <OverviewWrapper>
+      <Toolbar id="back-to-top-anchor" />
+      {!isMobile ? <Topbar /> : ''}
+      <Header />
+      {isMobile ? <Topbar /> : ''}
 
-    return (
-        <OverviewWrapper>
-            <Toolbar id="back-to-top-anchor" />
-            {!isMobile ? <Topbar /> : ""}
-            <Header />
-            {isMobile ? <Topbar /> : ""}
+      <MainContent maxWidth="xl">
+        <Fade in timeout={800}>
+          <Stack spacing={isMobile ? 3 : 5}>
+            {/* Summary Section */}
+            <SummaryWrapper elevation={0}>
+              <Summary />
+            </SummaryWrapper>
 
-            <Container maxWidth="xl">
-                <Grid
-                    container
-                    direction="row"
-                    justifyContent="left"
-                    alignItems="stretch"
-                    spacing={3}
-                >
-                    <Grid item xs={12} md={12} lg={8}>
-                        <Summary />
-                    </Grid>
-                    <Grid item xs={12} md={12} lg={12}>
-                        <CryptoHeatmap exchRate={exchRate} />
-                    </Grid>
-                </Grid>
-            </Container>
-            <Footer/>
-        </OverviewWrapper>
-    )
+            {/* Heatmap Section */}
+            <HeatmapWrapper elevation={0}>
+              <CryptoHeatmap exchRate={exchRate} />
+            </HeatmapWrapper>
+          </Stack>
+        </Fade>
+      </MainContent>
 
-}
+      <Footer />
+    </OverviewWrapper>
+  );
+};
 
 export default CryptoHeatmapPage;
