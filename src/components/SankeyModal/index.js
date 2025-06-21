@@ -1440,21 +1440,21 @@ const SankeyModal = ({ open, onClose, account }) => {
       value: accountStats.get(node)?.transactions || 0,
       displayName:
         node === inflowHub
-          ? `💰 TO ${targetAccount.substring(0, 8)}...`
+          ? `TO ${targetAccount.substring(0, 8)}...`
           : node === outflowHub
-          ? `💸 FROM ${targetAccount.substring(0, 8)}...`
+          ? `FROM ${targetAccount.substring(0, 8)}...`
           : node.startsWith('DEX_')
-          ? `🏪 ${node.replace('DEX_', '')}`
+          ? `${node.replace('DEX_', '')}`
           : node.startsWith('TRUST_')
-          ? `🤝 ${node.replace('TRUST_', '')}`
+          ? `${node.replace('TRUST_', '')}`
           : node.startsWith('AMM_') && node.endsWith('_POOL')
-          ? `🌊 ${node.replace('AMM_', '').replace('_POOL', '')} Pool`
+          ? `${node.replace('AMM_', '').replace('_POOL', '')} Pool`
           : node.startsWith('AMM_')
-          ? `🔄 ${node.replace('AMM_', '')} Pool`
+          ? `${node.replace('AMM_', '')} Pool`
           : node === 'SELF_TRANSFER'
-          ? '🔄 Self Transfer'
+          ? 'Self Transfer'
           : node.endsWith('_OPS')
-          ? `⚙️ ${node.replace('_OPS', '')}`
+          ? `${node.replace('_OPS', '')}`
           : node.length > 25
           ? `${node.substring(0, 10)}...${node.substring(node.length - 8)}`
           : node
@@ -1516,8 +1516,17 @@ const SankeyModal = ({ open, onClose, account }) => {
 
     // Filter links based on spam filter
     const filteredLinks = showSpamOnly
-      ? links.filter((link) => link.isSpam)
-      : links.filter((link) => !link.isSpam);
+      ? links.filter((link) => link.isSpam) // Show only spam links when toggle is ON
+      : links.filter((link) => !link.isSpam); // Show only non-spam links when toggle is OFF
+
+    // Filter nodes to only show those that have connections in filteredLinks
+    const connectedNodeNames = new Set();
+    filteredLinks.forEach((link) => {
+      connectedNodeNames.add(link.source);
+      connectedNodeNames.add(link.target);
+    });
+
+    const filteredNodes = nodes.filter((node) => connectedNodeNames.has(node.name));
 
     return {
       backgroundColor: 'transparent',
@@ -1757,10 +1766,10 @@ const SankeyModal = ({ open, onClose, account }) => {
           layout: 'none',
           top: 90, // Increased from 60 to 90 to provide more space for text labels
           bottom: 20,
-          left: 20,
-          right: 20,
+          left: 50, // Increased from 20 to 50 to give icons more space
+          right: 80, // Reduced from 120 to 80 since labels are now inside nodes
           nodeWidth: 25,
-          nodeGap: 15, // Slightly larger gap for better line visibility
+          nodeGap: 10, // Reduced from 15 to 10 to make graph more compact
           nodeAlign: 'justify',
           layoutIterations: 0,
           emphasis: {
@@ -1819,7 +1828,7 @@ const SankeyModal = ({ open, onClose, account }) => {
               shadowColor: 'rgba(0, 0, 0, 0.8)'
             }
           },
-          data: nodes.map((node) => ({
+          data: filteredNodes.map((node) => ({
             ...node,
             itemStyle: {
               color: (() => {
@@ -1885,19 +1894,35 @@ const SankeyModal = ({ open, onClose, account }) => {
           })),
           label: {
             show: true,
-            position: 'right',
-            distance: 8,
+            position: function (params) {
+              // Use different positioning for different node types
+              if (params.data.category === 'outflow') {
+                return 'inside'; // Place inside the outflow hub node
+              } else if (params.data.category === 'inflow') {
+                return 'inside'; // Place inside the inflow hub node
+              } else {
+                return 'insideRight'; // Place inside right edge for account nodes
+              }
+            },
+            distance: function (params) {
+              // Use different distances based on position
+              if (params.data.category === 'outflow' || params.data.category === 'inflow') {
+                return 0; // No distance for inside labels
+              } else {
+                return 5; // Small distance for insideRight labels
+              }
+            },
             color: theme.palette.text.primary,
             fontSize: 11,
             fontWeight: 'bold',
             formatter: function (params) {
               const displayName = params.data.displayName || params.data.name;
 
-              // Add icons based on category
+              // Add icons based on category with different formatting for hubs
               const icon =
                 {
-                  inflow: '💰 ',
-                  outflow: '💸 ',
+                  inflow: '💰',
+                  outflow: '💸',
                   dex: '🏪 ',
                   trust: '🤝 ',
                   amm_pool: '🌊 ',
@@ -1907,7 +1932,12 @@ const SankeyModal = ({ open, onClose, account }) => {
                   account: '👤 '
                 }[params.data.category] || '';
 
-              return icon + displayName;
+              // For hub nodes (inside positioning), use shorter labels
+              if (params.data.category === 'inflow' || params.data.category === 'outflow') {
+                return icon; // Just show the icon for hub nodes
+              } else {
+                return icon + displayName; // Full label for account nodes
+              }
             },
             rich: {
               icon: {
