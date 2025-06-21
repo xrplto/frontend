@@ -1550,6 +1550,9 @@ const SankeyModal = ({ open, onClose, account }) => {
 
     const { nodes, links } = chartData;
 
+    // Define text color for labels based on theme - VERY BRIGHT
+    const labelTextColor = darkMode ? '#FFFFFF' : '#000000';
+
     // Filter links based on spam filter
     const filteredLinks = showSpamOnly
       ? links.filter((link) => link.isSpam) // Show only spam links when toggle is ON
@@ -1996,22 +1999,9 @@ const SankeyModal = ({ open, onClose, account }) => {
                 }
               }
             },
-            color: function (params) {
-              // Color code the target account hubs differently ONLY if they match the current account
-              if (params.data.category === 'inflow' || params.data.category === 'outflow') {
-                // Extract account address from hub name (e.g., "rXXXX_INFLOW" -> "rXXXX")
-                const hubAccount = params.data.name.replace('_INFLOW', '').replace('_OUTFLOW', '');
-                if (hubAccount === currentAccount) {
-                  return '#1a1a1a'; // Dark text on gold/orange background for current account hubs
-                }
-              }
-              // Special color for target account node
-              if (params.data.name === currentAccount) {
-                return '#1a1a1a'; // Dark text on gold background
-              }
-              return theme.palette.text.primary; // Default color for all other nodes
-            },
-            fontSize: 11,
+            // Set color directly based on theme
+            color: darkMode ? '#FFFFFF' : '#000000',
+            fontSize: 12,
             fontWeight: 'bold',
             formatter: function (params) {
               try {
@@ -2056,7 +2046,7 @@ const SankeyModal = ({ open, onClose, account }) => {
                     cleanLabel = displayName;
                   }
 
-                  return cleanLabel;
+                  return `{normalLabel|${cleanLabel}}`;
                 }
               } catch (error) {
                 return '';
@@ -2066,6 +2056,16 @@ const SankeyModal = ({ open, onClose, account }) => {
               icon: {
                 fontSize: 14,
                 padding: [0, 4, 0, 0]
+              },
+              normalLabel: {
+                color: darkMode ? '#FFFFFF' : '#000000', // White in dark mode, black in light mode
+                fontWeight: 'bold',
+                fontSize: 12
+              },
+              hubLabel: {
+                color: darkMode ? '#FFFFFF' : '#000000', // White in dark mode, black in light mode
+                fontWeight: 'bold',
+                fontSize: 12
               },
               targetAccount: {
                 color: '#1a1a1a', // Dark text
@@ -2112,7 +2112,7 @@ const SankeyModal = ({ open, onClose, account }) => {
         }
       ]
     };
-  }, [chartData, showSpamOnly, spamStats, theme, currentAccount]);
+  }, [chartData, showSpamOnly, spamStats, theme, currentAccount, darkMode]);
 
   const handleClose = () => {
     setChartData(null);
