@@ -1102,53 +1102,93 @@ const SankeyModal = ({ open, onClose, account }) => {
           if (sourceAccount === destinationAccount) {
             // Check if this is an AMM transaction (self-payment with token exchange)
             if (sourceAccount === targetAccount) {
-              const metaExchange = extractExchangeFromMeta(meta, targetAccount);
+              // First check if this is a failed exchange attempt
+              if (meta && meta.TransactionResult !== 'tesSUCCESS') {
+                // For failed transactions, check if it was an exchange attempt
+                if (
+                  tx.SendMax &&
+                  ((typeof tx.SendMax === 'object' && typeof tx.Amount === 'string') ||
+                    (typeof tx.SendMax === 'string' && typeof tx.Amount === 'object') ||
+                    (typeof tx.SendMax === 'object' &&
+                      typeof tx.Amount === 'object' &&
+                      tx.SendMax.currency !== tx.Amount.currency))
+                ) {
+                  // This was a failed exchange attempt - categorize by intended exchange
+                  let exchangeCurrency = 'UNKNOWN';
+                  let isTokenToXrp = false;
 
-              if (
-                metaExchange &&
-                (metaExchange.tokensReceived.length > 0 || metaExchange.tokensSent.length > 0)
-              ) {
-                // This is an AMM transaction - analyze XRP vs token changes
-                let xrpAmount = 0;
-                let tokenCurrency = '';
-                let isTokenBuy = false;
+                  if (typeof tx.SendMax === 'object' && typeof tx.Amount === 'string') {
+                    // Trying to send tokens to get XRP
+                    exchangeCurrency = decodeCurrency(tx.SendMax.currency);
+                    isTokenToXrp = true;
+                  } else if (typeof tx.SendMax === 'string' && typeof tx.Amount === 'object') {
+                    // Trying to send XRP to get tokens
+                    exchangeCurrency = decodeCurrency(tx.Amount.currency);
+                    isTokenToXrp = false;
+                  }
 
-                // For AMM transactions, we want to show XRP amount, not token amount
-                if (meta && meta.AffectedNodes) {
-                  // Find XRP balance change
-                  for (const node of meta.AffectedNodes) {
-                    const modifiedNode = node.ModifiedNode;
-                    if (
-                      modifiedNode &&
-                      modifiedNode.LedgerEntryType === 'AccountRoot' &&
-                      modifiedNode.FinalFields?.Account === targetAccount
-                    ) {
-                      const prevBalance = parseInt(modifiedNode.PreviousFields?.Balance || 0);
-                      const finalBalance = parseInt(modifiedNode.FinalFields?.Balance || 0);
-                      const xrpChange = (finalBalance - prevBalance) / 1000000; // Convert to XRP
-                      xrpAmount = Math.abs(xrpChange); // Always show positive amount
-                      isTokenBuy = xrpChange < 0; // If XRP decreased, user bought tokens
-                      break;
+                  destinationAccount = `FAILED_EXCHANGE_${exchangeCurrency}`;
+                  amount = isTokenToXrp
+                    ? parseInt(tx.Amount) / 1000000 // Show intended XRP amount
+                    : typeof tx.Amount === 'object'
+                    ? parseFloat(tx.Amount.value)
+                    : 1;
+                  currency = isTokenToXrp ? 'XRP' : exchangeCurrency;
+                } else {
+                  // Regular failed self-transfer
+                  destinationAccount = 'FAILED_SELF_TRANSFER';
+                  currency = 'FAILED';
+                }
+              } else {
+                // Successful self-payment - check for token exchange
+                const metaExchange = extractExchangeFromMeta(meta, targetAccount);
+
+                if (
+                  metaExchange &&
+                  (metaExchange.tokensReceived.length > 0 || metaExchange.tokensSent.length > 0)
+                ) {
+                  // This is an AMM transaction - analyze XRP vs token changes
+                  let xrpAmount = 0;
+                  let tokenCurrency = '';
+                  let isTokenBuy = false;
+
+                  // For AMM transactions, we want to show XRP amount, not token amount
+                  if (meta && meta.AffectedNodes) {
+                    // Find XRP balance change
+                    for (const node of meta.AffectedNodes) {
+                      const modifiedNode = node.ModifiedNode;
+                      if (
+                        modifiedNode &&
+                        modifiedNode.LedgerEntryType === 'AccountRoot' &&
+                        modifiedNode.FinalFields?.Account === targetAccount
+                      ) {
+                        const prevBalance = parseInt(modifiedNode.PreviousFields?.Balance || 0);
+                        const finalBalance = parseInt(modifiedNode.FinalFields?.Balance || 0);
+                        const xrpChange = (finalBalance - prevBalance) / 1000000; // Convert to XRP
+                        xrpAmount = Math.abs(xrpChange); // Always show positive amount
+                        isTokenBuy = xrpChange < 0; // If XRP decreased, user bought tokens
+                        break;
+                      }
+                    }
+
+                    // Get token currency from the first token change
+                    if (metaExchange.tokensReceived.length > 0) {
+                      tokenCurrency = metaExchange.tokensReceived[0].currency;
+                    } else if (metaExchange.tokensSent.length > 0) {
+                      tokenCurrency = metaExchange.tokensSent[0].currency;
                     }
                   }
 
-                  // Get token currency from the first token change
-                  if (metaExchange.tokensReceived.length > 0) {
-                    tokenCurrency = metaExchange.tokensReceived[0].currency;
-                  } else if (metaExchange.tokensSent.length > 0) {
-                    tokenCurrency = metaExchange.tokensSent[0].currency;
+                  if (xrpAmount > 0 && tokenCurrency) {
+                    destinationAccount = `AMM_${tokenCurrency}`;
+                    amount = xrpAmount; // Use XRP amount instead of token amount
+                    currency = 'XRP'; // Always show as XRP for AMM transactions
                   }
+                } else {
+                  // Regular self-transfer (no token exchange detected)
+                  destinationAccount = 'SELF_TRANSFER';
+                  currency = 'SELF';
                 }
-
-                if (xrpAmount > 0 && tokenCurrency) {
-                  destinationAccount = `AMM_${tokenCurrency}`;
-                  amount = xrpAmount; // Use XRP amount instead of token amount
-                  currency = 'XRP'; // Always show as XRP for AMM transactions
-                }
-              } else {
-                // Regular self-transfer (no token exchange detected)
-                destinationAccount = 'SELF_TRANSFER';
-                currency = 'SELF';
               }
             }
           }
@@ -1488,6 +1528,10 @@ const SankeyModal = ({ open, onClose, account }) => {
           ? 'amm_pool'
           : node.startsWith('AMM_')
           ? 'amm'
+          : node.startsWith('FAILED_EXCHANGE_')
+          ? 'failed_exchange'
+          : node === 'FAILED_SELF_TRANSFER'
+          ? 'failed_self'
           : node === 'SELF_TRANSFER'
           ? 'self'
           : node.endsWith('_OPS')
@@ -1762,6 +1806,10 @@ const SankeyModal = ({ open, onClose, account }) => {
                     return theme.palette.purple?.[500] || '#9c27b0';
                   case 'self':
                     return theme.palette.grey[600];
+                  case 'failed_exchange':
+                    return '#FF6B6B'; // Red for failed exchanges
+                  case 'failed_self':
+                    return '#FF8E53'; // Orange-red for failed self transfers
                   case 'operations':
                     return theme.palette.warning.main;
                   default:
@@ -1909,6 +1957,10 @@ const SankeyModal = ({ open, onClose, account }) => {
                     cleanLabel = displayName; // Already clean from displayName processing
                   } else if (params.data.category === 'self') {
                     cleanLabel = 'Self Transfer';
+                  } else if (params.data.category === 'failed_exchange') {
+                    cleanLabel = 'Failed Exchange';
+                  } else if (params.data.category === 'failed_self') {
+                    cleanLabel = 'Failed Self Transfer';
                   } else if (params.data.category === 'operations') {
                     cleanLabel = displayName; // Already clean from displayName processing
                   } else {
