@@ -150,7 +150,9 @@ const SankeyModal = ({ open, onClose, account }) => {
       spamScore: 0,
       patterns: [],
       spamMemos: [], // Add spam memos collection
-      uniqueSpamMessages: new Set() // Track unique spam messages
+      uniqueSpamMessages: new Set(), // Track unique spam messages
+      allMemos: [], // Add collection for all memos (not just spam)
+      uniqueAllMessages: new Set() // Track all unique messages
     };
 
     const accountTransactions = transactions.filter((txData) => {
@@ -198,9 +200,28 @@ const SankeyModal = ({ open, onClose, account }) => {
             activity.incomingValue += amount;
           }
 
-          // Decode and analyze memos
+          // Decode and analyze memos for ALL transactions
           const decodedMemo = decodeMemo(tx.Memos);
           let memoSpamScore = 0;
+
+          // Collect ALL memos (not just spam ones)
+          if (decodedMemo) {
+            const memoEntry = {
+              amount: amount,
+              memo: decodedMemo,
+              hash: tx.hash,
+              date: tx.date ? new Date((tx.date + 946684800) * 1000) : null,
+              isSpam: amount <= spamThresholds.small,
+              spamScore: 0
+            };
+
+            activity.allMemos.push(memoEntry);
+
+            // Track unique messages
+            if (decodedMemo.data) {
+              activity.uniqueAllMessages.add(decodedMemo.data);
+            }
+          }
 
           // Spam analysis
           if (amount <= spamThresholds.small) {
@@ -232,6 +253,11 @@ const SankeyModal = ({ open, onClose, account }) => {
               if (decodedMemo.data) {
                 activity.uniqueSpamMessages.add(decodedMemo.data);
               }
+            }
+          } else {
+            // For non-spam memos, update the spam score in allMemos
+            if (decodedMemo && activity.allMemos.length > 0) {
+              activity.allMemos[activity.allMemos.length - 1].spamScore = memoSpamScore;
             }
           }
 
@@ -881,7 +907,7 @@ const SankeyModal = ({ open, onClose, account }) => {
                     </div>
                     ${spamInfo}
                     <div style="margin-bottom: 4px;">Total Value: <strong>${params.data.value.toFixed(
-                      6
+                      8
                     )}</strong></div>
                     <div style="margin-bottom: 4px;">Transactions: <strong>${
                       params.data.count
@@ -1072,10 +1098,10 @@ const SankeyModal = ({ open, onClose, account }) => {
         elevation={8}
         sx={{
           position: 'absolute',
-          left: 20,
+          left: 220,
           top: 20,
           bottom: 20,
-          width: 350,
+          width: 420,
           zIndex: 1000,
           bgcolor: darkMode ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.95)',
           backdropFilter: 'blur(20px)',
@@ -1094,23 +1120,26 @@ const SankeyModal = ({ open, onClose, account }) => {
         }}
       >
         {/* Header */}
-        <Box sx={{ p: 2, borderBottom: `1px solid ${darkMode ? '#333' : theme.palette.divider}` }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+        <Box
+          sx={{ p: 1.5, borderBottom: `1px solid ${darkMode ? '#333' : theme.palette.divider}` }}
+        >
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
             👤 Account Analysis
           </Typography>
           <Typography
-            variant="body2"
+            variant="caption"
             sx={{
               fontFamily: 'monospace',
               bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-              p: 1,
+              p: 0.5,
               borderRadius: 1,
-              wordBreak: 'break-all'
+              wordBreak: 'break-all',
+              display: 'block'
             }}
           >
             {details.address}
           </Typography>
-          <Box sx={{ mt: 1 }}>
+          <Box sx={{ mt: 0.5 }}>
             <Chip
               label={spamLevel}
               size="small"
@@ -1121,267 +1150,442 @@ const SankeyModal = ({ open, onClose, account }) => {
                   ? '#ffaa00'
                   : '#4caf50',
                 color: 'white',
-                fontWeight: 600
+                fontWeight: 600,
+                fontSize: '0.7rem'
               }}
             />
           </Box>
         </Box>
 
         {/* Content */}
-        <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
-          {/* Transaction Summary */}
+        <Box sx={{ flex: 1, overflow: 'hidden', p: 1.5 }}>
+          {/* Combined Transaction & Flow Summary */}
           <Typography
-            variant="subtitle2"
-            sx={{ fontWeight: 600, mb: 1, color: theme.palette.primary.main }}
+            variant="caption"
+            sx={{ fontWeight: 600, mb: 0.5, color: theme.palette.primary.main, display: 'block' }}
           >
-            📊 Transaction Summary
+            📊 Transaction & Flow Summary
           </Typography>
-          <Box sx={{ mb: 2 }}>
-            <Stack spacing={1}>
+          <Box sx={{ mb: 1.5, fontSize: '0.75rem' }}>
+            <Stack spacing={0.3}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2">Total Transactions:</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {details.totalTransactions}
-                </Typography>
+                <span>Total Transactions:</span>
+                <strong>{details.totalTransactions}</strong>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2">Total Value:</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {details.totalValue.toFixed(6)} XRP
-                </Typography>
+                <span>Total Value:</span>
+                <strong>{details.totalValue.toFixed(8)} XRP</strong>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2">Avg Transaction:</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {details.avgTransactionSize.toFixed(6)} XRP
-                </Typography>
+                <span>📈 Received:</span>
+                <strong style={{ color: theme.palette.success.main }}>
+                  {details.incomingValue.toFixed(8)} XRP
+                </strong>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>📉 Sent:</span>
+                <strong style={{ color: theme.palette.error.main }}>
+                  {details.outgoingValue.toFixed(8)} XRP
+                </strong>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Avg Size:</span>
+                <strong>{details.avgTransactionSize.toFixed(8)} XRP</strong>
               </Box>
             </Stack>
           </Box>
 
-          {/* Flow Direction */}
-          <Typography
-            variant="subtitle2"
-            sx={{ fontWeight: 600, mb: 1, color: theme.palette.primary.main }}
-          >
-            💱 Flow Analysis
-          </Typography>
-          <Box sx={{ mb: 2 }}>
-            <Stack spacing={1}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="body2">📈 Received:</Typography>
-                <Chip
-                  label={`${details.incomingValue.toFixed(6)} XRP`}
-                  size="small"
-                  sx={{ bgcolor: theme.palette.success.main, color: 'white', fontSize: '0.7rem' }}
-                />
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="body2">📉 Sent:</Typography>
-                <Chip
-                  label={`${details.outgoingValue.toFixed(6)} XRP`}
-                  size="small"
-                  sx={{ bgcolor: theme.palette.error.main, color: 'white', fontSize: '0.7rem' }}
-                />
-              </Box>
-            </Stack>
-          </Box>
-
-          {/* Transaction Types */}
-          <Typography
-            variant="subtitle2"
-            sx={{ fontWeight: 600, mb: 1, color: theme.palette.primary.main }}
-          >
-            🔄 Transaction Types
-          </Typography>
-          <Box sx={{ mb: 2 }}>
-            <Stack spacing={0.5}>
-              {[...details.transactionTypes.entries()].map(([type, count]) => (
-                <Box key={type} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2">{type}:</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {count}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          </Box>
-
-          {/* Spam Analysis */}
-          {details.spamTransactions > 0 && (
+          {/* Transaction Types - Condensed */}
+          {details.transactionTypes.size > 0 && (
             <>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#ff4444' }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 600,
+                  mb: 0.5,
+                  color: theme.palette.primary.main,
+                  display: 'block'
+                }}
+              >
+                🔄 Types:{' '}
+                {[...details.transactionTypes.entries()]
+                  .map(([type, count]) => `${type}(${count})`)
+                  .join(', ')}
+              </Typography>
+            </>
+          )}
+
+          {/* Spam Analysis - Condensed */}
+          {details.spamTransactions > 0 && (
+            <Box
+              sx={{
+                mb: 1.5,
+                p: 1,
+                bgcolor: 'rgba(255,68,68,0.1)',
+                borderRadius: 1,
+                fontSize: '0.75rem'
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{ fontWeight: 600, color: '#ff4444', display: 'block', mb: 0.5 }}
+              >
                 ⚠️ Spam Analysis
               </Typography>
-              <Box sx={{ mb: 2 }}>
-                <Stack spacing={1}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">Spam Score:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#ff4444' }}>
-                      {details.spamScore}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">Spam Transactions:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#ff4444' }}>
-                      {details.spamTransactions}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">Dust Attacks:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#ff4444' }}>
-                      {details.dustTransactions}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">Spam Ratio:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#ff4444' }}>
+              <Stack spacing={0.2}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>
+                    Score: <strong style={{ color: '#ff4444' }}>{details.spamScore}</strong>
+                  </span>
+                  <span>
+                    Spam: <strong style={{ color: '#ff4444' }}>{details.spamTransactions}</strong>
+                  </span>
+                  <span>
+                    Dust: <strong style={{ color: '#ff4444' }}>{details.dustTransactions}</strong>
+                  </span>
+                </Box>
+                <Box>
+                  <span>
+                    Ratio:{' '}
+                    <strong style={{ color: '#ff4444' }}>
                       {((details.spamTransactions / details.totalTransactions) * 100).toFixed(1)}%
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Box>
-            </>
+                    </strong>
+                  </span>
+                </Box>
+              </Stack>
+            </Box>
           )}
 
-          {/* Spam Messages */}
-          {details.spamMemos && details.spamMemos.length > 0 && (
-            <>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#ff4444' }}>
-                📨 Spam Messages Decoded
+          {/* All Memos Section - Show all memos with decoding */}
+          {details.allMemos && details.allMemos.length > 0 && (
+            <Box sx={{ mb: 1.5 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 600,
+                  color: theme.palette.primary.main,
+                  display: 'block',
+                  mb: 0.5
+                }}
+              >
+                📨 All Memos ({details.allMemos.length} total, {details.uniqueAllMessages.size}{' '}
+                unique)
               </Typography>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="caption" sx={{ color: '#ff4444', display: 'block', mb: 1 }}>
-                  {details.uniqueSpamMessages.size} unique message(s) from{' '}
-                  {details.spamMemos.length} spam transaction(s):
-                </Typography>
-                <Stack spacing={1}>
-                  {[...details.uniqueSpamMessages].slice(0, 5).map((message, index) => (
-                    <Box
-                      key={index}
+              <Box sx={{ maxHeight: '150px', overflow: 'auto' }}>
+                {details.allMemos.slice(0, 8).map((memoEntry, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      p: 0.5,
+                      mb: 0.5,
+                      bgcolor: memoEntry.isSpam
+                        ? 'rgba(255,68,68,0.1)'
+                        : darkMode
+                        ? 'rgba(255,255,255,0.05)'
+                        : 'rgba(0,0,0,0.05)',
+                      border: `1px solid ${
+                        memoEntry.isSpam ? 'rgba(255,68,68,0.3)' : 'rgba(128,128,128,0.3)'
+                      }`,
+                      borderRadius: 0.5,
+                      fontSize: '0.65rem'
+                    }}
+                  >
+                    {/* Show memo amount and type */}
+                    <Typography
+                      variant="caption"
                       sx={{
-                        p: 1,
-                        bgcolor: 'rgba(255,68,68,0.1)',
-                        border: '1px solid rgba(255,68,68,0.3)',
-                        borderRadius: 1,
-                        fontSize: '0.75rem'
+                        fontWeight: 600,
+                        color: memoEntry.isSpam ? '#ff4444' : theme.palette.primary.main,
+                        display: 'block',
+                        mb: 0.3
                       }}
                     >
+                      💸 {memoEntry.amount.toFixed(8)} XRP
+                      {memoEntry.isSpam && ` • Spam Score: ${memoEntry.spamScore}`}
+                      {!memoEntry.isSpam && ' • Legitimate'}
+                    </Typography>
+
+                    {/* Show memo type if available */}
+                    {memoEntry.memo.type && (
                       <Typography
                         variant="caption"
-                        sx={{ fontWeight: 600, color: '#ff4444', display: 'block' }}
-                      >
-                        Spam Message {index + 1}:
-                      </Typography>
-                      <Typography
-                        variant="body2"
                         sx={{
-                          fontFamily: 'monospace',
-                          fontSize: '0.7rem',
-                          color: theme.palette.text.primary,
-                          wordBreak: 'break-word',
-                          maxHeight: '60px',
-                          overflow: 'auto'
+                          color: theme.palette.text.secondary,
+                          display: 'block',
+                          mb: 0.2,
+                          fontSize: '0.6rem'
                         }}
                       >
-                        "{message}"
+                        Type: {memoEntry.memo.type}
                       </Typography>
+                    )}
+
+                    {/* Show memo format if available */}
+                    {memoEntry.memo.format && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          display: 'block',
+                          mb: 0.2,
+                          fontSize: '0.6rem'
+                        }}
+                      >
+                        Format: {memoEntry.memo.format}
+                      </Typography>
+                    )}
+
+                    {/* Show memo data */}
+                    {memoEntry.memo.data && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontFamily: 'monospace',
+                          color: theme.palette.text.primary,
+                          wordBreak: 'break-word',
+                          display: 'block',
+                          bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                          p: 0.3,
+                          borderRadius: 0.3,
+                          fontSize: '0.65rem'
+                        }}
+                      >
+                        "{memoEntry.memo.data}"
+                      </Typography>
+                    )}
+
+                    {/* Show transaction date and hash */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.2 }}>
+                      {memoEntry.date && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            fontSize: '0.6rem'
+                          }}
+                        >
+                          📅 {memoEntry.date.toLocaleDateString()}
+                        </Typography>
+                      )}
+                      {memoEntry.hash && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            fontSize: '0.6rem',
+                            fontFamily: 'monospace'
+                          }}
+                        >
+                          #{memoEntry.hash.substring(0, 8)}...
+                        </Typography>
+                      )}
                     </Box>
-                  ))}
-                  {details.uniqueSpamMessages.size > 5 && (
-                    <Typography variant="caption" sx={{ color: '#ff4444', fontStyle: 'italic' }}>
-                      ... and {details.uniqueSpamMessages.size - 5} more spam messages
-                    </Typography>
-                  )}
-                </Stack>
+                  </Box>
+                ))}
+                {details.allMemos.length > 8 && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontStyle: 'italic',
+                      fontSize: '0.65rem'
+                    }}
+                  >
+                    +{details.allMemos.length - 8} more memo transactions
+                  </Typography>
+                )}
               </Box>
-            </>
+            </Box>
           )}
 
-          {/* Patterns */}
-          {details.patterns.length > 0 && (
-            <>
+          {/* Spam Messages - More Compact */}
+          {details.spamMemos && details.spamMemos.length > 0 && (
+            <Box sx={{ mb: 1.5 }}>
               <Typography
-                variant="subtitle2"
-                sx={{ fontWeight: 600, mb: 1, color: theme.palette.warning.main }}
+                variant="caption"
+                sx={{ fontWeight: 600, color: '#ff4444', display: 'block', mb: 0.5 }}
               >
-                🔍 Detected Patterns
+                📨 Spam Messages ({details.uniqueSpamMessages.size} unique)
               </Typography>
-              <Box sx={{ mb: 2 }}>
-                <Stack spacing={0.5}>
-                  {details.patterns.map((pattern, index) => (
-                    <Chip
-                      key={index}
-                      label={pattern}
-                      size="small"
+              <Box sx={{ maxHeight: '120px', overflow: 'auto' }}>
+                {details.spamMemos.slice(0, 5).map((memoEntry, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      p: 0.5,
+                      mb: 0.5,
+                      bgcolor: 'rgba(255,68,68,0.1)',
+                      border: '1px solid rgba(255,68,68,0.3)',
+                      borderRadius: 0.5,
+                      fontSize: '0.65rem'
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
                       sx={{
-                        bgcolor: 'rgba(255,152,0,0.2)',
-                        color: theme.palette.warning.main,
-                        fontSize: '0.7rem'
+                        fontWeight: 600,
+                        color: '#ff4444',
+                        display: 'block',
+                        mb: 0.3
                       }}
-                    />
-                  ))}
-                </Stack>
+                    >
+                      💸 {memoEntry.amount.toFixed(8)} XRP • Score: {memoEntry.spamScore}
+                    </Typography>
+
+                    {memoEntry.memo.type && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          display: 'block',
+                          mb: 0.2,
+                          fontSize: '0.6rem'
+                        }}
+                      >
+                        Type: {memoEntry.memo.type}
+                      </Typography>
+                    )}
+
+                    {memoEntry.memo.format && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          display: 'block',
+                          mb: 0.2,
+                          fontSize: '0.6rem'
+                        }}
+                      >
+                        Format: {memoEntry.memo.format}
+                      </Typography>
+                    )}
+
+                    {memoEntry.memo.data && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontFamily: 'monospace',
+                          color: theme.palette.text.primary,
+                          wordBreak: 'break-word',
+                          display: 'block',
+                          bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                          p: 0.3,
+                          borderRadius: 0.3,
+                          fontSize: '0.65rem'
+                        }}
+                      >
+                        "{memoEntry.memo.data}"
+                      </Typography>
+                    )}
+
+                    {memoEntry.date && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          display: 'block',
+                          mt: 0.2,
+                          fontSize: '0.6rem'
+                        }}
+                      >
+                        📅 {memoEntry.date.toLocaleDateString()}{' '}
+                        {memoEntry.date.toLocaleTimeString()}
+                      </Typography>
+                    )}
+                  </Box>
+                ))}
+                {details.spamMemos.length > 5 && (
+                  <Typography
+                    variant="caption"
+                    sx={{ color: '#ff4444', fontStyle: 'italic', fontSize: '0.65rem' }}
+                  >
+                    +{details.spamMemos.length - 5} more memo transactions
+                  </Typography>
+                )}
               </Box>
-            </>
+            </Box>
           )}
 
-          {/* Timeline */}
-          {details.firstTransaction && details.lastTransaction && (
-            <>
+          {/* Patterns - Inline Chips */}
+          {details.patterns.length > 0 && (
+            <Box sx={{ mb: 1.5 }}>
               <Typography
-                variant="subtitle2"
-                sx={{ fontWeight: 600, mb: 1, color: theme.palette.primary.main }}
+                variant="caption"
+                sx={{
+                  fontWeight: 600,
+                  mb: 0.5,
+                  color: theme.palette.warning.main,
+                  display: 'block'
+                }}
               >
-                ⏰ Activity Timeline
+                🔍 Patterns
               </Typography>
-              <Box sx={{ mb: 2 }}>
-                <Stack spacing={1}>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      First Transaction:
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {details.firstTransaction.toLocaleDateString()}{' '}
-                      {details.firstTransaction.toLocaleTimeString()}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Last Transaction:
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {details.lastTransaction.toLocaleDateString()}{' '}
-                      {details.lastTransaction.toLocaleTimeString()}
-                    </Typography>
-                  </Box>
-                </Stack>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                {details.patterns.map((pattern, index) => (
+                  <Chip
+                    key={index}
+                    label={pattern}
+                    size="small"
+                    sx={{
+                      bgcolor: 'rgba(255,152,0,0.2)',
+                      color: theme.palette.warning.main,
+                      fontSize: '0.6rem',
+                      height: '20px'
+                    }}
+                  />
+                ))}
               </Box>
-            </>
+            </Box>
           )}
 
-          {/* Currencies */}
-          {details.currencies.size > 0 && (
-            <>
+          {/* Timeline - Compact */}
+          {details.firstTransaction && details.lastTransaction && (
+            <Box sx={{ mb: 1.5, fontSize: '0.75rem' }}>
               <Typography
-                variant="subtitle2"
-                sx={{ fontWeight: 600, mb: 1, color: theme.palette.primary.main }}
+                variant="caption"
+                sx={{
+                  fontWeight: 600,
+                  mb: 0.5,
+                  color: theme.palette.primary.main,
+                  display: 'block'
+                }}
               >
-                💰 Currencies Involved
+                ⏰ Activity Period
               </Typography>
               <Box>
-                <Stack spacing={0.5}>
-                  {[...details.currencies.entries()].map(([currency, amount]) => (
-                    <Box key={currency} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body2">{currency}:</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {typeof amount === 'number' ? amount.toFixed(6) : amount}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Stack>
+                <Box sx={{ mb: 0.3 }}>
+                  <span style={{ color: theme.palette.text.secondary }}>First: </span>
+                  <strong>{details.firstTransaction.toLocaleDateString()}</strong>
+                </Box>
+                <Box>
+                  <span style={{ color: theme.palette.text.secondary }}>Last: </span>
+                  <strong>{details.lastTransaction.toLocaleDateString()}</strong>
+                </Box>
               </Box>
-            </>
+            </Box>
+          )}
+
+          {/* Currencies - Inline */}
+          {details.currencies.size > 0 && (
+            <Box sx={{ fontSize: '0.75rem' }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 600,
+                  mb: 0.5,
+                  color: theme.palette.primary.main,
+                  display: 'block'
+                }}
+              >
+                💰 Currencies:{' '}
+                {[...details.currencies.entries()]
+                  .map(
+                    ([currency, amount]) =>
+                      `${currency}(${typeof amount === 'number' ? amount.toFixed(2) : amount})`
+                  )
+                  .join(', ')}
+              </Typography>
+            </Box>
           )}
         </Box>
       </Paper>
@@ -1798,14 +2002,6 @@ const SankeyModal = ({ open, onClose, account }) => {
                             setHoveredAccount(accountName);
                           }
                         }
-                      },
-                      mouseout: (params) => {
-                        if (params.dataType === 'node' && params.data.category === 'account') {
-                          setHoveredAccount(null);
-                        }
-                      },
-                      globalout: () => {
-                        setHoveredAccount(null);
                       }
                     }}
                   />
