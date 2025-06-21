@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useRef } from 'react';
 import axios from 'axios';
 import ReactECharts from 'echarts-for-react';
 import {
@@ -37,6 +37,20 @@ const SankeyModal = ({ open, onClose, account }) => {
   const [selectedDebugItem, setSelectedDebugItem] = useState(null); // Track selected item for debug
   const [showSummary, setShowSummary] = useState(false); // Add summary toggle state
   const [selectedSummaryItem, setSelectedSummaryItem] = useState(null); // Track selected item for summary
+  // Add custom tooltip state
+  const [customTooltip, setCustomTooltip] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    content: '',
+    type: 'node'
+  });
+
+  // Add refs for debouncing
+  const tooltipTimeoutRef = useRef(null);
+  const mouseMoveTimeoutRef = useRef(null);
+  const lastPositionRef = useRef({ x: 0, y: 0 });
+  const showTimeoutRef = useRef(null); // Add show timeout for debouncing
 
   // Micro payment thresholds (in XRP)
   const spamThresholds = {
@@ -319,9 +333,10 @@ const SankeyModal = ({ open, onClose, account }) => {
           } else if (tx.Account === targetAccount && tx.Destination === accountAddress) {
             activity.incomingValue += amount;
 
-            // Activity detection for incoming payments
+            // Activity detection for incoming payments - DON'T penalize for receiving spam
             if (amount <= spamThresholds.small) {
-              activity.activityScore.spamming += 5; // Less weight for receiving spam
+              // Receiving spam doesn't make you a spammer - no spamming score added
+              // We could track this separately as "spam victim" if needed
             } else if (amount >= 1) {
               activity.activityScore.regularPayments += 3;
             }
@@ -362,8 +377,9 @@ const SankeyModal = ({ open, onClose, account }) => {
             }
           }
 
-          // Spam analysis
-          if (amount <= spamThresholds.small) {
+          // Spam analysis - only for OUTGOING payments from the analyzed account
+          if (amount <= spamThresholds.small && tx.Account === accountAddress) {
+            // Only count as spam if this account is SENDING the micro payment
             if (amount <= spamThresholds.dust) {
               activity.dustTransactions++;
               activity.spamScore += 50;
@@ -377,7 +393,7 @@ const SankeyModal = ({ open, onClose, account }) => {
             }
             activity.spamTransactions++;
 
-            // Collect spam memos for analysis
+            // Collect spam memos for analysis - only for outgoing spam
             if (decodedMemo) {
               const spamMemoEntry = {
                 amount: amount,
@@ -393,8 +409,8 @@ const SankeyModal = ({ open, onClose, account }) => {
                 activity.uniqueSpamMessages.add(decodedMemo.data);
               }
             }
-          } else {
-            // For non-spam memos, update the spam score in allMemos
+          } else if (tx.Account === accountAddress) {
+            // For non-spam outgoing memos, update the spam score in allMemos
             if (decodedMemo && activity.allMemos.length > 0) {
               activity.allMemos[activity.allMemos.length - 1].spamScore = memoSpamScore;
             }
@@ -778,6 +794,26 @@ const SankeyModal = ({ open, onClose, account }) => {
     }
     if (scores.regularPayments > maxScore && maxScore < 20) {
       mainActivity = '👤 Regular User';
+    }
+
+    // Check if this account receives a lot of spam (spam victim)
+    const incomingSpamTransactions = transactions.filter((txData) => {
+      const tx = txData.tx;
+      const meta = txData.meta;
+      return (
+        meta &&
+        meta.TransactionResult === 'tesSUCCESS' &&
+        tx.TransactionType === 'Payment' &&
+        typeof tx.Amount === 'string' &&
+        tx.Destination === accountAddress &&
+        tx.Account !== accountAddress &&
+        parseInt(tx.Amount) / 1000000 <= spamThresholds.small
+      );
+    }).length;
+
+    // Add spam victim indicator if they receive significant spam but aren't spammers themselves
+    if (incomingSpamTransactions > 10 && activity.spamScore < 20) {
+      mainActivity += ' (🛡️ Spam Target)';
     }
 
     // Set activities based on scores
@@ -1639,7 +1675,7 @@ const SankeyModal = ({ open, onClose, account }) => {
       title: {
         text: 'Transaction Flow Analysis',
         left: 'center',
-        top: 10,
+        top: 10, // Increased from 60 to 90 to provide more space for text labels
         textStyle: {
           color: theme.palette.text.primary,
           fontSize: 16,
@@ -1647,79 +1683,7 @@ const SankeyModal = ({ open, onClose, account }) => {
         }
       },
       tooltip: {
-        trigger: 'item',
-        triggerOn: 'mousemove',
-        hideDelay: 200,
-        showDelay: 100,
-        backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        borderColor: darkMode ? '#444444' : theme.palette.divider,
-        borderWidth: 1,
-        borderRadius: 8,
-        padding: [8, 12],
-        textStyle: {
-          color: theme.palette.text.primary,
-          fontSize: 11
-        },
-        formatter: function (params) {
-          try {
-            // Log to console instead of HTML tooltip
-            console.log('🐛 Tooltip Debug:', {
-              dataType: params.dataType,
-              data: params.data,
-              params: params
-            });
-
-            // Add safety check for params and data
-            if (!params || !params.data) {
-              return 'No data available';
-            }
-
-            if (params.dataType === 'node') {
-              const data = params.data;
-              console.log('📊 Node Details:', {
-                name: data.name,
-                displayName: data.displayName,
-                category: data.category,
-                value: data.value,
-                accountDetails: accountDetails.has(data.name) ? accountDetails.get(data.name) : null
-              });
-
-              // Simple tooltip without complex HTML
-              return `${data.displayName || data.name}\nType: ${data.category}\nTransactions: ${
-                data.value || 0
-              }`;
-            } else if (params.dataType === 'edge') {
-              const data = params.data;
-              console.log('🔗 Link Details:', {
-                source: data.source,
-                target: data.target,
-                value: data.value,
-                count: data.count,
-                currency: data.currency,
-                txType: data.txType,
-                isSpam: data.isSpam,
-                spamScore: data.spamScore,
-                ammDirection: data.ammDirection,
-                ammToken: data.ammToken
-              });
-
-              // Simple tooltip without complex HTML
-              return `${data.source} → ${data.target}\nValue: ${(data.value || 0).toFixed(
-                6
-              )}\nTransactions: ${data.count || 0}\nCurrency: ${data.currency || 'Unknown'}`;
-            }
-
-            return 'Unknown item type';
-          } catch (error) {
-            console.error('Tooltip error:', error);
-            return 'Check console for details';
-          }
-        },
-        extraCssText: `
-          box-shadow: 0 8px 32px ${darkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.15)'};
-          backdrop-filter: blur(10px);
-          z-index: 9999 !important;
-        `
+        show: false // Disable tooltip entirely to prevent ECharts internal error
       },
       series: [
         {
@@ -1755,38 +1719,33 @@ const SankeyModal = ({ open, onClose, account }) => {
           animationEasing: 'linear',
           // Add better hover detection
           triggerLineEvent: true,
-          hoverAnimation: true,
+          hoverAnimation: false, // Disable hover animation to reduce jitter
           // Improve selection sensitivity
-          silent: false,
-          // Increase hover detection sensitivity
           lineStyle: {
-            // Make lines thicker for better hover detection
-            width: 12 // Increased from 8 to 12
+            // Make lines extremely thick for excellent hover detection
+            width: 50 // Increased from 35 to 50 for even better hover area
           },
           // Add more hover sensitivity settings
           selectMode: false,
           selectedMode: false,
-          // Increase hover area
-          zlevel: 0,
-          z: 2,
           // Make hover detection more sensitive
           triggerEvent: true,
           emphasis: {
             focus: 'adjacency',
             blurScope: 'coordinateSystem',
-            scale: 1.05,
+            scale: 1.02, // Reduced scale to minimize jumpiness
             // Increase hover detection area
             itemStyle: {
-              borderWidth: 3,
-              borderColor: 'rgba(255, 255, 255, 0.8)',
-              shadowBlur: 20,
-              shadowColor: 'rgba(0, 0, 0, 0.5)'
+              borderWidth: 2, // Reduced from 3
+              borderColor: 'rgba(255, 255, 255, 0.6)', // Reduced opacity
+              shadowBlur: 10, // Reduced shadow
+              shadowColor: 'rgba(0, 0, 0, 0.3)'
             },
             lineStyle: {
-              // Very thick lines on hover for better visibility
-              width: 24, // Increased from 16 to 24
-              shadowBlur: 25,
-              shadowColor: 'rgba(0, 0, 0, 0.8)'
+              // Extremely thick lines on hover for excellent detection
+              width: 70, // Increased from 50 to 70 for even better hover area
+              shadowBlur: 15, // Reduced shadow
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
             }
           },
           data: filteredNodes.map((node) => ({
@@ -1799,27 +1758,34 @@ const SankeyModal = ({ open, onClose, account }) => {
                   case 'outflow':
                     return '#FF8C00'; // Dark orange for target account outflow
                   case 'dex':
-                    return theme.palette.info.main;
+                    return '#2196F3'; // Blue for DEX operations
                   case 'trust':
-                    return theme.palette.secondary.main;
+                    return '#4CAF50'; // Green for trust operations (authorization/permissions)
                   case 'amm_pool':
-                    return theme.palette.cyan?.[500] || '#00bcd4';
+                    return '#E91E63'; // Pink for AMM pools (liquidity pools)
                   case 'amm':
-                    return theme.palette.purple?.[500] || '#9c27b0';
+                    return '#9C27B0'; // Purple for AMM operations
                   case 'self':
-                    return theme.palette.grey[600];
+                    return '#757575'; // Grey for self transfers
                   case 'failed_exchange':
-                    return '#FF6B6B'; // Red for failed exchanges
+                    return '#F44336'; // Red for failed exchanges
                   case 'failed_self':
-                    return '#FF8E53'; // Orange-red for failed self transfers
+                    return '#FF5722'; // Orange-red for failed self transfers
                   case 'operations':
-                    return theme.palette.warning.main;
+                    return '#FF9800'; // Orange for general operations
                   default:
                     // Check if this is the target account node
                     if (node.name === currentAccount) {
                       return '#FFD700'; // Gold for target account
                     }
-                    return theme.palette.primary.main;
+
+                    // Check if this is a spam account
+                    const accountDetail = accountDetails.get(node.name);
+                    if (accountDetail && accountDetail.isSpammer) {
+                      return '#F44336'; // Red for spam accounts
+                    }
+
+                    return '#673AB7'; // Deep purple for regular accounts
                 }
               })(),
               borderColor: (() => {
@@ -1850,34 +1816,62 @@ const SankeyModal = ({ open, onClose, account }) => {
             ...link,
             lineStyle: {
               color: link.isSpam
-                ? '#ff4444'
+                ? '#FF1744' // Vibrant red for spam
                 : link.txType === 'TrustSet' || link.currency === 'TRUST'
-                ? '#9c27b0' // Purple color for TrustSet transactions
-                : 'source', // Red for spam, purple for trust, source color for normal
-              opacity: link.isSpam ? 0.8 : 0.6,
+                ? '#E91E63' // Vibrant pink for TrustSet transactions
+                : link.txType === 'OfferCreate' || link.txType === 'OfferCancel'
+                ? '#00E676' // Vibrant green for DEX operations
+                : link.txType === 'AMMDeposit' || link.txType === 'AMMWithdraw'
+                ? '#FF6D00' // Vibrant orange for AMM operations
+                : link.currency === 'XRP'
+                ? '#2196F3' // Vibrant blue for XRP transactions
+                : link.currency && link.currency !== 'XRP'
+                ? '#9C27B0' // Vibrant purple for token transactions
+                : link.ammDirection === 'BUY'
+                ? '#4CAF50' // Vibrant green for token buying
+                : link.ammDirection === 'SELL'
+                ? '#FF5722' // Vibrant deep orange for token selling
+                : '#00BCD4', // Vibrant cyan as default
+              opacity: link.isSpam ? 0.9 : 0.8, // Increased opacity for more vibrant appearance
               curveness: 0.5,
-              width: Math.max(link.isSpam ? 16 : 12, 12), // Increased base width: 12px normal, 16px spam
-              type: link.isSpam ? 'dashed' : 'solid', // Dashed lines for spam
-              shadowColor: link.isSpam ? '#ff4444' : undefined,
-              shadowBlur: link.isSpam ? 10 : undefined
+              width: Math.max(link.isSpam ? 55 : 50, 50),
+              type: link.isSpam ? 'dashed' : 'solid',
+              shadowColor: link.isSpam
+                ? '#FF1744'
+                : link.txType === 'TrustSet' || link.currency === 'TRUST'
+                ? '#E91E63'
+                : link.txType === 'OfferCreate' || link.txType === 'OfferCancel'
+                ? '#00E676'
+                : link.txType === 'AMMDeposit' || link.txType === 'AMMWithdraw'
+                ? '#FF6D00'
+                : 'rgba(0, 188, 212, 0.3)',
+              shadowBlur: 8 // Increased shadow for more vibrant glow
             },
             emphasis: {
               lineStyle: {
-                width: Math.max(link.isSpam ? 28 : 24, 24), // Much thicker on hover: 24-28px
+                width: Math.max(link.isSpam ? 80 : 75, 75),
                 opacity: 1,
-                shadowBlur: 30, // Increased shadow blur
+                shadowBlur: 40, // Increased shadow blur for more dramatic effect
                 shadowColor: link.isSpam
-                  ? '#ff4444'
+                  ? '#FF1744'
                   : link.txType === 'TrustSet' || link.currency === 'TRUST'
-                  ? '#9c27b0'
-                  : 'rgba(0, 0, 0, 0.8)',
-                // Add glow effect
+                  ? '#E91E63'
+                  : link.txType === 'OfferCreate' || link.txType === 'OfferCancel'
+                  ? '#00E676'
+                  : link.txType === 'AMMDeposit' || link.txType === 'AMMWithdraw'
+                  ? '#FF6D00'
+                  : 'rgba(0, 188, 212, 0.8)',
+                // Add glow effect with vibrant colors
                 borderColor: link.isSpam
-                  ? '#ff4444'
+                  ? '#FF1744'
                   : link.txType === 'TrustSet' || link.currency === 'TRUST'
-                  ? '#9c27b0'
-                  : '#ffffff',
-                borderWidth: 2
+                  ? '#E91E63'
+                  : link.txType === 'OfferCreate' || link.txType === 'OfferCancel'
+                  ? '#00E676'
+                  : link.txType === 'AMMDeposit' || link.txType === 'AMMWithdraw'
+                  ? '#FF6D00'
+                  : '#00BCD4',
+                borderWidth: 3 // Increased border width for more vibrant effect
               }
             }
           })),
@@ -2036,7 +2030,7 @@ const SankeyModal = ({ open, onClose, account }) => {
         }
       ]
     };
-  }, [chartData, showSpamOnly, spamStats, theme, currentAccount, darkMode]);
+  }, [chartData, showSpamOnly, spamStats, theme, currentAccount, darkMode, accountDetails]);
 
   const handleClose = () => {
     setChartData(null);
@@ -2047,6 +2041,124 @@ const SankeyModal = ({ open, onClose, account }) => {
     setCurrentAccount(account); // Reset to original account
     onClose();
   };
+
+  // Helper function to generate tooltip content
+  const generateTooltipContent = (params) => {
+    try {
+      if (!params || typeof params !== 'object') {
+        return 'No data';
+      }
+
+      const data = params.data;
+      if (!data || typeof data !== 'object') {
+        return 'No data available';
+      }
+
+      if (params.dataType === 'node') {
+        const name = String(data.displayName || data.name || 'Unknown');
+        const category = String(data.category || 'unknown');
+        const value = Number(data.value) || 0;
+
+        return `${name}\nType: ${category}\nTransactions: ${value}`;
+      } else if (params.dataType === 'edge') {
+        const source = String(data.source || 'Unknown');
+        const target = String(data.target || 'Unknown');
+        const value = Number(data.value) || 0;
+        const count = Number(data.count) || 0;
+        const currency = String(data.currency || 'Unknown');
+
+        return `${source} → ${target}\nValue: ${value.toFixed(
+          6
+        )}\nTransactions: ${count}\nCurrency: ${currency}`;
+      }
+
+      return 'Item details';
+    } catch (error) {
+      console.warn('Tooltip content error:', error);
+      return 'Details unavailable';
+    }
+  };
+
+  // Helper function to show custom tooltip
+  const showCustomTooltip = (event, params) => {
+    try {
+      // Clear any existing hide timeout immediately
+      if (tooltipTimeoutRef.current) {
+        clearTimeout(tooltipTimeoutRef.current);
+        tooltipTimeoutRef.current = null;
+      }
+
+      // Clear any existing show timeout
+      if (showTimeoutRef.current) {
+        clearTimeout(showTimeoutRef.current);
+        showTimeoutRef.current = null;
+      }
+
+      // Debounce the show function to prevent rapid show/hide cycles
+      showTimeoutRef.current = setTimeout(() => {
+        const content = generateTooltipContent(params);
+
+        // Use much larger distances to avoid cursor interference
+        let x = 50; // Increased base offset
+        let y = 50;
+
+        // Try to get mouse position from various event properties
+        if (event && typeof event === 'object') {
+          if (event.offsetX !== undefined && event.offsetY !== undefined) {
+            x = event.offsetX + 40; // Much larger offset to avoid cursor interference
+            y = event.offsetY - 60;
+          } else if (event.layerX !== undefined && event.layerY !== undefined) {
+            x = event.layerX + 40;
+            y = event.layerY - 60;
+          } else if (event.clientX !== undefined && event.clientY !== undefined) {
+            x = (event.clientX % 400) + 40;
+            y = (event.clientY % 300) - 60;
+          }
+        }
+
+        // Store last position for smooth updates
+        const newPosition = {
+          x: Math.max(50, Math.min(x, 800)), // Increased bounds
+          y: Math.max(50, Math.min(y, 500))
+        };
+        lastPositionRef.current = newPosition;
+
+        // Always show immediately after debounce delay
+        setCustomTooltip({
+          visible: true,
+          ...newPosition,
+          content: content,
+          type: params?.dataType || 'unknown'
+        });
+      }, 50); // 50ms debounce delay for show
+    } catch (error) {
+      console.warn('Custom tooltip error:', error);
+    }
+  };
+
+  // Helper function to hide custom tooltip with longer delay
+  const hideCustomTooltip = () => {
+    // Much longer delay to prevent flickering when moving quickly between elements
+    tooltipTimeoutRef.current = setTimeout(() => {
+      setCustomTooltip((prev) => ({ ...prev, visible: false }));
+    }, 500); // Increased from 200ms to 500ms for maximum stability
+  };
+
+  // Simplified mouse move handler - disable position updates to prevent jitter
+  const handleMouseMove = (params, event) => {
+    // Disable mousemove updates entirely to prevent flickering
+    // The tooltip will stay in its initial position once shown
+    return;
+  };
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
+      if (mouseMoveTimeoutRef.current) clearTimeout(mouseMoveTimeoutRef.current);
+      if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
+    };
+  }, []);
 
   return (
     <Modal open={open} onClose={handleClose} aria-labelledby="sankey-modal-title">
@@ -2502,13 +2614,15 @@ const SankeyModal = ({ open, onClose, account }) => {
                   <Stack direction="row" spacing={0.5} sx={{ display: 'inline-flex' }}>
                     {[
                       { label: '👤 You', color: '#FFD700' }, // Gold for target account
-                      { label: '💰 In', color: '#32CD32' }, // Different green for incoming
-                      { label: '💸 Out', color: '#FF6347' }, // Different red for outgoing
-                      { label: '🏪 DEX', color: theme.palette.info.main },
-                      { label: '🌊 Pool', color: theme.palette.cyan?.[500] || '#00bcd4' },
-                      { label: '🔄 AMM', color: theme.palette.purple?.[500] || '#9c27b0' },
-                      { label: '👤 Acc', color: theme.palette.primary.main },
-                      { label: '⚠️ Spam', color: '#ff4444' }
+                      { label: '💰 In', color: '#00E676' }, // Vibrant green for incoming
+                      { label: '💸 Out', color: '#FF5722' }, // Vibrant deep orange for outgoing
+                      { label: '🏪 DEX', color: '#00E676' }, // Vibrant green for DEX operations
+                      { label: '🌊 Pool', color: '#FF6D00' }, // Vibrant orange for AMM pools
+                      { label: '🔄 AMM', color: '#FF6D00' }, // Vibrant orange for AMM operations
+                      { label: '🔐 Trust', color: '#E91E63' }, // Vibrant pink for trust operations
+                      { label: '💎 XRP', color: '#2196F3' }, // Vibrant blue for XRP
+                      { label: '🪙 Token', color: '#9C27B0' }, // Vibrant purple for tokens
+                      { label: '⚠️ Spam', color: '#FF1744' } // Vibrant red for spam
                     ].map((item, index) => (
                       <Chip
                         key={index}
@@ -2558,7 +2672,7 @@ const SankeyModal = ({ open, onClose, account }) => {
                         whiteSpace: 'nowrap'
                       }}
                     >
-                      ⚠️ {spamStats.totalSpamTransactions} SPAM DETECTED -{' '}
+                      ⚠️ {spamStats.totalSpamTransactions} OUTGOING SPAM DETECTED -{' '}
                       {spamStats.totalSpamTransactions}/{spamStats.totalMicroPayments} (
                       {spamStats.spamPercentage}%)
                     </Typography>
@@ -2788,44 +2902,99 @@ const SankeyModal = ({ open, onClose, account }) => {
               }}
             >
               {/* Chart Container */}
-              <Box sx={{ flex: 1, height: '100%' }}>
+              <Box sx={{ flex: 1, height: '100%', position: 'relative' }}>
                 {chartData.links.length > 0 ? (
-                  <ReactECharts
-                    option={getChartOption}
-                    notMerge={true}
-                    style={{ height: '100%', width: '100%' }}
-                    opts={{
-                      renderer: 'canvas',
-                      devicePixelRatio: window.devicePixelRatio || 2
-                    }}
-                    onEvents={{
-                      click: (params) => {
-                        // Handle debug item selection
-                        if (showDebug) {
-                          setSelectedDebugItem({
-                            type: params.dataType,
-                            data: params.data,
-                            params: params
-                          });
-                        }
-
-                        // Handle click on account nodes to navigate to that account's Sankey
-                        if (params.dataType === 'node' && params.data.category === 'account') {
-                          const clickedAccount = params.data.name;
-                          // Check if it's a valid XRPL address (starts with 'r' and is 25-34 characters)
-                          if (
-                            clickedAccount &&
-                            clickedAccount.length >= 25 &&
-                            clickedAccount.length <= 34 &&
-                            clickedAccount.startsWith('r') &&
-                            !showDebug // Only navigate if not in debug mode
-                          ) {
-                            navigateToAccount(clickedAccount);
+                  <>
+                    <ReactECharts
+                      option={getChartOption}
+                      notMerge={true}
+                      style={{ height: '100%', width: '100%' }}
+                      opts={{
+                        renderer: 'canvas',
+                        devicePixelRatio: window.devicePixelRatio || 2
+                      }}
+                      onEvents={{
+                        click: (params) => {
+                          // Handle debug item selection
+                          if (showDebug) {
+                            setSelectedDebugItem({
+                              type: params.dataType,
+                              data: params.data,
+                              params: params
+                            });
                           }
+
+                          // Handle summary item selection
+                          if (showSummary) {
+                            setSelectedSummaryItem({
+                              type: params.dataType,
+                              data: params.data,
+                              params: params
+                            });
+                          }
+
+                          // Handle click on account nodes to navigate to that account's Sankey
+                          if (params.dataType === 'node' && params.data.category === 'account') {
+                            const clickedAccount = params.data.name;
+                            // Check if it's a valid XRPL address (starts with 'r' and is 25-34 characters)
+                            if (
+                              clickedAccount &&
+                              clickedAccount.length >= 25 &&
+                              clickedAccount.length <= 34 &&
+                              clickedAccount.startsWith('r') &&
+                              !showDebug &&
+                              !showSummary // Only navigate if not in debug or summary mode
+                            ) {
+                              navigateToAccount(clickedAccount);
+                            }
+                          }
+                        },
+                        mouseover: (params, event) => {
+                          showCustomTooltip(event.event, params);
+                        },
+                        mouseout: () => {
+                          hideCustomTooltip();
+                        },
+                        mousemove: (params, event) => {
+                          handleMouseMove(params, event);
                         }
-                      }
-                    }}
-                  />
+                      }}
+                    />
+
+                    {/* Custom Tooltip Overlay */}
+                    {customTooltip.visible && (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          left: customTooltip.x,
+                          top: customTooltip.y,
+                          bgcolor: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                          border: `1px solid ${darkMode ? '#444444' : theme.palette.divider}`,
+                          borderRadius: 2,
+                          padding: '8px 12px',
+                          fontSize: '11px',
+                          color: theme.palette.text.primary,
+                          boxShadow: `0 8px 32px ${
+                            darkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.15)'
+                          }`,
+                          backdropFilter: 'blur(10px)',
+                          WebkitBackdropFilter: 'blur(10px)',
+                          zIndex: 10000,
+                          pointerEvents: 'none',
+                          maxWidth: 300,
+                          wordWrap: 'break-word',
+                          whiteSpace: 'pre-line',
+                          fontFamily: 'monospace',
+                          transition: 'opacity 0.15s ease-out',
+                          transform: 'translateZ(0)',
+                          willChange: 'opacity',
+                          opacity: 1
+                        }}
+                      >
+                        {customTooltip.content}
+                      </Box>
+                    )}
+                  </>
                 ) : (
                   <Box
                     sx={{
@@ -2878,659 +3047,353 @@ const SankeyModal = ({ open, onClose, account }) => {
                 )}
               </Box>
 
-              {/* Debug Panel */}
-              {showDebug && chartData && (
+              {/* Summary Panel */}
+              {showSummary && accountDetails.has(currentAccount) && (
                 <Box
                   sx={{
-                    position: 'absolute',
-                    top: 10,
-                    right: 10,
-                    width: 320,
-                    maxHeight: '80%',
-                    bgcolor: darkMode ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.95)',
-                    border: `1px solid ${darkMode ? '#333' : '#ddd'}`,
-                    borderRadius: 2,
-                    p: 1.5,
-                    overflow: 'auto',
+                    width: 350,
+                    height: '100%',
+                    borderLeft: `1px solid ${darkMode ? '#333333' : theme.palette.divider}`,
+                    bgcolor: darkMode ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)',
                     backdropFilter: 'blur(10px)',
-                    boxShadow: `0 8px 32px ${darkMode ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.15)'}`,
-                    zIndex: 1000
+                    overflow: 'auto',
+                    p: 1.5
                   }}
                 >
-                  <Typography variant="subtitle2" sx={{ mb: 1, color: '#4caf50', fontWeight: 600 }}>
-                    📊 Node Summary Info
-                  </Typography>
-
-                  <Stack spacing={0.5} sx={{ maxHeight: 400, overflow: 'auto' }}>
-                    {chartData.nodes.map((node, index) => (
-                      <Box
-                        key={index}
-                        sx={{
-                          p: 0.8,
-                          bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                          borderRadius: 1,
-                          border: `1px solid ${darkMode ? '#333' : '#eee'}`
-                        }}
-                      >
+                  {(() => {
+                    const details = accountDetails.get(currentAccount);
+                    return (
+                      <Stack spacing={1.2}>
+                        {/* Header */}
                         <Typography
-                          variant="caption"
+                          variant="subtitle1"
                           sx={{
-                            fontWeight: 600,
+                            fontWeight: 700,
                             color: theme.palette.primary.main,
-                            display: 'block',
-                            mb: 0.3,
-                            fontSize: '0.7rem'
+                            fontSize: '1rem',
+                            mb: 0.5
                           }}
                         >
-                          {node.displayName}
+                          📊 Account Summary
                         </Typography>
 
-                        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.3 }}>
-                          <Chip
-                            label={`Type: ${node.category}`}
-                            size="small"
-                            sx={{
-                              fontSize: '0.55rem',
-                              height: '16px',
-                              bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-                            }}
-                          />
-                          <Chip
-                            label={`Txns: ${node.value}`}
-                            size="small"
-                            sx={{
-                              fontSize: '0.55rem',
-                              height: '16px',
-                              bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-                            }}
-                          />
-                          {node.name.length > 20 && (
-                            <Tooltip title={node.name} arrow>
-                              <Chip
-                                label={`ID: ${node.name.substring(0, 8)}...`}
-                                size="small"
-                                sx={{
-                                  fontSize: '0.55rem',
-                                  height: '16px',
-                                  fontFamily: 'monospace',
-                                  bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-                                }}
-                              />
-                            </Tooltip>
-                          )}
-                        </Stack>
-
-                        {/* Show account details if available */}
-                        {accountDetails.has(node.name) && (
-                          <Box sx={{ mt: 0.5 }}>
-                            {(() => {
-                              const details = accountDetails.get(node.name);
-                              return (
-                                <Stack
-                                  direction="row"
-                                  spacing={0.3}
-                                  sx={{ flexWrap: 'wrap', gap: 0.2 }}
-                                >
-                                  <Chip
-                                    label={`XRP: ${details.totalValue.toFixed(2)}`}
-                                    size="small"
-                                    sx={{
-                                      fontSize: '0.5rem',
-                                      height: '14px',
-                                      bgcolor: theme.palette.success.main,
-                                      color: 'white'
-                                    }}
-                                  />
-                                  {details.isSpammer && (
-                                    <Chip
-                                      label="SPAM"
-                                      size="small"
-                                      sx={{
-                                        fontSize: '0.5rem',
-                                        height: '14px',
-                                        bgcolor: '#ff4444',
-                                        color: 'white'
-                                      }}
-                                    />
-                                  )}
-                                  {details.topTokens.length > 0 && (
-                                    <Chip
-                                      label={`Token: ${details.topTokens[0]}`}
-                                      size="small"
-                                      sx={{
-                                        fontSize: '0.5rem',
-                                        height: '14px',
-                                        bgcolor: theme.palette.info.main,
-                                        color: 'white'
-                                      }}
-                                    />
-                                  )}
-                                </Stack>
-                              );
-                            })()}
-                          </Box>
-                        )}
-                      </Box>
-                    ))}
-                  </Stack>
-
-                  {/* Selected Item Debug Info */}
-                  {selectedDebugItem && (
-                    <Box
-                      sx={{ mt: 1, pt: 1, borderTop: `1px solid ${darkMode ? '#333' : '#eee'}` }}
-                    >
-                      <Typography
-                        variant="subtitle2"
-                        sx={{ mb: 1, color: '#ff9800', fontWeight: 600 }}
-                      >
-                        🎯 Selected {selectedDebugItem.type === 'node' ? 'Node' : 'Link'}
-                      </Typography>
-
-                      {selectedDebugItem.type === 'edge' ? (
-                        <Box
+                        {/* Basic Info - More Compact */}
+                        <Paper
                           sx={{
-                            p: 0.8,
-                            bgcolor: darkMode ? 'rgba(255,152,0,0.1)' : 'rgba(255,152,0,0.05)',
-                            borderRadius: 1,
-                            border: `1px solid #ff9800`
+                            p: 1,
+                            bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'
                           }}
                         >
                           <Typography
                             variant="caption"
-                            sx={{
-                              fontWeight: 600,
-                              color: '#ff9800',
-                              display: 'block',
-                              mb: 0.5,
-                              fontSize: '0.7rem'
-                            }}
+                            sx={{ fontWeight: 600, fontSize: '0.7rem', display: 'block', mb: 0.5 }}
                           >
-                            {selectedDebugItem.data.source} → {selectedDebugItem.data.target}
+                            Basic Information
                           </Typography>
-
-                          <Stack spacing={0.3}>
-                            <Stack
-                              direction="row"
-                              spacing={0.3}
-                              sx={{ flexWrap: 'wrap', gap: 0.2 }}
-                            >
-                              <Chip
-                                label={`Value: ${selectedDebugItem.data.value.toFixed(6)}`}
-                                size="small"
-                                sx={{
-                                  fontSize: '0.5rem',
-                                  height: '14px',
-                                  bgcolor: theme.palette.primary.main,
-                                  color: 'white'
-                                }}
-                              />
-                              <Chip
-                                label={`Count: ${selectedDebugItem.data.count}`}
-                                size="small"
-                                sx={{
-                                  fontSize: '0.5rem',
-                                  height: '14px',
-                                  bgcolor: theme.palette.info.main,
-                                  color: 'white'
-                                }}
-                              />
-                              <Chip
-                                label={`Currency: ${selectedDebugItem.data.currency}`}
-                                size="small"
-                                sx={{
-                                  fontSize: '0.5rem',
-                                  height: '14px',
-                                  bgcolor: theme.palette.secondary.main,
-                                  color: 'white'
-                                }}
-                              />
-                            </Stack>
-
-                            <Stack
-                              direction="row"
-                              spacing={0.3}
-                              sx={{ flexWrap: 'wrap', gap: 0.2 }}
-                            >
-                              <Chip
-                                label={`TxType: ${selectedDebugItem.data.txType}`}
-                                size="small"
-                                sx={{
-                                  fontSize: '0.5rem',
-                                  height: '14px',
-                                  bgcolor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
-                                  color: darkMode ? 'white' : 'black'
-                                }}
-                              />
-                              {selectedDebugItem.data.isSpam && (
-                                <Chip
-                                  label={`SPAM (${selectedDebugItem.data.spamScore})`}
-                                  size="small"
-                                  sx={{
-                                    fontSize: '0.5rem',
-                                    height: '14px',
-                                    bgcolor: '#ff4444',
-                                    color: 'white'
-                                  }}
-                                />
-                              )}
-                              {selectedDebugItem.data.ammDirection && (
-                                <Chip
-                                  label={`AMM: ${selectedDebugItem.data.ammDirection} ${selectedDebugItem.data.ammToken}`}
-                                  size="small"
-                                  sx={{
-                                    fontSize: '0.5rem',
-                                    height: '14px',
-                                    bgcolor:
-                                      selectedDebugItem.data.ammDirection === 'BUY'
-                                        ? '#4caf50'
-                                        : '#ff9800',
-                                    color: 'white'
-                                  }}
-                                />
-                              )}
-                            </Stack>
+                          <Stack spacing={0.2}>
+                            <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                              <strong>Account:</strong> {currentAccount.substring(0, 10)}...
+                              {currentAccount.substring(currentAccount.length - 6)}
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                              <strong>Activity:</strong> {details.mainActivity}
+                            </Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                                <strong>Txns:</strong> {details.totalTransactions}
+                              </Typography>
+                              <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                                <strong>Volume:</strong> {details.totalValue.toFixed(1)} XRP
+                              </Typography>
+                            </Box>
                           </Stack>
-                        </Box>
-                      ) : (
-                        <Box
-                          sx={{
-                            p: 0.8,
-                            bgcolor: darkMode ? 'rgba(255,152,0,0.1)' : 'rgba(255,152,0,0.05)',
-                            borderRadius: 1,
-                            border: `1px solid #ff9800`
-                          }}
-                        >
-                          <Typography
-                            variant="caption"
+                        </Paper>
+
+                        {/* Trading Summary - More Compact */}
+                        {(details.tokensBought.size > 0 || details.tokensSold.size > 0) && (
+                          <Paper
                             sx={{
-                              fontWeight: 600,
-                              color: '#ff9800',
-                              display: 'block',
-                              mb: 0.3,
-                              fontSize: '0.7rem'
-                            }}
-                          >
-                            {selectedDebugItem.data.displayName}
-                          </Typography>
-                          <Chip
-                            label={`Category: ${selectedDebugItem.data.category}`}
-                            size="small"
-                            sx={{
-                              fontSize: '0.5rem',
-                              height: '14px',
-                              bgcolor: '#ff9800',
-                              color: 'white'
-                            }}
-                          />
-                        </Box>
-                      )}
-
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          display: 'block',
-                          mt: 0.5,
-                          color: theme.palette.text.secondary,
-                          fontSize: '0.5rem',
-                          fontStyle: 'italic'
-                        }}
-                      >
-                        💡 Click on nodes/links to inspect them
-                      </Typography>
-                    </Box>
-                  )}
-
-                  {/* Links summary */}
-                  <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${darkMode ? '#333' : '#eee'}` }}>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}
-                    >
-                      📊 Links: {chartData.links.length} | Spam:{' '}
-                      {chartData.links.filter((l) => l.isSpam).length}
-                    </Typography>
-                  </Box>
-                </Box>
-              )}
-
-              {/* Summary Panel */}
-              {showSummary && chartData && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 10,
-                    right: 10,
-                    width: 500,
-                    maxHeight: '85%',
-                    bgcolor: darkMode ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.95)',
-                    border: `1px solid ${darkMode ? '#2196f3' : '#2196f3'}`,
-                    borderRadius: 2,
-                    p: 2,
-                    backdropFilter: 'blur(10px)',
-                    boxShadow: `0 8px 32px ${darkMode ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.15)'}`,
-                    zIndex: 1000
-                  }}
-                >
-                  <Typography variant="subtitle2" sx={{ mb: 2, color: '#2196f3', fontWeight: 600 }}>
-                    📊 Transaction Flow Summary
-                  </Typography>
-
-                  {/* Flow Statistics */}
-                  <Box sx={{ mb: 2 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 1
-                      }}
-                    >
-                      Flow Statistics
-                    </Typography>
-                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
-                      <Chip
-                        label={`Total Nodes: ${chartData.nodes.length}`}
-                        size="small"
-                        sx={{
-                          fontSize: '0.65rem',
-                          bgcolor: theme.palette.primary.main,
-                          color: 'white'
-                        }}
-                      />
-                      <Chip
-                        label={`Total Links: ${chartData.links.length}`}
-                        size="small"
-                        sx={{
-                          fontSize: '0.65rem',
-                          bgcolor: theme.palette.info.main,
-                          color: 'white'
-                        }}
-                      />
-                      <Chip
-                        label={`Total Transactions: ${chartData.summary.totalTransactions}`}
-                        size="small"
-                        sx={{
-                          fontSize: '0.65rem',
-                          bgcolor: theme.palette.secondary.main,
-                          color: 'white'
-                        }}
-                      />
-                    </Stack>
-                  </Box>
-
-                  {/* XRP Flow Summary */}
-                  <Box sx={{ mb: 2 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 1
-                      }}
-                    >
-                      XRP Flow
-                    </Typography>
-                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
-                      {chartData.summary.totalInflow > 0 && (
-                        <Chip
-                          label={`📈 Inflow: ${chartData.summary.totalInflow.toFixed(2)} XRP`}
-                          size="small"
-                          sx={{
-                            fontSize: '0.65rem',
-                            bgcolor: theme.palette.success.main,
-                            color: 'white'
-                          }}
-                        />
-                      )}
-                      {chartData.summary.totalOutflow > 0 && (
-                        <Chip
-                          label={`📉 Outflow: ${chartData.summary.totalOutflow.toFixed(2)} XRP`}
-                          size="small"
-                          sx={{
-                            fontSize: '0.65rem',
-                            bgcolor: theme.palette.error.main,
-                            color: 'white'
-                          }}
-                        />
-                      )}
-                    </Stack>
-                  </Box>
-
-                  {/* Node Categories */}
-                  <Box sx={{ mb: 2 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 1
-                      }}
-                    >
-                      Node Categories
-                    </Typography>
-                    <Stack spacing={0.5}>
-                      {(() => {
-                        const categoryCount = {};
-                        chartData.nodes.forEach((node) => {
-                          categoryCount[node.category] = (categoryCount[node.category] || 0) + 1;
-                        });
-
-                        return Object.entries(categoryCount).map(([category, count]) => (
-                          <Box
-                            key={category}
-                            sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center'
+                              p: 1,
+                              bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'
                             }}
                           >
                             <Typography
                               variant="caption"
-                              sx={{ fontSize: '0.65rem', textTransform: 'capitalize' }}
-                            >
-                              {category.replace('_', ' ')}
-                            </Typography>
-                            <Chip
-                              label={count}
-                              size="small"
                               sx={{
-                                fontSize: '0.6rem',
-                                height: '18px',
-                                bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                                fontWeight: 600,
+                                fontSize: '0.7rem',
+                                display: 'block',
+                                mb: 0.5
                               }}
-                            />
-                          </Box>
-                        ));
-                      })()}
-                    </Stack>
-                  </Box>
+                            >
+                              Trading Activity
+                            </Typography>
+                            <Stack spacing={0.2}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                                  <strong>Direction:</strong>{' '}
+                                  {details.tradingDirection.toUpperCase()}
+                                </Typography>
+                                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                                  <strong>Tokens:</strong>{' '}
+                                  {details.topTokens.slice(0, 2).join(', ') || 'None'}
+                                </Typography>
+                              </Box>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{ fontSize: '0.65rem', color: theme.palette.success.main }}
+                                >
+                                  <strong>Spent:</strong> {details.xrpSpentOnTokens.toFixed(1)} XRP
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  sx={{ fontSize: '0.65rem', color: theme.palette.error.main }}
+                                >
+                                  <strong>Received:</strong>{' '}
+                                  {details.xrpReceivedFromTokens.toFixed(1)} XRP
+                                </Typography>
+                              </Box>
+                            </Stack>
+                          </Paper>
+                        )}
 
-                  {/* Top Accounts by Activity */}
-                  <Box sx={{ mb: 2 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 1
-                      }}
-                    >
-                      Top Active Accounts
-                    </Typography>
-                    <Stack spacing={0.5}>
-                      {chartData.nodes
-                        .filter((node) => node.category === 'account')
-                        .sort((a, b) => b.value - a.value)
-                        .slice(0, 5)
-                        .map((node, index) => (
-                          <Box
-                            key={node.name}
+                        {/* Activity Scores - Horizontal Layout */}
+                        <Paper
+                          sx={{
+                            p: 1,
+                            bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{ fontWeight: 600, fontSize: '0.7rem', display: 'block', mb: 0.5 }}
+                          >
+                            Activity Breakdown
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {Object.entries(details.activityScore)
+                              .filter(([_, score]) => score > 0)
+                              .sort((a, b) => b[1] - a[1])
+                              .slice(0, 6) // Limit to top 6 activities
+                              .map(([activity, score]) => (
+                                <Chip
+                                  key={activity}
+                                  label={`${activity
+                                    .replace(/([A-Z])/g, ' $1')
+                                    .replace(/^\w/, (c) => c.toUpperCase())}: ${score}`}
+                                  size="small"
+                                  sx={{
+                                    fontSize: '0.6rem',
+                                    height: '20px',
+                                    bgcolor: theme.palette.primary.main,
+                                    color: 'white',
+                                    '& .MuiChip-label': { px: 0.5 }
+                                  }}
+                                />
+                              ))}
+                          </Box>
+                        </Paper>
+
+                        {/* Spam Information - Inline Layout */}
+                        {details.spamScore > 0 && (
+                          <Paper
                             sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center'
+                              p: 1,
+                              bgcolor: darkMode ? 'rgba(255,68,68,0.1)' : 'rgba(255,68,68,0.05)'
                             }}
                           >
                             <Typography
                               variant="caption"
-                              sx={{ fontSize: '0.6rem', fontFamily: 'monospace' }}
-                            >
-                              {node.displayName}
-                            </Typography>
-                            <Chip
-                              label={`${node.value} txns`}
-                              size="small"
                               sx={{
-                                fontSize: '0.55rem',
-                                height: '16px',
-                                bgcolor: theme.palette.primary.main,
-                                color: 'white'
+                                fontWeight: 600,
+                                color: '#ff4444',
+                                fontSize: '0.7rem',
+                                display: 'block',
+                                mb: 0.5
                               }}
-                            />
-                          </Box>
-                        ))}
-                    </Stack>
-                  </Box>
-
-                  {/* Spam Detection Summary */}
-                  {spamStats && spamStats.totalSpamTransactions > 0 && (
-                    <Box sx={{ mb: 2 }}>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: '#ff4444', fontWeight: 600, display: 'block', mb: 1 }}
-                      >
-                        ⚠️ Spam Detection
-                      </Typography>
-                      <Stack spacing={0.5}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                          }}
-                        >
-                          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                            Total Spam Transactions
-                          </Typography>
-                          <Chip
-                            label={spamStats.totalSpamTransactions}
-                            size="small"
-                            sx={{
-                              fontSize: '0.6rem',
-                              height: '18px',
-                              bgcolor: '#ff4444',
-                              color: 'white'
-                            }}
-                          />
-                        </Box>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                          }}
-                        >
-                          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                            Spam Percentage
-                          </Typography>
-                          <Chip
-                            label={`${spamStats.spamPercentage}%`}
-                            size="small"
-                            sx={{
-                              fontSize: '0.6rem',
-                              height: '18px',
-                              bgcolor: '#ff6666',
-                              color: 'white'
-                            }}
-                          />
-                        </Box>
-                      </Stack>
-                    </Box>
-                  )}
-
-                  {/* Decoded Spam Messages */}
-                  {(() => {
-                    const targetAccountDetails = accountDetails.get(currentAccount);
-                    if (targetAccountDetails && targetAccountDetails.uniqueSpamMessages.size > 0) {
-                      const spamMessages = Array.from(
-                        targetAccountDetails.uniqueSpamMessages
-                      ).slice(0, 5);
-                      return (
-                        <Box sx={{ mb: 2 }}>
-                          <Typography
-                            variant="caption"
-                            sx={{ color: '#ff4444', fontWeight: 600, display: 'block', mb: 1 }}
-                          >
-                            🚨 Decoded Spam Messages
-                          </Typography>
-                          <Stack spacing={0.5}>
-                            {spamMessages.map((message, index) => (
-                              <Box
-                                key={index}
+                            >
+                              ⚠️ Spam Analysis
+                            </Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                              <Chip
+                                label={`Score: ${details.spamScore}`}
+                                size="small"
                                 sx={{
-                                  p: 1,
-                                  bgcolor: darkMode
-                                    ? 'rgba(255,68,68,0.1)'
-                                    : 'rgba(255,68,68,0.05)',
-                                  borderRadius: 1,
-                                  border: '1px solid rgba(255,68,68,0.3)'
+                                  fontSize: '0.6rem',
+                                  height: '18px',
+                                  bgcolor: '#ff4444',
+                                  color: 'white'
                                 }}
-                              >
+                              />
+                              <Chip
+                                label={`Spam: ${details.spamTransactions}`}
+                                size="small"
+                                sx={{
+                                  fontSize: '0.6rem',
+                                  height: '18px',
+                                  bgcolor: '#ff4444',
+                                  color: 'white'
+                                }}
+                              />
+                              <Chip
+                                label={`Dust: ${details.dustTransactions}`}
+                                size="small"
+                                sx={{
+                                  fontSize: '0.6rem',
+                                  height: '18px',
+                                  bgcolor: '#ff4444',
+                                  color: 'white'
+                                }}
+                              />
+                              <Chip
+                                label={details.isSpammer ? 'Spammer' : 'Clean'}
+                                size="small"
+                                sx={{
+                                  fontSize: '0.6rem',
+                                  height: '18px',
+                                  bgcolor: details.isSpammer ? '#d32f2f' : '#4caf50',
+                                  color: 'white'
+                                }}
+                              />
+                            </Box>
+                          </Paper>
+                        )}
+
+                        {/* Recent Memos - Compact List */}
+                        {details.allMemos && details.allMemos.length > 0 && (
+                          <Paper
+                            sx={{
+                              p: 1,
+                              bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontWeight: 600,
+                                fontSize: '0.7rem',
+                                display: 'block',
+                                mb: 0.5
+                              }}
+                            >
+                              Recent Memos ({details.allMemos.length})
+                            </Typography>
+                            <Stack spacing={0.3}>
+                              {details.allMemos.slice(0, 5).map((memo, index) => (
+                                <Box
+                                  key={index}
+                                  sx={{
+                                    p: 0.5,
+                                    bgcolor: memo.isSpam
+                                      ? 'rgba(255,68,68,0.1)'
+                                      : 'rgba(128,128,128,0.1)',
+                                    borderRadius: 0.5,
+                                    border: memo.isSpam ? '1px solid #ff4444' : 'none'
+                                  }}
+                                >
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      fontSize: '0.6rem',
+                                      wordBreak: 'break-word',
+                                      display: 'block',
+                                      lineHeight: 1.2
+                                    }}
+                                  >
+                                    {memo.memo.data ? memo.memo.data.substring(0, 80) : 'No data'}
+                                    {memo.memo.data && memo.memo.data.length > 80 && '...'}
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      color: 'text.secondary',
+                                      fontSize: '0.55rem'
+                                    }}
+                                  >
+                                    {memo.amount.toFixed(4)} XRP {memo.isSpam && '(SPAM)'}
+                                  </Typography>
+                                </Box>
+                              ))}
+                              {details.allMemos.length > 5 && (
                                 <Typography
                                   variant="caption"
                                   sx={{
+                                    color: 'text.secondary',
+                                    fontStyle: 'italic',
                                     fontSize: '0.6rem',
-                                    fontFamily: 'monospace',
-                                    wordBreak: 'break-all',
-                                    color: theme.palette.text.primary,
-                                    display: 'block'
+                                    textAlign: 'center',
+                                    py: 0.5
                                   }}
                                 >
-                                  "{message}"
+                                  ... and {details.allMemos.length - 5} more memos
                                 </Typography>
+                              )}
+                            </Stack>
+                          </Paper>
+                        )}
+
+                        {/* Selected Item Details - Compact */}
+                        {selectedSummaryItem && (
+                          <Paper
+                            sx={{
+                              p: 1,
+                              bgcolor: darkMode ? 'rgba(33,150,243,0.1)' : 'rgba(33,150,243,0.05)'
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontWeight: 600,
+                                color: theme.palette.primary.main,
+                                fontSize: '0.7rem',
+                                display: 'block',
+                                mb: 0.5
+                              }}
+                            >
+                              🔍 Selected Item
+                            </Typography>
+                            <Stack spacing={0.2}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                                  <strong>Type:</strong> {selectedSummaryItem.type}
+                                </Typography>
+                                {selectedSummaryItem.data?.value && (
+                                  <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                                    <strong>Value:</strong> {selectedSummaryItem.data.value}
+                                  </Typography>
+                                )}
                               </Box>
-                            ))}
-                            {targetAccountDetails.uniqueSpamMessages.size > 5 && (
                               <Typography
                                 variant="caption"
-                                sx={{
-                                  fontSize: '0.55rem',
-                                  fontStyle: 'italic',
-                                  color: theme.palette.text.secondary,
-                                  textAlign: 'center'
-                                }}
+                                sx={{ fontSize: '0.65rem', wordBreak: 'break-word' }}
                               >
-                                +{targetAccountDetails.uniqueSpamMessages.size - 5} more unique spam
-                                messages
+                                <strong>Name:</strong>{' '}
+                                {selectedSummaryItem.data?.displayName ||
+                                  selectedSummaryItem.data?.name ||
+                                  'Unknown'}
                               </Typography>
-                            )}
-                          </Stack>
-                        </Box>
-                      );
-                    }
-                    return null;
+                              {(selectedSummaryItem.data?.currency ||
+                                selectedSummaryItem.data?.count) && (
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                  {selectedSummaryItem.data?.currency && (
+                                    <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                                      <strong>Currency:</strong> {selectedSummaryItem.data.currency}
+                                    </Typography>
+                                  )}
+                                  {selectedSummaryItem.data?.count && (
+                                    <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                                      <strong>Txns:</strong> {selectedSummaryItem.data.count}
+                                    </Typography>
+                                  )}
+                                </Box>
+                              )}
+                            </Stack>
+                          </Paper>
+                        )}
+                      </Stack>
+                    );
                   })()}
-
-                  {/* Footer */}
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      display: 'block',
-                      mt: 1,
-                      pt: 1,
-                      borderTop: `1px solid ${darkMode ? '#333' : '#eee'}`,
-                      color: theme.palette.text.secondary,
-                      fontSize: '0.55rem',
-                      fontStyle: 'italic',
-                      textAlign: 'center'
-                    }}
-                  >
-                    💡 Toggle this panel to see detailed transaction flow analysis
-                  </Typography>
                 </Box>
               )}
             </Box>
