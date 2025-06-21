@@ -35,6 +35,8 @@ const SankeyModal = ({ open, onClose, account }) => {
   const [currentAccount, setCurrentAccount] = useState(account); // Track current account being viewed
   const [showDebug, setShowDebug] = useState(false); // Add debug toggle state
   const [selectedDebugItem, setSelectedDebugItem] = useState(null); // Track selected item for debug
+  const [showSummary, setShowSummary] = useState(false); // Add summary toggle state
+  const [selectedSummaryItem, setSelectedSummaryItem] = useState(null); // Track selected item for summary
 
   // Micro payment thresholds (in XRP)
   const spamThresholds = {
@@ -2587,7 +2589,7 @@ const SankeyModal = ({ open, onClose, account }) => {
                   </Box>
                 )}
 
-                {/* Debug Toggle */}
+                {/* Summary Toggle */}
                 <Box
                   sx={{
                     display: 'flex',
@@ -2596,27 +2598,27 @@ const SankeyModal = ({ open, onClose, account }) => {
                     px: 1.2,
                     py: 0.4,
                     height: '32px',
-                    bgcolor: darkMode ? 'rgba(76,175,80,0.12)' : 'rgba(76,175,80,0.08)',
+                    bgcolor: darkMode ? 'rgba(33,150,243,0.12)' : 'rgba(33,150,243,0.08)',
                     borderRadius: '16px',
-                    border: '1px solid #4caf50'
+                    border: '1px solid #2196f3'
                   }}
                 >
                   <Typography
                     variant="caption"
                     sx={{
-                      color: '#4caf50',
+                      color: '#2196f3',
                       fontWeight: 600,
                       fontSize: '0.65rem',
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    🐛 DEBUG
+                    📊 SUMMARY
                   </Typography>
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={showDebug}
-                        onChange={(e) => setShowDebug(e.target.checked)}
+                        checked={showSummary}
+                        onChange={(e) => setShowSummary(e.target.checked)}
                         size="small"
                         sx={{
                           '& .MuiSwitch-switchBase.Mui-checked': { color: '#4caf50' },
@@ -2626,7 +2628,7 @@ const SankeyModal = ({ open, onClose, account }) => {
                         }}
                       />
                     }
-                    label="Show Debug"
+                    label="Show Summary"
                     sx={{
                       m: 0,
                       '& .MuiFormControlLabel-label': {
@@ -2896,7 +2898,7 @@ const SankeyModal = ({ open, onClose, account }) => {
                   }}
                 >
                   <Typography variant="subtitle2" sx={{ mb: 1, color: '#4caf50', fontWeight: 600 }}>
-                    🐛 Node Debug Info
+                    📊 Node Summary Info
                   </Typography>
 
                   <Stack spacing={0.5} sx={{ maxHeight: 400, overflow: 'auto' }}>
@@ -3188,6 +3190,347 @@ const SankeyModal = ({ open, onClose, account }) => {
                       {chartData.links.filter((l) => l.isSpam).length}
                     </Typography>
                   </Box>
+                </Box>
+              )}
+
+              {/* Summary Panel */}
+              {showSummary && chartData && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    width: 500,
+                    maxHeight: '85%',
+                    bgcolor: darkMode ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.95)',
+                    border: `1px solid ${darkMode ? '#2196f3' : '#2196f3'}`,
+                    borderRadius: 2,
+                    p: 2,
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: `0 8px 32px ${darkMode ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.15)'}`,
+                    zIndex: 1000
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ mb: 2, color: '#2196f3', fontWeight: 600 }}>
+                    📊 Transaction Flow Summary
+                  </Typography>
+
+                  {/* Flow Statistics */}
+                  <Box sx={{ mb: 2 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontWeight: 600,
+                        display: 'block',
+                        mb: 1
+                      }}
+                    >
+                      Flow Statistics
+                    </Typography>
+                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                      <Chip
+                        label={`Total Nodes: ${chartData.nodes.length}`}
+                        size="small"
+                        sx={{
+                          fontSize: '0.65rem',
+                          bgcolor: theme.palette.primary.main,
+                          color: 'white'
+                        }}
+                      />
+                      <Chip
+                        label={`Total Links: ${chartData.links.length}`}
+                        size="small"
+                        sx={{
+                          fontSize: '0.65rem',
+                          bgcolor: theme.palette.info.main,
+                          color: 'white'
+                        }}
+                      />
+                      <Chip
+                        label={`Total Transactions: ${chartData.summary.totalTransactions}`}
+                        size="small"
+                        sx={{
+                          fontSize: '0.65rem',
+                          bgcolor: theme.palette.secondary.main,
+                          color: 'white'
+                        }}
+                      />
+                    </Stack>
+                  </Box>
+
+                  {/* XRP Flow Summary */}
+                  <Box sx={{ mb: 2 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontWeight: 600,
+                        display: 'block',
+                        mb: 1
+                      }}
+                    >
+                      XRP Flow
+                    </Typography>
+                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                      {chartData.summary.totalInflow > 0 && (
+                        <Chip
+                          label={`📈 Inflow: ${chartData.summary.totalInflow.toFixed(2)} XRP`}
+                          size="small"
+                          sx={{
+                            fontSize: '0.65rem',
+                            bgcolor: theme.palette.success.main,
+                            color: 'white'
+                          }}
+                        />
+                      )}
+                      {chartData.summary.totalOutflow > 0 && (
+                        <Chip
+                          label={`📉 Outflow: ${chartData.summary.totalOutflow.toFixed(2)} XRP`}
+                          size="small"
+                          sx={{
+                            fontSize: '0.65rem',
+                            bgcolor: theme.palette.error.main,
+                            color: 'white'
+                          }}
+                        />
+                      )}
+                    </Stack>
+                  </Box>
+
+                  {/* Node Categories */}
+                  <Box sx={{ mb: 2 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontWeight: 600,
+                        display: 'block',
+                        mb: 1
+                      }}
+                    >
+                      Node Categories
+                    </Typography>
+                    <Stack spacing={0.5}>
+                      {(() => {
+                        const categoryCount = {};
+                        chartData.nodes.forEach((node) => {
+                          categoryCount[node.category] = (categoryCount[node.category] || 0) + 1;
+                        });
+
+                        return Object.entries(categoryCount).map(([category, count]) => (
+                          <Box
+                            key={category}
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{ fontSize: '0.65rem', textTransform: 'capitalize' }}
+                            >
+                              {category.replace('_', ' ')}
+                            </Typography>
+                            <Chip
+                              label={count}
+                              size="small"
+                              sx={{
+                                fontSize: '0.6rem',
+                                height: '18px',
+                                bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                              }}
+                            />
+                          </Box>
+                        ));
+                      })()}
+                    </Stack>
+                  </Box>
+
+                  {/* Top Accounts by Activity */}
+                  <Box sx={{ mb: 2 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontWeight: 600,
+                        display: 'block',
+                        mb: 1
+                      }}
+                    >
+                      Top Active Accounts
+                    </Typography>
+                    <Stack spacing={0.5}>
+                      {chartData.nodes
+                        .filter((node) => node.category === 'account')
+                        .sort((a, b) => b.value - a.value)
+                        .slice(0, 5)
+                        .map((node, index) => (
+                          <Box
+                            key={node.name}
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{ fontSize: '0.6rem', fontFamily: 'monospace' }}
+                            >
+                              {node.displayName}
+                            </Typography>
+                            <Chip
+                              label={`${node.value} txns`}
+                              size="small"
+                              sx={{
+                                fontSize: '0.55rem',
+                                height: '16px',
+                                bgcolor: theme.palette.primary.main,
+                                color: 'white'
+                              }}
+                            />
+                          </Box>
+                        ))}
+                    </Stack>
+                  </Box>
+
+                  {/* Spam Detection Summary */}
+                  {spamStats && spamStats.totalSpamTransactions > 0 && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: '#ff4444', fontWeight: 600, display: 'block', mb: 1 }}
+                      >
+                        ⚠️ Spam Detection
+                      </Typography>
+                      <Stack spacing={0.5}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                            Total Spam Transactions
+                          </Typography>
+                          <Chip
+                            label={spamStats.totalSpamTransactions}
+                            size="small"
+                            sx={{
+                              fontSize: '0.6rem',
+                              height: '18px',
+                              bgcolor: '#ff4444',
+                              color: 'white'
+                            }}
+                          />
+                        </Box>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                            Spam Percentage
+                          </Typography>
+                          <Chip
+                            label={`${spamStats.spamPercentage}%`}
+                            size="small"
+                            sx={{
+                              fontSize: '0.6rem',
+                              height: '18px',
+                              bgcolor: '#ff6666',
+                              color: 'white'
+                            }}
+                          />
+                        </Box>
+                      </Stack>
+                    </Box>
+                  )}
+
+                  {/* Decoded Spam Messages */}
+                  {(() => {
+                    const targetAccountDetails = accountDetails.get(currentAccount);
+                    if (targetAccountDetails && targetAccountDetails.uniqueSpamMessages.size > 0) {
+                      const spamMessages = Array.from(
+                        targetAccountDetails.uniqueSpamMessages
+                      ).slice(0, 5);
+                      return (
+                        <Box sx={{ mb: 2 }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: '#ff4444', fontWeight: 600, display: 'block', mb: 1 }}
+                          >
+                            🚨 Decoded Spam Messages
+                          </Typography>
+                          <Stack spacing={0.5}>
+                            {spamMessages.map((message, index) => (
+                              <Box
+                                key={index}
+                                sx={{
+                                  p: 1,
+                                  bgcolor: darkMode
+                                    ? 'rgba(255,68,68,0.1)'
+                                    : 'rgba(255,68,68,0.05)',
+                                  borderRadius: 1,
+                                  border: '1px solid rgba(255,68,68,0.3)'
+                                }}
+                              >
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    fontSize: '0.6rem',
+                                    fontFamily: 'monospace',
+                                    wordBreak: 'break-all',
+                                    color: theme.palette.text.primary,
+                                    display: 'block'
+                                  }}
+                                >
+                                  "{message}"
+                                </Typography>
+                              </Box>
+                            ))}
+                            {targetAccountDetails.uniqueSpamMessages.size > 5 && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  fontSize: '0.55rem',
+                                  fontStyle: 'italic',
+                                  color: theme.palette.text.secondary,
+                                  textAlign: 'center'
+                                }}
+                              >
+                                +{targetAccountDetails.uniqueSpamMessages.size - 5} more unique spam
+                                messages
+                              </Typography>
+                            )}
+                          </Stack>
+                        </Box>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  {/* Footer */}
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      display: 'block',
+                      mt: 1,
+                      pt: 1,
+                      borderTop: `1px solid ${darkMode ? '#333' : '#eee'}`,
+                      color: theme.palette.text.secondary,
+                      fontSize: '0.55rem',
+                      fontStyle: 'italic',
+                      textAlign: 'center'
+                    }}
+                  >
+                    💡 Toggle this panel to see detailed transaction flow analysis
+                  </Typography>
                 </Box>
               )}
             </Box>
