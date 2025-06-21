@@ -33,6 +33,8 @@ const SankeyModal = ({ open, onClose, account }) => {
   const [accountDetails, setAccountDetails] = useState(new Map());
   const [navigationHistory, setNavigationHistory] = useState([]); // Track navigation history
   const [currentAccount, setCurrentAccount] = useState(account); // Track current account being viewed
+  const [showDebug, setShowDebug] = useState(false); // Add debug toggle state
+  const [selectedDebugItem, setSelectedDebugItem] = useState(null); // Track selected item for debug
 
   // Micro payment thresholds (in XRP)
   const spamThresholds = {
@@ -885,8 +887,25 @@ const SankeyModal = ({ open, onClose, account }) => {
         ]
       });
 
+      // Log raw API response before any processing
+      console.log('🔥 RAW account_tx API Response:', {
+        account: currentAccount,
+        response: response.data,
+        fullResponse: response
+      });
+
       if (response.data && response.data.result && response.data.result.transactions) {
         const transactions = response.data.result.transactions;
+
+        // Log transaction count and first few transactions
+        console.log('📊 Transactions Summary:', {
+          account: currentAccount,
+          totalTransactions: transactions.length,
+          firstTransaction: transactions[0],
+          lastTransaction: transactions[transactions.length - 1],
+          allTransactions: transactions
+        });
+
         const processedData = processTransactionsForSankey(transactions, currentAccount);
         setChartData(processedData);
 
@@ -897,10 +916,11 @@ const SankeyModal = ({ open, onClose, account }) => {
           mainActivity: processedData.mainActivity
         });
       } else {
+        console.warn('❌ No transaction data found:', response.data);
         setError('No transaction data found for this account');
       }
     } catch (err) {
-      console.error('Error fetching account transactions:', err);
+      console.error('💥 Error fetching account transactions:', err);
       setError('Failed to fetch account transactions');
     } finally {
       setLoading(false);
@@ -1596,207 +1616,57 @@ const SankeyModal = ({ open, onClose, account }) => {
         },
         formatter: function (params) {
           try {
+            // Log to console instead of HTML tooltip
+            console.log('🐛 Tooltip Debug:', {
+              dataType: params.dataType,
+              data: params.data,
+              params: params
+            });
+
             // Add safety check for params and data
             if (!params || !params.data) {
               return 'No data available';
             }
 
             if (params.dataType === 'node') {
-              const categoryLabel =
-                {
-                  inflow: '💰 Inflow Hub',
-                  outflow: '💸 Outflow Hub',
-                  dex: '🏪 DEX Operations',
-                  trust: '🤝 Trust Lines',
-                  amm_pool: '🌊 AMM Pool',
-                  amm: '🔄 AMM Pool',
-                  self: '🔄 Self Transfer',
-                  operations: '⚙️ System Operations',
-                  account: '👤 Account'
-                }[params.data.category] || 'Unknown';
+              const data = params.data;
+              console.log('📊 Node Details:', {
+                name: data.name,
+                displayName: data.displayName,
+                category: data.category,
+                value: data.value,
+                accountDetails: accountDetails.has(data.name) ? accountDetails.get(data.name) : null
+              });
 
-              let tooltipContent = `<div style="font-weight: bold; margin-bottom: 6px; color: ${
-                theme.palette.primary.main
-              }; font-size: 12px;">
-                        ${params.data.displayName || params.data.name}
-                      </div>
-                      <div style="margin-bottom: 3px; font-size: 10px;">Type: ${categoryLabel}</div>
-                      <div style="font-size: 10px;">Transactions: <strong>${
-                        params.data.value
-                      }</strong></div>`;
-
-              // Add detailed account analysis for account nodes
-              if (params.data.category === 'account' && accountDetails.has(params.data.name)) {
-                const details = accountDetails.get(params.data.name);
-                const spamLevel = details.isSpammer
-                  ? '🔴 HIGH RISK'
-                  : details.spamScore > 50
-                  ? '🟡 MEDIUM RISK'
-                  : '🟢 LOW RISK';
-
-                tooltipContent += `
-                  <div style="border-top: 1px solid ${
-                    theme.palette.divider
-                  }; margin-top: 6px; padding-top: 4px;">
-                    <div style="font-weight: bold; color: ${
-                      theme.palette.primary.main
-                    }; margin-bottom: 3px; font-size: 11px;">📊 Account Analysis</div>
-                    <div style="margin-bottom: 2px; font-size: 9px;">Risk: <span style="font-weight: bold; color: ${
-                      details.isSpammer ? '#ff4444' : details.spamScore > 50 ? '#ffaa00' : '#4caf50'
-                    }">${spamLevel}</span></div>
-                    <div style="margin-bottom: 2px; font-size: 9px;">Value: <strong>${details.totalValue.toFixed(
-                      8
-                    )} XRP</strong> | 📈 <strong style="color: ${
-                  theme.palette.success.main
-                }">${details.incomingValue.toFixed(8)}</strong> | 📉 <strong style="color: ${
-                  theme.palette.error.main
-                }">${details.outgoingValue.toFixed(8)}</strong></div>
-                    <div style="margin-bottom: 2px; font-size: 9px;">Avg: <strong>${details.avgTransactionSize.toFixed(
-                      8
-                    )} XRP</strong></div>`;
-
-                // Add spam analysis if present
-                if (details.spamTransactions > 0) {
-                  tooltipContent += `
-                    <div style="border-top: 1px solid #ff4444; margin-top: 3px; padding-top: 3px; background: rgba(255,68,68,0.1); padding: 3px; border-radius: 3px;">
-                      <div style="font-weight: bold; color: #ff4444; margin-bottom: 2px; font-size: 10px;">⚠️ Spam Analysis</div>
-                      <div style="font-size: 8px;">Score: <strong style="color: #ff4444">${
-                        details.spamScore
-                      }</strong> | Spam: <strong style="color: #ff4444">${
-                    details.spamTransactions
-                  }</strong> | Dust: <strong style="color: #ff4444">${
-                    details.dustTransactions
-                  }</strong> | Ratio: <strong style="color: #ff4444">${(
-                    (details.spamTransactions / details.totalTransactions) *
-                    100
-                  ).toFixed(1)}%</strong></div>
-                    </div>`;
-                }
-
-                // Add memo information if present
-                if (details.allMemos && details.allMemos.length > 0) {
-                  tooltipContent += `
-                    <div style="border-top: 1px solid ${theme.palette.divider}; margin-top: 3px; padding-top: 3px;">
-                      <div style="font-weight: bold; color: ${theme.palette.primary.main}; margin-bottom: 2px; font-size: 10px;">📨 Memos (${details.allMemos.length} total)</div>`;
-
-                  // Show up to 3 most recent memos
-                  const recentMemos = details.allMemos.slice(0, 3);
-                  recentMemos.forEach((memoEntry, index) => {
-                    tooltipContent += `
-                      <div style="margin-bottom: 2px; padding: 2px; background: ${
-                        memoEntry.isSpam ? 'rgba(255,68,68,0.1)' : 'rgba(128,128,128,0.1)'
-                      }; border-radius: 2px; font-size: 8px;">
-                        <div style="font-weight: bold; color: ${
-                          memoEntry.isSpam ? '#ff4444' : theme.palette.primary.main
-                        }; margin-bottom: 1px;">💸 ${memoEntry.amount.toFixed(8)} XRP ${
-                      memoEntry.isSpam ? '(Spam)' : ''
-                    }</div>`;
-
-                    if (memoEntry.memo.data) {
-                      const truncatedData =
-                        memoEntry.memo.data.length > 40
-                          ? memoEntry.memo.data.substring(0, 40) + '...'
-                          : memoEntry.memo.data;
-                      tooltipContent += `<div style="font-family: monospace; font-size: 8px;">"${truncatedData}"</div>`;
-                    }
-
-                    tooltipContent += `</div>`;
-                  });
-
-                  if (details.allMemos.length > 3) {
-                    tooltipContent += `<div style="font-size: 8px; color: ${
-                      theme.palette.text.secondary
-                    }; font-style: italic;">+${details.allMemos.length - 3} more...</div>`;
-                  }
-
-                  tooltipContent += `</div>`;
-                }
-
-                // Add patterns if present
-                if (details.patterns.length > 0) {
-                  tooltipContent += `
-                    <div style="border-top: 1px solid ${
-                      theme.palette.divider
-                    }; margin-top: 3px; padding-top: 3px;">
-                      <div style="font-weight: bold; color: ${
-                        theme.palette.warning.main
-                      }; margin-bottom: 2px; font-size: 10px;">🔍 Patterns</div>
-                      <div style="font-size: 8px;">${details.patterns.join(', ')}</div>
-                    </div>`;
-                }
-
-                tooltipContent += `</div>`;
-              }
-
-              return tooltipContent;
+              // Simple tooltip without complex HTML
+              return `${data.displayName || data.name}\nType: ${data.category}\nTransactions: ${
+                data.value || 0
+              }`;
             } else if (params.dataType === 'edge') {
-              // Add safety checks for filtered nodes
-              const sourceNode = filteredNodes.find((n) => n.name === params.data.source);
-              const targetNode = filteredNodes.find((n) => n.name === params.data.target);
+              const data = params.data;
+              console.log('🔗 Link Details:', {
+                source: data.source,
+                target: data.target,
+                value: data.value,
+                count: data.count,
+                currency: data.currency,
+                txType: data.txType,
+                isSpam: data.isSpam,
+                spamScore: data.spamScore,
+                ammDirection: data.ammDirection,
+                ammToken: data.ammToken
+              });
 
-              if (!sourceNode || !targetNode) {
-                return 'Transaction details unavailable';
-              }
-
-              const sourceName = sourceNode.displayName || params.data.source;
-              const targetName = targetNode.displayName || params.data.target;
-
-              let spamInfo = '';
-              if (params.data.isSpam) {
-                const spamLevel = params.data.spamScore >= 70 ? '🔴 HIGH' : '🟡 MEDIUM';
-                spamInfo = `<div style="margin-bottom: 4px; color: #ff4444; font-weight: bold;">
-                              ⚠️ SPAM DETECTED: ${spamLevel} (Score: ${params.data.spamScore})
-                            </div>
-                            <div style="margin-bottom: 4px;">Spam Transactions: <strong style="color: #ff4444;">${params.data.spamCount}</strong></div>`;
-              }
-
-              // Add AMM operation information
-              let ammInfo = '';
-              if (params.data.ammDirection && params.data.ammToken) {
-                const directionIcon = params.data.ammDirection === 'BUY' ? '💰' : '💸';
-                const directionColor = params.data.ammDirection === 'BUY' ? '#4caf50' : '#ff9800';
-                const operation =
-                  params.data.ammDirection === 'BUY'
-                    ? `Bought ${params.data.ammToken} tokens`
-                    : `Sold ${params.data.ammToken} tokens for XRP`;
-
-                ammInfo = `<div style="margin-bottom: 6px; padding: 6px; background: rgba(${
-                  params.data.ammDirection === 'BUY' ? '76, 175, 80' : '255, 152, 0'
-                }, 0.15); border-radius: 4px; border-left: 4px solid ${directionColor};">
-                            <div style="font-weight: bold; color: ${directionColor}; margin-bottom: 2px; font-size: 11px;">
-                              ${directionIcon} AMM ${params.data.ammDirection}
-                            </div>
-                            <div style="font-size: 10px; color: ${theme.palette.text.primary};">
-                              ${operation}
-                            </div>
-                          </div>`;
-              }
-
-              return `<div style="font-weight: bold; margin-bottom: 8px; color: ${
-                theme.palette.primary.main
-              };">
-                        ${sourceName} → ${targetName}
-                      </div>
-                      ${spamInfo}
-                      ${ammInfo}
-                      <div style="margin-bottom: 4px;">Total Value: <strong>${params.data.value.toFixed(
-                        8
-                      )}</strong></div>
-                      <div style="margin-bottom: 4px;">Transactions: <strong>${
-                        params.data.count
-                      }</strong></div>
-                      <div style="margin-bottom: 4px;">Currency: <strong>${
-                        params.data.currency
-                      }</strong></div>
-                      ${
-                        params.data.txType
-                          ? `<div>Transaction Type: <strong>${params.data.txType}</strong></div>`
-                          : ''
-                      }`;
+              // Simple tooltip without complex HTML
+              return `${data.source} → ${data.target}\nValue: ${(data.value || 0).toFixed(
+                6
+              )}\nTransactions: ${data.count || 0}\nCurrency: ${data.currency || 'Unknown'}`;
             }
+
+            return 'Unknown item type';
           } catch (error) {
-            console.error('Error formatting tooltip:', error);
-            return 'Error formatting tooltip';
+            console.error('Tooltip error:', error);
+            return 'Check console for details';
           }
         },
         extraCssText: `
@@ -2665,6 +2535,57 @@ const SankeyModal = ({ open, onClose, account }) => {
                   </Box>
                 )}
 
+                {/* Debug Toggle */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    px: 1.2,
+                    py: 0.4,
+                    height: '32px',
+                    bgcolor: darkMode ? 'rgba(76,175,80,0.12)' : 'rgba(76,175,80,0.08)',
+                    borderRadius: '16px',
+                    border: '1px solid #4caf50'
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: '#4caf50',
+                      fontWeight: 600,
+                      fontSize: '0.65rem',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    🐛 DEBUG
+                  </Typography>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={showDebug}
+                        onChange={(e) => setShowDebug(e.target.checked)}
+                        size="small"
+                        sx={{
+                          '& .MuiSwitch-switchBase.Mui-checked': { color: '#4caf50' },
+                          '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                            backgroundColor: '#4caf50'
+                          }
+                        }}
+                      />
+                    }
+                    label="Show Debug"
+                    sx={{
+                      m: 0,
+                      '& .MuiFormControlLabel-label': {
+                        fontSize: '0.6rem',
+                        fontWeight: 500,
+                        whiteSpace: 'nowrap'
+                      }
+                    }}
+                  />
+                </Box>
+
                 {/* Summary - Inline */}
                 {chartData && chartData.summary && (
                   <Stack
@@ -2825,6 +2746,15 @@ const SankeyModal = ({ open, onClose, account }) => {
                     }}
                     onEvents={{
                       click: (params) => {
+                        // Handle debug item selection
+                        if (showDebug) {
+                          setSelectedDebugItem({
+                            type: params.dataType,
+                            data: params.data,
+                            params: params
+                          });
+                        }
+
                         // Handle click on account nodes to navigate to that account's Sankey
                         if (params.dataType === 'node' && params.data.category === 'account') {
                           const clickedAccount = params.data.name;
@@ -2833,7 +2763,8 @@ const SankeyModal = ({ open, onClose, account }) => {
                             clickedAccount &&
                             clickedAccount.length >= 25 &&
                             clickedAccount.length <= 34 &&
-                            clickedAccount.startsWith('r')
+                            clickedAccount.startsWith('r') &&
+                            !showDebug // Only navigate if not in debug mode
                           ) {
                             navigateToAccount(clickedAccount);
                           }
@@ -2892,6 +2823,321 @@ const SankeyModal = ({ open, onClose, account }) => {
                   </Box>
                 )}
               </Box>
+
+              {/* Debug Panel */}
+              {showDebug && chartData && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    width: 320,
+                    maxHeight: '80%',
+                    bgcolor: darkMode ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.95)',
+                    border: `1px solid ${darkMode ? '#333' : '#ddd'}`,
+                    borderRadius: 2,
+                    p: 1.5,
+                    overflow: 'auto',
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: `0 8px 32px ${darkMode ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.15)'}`,
+                    zIndex: 1000
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ mb: 1, color: '#4caf50', fontWeight: 600 }}>
+                    🐛 Node Debug Info
+                  </Typography>
+
+                  <Stack spacing={0.5} sx={{ maxHeight: 400, overflow: 'auto' }}>
+                    {chartData.nodes.map((node, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          p: 0.8,
+                          bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                          borderRadius: 1,
+                          border: `1px solid ${darkMode ? '#333' : '#eee'}`
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            fontWeight: 600,
+                            color: theme.palette.primary.main,
+                            display: 'block',
+                            mb: 0.3,
+                            fontSize: '0.7rem'
+                          }}
+                        >
+                          {node.displayName}
+                        </Typography>
+
+                        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.3 }}>
+                          <Chip
+                            label={`Type: ${node.category}`}
+                            size="small"
+                            sx={{
+                              fontSize: '0.55rem',
+                              height: '16px',
+                              bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                            }}
+                          />
+                          <Chip
+                            label={`Txns: ${node.value}`}
+                            size="small"
+                            sx={{
+                              fontSize: '0.55rem',
+                              height: '16px',
+                              bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                            }}
+                          />
+                          {node.name.length > 20 && (
+                            <Tooltip title={node.name} arrow>
+                              <Chip
+                                label={`ID: ${node.name.substring(0, 8)}...`}
+                                size="small"
+                                sx={{
+                                  fontSize: '0.55rem',
+                                  height: '16px',
+                                  fontFamily: 'monospace',
+                                  bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                                }}
+                              />
+                            </Tooltip>
+                          )}
+                        </Stack>
+
+                        {/* Show account details if available */}
+                        {accountDetails.has(node.name) && (
+                          <Box sx={{ mt: 0.5 }}>
+                            {(() => {
+                              const details = accountDetails.get(node.name);
+                              return (
+                                <Stack
+                                  direction="row"
+                                  spacing={0.3}
+                                  sx={{ flexWrap: 'wrap', gap: 0.2 }}
+                                >
+                                  <Chip
+                                    label={`XRP: ${details.totalValue.toFixed(2)}`}
+                                    size="small"
+                                    sx={{
+                                      fontSize: '0.5rem',
+                                      height: '14px',
+                                      bgcolor: theme.palette.success.main,
+                                      color: 'white'
+                                    }}
+                                  />
+                                  {details.isSpammer && (
+                                    <Chip
+                                      label="SPAM"
+                                      size="small"
+                                      sx={{
+                                        fontSize: '0.5rem',
+                                        height: '14px',
+                                        bgcolor: '#ff4444',
+                                        color: 'white'
+                                      }}
+                                    />
+                                  )}
+                                  {details.topTokens.length > 0 && (
+                                    <Chip
+                                      label={`Token: ${details.topTokens[0]}`}
+                                      size="small"
+                                      sx={{
+                                        fontSize: '0.5rem',
+                                        height: '14px',
+                                        bgcolor: theme.palette.info.main,
+                                        color: 'white'
+                                      }}
+                                    />
+                                  )}
+                                </Stack>
+                              );
+                            })()}
+                          </Box>
+                        )}
+                      </Box>
+                    ))}
+                  </Stack>
+
+                  {/* Selected Item Debug Info */}
+                  {selectedDebugItem && (
+                    <Box
+                      sx={{ mt: 1, pt: 1, borderTop: `1px solid ${darkMode ? '#333' : '#eee'}` }}
+                    >
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ mb: 1, color: '#ff9800', fontWeight: 600 }}
+                      >
+                        🎯 Selected {selectedDebugItem.type === 'node' ? 'Node' : 'Link'}
+                      </Typography>
+
+                      {selectedDebugItem.type === 'edge' ? (
+                        <Box
+                          sx={{
+                            p: 0.8,
+                            bgcolor: darkMode ? 'rgba(255,152,0,0.1)' : 'rgba(255,152,0,0.05)',
+                            borderRadius: 1,
+                            border: `1px solid #ff9800`
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontWeight: 600,
+                              color: '#ff9800',
+                              display: 'block',
+                              mb: 0.5,
+                              fontSize: '0.7rem'
+                            }}
+                          >
+                            {selectedDebugItem.data.source} → {selectedDebugItem.data.target}
+                          </Typography>
+
+                          <Stack spacing={0.3}>
+                            <Stack
+                              direction="row"
+                              spacing={0.3}
+                              sx={{ flexWrap: 'wrap', gap: 0.2 }}
+                            >
+                              <Chip
+                                label={`Value: ${selectedDebugItem.data.value.toFixed(6)}`}
+                                size="small"
+                                sx={{
+                                  fontSize: '0.5rem',
+                                  height: '14px',
+                                  bgcolor: theme.palette.primary.main,
+                                  color: 'white'
+                                }}
+                              />
+                              <Chip
+                                label={`Count: ${selectedDebugItem.data.count}`}
+                                size="small"
+                                sx={{
+                                  fontSize: '0.5rem',
+                                  height: '14px',
+                                  bgcolor: theme.palette.info.main,
+                                  color: 'white'
+                                }}
+                              />
+                              <Chip
+                                label={`Currency: ${selectedDebugItem.data.currency}`}
+                                size="small"
+                                sx={{
+                                  fontSize: '0.5rem',
+                                  height: '14px',
+                                  bgcolor: theme.palette.secondary.main,
+                                  color: 'white'
+                                }}
+                              />
+                            </Stack>
+
+                            <Stack
+                              direction="row"
+                              spacing={0.3}
+                              sx={{ flexWrap: 'wrap', gap: 0.2 }}
+                            >
+                              <Chip
+                                label={`TxType: ${selectedDebugItem.data.txType}`}
+                                size="small"
+                                sx={{
+                                  fontSize: '0.5rem',
+                                  height: '14px',
+                                  bgcolor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                                  color: darkMode ? 'white' : 'black'
+                                }}
+                              />
+                              {selectedDebugItem.data.isSpam && (
+                                <Chip
+                                  label={`SPAM (${selectedDebugItem.data.spamScore})`}
+                                  size="small"
+                                  sx={{
+                                    fontSize: '0.5rem',
+                                    height: '14px',
+                                    bgcolor: '#ff4444',
+                                    color: 'white'
+                                  }}
+                                />
+                              )}
+                              {selectedDebugItem.data.ammDirection && (
+                                <Chip
+                                  label={`AMM: ${selectedDebugItem.data.ammDirection} ${selectedDebugItem.data.ammToken}`}
+                                  size="small"
+                                  sx={{
+                                    fontSize: '0.5rem',
+                                    height: '14px',
+                                    bgcolor:
+                                      selectedDebugItem.data.ammDirection === 'BUY'
+                                        ? '#4caf50'
+                                        : '#ff9800',
+                                    color: 'white'
+                                  }}
+                                />
+                              )}
+                            </Stack>
+                          </Stack>
+                        </Box>
+                      ) : (
+                        <Box
+                          sx={{
+                            p: 0.8,
+                            bgcolor: darkMode ? 'rgba(255,152,0,0.1)' : 'rgba(255,152,0,0.05)',
+                            borderRadius: 1,
+                            border: `1px solid #ff9800`
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontWeight: 600,
+                              color: '#ff9800',
+                              display: 'block',
+                              mb: 0.3,
+                              fontSize: '0.7rem'
+                            }}
+                          >
+                            {selectedDebugItem.data.displayName}
+                          </Typography>
+                          <Chip
+                            label={`Category: ${selectedDebugItem.data.category}`}
+                            size="small"
+                            sx={{
+                              fontSize: '0.5rem',
+                              height: '14px',
+                              bgcolor: '#ff9800',
+                              color: 'white'
+                            }}
+                          />
+                        </Box>
+                      )}
+
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          display: 'block',
+                          mt: 0.5,
+                          color: theme.palette.text.secondary,
+                          fontSize: '0.5rem',
+                          fontStyle: 'italic'
+                        }}
+                      >
+                        💡 Click on nodes/links to inspect them
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {/* Links summary */}
+                  <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${darkMode ? '#333' : '#eee'}` }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}
+                    >
+                      📊 Links: {chartData.links.length} | Spam:{' '}
+                      {chartData.links.filter((l) => l.isSpam).length}
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
             </Box>
           )}
         </Box>
