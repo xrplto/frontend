@@ -537,6 +537,126 @@ const SankeyModal = ({ open, onClose, account }) => {
         } else if (tx.TransactionType === 'TrustSet') {
           // Setting up for token trading
           activity.activityScore.tokenBuying += 3;
+        } else if (tx.TransactionType === 'AMMDeposit') {
+          // AMM Deposit operations
+          activity.activityScore.ammInteractions += 15;
+          activity.activityScore.trading += 8;
+
+          // Analyze balance changes from metadata for AMM deposits
+          if (meta && meta.AffectedNodes) {
+            let xrpChange = 0;
+            let tokenChanges = [];
+
+            for (const node of meta.AffectedNodes) {
+              const modifiedNode = node.ModifiedNode;
+
+              // XRP balance change
+              if (
+                modifiedNode &&
+                modifiedNode.LedgerEntryType === 'AccountRoot' &&
+                modifiedNode.FinalFields?.Account === targetAccount
+              ) {
+                const prevBalance = parseInt(modifiedNode.PreviousFields?.Balance || 0);
+                const finalBalance = parseInt(modifiedNode.FinalFields?.Balance || 0);
+                xrpChange = (prevBalance - finalBalance) / 1000000; // Amount deposited (positive)
+              }
+
+              // Token balance changes
+              if (modifiedNode && modifiedNode.LedgerEntryType === 'RippleState') {
+                const balance = modifiedNode.FinalFields?.Balance;
+                const prevBalance = modifiedNode.PreviousFields?.Balance;
+
+                if (
+                  balance &&
+                  prevBalance &&
+                  typeof balance === 'object' &&
+                  typeof prevBalance === 'object'
+                ) {
+                  const change = parseFloat(prevBalance.value) - parseFloat(balance.value); // Amount deposited (positive)
+                  if (Math.abs(change) > 0.01) {
+                    const currency = decodeCurrency(balance.currency);
+                    tokenChanges.push({ currency, amount: change });
+                  }
+                }
+              }
+            }
+
+            // Track XRP deposited into AMM
+            if (xrpChange > 0) {
+              activity.xrpSpentOnTokens += xrpChange;
+            }
+
+            // Track tokens deposited into AMM
+            tokenChanges.forEach((tc) => {
+              if (tc.amount > 0) {
+                activity.tokensSold.set(
+                  tc.currency,
+                  (activity.tokensSold.get(tc.currency) || 0) + tc.amount
+                );
+                activity.activityScore.tokenSelling += 5;
+              }
+            });
+          }
+        } else if (tx.TransactionType === 'AMMWithdraw') {
+          // AMM Withdraw operations
+          activity.activityScore.ammInteractions += 15;
+          activity.activityScore.trading += 8;
+
+          // Analyze balance changes from metadata for AMM withdrawals
+          if (meta && meta.AffectedNodes) {
+            let xrpChange = 0;
+            let tokenChanges = [];
+
+            for (const node of meta.AffectedNodes) {
+              const modifiedNode = node.ModifiedNode;
+
+              // XRP balance change
+              if (
+                modifiedNode &&
+                modifiedNode.LedgerEntryType === 'AccountRoot' &&
+                modifiedNode.FinalFields?.Account === targetAccount
+              ) {
+                const prevBalance = parseInt(modifiedNode.PreviousFields?.Balance || 0);
+                const finalBalance = parseInt(modifiedNode.FinalFields?.Balance || 0);
+                xrpChange = (finalBalance - prevBalance) / 1000000; // Amount withdrawn (positive)
+              }
+
+              // Token balance changes
+              if (modifiedNode && modifiedNode.LedgerEntryType === 'RippleState') {
+                const balance = modifiedNode.FinalFields?.Balance;
+                const prevBalance = modifiedNode.PreviousFields?.Balance;
+
+                if (
+                  balance &&
+                  prevBalance &&
+                  typeof balance === 'object' &&
+                  typeof prevBalance === 'object'
+                ) {
+                  const change = parseFloat(balance.value) - parseFloat(prevBalance.value); // Amount withdrawn (positive)
+                  if (Math.abs(change) > 0.01) {
+                    const currency = decodeCurrency(balance.currency);
+                    tokenChanges.push({ currency, amount: change });
+                  }
+                }
+              }
+            }
+
+            // Track XRP withdrawn from AMM
+            if (xrpChange > 0) {
+              activity.xrpReceivedFromTokens += xrpChange;
+            }
+
+            // Track tokens withdrawn from AMM
+            tokenChanges.forEach((tc) => {
+              if (tc.amount > 0) {
+                activity.tokensBought.set(
+                  tc.currency,
+                  (activity.tokensBought.get(tc.currency) || 0) + tc.amount
+                );
+                activity.activityScore.tokenBuying += 5;
+              }
+            });
+          }
         } else {
           // Handle other transaction types
           activity.transactionTypes.set(
@@ -1008,6 +1128,77 @@ const SankeyModal = ({ open, onClose, account }) => {
           destinationAccount = `TRUST_${limitCurrency}`;
           amount = 1;
           currency = 'TRUST';
+        } else if (tx.TransactionType === 'AMMDeposit') {
+          // AMM Deposit operations
+          sourceAccount = tx.Account;
+
+          // Extract asset information from the transaction
+          let assetCurrency = 'TOKEN';
+          if (tx.Asset && tx.Asset.currency) {
+            assetCurrency = decodeCurrency(tx.Asset.currency);
+          } else if (tx.Amount && typeof tx.Amount === 'object') {
+            assetCurrency = decodeCurrency(tx.Amount.currency);
+          }
+
+          destinationAccount = `AMM_${assetCurrency}_POOL`;
+
+          // Analyze actual amounts from metadata
+          if (meta && meta.AffectedNodes) {
+            let xrpChange = 0;
+            for (const node of meta.AffectedNodes) {
+              const modifiedNode = node.ModifiedNode;
+              if (
+                modifiedNode &&
+                modifiedNode.LedgerEntryType === 'AccountRoot' &&
+                modifiedNode.FinalFields?.Account === sourceAccount
+              ) {
+                const prevBalance = parseInt(modifiedNode.PreviousFields?.Balance || 0);
+                const finalBalance = parseInt(modifiedNode.FinalFields?.Balance || 0);
+                xrpChange = (prevBalance - finalBalance) / 1000000; // Amount deposited
+                break;
+              }
+            }
+            amount = Math.max(xrpChange, 1); // Use XRP amount or minimum 1
+          } else {
+            amount = 1;
+          }
+
+          currency = 'AMM_DEPOSIT';
+        } else if (tx.TransactionType === 'AMMWithdraw') {
+          // AMM Withdraw operations
+          sourceAccount = `AMM_${(() => {
+            let assetCurrency = 'TOKEN';
+            if (tx.Asset && tx.Asset.currency) {
+              assetCurrency = decodeCurrency(tx.Asset.currency);
+            } else if (tx.Amount && typeof tx.Amount === 'object') {
+              assetCurrency = decodeCurrency(tx.Amount.currency);
+            }
+            return assetCurrency;
+          })()}_POOL`;
+          destinationAccount = tx.Account;
+
+          // Analyze actual amounts from metadata
+          if (meta && meta.AffectedNodes) {
+            let xrpChange = 0;
+            for (const node of meta.AffectedNodes) {
+              const modifiedNode = node.ModifiedNode;
+              if (
+                modifiedNode &&
+                modifiedNode.LedgerEntryType === 'AccountRoot' &&
+                modifiedNode.FinalFields?.Account === destinationAccount
+              ) {
+                const prevBalance = parseInt(modifiedNode.PreviousFields?.Balance || 0);
+                const finalBalance = parseInt(modifiedNode.FinalFields?.Balance || 0);
+                xrpChange = (finalBalance - prevBalance) / 1000000; // Amount withdrawn
+                break;
+              }
+            }
+            amount = Math.max(Math.abs(xrpChange), 1); // Use XRP amount or minimum 1
+          } else {
+            amount = 1;
+          }
+
+          currency = 'AMM_WITHDRAW';
         } else {
           // Handle other transaction types
           sourceAccount = tx.Account;
@@ -1237,6 +1428,8 @@ const SankeyModal = ({ open, onClose, account }) => {
           ? 'dex'
           : node.startsWith('TRUST_')
           ? 'trust'
+          : node.startsWith('AMM_') && node.endsWith('_POOL')
+          ? 'amm_pool'
           : node.startsWith('AMM_')
           ? 'amm'
           : node === 'SELF_TRANSFER'
@@ -1254,6 +1447,8 @@ const SankeyModal = ({ open, onClose, account }) => {
           ? `🏪 ${node.replace('DEX_', '')}`
           : node.startsWith('TRUST_')
           ? `🤝 ${node.replace('TRUST_', '')}`
+          : node.startsWith('AMM_') && node.endsWith('_POOL')
+          ? `🌊 ${node.replace('AMM_', '').replace('_POOL', '')} Pool`
           : node.startsWith('AMM_')
           ? `🔄 ${node.replace('AMM_', '')} Pool`
           : node === 'SELF_TRANSFER'
@@ -1347,6 +1542,18 @@ const SankeyModal = ({ open, onClose, account }) => {
         // Add more sensitive hover detection
         alwaysShowContent: false,
         confine: true,
+        // Increase hover detection area
+        axisPointer: {
+          type: 'none'
+        },
+        // Make hover more sensitive
+        renderMode: 'html',
+        appendToBody: true,
+        // Increase hover sensitivity
+        triggerOn: 'mousemove|click',
+        enterable: true,
+        hideDelay: 100,
+        showDelay: 50,
         backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         borderColor: darkMode ? '#444444' : theme.palette.divider,
         borderWidth: 1,
@@ -1400,6 +1607,7 @@ const SankeyModal = ({ open, onClose, account }) => {
                 outflow: '💸 Outflow Hub',
                 dex: '🏪 DEX Operations',
                 trust: '🤝 Trust Lines',
+                amm_pool: '🌊 AMM Pool',
                 amm: '🔄 AMM Pool',
                 self: '🔄 Self Transfer',
                 operations: '⚙️ System Operations',
@@ -1590,7 +1798,7 @@ const SankeyModal = ({ open, onClose, account }) => {
         {
           type: 'sankey',
           layout: 'none',
-          top: 60,
+          top: 90, // Increased from 60 to 90 to provide more space for text labels
           bottom: 20,
           left: 20,
           right: 20,
@@ -1623,6 +1831,39 @@ const SankeyModal = ({ open, onClose, account }) => {
           hoverAnimation: true,
           // Improve selection sensitivity
           silent: false,
+          // Increase hover detection sensitivity
+          lineStyle: {
+            // Make lines thicker for better hover detection
+            width: 8
+          },
+          emphasis: {
+            lineStyle: {
+              // Very thick lines on hover for better visibility
+              width: 16,
+              shadowBlur: 25,
+              shadowColor: 'rgba(0, 0, 0, 0.8)'
+            }
+          },
+          // Add more hover sensitivity settings
+          selectMode: false,
+          selectedMode: false,
+          // Increase hover area
+          zlevel: 0,
+          z: 2,
+          // Make hover detection more sensitive
+          triggerEvent: true,
+          emphasis: {
+            focus: 'adjacency',
+            blurScope: 'coordinateSystem',
+            scale: 1.05,
+            // Increase hover detection area
+            itemStyle: {
+              borderWidth: 3,
+              borderColor: 'rgba(255, 255, 255, 0.8)',
+              shadowBlur: 20,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+          },
           data: nodes.map((node) => ({
             ...node,
             itemStyle: {
@@ -1636,6 +1877,8 @@ const SankeyModal = ({ open, onClose, account }) => {
                     return theme.palette.info.main;
                   case 'trust':
                     return theme.palette.secondary.main;
+                  case 'amm_pool':
+                    return theme.palette.cyan?.[500] || '#00bcd4';
                   case 'amm':
                     return theme.palette.purple?.[500] || '#9c27b0';
                   case 'self':
@@ -1653,20 +1896,35 @@ const SankeyModal = ({ open, onClose, account }) => {
           links: filteredLinks.map((link) => ({
             ...link,
             lineStyle: {
-              color: link.isSpam ? '#ff4444' : 'source', // Red for spam, source color for normal
+              color: link.isSpam
+                ? '#ff4444'
+                : link.txType === 'TrustSet' || link.currency === 'TRUST'
+                ? '#9c27b0' // Purple color for TrustSet transactions
+                : 'source', // Red for spam, purple for trust, source color for normal
               opacity: link.isSpam ? 0.8 : 0.6,
               curveness: 0.5,
-              width: Math.max(link.isSpam ? 8 : 5, 5), // Much thicker minimum width: 5px normal, 8px spam
+              width: Math.max(link.isSpam ? 12 : 8, 8), // Increased base width: 8px normal, 12px spam
               type: link.isSpam ? 'dashed' : 'solid', // Dashed lines for spam
               shadowColor: link.isSpam ? '#ff4444' : undefined,
               shadowBlur: link.isSpam ? 10 : undefined
             },
             emphasis: {
               lineStyle: {
-                width: Math.max(link.isSpam ? 12 : 8, 8), // Very thick on hover: 8-12px
+                width: Math.max(link.isSpam ? 20 : 16, 16), // Much thicker on hover: 16-20px
                 opacity: 1,
-                shadowBlur: 20,
-                shadowColor: link.isSpam ? '#ff4444' : 'rgba(0, 0, 0, 0.5)'
+                shadowBlur: 30, // Increased shadow blur
+                shadowColor: link.isSpam
+                  ? '#ff4444'
+                  : link.txType === 'TrustSet' || link.currency === 'TRUST'
+                  ? '#9c27b0'
+                  : 'rgba(0, 0, 0, 0.8)',
+                // Add glow effect
+                borderColor: link.isSpam
+                  ? '#ff4444'
+                  : link.txType === 'TrustSet' || link.currency === 'TRUST'
+                  ? '#9c27b0'
+                  : '#ffffff',
+                borderWidth: 2
               }
             }
           })),
@@ -1687,6 +1945,7 @@ const SankeyModal = ({ open, onClose, account }) => {
                   outflow: '💸 ',
                   dex: '🏪 ',
                   trust: '🤝 ',
+                  amm_pool: '🌊 ',
                   amm: '🔄 ',
                   self: '🔄 ',
                   operations: '⚙️ ',
@@ -2084,6 +2343,7 @@ const SankeyModal = ({ open, onClose, account }) => {
                       { label: '💰 In', color: theme.palette.success.main },
                       { label: '💸 Out', color: theme.palette.error.main },
                       { label: '🏪 DEX', color: theme.palette.info.main },
+                      { label: '🌊 Pool', color: theme.palette.cyan?.[500] || '#00bcd4' },
                       { label: '🔄 AMM', color: theme.palette.purple?.[500] || '#9c27b0' },
                       { label: '👤 Acc', color: theme.palette.primary.main },
                       { label: '⚠️ Spam', color: '#ff4444' }
