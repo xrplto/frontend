@@ -222,7 +222,13 @@ const SankeyModal = ({ open, onClose, account }) => {
       tokensBought: new Map(), // currency -> amount
       tokensSold: new Map(), // currency -> amount
       topTokens: [], // most traded tokens
-      tradingDirection: 'neutral' // 'buying', 'selling', 'neutral'
+      tradingDirection: 'neutral', // 'buying', 'selling', 'neutral'
+      // Add XRP amounts specifically for token trading
+      xrpSpentOnTokens: 0, // XRP spent buying tokens
+      xrpReceivedFromTokens: 0, // XRP received from selling tokens
+      // Add per-token XRP tracking
+      xrpSpentPerToken: new Map(), // currency -> XRP amount spent
+      xrpReceivedPerToken: new Map() // currency -> XRP amount received
     };
 
     const accountTransactions = transactions.filter((txData) => {
@@ -370,7 +376,60 @@ const SankeyModal = ({ open, onClose, account }) => {
 
           // Activity detection for token payments
           activity.activityScore.trading += 8;
-          if (tx.Account === targetAccount) {
+
+          // FIXED LOGIC: Handle self-payments (AMM transactions) by checking XRP balance changes
+          if (tx.Account === tx.Destination && tx.Account === targetAccount) {
+            // This is a self-payment AMM transaction - determine buy/sell from XRP balance change
+            if (meta && meta.AffectedNodes) {
+              let xrpChange = 0;
+
+              // Find XRP balance change
+              for (const node of meta.AffectedNodes) {
+                const modifiedNode = node.ModifiedNode;
+                if (
+                  modifiedNode &&
+                  modifiedNode.LedgerEntryType === 'AccountRoot' &&
+                  modifiedNode.FinalFields?.Account === targetAccount
+                ) {
+                  const prevBalance = parseInt(modifiedNode.PreviousFields?.Balance || 0);
+                  const finalBalance = parseInt(modifiedNode.FinalFields?.Balance || 0);
+                  xrpChange = (finalBalance - prevBalance) / 1000000;
+                  break;
+                }
+              }
+
+              if (xrpChange < 0) {
+                // Spent XRP = buying tokens
+                activity.activityScore.tokenBuying += 10;
+                activity.tokensBought.set(
+                  currency,
+                  (activity.tokensBought.get(currency) || 0) + amount
+                );
+
+                const xrpSpent = Math.abs(xrpChange);
+                activity.xrpSpentOnTokens += xrpSpent;
+                activity.xrpSpentPerToken.set(
+                  currency,
+                  (activity.xrpSpentPerToken.get(currency) || 0) + xrpSpent
+                );
+              } else if (xrpChange > 0) {
+                // Received XRP = selling tokens
+                activity.activityScore.tokenSelling += 10;
+                activity.tokensSold.set(
+                  currency,
+                  (activity.tokensSold.get(currency) || 0) + amount
+                );
+
+                activity.xrpReceivedFromTokens += xrpChange;
+                activity.xrpReceivedPerToken.set(
+                  currency,
+                  (activity.xrpReceivedPerToken.get(currency) || 0) + xrpChange
+                );
+              }
+            }
+          }
+          // Handle regular token payments (not self-payments)
+          else if (tx.Account === targetAccount) {
             // Target account is sending tokens = selling
             activity.activityScore.tokenSelling += 10;
             activity.tokensSold.set(currency, (activity.tokensSold.get(currency) || 0) + amount);
@@ -381,6 +440,39 @@ const SankeyModal = ({ open, onClose, account }) => {
               currency,
               (activity.tokensBought.get(currency) || 0) + amount
             );
+          }
+
+          // Track XRP amounts for token trades by analyzing metadata
+          if (meta && meta.AffectedNodes) {
+            for (const node of meta.AffectedNodes) {
+              const modifiedNode = node.ModifiedNode;
+              if (
+                modifiedNode &&
+                modifiedNode.LedgerEntryType === 'AccountRoot' &&
+                modifiedNode.FinalFields?.Account === targetAccount
+              ) {
+                const prevBalance = parseInt(modifiedNode.PreviousFields?.Balance || 0);
+                const finalBalance = parseInt(modifiedNode.FinalFields?.Balance || 0);
+                const xrpChange = (finalBalance - prevBalance) / 1000000; // Convert to XRP
+
+                if (tx.Account === targetAccount && xrpChange > 0) {
+                  // Target sent tokens and received XRP = selling tokens
+                  activity.xrpReceivedFromTokens += xrpChange;
+                  activity.xrpReceivedPerToken.set(
+                    currency,
+                    (activity.xrpReceivedPerToken.get(currency) || 0) + xrpChange
+                  );
+                } else if (tx.Destination === targetAccount && xrpChange < 0) {
+                  // Target received tokens and spent XRP = buying tokens
+                  activity.xrpSpentOnTokens += Math.abs(xrpChange);
+                  activity.xrpSpentPerToken.set(
+                    currency,
+                    (activity.xrpSpentPerToken.get(currency) || 0) + Math.abs(xrpChange)
+                  );
+                }
+                break;
+              }
+            }
           }
         } else if (tx.TransactionType === 'OfferCreate') {
           // DEX operations - analyze what's being traded
@@ -409,6 +501,16 @@ const SankeyModal = ({ open, onClose, account }) => {
                 getCurrency,
                 (activity.tokensBought.get(getCurrency) || 0) + amount
               );
+
+              // Track XRP amount for buying tokens
+              if (typeof tx.TakerPays === 'string') {
+                const xrpAmount = parseInt(tx.TakerPays) / 1000000; // Convert drops to XRP
+                activity.xrpSpentOnTokens += xrpAmount;
+                activity.xrpSpentPerToken.set(
+                  getCurrency,
+                  (activity.xrpSpentPerToken.get(getCurrency) || 0) + xrpAmount
+                );
+              }
             }
             if (payCurrency !== 'XRP') {
               // Paying with tokens = selling
@@ -418,6 +520,16 @@ const SankeyModal = ({ open, onClose, account }) => {
                 payCurrency,
                 (activity.tokensSold.get(payCurrency) || 0) + amount
               );
+
+              // Track XRP amount for selling tokens
+              if (typeof tx.TakerGets === 'string') {
+                const xrpAmount = parseInt(tx.TakerGets) / 1000000; // Convert drops to XRP
+                activity.xrpReceivedFromTokens += xrpAmount;
+                activity.xrpReceivedPerToken.set(
+                  payCurrency,
+                  (activity.xrpReceivedPerToken.get(payCurrency) || 0) + xrpAmount
+                );
+              }
             }
           }
         } else if (tx.TransactionType === 'OfferCancel') {
@@ -820,19 +932,42 @@ const SankeyModal = ({ open, onClose, account }) => {
                 metaExchange &&
                 (metaExchange.tokensReceived.length > 0 || metaExchange.tokensSent.length > 0)
               ) {
-                // This is an AMM transaction - token purchase/sale
-                if (metaExchange.tokensReceived.length > 0) {
-                  // Receiving tokens - treat as purchase from AMM
-                  const token = metaExchange.tokensReceived[0]; // Use first token
-                  destinationAccount = `AMM_${token.currency}`;
-                  amount = token.amount;
-                  currency = token.currency;
-                } else if (metaExchange.tokensSent.length > 0) {
-                  // Sending tokens - treat as sale to AMM
-                  const token = metaExchange.tokensSent[0]; // Use first token
-                  destinationAccount = `AMM_${token.currency}`;
-                  amount = token.amount;
-                  currency = token.currency;
+                // This is an AMM transaction - analyze XRP vs token changes
+                let xrpAmount = 0;
+                let tokenCurrency = '';
+                let isTokenBuy = false;
+
+                // For AMM transactions, we want to show XRP amount, not token amount
+                if (meta && meta.AffectedNodes) {
+                  // Find XRP balance change
+                  for (const node of meta.AffectedNodes) {
+                    const modifiedNode = node.ModifiedNode;
+                    if (
+                      modifiedNode &&
+                      modifiedNode.LedgerEntryType === 'AccountRoot' &&
+                      modifiedNode.FinalFields?.Account === targetAccount
+                    ) {
+                      const prevBalance = parseInt(modifiedNode.PreviousFields?.Balance || 0);
+                      const finalBalance = parseInt(modifiedNode.FinalFields?.Balance || 0);
+                      const xrpChange = (finalBalance - prevBalance) / 1000000; // Convert to XRP
+                      xrpAmount = Math.abs(xrpChange); // Always show positive amount
+                      isTokenBuy = xrpChange < 0; // If XRP decreased, user bought tokens
+                      break;
+                    }
+                  }
+
+                  // Get token currency from the first token change
+                  if (metaExchange.tokensReceived.length > 0) {
+                    tokenCurrency = metaExchange.tokensReceived[0].currency;
+                  } else if (metaExchange.tokensSent.length > 0) {
+                    tokenCurrency = metaExchange.tokensSent[0].currency;
+                  }
+                }
+
+                if (xrpAmount > 0 && tokenCurrency) {
+                  destinationAccount = `AMM_${tokenCurrency}`;
+                  amount = xrpAmount; // Use XRP amount instead of token amount
+                  currency = 'XRP'; // Always show as XRP for AMM transactions
                 }
               } else {
                 // Regular self-transfer (no token exchange detected)
@@ -893,6 +1028,54 @@ const SankeyModal = ({ open, onClose, account }) => {
 
         if (sourceAccount && destinationAccount && amount >= 0) {
           // Accept all amounts including 0
+
+          // Detect AMM operation direction for proper labeling
+          let ammDirection = null;
+          let ammToken = null;
+
+          // Check if this involves an AMM transaction
+          if (destinationAccount.startsWith('AMM_')) {
+            // Extract token name from AMM destination
+            ammToken = destinationAccount.replace('AMM_', '');
+
+            // For AMM transactions, determine direction from metadata analysis
+            if (sourceAccount === targetAccount && meta && meta.AffectedNodes) {
+              // Analyze XRP balance change to determine buy/sell
+              for (const node of meta.AffectedNodes) {
+                const modifiedNode = node.ModifiedNode;
+                if (
+                  modifiedNode &&
+                  modifiedNode.LedgerEntryType === 'AccountRoot' &&
+                  modifiedNode.FinalFields?.Account === targetAccount
+                ) {
+                  const prevBalance = parseInt(modifiedNode.PreviousFields?.Balance || 0);
+                  const finalBalance = parseInt(modifiedNode.FinalFields?.Balance || 0);
+                  const xrpChange = (finalBalance - prevBalance) / 1000000;
+
+                  if (xrpChange < 0) {
+                    // XRP decreased → User spent XRP to buy tokens
+                    ammDirection = 'BUY';
+                  } else if (xrpChange > 0) {
+                    // XRP increased → User received XRP from selling tokens
+                    ammDirection = 'SELL';
+                  }
+                  break;
+                }
+              }
+            }
+          } else if (sourceAccount.startsWith('AMM_')) {
+            // AMM is sending to user (inflow case) - this shouldn't happen with our new logic
+            // but keeping for completeness
+            ammToken = sourceAccount.replace('AMM_', '');
+            if (destinationAccount === targetAccount) {
+              if (currency === 'XRP') {
+                ammDirection = 'SELL'; // User received XRP → sold tokens
+              } else {
+                ammDirection = 'BUY'; // User received tokens → bought tokens
+              }
+            }
+          }
+
           // Restructure to avoid cycles using hub-and-spoke model
           if (sourceAccount === targetAccount) {
             // Target account is sending - flow from outflow hub to destination
@@ -913,6 +1096,11 @@ const SankeyModal = ({ open, onClose, account }) => {
             if (existingLink) {
               existingLink.value += amount;
               existingLink.count += 1;
+              // Update AMM direction if available
+              if (ammDirection && !existingLink.ammDirection) {
+                existingLink.ammDirection = ammDirection;
+                existingLink.ammToken = ammToken;
+              }
               // Update spam information if this is a spam transaction
               if (spamAnalysis && spamAnalysis.spamScore >= 40) {
                 existingLink.isSpam = true;
@@ -932,7 +1120,10 @@ const SankeyModal = ({ open, onClose, account }) => {
                 txType: tx.TransactionType,
                 isSpam: spamAnalysis && spamAnalysis.spamScore >= 40,
                 spamScore: spamAnalysis?.spamScore || 0,
-                spamCount: spamAnalysis && spamAnalysis.spamScore >= 40 ? 1 : 0
+                spamCount: spamAnalysis && spamAnalysis.spamScore >= 40 ? 1 : 0,
+                // Add AMM direction information
+                ammDirection: ammDirection,
+                ammToken: ammToken
               };
               links.push(newLink);
             }
@@ -960,6 +1151,11 @@ const SankeyModal = ({ open, onClose, account }) => {
             if (existingLink) {
               existingLink.value += amount;
               existingLink.count += 1;
+              // Update AMM direction if available
+              if (ammDirection && !existingLink.ammDirection) {
+                existingLink.ammDirection = ammDirection;
+                existingLink.ammToken = ammToken;
+              }
               // Update spam information if this is a spam transaction
               if (spamAnalysis && spamAnalysis.spamScore >= 40) {
                 existingLink.isSpam = true;
@@ -979,7 +1175,10 @@ const SankeyModal = ({ open, onClose, account }) => {
                 txType: tx.TransactionType,
                 isSpam: spamAnalysis && spamAnalysis.spamScore >= 40,
                 spamScore: spamAnalysis?.spamScore || 0,
-                spamCount: spamAnalysis && spamAnalysis.spamScore >= 40 ? 1 : 0
+                spamCount: spamAnalysis && spamAnalysis.spamScore >= 40 ? 1 : 0,
+                // Add AMM direction information
+                ammDirection: ammDirection,
+                ammToken: ammToken
               };
               links.push(newLink);
             }
@@ -1121,7 +1320,9 @@ const SankeyModal = ({ open, onClose, account }) => {
     const { nodes, links } = chartData;
 
     // Filter links based on spam filter
-    const filteredLinks = showSpamOnly ? links.filter((link) => link.isSpam) : links;
+    const filteredLinks = showSpamOnly
+      ? links.filter((link) => link.isSpam)
+      : links.filter((link) => !link.isSpam);
 
     return {
       backgroundColor: 'transparent',
@@ -1139,6 +1340,13 @@ const SankeyModal = ({ open, onClose, account }) => {
       tooltip: {
         trigger: 'item',
         triggerOn: 'mousemove',
+        // Improve hover sensitivity for thin lines
+        enterable: true,
+        hideDelay: 300,
+        showDelay: 0,
+        // Add more sensitive hover detection
+        alwaysShowContent: false,
+        confine: true,
         backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         borderColor: darkMode ? '#444444' : theme.palette.divider,
         borderWidth: 1,
@@ -1327,12 +1535,35 @@ const SankeyModal = ({ open, onClose, account }) => {
                           <div style="margin-bottom: 4px;">Spam Transactions: <strong style="color: #ff4444;">${params.data.spamCount}</strong></div>`;
             }
 
+            // Add AMM operation information
+            let ammInfo = '';
+            if (params.data.ammDirection && params.data.ammToken) {
+              const directionIcon = params.data.ammDirection === 'BUY' ? '💰' : '💸';
+              const directionColor = params.data.ammDirection === 'BUY' ? '#4caf50' : '#ff9800';
+              const operation =
+                params.data.ammDirection === 'BUY'
+                  ? `Bought ${params.data.ammToken} tokens`
+                  : `Sold ${params.data.ammToken} tokens for XRP`;
+
+              ammInfo = `<div style="margin-bottom: 6px; padding: 6px; background: rgba(${
+                params.data.ammDirection === 'BUY' ? '76, 175, 80' : '255, 152, 0'
+              }, 0.15); border-radius: 4px; border-left: 4px solid ${directionColor};">
+                          <div style="font-weight: bold; color: ${directionColor}; margin-bottom: 2px; font-size: 11px;">
+                            ${directionIcon} AMM ${params.data.ammDirection}
+                          </div>
+                          <div style="font-size: 10px; color: ${theme.palette.text.primary};">
+                            ${operation}
+                          </div>
+                        </div>`;
+            }
+
             return `<div style="font-weight: bold; margin-bottom: 8px; color: ${
               theme.palette.primary.main
             };">
                       ${sourceName} → ${targetName}
                     </div>
                     ${spamInfo}
+                    ${ammInfo}
                     <div style="margin-bottom: 4px;">Total Value: <strong>${params.data.value.toFixed(
                       8
                     )}</strong></div>
@@ -1364,27 +1595,34 @@ const SankeyModal = ({ open, onClose, account }) => {
           left: 20,
           right: 20,
           nodeWidth: 25,
-          nodeGap: 12,
+          nodeGap: 15, // Slightly larger gap for better line visibility
           nodeAlign: 'justify',
           layoutIterations: 0,
           emphasis: {
             focus: 'adjacency',
-            blurScope: 'coordinateSystem'
+            blurScope: 'coordinateSystem',
+            // Make emphasis more pronounced
+            scale: 1.1
           },
           blur: {
             itemStyle: {
-              opacity: 0.3
-            },
-            lineStyle: {
               opacity: 0.2
             },
+            lineStyle: {
+              opacity: 0.1
+            },
             label: {
-              opacity: 0.3
+              opacity: 0.2
             }
           },
           animation: false,
           animationDuration: 0,
           animationEasing: 'linear',
+          // Add better hover detection
+          triggerLineEvent: true,
+          hoverAnimation: true,
+          // Improve selection sensitivity
+          silent: false,
           data: nodes.map((node) => ({
             ...node,
             itemStyle: {
@@ -1418,10 +1656,18 @@ const SankeyModal = ({ open, onClose, account }) => {
               color: link.isSpam ? '#ff4444' : 'source', // Red for spam, source color for normal
               opacity: link.isSpam ? 0.8 : 0.6,
               curveness: 0.5,
-              width: link.isSpam ? 3 : undefined, // Thicker lines for spam
+              width: Math.max(link.isSpam ? 8 : 5, 5), // Much thicker minimum width: 5px normal, 8px spam
               type: link.isSpam ? 'dashed' : 'solid', // Dashed lines for spam
               shadowColor: link.isSpam ? '#ff4444' : undefined,
               shadowBlur: link.isSpam ? 10 : undefined
+            },
+            emphasis: {
+              lineStyle: {
+                width: Math.max(link.isSpam ? 12 : 8, 8), // Very thick on hover: 8-12px
+                opacity: 1,
+                shadowBlur: 20,
+                shadowColor: link.isSpam ? '#ff4444' : 'rgba(0, 0, 0, 0.5)'
+              }
             }
           })),
           label: {
@@ -1480,23 +1726,7 @@ const SankeyModal = ({ open, onClose, account }) => {
             fontSize: 12,
             fontWeight: 'bold'
           }
-        },
-        // Add spam indicator if spam exists
-        ...(spamStats && spamStats.totalSpamTransactions > 0
-          ? [
-              {
-                type: 'text',
-                left: 'center',
-                top: 40,
-                style: {
-                  text: `⚠️ ${spamStats.totalSpamTransactions} SPAM TRANSACTIONS DETECTED`,
-                  fill: '#ff4444',
-                  fontSize: 11,
-                  fontWeight: 'bold'
-                }
-              }
-            ]
-          : [])
+        }
       ]
     };
   }, [chartData, showSpamOnly, spamStats, theme]);
@@ -1535,7 +1765,7 @@ const SankeyModal = ({ open, onClose, account }) => {
         <Paper
           elevation={0}
           sx={{
-            p: 3,
+            p: 1.5,
             borderBottom: `2px solid ${darkMode ? '#333333' : theme.palette.divider}`,
             background: darkMode
               ? 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)'
@@ -1545,7 +1775,8 @@ const SankeyModal = ({ open, onClose, account }) => {
         >
           <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
             <Box sx={{ flex: 1 }}>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+              {/* Title Row with Account Info and Activity */}
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.6 }}>
                 {/* Back button */}
                 {navigationHistory.length > 0 && (
                   <IconButton
@@ -1566,11 +1797,12 @@ const SankeyModal = ({ open, onClose, account }) => {
 
                 <Typography
                   id="sankey-modal-title"
-                  variant="h5"
+                  variant="subtitle1"
                   component="h2"
                   sx={{
                     fontWeight: 700,
-                    color: theme.palette.text.primary
+                    color: theme.palette.text.primary,
+                    fontSize: '1.1rem'
                   }}
                 >
                   🌊 Sankey Flow Analysis
@@ -1582,122 +1814,331 @@ const SankeyModal = ({ open, onClose, account }) => {
                     variant="caption"
                     sx={{
                       color: theme.palette.text.secondary,
-                      ml: 1,
-                      fontStyle: 'italic'
+                      fontStyle: 'italic',
+                      fontSize: '0.7rem'
                     }}
                   >
                     (Level {navigationHistory.length + 1})
                   </Typography>
                 )}
-              </Stack>
 
-              {accountInfo && (
-                <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap' }}>
-                  <Chip
-                    label={`👤 ${accountInfo.address.substring(
-                      0,
-                      8
-                    )}...${accountInfo.address.substring(accountInfo.address.length - 6)}`}
-                    size="medium"
-                    variant="outlined"
-                    sx={{
-                      fontFamily: 'monospace',
-                      fontSize: '0.8rem',
-                      fontWeight: 600
-                    }}
-                  />
-                  <Chip
-                    label={`📊 ${accountInfo.totalTransactions} Transactions`}
-                    size="medium"
-                    color="primary"
-                    sx={{ fontWeight: 600 }}
-                  />
-                  {/* Display main activity */}
-                  {accountInfo.mainActivity && (
+                {/* Account Info - Moved to same row */}
+                {accountInfo && (
+                  <>
                     <Chip
-                      label={`🎯 ${accountInfo.mainActivity}`}
-                      size="medium"
+                      label={`👤 ${accountInfo.address.substring(
+                        0,
+                        8
+                      )}...${accountInfo.address.substring(accountInfo.address.length - 6)}`}
+                      size="small"
+                      variant="outlined"
                       sx={{
-                        bgcolor: accountInfo.mainActivity.includes('Spammer')
-                          ? '#ff4444'
-                          : accountInfo.mainActivity.includes('Trader')
-                          ? '#2196f3'
-                          : accountInfo.mainActivity.includes('Buyer')
-                          ? '#4caf50'
-                          : accountInfo.mainActivity.includes('Seller')
-                          ? '#ff9800'
-                          : '#9c27b0',
-                        color: 'white',
+                        fontFamily: 'monospace',
+                        fontSize: '0.7rem',
                         fontWeight: 600,
-                        fontSize: '0.8rem'
+                        height: '24px',
+                        ml: 1
                       }}
                     />
-                  )}
-                </Stack>
-              )}
+                    <Chip
+                      label={`📊 ${accountInfo.totalTransactions} Txns`}
+                      size="small"
+                      color="primary"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '0.7rem',
+                        height: '24px'
+                      }}
+                    />
+                    {/* Display main activity */}
+                    {accountInfo.mainActivity && (
+                      <Chip
+                        label={`🎯 ${accountInfo.mainActivity}`}
+                        size="small"
+                        sx={{
+                          bgcolor: accountInfo.mainActivity.includes('Spammer')
+                            ? '#ff4444'
+                            : accountInfo.mainActivity.includes('Trader')
+                            ? '#2196f3'
+                            : accountInfo.mainActivity.includes('Buyer')
+                            ? '#4caf50'
+                            : accountInfo.mainActivity.includes('Seller')
+                            ? '#ff9800'
+                            : '#9c27b0',
+                          color: 'white',
+                          fontWeight: 600,
+                          fontSize: '0.7rem',
+                          height: '24px'
+                        }}
+                      />
+                    )}
+                  </>
+                )}
+              </Stack>
 
-              {/* Simplified Legend - Group into two rows */}
-              <Box sx={{ mb: 2 }}>
-                <Typography
-                  variant="caption"
-                  sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}
-                >
-                  Flow Types:
-                </Typography>
-                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 1 }}>
-                  <Chip
-                    label="💰 Inflows"
-                    size="small"
-                    sx={{ bgcolor: theme.palette.success.main, color: 'white', fontSize: '0.7rem' }}
-                  />
-                  <Chip
-                    label="💸 Outflows"
-                    size="small"
-                    sx={{ bgcolor: theme.palette.error.main, color: 'white', fontSize: '0.7rem' }}
-                  />
-                  <Chip
-                    label="🏪 DEX"
-                    size="small"
-                    sx={{ bgcolor: theme.palette.info.main, color: 'white', fontSize: '0.7rem' }}
-                  />
-                  <Chip
-                    label="🔄 AMM"
-                    size="small"
+              {/* Token Trading Summary - Horizontal Layout */}
+              {accountDetails.has(currentAccount) &&
+                (() => {
+                  const details = accountDetails.get(currentAccount);
+                  const hasTokenActivity =
+                    details.tokensBought.size > 0 || details.tokensSold.size > 0;
+
+                  if (hasTokenActivity) {
+                    return (
+                      <Box
+                        sx={{
+                          mb: 0.8,
+                          p: 1,
+                          bgcolor: darkMode
+                            ? 'rgba(33, 150, 243, 0.15)'
+                            : 'rgba(33, 150, 243, 0.08)',
+                          borderRadius: 2,
+                          border: `1px solid ${
+                            darkMode ? 'rgba(33, 150, 243, 0.4)' : 'rgba(33, 150, 243, 0.3)'
+                          }`,
+                          boxShadow: darkMode
+                            ? '0 2px 8px rgba(33, 150, 243, 0.2)'
+                            : '0 1px 4px rgba(33, 150, 243, 0.1)'
+                        }}
+                      >
+                        {/* Header with Direction in same row */}
+                        <Stack
+                          direction="row"
+                          justifyContent="space-between"
+                          alignItems="center"
+                          sx={{ mb: 0.6 }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: theme.palette.info.main,
+                              fontWeight: 600,
+                              fontSize: '0.75rem'
+                            }}
+                          >
+                            📈 Token Trading Summary
+                          </Typography>
+
+                          {/* Trading Direction - Moved to header row */}
+                          {details.tradingDirection !== 'neutral' && (
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: theme.palette.text.secondary,
+                                fontSize: '0.65rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.4
+                              }}
+                            >
+                              🎯
+                              <span
+                                style={{
+                                  color:
+                                    details.tradingDirection === 'buying'
+                                      ? theme.palette.success.main
+                                      : theme.palette.error.main,
+                                  fontWeight: 600,
+                                  textTransform: 'uppercase'
+                                }}
+                              >
+                                {details.tradingDirection === 'buying'
+                                  ? '📈 NET BUYING'
+                                  : '📉 NET SELLING'}
+                              </span>
+                              {details.topTokens.length > 0 && (
+                                <span style={{ fontStyle: 'italic' }}>
+                                  ({details.topTokens[0]})
+                                </span>
+                              )}
+                            </Typography>
+                          )}
+                        </Stack>
+
+                        {/* Two-Column Layout for Bought/Sold */}
+                        <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
+                          {/* Tokens Bought Column */}
+                          {details.tokensBought.size > 0 && (
+                            <Box sx={{ flex: 1, minWidth: 300 }}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: theme.palette.success.main,
+                                  fontWeight: 600,
+                                  display: 'block',
+                                  mb: 0.3,
+                                  fontSize: '0.65rem'
+                                }}
+                              >
+                                💰 TOKENS BOUGHT (~{details.xrpSpentOnTokens.toFixed(2)} XRP)
+                              </Typography>
+                              <Stack direction="row" spacing={0.3} sx={{ flexWrap: 'wrap' }}>
+                                {[...details.tokensBought.entries()].map(([currency, amount]) => {
+                                  const decodedCurrency = decodeCurrency(currency);
+                                  const xrpSpent = details.xrpSpentPerToken.get(currency) || 0;
+                                  return (
+                                    <Chip
+                                      key={`bought-${currency}`}
+                                      label={`${decodedCurrency}: ${amount.toFixed(
+                                        2
+                                      )} (${xrpSpent.toFixed(2)})`}
+                                      size="small"
+                                      sx={{
+                                        bgcolor: theme.palette.success.main,
+                                        color: 'white',
+                                        fontSize: '0.55rem',
+                                        fontWeight: 600,
+                                        height: '16px',
+                                        '& .MuiChip-label': {
+                                          px: 0.4
+                                        }
+                                      }}
+                                    />
+                                  );
+                                })}
+                              </Stack>
+                            </Box>
+                          )}
+
+                          {/* Tokens Sold Column */}
+                          {details.tokensSold.size > 0 && (
+                            <Box sx={{ flex: 1, minWidth: 300 }}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: theme.palette.error.main,
+                                  fontWeight: 600,
+                                  display: 'block',
+                                  mb: 0.3,
+                                  fontSize: '0.65rem'
+                                }}
+                              >
+                                💸 TOKENS SOLD (~{details.xrpReceivedFromTokens.toFixed(2)} XRP)
+                              </Typography>
+                              <Stack direction="row" spacing={0.3} sx={{ flexWrap: 'wrap' }}>
+                                {[...details.tokensSold.entries()]
+                                  .slice(0, 6)
+                                  .map(([currency, amount]) => {
+                                    const decodedCurrency = decodeCurrency(currency);
+                                    const xrpReceived =
+                                      details.xrpReceivedPerToken.get(currency) || 0;
+                                    return (
+                                      <Chip
+                                        key={`sold-${currency}`}
+                                        label={`${decodedCurrency}: ${amount.toFixed(
+                                          2
+                                        )} (${xrpReceived.toFixed(2)})`}
+                                        size="small"
+                                        sx={{
+                                          bgcolor: theme.palette.error.main,
+                                          color: 'white',
+                                          fontSize: '0.55rem',
+                                          fontWeight: 600,
+                                          height: '16px',
+                                          '& .MuiChip-label': {
+                                            px: 0.4
+                                          }
+                                        }}
+                                      />
+                                    );
+                                  })}
+                                {details.tokensSold.size > 6 && (
+                                  <Chip
+                                    label={`+${details.tokensSold.size - 6} more`}
+                                    size="small"
+                                    sx={{
+                                      bgcolor: theme.palette.error.light,
+                                      color: 'white',
+                                      fontSize: '0.55rem',
+                                      height: '16px'
+                                    }}
+                                  />
+                                )}
+                              </Stack>
+                            </Box>
+                          )}
+                        </Stack>
+                      </Box>
+                    );
+                  }
+                  return null;
+                })()}
+
+              {/* Bottom Row: Legend, Spam, and Summary in one row */}
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                sx={{ flexWrap: 'wrap', gap: 1, minHeight: '32px' }}
+              >
+                {/* Legend - Compact Single Row */}
+                <Box sx={{ display: 'flex', alignItems: 'center', height: '32px' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'text.secondary', fontSize: '0.65rem', mr: 0.8, fontWeight: 500 }}
+                  >
+                    Flow Types:
+                  </Typography>
+                  <Stack direction="row" spacing={0.5} sx={{ display: 'inline-flex' }}>
+                    {[
+                      { label: '💰 In', color: theme.palette.success.main },
+                      { label: '💸 Out', color: theme.palette.error.main },
+                      { label: '🏪 DEX', color: theme.palette.info.main },
+                      { label: '🔄 AMM', color: theme.palette.purple?.[500] || '#9c27b0' },
+                      { label: '👤 Acc', color: theme.palette.primary.main },
+                      { label: '⚠️ Spam', color: '#ff4444' }
+                    ].map((item, index) => (
+                      <Chip
+                        key={index}
+                        label={item.label}
+                        size="small"
+                        sx={{
+                          bgcolor: item.color,
+                          color: 'white',
+                          fontSize: '0.6rem',
+                          fontWeight: 600,
+                          height: '22px',
+                          minWidth: '50px',
+                          borderRadius: '11px',
+                          '& .MuiChip-label': {
+                            px: 0.6,
+                            py: 0,
+                            lineHeight: 1.2
+                          }
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                </Box>
+
+                {/* Spam Detection - Inline */}
+                {spamStats && spamStats.totalMicroPayments > 0 && (
+                  <Box
                     sx={{
-                      bgcolor: theme.palette.purple?.[500] || '#9c27b0',
-                      color: 'white',
-                      fontSize: '0.7rem'
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      px: 1.2,
+                      py: 0.4,
+                      height: '32px',
+                      bgcolor: darkMode ? 'rgba(255,68,68,0.12)' : 'rgba(255,68,68,0.08)',
+                      borderRadius: '16px',
+                      border: '1px solid #ff4444'
                     }}
-                  />
-                  <Chip
-                    label="👤 Accounts"
-                    size="small"
-                    sx={{ bgcolor: theme.palette.primary.main, color: 'white', fontSize: '0.7rem' }}
-                  />
-                  <Chip
-                    label="⚠️ Spam"
-                    size="small"
-                    sx={{ bgcolor: '#ff4444', color: 'white', fontSize: '0.7rem' }}
-                  />
-                </Stack>
-              </Box>
-
-              {/* Simplified Spam Statistics */}
-              {spamStats && spamStats.totalMicroPayments > 0 && (
-                <Box
-                  sx={{
-                    mt: 1,
-                    p: 1.5,
-                    bgcolor: darkMode ? 'rgba(255,68,68,0.1)' : 'rgba(255,68,68,0.05)',
-                    borderRadius: 2,
-                    border: '1px solid #ff4444'
-                  }}
-                >
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <WarningIcon sx={{ color: '#ff4444', fontSize: '1.2rem' }} />
-                    <Typography variant="subtitle2" sx={{ color: '#ff4444', fontWeight: 600 }}>
-                      Spam Detection: {spamStats.totalSpamTransactions} of{' '}
-                      {spamStats.totalMicroPayments} micro-payments ({spamStats.spamPercentage}%)
+                  >
+                    <WarningIcon sx={{ color: '#ff4444', fontSize: '0.9rem' }} />
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#ff4444',
+                        fontWeight: 600,
+                        fontSize: '0.65rem',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      ⚠️ {spamStats.totalSpamTransactions} SPAM DETECTED -{' '}
+                      {spamStats.totalSpamTransactions}/{spamStats.totalMicroPayments} (
+                      {spamStats.spamPercentage}%)
                     </Typography>
                     <FormControlLabel
                       control={
@@ -1713,55 +2154,98 @@ const SankeyModal = ({ open, onClose, account }) => {
                           }}
                         />
                       }
-                      label="Show Spam Only"
-                      sx={{ ml: 'auto', '& .MuiFormControlLabel-label': { fontSize: '0.8rem' } }}
+                      label="Show Spam"
+                      sx={{
+                        m: 0,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.6rem',
+                          fontWeight: 500,
+                          whiteSpace: 'nowrap'
+                        }
+                      }}
+                    />
+                  </Box>
+                )}
+
+                {/* Summary - Inline */}
+                {chartData && chartData.summary && (
+                  <Stack
+                    direction="row"
+                    spacing={0.8}
+                    sx={{ ml: 'auto', height: '32px', alignItems: 'center' }}
+                  >
+                    {chartData.summary.totalInflow > 0 && (
+                      <Chip
+                        label={`📈 ${chartData.summary.totalInflow.toFixed(1)}`}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          borderColor: theme.palette.success.main,
+                          color: theme.palette.success.main,
+                          bgcolor: darkMode ? 'rgba(76, 175, 80, 0.1)' : 'rgba(76, 175, 80, 0.05)',
+                          fontSize: '0.6rem',
+                          fontWeight: 600,
+                          height: '22px',
+                          minWidth: '60px',
+                          borderRadius: '11px',
+                          '& .MuiChip-label': {
+                            px: 0.6,
+                            py: 0,
+                            lineHeight: 1.2
+                          }
+                        }}
+                      />
+                    )}
+                    {chartData.summary.totalOutflow > 0 && (
+                      <Chip
+                        label={`📉 ${chartData.summary.totalOutflow.toFixed(1)}`}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          borderColor: theme.palette.error.main,
+                          color: theme.palette.error.main,
+                          bgcolor: darkMode ? 'rgba(244, 67, 54, 0.1)' : 'rgba(244, 67, 54, 0.05)',
+                          fontSize: '0.6rem',
+                          fontWeight: 600,
+                          height: '22px',
+                          minWidth: '60px',
+                          borderRadius: '11px',
+                          '& .MuiChip-label': {
+                            px: 0.6,
+                            py: 0,
+                            lineHeight: 1.2
+                          }
+                        }}
+                      />
+                    )}
+                    <Chip
+                      label={`🔄 ${chartData.summary.totalTransactions}`}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        fontSize: '0.6rem',
+                        fontWeight: 600,
+                        height: '22px',
+                        minWidth: '50px',
+                        borderRadius: '11px',
+                        bgcolor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+                        '& .MuiChip-label': {
+                          px: 0.6,
+                          py: 0,
+                          lineHeight: 1.2
+                        }
+                      }}
                     />
                   </Stack>
-                </Box>
-              )}
-
-              {/* Simplified Summary */}
-              {chartData && chartData.summary && (
-                <Stack direction="row" spacing={2} sx={{ mt: 1.5 }}>
-                  {chartData.summary.totalInflow > 0 && (
-                    <Chip
-                      label={`📈 ${chartData.summary.totalInflow.toFixed(2)} XRP`}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        borderColor: theme.palette.success.main,
-                        color: theme.palette.success.main,
-                        fontSize: '0.7rem'
-                      }}
-                    />
-                  )}
-                  {chartData.summary.totalOutflow > 0 && (
-                    <Chip
-                      label={`📉 ${chartData.summary.totalOutflow.toFixed(2)} XRP`}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        borderColor: theme.palette.error.main,
-                        color: theme.palette.error.main,
-                        fontSize: '0.7rem'
-                      }}
-                    />
-                  )}
-                  <Chip
-                    label={`🔄 ${chartData.summary.totalTransactions} Total`}
-                    size="small"
-                    variant="outlined"
-                    sx={{ fontSize: '0.7rem' }}
-                  />
-                </Stack>
-              )}
+                )}
+              </Stack>
             </Box>
 
             <IconButton
               onClick={handleClose}
-              size="large"
+              size="small"
               sx={{
-                ml: 2,
+                ml: 1,
                 bgcolor: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
                 border: darkMode ? '1px solid rgba(255,255,255,0.12)' : 'none',
                 '&:hover': {
@@ -1770,7 +2254,7 @@ const SankeyModal = ({ open, onClose, account }) => {
                 }
               }}
             >
-              <CloseIcon />
+              <CloseIcon fontSize="small" />
             </IconButton>
           </Stack>
         </Paper>
