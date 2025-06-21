@@ -184,6 +184,38 @@ const SankeyModal = ({ open, onClose, account }) => {
     return currency.length > 8 ? currency.substring(0, 8) + '...' : currency;
   };
 
+  // Helper function to format large token amounts properly
+  const formatTokenAmount = (amount) => {
+    if (typeof amount !== 'number' || isNaN(amount) || amount === 0) return '0';
+
+    // Handle extremely large numbers that appear in scientific notation
+    // Convert scientific notation to a more readable format
+    if (amount >= 1e21) {
+      // For astronomically large numbers (likely calculation errors), show as "MAX"
+      return 'MAX';
+    } else if (amount >= 1e18) {
+      return `${(amount / 1e18).toFixed(2)}E`; // Quintillion (E for Exa)
+    } else if (amount >= 1e15) {
+      return `${(amount / 1e15).toFixed(2)}P`; // Quadrillion (P for Peta)
+    } else if (amount >= 1e12) {
+      return `${(amount / 1e12).toFixed(2)}T`; // Trillion
+    } else if (amount >= 1e9) {
+      return `${(amount / 1e9).toFixed(2)}B`; // Billion
+    } else if (amount >= 1e6) {
+      return `${(amount / 1e6).toFixed(2)}M`; // Million
+    } else if (amount >= 1e3) {
+      return `${(amount / 1e3).toFixed(2)}K`; // Thousand
+    } else if (amount >= 1) {
+      return amount.toFixed(2);
+    } else if (amount >= 0.01) {
+      return amount.toFixed(4);
+    } else if (amount > 0) {
+      return amount.toFixed(8);
+    } else {
+      return '0';
+    }
+  };
+
   // Helper function to analyze account activity
   const analyzeAccountActivity = (accountAddress, transactions, targetAccount) => {
     const activity = {
@@ -679,30 +711,34 @@ const SankeyModal = ({ open, onClose, account }) => {
     let maxScore = 0;
     let mainActivity = 'Regular User';
 
-    // Calculate top traded tokens with decoded currency names
-    const allTokens = new Map();
-    activity.tokensBought.forEach((amount, currency) => {
+    // Calculate top traded tokens based on XRP amounts spent/received (not token quantities)
+    const tokenXrpAmounts = new Map();
+
+    // Add XRP spent on buying tokens
+    activity.xrpSpentPerToken.forEach((xrpAmount, currency) => {
       const decodedCurrency = decodeCurrency(currency);
-      allTokens.set(decodedCurrency, (allTokens.get(decodedCurrency) || 0) + amount);
-    });
-    activity.tokensSold.forEach((amount, currency) => {
-      const decodedCurrency = decodeCurrency(currency);
-      allTokens.set(decodedCurrency, (allTokens.get(decodedCurrency) || 0) + amount);
+      tokenXrpAmounts.set(decodedCurrency, (tokenXrpAmounts.get(decodedCurrency) || 0) + xrpAmount);
     });
 
-    // Sort tokens by trading volume (already decoded)
-    activity.topTokens = [...allTokens.entries()]
+    // Add XRP received from selling tokens
+    activity.xrpReceivedPerToken.forEach((xrpAmount, currency) => {
+      const decodedCurrency = decodeCurrency(currency);
+      tokenXrpAmounts.set(decodedCurrency, (tokenXrpAmounts.get(decodedCurrency) || 0) + xrpAmount);
+    });
+
+    // Sort tokens by XRP trading volume (not token quantities)
+    activity.topTokens = [...tokenXrpAmounts.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
-      .map(([currency, amount]) => currency); // Currency is already decoded
+      .map(([currency, xrpAmount]) => currency);
 
-    // Determine trading direction
-    const totalBought = [...activity.tokensBought.values()].reduce((sum, val) => sum + val, 0);
-    const totalSold = [...activity.tokensSold.values()].reduce((sum, val) => sum + val, 0);
+    // Determine trading direction based on XRP amounts (not token quantities)
+    const totalXrpSpentOnTokens = activity.xrpSpentOnTokens;
+    const totalXrpReceivedFromTokens = activity.xrpReceivedFromTokens;
 
-    if (totalBought > totalSold * 1.5) {
+    if (totalXrpSpentOnTokens > totalXrpReceivedFromTokens * 1.5) {
       activity.tradingDirection = 'buying';
-    } else if (totalSold > totalBought * 1.5) {
+    } else if (totalXrpReceivedFromTokens > totalXrpSpentOnTokens * 1.5) {
       activity.tradingDirection = 'selling';
     } else {
       activity.tradingDirection = 'neutral';
@@ -1543,18 +1579,9 @@ const SankeyModal = ({ open, onClose, account }) => {
       },
       tooltip: {
         trigger: 'item',
-        triggerOn: 'mousemove|click',
-        // Improve hover sensitivity for thin lines
-        enterable: true,
-        hideDelay: 100,
-        showDelay: 50,
-        // Add more sensitive hover detection
-        alwaysShowContent: false,
-        confine: true,
-        // Increase hover detection area
-        axisPointer: {
-          type: 'none'
-        },
+        triggerOn: 'mousemove',
+        hideDelay: 200,
+        showDelay: 100,
         backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         borderColor: darkMode ? '#444444' : theme.palette.divider,
         borderWidth: 1,
@@ -1564,194 +1591,209 @@ const SankeyModal = ({ open, onClose, account }) => {
           color: theme.palette.text.primary,
           fontSize: 11
         },
-        z: 99999, // Set z-index directly
         formatter: function (params) {
-          if (params.dataType === 'node') {
-            const categoryLabel =
-              {
-                inflow: '💰 Inflow Hub',
-                outflow: '💸 Outflow Hub',
-                dex: '🏪 DEX Operations',
-                trust: '🤝 Trust Lines',
-                amm_pool: '🌊 AMM Pool',
-                amm: '🔄 AMM Pool',
-                self: '🔄 Self Transfer',
-                operations: '⚙️ System Operations',
-                account: '👤 Account'
-              }[params.data.category] || 'Unknown';
+          try {
+            // Add safety check for params and data
+            if (!params || !params.data) {
+              return 'No data available';
+            }
 
-            let tooltipContent = `<div style="font-weight: bold; margin-bottom: 6px; color: ${
-              theme.palette.primary.main
-            }; font-size: 12px;">
-                      ${params.data.displayName || params.data.name}
-                    </div>
-                    <div style="margin-bottom: 3px; font-size: 10px;">Type: ${categoryLabel}</div>
-                    <div style="font-size: 10px;">Transactions: <strong>${
-                      params.data.value
-                    }</strong></div>`;
+            if (params.dataType === 'node') {
+              const categoryLabel =
+                {
+                  inflow: '💰 Inflow Hub',
+                  outflow: '💸 Outflow Hub',
+                  dex: '🏪 DEX Operations',
+                  trust: '🤝 Trust Lines',
+                  amm_pool: '🌊 AMM Pool',
+                  amm: '🔄 AMM Pool',
+                  self: '🔄 Self Transfer',
+                  operations: '⚙️ System Operations',
+                  account: '👤 Account'
+                }[params.data.category] || 'Unknown';
 
-            // Add detailed account analysis for account nodes
-            if (params.data.category === 'account' && accountDetails.has(params.data.name)) {
-              const details = accountDetails.get(params.data.name);
-              const spamLevel = details.isSpammer
-                ? '🔴 HIGH RISK'
-                : details.spamScore > 50
-                ? '🟡 MEDIUM RISK'
-                : '🟢 LOW RISK';
+              let tooltipContent = `<div style="font-weight: bold; margin-bottom: 6px; color: ${
+                theme.palette.primary.main
+              }; font-size: 12px;">
+                        ${params.data.displayName || params.data.name}
+                      </div>
+                      <div style="margin-bottom: 3px; font-size: 10px;">Type: ${categoryLabel}</div>
+                      <div style="font-size: 10px;">Transactions: <strong>${
+                        params.data.value
+                      }</strong></div>`;
 
-              tooltipContent += `
-                <div style="border-top: 1px solid ${
-                  theme.palette.divider
-                }; margin-top: 6px; padding-top: 4px;">
-                  <div style="font-weight: bold; color: ${
-                    theme.palette.primary.main
-                  }; margin-bottom: 3px; font-size: 11px;">📊 Account Analysis</div>
-                  <div style="margin-bottom: 2px; font-size: 9px;">Risk: <span style="font-weight: bold; color: ${
-                    details.isSpammer ? '#ff4444' : details.spamScore > 50 ? '#ffaa00' : '#4caf50'
-                  }">${spamLevel}</span></div>
-                  <div style="margin-bottom: 2px; font-size: 9px;">Value: <strong>${details.totalValue.toFixed(
-                    8
-                  )} XRP</strong> | 📈 <strong style="color: ${
-                theme.palette.success.main
-              }">${details.incomingValue.toFixed(8)}</strong> | 📉 <strong style="color: ${
-                theme.palette.error.main
-              }">${details.outgoingValue.toFixed(8)}</strong></div>
-                  <div style="margin-bottom: 2px; font-size: 9px;">Avg: <strong>${details.avgTransactionSize.toFixed(
-                    8
-                  )} XRP</strong></div>`;
+              // Add detailed account analysis for account nodes
+              if (params.data.category === 'account' && accountDetails.has(params.data.name)) {
+                const details = accountDetails.get(params.data.name);
+                const spamLevel = details.isSpammer
+                  ? '🔴 HIGH RISK'
+                  : details.spamScore > 50
+                  ? '🟡 MEDIUM RISK'
+                  : '🟢 LOW RISK';
 
-              // Add spam analysis if present
-              if (details.spamTransactions > 0) {
                 tooltipContent += `
-                  <div style="border-top: 1px solid #ff4444; margin-top: 3px; padding-top: 3px; background: rgba(255,68,68,0.1); padding: 3px; border-radius: 3px;">
-                    <div style="font-weight: bold; color: #ff4444; margin-bottom: 2px; font-size: 10px;">⚠️ Spam Analysis</div>
-                    <div style="font-size: 8px;">Score: <strong style="color: #ff4444">${
-                      details.spamScore
-                    }</strong> | Spam: <strong style="color: #ff4444">${
-                  details.spamTransactions
-                }</strong> | Dust: <strong style="color: #ff4444">${
-                  details.dustTransactions
-                }</strong> | Ratio: <strong style="color: #ff4444">${(
-                  (details.spamTransactions / details.totalTransactions) *
-                  100
-                ).toFixed(1)}%</strong></div>
-                  </div>`;
-              }
+                  <div style="border-top: 1px solid ${
+                    theme.palette.divider
+                  }; margin-top: 6px; padding-top: 4px;">
+                    <div style="font-weight: bold; color: ${
+                      theme.palette.primary.main
+                    }; margin-bottom: 3px; font-size: 11px;">📊 Account Analysis</div>
+                    <div style="margin-bottom: 2px; font-size: 9px;">Risk: <span style="font-weight: bold; color: ${
+                      details.isSpammer ? '#ff4444' : details.spamScore > 50 ? '#ffaa00' : '#4caf50'
+                    }">${spamLevel}</span></div>
+                    <div style="margin-bottom: 2px; font-size: 9px;">Value: <strong>${details.totalValue.toFixed(
+                      8
+                    )} XRP</strong> | 📈 <strong style="color: ${
+                  theme.palette.success.main
+                }">${details.incomingValue.toFixed(8)}</strong> | 📉 <strong style="color: ${
+                  theme.palette.error.main
+                }">${details.outgoingValue.toFixed(8)}</strong></div>
+                    <div style="margin-bottom: 2px; font-size: 9px;">Avg: <strong>${details.avgTransactionSize.toFixed(
+                      8
+                    )} XRP</strong></div>`;
 
-              // Add memo information if present
-              if (details.allMemos && details.allMemos.length > 0) {
-                tooltipContent += `
-                  <div style="border-top: 1px solid ${theme.palette.divider}; margin-top: 3px; padding-top: 3px;">
-                    <div style="font-weight: bold; color: ${theme.palette.primary.main}; margin-bottom: 2px; font-size: 10px;">📨 Memos (${details.allMemos.length} total)</div>`;
-
-                // Show up to 3 most recent memos
-                const recentMemos = details.allMemos.slice(0, 3);
-                recentMemos.forEach((memoEntry, index) => {
+                // Add spam analysis if present
+                if (details.spamTransactions > 0) {
                   tooltipContent += `
-                    <div style="margin-bottom: 2px; padding: 2px; background: ${
-                      memoEntry.isSpam ? 'rgba(255,68,68,0.1)' : 'rgba(128,128,128,0.1)'
-                    }; border-radius: 2px; font-size: 8px;">
-                      <div style="font-weight: bold; color: ${
-                        memoEntry.isSpam ? '#ff4444' : theme.palette.primary.main
-                      }; margin-bottom: 1px;">💸 ${memoEntry.amount.toFixed(8)} XRP ${
-                    memoEntry.isSpam ? '(Spam)' : ''
-                  }</div>`;
+                    <div style="border-top: 1px solid #ff4444; margin-top: 3px; padding-top: 3px; background: rgba(255,68,68,0.1); padding: 3px; border-radius: 3px;">
+                      <div style="font-weight: bold; color: #ff4444; margin-bottom: 2px; font-size: 10px;">⚠️ Spam Analysis</div>
+                      <div style="font-size: 8px;">Score: <strong style="color: #ff4444">${
+                        details.spamScore
+                      }</strong> | Spam: <strong style="color: #ff4444">${
+                    details.spamTransactions
+                  }</strong> | Dust: <strong style="color: #ff4444">${
+                    details.dustTransactions
+                  }</strong> | Ratio: <strong style="color: #ff4444">${(
+                    (details.spamTransactions / details.totalTransactions) *
+                    100
+                  ).toFixed(1)}%</strong></div>
+                    </div>`;
+                }
 
-                  if (memoEntry.memo.data) {
-                    const truncatedData =
-                      memoEntry.memo.data.length > 40
-                        ? memoEntry.memo.data.substring(0, 40) + '...'
-                        : memoEntry.memo.data;
-                    tooltipContent += `<div style="font-family: monospace; font-size: 8px;">"${truncatedData}"</div>`;
+                // Add memo information if present
+                if (details.allMemos && details.allMemos.length > 0) {
+                  tooltipContent += `
+                    <div style="border-top: 1px solid ${theme.palette.divider}; margin-top: 3px; padding-top: 3px;">
+                      <div style="font-weight: bold; color: ${theme.palette.primary.main}; margin-bottom: 2px; font-size: 10px;">📨 Memos (${details.allMemos.length} total)</div>`;
+
+                  // Show up to 3 most recent memos
+                  const recentMemos = details.allMemos.slice(0, 3);
+                  recentMemos.forEach((memoEntry, index) => {
+                    tooltipContent += `
+                      <div style="margin-bottom: 2px; padding: 2px; background: ${
+                        memoEntry.isSpam ? 'rgba(255,68,68,0.1)' : 'rgba(128,128,128,0.1)'
+                      }; border-radius: 2px; font-size: 8px;">
+                        <div style="font-weight: bold; color: ${
+                          memoEntry.isSpam ? '#ff4444' : theme.palette.primary.main
+                        }; margin-bottom: 1px;">💸 ${memoEntry.amount.toFixed(8)} XRP ${
+                      memoEntry.isSpam ? '(Spam)' : ''
+                    }</div>`;
+
+                    if (memoEntry.memo.data) {
+                      const truncatedData =
+                        memoEntry.memo.data.length > 40
+                          ? memoEntry.memo.data.substring(0, 40) + '...'
+                          : memoEntry.memo.data;
+                      tooltipContent += `<div style="font-family: monospace; font-size: 8px;">"${truncatedData}"</div>`;
+                    }
+
+                    tooltipContent += `</div>`;
+                  });
+
+                  if (details.allMemos.length > 3) {
+                    tooltipContent += `<div style="font-size: 8px; color: ${
+                      theme.palette.text.secondary
+                    }; font-style: italic;">+${details.allMemos.length - 3} more...</div>`;
                   }
 
                   tooltipContent += `</div>`;
-                });
+                }
 
-                if (details.allMemos.length > 3) {
-                  tooltipContent += `<div style="font-size: 8px; color: ${
-                    theme.palette.text.secondary
-                  }; font-style: italic;">+${details.allMemos.length - 3} more...</div>`;
+                // Add patterns if present
+                if (details.patterns.length > 0) {
+                  tooltipContent += `
+                    <div style="border-top: 1px solid ${
+                      theme.palette.divider
+                    }; margin-top: 3px; padding-top: 3px;">
+                      <div style="font-weight: bold; color: ${
+                        theme.palette.warning.main
+                      }; margin-bottom: 2px; font-size: 10px;">🔍 Patterns</div>
+                      <div style="font-size: 8px;">${details.patterns.join(', ')}</div>
+                    </div>`;
                 }
 
                 tooltipContent += `</div>`;
               }
 
-              // Add patterns if present
-              if (details.patterns.length > 0) {
-                tooltipContent += `
-                  <div style="border-top: 1px solid ${
-                    theme.palette.divider
-                  }; margin-top: 3px; padding-top: 3px;">
-                    <div style="font-weight: bold; color: ${
-                      theme.palette.warning.main
-                    }; margin-bottom: 2px; font-size: 10px;">🔍 Patterns</div>
-                    <div style="font-size: 8px;">${details.patterns.join(', ')}</div>
-                  </div>`;
+              return tooltipContent;
+            } else if (params.dataType === 'edge') {
+              // Add safety checks for filtered nodes
+              const sourceNode = filteredNodes.find((n) => n.name === params.data.source);
+              const targetNode = filteredNodes.find((n) => n.name === params.data.target);
+
+              if (!sourceNode || !targetNode) {
+                return 'Transaction details unavailable';
               }
 
-              tooltipContent += `</div>`;
+              const sourceName = sourceNode.displayName || params.data.source;
+              const targetName = targetNode.displayName || params.data.target;
+
+              let spamInfo = '';
+              if (params.data.isSpam) {
+                const spamLevel = params.data.spamScore >= 70 ? '🔴 HIGH' : '🟡 MEDIUM';
+                spamInfo = `<div style="margin-bottom: 4px; color: #ff4444; font-weight: bold;">
+                              ⚠️ SPAM DETECTED: ${spamLevel} (Score: ${params.data.spamScore})
+                            </div>
+                            <div style="margin-bottom: 4px;">Spam Transactions: <strong style="color: #ff4444;">${params.data.spamCount}</strong></div>`;
+              }
+
+              // Add AMM operation information
+              let ammInfo = '';
+              if (params.data.ammDirection && params.data.ammToken) {
+                const directionIcon = params.data.ammDirection === 'BUY' ? '💰' : '💸';
+                const directionColor = params.data.ammDirection === 'BUY' ? '#4caf50' : '#ff9800';
+                const operation =
+                  params.data.ammDirection === 'BUY'
+                    ? `Bought ${params.data.ammToken} tokens`
+                    : `Sold ${params.data.ammToken} tokens for XRP`;
+
+                ammInfo = `<div style="margin-bottom: 6px; padding: 6px; background: rgba(${
+                  params.data.ammDirection === 'BUY' ? '76, 175, 80' : '255, 152, 0'
+                }, 0.15); border-radius: 4px; border-left: 4px solid ${directionColor};">
+                            <div style="font-weight: bold; color: ${directionColor}; margin-bottom: 2px; font-size: 11px;">
+                              ${directionIcon} AMM ${params.data.ammDirection}
+                            </div>
+                            <div style="font-size: 10px; color: ${theme.palette.text.primary};">
+                              ${operation}
+                            </div>
+                          </div>`;
+              }
+
+              return `<div style="font-weight: bold; margin-bottom: 8px; color: ${
+                theme.palette.primary.main
+              };">
+                        ${sourceName} → ${targetName}
+                      </div>
+                      ${spamInfo}
+                      ${ammInfo}
+                      <div style="margin-bottom: 4px;">Total Value: <strong>${params.data.value.toFixed(
+                        8
+                      )}</strong></div>
+                      <div style="margin-bottom: 4px;">Transactions: <strong>${
+                        params.data.count
+                      }</strong></div>
+                      <div style="margin-bottom: 4px;">Currency: <strong>${
+                        params.data.currency
+                      }</strong></div>
+                      ${
+                        params.data.txType
+                          ? `<div>Transaction Type: <strong>${params.data.txType}</strong></div>`
+                          : ''
+                      }`;
             }
-
-            return tooltipContent;
-          } else if (params.dataType === 'edge') {
-            const sourceName =
-              nodes.find((n) => n.name === params.data.source)?.displayName || params.data.source;
-            const targetName =
-              nodes.find((n) => n.name === params.data.target)?.displayName || params.data.target;
-
-            let spamInfo = '';
-            if (params.data.isSpam) {
-              const spamLevel = params.data.spamScore >= 70 ? '🔴 HIGH' : '🟡 MEDIUM';
-              spamInfo = `<div style="margin-bottom: 4px; color: #ff4444; font-weight: bold;">
-                            ⚠️ SPAM DETECTED: ${spamLevel} (Score: ${params.data.spamScore})
-                          </div>
-                          <div style="margin-bottom: 4px;">Spam Transactions: <strong style="color: #ff4444;">${params.data.spamCount}</strong></div>`;
-            }
-
-            // Add AMM operation information
-            let ammInfo = '';
-            if (params.data.ammDirection && params.data.ammToken) {
-              const directionIcon = params.data.ammDirection === 'BUY' ? '💰' : '💸';
-              const directionColor = params.data.ammDirection === 'BUY' ? '#4caf50' : '#ff9800';
-              const operation =
-                params.data.ammDirection === 'BUY'
-                  ? `Bought ${params.data.ammToken} tokens`
-                  : `Sold ${params.data.ammToken} tokens for XRP`;
-
-              ammInfo = `<div style="margin-bottom: 6px; padding: 6px; background: rgba(${
-                params.data.ammDirection === 'BUY' ? '76, 175, 80' : '255, 152, 0'
-              }, 0.15); border-radius: 4px; border-left: 4px solid ${directionColor};">
-                          <div style="font-weight: bold; color: ${directionColor}; margin-bottom: 2px; font-size: 11px;">
-                            ${directionIcon} AMM ${params.data.ammDirection}
-                          </div>
-                          <div style="font-size: 10px; color: ${theme.palette.text.primary};">
-                            ${operation}
-                          </div>
-                        </div>`;
-            }
-
-            return `<div style="font-weight: bold; margin-bottom: 8px; color: ${
-              theme.palette.primary.main
-            };">
-                      ${sourceName} → ${targetName}
-                    </div>
-                    ${spamInfo}
-                    ${ammInfo}
-                    <div style="margin-bottom: 4px;">Total Value: <strong>${params.data.value.toFixed(
-                      8
-                    )}</strong></div>
-                    <div style="margin-bottom: 4px;">Transactions: <strong>${
-                      params.data.count
-                    }</strong></div>
-                    <div style="margin-bottom: 4px;">Currency: <strong>${
-                      params.data.currency
-                    }</strong></div>
-                    ${
-                      params.data.txType
-                        ? `<div>Transaction Type: <strong>${params.data.txType}</strong></div>`
-                        : ''
-                    }`;
+          } catch (error) {
+            console.error('Error formatting tooltip:', error);
+            return 'Error formatting tooltip';
           }
         },
         extraCssText: `
@@ -1834,9 +1876,9 @@ const SankeyModal = ({ open, onClose, account }) => {
               color: (() => {
                 switch (node.category) {
                   case 'inflow':
-                    return theme.palette.success.main;
+                    return '#FFD700'; // Gold for target account inflow
                   case 'outflow':
-                    return theme.palette.error.main;
+                    return '#FF8C00'; // Dark orange for target account outflow
                   case 'dex':
                     return theme.palette.info.main;
                   case 'trust':
@@ -1850,11 +1892,35 @@ const SankeyModal = ({ open, onClose, account }) => {
                   case 'operations':
                     return theme.palette.warning.main;
                   default:
+                    // Check if this is the target account node
+                    if (node.name === currentAccount) {
+                      return '#FFD700'; // Gold for target account
+                    }
                     return theme.palette.primary.main;
                 }
               })(),
-              borderColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
-              borderWidth: 1
+              borderColor: (() => {
+                // Special border for target account related nodes
+                if (
+                  node.category === 'inflow' ||
+                  node.category === 'outflow' ||
+                  node.name === currentAccount
+                ) {
+                  return '#FF8C00'; // Dark orange border
+                }
+                return darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)';
+              })(),
+              borderWidth: (() => {
+                // Thicker border for target account related nodes
+                if (
+                  node.category === 'inflow' ||
+                  node.category === 'outflow' ||
+                  node.name === currentAccount
+                ) {
+                  return 3;
+                }
+                return 1;
+              })()
             }
           })),
           links: filteredLinks.map((link) => ({
@@ -1895,54 +1961,123 @@ const SankeyModal = ({ open, onClose, account }) => {
           label: {
             show: true,
             position: function (params) {
-              // Use different positioning for different node types
-              if (params.data.category === 'outflow') {
-                return 'inside'; // Place inside the outflow hub node
-              } else if (params.data.category === 'inflow') {
-                return 'inside'; // Place inside the inflow hub node
+              // Position labels differently based on node type and connection
+              if (params.data.category === 'inflow' || params.data.category === 'outflow') {
+                return 'insideRight'; // Keep hub labels inside
               } else {
-                return 'insideRight'; // Place inside right edge for account nodes
+                // Check if this is an outgoing node (connected to outflow hub)
+                // For outgoing nodes, position labels to the left
+                // For incoming nodes, position labels to the right
+                const isOutgoingNode = filteredLinks.some(
+                  (link) => link.source === outflowHub && link.target === params.data.name
+                );
+
+                if (isOutgoingNode) {
+                  return 'left'; // Position outgoing node labels to the left
+                } else {
+                  return 'right'; // Position incoming node labels to the right
+                }
               }
             },
             distance: function (params) {
-              // Use different distances based on position
-              if (params.data.category === 'outflow' || params.data.category === 'inflow') {
-                return 0; // No distance for inside labels
+              // Different distances based on node type and position
+              if (params.data.category === 'inflow' || params.data.category === 'outflow') {
+                return 5; // Keep hub labels close to node
               } else {
-                return 5; // Small distance for insideRight labels
+                // Check if this is an outgoing node
+                const isOutgoingNode = filteredLinks.some(
+                  (link) => link.source === outflowHub && link.target === params.data.name
+                );
+
+                if (isOutgoingNode) {
+                  return 8; // Shorter distance for outgoing nodes (labels to the left)
+                } else {
+                  return 10; // Normal distance for incoming nodes (labels to the right)
+                }
               }
             },
-            color: theme.palette.text.primary,
+            color: function (params) {
+              // Color code the target account hubs differently ONLY if they match the current account
+              if (params.data.category === 'inflow' || params.data.category === 'outflow') {
+                // Extract account address from hub name (e.g., "rXXXX_INFLOW" -> "rXXXX")
+                const hubAccount = params.data.name.replace('_INFLOW', '').replace('_OUTFLOW', '');
+                if (hubAccount === currentAccount) {
+                  return '#1a1a1a'; // Dark text on gold/orange background for current account hubs
+                }
+              }
+              // Special color for target account node
+              if (params.data.name === currentAccount) {
+                return '#1a1a1a'; // Dark text on gold background
+              }
+              return theme.palette.text.primary; // Default color for all other nodes
+            },
             fontSize: 11,
             fontWeight: 'bold',
             formatter: function (params) {
-              const displayName = params.data.displayName || params.data.name;
+              try {
+                if (!params || !params.data) return '';
 
-              // Add icons based on category with different formatting for hubs
-              const icon =
-                {
-                  inflow: '💰',
-                  outflow: '💸',
-                  dex: '🏪 ',
-                  trust: '🤝 ',
-                  amm_pool: '🌊 ',
-                  amm: '🔄 ',
-                  self: '🔄 ',
-                  operations: '⚙️ ',
-                  account: '👤 '
-                }[params.data.category] || '';
+                const displayName = params.data.displayName || params.data.name;
 
-              // For hub nodes (inside positioning), use shorter labels
-              if (params.data.category === 'inflow' || params.data.category === 'outflow') {
-                return icon; // Just show the icon for hub nodes
-              } else {
-                return icon + displayName; // Full label for account nodes
+                // Clean minimalist labels without emojis
+                if (params.data.category === 'inflow' || params.data.category === 'outflow') {
+                  // Special styling for target account hubs
+                  const hubAccount = params.data.name
+                    .replace('_INFLOW', '')
+                    .replace('_OUTFLOW', '');
+                  if (hubAccount === currentAccount) {
+                    return `{targetAccount|${displayName}}`;
+                  }
+                  return displayName; // Just show the display name for hub nodes
+                } else {
+                  // Check if this is the target account node
+                  if (params.data.name === currentAccount) {
+                    return `{targetAccount|${displayName}}`;
+                  }
+
+                  // Remove emoji prefixes and just show clean text
+                  let cleanLabel = displayName;
+
+                  // Clean up specific prefixes
+                  if (params.data.category === 'dex') {
+                    cleanLabel = displayName; // Already clean from displayName processing
+                  } else if (params.data.category === 'trust') {
+                    cleanLabel = displayName; // Already clean from displayName processing
+                  } else if (params.data.category === 'amm_pool') {
+                    cleanLabel = displayName; // Already clean from displayName processing
+                  } else if (params.data.category === 'amm') {
+                    cleanLabel = displayName; // Already clean from displayName processing
+                  } else if (params.data.category === 'self') {
+                    cleanLabel = 'Self Transfer';
+                  } else if (params.data.category === 'operations') {
+                    cleanLabel = displayName; // Already clean from displayName processing
+                  } else {
+                    // For account nodes, show clean address
+                    cleanLabel = displayName;
+                  }
+
+                  return cleanLabel;
+                }
+              } catch (error) {
+                return '';
               }
             },
             rich: {
               icon: {
                 fontSize: 14,
                 padding: [0, 4, 0, 0]
+              },
+              targetAccount: {
+                color: '#1a1a1a', // Dark text
+                fontWeight: 'bold',
+                fontSize: 12,
+                backgroundColor: '#FFD700', // Gold background
+                borderRadius: 6,
+                padding: [3, 8],
+                borderColor: '#FF8C00',
+                borderWidth: 2,
+                shadowColor: 'rgba(255, 215, 0, 0.5)',
+                shadowBlur: 8
               }
             }
           }
@@ -1954,10 +2089,12 @@ const SankeyModal = ({ open, onClose, account }) => {
           left: 30,
           top: 70,
           style: {
-            text: 'INCOMING',
-            fill: theme.palette.success.main,
+            text: 'OUTGOING',
+            fill: '#FF8C00', // Dark orange for outgoing to match target account
             fontSize: 12,
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            shadowColor: 'rgba(255, 140, 0, 0.3)',
+            shadowBlur: 4
           }
         },
         {
@@ -1965,15 +2102,17 @@ const SankeyModal = ({ open, onClose, account }) => {
           right: 30,
           top: 70,
           style: {
-            text: 'OUTGOING',
-            fill: theme.palette.error.main,
+            text: 'INCOMING',
+            fill: '#FFD700', // Gold color for incoming to match target account
             fontSize: 12,
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            shadowColor: 'rgba(255, 215, 0, 0.3)',
+            shadowBlur: 4
           }
         }
       ]
     };
-  }, [chartData, showSpamOnly, spamStats, theme]);
+  }, [chartData, showSpamOnly, spamStats, theme, currentAccount]);
 
   const handleClose = () => {
     setChartData(null);
@@ -2081,7 +2220,18 @@ const SankeyModal = ({ open, onClose, account }) => {
                         fontSize: '0.7rem',
                         fontWeight: 600,
                         height: '24px',
-                        ml: 1
+                        ml: 1,
+                        // Unique styling for target account
+                        bgcolor: '#FFD700', // Gold background
+                        color: '#1a1a1a', // Dark text for contrast
+                        borderColor: '#FFA500', // Orange border
+                        border: '2px solid #FFA500',
+                        '&:hover': {
+                          bgcolor: '#FFA500',
+                          borderColor: '#FF8C00',
+                          transform: 'scale(1.05)'
+                        },
+                        boxShadow: '0 2px 8px rgba(255, 215, 0, 0.3)'
                       }}
                     />
                     <Chip
@@ -2132,17 +2282,104 @@ const SankeyModal = ({ open, onClose, account }) => {
                       <Box
                         sx={{
                           mb: 0.8,
-                          p: 1,
-                          bgcolor: darkMode
-                            ? 'rgba(33, 150, 243, 0.15)'
-                            : 'rgba(33, 150, 243, 0.08)',
-                          borderRadius: 2,
+                          p: 1.5,
+                          background: darkMode
+                            ? `linear-gradient(135deg, 
+                                rgba(${parseInt(
+                                  theme.palette.primary.main.slice(1, 3),
+                                  16
+                                )}, ${parseInt(
+                                theme.palette.primary.main.slice(3, 5),
+                                16
+                              )}, ${parseInt(
+                                theme.palette.primary.main.slice(5, 7),
+                                16
+                              )}, 0.15) 0%, 
+                                rgba(${parseInt(
+                                  theme.palette.primary.main.slice(1, 3),
+                                  16
+                                )}, ${parseInt(
+                                theme.palette.primary.main.slice(3, 5),
+                                16
+                              )}, ${parseInt(
+                                theme.palette.primary.main.slice(5, 7),
+                                16
+                              )}, 0.08) 100%)`
+                            : `linear-gradient(135deg, 
+                                rgba(${parseInt(
+                                  theme.palette.primary.main.slice(1, 3),
+                                  16
+                                )}, ${parseInt(
+                                theme.palette.primary.main.slice(3, 5),
+                                16
+                              )}, ${parseInt(
+                                theme.palette.primary.main.slice(5, 7),
+                                16
+                              )}, 0.12) 0%, 
+                                rgba(${parseInt(
+                                  theme.palette.primary.main.slice(1, 3),
+                                  16
+                                )}, ${parseInt(
+                                theme.palette.primary.main.slice(3, 5),
+                                16
+                              )}, ${parseInt(
+                                theme.palette.primary.main.slice(5, 7),
+                                16
+                              )}, 0.05) 100%)`,
+                          borderRadius: 3,
                           border: `1px solid ${
-                            darkMode ? 'rgba(33, 150, 243, 0.4)' : 'rgba(33, 150, 243, 0.3)'
+                            darkMode
+                              ? `rgba(${parseInt(
+                                  theme.palette.primary.main.slice(1, 3),
+                                  16
+                                )}, ${parseInt(
+                                  theme.palette.primary.main.slice(3, 5),
+                                  16
+                                )}, ${parseInt(theme.palette.primary.main.slice(5, 7), 16)}, 0.25)`
+                              : `rgba(${parseInt(
+                                  theme.palette.primary.main.slice(1, 3),
+                                  16
+                                )}, ${parseInt(
+                                  theme.palette.primary.main.slice(3, 5),
+                                  16
+                                )}, ${parseInt(theme.palette.primary.main.slice(5, 7), 16)}, 0.20)`
                           }`,
+                          backdropFilter: 'blur(12px)',
+                          WebkitBackdropFilter: 'blur(12px)',
                           boxShadow: darkMode
-                            ? '0 2px 8px rgba(33, 150, 243, 0.2)'
-                            : '0 1px 4px rgba(33, 150, 243, 0.1)'
+                            ? `0 8px 32px rgba(${parseInt(
+                                theme.palette.primary.main.slice(1, 3),
+                                16
+                              )}, ${parseInt(
+                                theme.palette.primary.main.slice(3, 5),
+                                16
+                              )}, ${parseInt(theme.palette.primary.main.slice(5, 7), 16)}, 0.15), 
+                               0 2px 8px rgba(0, 0, 0, 0.3), 
+                               inset 0 1px 0 rgba(255, 255, 255, 0.1)`
+                            : `0 4px 16px rgba(${parseInt(
+                                theme.palette.primary.main.slice(1, 3),
+                                16
+                              )}, ${parseInt(
+                                theme.palette.primary.main.slice(3, 5),
+                                16
+                              )}, ${parseInt(theme.palette.primary.main.slice(5, 7), 16)}, 0.1), 
+                               0 1px 4px rgba(0, 0, 0, 0.1), 
+                               inset 0 1px 0 rgba(255, 255, 255, 0.6)`,
+                          position: 'relative',
+                          overflow: 'hidden',
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: '1px',
+                            background: `linear-gradient(90deg, 
+                              transparent 0%, 
+                              rgba(255, 255, 255, ${darkMode ? '0.3' : '0.5'}) 50%, 
+                              transparent 100%)`,
+                            zIndex: 1
+                          }
                         }}
                       >
                         {/* Header with Direction in same row */}
@@ -2200,7 +2437,7 @@ const SankeyModal = ({ open, onClose, account }) => {
                         </Stack>
 
                         {/* Two-Column Layout for Bought/Sold */}
-                        <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
+                        <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap' }}>
                           {/* Tokens Bought Column */}
                           {details.tokensBought.size > 0 && (
                             <Box sx={{ flex: 1, minWidth: 300 }}>
@@ -2210,31 +2447,38 @@ const SankeyModal = ({ open, onClose, account }) => {
                                   color: theme.palette.success.main,
                                   fontWeight: 600,
                                   display: 'block',
-                                  mb: 0.3,
-                                  fontSize: '0.65rem'
+                                  mb: 0.8,
+                                  fontSize: '0.65rem',
+                                  mt: 0.5
                                 }}
                               >
                                 💰 TOKENS BOUGHT (~{details.xrpSpentOnTokens.toFixed(2)} XRP)
                               </Typography>
-                              <Stack direction="row" spacing={0.3} sx={{ flexWrap: 'wrap' }}>
+                              <Stack
+                                direction="row"
+                                spacing={0.5}
+                                sx={{ flexWrap: 'wrap', gap: 0.8 }}
+                              >
                                 {[...details.tokensBought.entries()].map(([currency, amount]) => {
                                   const decodedCurrency = decodeCurrency(currency);
                                   const xrpSpent = details.xrpSpentPerToken.get(currency) || 0;
                                   return (
                                     <Chip
                                       key={`bought-${currency}`}
-                                      label={`${decodedCurrency}: ${amount.toFixed(
-                                        2
-                                      )} (${xrpSpent.toFixed(2)})`}
+                                      label={`${decodedCurrency}: ${formatTokenAmount(
+                                        amount
+                                      )} (${formatTokenAmount(xrpSpent)})`}
                                       size="small"
                                       sx={{
                                         bgcolor: theme.palette.success.main,
                                         color: 'white',
                                         fontSize: '0.55rem',
                                         fontWeight: 600,
-                                        height: '16px',
+                                        height: '18px',
+                                        mb: 0.3,
                                         '& .MuiChip-label': {
-                                          px: 0.4
+                                          px: 0.5,
+                                          py: 0.2
                                         }
                                       }}
                                     />
@@ -2253,13 +2497,18 @@ const SankeyModal = ({ open, onClose, account }) => {
                                   color: theme.palette.error.main,
                                   fontWeight: 600,
                                   display: 'block',
-                                  mb: 0.3,
-                                  fontSize: '0.65rem'
+                                  mb: 0.8,
+                                  fontSize: '0.65rem',
+                                  mt: 0.5
                                 }}
                               >
                                 💸 TOKENS SOLD (~{details.xrpReceivedFromTokens.toFixed(2)} XRP)
                               </Typography>
-                              <Stack direction="row" spacing={0.3} sx={{ flexWrap: 'wrap' }}>
+                              <Stack
+                                direction="row"
+                                spacing={0.5}
+                                sx={{ flexWrap: 'wrap', gap: 0.8 }}
+                              >
                                 {[...details.tokensSold.entries()]
                                   .slice(0, 6)
                                   .map(([currency, amount]) => {
@@ -2269,18 +2518,20 @@ const SankeyModal = ({ open, onClose, account }) => {
                                     return (
                                       <Chip
                                         key={`sold-${currency}`}
-                                        label={`${decodedCurrency}: ${amount.toFixed(
-                                          2
-                                        )} (${xrpReceived.toFixed(2)})`}
+                                        label={`${decodedCurrency}: ${formatTokenAmount(
+                                          amount
+                                        )} (${formatTokenAmount(xrpReceived)})`}
                                         size="small"
                                         sx={{
                                           bgcolor: theme.palette.error.main,
                                           color: 'white',
                                           fontSize: '0.55rem',
                                           fontWeight: 600,
-                                          height: '16px',
+                                          height: '18px',
+                                          mb: 0.3,
                                           '& .MuiChip-label': {
-                                            px: 0.4
+                                            px: 0.5,
+                                            py: 0.2
                                           }
                                         }}
                                       />
@@ -2294,7 +2545,8 @@ const SankeyModal = ({ open, onClose, account }) => {
                                       bgcolor: theme.palette.error.light,
                                       color: 'white',
                                       fontSize: '0.55rem',
-                                      height: '16px'
+                                      height: '18px',
+                                      mb: 0.3
                                     }}
                                   />
                                 )}
@@ -2325,8 +2577,9 @@ const SankeyModal = ({ open, onClose, account }) => {
                   </Typography>
                   <Stack direction="row" spacing={0.5} sx={{ display: 'inline-flex' }}>
                     {[
-                      { label: '💰 In', color: theme.palette.success.main },
-                      { label: '💸 Out', color: theme.palette.error.main },
+                      { label: '👤 You', color: '#FFD700' }, // Gold for target account
+                      { label: '💰 In', color: '#32CD32' }, // Different green for incoming
+                      { label: '💸 Out', color: '#FF6347' }, // Different red for outgoing
                       { label: '🏪 DEX', color: theme.palette.info.main },
                       { label: '🌊 Pool', color: theme.palette.cyan?.[500] || '#00bcd4' },
                       { label: '🔄 AMM', color: theme.palette.purple?.[500] || '#9c27b0' },
