@@ -1534,11 +1534,11 @@ const SankeyModal = ({ open, onClose, account }) => {
       },
       tooltip: {
         trigger: 'item',
-        triggerOn: 'mousemove',
+        triggerOn: 'mousemove|click',
         // Improve hover sensitivity for thin lines
         enterable: true,
-        hideDelay: 300,
-        showDelay: 0,
+        hideDelay: 100,
+        showDelay: 50,
         // Add more sensitive hover detection
         alwaysShowContent: false,
         confine: true,
@@ -1546,14 +1546,6 @@ const SankeyModal = ({ open, onClose, account }) => {
         axisPointer: {
           type: 'none'
         },
-        // Make hover more sensitive
-        renderMode: 'html',
-        appendToBody: true,
-        // Increase hover sensitivity
-        triggerOn: 'mousemove|click',
-        enterable: true,
-        hideDelay: 100,
-        showDelay: 50,
         backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         borderColor: darkMode ? '#444444' : theme.palette.divider,
         borderWidth: 1,
@@ -1562,41 +1554,6 @@ const SankeyModal = ({ open, onClose, account }) => {
         textStyle: {
           color: theme.palette.text.primary,
           fontSize: 11
-        },
-        position: function (point, params, dom, rect, size) {
-          // Get tooltip dimensions
-          const tooltipWidth = dom.offsetWidth || 300; // fallback width
-          const tooltipHeight = dom.offsetHeight || 200; // fallback height
-
-          // Get container dimensions
-          const containerWidth = size.viewSize[0];
-          const containerHeight = size.viewSize[1];
-
-          // Calculate preferred position
-          let x = point[0] + 10;
-          let y = point[1] - 10;
-
-          // Adjust if tooltip would go outside right boundary
-          if (x + tooltipWidth > containerWidth - 20) {
-            x = point[0] - tooltipWidth - 10; // Position to the left of cursor
-          }
-
-          // Adjust if tooltip would go outside left boundary
-          if (x < 10) {
-            x = 10;
-          }
-
-          // Adjust if tooltip would go outside top boundary
-          if (y < 10) {
-            y = 10;
-          }
-
-          // Adjust if tooltip would go outside bottom boundary
-          if (y + tooltipHeight > containerHeight - 20) {
-            y = containerHeight - tooltipHeight - 20;
-          }
-
-          return [x, y];
         },
         z: 99999, // Set z-index directly
         formatter: function (params) {
@@ -1834,15 +1791,7 @@ const SankeyModal = ({ open, onClose, account }) => {
           // Increase hover detection sensitivity
           lineStyle: {
             // Make lines thicker for better hover detection
-            width: 8
-          },
-          emphasis: {
-            lineStyle: {
-              // Very thick lines on hover for better visibility
-              width: 16,
-              shadowBlur: 25,
-              shadowColor: 'rgba(0, 0, 0, 0.8)'
-            }
+            width: 12 // Increased from 8 to 12
           },
           // Add more hover sensitivity settings
           selectMode: false,
@@ -1862,6 +1811,12 @@ const SankeyModal = ({ open, onClose, account }) => {
               borderColor: 'rgba(255, 255, 255, 0.8)',
               shadowBlur: 20,
               shadowColor: 'rgba(0, 0, 0, 0.5)'
+            },
+            lineStyle: {
+              // Very thick lines on hover for better visibility
+              width: 24, // Increased from 16 to 24
+              shadowBlur: 25,
+              shadowColor: 'rgba(0, 0, 0, 0.8)'
             }
           },
           data: nodes.map((node) => ({
@@ -1903,14 +1858,14 @@ const SankeyModal = ({ open, onClose, account }) => {
                 : 'source', // Red for spam, purple for trust, source color for normal
               opacity: link.isSpam ? 0.8 : 0.6,
               curveness: 0.5,
-              width: Math.max(link.isSpam ? 12 : 8, 8), // Increased base width: 8px normal, 12px spam
+              width: Math.max(link.isSpam ? 16 : 12, 12), // Increased base width: 12px normal, 16px spam
               type: link.isSpam ? 'dashed' : 'solid', // Dashed lines for spam
               shadowColor: link.isSpam ? '#ff4444' : undefined,
               shadowBlur: link.isSpam ? 10 : undefined
             },
             emphasis: {
               lineStyle: {
-                width: Math.max(link.isSpam ? 20 : 16, 16), // Much thicker on hover: 16-20px
+                width: Math.max(link.isSpam ? 28 : 24, 24), // Much thicker on hover: 24-28px
                 opacity: 1,
                 shadowBlur: 30, // Increased shadow blur
                 shadowColor: link.isSpam
