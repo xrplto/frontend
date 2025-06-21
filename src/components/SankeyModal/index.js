@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import WarningIcon from '@mui/icons-material/Warning';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { AppContext } from 'src/AppContext';
 
 const SankeyModal = ({ open, onClose, account }) => {
@@ -31,6 +32,8 @@ const SankeyModal = ({ open, onClose, account }) => {
   const [spamStats, setSpamStats] = useState(null);
   const [hoveredAccount, setHoveredAccount] = useState(null);
   const [accountDetails, setAccountDetails] = useState(new Map());
+  const [navigationHistory, setNavigationHistory] = useState([]); // Track navigation history
+  const [currentAccount, setCurrentAccount] = useState(account); // Track current account being viewed
 
   // Micro payment thresholds (in XRP)
   const spamThresholds = {
@@ -328,9 +331,19 @@ const SankeyModal = ({ open, onClose, account }) => {
 
   useEffect(() => {
     if (open && account) {
+      // Initialize current account when modal opens
+      if (!currentAccount) {
+        setCurrentAccount(account);
+      }
+    }
+  }, [open, account, currentAccount]);
+
+  // Separate useEffect to fetch data when currentAccount changes
+  useEffect(() => {
+    if (open && currentAccount) {
       fetchAccountTransactions();
     }
-  }, [open, account]);
+  }, [open, currentAccount]);
 
   // Clean up hovered account when modal closes
   useEffect(() => {
@@ -349,7 +362,7 @@ const SankeyModal = ({ open, onClose, account }) => {
         method: 'account_tx',
         params: [
           {
-            account: account,
+            account: currentAccount,
             ledger_index_min: -1,
             ledger_index_max: -1,
             binary: false,
@@ -361,12 +374,12 @@ const SankeyModal = ({ open, onClose, account }) => {
 
       if (response.data && response.data.result && response.data.result.transactions) {
         const transactions = response.data.result.transactions;
-        const processedData = processTransactionsForSankey(transactions, account);
+        const processedData = processTransactionsForSankey(transactions, currentAccount);
         setChartData(processedData);
 
         // Get account info for display
         setAccountInfo({
-          address: account,
+          address: currentAccount,
           totalTransactions: transactions.length
         });
       } else {
@@ -831,6 +844,39 @@ const SankeyModal = ({ open, onClose, account }) => {
     };
   };
 
+  // Function to navigate to a new account
+  const navigateToAccount = (newAccount) => {
+    if (newAccount && newAccount !== currentAccount) {
+      // Add current account to history
+      setNavigationHistory((prev) => [...prev, currentAccount]);
+      // Set new account as current
+      setCurrentAccount(newAccount);
+      // Clear existing data
+      setChartData(null);
+      setAccountInfo(null);
+      setSpamStats(null);
+      setAccountDetails(new Map());
+      setHoveredAccount(null);
+      // Fetch new account data - this will trigger the useEffect
+    }
+  };
+
+  // Function to go back to previous account
+  const goBack = () => {
+    if (navigationHistory.length > 0) {
+      const previousAccount = navigationHistory[navigationHistory.length - 1];
+      setNavigationHistory((prev) => prev.slice(0, -1));
+      setCurrentAccount(previousAccount);
+      // Clear existing data
+      setChartData(null);
+      setAccountInfo(null);
+      setSpamStats(null);
+      setAccountDetails(new Map());
+      setHoveredAccount(null);
+      // Fetch previous account data - this will trigger the useEffect
+    }
+  };
+
   const getChartOption = useMemo(() => {
     if (!chartData) return {};
 
@@ -1079,6 +1125,8 @@ const SankeyModal = ({ open, onClose, account }) => {
     setHoveredAccount(null);
     setAccountDetails(new Map());
     setSpamStats(null);
+    setNavigationHistory([]); // Reset navigation history
+    setCurrentAccount(account); // Reset to original account
     onClose();
   };
 
@@ -1626,18 +1674,51 @@ const SankeyModal = ({ open, onClose, account }) => {
         >
           <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
             <Box sx={{ flex: 1 }}>
-              <Typography
-                id="sankey-modal-title"
-                variant="h5"
-                component="h2"
-                sx={{
-                  fontWeight: 700,
-                  color: theme.palette.text.primary,
-                  mb: 1.5
-                }}
-              >
-                🌊 Sankey Flow Analysis
-              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+                {/* Back button */}
+                {navigationHistory.length > 0 && (
+                  <IconButton
+                    onClick={goBack}
+                    size="small"
+                    sx={{
+                      bgcolor: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                      border: darkMode ? '1px solid rgba(255,255,255,0.12)' : 'none',
+                      '&:hover': {
+                        bgcolor: darkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)',
+                        transform: 'scale(1.05)'
+                      }
+                    }}
+                  >
+                    <ArrowBackIcon fontSize="small" />
+                  </IconButton>
+                )}
+
+                <Typography
+                  id="sankey-modal-title"
+                  variant="h5"
+                  component="h2"
+                  sx={{
+                    fontWeight: 700,
+                    color: theme.palette.text.primary
+                  }}
+                >
+                  🌊 Sankey Flow Analysis
+                </Typography>
+
+                {/* Navigation breadcrumb */}
+                {navigationHistory.length > 0 && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      ml: 1,
+                      fontStyle: 'italic'
+                    }}
+                  >
+                    (Level {navigationHistory.length + 1})
+                  </Typography>
+                )}
+              </Stack>
 
               {accountInfo && (
                 <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap' }}>
@@ -2000,6 +2081,21 @@ const SankeyModal = ({ open, onClose, account }) => {
                           const accountName = params.data.name;
                           if (accountDetails.has(accountName)) {
                             setHoveredAccount(accountName);
+                          }
+                        }
+                      },
+                      click: (params) => {
+                        // Handle click on account nodes to navigate to that account's Sankey
+                        if (params.dataType === 'node' && params.data.category === 'account') {
+                          const clickedAccount = params.data.name;
+                          // Check if it's a valid XRPL address (starts with 'r' and is 25-34 characters)
+                          if (
+                            clickedAccount &&
+                            clickedAccount.length >= 25 &&
+                            clickedAccount.length <= 34 &&
+                            clickedAccount.startsWith('r')
+                          ) {
+                            navigateToAccount(clickedAccount);
                           }
                         }
                       }
