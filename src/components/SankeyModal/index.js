@@ -1504,10 +1504,10 @@ const SankeyModal = ({ open, onClose, account }) => {
       mainActivity: targetAccountActivity.mainActivity,
       summary: {
         totalInflow: links
-          .filter((l) => l.target === inflowHub)
+          .filter((l) => l.target === inflowHub && l.currency === 'XRP')
           .reduce((sum, l) => sum + l.value, 0),
         totalOutflow: links
-          .filter((l) => l.source === outflowHub)
+          .filter((l) => l.source === outflowHub && l.currency === 'XRP')
           .reduce((sum, l) => sum + l.value, 0),
         totalTransactions: links.reduce((sum, l) => sum + l.count, 0)
       }
