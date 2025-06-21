@@ -30,6 +30,7 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckIcon from '@mui/icons-material/Check';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -39,6 +40,7 @@ import { fNumber, fPercent } from 'src/utils/formatNumber';
 
 // Components
 import { StatsModal } from 'src/components/trader/TraderStats';
+import SankeyModal from 'src/components/SankeyModal';
 
 function truncate(str, n) {
   if (!str) return '';
@@ -230,6 +232,8 @@ export default function TopTraders({ token }) {
   const [copiedTrader, setCopiedTrader] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [sankeyModalOpen, setSankeyModalOpen] = useState(false);
+  const [selectedSankeyAccount, setSelectedSankeyAccount] = useState(null);
 
   useEffect(() => {
     const fetchTopTraders = async () => {
@@ -382,6 +386,16 @@ export default function TopTraders({ token }) {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleOpenSankey = (traderAddress) => {
+    setSelectedSankeyAccount(traderAddress);
+    setSankeyModalOpen(true);
+  };
+
+  const handleCloseSankey = () => {
+    setSankeyModalOpen(false);
+    setSelectedSankeyAccount(null);
   };
 
   if (loading) {
@@ -684,6 +698,25 @@ export default function TopTraders({ token }) {
                               <BarChartIcon sx={{ fontSize: 16 }} />
                             </IconButton>
                           </Tooltip>
+                          <Tooltip title="View Sankey Flow Analysis">
+                            <IconButton
+                              edge="end"
+                              aria-label="sankey"
+                              onClick={() => handleOpenSankey(safeTrader.address)}
+                              size="small"
+                              sx={{
+                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                '&:hover': {
+                                  backgroundColor: darkMode
+                                    ? 'rgba(255, 255, 255, 0.08)'
+                                    : 'rgba(145, 158, 171, 0.08)',
+                                  transform: 'scale(1.1)'
+                                }
+                              }}
+                            >
+                              <AccountTreeIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </Tooltip>
                           <Tooltip title="Copy JSON Data">
                             <IconButton
                               edge="end"
@@ -746,6 +779,12 @@ export default function TopTraders({ token }) {
         account={selectedTrader?.address}
         traderStats={traderStats}
         isAmm={selectedTrader?.AMM}
+      />
+
+      <SankeyModal
+        open={sankeyModalOpen}
+        onClose={handleCloseSankey}
+        account={selectedSankeyAccount}
       />
     </>
   );
