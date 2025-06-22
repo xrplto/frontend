@@ -16,9 +16,7 @@ import { AppContext } from 'src/AppContext';
 import InfoIcon from '@mui/icons-material/Info';
 
 const SmallInfoIcon = (props) => {
-  // Filter out darkMode prop to prevent React warning
   const { darkMode, ...otherProps } = props;
-
   return (
     <InfoIcon
       {...otherProps}
@@ -49,9 +47,8 @@ const StickyTableCell = withStyles((theme) => ({
 
 const TABLE_HEAD = [
   { no: 0, id: 'star', label: '', align: 'left', width: '', order: false },
-  { no: 1, id: 'id', label: '#', align: 'left', width: '', order: false },
   {
-    no: 2,
+    no: 1,
     id: 'name',
     label: (
       <Tooltip
@@ -80,7 +77,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 3,
+    no: 2,
     id: 'exch',
     label: (
       <Typography variant="inherit" sx={{ fontWeight: '600' }}>
@@ -92,7 +89,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 4,
+    no: 3,
     id: 'pro5m',
     label: (
       <Tooltip
@@ -121,7 +118,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 5,
+    no: 4,
     id: 'pro1h',
     label: (
       <Tooltip
@@ -150,7 +147,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 6,
+    no: 5,
     id: 'pro24h',
     label: (
       <Tooltip
@@ -179,7 +176,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 7,
+    no: 6,
     id: 'pro7d',
     label: (
       <Tooltip
@@ -208,7 +205,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 8,
+    no: 7,
     id: 'vol24hxrp',
     label: (
       <Tooltip
@@ -237,7 +234,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 9,
+    no: 8,
     id: 'dateon',
     label: (
       <Tooltip
@@ -266,7 +263,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 10,
+    no: 9,
     id: 'vol24htx',
     label: (
       <Tooltip
@@ -295,7 +292,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 11,
+    no: 10,
     id: 'tvl',
     label: (
       <Tooltip
@@ -324,7 +321,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 12,
+    no: 11,
     id: 'marketcap',
     label: (
       <Tooltip
@@ -353,7 +350,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 13,
+    no: 12,
     id: 'holders',
     label: (
       <Tooltip
@@ -382,7 +379,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 14,
+    no: 13,
     id: 'supply',
     label: (
       <Tooltip
@@ -411,7 +408,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 15,
+    no: 14,
     id: 'historyGraph',
     label: (
       <Typography variant="inherit" sx={{ fontWeight: '600' }}>
@@ -481,48 +478,25 @@ export default function TokenListHead({
               paddingLeft: isMobile ? '4px' : '8px'
             }
           },
+          // First column (star) - sticky
           '& .MuiTableCell-root:nth-of-type(1)': {
             position: 'sticky',
-            zIndex: 998,
+            zIndex: 1001,
             left: 0,
             background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
-            width: isMobile ? '20px' : 'auto',
-            minWidth: isMobile ? '20px' : 'auto',
-            padding: isMobile ? '6px 4px' : '20px 12px'
+            width: isMobile ? '20px' : '24px',
+            minWidth: isMobile ? '20px' : '24px',
+            padding: isMobile ? '6px 4px' : '16px 8px'
           },
+          // Second column (name - matches TokenRow combined ID+Name) - sticky
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
-            zIndex: 998,
-            left: isMobile ? '20px' : (tokens?.length ?? 0) > 0 ? 56 : 32,
+            zIndex: 1001,
+            left: isMobile ? '20px' : '24px',
             background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
-            width: isMobile ? '28px' : 'auto',
-            minWidth: isMobile ? '28px' : 'auto',
-            padding: isMobile ? '6px 4px' : '20px 12px',
-            '&:before':
-              isMobile && scrollLeft
-                ? {
-                    content: "''",
-                    boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
-                    position: 'absolute',
-                    top: '0',
-                    right: '0',
-                    bottom: '-1px',
-                    width: '30px',
-                    transform: 'translate(100%)',
-                    transition: 'box-shadow .3s',
-                    pointerEvents: 'none'
-                  }
-                : {}
-          },
-          '& .MuiTableCell-root:nth-of-type(3)': {
-            position: 'sticky',
-            zIndex: 998,
-            left: isMobile ? '20px' : 56,
-            background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            padding: isMobile ? '6px 4px' : '20px 12px',
+            padding: isMobile ? '6px 4px' : '16px 12px',
             '&:before': scrollLeft
               ? {
                   content: "''",
@@ -537,12 +511,6 @@ export default function TokenListHead({
                   pointerEvents: 'none'
                 }
               : {}
-          },
-          '& .MuiTableCell-root:nth-of-type(4)': {
-            paddingLeft: isMobile ? '20px' : '8px'
-          },
-          '& .MuiTableCell-root:nth-of-type(5)': {
-            paddingLeft: isMobile ? '20px' : '8px'
           },
           '& .MuiTableSortLabel-root': {
             fontSize: isMobile ? '11px' : '13px',
@@ -564,7 +532,6 @@ export default function TokenListHead({
         }}
       >
         {TABLE_HEAD.map((headCell) => {
-          if (isMobile && headCell.id === 'id') return null;
           return (
             <StickyTableCell
               key={headCell.id}
