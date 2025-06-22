@@ -74,7 +74,6 @@ function formatDate(dateString) {
   try {
     return format(new Date(dateString), 'MMM d, yyyy');
   } catch (error) {
-    console.error('Error formatting date:', dateString, error);
     return 'Invalid Date';
   }
 }
@@ -220,9 +219,6 @@ export default function TopTraders({ token }) {
   const BASE_URL = process.env.API_URL;
   const { darkMode } = useContext(AppContext);
 
-  console.log('Token prop:', token);
-  console.log('BASE_URL:', BASE_URL);
-
   const [traders, setTraders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTrader, setSelectedTrader] = useState(null);
@@ -238,42 +234,32 @@ export default function TopTraders({ token }) {
   useEffect(() => {
     const fetchTopTraders = async () => {
       try {
-        console.log('Fetching traders for token:', token.md5);
         const response = await axios.get(
           `${BASE_URL}/analytics/top-traders/${token.md5}?limit=1000`
         );
-        console.log('API Response:', response.data);
         if (response.status === 200) {
           const tradersData = response.data.data || response.data;
 
           const tradersArray = Array.isArray(tradersData) ? tradersData : [];
 
-          console.log('Processed traders data:', tradersArray);
           setTraders(tradersArray);
         }
       } catch (error) {
-        console.error('Error fetching top traders:', error);
         setTraders([]);
       } finally {
         setLoading(false);
       }
     };
 
-    if (token?.md5) {
+    if (token && token.md5) {
       fetchTopTraders();
     } else {
-      console.log('No token.md5 provided');
       setLoading(false);
     }
-  }, [token?.md5, BASE_URL]);
-
-  useEffect(() => {
-    console.log('Current traders state:', traders);
-  }, [traders]);
+  }, [token, BASE_URL]);
 
   const sortedTraders = React.useMemo(() => {
     if (!Array.isArray(traders) || traders.length === 0) {
-      console.log('No traders data to sort');
       return [];
     }
 
@@ -311,7 +297,6 @@ export default function TopTraders({ token }) {
       }));
       return [...tradersWithDefaults].sort(getComparator(order, orderBy));
     } catch (error) {
-      console.error('Error sorting traders:', error);
       return traders.map((trader) => ({
         address: trader.address || 'Unknown',
         profit24h: trader.profit24h || 0,
@@ -365,18 +350,14 @@ export default function TopTraders({ token }) {
   };
 
   const handleCopyJson = (trader) => {
-    const jsonData = JSON.stringify(trader, null, 2);
-    navigator.clipboard
-      .writeText(jsonData)
-      .then(() => {
-        setCopiedTrader(trader.address);
-        setTimeout(() => {
-          setCopiedTrader(null);
-        }, 2000);
-      })
-      .catch((error) => {
-        console.error('Error copying JSON data:', error);
-      });
+    try {
+      const jsonData = JSON.stringify(trader, null, 2);
+      navigator.clipboard.writeText(jsonData);
+      setCopiedTrader(trader.address);
+      setTimeout(() => setCopiedTrader(null), 2000);
+    } catch (error) {
+      // Handle error silently
+    }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -748,24 +729,21 @@ export default function TopTraders({ token }) {
               </TableBody>
             </Table>
             <TablePagination
-              rowsPerPageOptions={[5, 10, 20, 25, 50, 100]}
               component="div"
               count={sortedTraders.length}
-              rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
+              rowsPerPage={rowsPerPage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              rowsPerPageOptions={[5, 10, 20, 25, 50, 100]}
               sx={{
-                borderTop: `1px solid ${
-                  darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-                }`,
-                backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.02)',
-                '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-                  fontSize: '0.75rem',
-                  fontWeight: 500
+                borderTop: '1px solid rgba(145, 158, 171, 0.08)',
+                '& .MuiTablePagination-toolbar': {
+                  minHeight: '52px'
                 },
-                '.MuiTablePagination-select': {
-                  fontSize: '0.75rem'
+                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  fontSize: '0.875rem',
+                  color: 'text.secondary'
                 }
               }}
             />
