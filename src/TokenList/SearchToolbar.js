@@ -451,7 +451,15 @@ export default function SearchToolbar({
     async (period) => {
       setIsLoading((prev) => ({ ...prev, gainers: true }));
       try {
-        window.location.href = `/?sort=${period}&order=desc`;
+        // Map API periods to clean URL periods
+        const periodMap = {
+          pro5m: '5m',
+          pro1h: '1h',
+          pro24h: '24h',
+          pro7d: '7d'
+        };
+        const urlPeriod = periodMap[period] || period;
+        window.location.href = `/gainers/${urlPeriod}`;
       } finally {
         setIsLoading((prev) => ({ ...prev, gainers: false }));
         handleGainersClose();
@@ -487,7 +495,7 @@ export default function SearchToolbar({
     e.stopPropagation();
     setIsLoading((prev) => ({ ...prev, new: true }));
     try {
-      window.location.href = '/?sort=dateon&order=desc';
+      window.location.href = '/new';
     } finally {
       setIsLoading((prev) => ({ ...prev, new: false }));
     }
@@ -498,7 +506,7 @@ export default function SearchToolbar({
     e.stopPropagation();
     setIsLoading((prev) => ({ ...prev, mostViewed: true }));
     try {
-      window.location.href = '/?sort=views&order=desc';
+      window.location.href = '/most-viewed';
     } finally {
       setIsLoading((prev) => ({ ...prev, mostViewed: false }));
     }
@@ -509,7 +517,7 @@ export default function SearchToolbar({
     e.stopPropagation();
     setIsLoading((prev) => ({ ...prev, spotlight: true }));
     try {
-      window.location.href = '/?sort=assessmentScore&order=desc';
+      window.location.href = '/spotlight';
     } finally {
       setIsLoading((prev) => ({ ...prev, spotlight: false }));
     }
@@ -520,7 +528,7 @@ export default function SearchToolbar({
     e.stopPropagation();
     setIsLoading((prev) => ({ ...prev, trending: true }));
     try {
-      window.location.href = '/?sort=trendingScore&order=desc';
+      window.location.href = '/trending';
     } finally {
       setIsLoading((prev) => ({ ...prev, trending: false }));
     }
