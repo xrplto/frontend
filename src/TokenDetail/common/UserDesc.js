@@ -47,6 +47,7 @@ import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { SvgIcon } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import VerifiedIcon from '@mui/icons-material/Verified';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -239,12 +240,19 @@ const StatusBadge = styled('div')(
 );
 
 // Compact origin and status indicator component
-const OriginStatusIndicator = ({ origin, isBlackholed, isBurned, kyc, size = 'normal' }) => {
+const OriginStatusIndicator = ({
+  origin,
+  isBlackholed,
+  isBurned,
+  kyc,
+  verified,
+  size = 'normal'
+}) => {
   const theme = useTheme();
   const isCompact = size === 'compact';
 
   return (
-    <Stack direction="row" spacing={0.25} alignItems="center">
+    <Stack direction="row" spacing={isCompact ? 0.75 : 1} alignItems="center">
       {/* Origin indicator */}
       <Tooltip title={origin || 'Standard Launch'}>
         <Box
@@ -261,6 +269,151 @@ const OriginStatusIndicator = ({ origin, isBlackholed, isBurned, kyc, size = 'no
         </Box>
       </Tooltip>
 
+      {/* Verified indicator - shows before KYC */}
+      {verified && (
+        <Tooltip title="Verified Token">
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: `linear-gradient(135deg, 
+                #1976D2 0%, 
+                #1565C0 25%, 
+                #0D47A1 50%, 
+                #1976D2 100%)`,
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontSize: isCompact ? '16px' : '18px',
+              marginRight: isCompact ? '4px' : '6px',
+              marginBottom: '2px',
+              position: 'relative',
+              filter: 'drop-shadow(0 2px 4px rgba(25, 118, 210, 0.4))',
+              animation: 'verifiedPremium 4s ease-in-out infinite',
+              cursor: 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                inset: '-3px',
+                background: `linear-gradient(45deg, 
+                  transparent 30%, 
+                  rgba(25, 118, 210, 0.1) 50%, 
+                  transparent 70%)`,
+                borderRadius: '50%',
+                animation: 'premiumGlow 3s linear infinite',
+                zIndex: -1
+              },
+
+              '@keyframes verifiedPremium': {
+                '0%, 100%': {
+                  transform: 'scale(1) rotate(0deg)',
+                  filter: 'drop-shadow(0 2px 4px rgba(25, 118, 210, 0.4))'
+                },
+                '25%': {
+                  transform: 'scale(1.05) rotate(1deg)',
+                  filter: 'drop-shadow(0 3px 6px rgba(25, 118, 210, 0.5))'
+                },
+                '50%': {
+                  transform: 'scale(1.1) rotate(0deg)',
+                  filter: 'drop-shadow(0 4px 8px rgba(25, 118, 210, 0.6))'
+                },
+                '75%': {
+                  transform: 'scale(1.05) rotate(-1deg)',
+                  filter: 'drop-shadow(0 3px 6px rgba(25, 118, 210, 0.5))'
+                }
+              },
+
+              '@keyframes premiumGlow': {
+                '0%': {
+                  transform: 'rotate(0deg) scale(1)',
+                  opacity: 0.3
+                },
+                '50%': {
+                  transform: 'rotate(180deg) scale(1.2)',
+                  opacity: 0.6
+                },
+                '100%': {
+                  transform: 'rotate(360deg) scale(1)',
+                  opacity: 0.3
+                }
+              },
+
+              '&:hover': {
+                transform: 'scale(1.3)',
+                background: `linear-gradient(135deg, 
+                  #0D47A1 0%, 
+                  #1976D2 25%, 
+                  #42A5F5 50%, 
+                  #1976D2 75%,
+                  #0D47A1 100%)`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 6px 12px rgba(25, 118, 210, 0.8))',
+                animation: 'none',
+
+                '&::before': {
+                  background: `linear-gradient(45deg, 
+                    rgba(25, 118, 210, 0.2) 0%, 
+                    rgba(66, 165, 245, 0.3) 50%, 
+                    rgba(25, 118, 210, 0.2) 100%)`,
+                  transform: 'rotate(45deg) scale(1.5)',
+                  opacity: 0.8
+                }
+              },
+
+              '&:active': {
+                transform: 'scale(0.9)',
+                filter: 'drop-shadow(0 1px 2px rgba(25, 118, 210, 0.3))'
+              }
+            }}
+          >
+            <VerifiedIcon
+              sx={{
+                fontSize: isCompact ? '16px' : '18px',
+                background: `linear-gradient(135deg, 
+                  #1976D2 0%, 
+                  #1565C0 25%, 
+                  #0D47A1 50%, 
+                  #1976D2 100%)`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                position: 'relative',
+                zIndex: 1,
+
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  inset: 0,
+                  background: `linear-gradient(135deg, 
+                    rgba(25, 118, 210, 0.1) 0%, 
+                    rgba(21, 101, 192, 0.15) 50%, 
+                    rgba(13, 71, 161, 0.1) 100%)`,
+                  borderRadius: '2px',
+                  zIndex: -1,
+                  animation: 'iconShimmer 2s ease-in-out infinite alternate'
+                },
+
+                '@keyframes iconShimmer': {
+                  '0%': {
+                    opacity: 0.3,
+                    transform: 'scale(0.95)'
+                  },
+                  '100%': {
+                    opacity: 0.7,
+                    transform: 'scale(1.05)'
+                  }
+                }
+              }}
+            />
+          </Box>
+        </Tooltip>
+      )}
+
       {/* KYC indicator */}
       {kyc && (
         <Tooltip title="KYC Verified">
@@ -276,7 +429,7 @@ const OriginStatusIndicator = ({ origin, isBlackholed, isBurned, kyc, size = 'no
               color: '#00AB55',
               fontSize: isCompact ? '12px' : '14px',
               fontWeight: 'bold',
-              marginRight: '2px',
+              marginRight: isCompact ? '4px' : '6px',
               marginBottom: '2px',
               transition: 'all 0.2s ease',
               '&:hover': {
@@ -740,6 +893,7 @@ export default function UserDesc({ token }) {
     domain,
     whitepaper,
     kyc,
+    verified,
     holders,
     offers,
     trustlines,
@@ -1279,6 +1433,7 @@ export default function UserDesc({ token }) {
                     isBlackholed={!!token.origin}
                     isBurned={!!token.origin}
                     kyc={kyc}
+                    verified={verified}
                     size="compact"
                   />
 
@@ -1542,6 +1697,7 @@ export default function UserDesc({ token }) {
                     isBlackholed={!!token.origin}
                     isBurned={!!token.origin}
                     kyc={kyc}
+                    verified={verified}
                     size="normal"
                   />
 

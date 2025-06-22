@@ -43,9 +43,9 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
 }));
 
-const KYCBadge = styled(Badge)(({ theme }) => ({
+const VerifiedBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
-    backgroundColor: '#00AB55',
+    backgroundColor: '#1976d2',
     color: '#fff',
     borderRadius: '50%',
     width: '12px',
@@ -54,7 +54,7 @@ const KYCBadge = styled(Badge)(({ theme }) => ({
     fontSize: '7px',
     fontWeight: 'bold',
     border: `1px solid ${theme.palette.background.paper}`,
-    boxShadow: `0 1px 3px ${alpha('#00AB55', 0.4)}`
+    boxShadow: `0 1px 3px ${alpha('#1976d2', 0.4)}`
   }
 }));
 
@@ -271,7 +271,7 @@ const TrendingTokens = () => {
 
       <Stack spacing={0.75}>
         {trendingList.map((row, index) => {
-          const { md5, id, name, user, slug, kyc, isOMCF } = row;
+          const { md5, id, name, user, slug, verified, isOMCF } = row;
           const imgUrl = `https://s1.xrpl.to/token/${md5}`;
           const link = `/token/${slug}`;
           const rank = index + 1;
@@ -295,8 +295,8 @@ const TrendingTokens = () => {
                       className="token-info"
                     >
                       <Box sx={{ position: 'relative' }}>
-                        {kyc ? (
-                          <KYCBadge
+                        {verified ? (
+                          <VerifiedBadge
                             badgeContent={<VerifiedIcon sx={{ fontSize: 7 }} />}
                             overlap="circular"
                             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -308,7 +308,7 @@ const TrendingTokens = () => {
                               height={28}
                               onError={(event) => (event.target.src = '/static/alt.webp')}
                             />
-                          </KYCBadge>
+                          </VerifiedBadge>
                         ) : (
                           <TokenImage
                             className="token-image"
