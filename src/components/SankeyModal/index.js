@@ -1143,45 +1143,53 @@ const SankeyModal = ({ open, onClose, account }) => {
           if (sourceAccount === destinationAccount) {
             // Check if this is an AMM transaction (self-payment with token exchange)
             if (sourceAccount === targetAccount) {
-              // First check if this is a failed exchange attempt
-              if (meta && meta.TransactionResult !== 'tesSUCCESS') {
-                // For failed transactions, check if it was an exchange attempt
-                if (
-                  tx.SendMax &&
-                  ((typeof tx.SendMax === 'object' && typeof tx.Amount === 'string') ||
-                    (typeof tx.SendMax === 'string' && typeof tx.Amount === 'object') ||
-                    (typeof tx.SendMax === 'object' &&
-                      typeof tx.Amount === 'object' &&
-                      tx.SendMax.currency !== tx.Amount.currency))
-                ) {
-                  // This was a failed exchange attempt - categorize by intended exchange
-                  let exchangeCurrency = 'UNKNOWN';
-                  let isTokenToXrp = false;
+              // Check if this is a cross-currency exchange (regardless of success/failure)
+              const isCrossCurrencyExchange =
+                tx.SendMax &&
+                ((typeof tx.SendMax === 'object' && typeof tx.Amount === 'string') ||
+                  (typeof tx.SendMax === 'string' && typeof tx.Amount === 'object') ||
+                  (typeof tx.SendMax === 'object' &&
+                    typeof tx.Amount === 'object' &&
+                    tx.SendMax.currency !== tx.Amount.currency));
 
-                  if (typeof tx.SendMax === 'object' && typeof tx.Amount === 'string') {
-                    // Trying to send tokens to get XRP
-                    exchangeCurrency = decodeCurrency(tx.SendMax.currency);
-                    isTokenToXrp = true;
-                  } else if (typeof tx.SendMax === 'string' && typeof tx.Amount === 'object') {
-                    // Trying to send XRP to get tokens
-                    exchangeCurrency = decodeCurrency(tx.Amount.currency);
-                    isTokenToXrp = false;
-                  }
+              if (isCrossCurrencyExchange) {
+                // This is a cross-currency exchange (token <-> XRP or token <-> token)
+                let exchangeCurrency = 'UNKNOWN';
+                let isTokenToXrp = false;
+                let exchangeAmount = 1;
 
-                  destinationAccount = `FAILED_EXCHANGE_${exchangeCurrency}`;
-                  amount = isTokenToXrp
-                    ? parseInt(tx.Amount) / 1000000 // Show intended XRP amount
-                    : typeof tx.Amount === 'object'
-                    ? parseFloat(tx.Amount.value)
-                    : 1;
+                if (typeof tx.SendMax === 'object' && typeof tx.Amount === 'string') {
+                  // Sending tokens to get XRP
+                  exchangeCurrency = decodeCurrency(tx.SendMax.currency);
+                  isTokenToXrp = true;
+                  exchangeAmount = parseInt(tx.Amount) / 1000000; // Use actual XRP amount received
+                } else if (typeof tx.SendMax === 'string' && typeof tx.Amount === 'object') {
+                  // Sending XRP to get tokens
+                  exchangeCurrency = decodeCurrency(tx.Amount.currency);
+                  isTokenToXrp = false;
+                  exchangeAmount = parseFloat(tx.Amount.value); // Use token amount
+                } else if (typeof tx.SendMax === 'object' && typeof tx.Amount === 'object') {
+                  // Token to token exchange
+                  exchangeCurrency = `${decodeCurrency(tx.SendMax.currency)}→${decodeCurrency(
+                    tx.Amount.currency
+                  )}`;
+                  isTokenToXrp = false;
+                  exchangeAmount = parseFloat(tx.Amount.value);
+                }
+
+                // Check if transaction was successful
+                if (meta && meta.TransactionResult === 'tesSUCCESS') {
+                  destinationAccount = `EXCHANGE_${exchangeCurrency}`;
+                  amount = exchangeAmount;
                   currency = isTokenToXrp ? 'XRP' : exchangeCurrency;
                 } else {
-                  // Regular failed self-transfer
-                  destinationAccount = 'FAILED_SELF_TRANSFER';
-                  currency = 'FAILED';
+                  // Failed exchange
+                  destinationAccount = `FAILED_EXCHANGE_${exchangeCurrency}`;
+                  amount = exchangeAmount;
+                  currency = isTokenToXrp ? 'XRP' : exchangeCurrency;
                 }
               } else {
-                // Successful self-payment - check for token exchange
+                // Not a cross-currency exchange, check for token exchange via metadata
                 const metaExchange = extractExchangeFromMeta(meta, targetAccount);
 
                 if (
@@ -1578,6 +1586,8 @@ const SankeyModal = ({ open, onClose, account }) => {
           ? 'amm_pool'
           : node.startsWith('AMM_')
           ? 'amm'
+          : node.startsWith('EXCHANGE_')
+          ? 'exchange'
           : node.startsWith('FAILED_EXCHANGE_')
           ? 'failed_exchange'
           : node === 'FAILED_SELF_TRANSFER'
@@ -1601,6 +1611,10 @@ const SankeyModal = ({ open, onClose, account }) => {
           ? `${node.replace('AMM_', '').replace('_POOL', '')} Pool`
           : node.startsWith('AMM_')
           ? `${node.replace('AMM_', '')} Pool`
+          : node.startsWith('EXCHANGE_')
+          ? `${node.replace('EXCHANGE_', '')} Exchange`
+          : node.startsWith('FAILED_EXCHANGE_')
+          ? `${node.replace('FAILED_EXCHANGE_', '')} (Failed)`
           : node === 'SELF_TRANSFER'
           ? 'Self Transfer'
           : node.endsWith('_OPS')
@@ -1777,6 +1791,8 @@ const SankeyModal = ({ open, onClose, account }) => {
                     return '#E91E63'; // Pink for AMM pools (liquidity pools)
                   case 'amm':
                     return '#9C27B0'; // Purple for AMM operations
+                  case 'exchange':
+                    return '#00BCD4'; // Cyan for successful exchanges
                   case 'self':
                     return '#757575'; // Grey for self transfers
                   case 'failed_exchange':
