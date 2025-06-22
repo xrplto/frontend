@@ -1088,9 +1088,11 @@ const SankeyModal = ({ open, onClose, account }) => {
     accountDetailsMap.set(targetAccount, targetAccountActivity);
     setAccountDetails(accountDetailsMap);
 
-    transactions.forEach((txData) => {
+    // Process transactions with index tracking for debugging
+    transactions.forEach((txData, txIndex) => {
       const tx = txData.tx;
       const meta = txData.meta;
+      const txNumber = txIndex + 1; // 1-based transaction number for user display
 
       if (meta && meta.TransactionResult === 'tesSUCCESS') {
         let sourceAccount = null;
@@ -1121,7 +1123,8 @@ const SankeyModal = ({ open, onClose, account }) => {
                 memo: tx.Memos,
                 fee: parseInt(tx.Fee) / 1000000,
                 timestamp: tx.date,
-                ledgerIndex: tx.ledger_index || txData.ledger_index
+                ledgerIndex: tx.ledger_index || txData.ledger_index,
+                txNumber: txNumber // Add transaction number for debugging
               };
 
               spamAnalysis = analyzeSpamPatterns(payment, senderStats, spamPatterns);
@@ -1420,6 +1423,9 @@ const SankeyModal = ({ open, onClose, account }) => {
             if (existingLink) {
               existingLink.value += amount;
               existingLink.count += 1;
+              // Add transaction numbers to existing link
+              existingLink.txNumbers.push(txNumber);
+              existingLink.txHashes.push(tx.hash);
               // Update AMM direction if available
               if (ammDirection && !existingLink.ammDirection) {
                 existingLink.ammDirection = ammDirection;
@@ -1442,6 +1448,8 @@ const SankeyModal = ({ open, onClose, account }) => {
                 count: 1,
                 currency: currency,
                 txType: tx.TransactionType,
+                txNumbers: [txNumber], // Add transaction numbers array
+                txHashes: [tx.hash], // Add transaction hashes for reference
                 isSpam: spamAnalysis && spamAnalysis.spamScore >= 40,
                 spamScore: spamAnalysis?.spamScore || 0,
                 spamCount: spamAnalysis && spamAnalysis.spamScore >= 40 ? 1 : 0,
@@ -1475,6 +1483,9 @@ const SankeyModal = ({ open, onClose, account }) => {
             if (existingLink) {
               existingLink.value += amount;
               existingLink.count += 1;
+              // Add transaction numbers to existing link
+              existingLink.txNumbers.push(txNumber);
+              existingLink.txHashes.push(tx.hash);
               // Update AMM direction if available
               if (ammDirection && !existingLink.ammDirection) {
                 existingLink.ammDirection = ammDirection;
@@ -1497,6 +1508,8 @@ const SankeyModal = ({ open, onClose, account }) => {
                 count: 1,
                 currency: currency,
                 txType: tx.TransactionType,
+                txNumbers: [txNumber], // Add transaction numbers array
+                txHashes: [tx.hash], // Add transaction hashes for reference
                 isSpam: spamAnalysis && spamAnalysis.spamScore >= 40,
                 spamScore: spamAnalysis?.spamScore || 0,
                 spamCount: spamAnalysis && spamAnalysis.spamScore >= 40 ? 1 : 0,
@@ -2168,6 +2181,25 @@ const SankeyModal = ({ open, onClose, account }) => {
         let content = `🔄 TRANSACTION FLOW\n`;
         content += `📤 From: ${sourceDisplay}\n`;
         content += `📥 To: ${targetDisplay}\n`;
+
+        // Add debugging information with transaction numbers
+        if (data.txNumbers && data.txNumbers.length > 0) {
+          content += `\n🔍 DEBUG INFO\n`;
+          content += `📝 Transaction Numbers: ${data.txNumbers.join(', ')}\n`;
+          if (data.txHashes && data.txHashes.length > 0) {
+            content += `🔗 Hash(es): `;
+            if (data.txHashes.length === 1) {
+              content += `${data.txHashes[0].substring(0, 8)}...${data.txHashes[0].substring(
+                data.txHashes[0].length - 4
+              )}\n`;
+            } else {
+              content += `${data.txHashes.length} hashes (tx #${data.txNumbers[0]}...#${
+                data.txNumbers[data.txNumbers.length - 1]
+              })\n`;
+            }
+          }
+        }
+
         content += `\n💰 AMOUNTS\n`;
 
         // Format currency and amount
