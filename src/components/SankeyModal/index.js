@@ -1288,8 +1288,7 @@ const SankeyModal = ({ open, onClose, account }) => {
               ) {
                 const prevBalance = parseInt(modifiedNode.PreviousFields?.Balance || 0);
                 const finalBalance = parseInt(modifiedNode.FinalFields?.Balance || 0);
-                xrpChange = (prevBalance - finalBalance) / 1000000; // Amount deposited
-                break;
+                xrpChange = (prevBalance - finalBalance) / 1000000; // Amount deposited (positive)
               }
             }
             amount = Math.max(xrpChange, 1); // Use XRP amount or minimum 1
@@ -1323,7 +1322,7 @@ const SankeyModal = ({ open, onClose, account }) => {
               ) {
                 const prevBalance = parseInt(modifiedNode.PreviousFields?.Balance || 0);
                 const finalBalance = parseInt(modifiedNode.FinalFields?.Balance || 0);
-                xrpChange = (finalBalance - prevBalance) / 1000000; // Amount withdrawn
+                xrpChange = (finalBalance - prevBalance) / 1000000; // Amount withdrawn (positive)
                 break;
               }
             }
@@ -2046,12 +2045,12 @@ const SankeyModal = ({ open, onClose, account }) => {
   const generateTooltipContent = (params) => {
     try {
       if (!params || typeof params !== 'object') {
-        return 'No data';
+        return 'ERROR: No data available';
       }
 
       const data = params.data;
       if (!data || typeof data !== 'object') {
-        return 'No data available';
+        return 'ERROR: No data available';
       }
 
       if (params.dataType === 'node') {
@@ -2059,23 +2058,180 @@ const SankeyModal = ({ open, onClose, account }) => {
         const category = String(data.category || 'unknown');
         const value = Number(data.value) || 0;
 
-        return `${name}\nType: ${category}\nTransactions: ${value}`;
+        // Get account details if available - fix variable naming conflict
+        const nodeAccountDetails = accountDetails.get(data.name);
+
+        // Format content based on node type
+        let content = '';
+
+        if (category === 'inflow') {
+          content = `💰 INCOMING TRANSACTIONS\n`;
+          content += `📍 Target: ${name}\n`;
+          content += `📊 Total Transactions: ${value.toLocaleString()}\n`;
+          content += `\n💡 This represents all money flowing INTO your account`;
+        } else if (category === 'outflow') {
+          content = `💸 OUTGOING TRANSACTIONS\n`;
+          content += `📍 Source: ${name}\n`;
+          content += `📊 Total Transactions: ${value.toLocaleString()}\n`;
+          content += `\n💡 This represents all money flowing OUT of your account`;
+        } else if (category === 'account') {
+          content = `👤 ACCOUNT DETAILS\n`;
+          content += `📍 Address: ${name}\n`;
+          content += `📊 Transactions: ${value.toLocaleString()}\n`;
+
+          if (nodeAccountDetails) {
+            content += `🎯 Activity: ${nodeAccountDetails.mainActivity}\n`;
+            content += `💰 Total Volume: ${nodeAccountDetails.totalValue.toLocaleString()} XRP\n`;
+
+            if (nodeAccountDetails.isSpammer) {
+              content += `⚠️ WARNING: Detected as spam account!\n`;
+              content += `🚨 Spam Score: ${nodeAccountDetails.spamScore}/100\n`;
+            }
+
+            if (nodeAccountDetails.topTokens && nodeAccountDetails.topTokens.length > 0) {
+              content += `🪙 Top Tokens: ${nodeAccountDetails.topTokens.slice(0, 3).join(', ')}\n`;
+            }
+          }
+
+          content += `\n💡 Click to explore this account's transactions`;
+        } else if (category === 'dex') {
+          content = `🏪 DEX TRADING\n`;
+          content += `📍 Market: ${name}\n`;
+          content += `📊 Operations: ${value.toLocaleString()}\n`;
+          content += `\n💡 Decentralized exchange trading operations`;
+        } else if (category === 'amm_pool') {
+          content = `🌊 LIQUIDITY POOL\n`;
+          content += `📍 Pool: ${name}\n`;
+          content += `📊 Interactions: ${value.toLocaleString()}\n`;
+          content += `\n💡 Automated Market Maker pool operations`;
+        } else if (category === 'amm') {
+          content = `🔄 AMM OPERATIONS\n`;
+          content += `📍 Token: ${name}\n`;
+          content += `📊 Transactions: ${value.toLocaleString()}\n`;
+          content += `\n💡 Token swaps and liquidity operations`;
+        } else if (category === 'trust') {
+          content = `🔐 TRUST OPERATIONS\n`;
+          content += `📍 Token: ${name}\n`;
+          content += `📊 Operations: ${value.toLocaleString()}\n`;
+          content += `\n💡 Setting up trust lines for token trading`;
+        } else if (category === 'self') {
+          content = `🔄 SELF TRANSFERS\n`;
+          content += `📍 Type: ${name}\n`;
+          content += `📊 Operations: ${value.toLocaleString()}\n`;
+          content += `\n💡 Internal account operations`;
+        } else if (category === 'failed_exchange') {
+          content = `❌ FAILED EXCHANGES\n`;
+          content += `📍 Token: ${name}\n`;
+          content += `📊 Failed Attempts: ${value.toLocaleString()}\n`;
+          content += `\n💡 Unsuccessful token exchange attempts`;
+        } else if (category === 'operations') {
+          content = `⚙️ OTHER OPERATIONS\n`;
+          content += `📍 Type: ${name}\n`;
+          content += `📊 Operations: ${value.toLocaleString()}\n`;
+          content += `\n💡 Various blockchain operations`;
+        } else {
+          content = `📊 UNKNOWN NODE\n`;
+          content += `📍 Name: ${name}\n`;
+          content += `📊 Value: ${value.toLocaleString()}\n`;
+        }
+
+        return content;
       } else if (params.dataType === 'edge') {
         const source = String(data.source || 'Unknown');
         const target = String(data.target || 'Unknown');
         const value = Number(data.value) || 0;
         const count = Number(data.count) || 0;
         const currency = String(data.currency || 'Unknown');
+        const txType = String(data.txType || 'Unknown');
 
-        return `${source} → ${target}\nValue: ${value.toFixed(
-          6
-        )}\nTransactions: ${count}\nCurrency: ${currency}`;
+        // Format the flow direction
+        let sourceDisplay = source;
+        let targetDisplay = target;
+
+        // Clean up hub names for display
+        if (source.includes('_INFLOW')) {
+          sourceDisplay = '💰 INCOMING';
+        } else if (source.includes('_OUTFLOW')) {
+          sourceDisplay = '💸 OUTGOING';
+        } else if (source.length > 20) {
+          sourceDisplay = `👤 ${source.substring(0, 8)}...${source.substring(source.length - 4)}`;
+        }
+
+        if (target.includes('_INFLOW')) {
+          targetDisplay = '💰 INCOMING';
+        } else if (target.includes('_OUTFLOW')) {
+          targetDisplay = '💸 OUTGOING';
+        } else if (target.length > 20) {
+          targetDisplay = `👤 ${target.substring(0, 8)}...${target.substring(target.length - 4)}`;
+        }
+
+        let content = `🔄 TRANSACTION FLOW\n`;
+        content += `📤 From: ${sourceDisplay}\n`;
+        content += `📥 To: ${targetDisplay}\n`;
+        content += `\n💰 AMOUNTS\n`;
+
+        // Format currency and amount
+        if (currency === 'XRP') {
+          content += `💎 ${value.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 6
+          })} XRP\n`;
+        } else if (currency === 'TRUST') {
+          content += `🔐 Trust Line Operations\n`;
+        } else if (currency === 'SELF') {
+          content += `🔄 Self Transfer Operations\n`;
+        } else if (currency === 'FAILED') {
+          content += `❌ Failed Operations\n`;
+        } else if (currency.includes('→')) {
+          content += `🏪 ${currency} Trading\n`;
+        } else {
+          content += `🪙 ${formatTokenAmount(value)} ${currency}\n`;
+        }
+
+        content += `📊 Total Transactions: ${count.toLocaleString()}\n`;
+
+        // Add transaction type information
+        if (txType === 'Payment') {
+          content += `\n💳 TYPE: Payment Transaction\n`;
+        } else if (txType === 'OfferCreate') {
+          content += `\n🏪 TYPE: DEX Order Creation\n`;
+        } else if (txType === 'OfferCancel') {
+          content += `\n🏪 TYPE: DEX Order Cancellation\n`;
+        } else if (txType === 'TrustSet') {
+          content += `\n🔐 TYPE: Trust Line Setup\n`;
+        } else if (txType === 'AMMDeposit') {
+          content += `\n🌊 TYPE: Liquidity Pool Deposit\n`;
+        } else if (txType === 'AMMWithdraw') {
+          content += `\n🌊 TYPE: Liquidity Pool Withdrawal\n`;
+        } else if (txType !== 'Unknown') {
+          content += `\n⚙️ TYPE: ${txType}\n`;
+        }
+
+        // Add spam warning if applicable
+        if (data.isSpam) {
+          content += `\n⚠️ WARNING: SPAM DETECTED!\n`;
+          content += `🚨 Spam Score: ${data.spamScore || 0}/100\n`;
+          content += `🔢 Spam Count: ${data.spamCount || 0} transactions\n`;
+        }
+
+        // Add AMM direction if available
+        if (data.ammDirection && data.ammToken) {
+          if (data.ammDirection === 'BUY') {
+            content += `\n📈 AMM ACTION: Buying ${data.ammToken}\n`;
+            content += `💡 Spent XRP to acquire tokens`;
+          } else if (data.ammDirection === 'SELL') {
+            content += `\n📉 AMM ACTION: Selling ${data.ammToken}\n`;
+            content += `💡 Sold tokens to receive XRP`;
+          }
+        }
+
+        return content;
       }
 
-      return 'Item details';
+      return '📊 Transaction Details';
     } catch (error) {
       console.warn('Tooltip content error:', error);
-      return 'Details unavailable';
+      return '❌ Error loading details';
     }
   };
 
@@ -2968,30 +3124,82 @@ const SankeyModal = ({ open, onClose, account }) => {
                           position: 'absolute',
                           left: customTooltip.x,
                           top: customTooltip.y,
-                          bgcolor: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                          border: `1px solid ${darkMode ? '#444444' : theme.palette.divider}`,
-                          borderRadius: 2,
-                          padding: '8px 12px',
-                          fontSize: '11px',
+                          bgcolor: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+                          border: `2px solid ${darkMode ? '#444444' : theme.palette.divider}`,
+                          borderRadius: 3,
+                          padding: '12px 16px',
+                          fontSize: '12px',
+                          fontWeight: 500,
                           color: theme.palette.text.primary,
-                          boxShadow: `0 8px 32px ${
-                            darkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.15)'
+                          boxShadow: `0 12px 48px ${
+                            darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.25)'
                           }`,
-                          backdropFilter: 'blur(10px)',
-                          WebkitBackdropFilter: 'blur(10px)',
+                          backdropFilter: 'blur(16px)',
+                          WebkitBackdropFilter: 'blur(16px)',
                           zIndex: 10000,
                           pointerEvents: 'none',
-                          maxWidth: 300,
+                          maxWidth: 350,
+                          minWidth: 200,
                           wordWrap: 'break-word',
                           whiteSpace: 'pre-line',
-                          fontFamily: 'monospace',
+                          fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
                           transition: 'opacity 0.15s ease-out',
                           transform: 'translateZ(0)',
                           willChange: 'opacity',
-                          opacity: 1
+                          opacity: 1,
+                          lineHeight: 1.4,
+                          // Add subtle gradient background for depth
+                          background: darkMode
+                            ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%)'
+                            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 248, 248, 0.98) 100%)',
+                          // Add subtle inner shadow for depth
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            borderRadius: 3,
+                            background: darkMode
+                              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)'
+                              : 'linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.05) 100%)',
+                            pointerEvents: 'none',
+                            zIndex: -1
+                          },
+                          // Enhanced text styling for better readability
+                          '& strong': {
+                            fontWeight: 700,
+                            color: theme.palette.primary.main
+                          },
+                          // Style for section headers (lines that end with :)
+                          '& > div': {
+                            '&:first-line': {
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              color: theme.palette.primary.main
+                            }
+                          }
                         }}
                       >
-                        {customTooltip.content}
+                        <Typography
+                          component="div"
+                          sx={{
+                            fontSize: '12px',
+                            lineHeight: 1.5,
+                            '& strong': {
+                              fontWeight: 700,
+                              color: theme.palette.primary.main
+                            },
+                            // Style lines that start with emojis differently
+                            '& > *:first-line': {
+                              fontWeight: 700,
+                              fontSize: '13px'
+                            }
+                          }}
+                        >
+                          {customTooltip.content}
+                        </Typography>
                       </Box>
                     )}
                   </>
