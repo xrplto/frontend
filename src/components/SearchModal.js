@@ -311,53 +311,81 @@ export default function SearchModal({ onClose, open }) {
         onClick={handleClose}
       />
       <Paper
-        elevation={6}
+        elevation={0}
         sx={{
           width: '100%',
-          maxWidth: '800px',
+          maxWidth: '900px',
           position: 'fixed',
           left: '50%',
-          top: open ? '20%' : '10%',
+          top: open ? '18%' : '8%',
           transform: 'translateX(-50%)',
-          p: 4,
+          p: { xs: 3, sm: 5 },
           zIndex: 12001,
           opacity: open ? 1 : 0,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          borderRadius: '24px',
-          background: `linear-gradient(135deg, ${alpha(
+          scale: open ? 1 : 0.95,
+          transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          borderRadius: '28px',
+          background: `linear-gradient(145deg, ${alpha(
             theme.palette.background.paper,
-            0.95
-          )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-          boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 2px 8px ${alpha(
-            theme.palette.primary.main,
-            0.04
-          )}`,
-          maxHeight: '70vh',
+            0.98
+          )} 0%, ${alpha(theme.palette.background.paper, 0.95)} 50%, ${alpha(
+            theme.palette.background.paper,
+            0.98
+          )} 100%)`,
+          backdropFilter: 'blur(40px)',
+          border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
+          boxShadow: `
+            0 32px 64px ${alpha(theme.palette.common.black, 0.12)}, 
+            0 16px 32px ${alpha(theme.palette.common.black, 0.08)},
+            0 4px 16px ${alpha(theme.palette.primary.main, 0.06)},
+            inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
+          `,
+          maxHeight: '75vh',
           overflowY: 'auto',
           '&::-webkit-scrollbar': {
-            display: 'none'
+            width: '8px'
           },
-          '-ms-overflow-style': 'none',
-          'scrollbar-width': 'none',
+          '&::-webkit-scrollbar-track': {
+            background: alpha(theme.palette.divider, 0.1),
+            borderRadius: '4px'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
+            borderRadius: '4px',
+            '&:hover': {
+              background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.success.dark})`
+            }
+          },
           '&::before': {
             content: '""',
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            height: '2px',
-            background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-            opacity: 0.8
+            height: '4px',
+            background: `linear-gradient(90deg, 
+              ${theme.palette.primary.main} 0%, 
+              ${theme.palette.success.main} 25%, 
+              ${theme.palette.info.main} 50%, 
+              ${theme.palette.warning.main} 75%, 
+              ${theme.palette.error.main} 100%
+            )`,
+            borderRadius: '28px 28px 0 0',
+            opacity: 0.9,
+            animation: 'shimmer 3s ease-in-out infinite'
+          },
+          '@keyframes shimmer': {
+            '0%, 100%': { opacity: 0.9 },
+            '50%': { opacity: 0.6 }
           },
           '@media (max-width: 600px)': {
-            width: '95vw',
-            maxWidth: '95vw',
+            width: '96vw',
+            maxWidth: '96vw',
             left: '50%',
-            top: open ? '15%' : '5%',
+            top: open ? '12%' : '2%',
             transform: 'translateX(-50%)',
-            p: 3
+            p: 3,
+            borderRadius: '24px'
           }
         }}
         ref={modalRef}
@@ -365,19 +393,24 @@ export default function SearchModal({ onClose, open }) {
         <Paper
           component="form"
           sx={{
-            p: '12px 20px',
+            p: '16px 24px',
             display: 'flex',
             alignItems: 'center',
-            background: `linear-gradient(135deg, ${alpha(
+            background: `linear-gradient(145deg, ${alpha(
               theme.palette.background.paper,
-              0.8
-            )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-            backdropFilter: 'blur(10px)',
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-            borderRadius: '16px',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              0.9
+            )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+            backdropFilter: 'blur(20px)',
+            border: `2px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+            borderRadius: '20px',
+            transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
             position: 'relative',
             overflow: 'hidden',
+            boxShadow: `
+              0 8px 32px ${alpha(theme.palette.common.black, 0.04)},
+              0 4px 16px ${alpha(theme.palette.primary.main, 0.04)},
+              inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
+            `,
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -385,46 +418,70 @@ export default function SearchModal({ onClose, open }) {
               left: '-100%',
               width: '100%',
               height: '100%',
-              background: `linear-gradient(90deg, transparent, ${alpha(
-                theme.palette.primary.main,
-                0.1
-              )}, transparent)`,
-              transition: 'left 0.5s ease'
+              background: `linear-gradient(90deg, 
+                transparent, 
+                ${alpha(theme.palette.primary.main, 0.08)}, 
+                ${alpha(theme.palette.success.main, 0.08)}, 
+                transparent
+              )`,
+              transition: 'left 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
             },
             '&:hover': {
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-              boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.08)}`,
+              border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+              boxShadow: `
+                0 12px 40px ${alpha(theme.palette.primary.main, 0.12)},
+                0 8px 24px ${alpha(theme.palette.common.black, 0.06)},
+                inset 0 1px 0 ${alpha(theme.palette.common.white, 0.15)}
+              `,
+              transform: 'translateY(-2px)',
               '&::before': {
                 left: '100%'
               }
             },
             '&:focus-within': {
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.12)}`
+              border: `2px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+              boxShadow: `
+                0 16px 48px ${alpha(theme.palette.primary.main, 0.15)},
+                0 8px 24px ${alpha(theme.palette.common.black, 0.08)},
+                inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}
+              `,
+              transform: 'translateY(-3px) scale(1.02)'
             }
           }}
         >
           <SearchIcon
             sx={{
               color: theme.palette.primary.main,
-              fontSize: '1.3rem',
-              transition: 'color 0.2s ease'
+              fontSize: '1.5rem',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+              '&:hover': {
+                color: theme.palette.primary.dark,
+                filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.15))',
+                transform: 'scale(1.1)'
+              }
             }}
           />
           <InputBase
-            placeholder="Search token, nft, issuer address"
+            placeholder="Search tokens, NFTs, collections..."
             fullWidth
             sx={{
-              ml: 1.5,
+              ml: 2,
               flex: 1,
               '& input': {
-                py: 1.5,
-                fontSize: '1rem',
+                py: 2,
+                fontSize: '1.1rem',
                 fontWeight: 500,
                 color: theme.palette.text.primary,
+                letterSpacing: '0.01em',
                 '&::placeholder': {
                   color: theme.palette.text.secondary,
-                  opacity: 0.8
+                  opacity: 0.7,
+                  fontWeight: 400,
+                  transition: 'opacity 0.2s ease'
+                },
+                '&:focus::placeholder': {
+                  opacity: 0.5
                 }
               }
             }}
@@ -434,27 +491,33 @@ export default function SearchModal({ onClose, open }) {
             autoFocus
           />
           <IconButton
-            size="small"
+            size="medium"
             onClick={handleClose}
             sx={{
               color: theme.palette.text.secondary,
-              background: `linear-gradient(135deg, ${alpha(
+              background: `linear-gradient(145deg, ${alpha(
                 theme.palette.background.paper,
-                0.6
-              )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-              backdropFilter: 'blur(10px)',
-              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-              borderRadius: '10px',
-              p: 1,
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                0.8
+              )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
+              backdropFilter: 'blur(15px)',
+              border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
+              borderRadius: '14px',
+              p: 1.5,
+              ml: 1,
+              transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.05)}`,
               '&:hover': {
-                background: `linear-gradient(135deg, ${alpha(
+                background: `linear-gradient(145deg, ${alpha(
                   theme.palette.error.main,
-                  0.08
-                )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
+                  0.12
+                )} 0%, ${alpha(theme.palette.error.main, 0.06)} 100%)`,
+                border: `2px solid ${alpha(theme.palette.error.main, 0.2)}`,
                 color: theme.palette.error.main,
-                transform: 'scale(1.05)'
+                transform: 'scale(1.1) rotate(-5deg)',
+                boxShadow: `0 8px 24px ${alpha(theme.palette.error.main, 0.15)}`
+              },
+              '&:active': {
+                transform: 'scale(0.95) rotate(-2deg)'
               }
             }}
           >
@@ -541,20 +604,49 @@ export default function SearchModal({ onClose, open }) {
             spacing={1}
             sx={{ display: activeTab === 'token' || activeTab === 'all' ? 'flex' : 'none' }}
           >
-            <Stack direction="row" alignItems="center" sx={{ px: 1 }} spacing={1}>
-              <Typography variant="subtitle2" fontWeight={600}>
-                {`${!search ? 'Trending ' : ''}Tokens`}
-              </Typography>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                height="16px"
-                width="16px"
-                viewBox="0 0 24 24"
-                color="#FF775F"
+            <Stack direction="row" alignItems="center" sx={{ px: 2, mb: 1 }} spacing={2}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  p: 2,
+                  borderRadius: '16px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                  backdropFilter: 'blur(10px)'
+                }}
               >
-                <path d="M17.0881 9.42254C16.4368 8.90717 15.8155 8.35512 15.3012 7.71336C12.3755 4.06357 13.8912 1 13.8912 1C8.46026 3.18334 7.22337 6.64895 7.16462 9.22981L7.1675 9.2572C7.1675 9.2572 7.21498 10.7365 7.90791 12.3625C8.12481 12.8713 7.88299 13.4666 7.33195 13.6199C6.87638 13.7465 6.40822 13.5317 6.21571 13.1314C5.90413 12.4831 5.49262 11.4521 5.6109 10.7249C4.75064 11.817 4.1815 13.1452 4.03542 14.6184C3.65092 18.4924 6.43759 22.0879 10.4208 22.8488C14.9906 23.7217 19.3121 20.7182 19.9269 16.3623C20.3117 13.6367 19.1498 11.0538 17.0881 9.42254ZM14.3578 17.7393C14.3289 17.776 13.5893 18.6597 12.3501 18.7517C12.2829 18.7547 12.2124 18.7577 12.1452 18.7577C11.2902 18.7577 10.4226 18.3682 9.56103 17.5951L9.37219 17.4262L9.61243 17.3372C9.62843 17.3312 11.2742 16.7236 11.6778 15.4077C11.8155 14.9629 11.7707 14.4566 11.553 13.9842C11.2905 13.4075 10.7845 11.9564 11.7453 10.9041L11.9309 10.7015L12.0206 10.9561C12.0238 10.9714 12.6034 12.5911 13.9741 13.4379C14.3871 13.6957 14.6977 14.0086 14.8931 14.3644C15.2959 15.1132 15.533 16.3065 14.3578 17.7393Z" />
-              </svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  height="20px"
+                  width="20px"
+                  viewBox="0 0 24 24"
+                  style={{
+                    color: theme.palette.primary.main,
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                  }}
+                >
+                  <path d="M17.0881 9.42254C16.4368 8.90717 15.8155 8.35512 15.3012 7.71336C12.3755 4.06357 13.8912 1 13.8912 1C8.46026 3.18334 7.22337 6.64895 7.16462 9.22981L7.1675 9.2572C7.1675 9.2572 7.21498 10.7365 7.90791 12.3625C8.12481 12.8713 7.88299 13.4666 7.33195 13.6199C6.87638 13.7465 6.40822 13.5317 6.21571 13.1314C5.90413 12.4831 5.49262 11.4521 5.6109 10.7249C4.75064 11.817 4.1815 13.1452 4.03542 14.6184C3.65092 18.4924 6.43759 22.0879 10.4208 22.8488C14.9906 23.7217 19.3121 20.7182 19.9269 16.3623C20.3117 13.6367 19.1498 11.0538 17.0881 9.42254ZM14.3578 17.7393C14.3289 17.776 13.5893 18.6597 12.3501 18.7517C12.2829 18.7547 12.2124 18.7577 12.1452 18.7577C11.2902 18.7577 10.4226 18.3682 9.56103 17.5951L9.37219 17.4262L9.61243 17.3372C9.62843 17.3312 11.2742 16.7236 11.6778 15.4077C11.8155 14.9629 11.7707 14.4566 11.553 13.9842C11.2905 13.4075 10.7845 11.9564 11.7453 10.9041L11.9309 10.7015L12.0206 10.9561C12.0238 10.9714 12.6034 12.5911 13.9741 13.4379C14.3871 13.6957 14.6977 14.0086 14.8931 14.3644C15.2959 15.1132 15.533 16.3065 14.3578 17.7393Z" />
+                </svg>
+                <Typography
+                  variant="h6"
+                  fontWeight={700}
+                  sx={{
+                    background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    letterSpacing: '0.02em'
+                  }}
+                >
+                  {`${!search ? 'Trending ' : ''}Cryptoassets`}
+                </Typography>
+              </Box>
             </Stack>
             <MenuList
               sx={{
@@ -691,7 +783,10 @@ export default function SearchModal({ onClose, open }) {
             </MenuList>
             {search && activeTab !== 'token' && tokens.length > 8 && (
               <Button
-                onClick={() => setActiveTab('token')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveTab('token');
+                }}
                 variant="text"
                 sx={{
                   mt: 2,
@@ -729,20 +824,49 @@ export default function SearchModal({ onClose, open }) {
             spacing={2}
             sx={{ display: activeTab === 'nft' || activeTab === 'all' ? 'flex' : 'none' }}
           >
-            <Stack direction="row" alignItems="center" spacing={1} sx={{ px: 1 }}>
-              <Typography variant="subtitle2" fontWeight={600} fontSize="1.1rem">
-                {`${!search ? 'Trending ' : ''}NFTs`}
-              </Typography>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                height="20px"
-                width="20px"
-                viewBox="0 0 24 24"
-                color="#FF775F"
+            <Stack direction="row" alignItems="center" sx={{ px: 2, mb: 1 }} spacing={2}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  p: 2,
+                  borderRadius: '16px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.success.main, 0.12)}`,
+                  backdropFilter: 'blur(10px)'
+                }}
               >
-                <path d="M17.0881 9.42254C16.4368 8.90717 15.8155 8.35512 15.3012 7.71336C12.3755 4.06357 13.8912 1 13.8912 1C8.46026 3.18334 7.22337 6.64895 7.16462 9.22981L7.1675 9.2572C7.1675 9.2572 7.21498 10.7365 7.90791 12.3625C8.12481 12.8713 7.88299 13.4666 7.33195 13.6199C6.87638 13.7465 6.40822 13.5317 6.21571 13.1314C5.90413 12.4831 5.49262 11.4521 5.6109 10.7249C4.75064 11.817 4.1815 13.1452 4.03542 14.6184C3.65092 18.4924 6.43759 22.0879 10.4208 22.8488C14.9906 23.7217 19.3121 20.7182 19.9269 16.3623C20.3117 13.6367 19.1498 11.0538 17.0881 9.42254ZM14.3578 17.7393C14.3289 17.776 13.5893 18.6597 12.3501 18.7517C12.2829 18.7547 12.2124 18.7577 12.1452 18.7577C11.2902 18.7577 10.4226 18.3682 9.56103 17.5951L9.37219 17.4262L9.61243 17.3372C9.62843 17.3312 11.2742 16.7236 11.6778 15.4077C11.8155 14.9629 11.7707 14.4566 11.553 13.9842C11.2905 13.4075 10.7845 11.9564 11.7453 10.9041L11.9309 10.7015L12.0206 10.9561C12.0238 10.9714 12.6034 12.5911 13.9741 13.4379C14.3871 13.6957 14.6977 14.0086 14.8931 14.3644C15.2959 15.1132 15.533 16.3065 14.3578 17.7393Z" />
-              </svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  height="24px"
+                  width="24px"
+                  viewBox="0 0 24 24"
+                  style={{
+                    color: theme.palette.success.main,
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                  }}
+                >
+                  <path d="M17.0881 9.42254C16.4368 8.90717 15.8155 8.35512 15.3012 7.71336C12.3755 4.06357 13.8912 1 13.8912 1C8.46026 3.18334 7.22337 6.64895 7.16462 9.22981L7.1675 9.2572C7.1675 9.2572 7.21498 10.7365 7.90791 12.3625C8.12481 12.8713 7.88299 13.4666 7.33195 13.6199C6.87638 13.7465 6.40822 13.5317 6.21571 13.1314C5.90413 12.4831 5.49262 11.4521 5.6109 10.7249C4.75064 11.817 4.1815 13.1452 4.03542 14.6184C3.65092 18.4924 6.43759 22.0879 10.4208 22.8488C14.9906 23.7217 19.3121 20.7182 19.9269 16.3623C20.3117 13.6367 19.1498 11.0538 17.0881 9.42254ZM14.3578 17.7393C14.3289 17.776 13.5893 18.6597 12.3501 18.7517C12.2829 18.7547 12.2124 18.7577 12.1452 18.7577C11.2902 18.7577 10.4226 18.3682 9.56103 17.5951L9.37219 17.4262L9.61243 17.3372C9.62843 17.3312 11.2742 16.7236 11.6778 15.4077C11.8155 14.9629 11.7707 14.4566 11.553 13.9842C11.2905 13.4075 10.7845 11.9564 11.7453 10.9041L11.9309 10.7015L12.0206 10.9561C12.0238 10.9714 12.6034 12.5911 13.9741 13.4379C14.3871 13.6957 14.6977 14.0086 14.8931 14.3644C15.2959 15.1132 15.533 16.3065 14.3578 17.7393Z" />
+                </svg>
+                <Typography
+                  variant="h6"
+                  fontWeight={700}
+                  sx={{
+                    background: `linear-gradient(45deg, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    letterSpacing: '0.02em'
+                  }}
+                >
+                  {`${!search ? 'Trending ' : ''}NFT Collections`}
+                </Typography>
+              </Box>
             </Stack>
 
             <MenuList
@@ -884,7 +1008,10 @@ export default function SearchModal({ onClose, open }) {
             </MenuList>
             {search && activeTab !== 'nft' && collections.length > 3 && (
               <Button
-                onClick={() => setActiveTab('nft')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveTab('nft');
+                }}
                 variant="text"
                 sx={{
                   mt: 2,
@@ -923,10 +1050,47 @@ export default function SearchModal({ onClose, open }) {
             display: (!search || activeTab === 'all') && searchHistory.length > 0 ? 'flex' : 'none'
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ px: 1 }}>
-            <Typography variant="subtitle2" fontSize="0.85rem" fontWeight={600}>
-              Recent searches
-            </Typography>
+          <Stack direction="row" alignItems="center" sx={{ px: 2, mb: 1 }} spacing={2}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                p: 1.5,
+                borderRadius: '12px',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.info.main,
+                  0.06
+                )} 0%, ${alpha(theme.palette.info.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.info.main, 0.08)}`,
+                backdropFilter: 'blur(10px)'
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                height="18px"
+                width="18px"
+                viewBox="0 0 24 24"
+                style={{
+                  color: theme.palette.info.main,
+                  filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+                }}
+              >
+                <path d="M13 3C16.31 3 19 5.69 19 9C19 10.74 18.3 12.32 17.18 13.53L20.71 17.06C21.1 17.45 21.1 18.08 20.71 18.47C20.32 18.86 19.69 18.86 19.3 18.47L15.77 14.94C14.56 16.06 12.98 16.76 11.24 16.76C7.93 16.76 5.24 14.07 5.24 10.76C5.24 7.45 7.93 4.76 11.24 4.76M11.24 6.26C8.76 6.26 6.74 8.28 6.74 10.76C6.74 13.24 8.76 15.26 11.24 15.26C13.72 15.26 15.74 13.24 15.74 10.76C15.74 8.28 13.72 6.26 11.24 6.26Z" />
+              </svg>
+              <Typography
+                variant="subtitle1"
+                fontWeight={600}
+                sx={{
+                  color: theme.palette.info.main,
+                  fontSize: '0.95rem',
+                  letterSpacing: '0.01em'
+                }}
+              >
+                Recent Searches
+              </Typography>
+            </Box>
           </Stack>
 
           <Stack
