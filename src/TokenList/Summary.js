@@ -39,61 +39,55 @@ const ContentTypography = styled(Typography)(({ theme }) => ({
   }
 }));
 
-// Enhanced MetricBox with zero top spacing on mobile
+// Enhanced MetricBox with modern styling
 const MetricBox = styled(Paper)(({ theme }) => ({
   padding: '16px 18px',
-  // Ultra-compact mobile design
   [theme.breakpoints.down('md')]: {
-    padding: '3px 4px' // Reduced padding further
+    padding: '3px 4px'
   },
   [theme.breakpoints.down('sm')]: {
-    padding: '2px 3px' // Ultra-minimal padding
+    padding: '2px 3px'
   },
-  borderRadius: '20px',
-  // Much smaller border radius on mobile
+  borderRadius: '16px',
   [theme.breakpoints.down('md')]: {
     borderRadius: '4px'
   },
   [theme.breakpoints.down('sm')]: {
     borderRadius: '3px'
   },
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+  background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
     theme.palette.background.paper,
-    0.8
-  )} 100%)`,
-  backdropFilter: 'blur(20px)',
+    0.95
+  )} 50%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
+  backdropFilter: 'blur(40px)',
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
   minWidth: '140px',
-  // Much smaller min width on mobile
   [theme.breakpoints.down('md')]: {
     minWidth: '75px'
   },
   [theme.breakpoints.down('sm')]: {
     minWidth: '65px',
-    minHeight: '28px' // Very compact height on mobile
+    minHeight: '28px'
   },
-  border:
-    theme.palette.mode === 'dark'
-      ? `1px solid ${alpha(theme.palette.divider, 0.08)}`
-      : `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-  // Remove border on mobile for cleaner look
+  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
   [theme.breakpoints.down('sm')]: {
     border: 'none'
   },
-  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
-    theme.palette.primary.main,
-    0.04
-  )}`,
-  // Remove shadow on mobile
+  boxShadow: `
+    0 24px 48px ${alpha(theme.palette.common.black, 0.12)}, 
+    0 12px 24px ${alpha(theme.palette.common.black, 0.08)},
+    0 4px 16px ${alpha(theme.palette.primary.main, 0.06)},
+    inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
+  `,
   [theme.breakpoints.down('sm')]: {
     boxShadow: 'none'
   },
   position: 'relative',
   overflow: 'hidden',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -101,16 +95,36 @@ const MetricBox = styled(Paper)(({ theme }) => ({
     left: 0,
     right: 0,
     height: '1px',
-    background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
-      theme.palette.success.main,
-      0.4
-    )}, ${alpha(theme.palette.info.main, 0.4)})`,
-    opacity: 0.6,
-    borderRadius: '20px 20px 0 0',
+    background: `linear-gradient(90deg, 
+      ${theme.palette.primary.main} 0%, 
+      ${theme.palette.success.main} 25%, 
+      ${theme.palette.info.main} 50%, 
+      ${theme.palette.warning.main} 75%, 
+      ${theme.palette.error.main} 100%
+    )`,
+    borderRadius: '16px 16px 0 0',
+    opacity: 0.9,
+    animation: 'shimmer 3s ease-in-out infinite',
     [theme.breakpoints.down('sm')]: {
-      display: 'none' // Remove decorative line on mobile
+      display: 'none'
     },
     zIndex: 1
+  },
+  '@keyframes shimmer': {
+    '0%, 100%': { opacity: 0.9 },
+    '50%': { opacity: 0.6 }
+  },
+  '&:hover': {
+    transform: 'translateY(-2px) scale(1.02)',
+    boxShadow: `
+      0 32px 64px ${alpha(theme.palette.common.black, 0.15)}, 
+      0 16px 32px ${alpha(theme.palette.common.black, 0.1)},
+      0 8px 24px ${alpha(theme.palette.primary.main, 0.12)}
+    `,
+    [theme.breakpoints.down('sm')]: {
+      transform: 'none',
+      boxShadow: 'none'
+    }
   }
 }));
 

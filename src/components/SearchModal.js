@@ -362,7 +362,7 @@ export default function SearchModal({ onClose, open }) {
             top: 0,
             left: 0,
             right: 0,
-            height: '3px',
+            height: '1px',
             background: `linear-gradient(90deg, 
               ${theme.palette.primary.main} 0%, 
               ${theme.palette.success.main} 25%, 
