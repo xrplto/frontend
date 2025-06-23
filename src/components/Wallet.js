@@ -91,50 +91,130 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
 }));
 
 const StyledPopoverPaper = styled(Box)(({ theme }) => ({
-  background:
-    theme.palette.mode === 'dark'
-      ? `linear-gradient(145deg, #0a0a0a 0%, #121212 100%)`
-      : `linear-gradient(145deg, #ffffff 0%, ${theme.palette.grey[50]} 100%)`,
-  backdropFilter: 'blur(20px)',
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-  borderRadius: 16,
-  boxShadow:
-    theme.palette.mode === 'dark'
-      ? `0 20px 40px ${alpha('#000000', 0.8)}, 0 0 0 1px ${alpha(theme.palette.common.white, 0.03)}`
-      : `0 20px 40px ${alpha(theme.palette.common.black, 0.15)}, 0 0 0 1px ${alpha(
-          theme.palette.common.black,
-          0.05
-        )}`,
-  overflow: 'hidden'
+  background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.95
+  )} 50%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
+  backdropFilter: 'blur(40px)',
+  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
+  borderRadius: 20,
+  boxShadow: `
+    0 24px 48px ${alpha(theme.palette.common.black, 0.12)}, 
+    0 12px 24px ${alpha(theme.palette.common.black, 0.08)},
+    0 4px 16px ${alpha(theme.palette.primary.main, 0.06)},
+    inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
+  `,
+  overflow: 'hidden',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '1px',
+    background: `linear-gradient(90deg, 
+      ${theme.palette.primary.main} 0%, 
+      ${theme.palette.success.main} 25%, 
+      ${theme.palette.info.main} 50%, 
+      ${theme.palette.warning.main} 75%, 
+      ${theme.palette.error.main} 100%
+    )`,
+    borderRadius: '20px 20px 0 0',
+    opacity: 0.9,
+    animation: 'shimmer 3s ease-in-out infinite',
+    zIndex: 1
+  },
+  '@keyframes shimmer': {
+    '0%, 100%': { opacity: 0.9 },
+    '50%': { opacity: 0.6 }
+  }
 }));
 
 const BalanceCard = styled(Card)(({ theme }) => ({
-  background:
-    theme.palette.mode === 'dark'
-      ? `linear-gradient(135deg, ${alpha('#1a1a1a', 0.8)} 0%, ${alpha('#0f0f0f', 0.9)} 100%)`
-      : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-          theme.palette.primary.light,
-          0.05
-        )} 100%)`,
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-  borderRadius: 12,
-  backdropFilter: 'blur(10px)',
+  background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.95
+  )} 50%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
+  border: `2px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+  borderRadius: 16,
+  backdropFilter: 'blur(40px)',
+  boxShadow: `
+    0 12px 32px ${alpha(theme.palette.common.black, 0.08)}, 
+    0 6px 16px ${alpha(theme.palette.common.black, 0.06)},
+    0 2px 8px ${alpha(theme.palette.primary.main, 0.04)},
+    inset 0 1px 0 ${alpha(theme.palette.common.white, 0.08)}
+  `,
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '1px',
+    background: `linear-gradient(90deg, 
+      ${theme.palette.primary.main} 0%, 
+      ${theme.palette.success.main} 50%, 
+      ${theme.palette.primary.main} 100%
+    )`,
+    borderRadius: '16px 16px 0 0',
+    opacity: 0.7,
+    zIndex: 1
+  },
   '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: theme.shadows[8],
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+    transform: 'translateY(-2px) scale(1.01)',
+    boxShadow: `
+      0 16px 40px ${alpha(theme.palette.common.black, 0.12)}, 
+      0 8px 24px ${alpha(theme.palette.common.black, 0.08)},
+      0 4px 12px ${alpha(theme.palette.primary.main, 0.08)}
+    `,
+    border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`
   }
 }));
 
 const ReserveCard = styled(Box)(({ theme }) => ({
-  background:
-    theme.palette.mode === 'dark'
-      ? `linear-gradient(135deg, ${alpha('#1a0f00', 0.6)} 0%, ${alpha('#0f0a00', 0.8)} 100%)`
-      : alpha(theme.palette.warning.light, 0.1),
-  border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
-  borderRadius: 12,
+  background: `linear-gradient(145deg, ${alpha(theme.palette.warning.light, 0.08)} 0%, ${alpha(
+    theme.palette.warning.light,
+    0.05
+  )} 50%, ${alpha(theme.palette.warning.light, 0.08)} 100%)`,
+  border: `2px solid ${alpha(theme.palette.warning.main, 0.15)}`,
+  borderRadius: 16,
   padding: theme.spacing(2),
-  backdropFilter: 'blur(5px)'
+  backdropFilter: 'blur(20px)',
+  boxShadow: `
+    0 8px 24px ${alpha(theme.palette.warning.main, 0.06)}, 
+    0 4px 12px ${alpha(theme.palette.common.black, 0.04)},
+    inset 0 1px 0 ${alpha(theme.palette.common.white, 0.05)}
+  `,
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '1px',
+    background: `linear-gradient(90deg, 
+      ${theme.palette.warning.main} 0%, 
+      ${theme.palette.warning.light} 50%, 
+      ${theme.palette.warning.main} 100%
+    )`,
+    borderRadius: '16px 16px 0 0',
+    opacity: 0.6,
+    zIndex: 1
+  },
+  '&:hover': {
+    border: `2px solid ${alpha(theme.palette.warning.main, 0.25)}`,
+    boxShadow: `
+      0 12px 32px ${alpha(theme.palette.warning.main, 0.1)}, 
+      0 6px 16px ${alpha(theme.palette.common.black, 0.06)}
+    `
+  }
 }));
 
 // function truncate(str, n) {
@@ -189,36 +269,88 @@ export default function Wallet({ style }) {
           position: 'relative',
           overflow: 'hidden',
           padding: '4px 12px',
-          borderRadius: '14px',
+          borderRadius: '16px',
           backgroundColor: 'transparent',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
-          minHeight: '28px',
+          minHeight: '32px',
           background: accountLogin
-            ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`
-            : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.8)} 0%, ${alpha(
+            ? `linear-gradient(145deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%, ${theme.palette.success.main} 100%)`
+            : `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.85)} 0%, ${alpha(
                 theme.palette.primary.dark,
-                0.9
-              )} 100%)`,
-          backdropFilter: 'blur(10px)',
-          border: `1px solid ${alpha(theme.palette.primary.light, 0.3)}`,
+                0.95
+              )} 50%, ${alpha(theme.palette.success.main, 0.8)} 100%)`,
+          backdropFilter: 'blur(20px)',
+          border: `1px solid ${alpha(theme.palette.primary.light, 0.25)}`,
           boxShadow: accountLogin
-            ? `0 6px 24px ${alpha(theme.palette.primary.main, 0.3)}`
-            : `0 3px 16px ${alpha(theme.palette.primary.main, 0.25)}`,
+            ? `0 8px 32px ${alpha(theme.palette.primary.main, 0.35)}, 0 4px 16px ${alpha(
+                theme.palette.common.black,
+                0.1
+              )}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}`
+            : `0 6px 24px ${alpha(theme.palette.primary.main, 0.3)}, 0 3px 12px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.15)}`,
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '1px',
+            background: `linear-gradient(90deg, 
+              ${theme.palette.primary.main} 0%, 
+              ${theme.palette.success.main} 25%, 
+              ${theme.palette.info.main} 50%, 
+              ${theme.palette.warning.main} 75%, 
+              ${theme.palette.error.main} 100%
+            )`,
+            borderRadius: '16px 16px 0 0',
+            opacity: 0.8,
+            animation: 'shimmer 3s ease-in-out infinite'
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: '-100%',
+            width: '100%',
+            height: '100%',
+            background: `linear-gradient(90deg, transparent, ${alpha(
+              theme.palette.common.white,
+              0.1
+            )}, transparent)`,
+            transition: 'left 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+          },
+          '@keyframes shimmer': {
+            '0%, 100%': { opacity: 0.8 },
+            '50%': { opacity: 0.5 }
+          },
           '&:hover': {
-            transform: 'translateY(-1px)',
-            boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.4)}`,
+            transform: 'translateY(-2px) scale(1.02)',
+            boxShadow: accountLogin
+              ? `0 12px 40px ${alpha(theme.palette.primary.main, 0.45)}, 0 6px 20px ${alpha(
+                  theme.palette.common.black,
+                  0.12
+                )}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.25)}`
+              : `0 10px 36px ${alpha(theme.palette.primary.main, 0.4)}, 0 4px 16px ${alpha(
+                  theme.palette.common.black,
+                  0.1
+                )}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}`,
             background: accountLogin
-              ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`
-              : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${alpha(
+              ? `linear-gradient(145deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.success.light} 100%)`
+              : `linear-gradient(145deg, ${theme.palette.primary.main} 0%, ${alpha(
                   theme.palette.primary.dark,
-                  0.8
-                )} 100%)`
+                  0.9
+                )} 50%, ${theme.palette.success.main} 100%)`,
+            '&::after': {
+              left: '100%'
+            }
           },
           '&:active': {
-            transform: 'translateY(0)',
+            transform: 'translateY(-1px) scale(0.98)',
             transition: 'transform 0.1s'
           }
         }}
@@ -602,12 +734,58 @@ export default function Wallet({ style }) {
                   typography: 'body2',
                   py: 1.5,
                   px: 3,
-                  borderRadius: 1,
+                  borderRadius: 2,
                   mx: 1,
                   mb: 0.5,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.06
+                  )} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`,
+                  backdropFilter: 'blur(10px)',
+                  border: `1px solid ${alpha(theme.palette.success.main, 0.12)}`,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '1px',
+                    background: `linear-gradient(90deg, 
+                      ${theme.palette.success.main} 0%, 
+                      ${theme.palette.primary.main} 50%, 
+                      ${theme.palette.success.main} 100%
+                    )`,
+                    borderRadius: '8px 8px 0 0',
+                    opacity: 0.6
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: `linear-gradient(90deg, transparent, ${alpha(
+                      theme.palette.success.main,
+                      0.08
+                    )}, transparent)`,
+                    transition: 'left 0.4s ease'
+                  },
                   '&:hover': {
-                    backgroundColor: alpha(theme.palette.success.main, 0.1),
-                    color: theme.palette.success.main
+                    backgroundColor: `linear-gradient(135deg, ${alpha(
+                      theme.palette.success.main,
+                      0.12
+                    )} 0%, ${alpha(theme.palette.success.main, 0.06)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                    color: theme.palette.success.main,
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.success.main, 0.15)}`,
+                    '&::after': {
+                      left: '100%'
+                    }
                   }
                 }}
                 onClick={() => setOpenWalletModal(true)}
@@ -631,11 +809,57 @@ export default function Wallet({ style }) {
                   typography: 'body2',
                   py: 1.5,
                   px: 3,
-                  borderRadius: 1,
+                  borderRadius: 2,
                   mx: 1,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.06
+                  )} 0%, ${alpha(theme.palette.error.main, 0.02)} 100%)`,
+                  backdropFilter: 'blur(10px)',
+                  border: `1px solid ${alpha(theme.palette.error.main, 0.12)}`,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '1px',
+                    background: `linear-gradient(90deg, 
+                      ${theme.palette.error.main} 0%, 
+                      ${theme.palette.warning.main} 50%, 
+                      ${theme.palette.error.main} 100%
+                    )`,
+                    borderRadius: '8px 8px 0 0',
+                    opacity: 0.6
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: `linear-gradient(90deg, transparent, ${alpha(
+                      theme.palette.error.main,
+                      0.08
+                    )}, transparent)`,
+                    transition: 'left 0.4s ease'
+                  },
                   '&:hover': {
-                    backgroundColor: alpha(theme.palette.error.main, 0.1),
-                    color: theme.palette.error.main
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.error.main,
+                      0.12
+                    )} 0%, ${alpha(theme.palette.error.main, 0.06)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+                    color: theme.palette.error.main,
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.error.main, 0.15)}`,
+                    '&::after': {
+                      left: '100%'
+                    }
                   }
                 }}
                 onClick={handleLogout}
