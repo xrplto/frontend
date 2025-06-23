@@ -112,7 +112,7 @@ export default function TokenDetail({ token, tab }) {
             top: 0,
             backgroundColor: !darkMode ? '#fff' : '#000000',
             width: '100%',
-            zIndex: 1100,
+            zIndex: 100,
             boxShadow: `0px 2px 4px ${
               !darkMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
             }`,
@@ -161,7 +161,7 @@ export default function TokenDetail({ token, tab }) {
           position: 'sticky',
           top: 0,
           backgroundColor: !darkMode ? '#fff' : '#000000',
-          zIndex: 1100
+          zIndex: 100
         }}
       >
         <Tabs
