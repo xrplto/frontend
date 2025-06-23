@@ -99,9 +99,9 @@ export default function TokenDetail({ token, tab }) {
       else url = `/token/${token.slug}/`;
       window.history.pushState({}, null, url);
       setTabID(newID);
-      gotoTabView(event);
+      // Removed gotoTabView(event) to prevent scrolling when switching tabs
     },
-    [token.slug, gotoTabView]
+    [token.slug]
   );
 
   const tabStyle = useMemo(
