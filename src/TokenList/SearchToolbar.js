@@ -1010,12 +1010,12 @@ export default function SearchToolbar({
               0.8
             )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
             backdropFilter: 'blur(10px)',
-            borderRadius: '12px',
-            padding: '8px 12px',
+            borderRadius: '8px',
+            padding: '4px 8px',
             // Compact styling for medium screens
             [theme.breakpoints.down('lg')]: {
-              borderRadius: '10px',
-              padding: '6px 10px'
+              borderRadius: '6px',
+              padding: '3px 6px'
             },
             border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
             boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.06)}`

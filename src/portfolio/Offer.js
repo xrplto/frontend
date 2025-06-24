@@ -42,7 +42,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   background: alpha(theme.palette.background.paper, 0.8),
   backdropFilter: 'blur(8px)',
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  borderRadius: theme.shape.borderRadius * 2
+  borderRadius: theme.shape.borderRadius
 }));
 
 const StyledCardHeader = styled(CardHeader)(({ theme }) => ({

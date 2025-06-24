@@ -87,7 +87,7 @@ const EnhancedToggleButton = styled(ToggleButton)(({ theme }) => ({
 
 const ChartContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius * 2,
+  borderRadius: theme.shape.borderRadius,
   overflow: 'hidden',
   background:
     theme.palette.mode === 'dark'
