@@ -27,7 +27,8 @@ import {
   toggleButtonGroupClasses,
   Paper,
   Menu,
-  SvgIcon
+  SvgIcon,
+  Typography
 } from '@mui/material';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
@@ -51,6 +52,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import ViewList from '@mui/icons-material/ViewList';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -203,6 +205,33 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]: {
     marginLeft: -1,
     borderLeft: '1px solid transparent'
+  }
+}));
+
+const RowsSelector = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  padding: theme.spacing(0.5, 1.5),
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: theme.palette.background.paper,
+  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+  boxShadow: theme.shadows[1]
+}));
+
+const CustomRowsSelect = styled(Select)(({ theme }) => ({
+  '& .MuiOutlinedInput-notchedOutline': {
+    border: 'none'
+  },
+  '& .MuiSelect-select': {
+    paddingRight: theme.spacing(3),
+    paddingLeft: theme.spacing(1),
+    fontWeight: 600,
+    color: theme.palette.primary.main,
+    minWidth: 60
+  },
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.04)
   }
 }));
 
@@ -999,47 +1028,19 @@ export default function SearchToolbar({
         </Tabs>
 
         {/* Enhanced Rows Selector */}
-        <Stack
-          direction="row"
-          alignItems="center"
-          sx={{
-            display: { xs: 'none', md: 'flex' },
-            ml: 'auto',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.8
-            )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-            backdropFilter: 'blur(10px)',
-            borderRadius: '8px',
-            padding: '4px 8px',
-            // Compact styling for medium screens
-            [theme.breakpoints.down('lg')]: {
-              borderRadius: '6px',
-              padding: '3px 6px'
-            },
-            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-            boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.06)}`
-          }}
-        >
-          Rows
-          <Select
-            value={rows}
-            onChange={handleChangeRows}
-            sx={{
-              mt: 0.4,
-              ml: 1,
-              '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-              '& .MuiSelect-select': {
-                fontWeight: 600,
-                color: theme.palette.primary.main
-              }
-            }}
-          >
-            <MenuItem value={100}>100</MenuItem>
-            <MenuItem value={50}>50</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-          </Select>
-        </Stack>
+        <Box sx={{ display: { xs: 'none', md: 'flex' }, ml: 'auto' }}>
+          <RowsSelector>
+            <ViewList fontSize="small" color="action" />
+            <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>
+              Rows
+            </Typography>
+            <CustomRowsSelect value={rows} onChange={handleChangeRows} size="small">
+              <MenuItem value={100}>100</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+              <MenuItem value={20}>20</MenuItem>
+            </CustomRowsSelect>
+          </RowsSelector>
+        </Box>
 
         <CategoriesDrawer
           isOpen={openCategoriesDrawer}
