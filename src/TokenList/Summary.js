@@ -773,7 +773,7 @@ export default function Summary() {
                               display: 'flex',
                               alignItems: 'center',
                               gap: '6px',
-                              mb: 1
+                              mb: 0.5
                             }}
                           >
                             <Box sx={{ fontSize: '0.9rem' }}>
@@ -852,8 +852,8 @@ export default function Summary() {
                                 sx={{
                                   display: 'flex',
                                   alignItems: 'center',
-                                  gap: '8px',
-                                  padding: '4px 0',
+                                  gap: '6px',
+                                  padding: '2px 0',
                                   cursor: 'pointer',
                                   transition: 'all 0.2s ease',
                                   '&:hover': {
@@ -871,8 +871,8 @@ export default function Summary() {
                                 <Box
                                   sx={{
                                     position: 'relative',
-                                    minWidth: '24px',
-                                    height: '24px',
+                                    minWidth: '20px',
+                                    height: '20px',
                                     borderRadius: '50%',
                                     overflow: 'hidden',
                                     border: (theme) =>
@@ -917,22 +917,22 @@ export default function Summary() {
                                 <Box sx={{ flex: 1, minWidth: 0 }}>
                                   <Typography
                                     sx={{
-                                      fontSize: '0.75rem',
+                                      fontSize: '0.7rem',
                                       fontWeight: 600,
                                       color: (theme) => theme.palette.text.primary,
                                       overflow: 'hidden',
                                       textOverflow: 'ellipsis',
                                       whiteSpace: 'nowrap',
-                                      lineHeight: 1.2
+                                      lineHeight: 1.1
                                     }}
                                   >
                                     {token.name || token.currency || 'Unknown'}
                                   </Typography>
                                   <Typography
                                     sx={{
-                                      fontSize: '0.65rem',
+                                      fontSize: '0.6rem',
                                       color: (theme) => theme.palette.text.secondary,
-                                      lineHeight: 1.1
+                                      lineHeight: 1.0
                                     }}
                                   >
                                     {(() => {
@@ -950,7 +950,7 @@ export default function Summary() {
                                 </Box>
                                 <Typography
                                   sx={{
-                                    fontSize: '0.65rem',
+                                    fontSize: '0.6rem',
                                     fontWeight: 600,
                                     color: (() => {
                                       const change = token.pro24h || token.change24h || token.p24h;
@@ -981,7 +981,7 @@ export default function Summary() {
                       {loading && (
                         <Skeleton
                           variant="rectangular"
-                          height={140}
+                          height={120}
                           sx={{
                             borderRadius: '16px',
                             [(theme) => theme.breakpoints.down('sm')]: {
