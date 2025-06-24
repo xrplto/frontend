@@ -249,13 +249,16 @@ export default function Summary() {
   const [isMostViewedLoading, setIsMostViewedLoading] = useState(true);
   const [activeTokenSection, setActiveTokenSection] = useState('trending');
 
+  // Use consistent API endpoint pattern with fallback
+  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
+
   // Fetch trending tokens
   useEffect(() => {
     const fetchTrendingTokens = async () => {
       try {
         setIsTrendingLoading(true);
         const response = await fetch(
-          'https://api.xrpl.to/api/tokens?sort=trendingScore&order=desc&limit=5&skipMetrics=true'
+          `${BASE_URL}/tokens?start=0&limit=5&sortBy=trendingScore&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
         );
         const data = await response.json();
 
@@ -279,7 +282,7 @@ export default function Summary() {
       try {
         setIsNewTokensLoading(true);
         const response = await fetch(
-          'https://api.xrpl.to/api/tokens?showNew=true&limit=5&skipMetrics=true'
+          `${BASE_URL}/tokens?start=0&limit=5&sortBy=dateon&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
         );
         const data = await response.json();
 
@@ -303,7 +306,7 @@ export default function Summary() {
       try {
         setIsMostViewedLoading(true);
         const response = await fetch(
-          'https://api.xrpl.to/api/tokens?sort=views&order=desc&limit=5&skipMetrics=true'
+          `${BASE_URL}/tokens?start=0&limit=5&sortBy=views&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
         );
         const data = await response.json();
 

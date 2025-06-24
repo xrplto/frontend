@@ -95,7 +95,7 @@ function MostViewedPage({ data }) {
 export default MostViewedPage;
 
 export async function getStaticProps() {
-  const BASE_URL = process.env.API_URL;
+  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
   let data = null;
   try {
     var t1 = performance.now();
