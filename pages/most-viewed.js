@@ -65,7 +65,7 @@ function MostViewedPage({ data }) {
           }
         }}
       >
-        <Summary />
+        <Summary mostViewedTokens={data?.tokens?.slice(0, 5)} />
       </Box>
 
       <Container maxWidth="xl">
@@ -94,15 +94,15 @@ function MostViewedPage({ data }) {
 
 export default MostViewedPage;
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
   let data = null;
   try {
     var t1 = performance.now();
 
-    // Fetch tokens sorted by views in descending order
+    // Fetch tokens sorted by nginxScore in descending order
     const res = await axios.get(
-      `${BASE_URL}/tokens?start=0&limit=100&sortBy=views&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
+      `${BASE_URL}/tokens?start=0&limit=100&sortBy=nginxScore&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
     );
 
     // Filter the API response to only keep necessary fields
@@ -195,7 +195,6 @@ export async function getStaticProps() {
   }
 
   return {
-    props: ret,
-    revalidate: 60 // Revalidate every 60 seconds
+    props: ret
   };
 }

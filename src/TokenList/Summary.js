@@ -236,7 +236,7 @@ const formatNumberWithDecimals = (num) => {
   return num.toFixed(2);
 };
 
-export default function Summary() {
+export default function Summary({ mostViewedTokens: propMostViewedTokens }) {
   const { t } = useTranslation(); // set translation const
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency } = useContext(AppContext);
@@ -249,8 +249,8 @@ export default function Summary() {
   const [isMostViewedLoading, setIsMostViewedLoading] = useState(true);
   const [activeTokenSection, setActiveTokenSection] = useState('trending');
 
-  // Use consistent API endpoint pattern with fallback
-  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
+  // Use consistent API endpoint - process.env is not available on client-side
+  const BASE_URL = 'https://api.xrpl.to/api';
 
   // Fetch trending tokens
   useEffect(() => {
@@ -263,7 +263,6 @@ export default function Summary() {
         const data = await response.json();
 
         if (data.result === 'success' && data.tokens) {
-          console.log('Trending tokens API response:', data.tokens[0]); // Debug log
           setTrendingTokens(data.tokens);
         }
       } catch (error) {
@@ -287,7 +286,6 @@ export default function Summary() {
         const data = await response.json();
 
         if (data.result === 'success' && data.tokens) {
-          console.log('New tokens API response:', data.tokens[0]); // Debug log
           setNewTokens(data.tokens);
         }
       } catch (error) {
@@ -300,29 +298,35 @@ export default function Summary() {
     fetchNewTokens();
   }, []);
 
-  // Fetch most viewed tokens
+  // Use prop data or fetch most viewed tokens
   useEffect(() => {
-    const fetchMostViewedTokens = async () => {
-      try {
-        setIsMostViewedLoading(true);
-        const response = await fetch(
-          `${BASE_URL}/tokens?start=0&limit=5&sortBy=views&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
-        );
-        const data = await response.json();
+    if (propMostViewedTokens && propMostViewedTokens.length > 0) {
+      // Use server-provided data for consistency
+      setMostViewedTokens(propMostViewedTokens);
+      setIsMostViewedLoading(false);
+    } else {
+      // Fetch from API only when prop not available (other pages)
+      const fetchMostViewedTokens = async () => {
+        try {
+          setIsMostViewedLoading(true);
+          const response = await fetch(
+            `${BASE_URL}/tokens?start=0&limit=5&sortBy=nginxScore&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
+          );
+          const data = await response.json();
 
-        if (data.result === 'success' && data.tokens) {
-          console.log('Most viewed tokens API response:', data.tokens[0]); // Debug log
-          setMostViewedTokens(data.tokens);
+          if (data.result === 'success' && data.tokens) {
+            setMostViewedTokens(data.tokens);
+          }
+        } catch (error) {
+          console.error('Error fetching most viewed tokens:', error);
+        } finally {
+          setIsMostViewedLoading(false);
         }
-      } catch (error) {
-        console.error('Error fetching most viewed tokens:', error);
-      } finally {
-        setIsMostViewedLoading(false);
-      }
-    };
+      };
 
-    fetchMostViewedTokens();
-  }, []);
+      fetchMostViewedTokens();
+    }
+  }, [propMostViewedTokens]);
 
   // Simulate loading completion after data is available
   useEffect(() => {
