@@ -84,10 +84,11 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
   const dispatch = useDispatch();
   const router = useRouter();
 
-  const currentFilteredCount = filteredCount;
+  const currentFilteredCount = filteredCount ?? 0;
   const num = currentFilteredCount / rows;
   let page_count = Math.floor(num);
-  if (num % 1 != 0) page_count++;
+  if (num % 1 !== 0) page_count++;
+  page_count = Math.max(page_count, 1); // Ensure at least 1 page
 
   const start = currentFilteredCount > 0 ? page * rows + 1 : 0;
   let end = start + rows - 1;

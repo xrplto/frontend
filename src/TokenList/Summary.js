@@ -76,15 +76,7 @@ const MetricBox = styled(Paper)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     border: 'none'
   },
-  boxShadow: `
-    0 24px 48px ${alpha(theme.palette.common.black, 0.12)}, 
-    0 12px 24px ${alpha(theme.palette.common.black, 0.08)},
-    0 4px 16px ${alpha(theme.palette.primary.main, 0.06)},
-    inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
-  `,
-  [theme.breakpoints.down('sm')]: {
-    boxShadow: 'none'
-  },
+  boxShadow: 'none',
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -113,18 +105,6 @@ const MetricBox = styled(Paper)(({ theme }) => ({
   '@keyframes shimmer': {
     '0%, 100%': { opacity: 0.9 },
     '50%': { opacity: 0.6 }
-  },
-  '&:hover': {
-    transform: 'translateY(-2px) scale(1.02)',
-    boxShadow: `
-      0 32px 64px ${alpha(theme.palette.common.black, 0.15)}, 
-      0 16px 32px ${alpha(theme.palette.common.black, 0.1)},
-      0 8px 24px ${alpha(theme.palette.primary.main, 0.12)}
-    `,
-    [theme.breakpoints.down('sm')]: {
-      transform: 'none',
-      boxShadow: 'none'
-    }
   }
 }));
 
@@ -261,6 +241,31 @@ export default function Summary() {
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true);
+  const [trendingTokens, setTrendingTokens] = useState([]);
+  const [isTrendingLoading, setIsTrendingLoading] = useState(true);
+
+  // Fetch trending tokens
+  useEffect(() => {
+    const fetchTrendingTokens = async () => {
+      try {
+        setIsTrendingLoading(true);
+        const response = await fetch(
+          'https://api.xrpl.to/api/tokens?sort=trendingScore&order=desc&limit=5&skipMetrics=true'
+        );
+        const data = await response.json();
+
+        if (data.result === 'success' && data.tokens) {
+          setTrendingTokens(data.tokens);
+        }
+      } catch (error) {
+        console.error('Error fetching trending tokens:', error);
+      } finally {
+        setIsTrendingLoading(false);
+      }
+    };
+
+    fetchTrendingTokens();
+  }, []);
 
   // Simulate loading completion after data is available
   useEffect(() => {
@@ -320,6 +325,22 @@ export default function Summary() {
   const xrpPriceSymbol =
     activeFiatCurrency === 'XRP' ? currencySymbols.USD : currencySymbols[activeFiatCurrency];
 
+  const formatTokenPrice = (token, fiatRate) => {
+    if (!token.usd || !fiatRate) return '0.00';
+    const price = new Decimal(token.usd).div(fiatRate).toNumber();
+    if (price >= 1) return price.toFixed(2);
+    if (price >= 0.01) return price.toFixed(4);
+    if (price >= 0.0001) return price.toFixed(6);
+    return price.toExponential(2);
+  };
+
+  const getTokenImageUrl = (token) => {
+    if (token.md5 && token.ext) {
+      return `https://xrpl.to/static/tokens/${token.md5}.${token.ext}`;
+    }
+    return null;
+  };
+
   return (
     <Stack
       sx={{
@@ -378,328 +399,491 @@ export default function Summary() {
         {t("Today's Top XRPL Token Prices by Volume")}
       </Typography>
 
-      {isLoading ? (
-        <Box
-          sx={{
-            overflowX: 'auto',
-            width: '100%',
-            maxWidth: '100vw',
-            pb: 0, // Zero padding on mobile
-            mt: { xs: '-12px', sm: '-8px', md: 0 }, // Extremely aggressive negative margin on loading state
-            [(theme) => theme.breakpoints.up('md')]: {
-              pb: 1
-            },
-            [(theme) => theme.breakpoints.down('sm')]: {
-              overflowX: 'hidden'
-            }
-          }}
-        >
-          <Grid
-            container
-            spacing={0} // Zero spacing on mobile
+      <Stack spacing={3} sx={{ width: '100%' }}>
+        {/* Main Metrics Section */}
+        {isLoading ? (
+          <Box
             sx={{
-              flexWrap: 'nowrap',
-              minWidth: '900px',
-              [(theme) => theme.breakpoints.down('sm')]: {
-                flexWrap: 'wrap',
-                minWidth: 'unset',
-                width: '100%',
-                margin: 0,
-                gap: '1px' // Ultra-minimal gap
-              },
-              [(theme) => theme.breakpoints.down('md')]: {
-                minWidth: '700px'
-              },
+              overflowX: 'auto',
+              width: '100%',
+              maxWidth: '100vw',
+              pb: 0, // Zero padding on mobile
+              mt: { xs: '-12px', sm: '-8px', md: 0 }, // Extremely aggressive negative margin on loading state
               [(theme) => theme.breakpoints.up('md')]: {
-                spacing: 2
+                pb: 1
               },
-              width: '100%'
+              [(theme) => theme.breakpoints.down('sm')]: {
+                overflowX: 'hidden'
+              }
             }}
           >
-            {[...Array(6)].map((_, index) => (
-              <Grid
-                item
-                key={index}
-                sx={{
-                  flex: '1 0 auto',
-                  [(theme) => theme.breakpoints.down('sm')]: {
-                    flex: 'none',
-                    width: 'calc(50% - 0.5px)', // Even tighter width
-                    maxWidth: 'calc(50% - 0.5px)',
-                    padding: '0 !important'
-                  }
-                }}
-              >
-                <Skeleton
-                  variant="rectangular"
-                  height={100}
+            <Grid
+              container
+              spacing={0} // Zero spacing on mobile
+              sx={{
+                flexWrap: 'nowrap',
+                minWidth: '900px',
+                [(theme) => theme.breakpoints.down('sm')]: {
+                  flexWrap: 'wrap',
+                  minWidth: 'unset',
+                  width: '100%',
+                  margin: 0,
+                  gap: '1px' // Ultra-minimal gap
+                },
+                [(theme) => theme.breakpoints.down('md')]: {
+                  minWidth: '700px'
+                },
+                [(theme) => theme.breakpoints.up('md')]: {
+                  spacing: 2
+                },
+                width: '100%'
+              }}
+            >
+              {[...Array(6)].map((_, index) => (
+                <Grid
+                  item
+                  key={index}
                   sx={{
-                    borderRadius: '20px',
+                    flex: '1 0 auto',
                     [(theme) => theme.breakpoints.down('sm')]: {
-                      height: 32, // Even smaller height
-                      borderRadius: '3px'
-                    },
-                    minWidth: '140px',
-                    [(theme) => theme.breakpoints.down('sm')]: {
-                      minWidth: 'unset',
-                      width: '100%'
-                    },
-                    [(theme) => theme.breakpoints.down('md')]: {
-                      minWidth: '110px'
-                    },
-                    background: (theme) =>
-                      `linear-gradient(135deg, ${alpha(
-                        theme.palette.background.paper,
-                        0.8
-                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`
+                      flex: 'none',
+                      width: 'calc(50% - 0.5px)', // Even tighter width
+                      maxWidth: 'calc(50% - 0.5px)',
+                      padding: '0 !important'
+                    }
                   }}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      ) : (
-        <Box
-          sx={{
-            overflowX: 'auto',
-            width: '100%',
-            maxWidth: '100vw',
-            pb: 0, // Zero padding on mobile
-            mt: { xs: '-12px', sm: '-8px', md: 0 }, // Extremely aggressive negative margin to pull content up
-            [(theme) => theme.breakpoints.up('md')]: {
-              pb: 2
-            },
-            [(theme) => theme.breakpoints.down('sm')]: {
-              overflowX: 'hidden'
-            },
-            '&::-webkit-scrollbar': {
-              height: '8px',
-              [(theme) => theme.breakpoints.down('sm')]: {
-                display: 'none'
-              }
-            },
-            '&::-webkit-scrollbar-track': {
-              backgroundColor: (theme) =>
-                theme.palette.mode === 'dark' ? alpha('#FFF', 0.05) : alpha('#000', 0.05),
-              borderRadius: '4px'
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: (theme) =>
-                theme.palette.mode === 'dark' ? alpha('#FFF', 0.2) : alpha('#000', 0.2),
-              borderRadius: '4px',
-              '&:hover': {
-                backgroundColor: (theme) =>
-                  theme.palette.mode === 'dark' ? alpha('#FFF', 0.3) : alpha('#000', 0.3)
-              }
-            }
-          }}
-        >
-          <Grid
-            container
-            spacing={0} // Zero spacing on mobile
+                >
+                  <Skeleton
+                    variant="rectangular"
+                    height={100}
+                    sx={{
+                      borderRadius: '20px',
+                      [(theme) => theme.breakpoints.down('sm')]: {
+                        height: 32, // Even smaller height
+                        borderRadius: '3px'
+                      },
+                      minWidth: '140px',
+                      [(theme) => theme.breakpoints.down('sm')]: {
+                        minWidth: 'unset',
+                        width: '100%'
+                      },
+                      [(theme) => theme.breakpoints.down('md')]: {
+                        minWidth: '110px'
+                      },
+                      background: (theme) =>
+                        `linear-gradient(135deg, ${alpha(
+                          theme.palette.background.paper,
+                          0.8
+                        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`
+                    }}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        ) : (
+          <Box
             sx={{
-              flexWrap: 'nowrap',
-              minWidth: '900px',
-              [(theme) => theme.breakpoints.down('sm')]: {
-                flexWrap: 'wrap',
-                minWidth: 'unset',
-                width: '100%',
-                margin: 0,
-                gap: '1px' // Ultra-minimal gap
-              },
-              [(theme) => theme.breakpoints.down('md')]: {
-                minWidth: '700px'
-              },
+              width: '100%',
+              pb: 0,
+              mt: { xs: '-12px', sm: '-8px', md: 0 },
               [(theme) => theme.breakpoints.up('md')]: {
-                spacing: 2
-              },
-              width: '100%'
+                pb: 2
+              }
             }}
           >
-            {/* Market Cap Box */}
             <Grid
-              item
+              container
+              spacing={2}
               sx={{
-                flex: '1 0 auto',
-                // Mobile: 2 items per row with zero spacing
+                flexWrap: 'wrap',
+                width: '100%',
                 [(theme) => theme.breakpoints.down('sm')]: {
-                  flex: 'none',
-                  width: 'calc(50% - 1px)',
-                  maxWidth: 'calc(50% - 1px)',
-                  padding: '0 !important'
+                  spacing: 1,
+                  gap: '1px'
                 }
               }}
             >
-              <MetricBox elevation={0}>
-                <MetricTitle>{t('Global Market Cap')}</MetricTitle>
-                <div>
-                  <MetricValue>
-                    {currencySymbols[activeFiatCurrency]}
-                    {formatNumberWithDecimals(Number(gMarketcap))}
-                  </MetricValue>
-                  <PercentageChange isPositive={gMarketcapPro >= 0}>
-                    {gMarketcapPro >= 0 ? '▲' : '▼'} {Math.abs(gMarketcapPro).toFixed(2)}%
-                  </PercentageChange>
-                </div>
-              </MetricBox>
-            </Grid>
-
-            {/* DEX Volume Box */}
-            <Grid
-              item
-              sx={{
-                flex: '1 0 auto',
-                [(theme) => theme.breakpoints.down('sm')]: {
-                  flex: 'none',
-                  width: 'calc(50% - 1px)',
-                  maxWidth: 'calc(50% - 1px)',
-                  padding: '0 !important'
-                }
-              }}
-            >
-              <MetricBox elevation={0}>
-                <MetricTitle>{t('24h DEX Volume')}</MetricTitle>
-                <div>
-                  <MetricValue>
-                    {currencySymbols[activeFiatCurrency]}
-                    {formatNumberWithDecimals(gDexVolume)}
-                  </MetricValue>
-                  <PercentageChange isPositive={gDexVolumePro >= 0}>
-                    {gDexVolumePro >= 0 ? '▲' : '▼'} {Math.abs(gDexVolumePro).toFixed(2)}%
-                  </PercentageChange>
-                </div>
-              </MetricBox>
-            </Grid>
-
-            {/* XRP Price Box */}
-            <Grid
-              item
-              sx={{
-                flex: '1 0 auto',
-                [(theme) => theme.breakpoints.down('sm')]: {
-                  flex: 'none',
-                  width: 'calc(50% - 1px)',
-                  maxWidth: 'calc(50% - 1px)',
-                  padding: '0 !important'
-                }
-              }}
-            >
-              <MetricBox elevation={0}>
-                <MetricTitle>{t('XRP Price')}</MetricTitle>
-                <div>
-                  <MetricValue>
-                    {xrpPriceSymbol}
-                    {xrpPrice}
-                  </MetricValue>
-                  <ContentTypography
+              {/* Left side - Main metrics in 2 rows */}
+              <Grid item xs={12} md={8}>
+                <Grid container spacing={2}>
+                  {/* Market Cap Box */}
+                  <Grid
+                    item
+                    xs={6}
+                    md={4}
                     sx={{
-                      fontSize: '0.75rem',
-                      [(theme) => theme.breakpoints.down('md')]: {
-                        fontSize: '0.6rem'
-                      },
                       [(theme) => theme.breakpoints.down('sm')]: {
-                        fontSize: '0.55rem'
-                      },
-                      padding: '2px 6px',
-                      [(theme) => theme.breakpoints.down('md')]: {
-                        padding: '1px 3px'
-                      },
-                      [(theme) => theme.breakpoints.down('sm')]: {
-                        padding: '0px 2px'
-                      },
-                      borderRadius: '6px',
-                      background: 'transparent',
-                      border: 'none',
-                      display: 'inline-block',
-                      color: (theme) =>
-                        theme.palette.mode === 'dark'
-                          ? alpha('#FFFFFF', 0.7)
-                          : alpha('#637381', 0.9)
+                        padding: '0 !important'
+                      }
                     }}
                   >
-                    {activeFiatCurrency === 'XRP' ? 'USD Value' : 'Native XRPL'}
-                  </ContentTypography>
-                </div>
-              </MetricBox>
-            </Grid>
+                    <MetricBox elevation={0}>
+                      <MetricTitle>{t('Global Market Cap')}</MetricTitle>
+                      <div>
+                        <MetricValue>
+                          {currencySymbols[activeFiatCurrency]}
+                          {formatNumberWithDecimals(Number(gMarketcap))}
+                        </MetricValue>
+                        <PercentageChange isPositive={gMarketcapPro >= 0}>
+                          {gMarketcapPro >= 0 ? '▲' : '▼'} {Math.abs(gMarketcapPro).toFixed(2)}%
+                        </PercentageChange>
+                      </div>
+                    </MetricBox>
+                  </Grid>
 
-            {/* NFT Volume Box */}
-            <Grid
-              item
-              sx={{
-                flex: '1 0 auto',
-                [(theme) => theme.breakpoints.down('sm')]: {
-                  flex: 'none',
-                  width: 'calc(50% - 1px)',
-                  maxWidth: 'calc(50% - 1px)',
-                  padding: '0 !important'
-                }
-              }}
-            >
-              <MetricBox elevation={0}>
-                <MetricTitle>{t('Collectibles & NFTs')}</MetricTitle>
-                <div>
-                  <MetricValue>
-                    {currencySymbols[activeFiatCurrency]}
-                    {formatNumberWithDecimals(gNFTIOUVolume)}
-                  </MetricValue>
-                  <VolumePercentage>{gNFTIOUVolumePro}% of volume</VolumePercentage>
-                </div>
-              </MetricBox>
-            </Grid>
+                  {/* DEX Volume Box */}
+                  <Grid
+                    item
+                    xs={6}
+                    md={4}
+                    sx={{
+                      [(theme) => theme.breakpoints.down('sm')]: {
+                        padding: '0 !important'
+                      }
+                    }}
+                  >
+                    <MetricBox elevation={0}>
+                      <MetricTitle>{t('24h DEX Volume')}</MetricTitle>
+                      <div>
+                        <MetricValue>
+                          {currencySymbols[activeFiatCurrency]}
+                          {formatNumberWithDecimals(gDexVolume)}
+                        </MetricValue>
+                        <PercentageChange isPositive={gDexVolumePro >= 0}>
+                          {gDexVolumePro >= 0 ? '▲' : '▼'} {Math.abs(gDexVolumePro).toFixed(2)}%
+                        </PercentageChange>
+                      </div>
+                    </MetricBox>
+                  </Grid>
 
-            {/* Stablecoins Box */}
-            <Grid
-              item
-              sx={{
-                flex: '1 0 auto',
-                [(theme) => theme.breakpoints.down('sm')]: {
-                  flex: 'none',
-                  width: 'calc(50% - 1px)',
-                  maxWidth: 'calc(50% - 1px)',
-                  padding: '0 !important'
-                }
-              }}
-            >
-              <MetricBox elevation={0}>
-                <MetricTitle>{t('Stablecoins')}</MetricTitle>
-                <div>
-                  <MetricValue>
-                    {currencySymbols[activeFiatCurrency]}
-                    {formatNumberWithDecimals(gStableVolume)}
-                  </MetricValue>
-                  <VolumePercentage>{gStableVolumePro}% of volume</VolumePercentage>
-                </div>
-              </MetricBox>
-            </Grid>
+                  {/* XRP Price Box */}
+                  <Grid
+                    item
+                    xs={6}
+                    md={4}
+                    sx={{
+                      [(theme) => theme.breakpoints.down('sm')]: {
+                        padding: '0 !important'
+                      }
+                    }}
+                  >
+                    <MetricBox elevation={0}>
+                      <MetricTitle>{t('XRP Price')}</MetricTitle>
+                      <div>
+                        <MetricValue>
+                          {xrpPriceSymbol}
+                          {xrpPrice}
+                        </MetricValue>
+                        <ContentTypography
+                          sx={{
+                            fontSize: '0.75rem',
+                            [(theme) => theme.breakpoints.down('md')]: {
+                              fontSize: '0.6rem'
+                            },
+                            [(theme) => theme.breakpoints.down('sm')]: {
+                              fontSize: '0.55rem'
+                            },
+                            padding: '2px 6px',
+                            [(theme) => theme.breakpoints.down('md')]: {
+                              padding: '1px 3px'
+                            },
+                            [(theme) => theme.breakpoints.down('sm')]: {
+                              padding: '0px 2px'
+                            },
+                            borderRadius: '6px',
+                            background: 'transparent',
+                            border: 'none',
+                            display: 'inline-block',
+                            color: (theme) =>
+                              theme.palette.mode === 'dark'
+                                ? alpha('#FFFFFF', 0.7)
+                                : alpha('#637381', 0.9)
+                          }}
+                        >
+                          {activeFiatCurrency === 'XRP' ? 'USD Value' : 'Native XRPL'}
+                        </ContentTypography>
+                      </div>
+                    </MetricBox>
+                  </Grid>
 
-            {/* Meme Tokens Box */}
-            <Grid
-              item
-              sx={{
-                flex: '1 0 auto',
-                [(theme) => theme.breakpoints.down('sm')]: {
-                  flex: 'none',
-                  width: 'calc(50% - 1px)',
-                  maxWidth: 'calc(50% - 1px)',
-                  padding: '0 !important'
-                }
-              }}
-            >
-              <MetricBox elevation={0}>
-                <MetricTitle>{t('Meme Tokens')}</MetricTitle>
-                <div>
-                  <MetricValue>
-                    {currencySymbols[activeFiatCurrency]}
-                    {formatNumberWithDecimals(gMemeVolume)}
-                  </MetricValue>
-                  <VolumePercentage>{gMemeVolumePro}% of volume</VolumePercentage>
-                </div>
-              </MetricBox>
+                  {/* NFT Volume Box */}
+                  <Grid
+                    item
+                    xs={6}
+                    md={4}
+                    sx={{
+                      [(theme) => theme.breakpoints.down('sm')]: {
+                        padding: '0 !important'
+                      }
+                    }}
+                  >
+                    <MetricBox elevation={0}>
+                      <MetricTitle>{t('Collectibles & NFTs')}</MetricTitle>
+                      <div>
+                        <MetricValue>
+                          {currencySymbols[activeFiatCurrency]}
+                          {formatNumberWithDecimals(gNFTIOUVolume)}
+                        </MetricValue>
+                        <VolumePercentage>{gNFTIOUVolumePro}% of volume</VolumePercentage>
+                      </div>
+                    </MetricBox>
+                  </Grid>
+
+                  {/* Stablecoins Box */}
+                  <Grid
+                    item
+                    xs={6}
+                    md={4}
+                    sx={{
+                      [(theme) => theme.breakpoints.down('sm')]: {
+                        padding: '0 !important'
+                      }
+                    }}
+                  >
+                    <MetricBox elevation={0}>
+                      <MetricTitle>{t('Stablecoins')}</MetricTitle>
+                      <div>
+                        <MetricValue>
+                          {currencySymbols[activeFiatCurrency]}
+                          {formatNumberWithDecimals(gStableVolume)}
+                        </MetricValue>
+                        <VolumePercentage>{gStableVolumePro}% of volume</VolumePercentage>
+                      </div>
+                    </MetricBox>
+                  </Grid>
+
+                  {/* Meme Tokens Box */}
+                  <Grid
+                    item
+                    xs={6}
+                    md={4}
+                    sx={{
+                      [(theme) => theme.breakpoints.down('sm')]: {
+                        padding: '0 !important'
+                      }
+                    }}
+                  >
+                    <MetricBox elevation={0}>
+                      <MetricTitle>{t('Meme Tokens')}</MetricTitle>
+                      <div>
+                        <MetricValue>
+                          {currencySymbols[activeFiatCurrency]}
+                          {formatNumberWithDecimals(gMemeVolume)}
+                        </MetricValue>
+                        <VolumePercentage>{gMemeVolumePro}% of volume</VolumePercentage>
+                      </div>
+                    </MetricBox>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              {/* Right side - Trending Tokens */}
+              <Grid item xs={12} md={4}>
+                {!isTrendingLoading && trendingTokens.length > 0 && (
+                  <MetricBox
+                    elevation={0}
+                    sx={{
+                      background: (theme) =>
+                        `linear-gradient(145deg, ${alpha(
+                          theme.palette.background.paper,
+                          0.98
+                        )} 0%, ${alpha(theme.palette.background.paper, 0.95)} 50%, ${alpha(
+                          theme.palette.primary.main,
+                          0.02
+                        )} 100%)`,
+                      borderLeft: (theme) => `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                      [(theme) => theme.breakpoints.down('sm')]: {
+                        borderLeft: 'none'
+                      },
+                      height: '100%'
+                    }}
+                  >
+                    <MetricTitle
+                      sx={{ display: 'flex', alignItems: 'center', gap: '4px', mb: '4px' }}
+                    >
+                      <Box
+                        sx={{
+                          fontSize: '0.65rem',
+                          [(theme) => theme.breakpoints.down('sm')]: {
+                            fontSize: '0.55rem'
+                          }
+                        }}
+                      >
+                        🔥
+                      </Box>
+                      <Box sx={{ flex: 1 }}>{t('Trending Tokens')}</Box>
+                      <Box
+                        sx={{
+                          fontSize: '0.55rem',
+                          [(theme) => theme.breakpoints.down('md')]: {
+                            fontSize: '0.45rem'
+                          },
+                          [(theme) => theme.breakpoints.down('sm')]: {
+                            fontSize: '0.4rem'
+                          },
+                          color: (theme) => alpha(theme.palette.text.secondary, 0.7),
+                          fontWeight: 500
+                        }}
+                      >
+                        TOP 5
+                      </Box>
+                    </MetricTitle>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '3px'
+                      }}
+                    >
+                      {trendingTokens.map((token, index) => (
+                        <Box
+                          key={token._id}
+                          onClick={() => {
+                            window.open(`/token/${token.slug}`, '_blank');
+                          }}
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                            padding: '4px 8px',
+                            [(theme) => theme.breakpoints.down('sm')]: {
+                              padding: '3px 6px'
+                            },
+                            borderRadius: '6px',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                              transform: 'translateX(2px)'
+                            }
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
+                            <Typography
+                              sx={{
+                                fontSize: '0.6rem',
+                                [(theme) => theme.breakpoints.down('md')]: {
+                                  fontSize: '0.55rem'
+                                },
+                                [(theme) => theme.breakpoints.down('sm')]: {
+                                  fontSize: '0.5rem'
+                                },
+                                fontWeight: 700,
+                                color: (theme) => alpha(theme.palette.text.secondary, 0.8),
+                                minWidth: '14px',
+                                textAlign: 'center'
+                              }}
+                            >
+                              {index + 1}
+                            </Typography>
+                            <Box
+                              sx={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '1px' }}
+                            >
+                              <Typography
+                                sx={{
+                                  fontSize: '0.72rem',
+                                  [(theme) => theme.breakpoints.down('md')]: {
+                                    fontSize: '0.65rem'
+                                  },
+                                  [(theme) => theme.breakpoints.down('sm')]: {
+                                    fontSize: '0.6rem'
+                                  },
+                                  fontWeight: 650,
+                                  color: (theme) => theme.palette.text.primary,
+                                  lineHeight: 1.1
+                                }}
+                              >
+                                {token.name}
+                              </Typography>
+                              <Typography
+                                sx={{
+                                  fontSize: '0.62rem',
+                                  [(theme) => theme.breakpoints.down('md')]: {
+                                    fontSize: '0.55rem'
+                                  },
+                                  [(theme) => theme.breakpoints.down('sm')]: {
+                                    fontSize: '0.5rem'
+                                  },
+                                  color: (theme) => theme.palette.text.secondary,
+                                  fontWeight: 500,
+                                  lineHeight: 1.0
+                                }}
+                              >
+                                {currencySymbols[activeFiatCurrency]}
+                                {formatTokenPrice(token, fiatRate)}
+                              </Typography>
+                            </Box>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                            <Typography
+                              sx={{
+                                fontSize: '0.55rem',
+                                [(theme) => theme.breakpoints.down('md')]: {
+                                  fontSize: '0.5rem'
+                                },
+                                [(theme) => theme.breakpoints.down('sm')]: {
+                                  fontSize: '0.45rem'
+                                },
+                                color:
+                                  token.pro24h >= 0
+                                    ? (theme) => theme.palette.success.main
+                                    : (theme) => theme.palette.error.main,
+                                fontWeight: 500
+                              }}
+                            >
+                              {token.pro24h >= 0 ? '↗' : '↘'}
+                            </Typography>
+                            <Typography
+                              sx={{
+                                fontSize: '0.68rem',
+                                [(theme) => theme.breakpoints.down('md')]: {
+                                  fontSize: '0.6rem'
+                                },
+                                [(theme) => theme.breakpoints.down('sm')]: {
+                                  fontSize: '0.55rem'
+                                },
+                                color:
+                                  token.pro24h >= 0
+                                    ? (theme) => theme.palette.success.main
+                                    : (theme) => theme.palette.error.main,
+                                fontWeight: 700
+                              }}
+                            >
+                              {Math.abs(token.pro24h).toFixed(1)}%
+                            </Typography>
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
+                  </MetricBox>
+                )}
+
+                {/* Loading skeleton for trending tokens */}
+                {isTrendingLoading && (
+                  <Skeleton
+                    variant="rectangular"
+                    height={140}
+                    sx={{
+                      borderRadius: '16px',
+                      [(theme) => theme.breakpoints.down('sm')]: {
+                        height: 100,
+                        borderRadius: '8px'
+                      },
+                      background: (theme) =>
+                        `linear-gradient(135deg, ${alpha(
+                          theme.palette.background.paper,
+                          0.8
+                        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`
+                    }}
+                  />
+                )}
+              </Grid>
             </Grid>
-          </Grid>
-        </Box>
-      )}
+          </Box>
+        )}
+      </Stack>
     </Stack>
   );
 }
