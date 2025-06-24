@@ -243,6 +243,11 @@ export default function Summary() {
   const [isLoading, setIsLoading] = useState(true);
   const [trendingTokens, setTrendingTokens] = useState([]);
   const [isTrendingLoading, setIsTrendingLoading] = useState(true);
+  const [newTokens, setNewTokens] = useState([]);
+  const [isNewTokensLoading, setIsNewTokensLoading] = useState(true);
+  const [mostViewedTokens, setMostViewedTokens] = useState([]);
+  const [isMostViewedLoading, setIsMostViewedLoading] = useState(true);
+  const [activeTokenSection, setActiveTokenSection] = useState('trending');
 
   // Fetch trending tokens
   useEffect(() => {
@@ -255,6 +260,7 @@ export default function Summary() {
         const data = await response.json();
 
         if (data.result === 'success' && data.tokens) {
+          console.log('Trending tokens API response:', data.tokens[0]); // Debug log
           setTrendingTokens(data.tokens);
         }
       } catch (error) {
@@ -265,6 +271,54 @@ export default function Summary() {
     };
 
     fetchTrendingTokens();
+  }, []);
+
+  // Fetch new tokens
+  useEffect(() => {
+    const fetchNewTokens = async () => {
+      try {
+        setIsNewTokensLoading(true);
+        const response = await fetch(
+          'https://api.xrpl.to/api/tokens?showNew=true&limit=5&skipMetrics=true'
+        );
+        const data = await response.json();
+
+        if (data.result === 'success' && data.tokens) {
+          console.log('New tokens API response:', data.tokens[0]); // Debug log
+          setNewTokens(data.tokens);
+        }
+      } catch (error) {
+        console.error('Error fetching new tokens:', error);
+      } finally {
+        setIsNewTokensLoading(false);
+      }
+    };
+
+    fetchNewTokens();
+  }, []);
+
+  // Fetch most viewed tokens
+  useEffect(() => {
+    const fetchMostViewedTokens = async () => {
+      try {
+        setIsMostViewedLoading(true);
+        const response = await fetch(
+          'https://api.xrpl.to/api/tokens?sort=views&order=desc&limit=5&skipMetrics=true'
+        );
+        const data = await response.json();
+
+        if (data.result === 'success' && data.tokens) {
+          console.log('Most viewed tokens API response:', data.tokens[0]); // Debug log
+          setMostViewedTokens(data.tokens);
+        }
+      } catch (error) {
+        console.error('Error fetching most viewed tokens:', error);
+      } finally {
+        setIsMostViewedLoading(false);
+      }
+    };
+
+    fetchMostViewedTokens();
   }, []);
 
   // Simulate loading completion after data is available
@@ -335,10 +389,10 @@ export default function Summary() {
   };
 
   const getTokenImageUrl = (token) => {
-    if (token.md5 && token.ext) {
-      return `https://xrpl.to/static/tokens/${token.md5}.${token.ext}`;
+    if (token.md5) {
+      return `https://s1.xrpl.to/token/${token.md5}`;
     }
-    return null;
+    return '/static/alt.webp'; // Fallback image
   };
 
   return (
@@ -678,207 +732,273 @@ export default function Summary() {
                 </Grid>
               </Grid>
 
-              {/* Right side - Trending Tokens */}
+              {/* Right side - Token Sections with Icon Menu */}
               <Grid item xs={12} md={4}>
-                {!isTrendingLoading && trendingTokens.length > 0 && (
-                  <MetricBox
-                    elevation={0}
-                    sx={{
-                      background: (theme) =>
-                        `linear-gradient(145deg, ${alpha(
-                          theme.palette.background.paper,
-                          0.98
-                        )} 0%, ${alpha(theme.palette.background.paper, 0.95)} 50%, ${alpha(
-                          theme.palette.primary.main,
-                          0.02
-                        )} 100%)`,
-                      borderLeft: (theme) => `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                      [(theme) => theme.breakpoints.down('sm')]: {
-                        borderLeft: 'none'
-                      },
-                      height: '100%'
-                    }}
-                  >
-                    <MetricTitle
-                      sx={{ display: 'flex', alignItems: 'center', gap: '4px', mb: '4px' }}
-                    >
-                      <Box
-                        sx={{
-                          fontSize: '0.65rem',
-                          [(theme) => theme.breakpoints.down('sm')]: {
-                            fontSize: '0.55rem'
-                          }
-                        }}
-                      >
-                        🔥
-                      </Box>
-                      <Box sx={{ flex: 1 }}>{t('Trending Tokens')}</Box>
-                      <Box
-                        sx={{
-                          fontSize: '0.55rem',
-                          [(theme) => theme.breakpoints.down('md')]: {
-                            fontSize: '0.45rem'
-                          },
-                          [(theme) => theme.breakpoints.down('sm')]: {
-                            fontSize: '0.4rem'
-                          },
-                          color: (theme) => alpha(theme.palette.text.secondary, 0.7),
-                          fontWeight: 500
-                        }}
-                      >
-                        TOP 5
-                      </Box>
-                    </MetricTitle>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '3px'
-                      }}
-                    >
-                      {trendingTokens.map((token, index) => (
-                        <Box
-                          key={token._id}
-                          onClick={() => {
-                            window.open(`/token/${token.slug}`, '_blank');
-                          }}
-                          sx={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            cursor: 'pointer',
-                            padding: '4px 8px',
-                            [(theme) => theme.breakpoints.down('sm')]: {
-                              padding: '3px 6px'
-                            },
-                            borderRadius: '6px',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
-                              transform: 'translateX(2px)'
-                            }
-                          }}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
-                            <Typography
+                {/* Unified Token Display */}
+                {(() => {
+                  const getCurrentTokens = () => {
+                    switch (activeTokenSection) {
+                      case 'trending':
+                        return { tokens: trendingTokens, loading: isTrendingLoading };
+                      case 'new':
+                        return { tokens: newTokens, loading: isNewTokensLoading };
+                      case 'mostViewed':
+                        return { tokens: mostViewedTokens, loading: isMostViewedLoading };
+                      default:
+                        return { tokens: trendingTokens, loading: isTrendingLoading };
+                    }
+                  };
+
+                  const { tokens, loading } = getCurrentTokens();
+                  const getThemeColor = () => {
+                    switch (activeTokenSection) {
+                      case 'trending':
+                        return 'primary';
+                      case 'new':
+                        return 'success';
+                      case 'mostViewed':
+                        return 'info';
+                      default:
+                        return 'primary';
+                    }
+                  };
+                  const themeColor = getThemeColor();
+
+                  return (
+                    <>
+                      {!loading && tokens.length > 0 && (
+                        <MetricBox elevation={0}>
+                          <MetricTitle
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              mb: 1
+                            }}
+                          >
+                            <Box sx={{ fontSize: '0.9rem' }}>
+                              {activeTokenSection === 'trending' && '🔥'}
+                              {activeTokenSection === 'new' && '✨'}
+                              {activeTokenSection === 'mostViewed' && '👁️'}
+                            </Box>
+                            <Box sx={{ flex: 1 }}>
+                              {activeTokenSection === 'trending' && 'Trending Tokens'}
+                              {activeTokenSection === 'new' && 'New Tokens'}
+                              {activeTokenSection === 'mostViewed' && 'Most Viewed'}
+                            </Box>
+
+                            {/* Compact switcher buttons */}
+                            <Box
                               sx={{
-                                fontSize: '0.6rem',
-                                [(theme) => theme.breakpoints.down('md')]: {
-                                  fontSize: '0.55rem'
-                                },
-                                [(theme) => theme.breakpoints.down('sm')]: {
-                                  fontSize: '0.5rem'
-                                },
-                                fontWeight: 700,
-                                color: (theme) => alpha(theme.palette.text.secondary, 0.8),
-                                minWidth: '14px',
-                                textAlign: 'center'
+                                display: 'flex',
+                                gap: '2px',
+                                mr: 1
                               }}
                             >
-                              {index + 1}
-                            </Typography>
-                            <Box
-                              sx={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '1px' }}
-                            >
-                              <Typography
-                                sx={{
-                                  fontSize: '0.72rem',
-                                  [(theme) => theme.breakpoints.down('md')]: {
-                                    fontSize: '0.65rem'
-                                  },
-                                  [(theme) => theme.breakpoints.down('sm')]: {
-                                    fontSize: '0.6rem'
-                                  },
-                                  fontWeight: 650,
-                                  color: (theme) => theme.palette.text.primary,
-                                  lineHeight: 1.1
-                                }}
-                              >
-                                {token.name}
-                              </Typography>
-                              <Typography
-                                sx={{
-                                  fontSize: '0.62rem',
-                                  [(theme) => theme.breakpoints.down('md')]: {
-                                    fontSize: '0.55rem'
-                                  },
-                                  [(theme) => theme.breakpoints.down('sm')]: {
-                                    fontSize: '0.5rem'
-                                  },
-                                  color: (theme) => theme.palette.text.secondary,
-                                  fontWeight: 500,
-                                  lineHeight: 1.0
-                                }}
-                              >
-                                {currencySymbols[activeFiatCurrency]}
-                                {formatTokenPrice(token, fiatRate)}
-                              </Typography>
+                              {[
+                                { key: 'trending', icon: '🔥' },
+                                { key: 'new', icon: '✨' },
+                                { key: 'mostViewed', icon: '👁️' }
+                              ].map((section) => (
+                                <Box
+                                  key={section.key}
+                                  onClick={() => setActiveTokenSection(section.key)}
+                                  sx={{
+                                    width: '20px',
+                                    height: '20px',
+                                    borderRadius: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    fontSize: '0.7rem',
+                                    transition: 'all 0.2s ease',
+                                    backgroundColor:
+                                      activeTokenSection === section.key
+                                        ? (theme) => alpha(theme.palette.primary.main, 0.15)
+                                        : (theme) => alpha(theme.palette.action.hover, 0.05),
+                                    border:
+                                      activeTokenSection === section.key
+                                        ? (theme) =>
+                                            `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+                                        : '1px solid transparent',
+                                    '&:hover': {
+                                      backgroundColor: (theme) =>
+                                        alpha(theme.palette.primary.main, 0.1),
+                                      transform: 'scale(1.05)'
+                                    }
+                                  }}
+                                >
+                                  {section.icon}
+                                </Box>
+                              ))}
                             </Box>
-                          </Box>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                            <Typography
+
+                            <Box
                               sx={{
-                                fontSize: '0.55rem',
-                                [(theme) => theme.breakpoints.down('md')]: {
-                                  fontSize: '0.5rem'
-                                },
-                                [(theme) => theme.breakpoints.down('sm')]: {
-                                  fontSize: '0.45rem'
-                                },
-                                color:
-                                  token.pro24h >= 0
-                                    ? (theme) => theme.palette.success.main
-                                    : (theme) => theme.palette.error.main,
+                                fontSize: '0.6rem',
+                                color: (theme) => theme.palette.text.secondary,
                                 fontWeight: 500
                               }}
                             >
-                              {token.pro24h >= 0 ? '↗' : '↘'}
-                            </Typography>
-                            <Typography
-                              sx={{
-                                fontSize: '0.68rem',
-                                [(theme) => theme.breakpoints.down('md')]: {
-                                  fontSize: '0.6rem'
-                                },
-                                [(theme) => theme.breakpoints.down('sm')]: {
-                                  fontSize: '0.55rem'
-                                },
-                                color:
-                                  token.pro24h >= 0
-                                    ? (theme) => theme.palette.success.main
-                                    : (theme) => theme.palette.error.main,
-                                fontWeight: 700
-                              }}
-                            >
-                              {Math.abs(token.pro24h).toFixed(1)}%
-                            </Typography>
-                          </Box>
-                        </Box>
-                      ))}
-                    </Box>
-                  </MetricBox>
-                )}
+                              TOP 5
+                            </Box>
+                          </MetricTitle>
+                          <div>
+                            {tokens.slice(0, 5).map((token, index) => (
+                              <Box
+                                key={token.id || index}
+                                onClick={() => window.open(`/token/${token.slug}`, '_blank')}
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  padding: '4px 0',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease',
+                                  '&:hover': {
+                                    backgroundColor: (theme) =>
+                                      alpha(theme.palette.action.hover, 0.1),
+                                    borderRadius: '4px',
+                                    transform: 'translateX(2px)'
+                                  },
+                                  '&:not(:last-child)': {
+                                    borderBottom: (theme) =>
+                                      `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                                  }
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    position: 'relative',
+                                    minWidth: '24px',
+                                    height: '24px',
+                                    borderRadius: '50%',
+                                    overflow: 'hidden',
+                                    border: (theme) =>
+                                      `1px solid ${alpha(theme.palette.divider, 0.2)}`
+                                  }}
+                                >
+                                  <img
+                                    src={getTokenImageUrl(token)}
+                                    alt={token.name || token.currency || 'Token'}
+                                    style={{
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'cover',
+                                      borderRadius: '50%'
+                                    }}
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                      e.target.nextSibling.style.display = 'flex';
+                                    }}
+                                  />
+                                  <Box
+                                    sx={{
+                                      position: 'absolute',
+                                      top: 0,
+                                      left: 0,
+                                      width: '100%',
+                                      height: '100%',
+                                      borderRadius: '50%',
+                                      backgroundColor: (theme) =>
+                                        alpha(theme.palette.primary.main, 0.1),
+                                      display: 'none',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      fontSize: '0.6rem',
+                                      fontWeight: 600,
+                                      color: (theme) => theme.palette.primary.main
+                                    }}
+                                  >
+                                    {index + 1}
+                                  </Box>
+                                </Box>
+                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                  <Typography
+                                    sx={{
+                                      fontSize: '0.75rem',
+                                      fontWeight: 600,
+                                      color: (theme) => theme.palette.text.primary,
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                      lineHeight: 1.2
+                                    }}
+                                  >
+                                    {token.name || token.currency || 'Unknown'}
+                                  </Typography>
+                                  <Typography
+                                    sx={{
+                                      fontSize: '0.65rem',
+                                      color: (theme) => theme.palette.text.secondary,
+                                      lineHeight: 1.1
+                                    }}
+                                  >
+                                    {(() => {
+                                      const price = token.usd || token.price || token.exch;
+                                      if (price) {
+                                        const numPrice = parseFloat(price);
+                                        if (numPrice >= 1) return `$${numPrice.toFixed(2)}`;
+                                        if (numPrice >= 0.01) return `$${numPrice.toFixed(4)}`;
+                                        if (numPrice >= 0.0001) return `$${numPrice.toFixed(6)}`;
+                                        return `$${numPrice.toExponential(2)}`;
+                                      }
+                                      return 'N/A';
+                                    })()}
+                                  </Typography>
+                                </Box>
+                                <Typography
+                                  sx={{
+                                    fontSize: '0.65rem',
+                                    fontWeight: 600,
+                                    color: (() => {
+                                      const change = token.pro24h || token.change24h || token.p24h;
+                                      return change && parseFloat(change) >= 0;
+                                    })()
+                                      ? (theme) => theme.palette.success.main
+                                      : (theme) => theme.palette.error.main,
+                                    minWidth: '40px',
+                                    textAlign: 'right'
+                                  }}
+                                >
+                                  {(() => {
+                                    const change = token.pro24h || token.change24h || token.p24h;
+                                    if (change !== undefined && change !== null) {
+                                      const numChange = parseFloat(change);
+                                      return `${numChange >= 0 ? '+' : ''}${numChange.toFixed(1)}%`;
+                                    }
+                                    return 'N/A';
+                                  })()}
+                                </Typography>
+                              </Box>
+                            ))}
+                          </div>
+                        </MetricBox>
+                      )}
 
-                {/* Loading skeleton for trending tokens */}
-                {isTrendingLoading && (
-                  <Skeleton
-                    variant="rectangular"
-                    height={140}
-                    sx={{
-                      borderRadius: '16px',
-                      [(theme) => theme.breakpoints.down('sm')]: {
-                        height: 100,
-                        borderRadius: '8px'
-                      },
-                      background: (theme) =>
-                        `linear-gradient(135deg, ${alpha(
-                          theme.palette.background.paper,
-                          0.8
-                        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`
-                    }}
-                  />
-                )}
+                      {/* Loading skeleton */}
+                      {loading && (
+                        <Skeleton
+                          variant="rectangular"
+                          height={140}
+                          sx={{
+                            borderRadius: '16px',
+                            [(theme) => theme.breakpoints.down('sm')]: {
+                              height: 100,
+                              borderRadius: '8px'
+                            },
+                            background: (theme) =>
+                              `linear-gradient(135deg, ${alpha(
+                                theme.palette.background.paper,
+                                0.8
+                              )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`
+                          }}
+                        />
+                      )}
+                    </>
+                  );
+                })()}
               </Grid>
             </Grid>
           </Box>
