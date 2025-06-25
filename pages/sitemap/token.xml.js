@@ -1,8 +1,28 @@
-import React from "react";
+import React from 'react';
 import axios from 'axios';
 import { performance } from 'perf_hooks';
 
 const BASE_URL = process.env.API_URL;
+
+// Function to escape XML special characters
+const escapeXml = (unsafe) => {
+  return unsafe.replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '&':
+        return '&amp;';
+      case "'":
+        return '&apos;';
+      case '"':
+        return '&quot;';
+      default:
+        return c;
+    }
+  });
+};
 
 const Sitemap = () => {
   // This component does not render anything, as it's meant for server-side generation only.
@@ -31,29 +51,37 @@ export const getServerSideProps = async ({ res }) => {
         <lastmod>${time}</lastmod>
         <changefreq>always</changefreq>
     </url>
-    ${slugs.map((slug) => `
+    ${slugs
+      .map(
+        (slug) => `
     <url>
-        <loc>https://xrpl.to/token/${slug}</loc>
+        <loc>https://xrpl.to/token/${escapeXml(slug)}</loc>
         <lastmod>${time}</lastmod>
         <changefreq>always</changefreq>
-    </url>`).join('')}
-    ${slugs.map((slug) => `
+    </url>`
+      )
+      .join('')}
+    ${slugs
+      .map(
+        (slug) => `
     <url>
-        <loc>https://xrpl.to/trustset/${slug}</loc>
+        <loc>https://xrpl.to/trustset/${escapeXml(slug)}</loc>
         <lastmod>${time}</lastmod>
         <changefreq>always</changefreq>
-    </url>`).join('')}
+    </url>`
+      )
+      .join('')}
 </urlset>`;
 
-    res.setHeader("Content-Type", "text/xml");
+    res.setHeader('Content-Type', 'text/xml');
     res.write(sitemap);
     res.end();
 
     return {
-      props: {},
+      props: {}
     };
   } catch (error) {
-    console.error("Error generating sitemap:", error);
+    console.error('Error generating sitemap:', error);
     res.statusCode = 500;
     res.end();
   }
