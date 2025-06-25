@@ -110,7 +110,7 @@ export async function getServerSideProps(ctx) {
     const { name, ext, md5, slug, exch, pro24h, vol24hxrp, marketcap, holders } = token;
 
     // Format price and percentage change for meta description
-    const priceDisplay = exch ? `${Number(exch).toFixed(exch < 0.01 ? 6 : 4)} XRP` : '';
+    const priceDisplay = exch ? `${Number(exch).toFixed(exch < 0.01 ? 10 : 8)} XRP` : '';
     const changeDisplay =
       pro24h !== undefined ? `${pro24h >= 0 ? '+' : ''}${Number(pro24h).toFixed(2)}%` : '';
 

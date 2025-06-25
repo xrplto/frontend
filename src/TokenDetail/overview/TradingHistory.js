@@ -221,6 +221,32 @@ const formatTradeValue = (value) => {
   return abbreviateNumber(numValue);
 };
 
+const formatPrice = (value) => {
+  const numValue = typeof value === 'string' ? Number(value) : value;
+
+  if (Math.abs(numValue) < 0.00001) {
+    return numValue.toFixed(10);
+  }
+
+  if (Math.abs(numValue) < 0.0001) {
+    return numValue.toFixed(8);
+  }
+
+  if (Math.abs(numValue) < 0.01) {
+    return numValue.toFixed(6);
+  }
+
+  if (Math.abs(numValue) < 1) {
+    return numValue.toFixed(4);
+  }
+
+  if (Math.abs(numValue) < 100) {
+    return numValue.toFixed(4);
+  }
+
+  return numValue.toFixed(2);
+};
+
 const abbreviateNumber = (num) => {
   if (Math.abs(num) < 1000) return num.toFixed(1);
   const suffixes = ['', 'k', 'M', 'B', 'T'];
@@ -483,7 +509,7 @@ const TradingHistory = ({ tokenId }) => {
                       color="text.primary"
                       sx={{ fontSize: '0.85rem' }}
                     >
-                      {formatTradeValue(price)} XRP
+                      {formatPrice(price)} XRP
                     </Typography>
                   </Box>
 
