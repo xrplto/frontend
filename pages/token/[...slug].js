@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { performance } from 'perf_hooks';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import useWebSocket from 'react-use-websocket';
 
 // Material
 import { Box, Container, styled, Toolbar } from '@mui/material';
 
 // Redux
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
 
 // Components
@@ -20,7 +20,7 @@ import TokenDetail from 'src/TokenDetail';
 
 // overflow: hidden;
 const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
+  () => `
     overflow: hidden;
     flex: 1;
 `
@@ -31,10 +31,10 @@ function Detail({ data }) {
   const [token, setToken] = useState(data.token);
   const WSS_FEED_URL = `wss://api.xrpl.to/ws/token/${token.md5}`;
 
-  const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
+  useWebSocket(WSS_FEED_URL, {
     onOpen: () => {},
     onClose: () => {},
-    shouldReconnect: (closeEvent) => true,
+    shouldReconnect: () => true,
     onMessage: (event) => processMessages(event)
     // reconnectAttempts: 10,
     // reconnectInterval: 3000,
@@ -107,17 +107,45 @@ export async function getServerSideProps(ctx) {
   if (data && data.token) {
     let ogp = {};
     const token = data.token;
-    const { name, ext, md5, slug } = token;
+    const { name, ext, md5, slug, exch, pro24h, vol24hxrp, marketcap, holders } = token;
 
-    let user = token.user;
-    if (!user) user = name;
+    // Format price and percentage change for meta description
+    const priceDisplay = exch ? `${Number(exch).toFixed(exch < 0.01 ? 6 : 4)} XRP` : '';
+    const changeDisplay =
+      pro24h !== undefined ? `${pro24h >= 0 ? '+' : ''}${Number(pro24h).toFixed(2)}%` : '';
+
+    // Create dynamic meta description with specific token data
+    let metaDesc = `${name} live price: ${priceDisplay}`;
+    if (changeDisplay) {
+      metaDesc += ` (${changeDisplay} 24h)`;
+    }
+    metaDesc += `. Get real-time charts, trading data & market insights on XRPL.to`;
+
+    // Ensure description is under 160 characters
+    if (metaDesc.length > 155) {
+      metaDesc = `${name} price: ${priceDisplay}${
+        changeDisplay ? ` (${changeDisplay})` : ''
+      }. Live charts, trading data & XRPL market insights`;
+    }
+
+    // Create SEO-optimized title with dynamic data
+    let seoTitle = `${name} Price: ${priceDisplay}`;
+    if (changeDisplay) {
+      seoTitle += ` ${changeDisplay}`;
+    }
+    seoTitle += ` | Live Chart & Trading Data`;
+
+    // Fallback shorter title if too long (keep under 60 chars when possible)
+    if (seoTitle.length > 55) {
+      seoTitle = `${name}: ${priceDisplay}${changeDisplay ? ` ${changeDisplay}` : ''} | XRPL.to`;
+    }
 
     ogp.canonical = `https://xrpl.to/token/${slug}`;
-    ogp.title = `${user} price today: ${name} to USD conversion, live rates, trading volume, historical data, and interactive chart`;
+    ogp.title = seoTitle;
     ogp.url = `https://xrpl.to/token/${slug}`;
     // ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${ext}`;
     ogp.imgUrl = `https://s1.xrpl.to/token/${md5}`;
-    ogp.desc = `Access up-to-date ${user} prices, ${name} market cap, trading pairs, interactive charts, and comprehensive data from the leading XRP Ledger token price-tracking platform.`;
+    ogp.desc = metaDesc;
 
     ret = { data, ogp };
     return {
