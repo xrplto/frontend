@@ -474,7 +474,19 @@ function Status404() {
     "Looks like this page got lost in the XRPL ledger... Even our lightning-fast 3-5 second settlements can't locate it!",
     'FUZZY BEAR 🐻 predicts this page will be found right after XRP flips BTC! Until then, maybe check out our trending tokens? 🚀',
     "This page vanished down to the smallest DROP! 💧 We searched all 1,000,000 drops in an XRP but still can't find it! 🔍",
-    "Tried withdrawing this page from an ATM but got 'insufficient funds'! 🏧 Guess ALL THE MONEY can't buy everything on the XRPL! 💸"
+    "Tried withdrawing this page from an ATM but got 'insufficient funds'! 🏧 Guess ALL THE MONEY can't buy everything on the XRPL! 💸",
+    "This page went BAYNANA and slipped away! 🍌 Even the apes can't find it in the XRPL jungle! 🐒",
+    "This page burned out faster than PHNIX rising from the ashes! 🔥 Even the Phoenix can't resurrect a 404 error! 🦅",
+    "Florida Man tried landscaping the XRPL but accidentally buried this page! 🌴 Even his alligator can't dig it up from the swamp! 🐊",
+    "The ARMY was deployed to search for this page but returned empty-handed! 🪖 Even military precision can't locate a missing XRPL asset! ⚔️",
+    "SCRAPPY the dog sniffed around the entire XRPL blockchain but couldn't fetch this page! 🐕 Good boy tried his best! 🦴",
+    "BERT the Bird flew across the entire XRPL network but this page has flown the coop! 🐦 Even his bird's-eye view couldn't spot it! 🪶",
+    "xSPECTAR searched every dimension of the metaverse but this page exists in a parallel universe! 🌌 Even virtual reality can't render a 404! 👽",
+    "XRDOGE went 'much search, very XRPL, such 404, wow!' 🐕 Even the goodest boy on the ledger couldn't find this page! 🚀",
+    'XOGE the red panda climbed every bamboo node on the XRPL but this page is hidden higher than the tallest tree! 🐼 So cute, yet so lost! 🎋',
+    "DONNIE called in all his connections across the XRPL network but this page is more elusive than insider alpha! 📱 Even the boss can't make it appear! 💼",
+    "PONGO bounced through every transaction on the XRPL but this page keeps jumping away! 🦘 Even the most energetic hopper can't catch it! 🏃‍♂️",
+    'BLUE scanned every wavelength on the XRPL spectrum but this page is invisible to all frequencies! 💙 Even the deepest ocean search came up empty! 🌊'
   ];
 
   useEffect(() => {
