@@ -486,7 +486,8 @@ function Status404() {
     'XOGE the red panda climbed every bamboo node on the XRPL but this page is hidden higher than the tallest tree! 🐼 So cute, yet so lost! 🎋',
     "DONNIE called in all his connections across the XRPL network but this page is more elusive than insider alpha! 📱 Even the boss can't make it appear! 💼",
     "PONGO bounced through every transaction on the XRPL but this page keeps jumping away! 🦘 Even the most energetic hopper can't catch it! 🏃‍♂️",
-    'BLUE scanned every wavelength on the XRPL spectrum but this page is invisible to all frequencies! 💙 Even the deepest ocean search came up empty! 🌊'
+    'BLUE scanned every wavelength on the XRPL spectrum but this page is invisible to all frequencies! 💙 Even the deepest ocean search came up empty! 🌊',
+    "BRAD called an emergency board meeting to locate this page! 👨‍💼 Even the CEO of blockchain leadership couldn't execute this search query! 📊"
   ];
 
   useEffect(() => {

@@ -58,64 +58,55 @@ const VerifiedBadge = styled(Badge)(({ theme }) => ({
   }
 }));
 
-const TrendingCard = styled(Card)(({ theme, darkMode, rank }) => {
-  return {
-    position: 'relative',
-    borderRadius: '12px',
-    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-      theme.palette.background.paper,
+const TrendingCard = styled(Card)(({ theme, darkMode, rank }) => ({
+  position: 'relative',
+  borderRadius: '12px',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.4
+  )} 100%)`,
+  backdropFilter: 'blur(10px)',
+  border:
+    rank <= 3
+      ? `2px solid ${alpha('#FFD700', 0.3)}`
+      : `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
+  cursor: 'pointer',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '1px',
+    background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
+      theme.palette.success.main,
       0.4
-    )} 100%)`,
-    backdropFilter: 'blur(10px)',
-    border:
-      rank <= 3
-        ? `2px solid ${alpha('#FFD700', 0.3)}`
-        : `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
-    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
-    cursor: 'pointer',
-    overflow: 'hidden',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: '1px',
-      background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
-        theme.palette.success.main,
-        0.4
-      )}, ${alpha(theme.palette.info.main, 0.4)})`,
-      opacity: 0.6
-    }
-  };
-});
+    )}, ${alpha(theme.palette.info.main, 0.4)})`,
+    opacity: 0.6
+  }
+}));
 
-const RankChip = styled(Chip)(({ theme, rank }) => {
-  const getGradient = (rank) => {
-    if (rank <= 3) {
-      return 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)';
-    } else if (rank <= 5) {
-      return 'linear-gradient(135deg, #E5E5E5 0%, #C0C0C0 50%, #A9A9A9 100%)';
-    } else {
-      return 'linear-gradient(135deg, #CD7F32 0%, #B8860B 50%, #DAA520 100%)';
-    }
-  };
-
-  return {
-    background: getGradient(rank),
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: '0.7rem',
-    height: '22px',
-    minWidth: '26px',
-    boxShadow: `0 1px 4px ${alpha('#000', 0.3)}`,
-    border: '1px solid rgba(255,255,255,0.2)',
-    '& .MuiChip-label': {
-      padding: '0 4px',
-      textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-    }
-  };
-});
+const RankChip = styled(Chip)(({ theme, rank }) => ({
+  background:
+    rank <= 3
+      ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)'
+      : rank <= 5
+      ? 'linear-gradient(135deg, #E5E5E5 0%, #C0C0C0 50%, #A9A9A9 100%)'
+      : 'linear-gradient(135deg, #CD7F32 0%, #B8860B 50%, #DAA520 100%)',
+  color: '#fff',
+  fontWeight: 'bold',
+  fontSize: '0.7rem',
+  height: '22px',
+  minWidth: '26px',
+  boxShadow: `0 1px 4px ${alpha('#000', 0.3)}`,
+  border: '1px solid rgba(255,255,255,0.2)',
+  '& .MuiChip-label': {
+    padding: '0 4px',
+    textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+  }
+}));
 
 const HeaderSection = styled(Box)(({ theme, darkMode }) => ({
   position: 'relative',
@@ -183,7 +174,7 @@ const SkeletonCard = () => (
 );
 
 const TrendingTokens = () => {
-  const BASE_URL = process.env.API_URL;
+  const BASE_URL = 'https://api.xrpl.to/api';
   const theme = useTheme();
   const { darkMode } = useContext(AppContext);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));

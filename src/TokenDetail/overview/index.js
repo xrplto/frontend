@@ -22,6 +22,7 @@ import { AppContext } from 'src/AppContext';
 import PriceChart from './PriceChart';
 import PriceStatistics from './PriceStatistics';
 import Description from './Description';
+import TrendingTokens from './TrendingTokens';
 
 import Swap from './Swap'; // Import Swap component
 import TradingHistory from './TradingHistory';
@@ -122,6 +123,7 @@ export default function Overview({ token }) {
             style={{ height: '500px' }}
           />
         )}
+        <TrendingTokens />
       </Grid>
     </Grid>
   );
