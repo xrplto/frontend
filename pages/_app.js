@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { memo, useMemo } from 'react';
+import React, { memo, useMemo } from 'react';
 import ThemeProvider from 'src/theme/ThemeProvider';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ContextProvider } from 'src/AppContext';
@@ -97,9 +97,22 @@ function XRPLToApp({ Component, pageProps, router }) {
         <meta property="og:title" content={`${ogp.title} | xrpl.to`} />
         <meta property="og:description" content={ogp.desc} />
         <meta property="og:image" content={ogp.imgUrl} />
-        <meta property="og:image:type" content="image/png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content={ogp.imgType || 'image/png'} />
+        <meta property="og:image:width" content={ogp.imgWidth || '1200'} />
+        <meta property="og:image:height" content={ogp.imgHeight || '630'} />
+        {ogp.imgAlt && <meta property="og:image:alt" content={ogp.imgAlt} />}
+
+        {/* Additional Open Graph images for better fallback support */}
+        {ogp.images &&
+          ogp.images.slice(1).map((img, index) => (
+            <React.Fragment key={index}>
+              <meta property="og:image" content={img.url} />
+              <meta property="og:image:type" content={img.type} />
+              <meta property="og:image:width" content={img.width} />
+              <meta property="og:image:height" content={img.height} />
+              {img.alt && <meta property="og:image:alt" content={img.alt} />}
+            </React.Fragment>
+          ))}
 
         {/* Twitter Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />

@@ -140,12 +140,78 @@ export async function getServerSideProps(ctx) {
       seoTitle = `${name}: ${priceDisplay}${changeDisplay ? ` ${changeDisplay}` : ''} | XRPL.to`;
     }
 
+    // Enhanced Open Graph image handling with fallbacks
+    const getOptimalImage = () => {
+      // Primary: Token-specific image from CDN
+      if (md5) {
+        return {
+          url: `https://s1.xrpl.to/token/${md5}`,
+          width: 400,
+          height: 400,
+          type: 'image/webp',
+          alt: `${name} token logo`
+        };
+      }
+
+      // Secondary: Legacy token image if ext is available
+      if (md5 && ext) {
+        return {
+          url: `https://xrpl.to/static/tokens/${md5}.${ext}`,
+          width: 400,
+          height: 400,
+          type:
+            ext === 'png'
+              ? 'image/png'
+              : ext === 'jpg' || ext === 'jpeg'
+              ? 'image/jpeg'
+              : 'image/webp',
+          alt: `${name} token logo`
+        };
+      }
+
+      // Fallback: XRPL.to logo
+      return {
+        url: 'https://xrpl.to/logo/xrpl-to-logo-white.svg',
+        width: 1200,
+        height: 630,
+        type: 'image/svg+xml',
+        alt: 'XRPL.to - XRPL Token Trading Platform'
+      };
+    };
+
+    const imageData = getOptimalImage();
+
     ogp.canonical = `https://xrpl.to/token/${slug}`;
     ogp.title = seoTitle;
     ogp.url = `https://xrpl.to/token/${slug}`;
-    // ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${ext}`;
-    ogp.imgUrl = `https://s1.xrpl.to/token/${md5}`;
+    ogp.imgUrl = imageData.url;
+    ogp.imgWidth = imageData.width;
+    ogp.imgHeight = imageData.height;
+    ogp.imgType = imageData.type;
+    ogp.imgAlt = imageData.alt;
     ogp.desc = metaDesc;
+
+    // Additional Open Graph image properties for better social media support
+    ogp.images = [
+      {
+        url: imageData.url,
+        width: imageData.width,
+        height: imageData.height,
+        type: imageData.type,
+        alt: imageData.alt
+      }
+    ];
+
+    // If we have a token image, also provide the logo as a secondary option
+    if (md5) {
+      ogp.images.push({
+        url: 'https://xrpl.to/logo/xrpl-to-logo-white.svg',
+        width: 1200,
+        height: 630,
+        type: 'image/svg+xml',
+        alt: 'XRPL.to - XRPL Token Trading Platform'
+      });
+    }
 
     ret = { data, ogp };
     return {
