@@ -2,11 +2,10 @@ import axios from 'axios';
 import { useEffect, useState, useMemo, memo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { useTheme, alpha } from '@mui/material/styles';
-import { LazyLoadComponent } from 'react-lazy-load-image-component';
 import { Box, Skeleton } from '@mui/material';
 import Decimal from 'decimal.js';
 
-const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
+const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, ...props }) => {
   const theme = useTheme();
   const [chartOption, setChartOption] = useState(null);
   const [isError, setIsError] = useState(false);
@@ -171,7 +170,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
               join: 'round'
             },
             smooth: 0.4,
-            animation: true,
+            animation: animation,
             animationDuration: 1000,
             animationEasing: 'cubicOut',
             // Add gradient fill if enabled
@@ -239,7 +238,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
         ]
       };
     },
-    [theme, showGradient, lineWidth]
+    [theme, showGradient, lineWidth, animation]
   );
 
   // Memoize the axios request
@@ -380,38 +379,36 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
   }
 
   return (
-    <LazyLoadComponent threshold={100}>
-      <Box
-        sx={{
-          width: '100%',
-          height: '100%',
-          position: 'relative',
-          borderRadius: 1,
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            transform: 'scale(1.02)',
-            '& .echarts-chart': {
-              filter: 'brightness(1.1)'
-            }
+    <Box
+      sx={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        borderRadius: 1,
+        transition: 'all 0.2s ease-in-out',
+        '&:hover': {
+          transform: 'scale(1.02)',
+          '& .echarts-chart': {
+            filter: 'brightness(1.1)'
           }
+        }
+      }}
+    >
+      <ReactECharts
+        option={chartOption}
+        style={{
+          height: '100%',
+          width: '100%',
+          transition: 'filter 0.2s ease-in-out'
         }}
-      >
-        <ReactECharts
-          option={chartOption}
-          style={{
-            height: '100%',
-            width: '100%',
-            transition: 'filter 0.2s ease-in-out'
-          }}
-          opts={{
-            renderer: 'svg',
-            devicePixelRatio: window.devicePixelRatio || 1
-          }}
-          className="echarts-chart"
-          {...props}
-        />
-      </Box>
-    </LazyLoadComponent>
+        opts={{
+          renderer: 'svg',
+          devicePixelRatio: window.devicePixelRatio || 1
+        }}
+        className="echarts-chart"
+        {...props}
+      />
+    </Box>
   );
 };
 

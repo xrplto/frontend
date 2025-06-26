@@ -1,7 +1,6 @@
 import Decimal from 'decimal.js';
 import { useState, useEffect, useContext, memo, useMemo, useCallback } from 'react';
 import React from 'react';
-import { LazyLoadComponent } from 'react-lazy-load-image-component';
 import Image from 'next/image';
 import {
   styled,
@@ -598,10 +597,10 @@ function FTokenRow({
                       ? '#fff'
                       : '#212B36'
                     : darkMode
-                    ? '#00AB55'
-                    : slug === md5
-                    ? '#B72136'
-                    : ''
+                      ? '#00AB55'
+                      : slug === md5
+                        ? '#B72136'
+                        : ''
                 }
                 noWrap={!isMobile}
               >
@@ -690,8 +689,8 @@ function FTokenRow({
             {convertedValues.volume >= 1000000
               ? `${(convertedValues.volume / 1000000).toFixed(1)}M`
               : convertedValues.volume >= 1000
-              ? `${(convertedValues.volume / 1000).toFixed(1)}K`
-              : fNumber(convertedValues.volume)}
+                ? `${(convertedValues.volume / 1000).toFixed(1)}K`
+                : fNumber(convertedValues.volume)}
           </Typography>
         </Stack>
       </TableCell>
@@ -716,8 +715,8 @@ function FTokenRow({
           {vol24htx >= 1000000
             ? `${(vol24htx / 1000000).toFixed(1)}M`
             : vol24htx >= 1000
-            ? `${(vol24htx / 1000).toFixed(1)}K`
-            : fNumber(vol24htx)}
+              ? `${(vol24htx / 1000).toFixed(1)}K`
+              : fNumber(vol24htx)}
         </Typography>
       </TableCell>
       <TableCell align="right">
@@ -727,8 +726,8 @@ function FTokenRow({
             {convertedValues.tvl >= 1000000
               ? `${(convertedValues.tvl / 1000000).toFixed(1)}M`
               : convertedValues.tvl >= 1000
-              ? `${(convertedValues.tvl / 1000).toFixed(1)}K`
-              : fNumber(convertedValues.tvl)}
+                ? `${(convertedValues.tvl / 1000).toFixed(1)}K`
+                : fNumber(convertedValues.tvl)}
           </Typography>
         </Stack>
       </TableCell>
@@ -738,8 +737,8 @@ function FTokenRow({
           {convertedValues.marketCap >= 1000000
             ? `${(convertedValues.marketCap / 1000000).toFixed(1)}M`
             : convertedValues.marketCap >= 1000
-            ? `${(convertedValues.marketCap / 1000).toFixed(1)}K`
-            : fNumber(convertedValues.marketCap)}
+              ? `${(convertedValues.marketCap / 1000).toFixed(1)}K`
+              : fNumber(convertedValues.marketCap)}
         </Typography>
       </TableCell>
       <TableCell align="right">
@@ -747,8 +746,8 @@ function FTokenRow({
           {holders >= 1000000
             ? `${(holders / 1000000).toFixed(1)}M`
             : holders >= 1000
-            ? `${(holders / 1000).toFixed(1)}K`
-            : fIntNumber(holders)}
+              ? `${(holders / 1000).toFixed(1)}K`
+              : fIntNumber(holders)}
         </Typography>
       </TableCell>
       <TableCell align="right">
@@ -831,14 +830,14 @@ function FTokenRow({
             {amount >= 1000000000000
               ? `${(amount / 1000000000000).toFixed(2)}T`
               : amount >= 1000000000
-              ? `${(amount / 1000000000).toFixed(2)}B`
-              : amount >= 1000000
-              ? amount >= 999500000
                 ? `${(amount / 1000000000).toFixed(2)}B`
-                : `${(amount / 1000000).toFixed(2)}M`
-              : amount >= 1000
-              ? `${(amount / 1000).toFixed(1)}K`
-              : fNumber(amount)}{' '}
+                : amount >= 1000000
+                  ? amount >= 999500000
+                    ? `${(amount / 1000000000).toFixed(2)}B`
+                    : `${(amount / 1000000).toFixed(2)}M`
+                  : amount >= 1000
+                    ? `${(amount / 1000).toFixed(1)}K`
+                    : fNumber(amount)}{' '}
             {name}
           </Typography>
         </Tooltip>
@@ -854,43 +853,27 @@ function FTokenRow({
           py: isMobile ? '6px !important' : '12px !important'
         }}
       >
-        <LazyLoadComponent
-          threshold={100}
-          placeholder={
-            <Box
-              sx={{
-                width: isMobile ? 120 : 160,
-                height: isMobile ? 34 : 48,
-                minWidth: isMobile ? 120 : 160,
-                minHeight: isMobile ? 34 : 48
-              }}
-            />
-          }
+        <Box
+          sx={{
+            width: isMobile ? 120 : 160,
+            height: isMobile ? 34 : 48,
+            minWidth: isMobile ? 120 : 160,
+            minHeight: isMobile ? 34 : 48,
+            position: 'relative',
+            zIndex: 1
+          }}
         >
-          <Box
-            sx={{
+          <LoadChart
+            url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`}
+            style={{ width: '100%', height: '100%' }}
+            animation={false}
+            opts={{
+              renderer: 'svg',
               width: isMobile ? 120 : 160,
-              height: isMobile ? 34 : 48,
-              minWidth: isMobile ? 120 : 160,
-              minHeight: isMobile ? 34 : 48,
-              position: 'relative',
-              zIndex: 1
+              height: isMobile ? 34 : 48
             }}
-          >
-            <LoadChart
-              url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`}
-              style={{ width: '100%', height: '100%' }}
-              opts={{
-                renderer: 'svg',
-                width: isMobile ? 120 : 160,
-                height: isMobile ? 34 : 48,
-                animation: false,
-                transitions: false,
-                duration: 0
-              }}
-            />
-          </Box>
-        </LazyLoadComponent>
+          />
+        </Box>
       </TableCell>
       <TableCell
         align="right"
