@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 
 // Material
 import { withStyles } from '@mui/styles';
-import { styled, Card, IconButton, Stack, TextField, Typography } from '@mui/material';
+import { styled, Card, IconButton, Stack, TextField, Typography, alpha } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import ImageIcon from '@mui/icons-material/Image';
 import SendIcon from '@mui/icons-material/Send';
@@ -17,30 +17,64 @@ import { AppContext } from 'src/AppContext';
 
 // Components
 
-const CardWrapper = styled('div')(
-  ({ theme }) => `
-    border: dashed 3px;
-    border-radius: 5px;
-    padding: 5px;
-    // width: fit-content;
-    &:hover {
-        cursor: pointer;
-    }
-`
-);
+const CardWrapper = styled('div')(({ theme }) => ({
+  padding: '5px',
+  borderRadius: '16px',
+  background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.95
+  )} 50%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
+  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
+  boxShadow: 'none',
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+  '&:hover': {
+    cursor: 'pointer',
+    boxShadow: `0 0 10px ${alpha(theme.palette.primary.main, 0.2)}`
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '2px',
+    background: `linear-gradient(90deg, 
+        ${theme.palette.primary.main} 0%, 
+        ${theme.palette.success.main} 25%, 
+        ${theme.palette.info.main} 50%, 
+        ${theme.palette.warning.main} 75%, 
+        ${theme.palette.error.main} 100%
+      )`,
+    opacity: 0.9,
+    animation: 'shimmer 3s ease-in-out infinite',
+    zIndex: 1
+  },
+  '@keyframes shimmer': {
+    '0%, 100%': { opacity: 0.9 },
+    '50%': { opacity: 0.6 }
+  }
+}));
 
-const CardWrapperCircle = styled('div')(
-  ({ theme }) => `
-    border: dashed 3px;
-    border-radius: 50%;
-    padding: 5px;
-    width: fit-content;
-    overflow: hidden;
-    &:hover {
-        cursor: pointer;
-    }
-`
-);
+const CardWrapperCircle = styled('div')(({ theme }) => ({
+  padding: '5px',
+  borderRadius: '50%',
+  width: 'fit-content',
+  overflow: 'hidden',
+  background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.95
+  )} 50%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
+  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
+  boxShadow: 'none',
+  position: 'relative',
+  transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+  '&:hover': {
+    cursor: 'pointer',
+    boxShadow: `0 0 10px ${alpha(theme.palette.primary.main, 0.2)}`
+  }
+}));
 
 const CardOverlay = styled('div')(
   ({ theme }) => `
