@@ -538,6 +538,13 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                   GET
                   https://api.xrpl.to/api/tokens?tag=collectables-and-nfts&start=0&limit=20&sortBy=vol24hxrp&sortType=desc
                 </CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  Example with trending sorting and performance optimization:
+                </Typography>
+                <CodeBlock language="http">
+                  GET
+                  https://api.xrpl.to/api/tokens?sort=trendingScore&order=desc&limit=50&skipMetrics=true
+                </CodeBlock>
               </CardContent>
             </Card>
 
@@ -595,21 +602,37 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                     </TableRow>
                     <TableRow>
                       <TableCell>limit</TableCell>
-                      <TableCell>100</TableCell>
-                      <TableCell>Limit count value for pagination (1-100, default: 100)</TableCell>
+                      <TableCell>Varies</TableCell>
+                      <TableCell>
+                        Records per page (1-100). Intelligent defaults: 50 for filtered queries, 20
+                        for complex sorts (assessmentScore, pro5m, trendingScore), 100 for general
+                        queries
+                      </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>sortBy</TableCell>
                       <TableCell>vol24hxrp</TableCell>
                       <TableCell>
                         Can be: name, exch, pro24h, pro7d, vol24hxrp, vol24htx, marketcap,
-                        trustlines, supply
+                        trustlines, supply, assessmentScore, pro5m, trendingScore
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>sort</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>
+                        Alternative parameter name for sortBy (same options available)
                       </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>sortType</TableCell>
                       <TableCell>desc</TableCell>
                       <TableCell>asc or desc (ascending or descending)</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>order</TableCell>
+                      <TableCell>desc</TableCell>
+                      <TableCell>Alternative parameter name for sortType (asc or desc)</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>tag</TableCell>
@@ -655,9 +678,64 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                       <TableCell>no</TableCell>
                       <TableCell>Set to "yes" to include tag information in response</TableCell>
                     </TableRow>
+                    <TableRow>
+                      <TableCell>skipMetrics</TableCell>
+                      <TableCell>false</TableCell>
+                      <TableCell>
+                        Set to "true" to skip fetching metrics data for improved performance
+                      </TableCell>
+                    </TableRow>
                   </TableBody>
                 </Table>
               </TableContainer>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.warning.main, fontWeight: 600 }}
+                >
+                  Performance Optimization
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  The API includes advanced performance optimizations and intelligent defaults:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Compression:</strong> Responses are automatically compressed using
+                    gzip compression (level 6) for responses over 1KB
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Intelligent Defaults:</strong> Limit defaults adapt based on query
+                    complexity (50 for filtered queries, 20 for expensive sorts)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Flexible Parameters:</strong> Supports both modern (sort/order) and
+                    legacy (sortBy/sortType) parameter names
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Conditional Metrics:</strong> Use skipMetrics=true to exclude
+                    additional metrics for faster responses
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Performance Monitoring:</strong> Response includes timing information
+                    showing actual query execution time
+                  </Typography>
+                </Box>
+              </CardContent>
             </Card>
 
             <Card sx={{ mb: 3, borderRadius: '12px' }}>
@@ -2545,6 +2623,13 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                   GET
                   https://api.xrpl.to/api/history?md5=c9ac9a6c44763c1bd9ccc6e47572fd26&account=rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH&page=0&limit=50
                 </CodeBlock>
+                <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+                  Example with time range and XRP-only filtering:
+                </Typography>
+                <CodeBlock language="http">
+                  GET
+                  https://api.xrpl.to/api/history?md5=c9ac9a6c44763c1bd9ccc6e47572fd26&page=0&limit=10&startTime=1640995200000&endTime=1641081600000&xrpOnly=true
+                </CodeBlock>
               </CardContent>
             </Card>
 
@@ -2630,6 +2715,30 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                       <TableCell>50</TableCell>
                       <TableCell>Records per page (range: 1-5000, default: 50)</TableCell>
                     </TableRow>
+                    <TableRow>
+                      <TableCell>startTime</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>
+                        Start timestamp for time range filtering (Unix timestamp in milliseconds)
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>endTime</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>
+                        End timestamp for time range filtering (Unix timestamp in milliseconds)
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>xrpOnly</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>false</TableCell>
+                      <TableCell>
+                        Filter results to show only XRP transactions (boolean: true/false)
+                      </TableCell>
+                    </TableRow>
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -2666,8 +2775,20 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
                     • <strong>Limit Bounds:</strong> Values above 5000 are capped at 5000
                   </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
                     • <strong>Minimum Limit:</strong> Values below 1 are set to default 50
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Time Range Validation:</strong> startTime must be less than or equal
+                    to endTime
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Timestamp Format:</strong> startTime and endTime must be valid Unix
+                    timestamps in milliseconds
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    • <strong>Boolean Parameters:</strong> xrpOnly accepts 'true' for true, any
+                    other value defaults to false
                   </Typography>
                 </Box>
               </CardContent>
@@ -2740,6 +2861,14 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
                     • <strong>Account Filtering:</strong> Filter transactions by specific account
                     addresses
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Time Range Filtering:</strong> Filter transactions by start and end
+                    timestamps for precise time-based analysis
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>XRP-Only Filtering:</strong> Filter results to show only XRP
+                    transactions when xrpOnly=true
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
                     • <strong>Flexible Pagination:</strong> Efficient browsing with configurable
