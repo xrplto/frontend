@@ -481,11 +481,15 @@ function FTokenRow({
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
   const fallbackImgUrl = '/static/alt.webp';
   const supplyRate = amount ? 100 : 0;
-  const [imgSrc, setImgSrc] = useState(imgUrl);
+  const [imgError, setImgError] = useState(false);
 
-  const handleImgError = () => {
-    setImgSrc(fallbackImgUrl);
-  };
+  const handleImgError = useCallback(() => {
+    setImgError(true);
+  }, []);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [md5]);
 
   return (
     <TableRow key={id} sx={tableRowStyle} onClick={handleRowClick}>
@@ -532,11 +536,10 @@ function FTokenRow({
             {isAdmin ? (
               <AdminImageWrapper onClick={handleEditToken}>
                 <Image
-                  src={imgSrc}
+                  src={imgError ? fallbackImgUrl : imgUrl}
                   alt={`${user} ${name} Logo`}
                   width={isMobile ? 20 : 38}
                   height={isMobile ? 20 : 38}
-                  priority
                   style={{ objectFit: 'cover', borderRadius: isMobile ? '4px' : '8px' }}
                   onError={handleImgError}
                 />
@@ -544,11 +547,10 @@ function FTokenRow({
             ) : (
               <TokenImageWrapper>
                 <Image
-                  src={imgSrc}
+                  src={imgError ? fallbackImgUrl : imgUrl}
                   alt={`${user} ${name} Logo`}
                   width={isMobile ? 20 : 38}
                   height={isMobile ? 20 : 38}
-                  priority
                   style={{ objectFit: 'cover', borderRadius: isMobile ? '4px' : '8px' }}
                   onError={handleImgError}
                 />
