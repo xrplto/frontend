@@ -4,12 +4,18 @@ import ReactECharts from 'echarts-for-react';
 import { useTheme, alpha } from '@mui/material/styles';
 import { Box, Skeleton } from '@mui/material';
 import Decimal from 'decimal.js';
+import { useInView } from 'react-intersection-observer';
 
 const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, ...props }) => {
   const theme = useTheme();
   const [chartOption, setChartOption] = useState(null);
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { ref, inView } = useInView({
+    triggerOnce: true, // Only trigger once
+    threshold: 0.1 // Trigger when 10% of the element is visible
+  });
 
   // Memoize the chart options creation function
   const createChartOptions = useMemo(
@@ -245,7 +251,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
     const controller = new AbortController();
 
     const fetchChartData = async () => {
-      if (!url) {
+      if (!url || !inView) {
         setIsLoading(false);
         return;
       }
@@ -276,12 +282,13 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
     return () => {
       controller.abort();
     };
-  }, [url, createChartOptions]);
+  }, [url, createChartOptions, inView]);
 
   // Loading state with skeleton
   if (isLoading) {
     return (
       <Box
+        ref={ref}
         sx={{
           width: '100%',
           height: '100%',
@@ -312,6 +319,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
   if (isError) {
     return (
       <Box
+        ref={ref}
         sx={{
           width: '100%',
           height: '100%',
@@ -341,6 +349,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
   if (!chartOption) {
     return (
       <Box
+        ref={ref}
         sx={{
           width: '100%',
           height: '100%',
@@ -369,6 +378,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
 
   return (
     <Box
+      ref={ref}
       sx={{
         width: '100%',
         height: '100%',
