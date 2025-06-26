@@ -13,7 +13,6 @@ import {
   Tooltip,
   Typography,
   Box,
-  LinearProgress,
   Table,
   TableBody,
   SvgIcon
@@ -21,13 +20,9 @@ import {
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
 import { Icon } from '@iconify/react';
-import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import chartLineUp from '@iconify/icons-ph/chart-line-up';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import LockIcon from '@mui/icons-material/Lock';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import StorefrontIcon from '@mui/icons-material/Storefront';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -51,20 +46,6 @@ const TransitionTypo = styled(Typography)(
         transition: background-color 300ms linear, color 1s linear;
     `
 );
-
-const badge24hStyle = {
-  display: 'inline-block',
-  marginRight: '4px',
-  color: '#fff',
-  fontSize: '10px',
-  fontWeight: '600',
-  lineHeight: '16px',
-  backgroundColor: 'rgba(99, 115, 129, 0.12)',
-  backdropFilter: 'blur(6px)',
-  borderRadius: '6px',
-  padding: '2px 6px',
-  border: '1px solid rgba(145, 158, 171, 0.08)'
-};
 
 const truncate = (str, n) => {
   if (!str) return '';
@@ -864,7 +845,7 @@ function FTokenRow({
           }}
         >
           <LoadChart
-            url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`}
+            url={`${BASE_URL}/sparkline/${md5}?period=24h`}
             style={{ width: '100%', height: '100%' }}
             animation={false}
             opts={{

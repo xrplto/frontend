@@ -241,53 +241,42 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
     [theme, showGradient, lineWidth, animation]
   );
 
-  // Memoize the axios request
-  const fetchChartData = useMemo(() => {
+  useEffect(() => {
     const controller = new AbortController();
 
-    return async () => {
+    const fetchChartData = async () => {
+      if (!url) {
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(true);
+      setIsError(false);
       try {
-        setIsLoading(true);
         const response = await axios.get(url, {
           signal: controller.signal,
-          // Add caching headers
           headers: {
             'Cache-Control': 'max-age=300' // Cache for 5 minutes
           }
         });
-        return response.data;
+        setChartOption(createChartOptions(response.data));
       } catch (err) {
-        if (err.name === 'AbortError') {
-          console.log('Request aborted');
-        } else {
+        if (!axios.isCancel(err)) {
           console.error('Error fetching chart data:', err);
           setIsError(true);
         }
-        return null;
       } finally {
-        setIsLoading(false);
-      }
-    };
-  }, [url]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadChart = async () => {
-      if (!url) return;
-
-      const data = await fetchChartData();
-      if (data && isMounted) {
-        setChartOption(createChartOptions(data));
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    loadChart();
+    fetchChartData();
 
     return () => {
-      isMounted = false;
+      controller.abort();
     };
-  }, [url, fetchChartData, createChartOptions]);
+  }, [url, createChartOptions]);
 
   // Loading state with skeleton
   if (isLoading) {
