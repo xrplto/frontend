@@ -305,10 +305,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
           animation="wave"
           sx={{
             borderRadius: 1,
-            bgcolor:
-              theme.palette.mode === 'dark'
-                ? alpha(theme.palette.common.white, 0.05)
-                : alpha(theme.palette.common.black, 0.05)
+            bgcolor: 'transparent'
           }}
         />
       </Box>
@@ -366,10 +363,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
           animation={false}
           sx={{
             borderRadius: 1,
-            bgcolor:
-              theme.palette.mode === 'dark'
-                ? alpha(theme.palette.common.white, 0.02)
-                : alpha(theme.palette.common.black, 0.02)
+            bgcolor: 'transparent'
           }}
         />
       </Box>
