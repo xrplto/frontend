@@ -231,15 +231,15 @@ export async function getStaticProps() {
 
     // Enhanced SEO metadata
     ogp.canonical = 'https://xrpl.to';
-    ogp.title = 'XRPL Token Prices | Real-Time Charts & Market Data | XRP Ledger';
+    ogp.title = 'XRP Ledger Tokens - Live Prices, Charts & Trading Data | XRPL.to';
     ogp.url = 'https://xrpl.to/';
     ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
     ogp.desc =
-      'Track real-time XRPL token prices, charts, and market activity. Compare tokens by volume, price changes, and market cap. The most comprehensive XRP Ledger token explorer updated in real-time.';
+      'Discover XRP Ledger tokens with live prices, market cap, 24h volume & trading charts. Track XRPL DeFi tokens, compare performance & find new opportunities on XRP Ledger.';
 
     // Additional structured metadata for better SEO
     ogp.keywords =
-      'XRPL, XRP Ledger, cryptocurrency prices, token charts, crypto market data, DEX tokens, XRP ecosystem';
+      'XRP Ledger, XRPL tokens, XRP tokens, cryptocurrency prices, DeFi tokens, crypto charts, market cap, trading volume, XRP ecosystem, digital assets, blockchain tokens, altcoins';
     ogp.type = 'website';
     ogp.siteName = 'XRPL.to';
     ogp.locale = 'en_US';
