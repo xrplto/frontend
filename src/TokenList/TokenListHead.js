@@ -36,7 +36,7 @@ const SmallInfoIcon = (props) => {
 const StickyTableCell = withStyles((theme) => ({
   head: {
     position: 'sticky',
-    zIndex: 1000,
+    zIndex: 11,
     top: 0,
     fontWeight: '600',
     fontSize: '13px',
@@ -442,7 +442,7 @@ export default function TokenListHead({
     <TableHead
       sx={{
         position: 'sticky',
-        zIndex: 999,
+        zIndex: 10,
         transform: `translateY(${scrollTopLength}px)`,
         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
@@ -481,7 +481,7 @@ export default function TokenListHead({
           // First column (star) - sticky
           '& .MuiTableCell-root:nth-of-type(1)': {
             position: 'sticky',
-            zIndex: 1001,
+            zIndex: 12,
             left: 0,
             background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
@@ -492,7 +492,7 @@ export default function TokenListHead({
           // Second column (name - matches TokenRow combined ID+Name) - sticky
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
-            zIndex: 1001,
+            zIndex: 12,
             left: isMobile ? '20px' : '24px',
             background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',

@@ -212,7 +212,7 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
           bottom: 16,
           left: '50%',
           transform: 'translateX(-50%)',
-          zIndex: 1000,
+          zIndex: 999,
           display: { xs: 'block', md: 'none' }
         }}
       >

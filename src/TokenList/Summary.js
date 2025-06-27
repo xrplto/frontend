@@ -1,8 +1,13 @@
 import Decimal from 'decimal.js';
 import { useContext, useState, useEffect, useRef } from 'react';
 // Material
-import { alpha, Box, Grid, Stack, Typography, Skeleton, Paper } from '@mui/material';
+import { alpha, Box, Grid, Stack, Typography, Skeleton, Paper, Divider } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import FiberNewIcon from '@mui/icons-material/FiberNew';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import GroupIcon from '@mui/icons-material/Group';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import BusinessIcon from '@mui/icons-material/Business';
 
 // import i18n (needs to be bundled ;))
 import 'src/utils/i18n';
@@ -30,6 +35,7 @@ import {
   Legend
 } from 'recharts';
 import moment from 'moment';
+import { useTheme } from '@mui/material';
 
 // Updated styled components with zero top spacing on mobile
 const ContentTypography = styled(Typography)(({ theme }) => ({
@@ -87,7 +93,6 @@ const MetricBox = styled(Paper)(({ theme }) => ({
   },
   boxShadow: 'none',
   position: 'relative',
-  overflow: 'hidden',
   transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
   '&::before': {
     content: '""',
@@ -251,6 +256,96 @@ export default function Summary() {
   const tokenCreation = useSelector(selectTokenCreation);
   const { activeFiatCurrency } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true);
+  const theme = useTheme();
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const platforms = data.platforms || {};
+
+      const platformEntries = Object.entries(platforms).filter(([, value]) => value > 0);
+
+      const renderStat = (Icon, label, value) => (
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          spacing={2}
+          sx={{ width: '100%' }}
+        >
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Icon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+            <Typography variant="caption" color="text.secondary">
+              {label}
+            </Typography>
+          </Stack>
+          <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+            {value}
+          </Typography>
+        </Stack>
+      );
+
+      return (
+        <Paper
+          sx={{
+            p: 1.5,
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.95
+            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            boxShadow: theme.shadows[5],
+            border: `1px solid ${theme.palette.divider}`,
+            minWidth: 220
+          }}
+        >
+          <Typography variant="subtitle2" sx={{ mb: 1.5, textAlign: 'center' }}>
+            {data.date}
+          </Typography>
+          <Stack spacing={1.5}>
+            {renderStat(FiberNewIcon, 'New Tokens', fNumber(data.Tokens))}
+            {renderStat(
+              MonetizationOnIcon,
+              'Avg MCap',
+              `${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(data.avgMarketcap)}`
+            )}
+            {renderStat(GroupIcon, 'Avg Holders', fNumber(data.avgHolders))}
+            {renderStat(
+              ShowChartIcon,
+              '24h Vol',
+              `${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(
+                data.totalVolume24h
+              )}`
+            )}
+          </Stack>
+
+          {platformEntries.length > 0 && (
+            <>
+              <Divider sx={{ my: 1.5 }} />
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                <BusinessIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+                <Typography variant="caption" color="text.secondary">
+                  Platforms
+                </Typography>
+              </Stack>
+              <Stack spacing={0.5} sx={{ pl: 2 }}>
+                {platformEntries.map(([platform, count]) => (
+                  <Stack key={platform} direction="row" justifyContent="space-between">
+                    <Typography variant="caption" display="block">{`• ${platform}`}</Typography>
+                    <Typography variant="caption" display="block" sx={{ fontWeight: 'bold' }}>
+                      {count}
+                    </Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            </>
+          )}
+        </Paper>
+      );
+    }
+    return null;
+  };
 
   // Simulate loading completion after data is available
   useEffect(() => {
@@ -305,7 +400,11 @@ export default function Summary() {
           .reverse()
           .map((d) => ({
             date: moment(d.date).format('MM/DD'),
-            Tokens: d.totalTokens
+            Tokens: d.totalTokens,
+            platforms: d.platforms,
+            avgMarketcap: new Decimal(d.avgMarketcap || 0).div(fiatRate).toNumber(),
+            avgHolders: d.avgHolders || 0,
+            totalVolume24h: new Decimal(d.totalVolume24h || 0).div(fiatRate).toNumber()
           }))
       : [];
 
@@ -322,6 +421,8 @@ export default function Summary() {
   return (
     <Stack
       sx={{
+        position: 'relative',
+        zIndex: 20,
         // EXTREMELY AGGRESSIVE negative margins on mobile to eliminate ALL top spacing
         mt: { xs: '-24px', sm: '-20px', md: 0 }, // Even more aggressive negative margin
         mb: 0,
@@ -640,11 +741,7 @@ export default function Summary() {
                           data={chartData}
                           margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
                         >
-                          <Tooltip
-                            formatter={(value) => [fNumber(value), 'Tokens']}
-                            labelStyle={{ fontSize: 12 }}
-                            itemStyle={{ fontSize: 12 }}
-                          />
+                          <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 9999 }} />
                           <Line
                             type="monotone"
                             dataKey="Tokens"
