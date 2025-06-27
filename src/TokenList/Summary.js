@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 
 // Redux
 import { useSelector } from 'react-redux';
-import { selectMetrics } from 'src/redux/statusSlice';
+import { selectMetrics, selectTokenCreation } from 'src/redux/statusSlice';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
@@ -19,6 +19,17 @@ import { fNumber } from 'src/utils/formatNumber';
 // Components
 import { currencySymbols } from 'src/utils/constants';
 import { AppContext } from 'src/AppContext';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Legend
+} from 'recharts';
+import moment from 'moment';
 
 // Updated styled components with zero top spacing on mobile
 const ContentTypography = styled(Typography)(({ theme }) => ({
@@ -237,6 +248,7 @@ const formatNumberWithDecimals = (num) => {
 export default function Summary() {
   const { t } = useTranslation(); // set translation const
   const metrics = useSelector(selectMetrics);
+  const tokenCreation = useSelector(selectTokenCreation);
   const { activeFiatCurrency } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -282,6 +294,20 @@ export default function Summary() {
     2,
     Decimal.ROUND_DOWN
   );
+
+  const newTokensToday =
+    tokenCreation && tokenCreation.length > 0 ? tokenCreation[0].totalTokens : 0;
+
+  const chartData =
+    tokenCreation && tokenCreation.length > 0
+      ? tokenCreation
+          .slice(0, 7)
+          .reverse()
+          .map((d) => ({
+            date: moment(d.date).format('MM/DD'),
+            Tokens: d.totalTokens
+          }))
+      : [];
 
   // Show XRP price in USD when currency is XRP, otherwise show in active currency
   const xrpPrice =
@@ -602,6 +628,32 @@ export default function Summary() {
                         </MetricValue>
                         <VolumePercentage>{gMemeVolumePro}% of volume</VolumePercentage>
                       </div>
+                    </MetricBox>
+                  </Grid>
+
+                  {/* New Tokens Chart */}
+                  <Grid item xs={12} md={2}>
+                    <MetricBox elevation={0}>
+                      <MetricTitle>{t('New Tokens Created (7-Day)')}</MetricTitle>
+                      <ResponsiveContainer width="100%" height={80}>
+                        <LineChart
+                          data={chartData}
+                          margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                        >
+                          <Tooltip
+                            formatter={(value) => [fNumber(value), 'Tokens']}
+                            labelStyle={{ fontSize: 12 }}
+                            itemStyle={{ fontSize: 12 }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="Tokens"
+                            stroke="#8884d8"
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
                     </MetricBox>
                   </Grid>
                 </Grid>

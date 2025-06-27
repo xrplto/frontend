@@ -36,7 +36,8 @@ const initialState = {
       gStableVolumePro: 0,
       gXRPdominance: 0,
       gXRPdominancePro: 0
-    }
+    },
+    tokenCreation: []
   },
   filteredCount: 0,
   activeFiatCurrency: currencyConfig.activeFiatCurrency
@@ -77,7 +78,8 @@ export function configureRedux(data) {
         CNY: data.exch.CNY,
         XRP: 1,
         H24: data.H24,
-        global: data.global
+        global: data.global,
+        tokenCreation: data.tokenCreation
       },
       filteredCount: data.count,
       activeFiatCurrency: defaultState.activeFiatCurrency

@@ -29,7 +29,8 @@ const initialState = {
       gStableVolumePro: 0,
       gXRPdominance: 0,
       gXRPdominancePro: 0
-    }
+    },
+    tokenCreation: []
   },
   filteredCount: 0,
   activeFiatCurrency: currencyConfig.activeFiatCurrency
@@ -49,7 +50,8 @@ const statusSlice = createSlice({
         CNY: data.exch?.CNY || 100,
         XRP: 1,
         H24: data.H24 || initialState.metrics.H24,
-        global: data.global || initialState.metrics.global
+        global: data.global || initialState.metrics.global,
+        tokenCreation: data.tokenCreation || state.metrics.tokenCreation
       };
       Object.assign(state.metrics, metrics);
     },
@@ -64,13 +66,12 @@ const statusSlice = createSlice({
   }
 });
 
-export const { update_metrics, update_filteredCount, update_activeCurrency } =
-  statusSlice.actions;
+export const { update_metrics, update_filteredCount, update_activeCurrency } = statusSlice.actions;
 
 export const selectMetrics = (state) => state.status.metrics;
 export const selectFilteredCount = (state) => state.status.filteredCount;
-export const selectActiveFiatCurrency = (state) =>
-  state.status.activeFiatCurrency;
+export const selectActiveFiatCurrency = (state) => state.status.activeFiatCurrency;
+export const selectTokenCreation = (state) => state.status.metrics.tokenCreation;
 
 export default statusSlice.reducer;
 
@@ -105,4 +106,3 @@ export default statusSlice.reducer;
 
 //   return store;
 // }
-
