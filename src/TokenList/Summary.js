@@ -1,7 +1,6 @@
 import Decimal from 'decimal.js';
 import { useContext, useState, useEffect, useRef } from 'react';
 // Material
-import { withStyles } from '@mui/styles';
 import { alpha, Box, Grid, Stack, Typography, Skeleton, Paper } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
@@ -15,10 +14,9 @@ import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 
 // Utils
-import { fNumber, fNumberWithSuffix } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatNumber';
 
 // Components
-import BearBull from 'src/components/BearBull';
 import { currencySymbols } from 'src/utils/constants';
 import { AppContext } from 'src/AppContext';
 
@@ -294,22 +292,6 @@ export default function Summary() {
   // Get the currency symbol for XRP price display
   const xrpPriceSymbol =
     activeFiatCurrency === 'XRP' ? currencySymbols.USD : currencySymbols[activeFiatCurrency];
-
-  const formatTokenPrice = (token, fiatRate) => {
-    if (!token.usd || !fiatRate) return '0.00';
-    const price = new Decimal(token.usd).div(fiatRate).toNumber();
-    if (price >= 1) return price.toFixed(2);
-    if (price >= 0.01) return price.toFixed(4);
-    if (price >= 0.0001) return price.toFixed(6);
-    return price.toExponential(2);
-  };
-
-  const getTokenImageUrl = (token) => {
-    if (token.md5) {
-      return `https://s1.xrpl.to/token/${token.md5}`;
-    }
-    return '/static/alt.webp'; // Fallback image
-  };
 
   return (
     <Stack
