@@ -274,11 +274,6 @@ export default function Summary() {
   const gMarketcapPro = new Decimal(metrics.global?.gMarketcapPro || 0).toNumber();
   const gDexVolume = new Decimal(metrics.global?.gDexVolume || 0).div(fiatRate).toNumber();
   const gDexVolumePro = new Decimal(metrics.global?.gDexVolumePro || 0).toNumber();
-  const gNFTIOUVolume = new Decimal(metrics.global?.gNFTIOUVolume || 0).div(fiatRate).toNumber();
-  const gNFTIOUVolumePro = new Decimal(metrics.global?.gNFTIOUVolumePro || 0).toFixed(
-    2,
-    Decimal.ROUND_DOWN
-  );
   const gStableVolume = new Decimal(metrics.global?.gStableVolume || 0).div(fiatRate).toNumber();
   const gStableVolumePro = new Decimal(metrics.global?.gStableVolumePro || 0).toFixed(
     2,
@@ -414,7 +409,7 @@ export default function Summary() {
                 width: '100%'
               }}
             >
-              {[...Array(6)].map((_, index) => (
+              {[...Array(5)].map((_, index) => (
                 <Grid
                   item
                   key={index}
@@ -486,7 +481,7 @@ export default function Summary() {
                   <Grid
                     item
                     xs={6}
-                    md={4}
+                    md={2}
                     sx={{
                       [(theme) => theme.breakpoints.down('sm')]: {
                         padding: '0 !important'
@@ -511,7 +506,7 @@ export default function Summary() {
                   <Grid
                     item
                     xs={6}
-                    md={4}
+                    md={2}
                     sx={{
                       [(theme) => theme.breakpoints.down('sm')]: {
                         padding: '0 !important'
@@ -536,7 +531,7 @@ export default function Summary() {
                   <Grid
                     item
                     xs={6}
-                    md={4}
+                    md={2}
                     sx={{
                       [(theme) => theme.breakpoints.down('sm')]: {
                         padding: '0 !important'
@@ -582,34 +577,11 @@ export default function Summary() {
                     </MetricBox>
                   </Grid>
 
-                  {/* NFT Volume Box */}
-                  <Grid
-                    item
-                    xs={6}
-                    md={4}
-                    sx={{
-                      [(theme) => theme.breakpoints.down('sm')]: {
-                        padding: '0 !important'
-                      }
-                    }}
-                  >
-                    <MetricBox elevation={0}>
-                      <MetricTitle>{t('Collectibles & NFTs')}</MetricTitle>
-                      <div>
-                        <MetricValue>
-                          {currencySymbols[activeFiatCurrency]}
-                          {formatNumberWithDecimals(gNFTIOUVolume)}
-                        </MetricValue>
-                        <VolumePercentage>{gNFTIOUVolumePro}% of volume</VolumePercentage>
-                      </div>
-                    </MetricBox>
-                  </Grid>
-
                   {/* Stablecoins Box */}
                   <Grid
                     item
                     xs={6}
-                    md={4}
+                    md={2}
                     sx={{
                       [(theme) => theme.breakpoints.down('sm')]: {
                         padding: '0 !important'
@@ -632,7 +604,7 @@ export default function Summary() {
                   <Grid
                     item
                     xs={6}
-                    md={4}
+                    md={2}
                     sx={{
                       [(theme) => theme.breakpoints.down('sm')]: {
                         padding: '0 !important'
