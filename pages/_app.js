@@ -9,7 +9,6 @@ import { useSnackbar } from 'src/components/useSnackbar';
 import './zMain.css';
 import { SnackbarProvider } from 'notistack';
 import NextNProgress from 'nextjs-progressbar';
-import { ClientContextProvider } from '@xrpl-walletconnect/react';
 
 // Move static schema outside component to prevent recreation
 const jsonLdSchema = {
@@ -35,15 +34,6 @@ const jsonLdSchema = {
     addressCountry: 'US'
   }
 };
-
-// WalletConnect configuration
-const walletConnectMetadata = {
-  name: 'xrpl.to',
-  description: 'xrpl.to | NFT Marketplace, DEX, Portfolio',
-  url: 'https://xrpl.to',
-  icons: ['https://xrpl.to/logo/xrpl-to-logo-white.svg']
-};
-const projectId = '4da6610f269123ad46c1516afee16c15';
 
 function XRPLToApp({ Component, pageProps, router }) {
   const isUnderMaintenance = process.env.MAINTENANCE;
@@ -133,25 +123,23 @@ function XRPLToApp({ Component, pageProps, router }) {
         <meta name="twitter:image" content={ogp.imgUrl} />
       </Head>
 
-      <ClientContextProvider projectId={projectId} metadata={walletConnectMetadata}>
-        <ContextProvider data={data} openSnackbar={openSnackbar}>
-          <NextNProgress />
-          <ThemeProvider>
-            <SnackbarProvider
-              maxSnack={2}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'center'
-              }}
-            >
-              <CssBaseline />
-              <Component {...pageProps} />
-              <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
-              <TransactionAlert />
-            </SnackbarProvider>
-          </ThemeProvider>
-        </ContextProvider>
-      </ClientContextProvider>
+      <ContextProvider data={data} openSnackbar={openSnackbar}>
+        <NextNProgress />
+        <ThemeProvider>
+          <SnackbarProvider
+            maxSnack={2}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'center'
+            }}
+          >
+            <CssBaseline />
+            <Component {...pageProps} />
+            <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
+            <TransactionAlert />
+          </SnackbarProvider>
+        </ThemeProvider>
+      </ContextProvider>
     </>
   );
 }

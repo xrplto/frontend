@@ -4,18 +4,24 @@
   --link-color-dark: #22b14c; /* Color for dark theme links */
 }
 
-/* Combine selectors for light and dark themes */
-.reactMarkDownlight a,
-.reactMarkDowndark a {
+/* Light theme */
+.reactMarkDownlight a:link,
+.reactMarkDownlight a:visited,
+.reactMarkDownlight a:hover,
+.reactMarkDownlight a:active {
+  color: var(--link-color-light);
   background-color: transparent;
-  text-decoration: none;
+  text-decoration: none; /* No underline for all states */
 }
 
-.reactMarkDownlight a {
-  color: var(--link-color-light);
-}
-.reactMarkDowndark a {
+/* Dark theme */
+.reactMarkDowndark a:link,
+.reactMarkDowndark a:visited,
+.reactMarkDowndark a:hover,
+.reactMarkDowndark a:active {
   color: var(--link-color-dark);
+  background-color: transparent;
+  text-decoration: none; /* No underline for all states */
 }
 
 /* Headings */
@@ -37,18 +43,22 @@
   pointer-events: none !important;
 }
 
-/* dropdown menu css */
+/* Dropdown menu CSS */
 #dropdown_menu {
   margin: 0;
   padding: 0;
   list-style: none;
   position: relative;
 }
+
 ul#dropItems {
   list-style: none;
+  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, transform 0.3s, opacity 0.3s; /* Updated transitions */
   border-radius: 10px;
+  box-shadow: none;
   position: absolute;
-  overflow: auto;
+  overflow: hidden auto;
+  outline: 0px;
   padding: 12px;
   width: 230px;
   z-index: 1010;
@@ -56,21 +66,26 @@ ul#dropItems {
   transform-origin: left top;
   opacity: 0;
   transform: scale(0.7);
-  transition: opacity 0.1s, transform 0.1s;
+  visibility: hidden; /* Hide by default */
 }
+
 ul#dropItems li {
   padding: 5px 10px;
   border-radius: 5px;
   margin: 3px 15px;
-  transition: background-color 0.3s;
+  transition: all 0.3s;
 }
+
 #darkItem:hover {
-  background: #2a2a2a;
+  background: #2a2a2a !important;
 }
+
 #lightItem:hover {
-  background: #dfdfdf;
+  background: #dfdfdf !important;
 }
-#dropdown_menu li a:hover ul#dropItems {
+
+#dropdown_menu li:hover ul#dropItems {
   transform: scale(1);
   opacity: 1;
+  visibility: visible; /* Show on hover */
 }

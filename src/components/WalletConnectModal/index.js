@@ -1,5 +1,4 @@
-import { useContext, useState, useEffect } from 'react';
-import { Global } from '@emotion/react';
+import { useContext, useState } from 'react';
 
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -18,8 +17,6 @@ import sdk from '@crossmarkio/sdk';
 import LoginDialog from '../LoginDialog';
 import { AppContext } from 'src/AppContext';
 import axios from 'axios';
-import { useWalletConnectClient } from '@xrpl-walletconnect/react';
-import { mainnet } from '@xrpl-walletconnect/core';
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(20px)',
@@ -255,84 +252,6 @@ const FeeTag = styled('div')(({ theme, isFree }) => ({
   }
 }));
 
-const projectId = '4da6610f269123ad46c1516afee16c15';
-
-const WalletConnect = ({ setOpenWalletModal }) => {
-  const { connect, disconnect, accounts, chains, setChains } = useWalletConnectClient();
-
-  const { doLogIn, onLogoutXumm, session, addProfile } = useContext(AppContext);
-
-  const onConnect = async () => {
-    if (accounts.length > 0) {
-      await disconnect();
-      onLogoutXumm();
-    } else {
-      setOpenWalletModal(false);
-      if (!chains.includes(mainnet.id)) {
-        setChains([mainnet.id]);
-      }
-      await connect();
-    }
-  };
-
-  useEffect(() => {
-    if (accounts && accounts.length > 0 && accounts[0]) {
-      const account = accounts[0];
-      const address = account.split(':')[2];
-      if (session && session.account) {
-        if (address !== session.account) {
-          addProfile({
-            account: address,
-            wallet_type: 'walletconnect'
-          });
-          setOpenWalletModal(false);
-        }
-      } else {
-        if (address !== session?.account) {
-          setOpenWalletModal(false);
-          doLogIn({
-            account: address,
-            wallet_type: 'walletconnect'
-          });
-        }
-      }
-    }
-  }, [accounts, session?.account, setOpenWalletModal, doLogIn, addProfile, session]);
-
-  return (
-    <WalletItem direction="row" spacing={2} alignItems="center" onClick={onConnect}>
-      <WalletIcon
-        src="https://walletconnect.com/meta/walletconnect-logo-blue.svg"
-        alt="WalletConnect"
-        className="wallet-icon"
-      />
-      <Stack sx={{ flexGrow: 1 }}>
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <Typography
-            variant="h6"
-            component="div"
-            className="wallet-name"
-            sx={{
-              fontWeight: 600,
-              transition: 'color 0.3s ease'
-            }}
-          >
-            {accounts.length > 0 ? 'Disconnect' : 'WalletConnect'}
-          </Typography>
-        </Stack>
-        <Typography
-          variant="body2"
-          sx={{
-            color: (theme) => alpha(theme.palette.text.secondary, 0.8)
-          }}
-        >
-          {accounts.length > 0 ? accounts[0] : 'Mobile Wallets'}
-        </Typography>
-      </Stack>
-    </WalletItem>
-  );
-};
-
 const WalletConnectModal = () => {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
@@ -439,266 +358,255 @@ const WalletConnectModal = () => {
   };
 
   return (
-    <>
-      <Global
-        styles={{
-          'wcm-modal': {
-            zIndex: '10000 !important'
-          }
-        }}
-      />
-      <StyledDialog
-        open={openWalletModal}
-        onClose={handleClose}
-        aria-labelledby="scroll-dialog-title"
-        aria-describedby="scroll-dialog-description"
-        sx={{ zIndex: 9999 }}
-      >
-        <StyledDialogTitle>
-          <Stack direction="row" justifyContent={openLogin ? 'space-between' : 'end'}>
-            {openLogin && (
-              <ActionButton onClick={onLogoutXumm}>
-                <ArrowBackIcon />
-              </ActionButton>
-            )}
-            <ActionButton onClick={handleClose}>
-              <ClearIcon />
+    <StyledDialog
+      open={openWalletModal}
+      onClose={handleClose}
+      aria-labelledby="scroll-dialog-title"
+      aria-describedby="scroll-dialog-description"
+      sx={{ zIndex: 9999 }}
+    >
+      <StyledDialogTitle>
+        <Stack direction="row" justifyContent={openLogin ? 'space-between' : 'end'}>
+          {openLogin && (
+            <ActionButton onClick={onLogoutXumm}>
+              <ArrowBackIcon />
             </ActionButton>
-          </Stack>
-        </StyledDialogTitle>
-
-        <StyledDialogContent>
-          {openLogin ? (
-            <LoginDialog
-              open={openLogin}
-              handleClose={handleLoginClose}
-              qrUrl={qrUrl}
-              nextUrl={nextUrl}
-            />
-          ) : (
-            <>
-              <ModalTitle variant="modal">Connect Wallet</ModalTitle>
-              <Stack spacing={2}>
-                <WalletItem direction="row" spacing={2} alignItems="center" onClick={handleLogin}>
-                  <WalletIcon src="/static/xaman.webp" alt="Xaman Wallet" className="wallet-icon" />
-                  <Stack sx={{ flexGrow: 1 }}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Typography
-                        variant="h6"
-                        component="div"
-                        className="wallet-name"
-                        sx={{
-                          fontWeight: 600,
-                          transition: 'color 0.3s ease'
-                        }}
-                      >
-                        Xaman
-                      </Typography>
-                      <Tooltip
-                        title="Xaman charges fees for trading (0.8%) and some transactions (0.09 XRP). Most basic transfers remain free."
-                        arrow
-                        placement="top"
-                        enterDelay={0}
-                        leaveDelay={0}
-                        PopperProps={{
-                          sx: {
-                            zIndex: 10000 // Higher than dialog
-                          }
-                        }}
-                      >
-                        <div style={{ display: 'inline-block' }}>
-                          <FeeTag
-                            isFree={false}
-                            title="Xaman charges fees for trading (0.8%) and some transactions (0.09 XRP). Most basic transfers remain free."
-                          >
-                            Fee
-                          </FeeTag>
-                        </div>
-                      </Tooltip>
-                    </Stack>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: alpha(theme.palette.text.secondary, 0.8)
-                      }}
-                    >
-                      Mobile Wallet
-                    </Typography>
-                  </Stack>
-                  <Typography
-                    component="a"
-                    href="https://xaman.app/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      marginLeft: 'auto',
-                      color: alpha(theme.palette.text.secondary, 0.7),
-                      transition: 'color 0.2s ease',
-                      '&:hover': { color: theme.palette.primary.main }
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <DownloadButton size="small" aria-label="Download Xaman Wallet">
-                      <DownloadIcon />
-                    </DownloadButton>
-                  </Typography>
-                </WalletItem>
-
-                <StyledDivider />
-
-                <WalletItem
-                  direction="row"
-                  spacing={2}
-                  alignItems="center"
-                  onClick={handleConnectGem}
-                >
-                  <WalletIcon src="/static/gem.svg" alt="GemWallet" className="wallet-icon" />
-                  <Stack sx={{ flexGrow: 1 }}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Typography
-                        variant="h6"
-                        component="div"
-                        className="wallet-name"
-                        sx={{
-                          fontWeight: 600,
-                          transition: 'color 0.3s ease'
-                        }}
-                      >
-                        GemWallet
-                      </Typography>
-                      <Tooltip
-                        title="GemWallet is completely free to use with no additional fees beyond standard XRPL network fees"
-                        arrow
-                        placement="top"
-                        enterDelay={0}
-                        leaveDelay={0}
-                        PopperProps={{
-                          sx: {
-                            zIndex: 10000 // Higher than dialog
-                          }
-                        }}
-                      >
-                        <div style={{ display: 'inline-block' }}>
-                          <FeeTag
-                            isFree={true}
-                            title="GemWallet is completely free to use with no additional fees beyond standard XRPL network fees"
-                          >
-                            Free
-                          </FeeTag>
-                        </div>
-                      </Tooltip>
-                    </Stack>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: alpha(theme.palette.text.secondary, 0.8)
-                      }}
-                    >
-                      Browser Wallet
-                    </Typography>
-                  </Stack>
-                  <Typography
-                    component="a"
-                    href="https://gemwallet.app/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      marginLeft: 'auto',
-                      color: alpha(theme.palette.text.secondary, 0.7),
-                      transition: 'color 0.2s ease',
-                      '&:hover': { color: theme.palette.primary.main }
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <DownloadButton size="small" aria-label="Download GemWallet">
-                      <DownloadIcon />
-                    </DownloadButton>
-                  </Typography>
-                </WalletItem>
-
-                <StyledDivider />
-
-                <WalletItem
-                  direction="row"
-                  spacing={2}
-                  alignItems="center"
-                  onClick={handleConnectCrossmark}
-                >
-                  <WalletIcon
-                    src="/static/crossmark.webp"
-                    alt="CrossMark Wallet"
-                    className="wallet-icon"
-                  />
-                  <Stack sx={{ flexGrow: 1 }}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Typography
-                        variant="h6"
-                        component="div"
-                        className="wallet-name"
-                        sx={{
-                          fontWeight: 600,
-                          transition: 'color 0.3s ease'
-                        }}
-                      >
-                        CrossMark
-                      </Typography>
-                      <Tooltip
-                        title="CrossMark is free to use with no wallet fees, only standard XRPL network transaction fees apply"
-                        arrow
-                        placement="top"
-                        enterDelay={0}
-                        leaveDelay={0}
-                        PopperProps={{
-                          sx: {
-                            zIndex: 10000 // Higher than dialog
-                          }
-                        }}
-                      >
-                        <div style={{ display: 'inline-block' }}>
-                          <FeeTag
-                            isFree={true}
-                            title="CrossMark is free to use with no wallet fees, only standard XRPL network transaction fees apply"
-                          >
-                            Free
-                          </FeeTag>
-                        </div>
-                      </Tooltip>
-                    </Stack>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: alpha(theme.palette.text.secondary, 0.8)
-                      }}
-                    >
-                      Browser Wallet
-                    </Typography>
-                  </Stack>
-                  <Typography
-                    component="a"
-                    href="https://crossmark.io/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      marginLeft: 'auto',
-                      color: alpha(theme.palette.text.secondary, 0.7),
-                      transition: 'color 0.2s ease',
-                      '&:hover': { color: theme.palette.primary.main }
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <DownloadButton size="small" aria-label="Download CrossMark Wallet">
-                      <DownloadIcon />
-                    </DownloadButton>
-                  </Typography>
-                </WalletItem>
-                <StyledDivider />
-                <WalletConnect setOpenWalletModal={setOpenWalletModal} />
-              </Stack>
-            </>
           )}
-        </StyledDialogContent>
-      </StyledDialog>
-    </>
+          <ActionButton onClick={handleClose}>
+            <ClearIcon />
+          </ActionButton>
+        </Stack>
+      </StyledDialogTitle>
+
+      <StyledDialogContent>
+        {openLogin ? (
+          <LoginDialog
+            open={openLogin}
+            handleClose={handleLoginClose}
+            qrUrl={qrUrl}
+            nextUrl={nextUrl}
+          />
+        ) : (
+          <>
+            <ModalTitle variant="modal">Connect Wallet</ModalTitle>
+            <Stack spacing={2}>
+              <WalletItem direction="row" spacing={2} alignItems="center" onClick={handleLogin}>
+                <WalletIcon src="/static/xaman.webp" alt="Xaman Wallet" className="wallet-icon" />
+                <Stack sx={{ flexGrow: 1 }}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Typography
+                      variant="h6"
+                      component="div"
+                      className="wallet-name"
+                      sx={{
+                        fontWeight: 600,
+                        transition: 'color 0.3s ease'
+                      }}
+                    >
+                      Xaman
+                    </Typography>
+                    <Tooltip
+                      title="Xaman charges fees for trading (0.8%) and some transactions (0.09 XRP). Most basic transfers remain free."
+                      arrow
+                      placement="top"
+                      enterDelay={0}
+                      leaveDelay={0}
+                      PopperProps={{
+                        sx: {
+                          zIndex: 10000 // Higher than dialog
+                        }
+                      }}
+                    >
+                      <div style={{ display: 'inline-block' }}>
+                        <FeeTag
+                          isFree={false}
+                          title="Xaman charges fees for trading (0.8%) and some transactions (0.09 XRP). Most basic transfers remain free."
+                        >
+                          Fee
+                        </FeeTag>
+                      </div>
+                    </Tooltip>
+                  </Stack>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: alpha(theme.palette.text.secondary, 0.8)
+                    }}
+                  >
+                    Mobile Wallet
+                  </Typography>
+                </Stack>
+                <Typography
+                  component="a"
+                  href="https://xaman.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    marginLeft: 'auto',
+                    color: alpha(theme.palette.text.secondary, 0.7),
+                    transition: 'color 0.2s ease',
+                    '&:hover': { color: theme.palette.primary.main }
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DownloadButton size="small" aria-label="Download Xaman Wallet">
+                    <DownloadIcon />
+                  </DownloadButton>
+                </Typography>
+              </WalletItem>
+
+              <StyledDivider />
+
+              <WalletItem
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                onClick={handleConnectGem}
+              >
+                <WalletIcon src="/static/gem.svg" alt="GemWallet" className="wallet-icon" />
+                <Stack sx={{ flexGrow: 1 }}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Typography
+                      variant="h6"
+                      component="div"
+                      className="wallet-name"
+                      sx={{
+                        fontWeight: 600,
+                        transition: 'color 0.3s ease'
+                      }}
+                    >
+                      GemWallet
+                    </Typography>
+                    <Tooltip
+                      title="GemWallet is completely free to use with no additional fees beyond standard XRPL network fees"
+                      arrow
+                      placement="top"
+                      enterDelay={0}
+                      leaveDelay={0}
+                      PopperProps={{
+                        sx: {
+                          zIndex: 10000 // Higher than dialog
+                        }
+                      }}
+                    >
+                      <div style={{ display: 'inline-block' }}>
+                        <FeeTag
+                          isFree={true}
+                          title="GemWallet is completely free to use with no additional fees beyond standard XRPL network fees"
+                        >
+                          Free
+                        </FeeTag>
+                      </div>
+                    </Tooltip>
+                  </Stack>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: alpha(theme.palette.text.secondary, 0.8)
+                    }}
+                  >
+                    Browser Wallet
+                  </Typography>
+                </Stack>
+                <Typography
+                  component="a"
+                  href="https://gemwallet.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    marginLeft: 'auto',
+                    color: alpha(theme.palette.text.secondary, 0.7),
+                    transition: 'color 0.2s ease',
+                    '&:hover': { color: theme.palette.primary.main }
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DownloadButton size="small" aria-label="Download GemWallet">
+                    <DownloadIcon />
+                  </DownloadButton>
+                </Typography>
+              </WalletItem>
+
+              <StyledDivider />
+
+              <WalletItem
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                onClick={handleConnectCrossmark}
+              >
+                <WalletIcon
+                  src="/static/crossmark.webp"
+                  alt="CrossMark Wallet"
+                  className="wallet-icon"
+                />
+                <Stack sx={{ flexGrow: 1 }}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Typography
+                      variant="h6"
+                      component="div"
+                      className="wallet-name"
+                      sx={{
+                        fontWeight: 600,
+                        transition: 'color 0.3s ease'
+                      }}
+                    >
+                      CrossMark
+                    </Typography>
+                    <Tooltip
+                      title="CrossMark is free to use with no wallet fees, only standard XRPL network transaction fees apply"
+                      arrow
+                      placement="top"
+                      enterDelay={0}
+                      leaveDelay={0}
+                      PopperProps={{
+                        sx: {
+                          zIndex: 10000 // Higher than dialog
+                        }
+                      }}
+                    >
+                      <div style={{ display: 'inline-block' }}>
+                        <FeeTag
+                          isFree={true}
+                          title="CrossMark is free to use with no wallet fees, only standard XRPL network transaction fees apply"
+                        >
+                          Free
+                        </FeeTag>
+                      </div>
+                    </Tooltip>
+                  </Stack>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: alpha(theme.palette.text.secondary, 0.8)
+                    }}
+                  >
+                    Browser Wallet
+                  </Typography>
+                </Stack>
+                <Typography
+                  component="a"
+                  href="https://crossmark.io/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    marginLeft: 'auto',
+                    color: alpha(theme.palette.text.secondary, 0.7),
+                    transition: 'color 0.2s ease',
+                    '&:hover': { color: theme.palette.primary.main }
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DownloadButton size="small" aria-label="Download CrossMark Wallet">
+                    <DownloadIcon />
+                  </DownloadButton>
+                </Typography>
+              </WalletItem>
+            </Stack>
+          </>
+        )}
+      </StyledDialogContent>
+    </StyledDialog>
   );
 };
 
