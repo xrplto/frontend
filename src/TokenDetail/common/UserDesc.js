@@ -1091,6 +1091,20 @@ export default function UserDesc({ token }) {
         return `https://github.com/${handle}`;
       case 'reddit':
         return `https://www.reddit.com/user/${handle}`;
+      case 'facebook':
+        return `https://www.facebook.com/${handle}`;
+      case 'linkedin':
+        return `https://www.linkedin.com/company/${handle}`;
+      case 'instagram':
+        return `https://www.instagram.com/${handle}`;
+      case 'youtube':
+        return `https://www.youtube.com/@${handle}`;
+      case 'medium':
+        return `https://medium.com/@${handle}`;
+      case 'tiktok':
+        return `https://www.tiktok.com/@${handle}`;
+      case 'twitch':
+        return `https://www.twitch.tv/${handle}`;
       case 'website':
         return `https://${handle}`;
       default:
