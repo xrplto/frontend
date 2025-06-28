@@ -31,7 +31,6 @@ import { currencySymbols } from 'src/utils/constants';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 // Components
-import ListToolbar from 'src/account/ListToolbar';
 import TrustLineRow from './TrustLineRow';
 import useWebSocket from 'react-use-websocket';
 import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
