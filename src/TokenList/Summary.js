@@ -330,7 +330,7 @@ export default function Summary() {
   const chartData =
     tokenCreation && tokenCreation.length > 0
       ? tokenCreation
-          .slice(0, 7)
+          .slice(0, 30)
           .reverse()
           .map((d) => ({
             date: moment(d.date).format('MM/DD'),
@@ -659,7 +659,7 @@ export default function Summary() {
                   <Grid item xs={12} md={3}>
                     <MetricBox sx={{ p: 0 }}>
                       <Box sx={{ width: '100%', pt: 2, px: 2 }}>
-                        <MetricTitle>{t('New Tokens Created (7-Day)')}</MetricTitle>
+                        <MetricTitle>{t('New Tokens Created (30-Day)')}</MetricTitle>
                       </Box>
                       <ResponsiveContainer width="100%" height={80}>
                         <AreaChart
