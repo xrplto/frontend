@@ -1809,7 +1809,7 @@ const App = ({ token }) => {
   };
 
   return (
-    <Stack alignItems="center" width="100%">
+    <Stack alignItems="center" width="100%" sx={{ mb: 2 }}>
       <Button
         variant="outlined"
         onClick={toggleSwap}

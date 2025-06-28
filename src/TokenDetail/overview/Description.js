@@ -159,35 +159,17 @@ const ReadMore = ({ children }) => {
 
 // Enhanced styled components
 const StyledCard = styled(Paper)(({ theme }) => ({
-  borderRadius: '12px',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+  borderRadius: '24px',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(
     theme.palette.background.paper,
-    0.4
+    0.5
   )} 100%)`,
-  backdropFilter: 'blur(10px)',
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+  backdropFilter: 'blur(25px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+  boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)}`,
   position: 'relative',
   overflow: 'hidden',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '1px',
-    background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
-      theme.palette.success.main,
-      0.4
-    )}, ${alpha(theme.palette.info.main, 0.4)})`,
-    opacity: 0.6,
-    zIndex: 1
-  },
-
-  '&:hover': {
-    transform: 'translateY(-2px)'
-  }
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
 }));
 
 const StyledCardHeader = styled(CardHeader)(({ theme }) => ({
@@ -332,7 +314,7 @@ export default function Description({
     ({ theme }) => `
         -webkit-box-flex: 1;
         flex-grow: 1;
-        height: 12em;
+        height: 8em;
         overflow: hidden;
         text-overflow: ellipsis;
         position: relative;
@@ -344,7 +326,7 @@ export default function Description({
             left: 0px;
             bottom: 0px;
             width: 100%;
-            height: 6em;
+            height: 4em;
             background: linear-gradient(180deg, 
               rgba(255,255,255,0) 0%, 
               ${theme.palette.background.default} 70%,
@@ -360,7 +342,7 @@ export default function Description({
         height: unset;
         overflow: unset;
         text-overflow: unset;
-        min-height: 12em;
+        min-height: 8em;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     `
   );

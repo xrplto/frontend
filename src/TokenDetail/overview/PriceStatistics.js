@@ -142,29 +142,17 @@ export default function PriceStatistics({ token }) {
   return (
     <Box
       sx={{
-        borderRadius: '12px',
+        borderRadius: '24px',
         background: `linear-gradient(135deg, ${alpha(
           theme.palette.background.paper,
-          0.8
-        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-        backdropFilter: 'blur(10px)',
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
-        boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
+          0.7
+        )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
+        backdropFilter: 'blur(25px)',
+        border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+        boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)}`,
         position: 'relative',
         overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '1px',
-          background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
-            theme.palette.success.main,
-            0.4
-          )}, ${alpha(theme.palette.info.main, 0.4)})`,
-          opacity: 0.6
-        }
+        mb: 2
       }}
     >
       <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
