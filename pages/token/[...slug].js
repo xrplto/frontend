@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { performance } from 'perf_hooks';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
 
 // Material
@@ -15,6 +15,7 @@ import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
+import TrustSetDialog from 'src/components/TrustSetDialog';
 
 import TokenDetail from 'src/TokenDetail';
 
@@ -29,6 +30,8 @@ const OverviewWrapper = styled(Box)(
 function Detail({ data }) {
   const dispatch = useDispatch();
   const [token, setToken] = useState(data.token);
+  const [trustsetToken, setTrustsetToken] = useState(null);
+  const [hasClosedTrustset, setHasClosedTrustset] = useState(false);
   const WSS_FEED_URL = `wss://api.xrpl.to/ws/token/${token.md5}`;
 
   useWebSocket(WSS_FEED_URL, {
@@ -39,6 +42,19 @@ function Detail({ data }) {
     // reconnectAttempts: 10,
     // reconnectInterval: 3000,
   });
+
+  // Handle trustset modal - only open on initial load, not after manual close
+  useEffect(() => {
+    if (data.tab === 'trustset' && !hasClosedTrustset) {
+      setTrustsetToken(token);
+    }
+  }, [data.tab, token, hasClosedTrustset]);
+
+  // Handle trustset modal close
+  const handleTrustsetClose = () => {
+    setTrustsetToken(null);
+    setHasClosedTrustset(true);
+  };
 
   const processMessages = (event) => {
     try {
@@ -72,6 +88,10 @@ function Detail({ data }) {
       <ScrollToTop />
 
       <Footer />
+
+      {trustsetToken && (
+        <TrustSetDialog token={trustsetToken} setToken={handleTrustsetClose} balance={0} />
+      )}
     </OverviewWrapper>
   );
 }
@@ -82,11 +102,14 @@ export async function getServerSideProps(ctx) {
   const BASE_URL = process.env.API_URL;
 
   let data = null;
+  let tab = null;
+  let slug = null;
+
   try {
     const params = ctx.params.slug;
 
-    const slug = params[0];
-    const tab = params[1];
+    slug = params[0];
+    tab = params[1];
 
     var t1 = performance.now();
 
@@ -181,15 +204,24 @@ export async function getServerSideProps(ctx) {
 
     const imageData = getOptimalImage();
 
-    ogp.canonical = `https://xrpl.to/token/${slug}`;
-    ogp.title = seoTitle;
-    ogp.url = `https://xrpl.to/token/${slug}`;
+    // Override meta data for trustset pages
+    if (tab === 'trustset') {
+      ogp.canonical = `https://xrpl.to/token/${slug}/trustset`;
+      ogp.title = `Establish a ${name} Trustline on the XRP Ledger`;
+      ogp.url = `https://xrpl.to/token/${slug}/trustset`;
+      ogp.desc = `Easily set up a ${name} Trustline on the XRPL for secure and streamlined transactions.`;
+    } else {
+      ogp.canonical = `https://xrpl.to/token/${slug}`;
+      ogp.title = seoTitle;
+      ogp.url = `https://xrpl.to/token/${slug}`;
+      ogp.desc = metaDesc;
+    }
+
     ogp.imgUrl = imageData.url;
     ogp.imgWidth = imageData.width;
     ogp.imgHeight = imageData.height;
     ogp.imgType = imageData.type;
     ogp.imgAlt = imageData.alt;
-    ogp.desc = metaDesc;
 
     // Additional Open Graph image properties for better social media support
     ogp.images = [
