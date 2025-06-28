@@ -391,7 +391,7 @@ const WalletConnectModal = () => {
             <ModalTitle variant="modal">Connect Wallet</ModalTitle>
             <Stack spacing={2}>
               <WalletItem direction="row" spacing={2} alignItems="center" onClick={handleLogin}>
-                <WalletIcon src="/icons/xaman.png" alt="Xaman Wallet" className="wallet-icon" />
+                <WalletIcon src="/static/xaman.webp" alt="Xaman Wallet" className="wallet-icon" />
                 <Stack sx={{ flexGrow: 1 }}>
                   <Stack direction="row" alignItems="center" spacing={1}>
                     <Typography
@@ -463,7 +463,7 @@ const WalletConnectModal = () => {
                 alignItems="center"
                 onClick={handleConnectGem}
               >
-                <WalletIcon src="/icons/gem.svg" alt="GemWallet" className="wallet-icon" />
+                <WalletIcon src="/static/gem.svg" alt="GemWallet" className="wallet-icon" />
                 <Stack sx={{ flexGrow: 1 }}>
                   <Stack direction="row" alignItems="center" spacing={1}>
                     <Typography
@@ -536,7 +536,7 @@ const WalletConnectModal = () => {
                 onClick={handleConnectCrossmark}
               >
                 <WalletIcon
-                  src="/icons/crossmark.png"
+                  src="/static/crossmark.webp"
                   alt="CrossMark Wallet"
                   className="wallet-icon"
                 />
