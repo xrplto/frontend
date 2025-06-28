@@ -437,6 +437,7 @@ export default function Summary() {
     <Stack
       sx={{
         position: 'relative',
+        zIndex: 2,
         // EXTREMELY AGGRESSIVE negative margins on mobile to eliminate ALL top spacing
         mt: { xs: '-24px', sm: '-20px', md: 0 }, // Even more aggressive negative margin
         mb: 0,
@@ -749,7 +750,7 @@ export default function Summary() {
                         >
                           <YAxis yAxisId="tokens" orientation="left" hide />
                           <YAxis yAxisId="marketcap" orientation="right" hide />
-                          <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 9999 }} />
+                          <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 99999 }} />
 
                           {/* New Tokens Line - using left Y-axis */}
                           <Line

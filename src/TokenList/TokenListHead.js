@@ -443,7 +443,7 @@ export default function TokenListHead({
     <TableHead
       sx={{
         position: 'sticky',
-        zIndex: 1002,
+        zIndex: 1,
         transform: `translateY(${scrollTopLength}px)`,
         background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(
           theme.palette.background.paper,
@@ -472,7 +472,7 @@ export default function TokenListHead({
           // First column (star) - sticky
           '& .MuiTableCell-root:nth-of-type(1)': {
             position: 'sticky',
-            zIndex: 1003,
+            zIndex: 2,
             left: 0,
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
@@ -486,7 +486,7 @@ export default function TokenListHead({
           // Second column (name - matches TokenRow combined ID+Name) - sticky
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
-            zIndex: 1003,
+            zIndex: 2,
             left: isMobile ? '20px' : '24px',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,

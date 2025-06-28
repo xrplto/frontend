@@ -113,7 +113,6 @@ const RootStyle = styled(Box)(({ theme }) => ({
     theme.palette.background.paper,
     0.5
   )} 100%)`,
-  backdropFilter: 'blur(25px)',
   padding: theme.spacing(1, 0),
   position: 'relative',
   // Mobile compact styling
