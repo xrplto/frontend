@@ -99,8 +99,18 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token, getFullUrl })
             <Typography variant="h6" color="textPrimary" sx={{ mt: 2, ml: 2, mb: 1 }}>
               Chat
             </Typography>
-            {social.telegram && renderLinkItem('Telegram', chatIcon, social.telegram)}
-            {social.discord && renderLinkItem('Discord', chatIcon, social.discord)}
+            {social.telegram &&
+              renderLinkItem(
+                'Telegram',
+                socialMediaIcons.telegram,
+                getFullUrl('telegram', social.telegram)
+              )}
+            {social.discord &&
+              renderLinkItem(
+                'Discord',
+                socialMediaIcons.discord,
+                getFullUrl('discord', social.discord)
+              )}
             <Divider sx={{ my: 2 }} />
           </>
         )}
