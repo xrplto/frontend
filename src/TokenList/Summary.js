@@ -69,7 +69,7 @@ const ContentTypography = styled(Typography)(({ theme }) => ({
 
 // Enhanced MetricBox with modern styling
 const MetricBox = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(1.5),
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
@@ -96,16 +96,16 @@ const MetricTitle = styled(Typography)(({ theme }) => ({
   fontSize: '0.75rem',
   fontWeight: 500,
   color: theme.palette.text.secondary,
-  marginBottom: theme.spacing(1)
+  marginBottom: theme.spacing(0.5)
 }));
 
 // Ultra-compact MetricValue
 const MetricValue = styled(Typography)(({ theme }) => ({
-  fontSize: '1.5rem',
+  fontSize: '1.4rem',
   fontWeight: 700,
   color: theme.palette.text.primary,
   lineHeight: 1.2,
-  marginBottom: theme.spacing(0.5)
+  marginBottom: 0
 }));
 
 // Ultra-compact PercentageChange
@@ -549,7 +549,7 @@ export default function Summary() {
                 >
                   <Skeleton
                     variant="rectangular"
-                    height={100}
+                    height={90}
                     sx={{
                       borderRadius: '20px',
                       [(theme) => theme.breakpoints.down('sm')]: {
@@ -600,7 +600,7 @@ export default function Summary() {
             >
               {/* Main metrics taking full width */}
               <Grid item xs={12}>
-                <Grid container spacing={2}>
+                <Grid container spacing={1.5}>
                   {/* Market Cap Box */}
                   <Grid item xs={6} md={1.5}>
                     <MetricBox>
@@ -682,14 +682,14 @@ export default function Summary() {
                           display: 'inline-flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          height: 60,
-                          width: 60
+                          height: 50,
+                          width: 50
                         }}
                       >
                         <CircularProgress
                           variant="determinate"
                           value={100}
-                          size={60}
+                          size={50}
                           thickness={2.5}
                           sx={{
                             color: (theme) => alpha(theme.palette.divider, 0.1),
@@ -699,7 +699,7 @@ export default function Summary() {
                         <CircularProgress
                           variant="determinate"
                           value={sentimentScore}
-                          size={60}
+                          size={50}
                           thickness={2.5}
                           color={
                             sentimentScore > 66
@@ -742,7 +742,7 @@ export default function Summary() {
                       <Box sx={{ width: '100%', pt: 2, px: 2 }}>
                         <MetricTitle>{t('Platform Trends & New Tokens (30-Day)')}</MetricTitle>
                       </Box>
-                      <ResponsiveContainer width="100%" height={80}>
+                      <ResponsiveContainer width="100%" height={70}>
                         <LineChart
                           key={`combined-${chartData.length}`}
                           data={chartData}
