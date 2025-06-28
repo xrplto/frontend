@@ -1,13 +1,24 @@
 import Decimal from 'decimal.js';
 import { useContext, useState, useEffect, useRef } from 'react';
 // Material
-import { alpha, Box, Grid, Stack, Typography, Skeleton, Paper, Divider } from '@mui/material';
+import {
+  alpha,
+  Box,
+  Grid,
+  Stack,
+  Typography,
+  Skeleton,
+  Paper,
+  Divider,
+  CircularProgress
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 import FiberNewIcon from '@mui/icons-material/FiberNew';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import GroupIcon from '@mui/icons-material/Group';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import BusinessIcon from '@mui/icons-material/Business';
+import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
 
 // import i18n (needs to be bundled ;))
 import 'src/utils/i18n';
@@ -390,6 +401,8 @@ export default function Summary() {
     Decimal.ROUND_DOWN
   );
 
+  const sentimentScore = metrics.global?.sentimentScore || 0;
+
   const newTokensToday =
     tokenCreation && tokenCreation.length > 0 ? tokenCreation[0].totalTokens : 0;
 
@@ -573,7 +586,7 @@ export default function Summary() {
           >
             <Grid
               container
-              spacing={2}
+              spacing={1}
               sx={{
                 flexWrap: 'wrap',
                 width: '100%',
@@ -640,7 +653,7 @@ export default function Summary() {
                   <Grid
                     item
                     xs={6}
-                    md={2}
+                    md={1.5}
                     sx={{
                       [(theme) => theme.breakpoints.down('sm')]: {
                         padding: '0 !important'
@@ -690,7 +703,7 @@ export default function Summary() {
                   <Grid
                     item
                     xs={6}
-                    md={2}
+                    md={1.5}
                     sx={{
                       [(theme) => theme.breakpoints.down('sm')]: {
                         padding: '0 !important'
@@ -713,7 +726,7 @@ export default function Summary() {
                   <Grid
                     item
                     xs={6}
-                    md={2}
+                    md={1.5}
                     sx={{
                       [(theme) => theme.breakpoints.down('sm')]: {
                         padding: '0 !important'
@@ -729,6 +742,73 @@ export default function Summary() {
                         </MetricValue>
                         <VolumePercentage>{gMemeVolumePro}% of volume</VolumePercentage>
                       </div>
+                    </MetricBox>
+                  </Grid>
+
+                  {/* Sentiment Score */}
+                  <Grid item xs={6} md={1.5}>
+                    <MetricBox
+                      elevation={0}
+                      sx={{ alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <MetricTitle>{t('Sentiment Score')}</MetricTitle>
+                      <Box sx={{ position: 'relative', display: 'inline-flex', mb: 1 }}>
+                        <CircularProgress
+                          variant="determinate"
+                          value={100}
+                          sx={{
+                            color: (theme) => alpha(theme.palette.grey[500], 0.2),
+                            position: 'absolute',
+                            left: 0
+                          }}
+                          size={50}
+                          thickness={4}
+                        />
+                        <CircularProgress
+                          variant="determinate"
+                          value={sentimentScore}
+                          color={
+                            sentimentScore > 66
+                              ? 'success'
+                              : sentimentScore > 33
+                              ? 'warning'
+                              : 'error'
+                          }
+                          size={50}
+                          thickness={4}
+                        />
+                        <Box
+                          sx={{
+                            top: 0,
+                            left: 0,
+                            bottom: 0,
+                            right: 0,
+                            position: 'absolute',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <SentimentVerySatisfiedIcon
+                            fontSize="small"
+                            color={
+                              sentimentScore > 66
+                                ? 'success'
+                                : sentimentScore > 33
+                                ? 'warning'
+                                : 'error'
+                            }
+                          />
+                        </Box>
+                      </Box>
+                      <Typography
+                        variant="caption"
+                        component="div"
+                        color="text.secondary"
+                        sx={{ fontWeight: 'bold' }}
+                      >
+                        {`${sentimentScore}/100`}
+                      </Typography>
                     </MetricBox>
                   </Grid>
 

@@ -35,7 +35,8 @@ const initialState = {
       gStableVolume: 0,
       gStableVolumePro: 0,
       gXRPdominance: 0,
-      gXRPdominancePro: 0
+      gXRPdominancePro: 0,
+      sentimentScore: 0
     },
     tokenCreation: []
   },
@@ -78,7 +79,7 @@ export function configureRedux(data) {
         CNY: data.exch.CNY,
         XRP: 1,
         H24: data.H24,
-        global: data.global,
+        global: { ...initialState.metrics.global, ...data.global },
         tokenCreation: data.tokenCreation
       },
       filteredCount: data.count,

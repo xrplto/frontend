@@ -28,7 +28,8 @@ const initialState = {
       gStableVolume: 0,
       gStableVolumePro: 0,
       gXRPdominance: 0,
-      gXRPdominancePro: 0
+      gXRPdominancePro: 0,
+      sentimentScore: 0
     },
     tokenCreation: []
   },
