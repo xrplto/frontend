@@ -240,14 +240,7 @@ const StatusBadge = styled('div')(
 );
 
 // Compact origin and status indicator component
-const OriginStatusIndicator = ({
-  origin,
-  isBlackholed,
-  isBurned,
-  kyc,
-  verified,
-  size = 'normal'
-}) => {
+const OriginStatusIndicator = ({ origin, isBlackholed, isBurned, verified, size = 'normal' }) => {
   const theme = useTheme();
   const isCompact = size === 'compact';
 
@@ -410,35 +403,6 @@ const OriginStatusIndicator = ({
                 }
               }}
             />
-          </Box>
-        </Tooltip>
-      )}
-
-      {/* KYC indicator */}
-      {kyc && (
-        <Tooltip title="KYC Verified">
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: isCompact ? '18px' : '20px',
-              height: isCompact ? '18px' : '20px',
-              borderRadius: '50%',
-              background: 'transparent',
-              color: '#00AB55',
-              fontSize: isCompact ? '12px' : '14px',
-              fontWeight: 'bold',
-              marginRight: isCompact ? '4px' : '6px',
-              marginBottom: '2px',
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                background: 'rgba(0, 171, 85, 0.1)',
-                transform: 'scale(1.1)'
-              }
-            }}
-          >
-            ✓
           </Box>
         </Tooltip>
       )}
@@ -892,7 +856,6 @@ export default function UserDesc({ token }) {
     name,
     domain,
     whitepaper,
-    kyc,
     verified,
     holders,
     offers,
@@ -1468,7 +1431,6 @@ export default function UserDesc({ token }) {
                     origin={token.origin}
                     isBlackholed={!!token.origin}
                     isBurned={!!token.origin}
-                    kyc={kyc}
                     verified={verified}
                     size="compact"
                   />
@@ -1732,7 +1694,6 @@ export default function UserDesc({ token }) {
                     origin={token.origin}
                     isBlackholed={!!token.origin}
                     isBurned={!!token.origin}
-                    kyc={kyc}
                     verified={verified}
                     size="normal"
                   />
