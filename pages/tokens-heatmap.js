@@ -95,54 +95,19 @@ const MainContent = styled(Container)(
 
 const SummaryWrapper = styled(Paper)(
   ({ theme }) => `
-    background: ${
-      theme.palette.mode === 'dark'
-        ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-            theme.palette.background.paper,
-            0.8
-          )} 100%)`
-        : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
-            theme.palette.background.paper,
-            0.9
-          )} 100%)`
-    };
-    backdrop-filter: blur(20px) saturate(180%);
+    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.5
+    )} 100%);
+    backdrop-filter: blur(25px);
     border-radius: 24px;
     padding: ${theme.spacing(3, 4)};
-    border: ${
-      theme.palette.mode === 'dark'
-        ? `1px solid ${alpha(theme.palette.divider, 0.08)}`
-        : `1px solid ${alpha(theme.palette.divider, 0.06)}`
-    };
-    box-shadow: ${
-      theme.palette.mode === 'dark'
-        ? `0 12px 40px ${alpha(theme.palette.common.black, 0.4)}, 
-           0 4px 12px ${alpha(theme.palette.primary.main, 0.1)},
-           inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
-        : `0 12px 40px ${alpha(theme.palette.common.black, 0.1)}, 
-           0 4px 12px ${alpha(theme.palette.primary.main, 0.05)},
-           inset 0 1px 0 ${alpha(theme.palette.common.white, 0.6)}`
-    };
+    border: 1px solid ${alpha(theme.palette.divider, 0.12)};
+    box-shadow: 0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)};
     position: relative;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, 
-        ${alpha(theme.palette.primary.main, 0.8)}, 
-        ${alpha(theme.palette.success.main, 0.8)}, 
-        ${alpha(theme.palette.info.main, 0.8)},
-        ${alpha(theme.palette.warning.main, 0.8)}
-      );
-      border-radius: 24px 24px 0 0;
-    }
-    
+
     ${theme.breakpoints.down('md')} {
       padding: ${theme.spacing(2.5, 3)};
       border-radius: 20px;
@@ -152,53 +117,19 @@ const SummaryWrapper = styled(Paper)(
 
 const HeatmapWrapper = styled(Paper)(
   ({ theme }) => `
-    background: ${
-      theme.palette.mode === 'dark'
-        ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-            theme.palette.background.paper,
-            0.8
-          )} 100%)`
-        : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
-            theme.palette.background.paper,
-            0.9
-          )} 100%)`
-    };
-    backdrop-filter: blur(20px) saturate(180%);
+    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.5
+    )} 100%);
+    backdrop-filter: blur(25px);
     border-radius: 24px;
     padding: ${theme.spacing(4)};
-    border: ${
-      theme.palette.mode === 'dark'
-        ? `1px solid ${alpha(theme.palette.divider, 0.08)}`
-        : `1px solid ${alpha(theme.palette.divider, 0.06)}`
-    };
-    box-shadow: ${
-      theme.palette.mode === 'dark'
-        ? `0 12px 40px ${alpha(theme.palette.common.black, 0.4)}, 
-           0 4px 12px ${alpha(theme.palette.primary.main, 0.1)},
-           inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
-        : `0 12px 40px ${alpha(theme.palette.common.black, 0.1)}, 
-           0 4px 12px ${alpha(theme.palette.primary.main, 0.05)},
-           inset 0 1px 0 ${alpha(theme.palette.common.white, 0.6)}`
-    };
+    border: 1px solid ${alpha(theme.palette.divider, 0.12)};
+    box-shadow: 0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)};
     position: relative;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, 
-        ${alpha(theme.palette.error.main, 0.8)}, 
-        ${alpha(theme.palette.warning.main, 0.8)}, 
-        ${alpha(theme.palette.success.main, 0.8)}
-      );
-      border-radius: 24px 24px 0 0;
-    }
-    
+
     ${theme.breakpoints.down('md')} {
       padding: ${theme.spacing(3)};
       border-radius: 20px;

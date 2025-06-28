@@ -9,7 +9,8 @@ import {
   TableHead,
   TableSortLabel,
   Tooltip,
-  Typography
+  Typography,
+  alpha
 } from '@mui/material';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -442,24 +443,14 @@ export default function TokenListHead({
     <TableHead
       sx={{
         position: 'sticky',
-        zIndex: 10,
+        zIndex: 1002,
         transform: `translateY(${scrollTopLength}px)`,
-        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${
-          darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-        }`,
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '1px',
-          background: `linear-gradient(90deg, transparent, ${
-            darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-          }, transparent)`
-        }
+        background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(
+          theme.palette.background.paper,
+          0.5
+        )} 100%)`,
+        backdropFilter: 'blur(25px)',
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.12)}`
       }}
     >
       <TableRow
@@ -481,10 +472,13 @@ export default function TokenListHead({
           // First column (star) - sticky
           '& .MuiTableCell-root:nth-of-type(1)': {
             position: 'sticky',
-            zIndex: 12,
+            zIndex: 1003,
             left: 0,
-            background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.7
+            )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
+            backdropFilter: 'blur(25px)',
             width: isMobile ? '20px' : '24px',
             minWidth: isMobile ? '20px' : '24px',
             padding: isMobile ? '6px 4px' : '16px 8px'
@@ -492,10 +486,13 @@ export default function TokenListHead({
           // Second column (name - matches TokenRow combined ID+Name) - sticky
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
-            zIndex: 12,
+            zIndex: 1003,
             left: isMobile ? '20px' : '24px',
-            background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.7
+            )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
+            backdropFilter: 'blur(25px)',
             padding: isMobile ? '6px 4px' : '16px 12px',
             '&:before': scrollLeft
               ? {

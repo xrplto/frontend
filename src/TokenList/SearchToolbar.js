@@ -108,12 +108,12 @@ const RootStyle = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(
     theme.palette.background.paper,
-    0.4
+    0.5
   )} 100%)`,
-  backdropFilter: 'blur(20px)',
+  backdropFilter: 'blur(25px)',
   padding: theme.spacing(1, 0),
   position: 'relative',
   // Mobile compact styling
@@ -130,8 +130,11 @@ const RootStyle = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     height: '1px',
-    background: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.1) : alpha('#000000', 0.08),
-    opacity: 0.6
+    background: `linear-gradient(to right, ${alpha(theme.palette.divider, 0)}, ${alpha(
+      theme.palette.divider,
+      0.15
+    )}, ${alpha(theme.palette.divider, 0)})`,
+    opacity: 0.8
   }
 }));
 
