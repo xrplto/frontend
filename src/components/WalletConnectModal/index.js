@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { Global } from '@emotion/react';
 
 import Dialog from '@mui/material/Dialog';
@@ -260,9 +260,12 @@ const projectId = '4da6610f269123ad46c1516afee16c15';
 const WalletConnect = ({ setOpenWalletModal }) => {
   const { connect, disconnect, accounts, chains, setChains } = useWalletConnectClient();
 
-  const handleWalletConnect = async () => {
+  const { doLogIn, onLogoutXumm, session, addProfile } = useContext(AppContext);
+
+  const onConnect = async () => {
     if (accounts.length > 0) {
       await disconnect();
+      onLogoutXumm();
     } else {
       setOpenWalletModal(false);
       if (!chains.includes(mainnet.id)) {
@@ -272,8 +275,32 @@ const WalletConnect = ({ setOpenWalletModal }) => {
     }
   };
 
+  useEffect(() => {
+    if (accounts && accounts.length > 0 && accounts[0]) {
+      const account = accounts[0];
+      const address = account.split(':')[2];
+      if (session && session.account) {
+        if (address !== session.account) {
+          addProfile({
+            account: address,
+            wallet_type: 'walletconnect'
+          });
+          setOpenWalletModal(false);
+        }
+      } else {
+        if (address !== session?.account) {
+          setOpenWalletModal(false);
+          doLogIn({
+            account: address,
+            wallet_type: 'walletconnect'
+          });
+        }
+      }
+    }
+  }, [accounts, session?.account, setOpenWalletModal, doLogIn, addProfile, session]);
+
   return (
-    <WalletItem direction="row" spacing={2} alignItems="center" onClick={handleWalletConnect}>
+    <WalletItem direction="row" spacing={2} alignItems="center" onClick={onConnect}>
       <WalletIcon
         src="https://walletconnect.com/meta/walletconnect-logo-blue.svg"
         alt="WalletConnect"
