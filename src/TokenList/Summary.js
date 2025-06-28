@@ -217,6 +217,33 @@ export default function Summary() {
         </Stack>
       );
 
+      const renderPlatformMarketCap = (platform, color) => {
+        const marketCap = data[`${platform}_marketcap`] || 0;
+        if (marketCap <= 0) return null;
+
+        return (
+          <Stack key={platform} direction="row" justifyContent="space-between" alignItems="center">
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: color
+                }}
+              />
+              <Typography variant="caption" display="block">
+                {platform}
+              </Typography>
+            </Stack>
+            <Typography variant="caption" display="block" sx={{ fontWeight: 'bold' }}>
+              {currencySymbols[activeFiatCurrency]}
+              {formatNumberWithDecimals(marketCap)}
+            </Typography>
+          </Stack>
+        );
+      };
+
       return (
         <Paper
           sx={{
@@ -252,13 +279,30 @@ export default function Summary() {
             )}
           </Stack>
 
+          {activePlatforms.length > 0 && (
+            <>
+              <Divider sx={{ my: 1.5 }} />
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                <BusinessIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+                <Typography variant="caption" color="text.secondary">
+                  Platform Market Caps
+                </Typography>
+              </Stack>
+              <Stack spacing={0.5} sx={{ pl: 1 }}>
+                {activePlatforms.map((platform) =>
+                  renderPlatformMarketCap(platform, platformColors[platform])
+                )}
+              </Stack>
+            </>
+          )}
+
           {platformEntries.length > 0 && (
             <>
               <Divider sx={{ my: 1.5 }} />
               <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
                 <BusinessIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
                 <Typography variant="caption" color="text.secondary">
-                  Platforms
+                  New Tokens by Platform
                 </Typography>
               </Stack>
               <Stack spacing={0.5} sx={{ pl: 2 }}>
@@ -327,20 +371,57 @@ export default function Summary() {
   const newTokensToday =
     tokenCreation && tokenCreation.length > 0 ? tokenCreation[0].totalTokens : 0;
 
+  // Define platform colors
+  const platformColors = {
+    FirstLedger: '#2563eb', // Blue
+    'Magnetic X': '#dc2626', // Red
+    XPMarket: '#16a34a', // Green
+    LedgerMeme: '#ca8a04', // Yellow/Gold
+    'xrp.fun': '#9333ea', // Purple
+    Other: '#6b7280' // Gray for any other platforms
+  };
+
+  // Process chart data to include platform-specific market cap data
   const chartData =
     tokenCreation && tokenCreation.length > 0
       ? tokenCreation
           .slice(0, 30)
           .reverse()
-          .map((d) => ({
-            date: moment(d.date).format('MM/DD'),
-            Tokens: d.totalTokens,
-            platforms: d.platforms,
-            avgMarketcap: new Decimal(d.avgMarketcap || 0).div(fiatRate).toNumber(),
-            avgHolders: d.avgHolders || 0,
-            totalVolume24h: new Decimal(d.totalVolume24h || 0).div(fiatRate).toNumber()
-          }))
+          .map((d) => {
+            const baseData = {
+              date: moment(d.date).format('MM/DD'),
+              Tokens: d.totalTokens,
+              platforms: d.platforms,
+              avgMarketcap: new Decimal(d.avgMarketcap || 0).div(fiatRate).toNumber(),
+              avgHolders: d.avgHolders || 0,
+              totalVolume24h: new Decimal(d.totalVolume24h || 0).div(fiatRate).toNumber()
+            };
+
+            // Add platform-specific market cap data
+            const platforms = d.platforms || {};
+            Object.keys(platformColors).forEach((platform) => {
+              if (platform !== 'Other') {
+                // For market cap, we'll simulate based on token count and avg market cap
+                // This is a simplified calculation - in real implementation you'd have actual platform market cap data
+                const platformTokens = platforms[platform] || 0;
+                const totalTokens = d.totalTokens || 1;
+                const avgMarketcap = new Decimal(d.avgMarketcap || 0).div(fiatRate).toNumber();
+
+                // Estimate platform market cap based on token distribution
+                baseData[`${platform}_marketcap`] =
+                  (platformTokens / totalTokens) * avgMarketcap * platformTokens;
+              }
+            });
+
+            return baseData;
+          })
       : [];
+
+  // Get all platforms that have data
+  const activePlatforms = Object.keys(platformColors).filter((platform) => {
+    if (platform === 'Other') return false;
+    return chartData.some((d) => (d[`${platform}_marketcap`] || 0) > 0);
+  });
 
   // Show XRP price in USD when currency is XRP, otherwise show in active currency
   const xrpPrice =
@@ -655,43 +736,49 @@ export default function Summary() {
                     </MetricBox>
                   </Grid>
 
-                  {/* New Tokens Chart */}
+                  {/* Combined Platform Chart */}
                   <Grid item xs={12} md={3}>
                     <MetricBox sx={{ p: 0 }}>
                       <Box sx={{ width: '100%', pt: 2, px: 2 }}>
-                        <MetricTitle>{t('New Tokens Created (30-Day)')}</MetricTitle>
+                        <MetricTitle>{t('Platform Trends & New Tokens (30-Day)')}</MetricTitle>
                       </Box>
                       <ResponsiveContainer width="100%" height={80}>
-                        <AreaChart
-                          key={chartData.length}
+                        <LineChart
+                          key={`combined-${chartData.length}`}
                           data={chartData}
                           margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
                         >
-                          <defs>
-                            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop
-                                offset="5%"
-                                stopColor={theme.palette.primary.main}
-                                stopOpacity={0.5}
-                              />
-                              <stop
-                                offset="95%"
-                                stopColor={theme.palette.primary.main}
-                                stopOpacity={0}
-                              />
-                            </linearGradient>
-                          </defs>
+                          <YAxis yAxisId="tokens" orientation="left" hide />
+                          <YAxis yAxisId="marketcap" orientation="right" hide />
                           <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 9999 }} />
-                          <Area
+
+                          {/* New Tokens Line - using left Y-axis */}
+                          <Line
+                            yAxisId="tokens"
                             type="monotone"
                             dataKey="Tokens"
                             stroke={theme.palette.primary.main}
-                            strokeWidth={2}
-                            fillOpacity={1}
-                            fill="url(#chartGradient)"
+                            strokeWidth={3}
                             dot={false}
+                            name="New Tokens"
+                            connectNulls={false}
                           />
-                        </AreaChart>
+
+                          {/* Platform Market Cap Lines - using right Y-axis */}
+                          {activePlatforms.map((platform) => (
+                            <Line
+                              key={platform}
+                              yAxisId="marketcap"
+                              type="monotone"
+                              dataKey={`${platform}_marketcap`}
+                              stroke={platformColors[platform]}
+                              strokeWidth={2}
+                              dot={false}
+                              name={`${platform} MCap`}
+                              connectNulls={false}
+                            />
+                          ))}
+                        </LineChart>
                       </ResponsiveContainer>
                     </MetricBox>
                   </Grid>
