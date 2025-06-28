@@ -43,13 +43,13 @@ const TopWrapper = styled(Box)(
     align-items: center;
     height: ${theme.spacing(5)};
     border-radius: 0px;
-    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.8
-  )} 100%);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.08)};
-    box-shadow: 0 2px 8px ${alpha(theme.palette.common.black, 0.04)};
+    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.5
+    )} 100%);
+    backdrop-filter: blur(25px);
+    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.12)};
+    box-shadow: 0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)};
     position: relative;
     overflow: hidden;
     
@@ -60,8 +60,11 @@ const TopWrapper = styled(Box)(
       left: 0;
       right: 0;
       height: 1px;
-      background: ${alpha(theme.palette.divider, 0.15)};
-      opacity: 0.6;
+      background: linear-gradient(to right, ${alpha(
+        theme.palette.divider,
+        0
+      )}, ${alpha(theme.palette.divider, 0.15)}, ${alpha(theme.palette.divider, 0)});
+      opacity: 0.8;
     }
 `
 );
@@ -412,22 +415,23 @@ const BOT_ADDRESSES = [
 
 // Add these styled components after the existing styled components
 const MetricContainer = styled(Stack)(({ theme }) => ({
-  padding: theme.spacing(0.5, 1),
-  borderRadius: theme.spacing(1),
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+  padding: theme.spacing(0.5, 1.5),
+  borderRadius: theme.spacing(1.5),
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.2)} 0%, ${alpha(
     theme.palette.background.paper,
-    0.6
+    0.1
   )} 100%)`,
   backdropFilter: 'blur(10px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
   '&:hover': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.3)} 0%, ${alpha(
       theme.palette.background.paper,
-      0.7
+      0.2
     )} 100%)`,
-    transform: 'translateY(-1px)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
+    transform: 'translateY(-2px)',
+    boxShadow: `0 6px 16px ${alpha(theme.palette.common.black, 0.12)}`
   }
 }));
 

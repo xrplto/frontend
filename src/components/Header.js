@@ -72,16 +72,15 @@ const HeaderWrapper = styled(Box)(
     height: ${theme.spacing(7)};
     margin-bottom: ${theme.spacing(0)};
     border-radius: 0px;
-    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.08)};
+    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.12)};
     position: relative;
     z-index: 1100;
-    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.8
-  )} 100%);
-    backdrop-filter: blur(20px);
-    box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 
-                0 2px 8px ${alpha(theme.palette.primary.main, 0.04)};
+    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.5
+    )} 100%);
+    backdrop-filter: blur(25px);
+    box-shadow: 0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)};
     
     &::before {
       content: "";
@@ -90,8 +89,11 @@ const HeaderWrapper = styled(Box)(
       left: 0;
       right: 0;
       height: 1px;
-      background: ${alpha(theme.palette.divider, 0.15)};
-      opacity: 0.6;
+      background: linear-gradient(to right, ${alpha(
+        theme.palette.divider,
+        0
+      )}, ${alpha(theme.palette.divider, 0.15)}, ${alpha(theme.palette.divider, 0)});
+      opacity: 0.8;
     }
 `
 );
@@ -108,9 +110,9 @@ const StyledLink = styled(Link, {
     display: inline-flex;
     align-items: center;
     background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.3
-  )} 100%);
+      theme.palette.background.paper,
+      0.3
+    )} 100%);
     backdrop-filter: blur(10px);
     border: 1px solid ${alpha(theme.palette.divider, 0.08)};
     position: relative;
@@ -136,9 +138,9 @@ const StyledLink = styled(Link, {
         darkMode ? theme.palette.success.main : theme.palette.primary.main,
         0.08
       )} 0%, ${alpha(
-    darkMode ? theme.palette.success.main : theme.palette.primary.main,
-    0.03
-  )} 100%);
+        darkMode ? theme.palette.success.main : theme.palette.primary.main,
+        0.03
+      )} 100%);
       border: 1px solid ${alpha(
         darkMode ? theme.palette.success.main : theme.palette.primary.main,
         0.15
@@ -166,9 +168,9 @@ const StyledMenuItem = styled(MenuItem, {
     border-radius: 10px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.2
-  )} 100%);
+      theme.palette.background.paper,
+      0.2
+    )} 100%);
     backdrop-filter: blur(10px);
     border: 1px solid ${alpha(theme.palette.divider, 0.06)};
     position: relative;
@@ -194,9 +196,9 @@ const StyledMenuItem = styled(MenuItem, {
         darkMode ? theme.palette.success.main : theme.palette.primary.main,
         0.08
       )} 0%, ${alpha(
-    darkMode ? theme.palette.success.main : theme.palette.primary.main,
-    0.03
-  )} 100%);
+        darkMode ? theme.palette.success.main : theme.palette.primary.main,
+        0.03
+      )} 100%);
       border: 1px solid ${alpha(
         darkMode ? theme.palette.success.main : theme.palette.primary.main,
         0.12

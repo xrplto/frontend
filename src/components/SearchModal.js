@@ -301,9 +301,9 @@ export default function SearchModal({ onClose, open }) {
           bottom: 0,
           background: `linear-gradient(135deg, ${alpha(
             theme.palette.common.black,
-            0.6
-          )} 0%, ${alpha(theme.palette.common.black, 0.4)} 100%)`,
-          backdropFilter: 'blur(8px)',
+            0.4
+          )} 0%, ${alpha(theme.palette.common.black, 0.2)} 100%)`,
+          backdropFilter: 'blur(10px)',
           zIndex: 12000,
           opacity: open ? 1 : 0,
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -324,22 +324,14 @@ export default function SearchModal({ onClose, open }) {
           opacity: open ? 1 : 0,
           scale: open ? 1 : 0.95,
           transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          borderRadius: '20px',
-          background: `linear-gradient(145deg, ${alpha(
+          borderRadius: '24px',
+          background: `linear-gradient(135deg, ${alpha(
             theme.palette.background.paper,
-            0.98
-          )} 0%, ${alpha(theme.palette.background.paper, 0.95)} 50%, ${alpha(
-            theme.palette.background.paper,
-            0.98
-          )} 100%)`,
-          backdropFilter: 'blur(40px)',
-          border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
-          boxShadow: `
-            0 24px 48px ${alpha(theme.palette.common.black, 0.12)}, 
-            0 12px 24px ${alpha(theme.palette.common.black, 0.08)},
-            0 4px 16px ${alpha(theme.palette.primary.main, 0.06)},
-            inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
-          `,
+            0.7
+          )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
+          backdropFilter: 'blur(30px)',
+          border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+          boxShadow: `0 16px 40px ${alpha(theme.palette.common.black, 0.2)}`,
           maxHeight: '70vh',
           overflowY: 'auto',
           '&::-webkit-scrollbar': {
@@ -399,21 +391,17 @@ export default function SearchModal({ onClose, open }) {
             p: '12px 16px',
             display: 'flex',
             alignItems: 'center',
-            background: `linear-gradient(145deg, ${alpha(
+            background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
-              0.9
-            )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-            backdropFilter: 'blur(20px)',
-            border: `2px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+              0.5
+            )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+            backdropFilter: 'blur(15px)',
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
             borderRadius: '16px',
             transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
             position: 'relative',
             overflow: 'hidden',
-            boxShadow: `
-              0 6px 24px ${alpha(theme.palette.common.black, 0.04)},
-              0 3px 12px ${alpha(theme.palette.primary.main, 0.04)},
-              inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
-            `,
+            boxShadow: `inset 0 1px 1px ${alpha(theme.palette.common.black, 0.05)}`,
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -430,11 +418,10 @@ export default function SearchModal({ onClose, open }) {
               transition: 'left 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
             },
             '&:hover': {
-              border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
               boxShadow: `
-                0 8px 28px ${alpha(theme.palette.primary.main, 0.12)},
-                0 6px 16px ${alpha(theme.palette.common.black, 0.06)},
-                inset 0 1px 0 ${alpha(theme.palette.common.white, 0.15)}
+                0 6px 20px ${alpha(theme.palette.primary.main, 0.1)},
+                inset 0 1px 1px ${alpha(theme.palette.common.black, 0.05)}
               `,
               transform: 'translateY(-1px)',
               '&::before': {
@@ -442,11 +429,10 @@ export default function SearchModal({ onClose, open }) {
               }
             },
             '&:focus-within': {
-              border: `2px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
               boxShadow: `
-                0 12px 32px ${alpha(theme.palette.primary.main, 0.15)},
-                0 6px 16px ${alpha(theme.palette.common.black, 0.08)},
-                inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}
+                0 8px 28px ${alpha(theme.palette.primary.main, 0.15)},
+                inset 0 1px 1px ${alpha(theme.palette.common.black, 0.05)}
               `,
               transform: 'translateY(-2px) scale(1.01)'
             }
@@ -750,8 +736,8 @@ export default function SearchModal({ onClose, open }) {
                                       ? '#fff'
                                       : '#222531'
                                     : darkMode
-                                    ? '#007B55'
-                                    : '#5569ff'
+                                      ? '#007B55'
+                                      : '#5569ff'
                                 }
                                 noWrap
                               >
