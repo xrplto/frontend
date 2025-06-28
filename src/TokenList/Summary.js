@@ -373,10 +373,10 @@ export default function Summary() {
 
   // Define platform colors
   const platformColors = {
-    FirstLedger: '#2563eb', // Blue
+    FirstLedger: '#ADD8E6', // Very Light Blue
     'Magnetic X': '#dc2626', // Red
-    XPMarket: '#16a34a', // Green
-    LedgerMeme: '#ca8a04', // Yellow/Gold
+    XPMarket: '#8A2BE2', // Purple
+    LedgerMeme: '#16a34a', // Green
     'xrp.fun': '#9333ea', // Purple
     Other: '#6b7280' // Gray for any other platforms
   };
