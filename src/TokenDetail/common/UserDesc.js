@@ -1403,9 +1403,9 @@ export default function UserDesc({ token }) {
                 </Typography>
 
                 <Stack direction="row" spacing={0.5} alignItems="center">
-                  <Tooltip title={`Rank by 24h Volume: #${id}`}>
+                  <Tooltip title={`Rank by 24h Volume: #${id - 1}`}>
                     <Chip
-                      label={`#${id}`}
+                      label={`#${id - 1}`}
                       color="primary"
                       variant="outlined"
                       size="small"
@@ -1667,9 +1667,9 @@ export default function UserDesc({ token }) {
                 </Typography>
 
                 <Stack direction="row" spacing={0.75} alignItems="center">
-                  <Tooltip title={`Rank by 24h Volume: #${id}`}>
+                  <Tooltip title={`Rank by 24h Volume: #${id - 1}`}>
                     <Chip
-                      label={`#${id}`}
+                      label={`#${id - 1}`}
                       color="primary"
                       variant="outlined"
                       size="small"
