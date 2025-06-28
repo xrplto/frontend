@@ -1076,6 +1076,28 @@ export default function UserDesc({ token }) {
     }
   ];
 
+  const getFullUrl = (platform, handle) => {
+    if (!handle) return '#';
+    if (handle.startsWith('http')) return handle;
+    switch (platform) {
+      case 'twitter':
+      case 'x':
+        return `https://x.com/${handle}`;
+      case 'telegram':
+        return `https://t.me/${handle}`;
+      case 'discord':
+        return `https://discord.gg/${handle}`;
+      case 'github':
+        return `https://github.com/${handle}`;
+      case 'reddit':
+        return `https://www.reddit.com/user/${handle}`;
+      case 'website':
+        return `https://${handle}`;
+      default:
+        return handle;
+    }
+  };
+
   // Compact social links component for header integration
   const CompactSocialLinks = ({ size = 'small' }) => {
     if (!social) return null;
@@ -1091,7 +1113,7 @@ export default function UserDesc({ token }) {
           <Tooltip key={platform} title={`${platform}: ${url}`} arrow>
             <IconButton
               component="a"
-              href={url}
+              href={getFullUrl(platform, url)}
               target="_blank"
               rel="noopener noreferrer"
               size="small"
@@ -1117,7 +1139,7 @@ export default function UserDesc({ token }) {
                 }
               }}
             >
-              {platform === 'twitter' && (
+              {(platform === 'twitter' || platform === 'x') && (
                 <Icon icon="mdi:twitter" width={iconSize} height={iconSize} />
               )}
               {platform === 'telegram' && (
@@ -1133,7 +1155,7 @@ export default function UserDesc({ token }) {
               {platform === 'reddit' && (
                 <Icon icon="mdi:reddit" width={iconSize} height={iconSize} />
               )}
-              {!['twitter', 'telegram', 'discord', 'website', 'github', 'reddit'].includes(
+              {!['twitter', 'x', 'telegram', 'discord', 'website', 'github', 'reddit'].includes(
                 platform
               ) && <Icon icon="mdi:link" width={iconSize} height={iconSize} />}
             </IconButton>
@@ -2579,7 +2601,12 @@ export default function UserDesc({ token }) {
         md5={md5}
       />
 
-      <LinksDrawer isOpen={openLinksDrawer} toggleDrawer={toggleLinksDrawer} token={token} />
+      <LinksDrawer
+        isOpen={openLinksDrawer}
+        toggleDrawer={toggleLinksDrawer}
+        token={token}
+        getFullUrl={getFullUrl}
+      />
 
       <Dialog
         open={openScamWarning}

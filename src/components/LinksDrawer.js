@@ -30,7 +30,7 @@ const socialMediaIcons = {
   discord: { alt: 'discord', src: '/static/discord.webp' }
 };
 
-export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
+export default function LinksDrawer({ isOpen, toggleDrawer, token, getFullUrl }) {
   const { darkMode } = useContext(AppContext);
   const { issuer, domain, whitepaper, social } = token;
   const isChat = social && (social.telegram || social.discord);
@@ -115,7 +115,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
                 return renderLinkItem(
                   platform.charAt(0).toUpperCase() + platform.slice(1),
                   socialMediaIcons[platform],
-                  `https://${platform}.com/${handle}`,
+                  getFullUrl(platform, handle),
                   index
                 );
               }
