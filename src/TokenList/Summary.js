@@ -356,7 +356,7 @@ export default function Summary() {
     <Stack
       sx={{
         position: 'relative',
-        zIndex: 20,
+        zIndex: 1600, // Higher than Material-UI tooltips (1500) and menus (1300)
         // EXTREMELY AGGRESSIVE negative margins on mobile to eliminate ALL top spacing
         mt: { xs: '-24px', sm: '-20px', md: 0 }, // Even more aggressive negative margin
         mb: 0,
