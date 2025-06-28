@@ -1,96 +1,89 @@
-import { Alert, AlertTitle, CircularProgress, Snackbar, Stack, Typography } from "@mui/material";
+import { Alert, AlertTitle, CircularProgress, Snackbar, Stack, Typography } from '@mui/material';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
-import { useDispatch, useSelector } from "react-redux";
-import { selectProcess, selectTxHash, updateProcess } from "src/redux/transactionSlice";
+import { useDispatch, useSelector } from 'react-redux';
+import { selectProcess, selectTxHash, updateProcess } from 'src/redux/transactionSlice';
 
 const TransactionAlert = () => {
+  const dispatch = useDispatch();
+  const isProcessing = useSelector(selectProcess);
+  const txHash = useSelector(selectTxHash);
 
-    const dispatch = useDispatch();
-    const isProcessing = useSelector(selectProcess);
-    const txHash = useSelector(selectTxHash);
-
-    const handleClose = (_, reason) => {
-
-        if (reason === 'clickaway') {
-            return;
-        }
-        dispatch(updateProcess(0));
+  const handleClose = (_, reason) => {
+    if (reason === 'clickaway') {
+      return;
     }
+    dispatch(updateProcess(0));
+  };
 
-    const handleTitle = () => {
-        switch (isProcessing) {
-            case 1:
-                return "waiting for wallet to sign transaction";
-                break;
-            case 2:
-                return "transaction confirmed";
-                break;
-            case 3:
-                return "transaction cancelled";
-                break;
-        }
-    }
-
-    const handleContent = () => {
-        switch (isProcessing) {
-            case 1:
-                return <Typography color="primary" sx={{ textTransform: "capitalize" }}>pending wallet to sign</Typography>;
-                break;
-            case 2:
-                return <a href={`https://bithomp.com/explorer/${txHash}`} target="_blank" rel="noreferrer"><Typography sx={{ textTransform: "capitalize" }}>view transaction</Typography></a>
-                break;
-            case 3:
-                return <Typography color="error" sx={{ textTransform: "capitalize" }}>Transaction is cancelled</Typography>;
-                break;
-        }
-    }
-
-    const handleIcon = () => {
-        switch (isProcessing) {
-            case 1:
-                return <CircularProgress
-                    disableShrink
-                    size={20}
-                    color="primary"
-                />
-                break;
-            case 2:
-                return <TaskAltIcon color="primary" />
-                break;
-            case 3:
-                return <WarningAmberIcon color="error" />
-                break;
-        }
-    }
-
-    return (
-        <Snackbar
-            open={isProcessing > 0}
-            autoHideDuration={5000}
-            key={isProcessing}
-            onClose={isProcessing > 1 ? handleClose : null}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+  const alertConfig = {
+    1: {
+      title: 'Waiting for Signature',
+      content: <Typography>Please sign the transaction in your wallet.</Typography>,
+      icon: <CircularProgress size={20} />,
+      severity: 'info',
+      autoHideDuration: null,
+      showClose: false
+    },
+    2: {
+      title: 'Transaction Confirmed',
+      content: (
+        <a
+          href={`https://bithomp.com/explorer/${txHash}`}
+          target="_blank"
+          rel="noreferrer"
+          style={{ color: 'inherit', textDecoration: 'underline' }}
         >
-            <Alert
-                severity="tx"
-                sx={{ width: '100%' }}
-                icon={handleIcon()}
-                onClose={isProcessing > 1 ? handleClose : null}
-                variant="filled"
-            >
-                <AlertTitle sx={{ textTransform: "capitalize" }} color={isProcessing == 3 ? "error" : "primary"}>
-                    {handleTitle()}
-                </AlertTitle>
+          <Typography>View on explorer</Typography>
+        </a>
+      ),
+      icon: <TaskAltIcon />,
+      severity: 'success',
+      autoHideDuration: 5000,
+      showClose: true
+    },
+    3: {
+      title: 'Transaction Cancelled',
+      content: <Typography>The transaction was cancelled.</Typography>,
+      icon: <WarningAmberIcon />,
+      severity: 'error',
+      autoHideDuration: 5000,
+      showClose: true
+    }
+  };
 
-                <Stack mt={1} direction="row" spacing={1} alignItems="center">
-                    {handleContent()}
-                </Stack>
+  const currentConfig = alertConfig[isProcessing];
 
-            </Alert>
-        </Snackbar>
-    )
-}
+  if (!isProcessing || !currentConfig) {
+    return null;
+  }
+
+  const { title, content, icon, severity, autoHideDuration, showClose } = currentConfig;
+
+  return (
+    <Snackbar
+      open={isProcessing > 0}
+      autoHideDuration={autoHideDuration}
+      key={isProcessing}
+      onClose={showClose ? handleClose : null}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+    >
+      <Alert
+        severity={severity}
+        sx={{ width: '100%' }}
+        icon={icon}
+        onClose={showClose ? handleClose : null}
+        variant="filled"
+      >
+        <AlertTitle sx={{ textTransform: 'capitalize' }}>{title}</AlertTitle>
+
+        <Stack mt={1} direction="row" spacing={1} alignItems="center">
+          {content}
+        </Stack>
+      </Alert>
+    </Snackbar>
+  );
+};
 
 export default TransactionAlert;

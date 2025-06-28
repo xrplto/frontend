@@ -117,15 +117,15 @@ const OverviewWrapper = styled('div')(
     border-radius: 24px;
     display: flex;
     background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.8
-  )} 100%);
+      theme.palette.background.paper,
+      0.8
+    )} 100%);
     backdropFilter: blur(20px);
     border: 1px solid ${alpha(theme.palette.divider, 0.08)};
     box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
-    theme.palette.primary.main,
-    0.04
-  )};
+      theme.palette.primary.main,
+      0.04
+    )};
     padding-bottom: 10px;
     position: relative;
     overflow: visible;
@@ -138,9 +138,9 @@ const OverviewWrapper = styled('div')(
       right: -1px;
       height: 3px;
       background: linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
-    theme.palette.success.main,
-    0.4
-  )}, ${alpha(theme.palette.info.main, 0.4)});
+        theme.palette.success.main,
+        0.4
+      )}, ${alpha(theme.palette.info.main, 0.4)});
       opacity: 0.6;
       border-radius: 24px 24px 0 0;
       z-index: 10;
@@ -401,9 +401,9 @@ const WalletDisplay = styled('div')(
     margin-bottom: 20px;
     border-radius: 16px;
     background: linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(
-    theme.palette.success.main,
-    0.04
-  )} 100%);
+      theme.palette.success.main,
+      0.04
+    )} 100%);
     border: 1px solid ${alpha(theme.palette.success.main, 0.2)};
     backdrop-filter: blur(10px);
     
@@ -1431,7 +1431,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                     dispatch(updateProcess(0));
                   }, 1500);
                   setSwapped(!isSwapped);
-                  enqueueSnackbar('Swap completed successfully!', { variant: 'success' });
                   // Clear amounts after successful swap
                   setAmount1('');
                   setAmount2('');
@@ -1476,7 +1475,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 dispatch(updateProcess(0));
               }, 1500);
               setSwapped(!isSwapped);
-              enqueueSnackbar('Swap completed successfully!', { variant: 'success' });
               // Clear amounts after successful swap
               setAmount1('');
               setAmount2('');
@@ -1615,8 +1613,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               ? `${amt} XRP (top) * ${xrpPriceInUSD} = ${result} USD (bottom)`
               : `${amt} USD (bottom) / ${xrpPriceInUSD} = ${result} XRP (top)`
             : active === 'AMOUNT'
-            ? `${amt} USD (top) / ${xrpPriceInUSD} = ${result} XRP (bottom)`
-            : `${amt} XRP (bottom) * ${xrpPriceInUSD} = ${result} USD (top)`
+              ? `${amt} USD (top) / ${xrpPriceInUSD} = ${result} XRP (bottom)`
+              : `${amt} XRP (bottom) * ${xrpPriceInUSD} = ${result} USD (top)`
         });
 
         return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
@@ -1919,10 +1917,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   setTimeout(() => {
                     setSync(sync + 1);
                   }, 1500);
-                  enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
                 } else {
                   dispatch(updateProcess(3));
-                  enqueueSnackbar('Failed to create trustline', { variant: 'error' });
                 }
               });
             } else {
@@ -1951,10 +1947,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 setTimeout(() => {
                   setSync(sync + 1);
                 }, 1500);
-                enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
               } else {
                 dispatch(updateProcess(3));
-                enqueueSnackbar('Failed to create trustline', { variant: 'error' });
               }
             });
           break;
@@ -2836,8 +2830,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                       ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
                       : 'XRPL'
                     : token1.issuer
-                    ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
-                    : 'XRPL'}
+                      ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
+                      : 'XRPL'}
                 </Typography>
               </Stack>
             </Stack>
@@ -2956,8 +2950,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                       ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
                       : 'XRPL'
                     : token2.issuer
-                    ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
-                    : 'XRPL'}
+                      ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
+                      : 'XRPL'}
                 </Typography>
               </Stack>
             </Stack>
