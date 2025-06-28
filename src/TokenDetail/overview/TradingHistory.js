@@ -26,7 +26,9 @@ import {
   styled,
   useTheme,
   Card,
-  CardContent
+  CardContent,
+  FormControlLabel,
+  Switch
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -319,9 +321,15 @@ const TradingHistory = ({ tokenId }) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [newTradeIds, setNewTradeIds] = useState(new Set());
+  const [xrpOnly, setXrpOnly] = useState(true);
   const previousTradesRef = useRef(new Set());
   const theme = useTheme();
   const limit = 20;
+
+  const handleXrpOnlyChange = (event) => {
+    setXrpOnly(event.target.checked);
+    setPage(1);
+  };
 
   const fetchTradingHistory = useCallback(async () => {
     if (!tokenId) {
@@ -331,7 +339,9 @@ const TradingHistory = ({ tokenId }) => {
 
     try {
       const response = await fetch(
-        `https://api.xrpl.to/api/history?md5=${tokenId}&page=${page - 1}&limit=${limit}`
+        `https://api.xrpl.to/api/history?md5=${tokenId}&page=${page - 1}&limit=${limit}${
+          xrpOnly ? '&xrpOnly=true' : ''
+        }`
       );
       const data = await response.json();
       if (data.result === 'success') {
@@ -354,7 +364,7 @@ const TradingHistory = ({ tokenId }) => {
     } finally {
       setLoading(false);
     }
-  }, [tokenId, page]);
+  }, [tokenId, page, xrpOnly]);
 
   useEffect(() => {
     previousTradesRef.current = new Set();
@@ -410,6 +420,12 @@ const TradingHistory = ({ tokenId }) => {
 
   return (
     <Stack spacing={1}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <FormControlLabel
+          control={<Switch checked={xrpOnly} onChange={handleXrpOnlyChange} />}
+          label="XRP Trades Only"
+        />
+      </Box>
       {/* Table Headers with integrated title */}
       <Box
         sx={{
