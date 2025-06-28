@@ -43,7 +43,9 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
-  Legend
+  Legend,
+  AreaChart,
+  Area
 } from 'recharts';
 import moment from 'moment';
 import { useTheme } from '@mui/material';
@@ -67,124 +69,43 @@ const ContentTypography = styled(Typography)(({ theme }) => ({
 
 // Enhanced MetricBox with modern styling
 const MetricBox = styled(Paper)(({ theme }) => ({
-  padding: '16px 18px',
-  [theme.breakpoints.down('md')]: {
-    padding: '3px 4px'
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: '2px 3px'
-  },
-  borderRadius: '16px',
-  [theme.breakpoints.down('md')]: {
-    borderRadius: '4px'
-  },
-  [theme.breakpoints.down('sm')]: {
-    borderRadius: '3px'
-  },
-  background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.95
-  )} 50%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
-  backdropFilter: 'blur(40px)',
+  padding: theme.spacing(2),
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'space-between',
-  minWidth: '140px',
-  [theme.breakpoints.down('md')]: {
-    minWidth: '75px'
-  },
-  [theme.breakpoints.down('sm')]: {
-    minWidth: '65px',
-    minHeight: '28px'
-  },
-  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
-  [theme.breakpoints.down('sm')]: {
-    border: 'none'
-  },
-  boxShadow: 'none',
-  position: 'relative',
-  transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '1px',
-    background: `linear-gradient(90deg, 
-      ${theme.palette.primary.main} 0%, 
-      ${theme.palette.success.main} 25%, 
-      ${theme.palette.info.main} 50%, 
-      ${theme.palette.warning.main} 75%, 
-      ${theme.palette.error.main} 100%
-    )`,
-    borderRadius: '16px 16px 0 0',
-    opacity: 0.9,
-    animation: 'shimmer 3s ease-in-out infinite',
-    [theme.breakpoints.down('sm')]: {
-      display: 'none'
-    },
-    zIndex: 1
-  },
-  '@keyframes shimmer': {
-    '0%, 100%': { opacity: 0.9 },
-    '50%': { opacity: 0.6 }
+  justifyContent: 'center',
+  alignItems: 'center',
+  textAlign: 'center',
+  borderRadius: '20px',
+  background: alpha(theme.palette.background.paper, 0.7),
+  backdropFilter: 'blur(20px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.05)}`,
+  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.1)}, 0 0 15px ${alpha(
+      theme.palette.primary.main,
+      0.3
+    )}`
   }
 }));
 
 // Ultra-compact MetricTitle
 const MetricTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '0.8rem',
-  // Ultra-small font size on mobile
-  [theme.breakpoints.down('md')]: {
-    fontSize: '0.6rem'
-  },
-  [theme.breakpoints.down('sm')]: {
-    fontSize: '0.55rem'
-  },
-  fontWeight: 600,
-  color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.9) : alpha('#637381', 0.9),
-  marginBottom: '6px',
-  // Minimal margin on mobile
-  [theme.breakpoints.down('md')]: {
-    marginBottom: '1px'
-  },
-  [theme.breakpoints.down('sm')]: {
-    marginBottom: '0px'
-  },
-  whiteSpace: 'nowrap',
-  letterSpacing: '-0.01em',
-  // Make title text even smaller and truncate if needed
-  [theme.breakpoints.down('sm')]: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    maxWidth: '100%'
-  }
+  fontSize: '0.75rem',
+  fontWeight: 500,
+  color: theme.palette.text.secondary,
+  marginBottom: theme.spacing(1)
 }));
 
 // Ultra-compact MetricValue
 const MetricValue = styled(Typography)(({ theme }) => ({
-  fontSize: '1rem',
-  // Ultra-small font size on mobile
-  [theme.breakpoints.down('md')]: {
-    fontSize: '0.75rem'
-  },
-  [theme.breakpoints.down('sm')]: {
-    fontSize: '0.65rem'
-  },
+  fontSize: '1.5rem',
   fontWeight: 700,
-  color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#212B36',
-  marginBottom: '4px',
-  // No margin on mobile
-  [theme.breakpoints.down('md')]: {
-    marginBottom: '0px'
-  },
-  [theme.breakpoints.down('sm')]: {
-    marginBottom: '0px'
-  },
-  letterSpacing: '-0.02em',
-  lineHeight: 1.2
+  color: theme.palette.text.primary,
+  lineHeight: 1.2,
+  marginBottom: theme.spacing(0.5)
 }));
 
 // Ultra-compact PercentageChange
@@ -600,173 +521,105 @@ export default function Summary() {
               <Grid item xs={12}>
                 <Grid container spacing={2}>
                   {/* Market Cap Box */}
-                  <Grid
-                    item
-                    xs={6}
-                    md={2}
-                    sx={{
-                      [(theme) => theme.breakpoints.down('sm')]: {
-                        padding: '0 !important'
-                      }
-                    }}
-                  >
-                    <MetricBox elevation={0}>
+                  <Grid item xs={6} md={1.5}>
+                    <MetricBox>
                       <MetricTitle>{t('Global Market Cap')}</MetricTitle>
-                      <div>
-                        <MetricValue>
-                          {currencySymbols[activeFiatCurrency]}
-                          {formatNumberWithDecimals(Number(gMarketcap))}
-                        </MetricValue>
-                        <PercentageChange isPositive={gMarketcapPro >= 0}>
-                          {gMarketcapPro >= 0 ? '▲' : '▼'} {Math.abs(gMarketcapPro).toFixed(2)}%
-                        </PercentageChange>
-                      </div>
+                      <MetricValue>
+                        {currencySymbols[activeFiatCurrency]}
+                        {formatNumberWithDecimals(Number(gMarketcap))}
+                      </MetricValue>
+                      <PercentageChange isPositive={gMarketcapPro >= 0}>
+                        {gMarketcapPro >= 0 ? '▲' : '▼'} {Math.abs(gMarketcapPro).toFixed(2)}%
+                      </PercentageChange>
                     </MetricBox>
                   </Grid>
 
                   {/* DEX Volume Box */}
-                  <Grid
-                    item
-                    xs={6}
-                    md={2}
-                    sx={{
-                      [(theme) => theme.breakpoints.down('sm')]: {
-                        padding: '0 !important'
-                      }
-                    }}
-                  >
-                    <MetricBox elevation={0}>
+                  <Grid item xs={6} md={1.5}>
+                    <MetricBox>
                       <MetricTitle>{t('24h DEX Volume')}</MetricTitle>
-                      <div>
-                        <MetricValue>
-                          {currencySymbols[activeFiatCurrency]}
-                          {formatNumberWithDecimals(gDexVolume)}
-                        </MetricValue>
-                        <PercentageChange isPositive={gDexVolumePro >= 0}>
-                          {gDexVolumePro >= 0 ? '▲' : '▼'} {Math.abs(gDexVolumePro).toFixed(2)}%
-                        </PercentageChange>
-                      </div>
+                      <MetricValue>
+                        {currencySymbols[activeFiatCurrency]}
+                        {formatNumberWithDecimals(gDexVolume)}
+                      </MetricValue>
+                      <PercentageChange isPositive={gDexVolumePro >= 0}>
+                        {gDexVolumePro >= 0 ? '▲' : '▼'} {Math.abs(gDexVolumePro).toFixed(2)}%
+                      </PercentageChange>
                     </MetricBox>
                   </Grid>
 
                   {/* XRP Price Box */}
-                  <Grid
-                    item
-                    xs={6}
-                    md={1.5}
-                    sx={{
-                      [(theme) => theme.breakpoints.down('sm')]: {
-                        padding: '0 !important'
-                      }
-                    }}
-                  >
-                    <MetricBox elevation={0}>
+                  <Grid item xs={6} md={1.5}>
+                    <MetricBox>
                       <MetricTitle>{t('XRP Price')}</MetricTitle>
-                      <div>
-                        <MetricValue>
-                          {xrpPriceSymbol}
-                          {xrpPrice}
-                        </MetricValue>
-                        <ContentTypography
-                          sx={{
-                            fontSize: '0.75rem',
-                            [(theme) => theme.breakpoints.down('md')]: {
-                              fontSize: '0.6rem'
-                            },
-                            [(theme) => theme.breakpoints.down('sm')]: {
-                              fontSize: '0.55rem'
-                            },
-                            padding: '2px 6px',
-                            [(theme) => theme.breakpoints.down('md')]: {
-                              padding: '1px 3px'
-                            },
-                            [(theme) => theme.breakpoints.down('sm')]: {
-                              padding: '0px 2px'
-                            },
-                            borderRadius: '6px',
-                            background: 'transparent',
-                            border: 'none',
-                            display: 'inline-block',
-                            color: (theme) =>
-                              theme.palette.mode === 'dark'
-                                ? alpha('#FFFFFF', 0.7)
-                                : alpha('#637381', 0.9)
-                          }}
-                        >
-                          {activeFiatCurrency === 'XRP' ? 'USD Value' : 'Native XRPL'}
-                        </ContentTypography>
-                      </div>
+                      <MetricValue>
+                        {xrpPriceSymbol}
+                        {xrpPrice}
+                      </MetricValue>
+                      <ContentTypography
+                        sx={{
+                          fontSize: '0.7rem',
+                          color: 'text.secondary'
+                        }}
+                      >
+                        {activeFiatCurrency === 'XRP' ? 'USD Value' : 'Native XRPL'}
+                      </ContentTypography>
                     </MetricBox>
                   </Grid>
 
                   {/* Stablecoins Box */}
-                  <Grid
-                    item
-                    xs={6}
-                    md={1.5}
-                    sx={{
-                      [(theme) => theme.breakpoints.down('sm')]: {
-                        padding: '0 !important'
-                      }
-                    }}
-                  >
-                    <MetricBox elevation={0}>
+                  <Grid item xs={6} md={1.5}>
+                    <MetricBox>
                       <MetricTitle>{t('Stablecoins')}</MetricTitle>
-                      <div>
-                        <MetricValue>
-                          {currencySymbols[activeFiatCurrency]}
-                          {formatNumberWithDecimals(gStableVolume)}
-                        </MetricValue>
-                        <VolumePercentage>{gStableVolumePro}% of volume</VolumePercentage>
-                      </div>
+                      <MetricValue>
+                        {currencySymbols[activeFiatCurrency]}
+                        {formatNumberWithDecimals(gStableVolume)}
+                      </MetricValue>
+                      <VolumePercentage>{gStableVolumePro}% of volume</VolumePercentage>
                     </MetricBox>
                   </Grid>
 
                   {/* Meme Tokens Box */}
-                  <Grid
-                    item
-                    xs={6}
-                    md={1.5}
-                    sx={{
-                      [(theme) => theme.breakpoints.down('sm')]: {
-                        padding: '0 !important'
-                      }
-                    }}
-                  >
-                    <MetricBox elevation={0}>
+                  <Grid item xs={6} md={1.5}>
+                    <MetricBox>
                       <MetricTitle>{t('Meme Tokens')}</MetricTitle>
-                      <div>
-                        <MetricValue>
-                          {currencySymbols[activeFiatCurrency]}
-                          {formatNumberWithDecimals(gMemeVolume)}
-                        </MetricValue>
-                        <VolumePercentage>{gMemeVolumePro}% of volume</VolumePercentage>
-                      </div>
+                      <MetricValue>
+                        {currencySymbols[activeFiatCurrency]}
+                        {formatNumberWithDecimals(gMemeVolume)}
+                      </MetricValue>
+                      <VolumePercentage>{gMemeVolumePro}% of volume</VolumePercentage>
                     </MetricBox>
                   </Grid>
 
                   {/* Sentiment Score */}
                   <Grid item xs={6} md={1.5}>
-                    <MetricBox
-                      elevation={0}
-                      sx={{ alignItems: 'center', justifyContent: 'center' }}
-                    >
+                    <MetricBox>
                       <MetricTitle>{t('Sentiment Score')}</MetricTitle>
-                      <Box sx={{ position: 'relative', display: 'inline-flex', mb: 1 }}>
+                      <Box
+                        sx={{
+                          position: 'relative',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          height: 60,
+                          width: 60
+                        }}
+                      >
                         <CircularProgress
                           variant="determinate"
                           value={100}
+                          size={60}
+                          thickness={2.5}
                           sx={{
-                            color: (theme) => alpha(theme.palette.grey[500], 0.2),
-                            position: 'absolute',
-                            left: 0
+                            color: (theme) => alpha(theme.palette.divider, 0.1),
+                            position: 'absolute'
                           }}
-                          size={50}
-                          thickness={4}
                         />
                         <CircularProgress
                           variant="determinate"
                           value={sentimentScore}
+                          size={60}
+                          thickness={2.5}
                           color={
                             sentimentScore > 66
                               ? 'success'
@@ -774,62 +627,70 @@ export default function Summary() {
                               ? 'warning'
                               : 'error'
                           }
-                          size={50}
-                          thickness={4}
-                        />
-                        <Box
                           sx={{
-                            top: 0,
-                            left: 0,
-                            bottom: 0,
-                            right: 0,
+                            strokeLinecap: 'round',
                             position: 'absolute',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
+                            filter: (theme) =>
+                              `drop-shadow(0 0 4px ${alpha(
+                                theme.palette[
+                                  sentimentScore > 66
+                                    ? 'success'
+                                    : sentimentScore > 33
+                                    ? 'warning'
+                                    : 'error'
+                                ].main,
+                                0.7
+                              )})`
                           }}
+                        />
+                        <Typography
+                          variant="h6"
+                          component="div"
+                          color="text.primary"
+                          sx={{ fontWeight: 'bold', fontSize: '1rem' }}
                         >
-                          <SentimentVerySatisfiedIcon
-                            fontSize="small"
-                            color={
-                              sentimentScore > 66
-                                ? 'success'
-                                : sentimentScore > 33
-                                ? 'warning'
-                                : 'error'
-                            }
-                          />
-                        </Box>
+                          {`${sentimentScore}`}
+                        </Typography>
                       </Box>
-                      <Typography
-                        variant="caption"
-                        component="div"
-                        color="text.secondary"
-                        sx={{ fontWeight: 'bold' }}
-                      >
-                        {`${sentimentScore}/100`}
-                      </Typography>
                     </MetricBox>
                   </Grid>
 
                   {/* New Tokens Chart */}
-                  <Grid item xs={12} md={2}>
-                    <MetricBox elevation={0}>
-                      <MetricTitle>{t('New Tokens Created (7-Day)')}</MetricTitle>
+                  <Grid item xs={12} md={3}>
+                    <MetricBox sx={{ p: 0 }}>
+                      <Box sx={{ width: '100%', pt: 2, px: 2 }}>
+                        <MetricTitle>{t('New Tokens Created (7-Day)')}</MetricTitle>
+                      </Box>
                       <ResponsiveContainer width="100%" height={80}>
-                        <LineChart
+                        <AreaChart
                           data={chartData}
-                          margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                          margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
                         >
+                          <defs>
+                            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop
+                                offset="5%"
+                                stopColor={theme.palette.primary.main}
+                                stopOpacity={0.5}
+                              />
+                              <stop
+                                offset="95%"
+                                stopColor={theme.palette.primary.main}
+                                stopOpacity={0}
+                              />
+                            </linearGradient>
+                          </defs>
                           <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 9999 }} />
-                          <Line
+                          <Area
                             type="monotone"
                             dataKey="Tokens"
-                            stroke="#8884d8"
+                            stroke={theme.palette.primary.main}
                             strokeWidth={2}
+                            fillOpacity={1}
+                            fill="url(#chartGradient)"
                             dot={false}
                           />
-                        </LineChart>
+                        </AreaChart>
                       </ResponsiveContainer>
                     </MetricBox>
                   </Grid>
