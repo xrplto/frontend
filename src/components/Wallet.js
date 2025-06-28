@@ -507,7 +507,7 @@ export default function Wallet({ style }) {
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Stack direction="row" alignItems="center" spacing={1.5}>
                       <TokenImage
-                        src={'/static/xrp.3e1e159f.svg'}
+                        src={'/xrp.svg'}
                         width={28}
                         height={28}
                         onError={(event) => (event.target.src = '/static/alt.webp')}
