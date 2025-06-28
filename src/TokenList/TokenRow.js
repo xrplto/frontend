@@ -15,7 +15,8 @@ import {
   Box,
   Table,
   TableBody,
-  SvgIcon
+  SvgIcon,
+  alpha
 } from '@mui/material';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
@@ -326,18 +327,16 @@ function FTokenRow({
 
   const tableRowStyle = useMemo(
     () => ({
-      borderBottom: '1px solid rgba(145, 158, 171, 0.08)',
+      borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
       '&:hover': {
+        transform: 'translateY(-2px)',
         '& .MuiTableCell-root': {
-          backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(145, 158, 171, 0.04)',
-          backdropFilter: 'blur(6px)'
+          backgroundColor: darkMode
+            ? alpha(theme.palette.grey[500], 0.12)
+            : alpha(theme.palette.grey[500], 0.08)
         },
-        cursor: 'pointer',
-        transform: 'translateY(-1px)',
-        boxShadow: darkMode
-          ? '0 4px 16px rgba(0, 0, 0, 0.24)'
-          : '0 4px 16px rgba(145, 158, 171, 0.16)'
+        cursor: 'pointer'
       },
       '& .MuiTypography-root': {
         fontSize: isMobile ? '11px' : '14px',
@@ -352,7 +351,7 @@ function FTokenRow({
         }
       }
     }),
-    [darkMode, isMobile]
+    [darkMode, isMobile, theme]
   );
 
   const stickyCellStyles = useMemo(
@@ -493,7 +492,7 @@ function FTokenRow({
 
   return (
     <TableRow key={id} sx={tableRowStyle} onClick={handleRowClick}>
-      <TableCell align="left" style={stickyCellStyles.first}>
+      <TableCell align="left" sx={stickyCellStyles.first}>
         {watchList.includes(md5) ? (
           <Tooltip title="Remove from Watchlist">
             <StarRateIcon
