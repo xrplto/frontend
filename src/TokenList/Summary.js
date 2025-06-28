@@ -281,10 +281,10 @@ export default function Summary() {
 
   // Simulate loading completion after data is available
   useEffect(() => {
-    if (metrics.global && metrics[activeFiatCurrency]) {
+    if (metrics.global && metrics[activeFiatCurrency] && tokenCreation) {
       setIsLoading(false);
     }
-  }, [metrics, activeFiatCurrency]);
+  }, [metrics, activeFiatCurrency, tokenCreation]);
 
   if (
     !metrics.global ||
@@ -663,6 +663,7 @@ export default function Summary() {
                       </Box>
                       <ResponsiveContainer width="100%" height={80}>
                         <AreaChart
+                          key={chartData.length}
                           data={chartData}
                           margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
                         >

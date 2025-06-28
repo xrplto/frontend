@@ -573,7 +573,7 @@ const Topbar = () => {
   // Update the useSWR hook to prevent revalidation issues
   const { data: trades, error } = useSWR(
     tradeDrawerOpen
-      ? 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=1000&xrpOnly=true'
+      ? 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=500&xrpOnly=true'
       : null,
     fetcher,
     {
