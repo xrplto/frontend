@@ -95,7 +95,6 @@ const HistoryRow = (props) => {
     offerType
   } = props;
 
-  console.log('HistoryRow Props:', { TransactionType, source, offerType }); // Debug log
   const theme = useTheme();
 
   const monthNames = [
