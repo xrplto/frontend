@@ -19,19 +19,16 @@ import {
   Input,
   Stack,
   Typography,
-
   Box,
   Tooltip
 } from '@mui/material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-
 
 // Iconify
 import { Icon } from '@iconify/react';
 import exchangeIcon from '@iconify/icons-uil/exchange';
 import infoFill from '@iconify/icons-eva/info-fill';
 import shareIcon from '@iconify/icons-uil/share-alt';
-
 
 // Context
 import { useContext } from 'react';
@@ -639,7 +636,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
   const [trustlines, setTrustlines] = useState([]);
   const [hasTrustline1, setHasTrustline1] = useState(true);
   const [hasTrustline2, setHasTrustline2] = useState(true);
-  const [transactionType, setTransactionType] = useState('OfferCreate');
+  const [transactionType, setTransactionType] = useState('');
 
   // Add slippage state
   const [slippage, setSlippage] = useState(5); // Default 5% slippage
@@ -1284,7 +1281,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
     };
   }, [openScanQR, uuid]);
 
-  const onOfferCreateXumm = async () => {
+  const onSwap = async () => {
     try {
       // const curr1 = revert?pair.curr2:pair.curr1;
       // const curr2 = revert?pair.curr1:pair.curr2;
@@ -1539,7 +1536,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
     });
 
     if (fAmount1 > 0 && fAmount2 > 0) {
-      onOfferCreateXumm();
+      onSwap();
     } else {
       openSnackbar('Invalid values! Please enter amounts for both currencies.', 'error');
     }
