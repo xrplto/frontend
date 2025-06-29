@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useState } from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import Image from 'next/image';
 
 // Material
 import { styled, Stack, Typography, Box, alpha } from '@mui/material';
@@ -10,7 +10,7 @@ import CurrencySearchModal from 'src/components/CurrencySearchModal';
 // Context
 import { AppContext } from 'src/AppContext';
 
-const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
+const TokenImage = styled(Image)(({ theme }) => ({
   borderRadius: '8px',
   overflow: 'hidden'
 }));

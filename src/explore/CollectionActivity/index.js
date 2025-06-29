@@ -65,7 +65,6 @@ import { Activity } from 'src/utils/constants';
 import { normalizeAmount, normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 
 import { PulseLoader, ClockLoader } from 'react-spinners';
-import { RotatingSquare, Vortex } from 'react-loader-spinner';
 
 import ListToolbar from './ListToolbar';
 import FlagsContainer from 'src/components/Flags';

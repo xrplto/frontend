@@ -46,7 +46,6 @@ import infoFilled from '@iconify/icons-ep/info-filled';
 
 // Loader
 import { PuffLoader, PulseLoader } from 'react-spinners';
-import { ProgressBar, Discuss } from 'react-loader-spinner';
 
 // Context
 import { useContext } from 'react';

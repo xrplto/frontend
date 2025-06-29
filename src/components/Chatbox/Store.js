@@ -7,7 +7,8 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Backdrop
+  Backdrop,
+  Stack
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
@@ -16,7 +17,7 @@ import ConfirmPurchaseDialog from './ConfirmPurchaseDialog';
 import { isInstalled, submitTransaction } from '@gemwallet/api';
 import axios from 'axios';
 import sdk from '@crossmarkio/sdk';
-import { ProgressBar } from 'react-loader-spinner';
+import { PuffLoader, BarLoader } from 'react-spinners';
 import QRDialog from 'src/components/QRDialog';
 import { ranks, verifiedStatus } from './RankItems';
 import RankItem from './RankItem';
@@ -355,15 +356,10 @@ function Store() {
         sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={pageLoading}
       >
-        <ProgressBar
-          height="80"
-          width="80"
-          ariaLabel="progress-bar-loading"
-          wrapperStyle={{}}
-          wrapperClass="progress-bar-wrapper"
-          borderColor="#F4442E"
-          barColor="#51E5FF"
-        />
+        <Stack alignItems="center" spacing={2}>
+            <PuffLoader color="white" />
+            <BarLoader color="#51E5FF" width={100} />
+        </Stack>
       </Backdrop>
       <Box sx={{ p: 2, backgroundColor: theme.palette.background.default }}>
         <ConfirmPurchaseDialog
@@ -373,7 +369,7 @@ function Store() {
         />
         <QRDialog
           open={openScanQR}
-          type="Payment"
+          type="NFTokenAcceptOffer"
           onClose={handleScanQRClose}
           qrUrl={qrUrl}
           nextUrl={nextUrl}

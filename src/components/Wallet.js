@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import Image from 'next/image';
 
 // Material
 import {
@@ -85,7 +85,7 @@ const ActiveIndicator = styled(Box)(({ theme }) => ({
   }
 }));
 
-const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
+const TokenImage = styled(Image)(({ theme }) => ({
   borderRadius: '50%',
   overflow: 'hidden'
 }));
@@ -405,17 +405,28 @@ export default function Wallet({ style }) {
             {/* Header Section */}
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" spacing={2}>
-                <Avatar
-                  variant={accountLogo ? 'circular' : 'square'}
-                  alt="User"
-                  src={logoImageUrl}
+                <IconButton
+                  ref={anchorRef}
+                  onClick={handleOpen}
                   sx={{
+                    padding: 0,
                     width: 44,
                     height: 44,
-                    border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                    ...(open && {
+                      '&:before': {
+                        zIndex: 1,
+                        content: "''",
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '50%',
+                        position: 'absolute',
+                        bgcolor: (theme) => alpha(theme.palette.grey[900], 0.72)
+                      }
+                    })
                   }}
-                />
+                >
+                  <TokenImage alt="photoURL" src={logoImageUrl} width={40} height={40} />
+                </IconButton>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography
                     variant="h6"
@@ -669,12 +680,28 @@ export default function Wallet({ style }) {
                       }}
                     >
                       <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-                        <Avatar
-                          variant={accountLogo ? 'circular' : 'square'}
-                          alt="User"
-                          src={logoImageUrl}
-                          sx={{ width: 36, height: 36 }}
-                        />
+                        <IconButton
+                          ref={anchorRef}
+                          onClick={handleOpen}
+                          sx={{
+                            padding: 0,
+                            width: 44,
+                            height: 44,
+                            ...(open && {
+                              '&:before': {
+                                zIndex: 1,
+                                content: "''",
+                                width: '100%',
+                                height: '100%',
+                                borderRadius: '50%',
+                                position: 'absolute',
+                                bgcolor: (theme) => alpha(theme.palette.grey[900], 0.72)
+                              }
+                            })
+                          }}
+                        >
+                          <TokenImage alt="photoURL" src={logoImageUrl} width={40} height={40} />
+                        </IconButton>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {truncateAccount(account)}

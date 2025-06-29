@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useState, useMemo, memo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { useTheme, alpha } from '@mui/material/styles';
-import { LazyLoadComponent } from 'react-lazy-load-image-component';
+import { useInView } from 'react-intersection-observer';
 import { Box, Skeleton } from '@mui/material';
 import Decimal from 'decimal.js';
 
@@ -18,6 +18,11 @@ const SparklineChart = ({
   const [chartOption, setChartOption] = useState(null);
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1
+  });
 
   // Memoize the chart options creation function
   const createChartOptions = useMemo(
@@ -275,23 +280,19 @@ const SparklineChart = ({
   }, [url]);
 
   useEffect(() => {
-    let isMounted = true;
+    if (inView) {
+      loadChart();
+    }
+  }, [inView, loadChart]);
 
-    const loadChart = async () => {
-      if (!url) return;
+  const loadChart = async () => {
+    if (!url) return;
 
-      const data = await fetchChartData();
-      if (data && isMounted) {
-        setChartOption(createChartOptions(data));
-      }
-    };
-
-    loadChart();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [url, fetchChartData, createChartOptions]);
+    const data = await fetchChartData();
+    if (data) {
+      setChartOption(createChartOptions(data));
+    }
+  };
 
   // Loading state with skeleton
   if (isLoading) {
@@ -310,42 +311,13 @@ const SparklineChart = ({
           variant="rectangular"
           width="100%"
           height="100%"
-          animation="wave"
+          animation={false}
           sx={{
             borderRadius: 1,
             bgcolor:
               theme.palette.mode === 'dark'
-                ? alpha(theme.palette.common.white, 0.05)
-                : alpha(theme.palette.common.black, 0.05)
-          }}
-        />
-      </Box>
-    );
-  }
-
-  // Error state
-  if (isError) {
-    return (
-      <Box
-        sx={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: typeof height === 'string' && height.includes('px') ? height : '40px',
-          opacity: 0.3
-        }}
-      >
-        <Box
-          sx={{
-            width: '100%',
-            height: '2px',
-            background: `linear-gradient(90deg, transparent, ${alpha(
-              theme.palette.divider,
-              0.5
-            )}, transparent)`,
-            borderRadius: 1
+                ? alpha(theme.palette.common.white, 0.02)
+                : alpha(theme.palette.common.black, 0.02)
           }}
         />
       </Box>
@@ -383,23 +355,8 @@ const SparklineChart = ({
   }
 
   return (
-    <LazyLoadComponent threshold={100}>
-      <Box
-        sx={{
-          width: '100%',
-          height: '100%',
-          position: 'relative',
-          overflow: 'hidden',
-          borderRadius: 1,
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            transform: 'scale(1.02)',
-            '& .echarts-chart': {
-              filter: 'brightness(1.1)'
-            }
-          }
-        }}
-      >
+    <Box ref={ref} sx={{ height, width, position: 'relative' }}>
+      {inView && (
         <ReactECharts
           option={chartOption}
           style={{
@@ -414,8 +371,8 @@ const SparklineChart = ({
           className="echarts-chart"
           {...props}
         />
-      </Box>
-    </LazyLoadComponent>
+      )}
+    </Box>
   );
 };
 

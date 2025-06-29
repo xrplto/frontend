@@ -24,7 +24,7 @@ import { CURRENCY_ISSUERS } from 'src/utils/constants';
 import TrustSetDialog from 'src/components/TrustSetDialog';
 
 // Step 1: Import the necessary dependencies
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import Image from 'next/image';
 import { AppContext } from 'src/AppContext';
 import Decimal from 'decimal.js';
 
@@ -141,10 +141,11 @@ export default function ExtraButtons({ token }) {
           '&:hover': { opacity: 1 }
         }}
       >
-        <LazyLoadImage
+        <Image
           src={darkMode ? '/static/sponsor-dark-theme.svg' : '/static/sponsor-light-theme.svg'}
           width={16}
           height={16}
+          alt="Sponsor"
         />
         <Typography
           variant="caption"

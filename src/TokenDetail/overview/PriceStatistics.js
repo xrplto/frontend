@@ -1,4 +1,7 @@
 import Decimal from 'decimal.js';
+import PropTypes from 'prop-types';
+import { useState, useContext } from 'react';
+import Image from 'next/image';
 // Material
 import {
   alpha,
@@ -30,7 +33,6 @@ import blackholeIcon from '@iconify/icons-arcticons/blackhole';
 // Components
 import BearBullLabel from './BearBullLabel';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
 import IssuerInfoDialog from '../common/IssuerInfoDialog';
 
 // Redux
@@ -45,7 +47,6 @@ import NumberTooltip from 'src/components/NumberTooltip';
 // ----------------------------------------------------------------------
 import StackStyle from 'src/components/StackStyle';
 import { currencySymbols } from 'src/utils/constants';
-import { useContext, useState } from 'react';
 import { AppContext } from 'src/AppContext';
 
 const badge24hStyle = {
@@ -138,6 +139,8 @@ export default function PriceStatistics({ token }) {
   const handleOpenIssuerInfo = () => {
     setOpenIssuerInfo(true);
   };
+
+  const [imgSrc, setImgSrc] = useState(img_xrplf);
 
   return (
     <Box
@@ -313,7 +316,7 @@ export default function PriceStatistics({ token }) {
                           }
                         }}
                       >
-                        <LazyLoadImage src={img_xrplf} width={14} height={14} />
+                        <Image alt="icon" src={imgSrc} width={14} height={14} />
                       </IconButton>
                     </Tooltip>
                   </Link>
@@ -696,3 +699,7 @@ export default function PriceStatistics({ token }) {
     </Box>
   );
 }
+
+PriceStatistics.propTypes = {
+  token: PropTypes.object.isRequired
+};

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useState, useMemo, memo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { useTheme, alpha } from '@mui/material/styles';
-import { LazyLoadComponent } from 'react-lazy-load-image-component';
+import { useInView } from 'react-intersection-observer';
 import { Box, Skeleton } from '@mui/material';
 import Decimal from 'decimal.js';
 
@@ -11,6 +11,10 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
   const [chartOption, setChartOption] = useState(null);
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1
+  });
 
   // Memoize the chart options creation function
   const createChartOptions = useMemo(
@@ -216,7 +220,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
     let isMounted = true;
 
     const loadChart = async () => {
-      if (!url) return;
+      if (!url || !inView) return;
 
       const data = await fetchChartData();
       if (data && isMounted) {
@@ -232,12 +236,13 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
     return () => {
       isMounted = false;
     };
-  }, [url, fetchChartData, createChartOptions]);
+  }, [url, fetchChartData, createChartOptions, inView]);
 
   // Loading state with skeleton
   if (isLoading) {
     return (
       <Box
+        ref={ref}
         sx={{
           width: 210,
           height: 80,
@@ -267,6 +272,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
   if (isError) {
     return (
       <Box
+        ref={ref}
         sx={{
           width: 210,
           height: 80,
@@ -295,6 +301,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
   if (!chartOption) {
     return (
       <Box
+        ref={ref}
         sx={{
           width: 210,
           height: 80,
@@ -321,39 +328,38 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
   }
 
   return (
-    <LazyLoadComponent threshold={100}>
-      <Box
-        sx={{
-          width: 210,
-          height: 80,
-          position: 'relative',
-          overflow: 'hidden',
-          borderRadius: 1,
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            transform: 'scale(1.02)',
-            '& .echarts-chart': {
-              filter: 'brightness(1.1)'
-            }
+    <Box
+      ref={ref}
+      sx={{
+        width: 210,
+        height: 80,
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: 1,
+        transition: 'all 0.2s ease-in-out',
+        '&:hover': {
+          transform: 'scale(1.02)',
+          '& .echarts-chart': {
+            filter: 'brightness(1.1)'
           }
+        }
+      }}
+    >
+      <ReactECharts
+        option={chartOption}
+        style={{
+          height: 80,
+          width: 210,
+          transition: 'filter 0.2s ease-in-out'
         }}
-      >
-        <ReactECharts
-          option={chartOption}
-          style={{
-            height: 80,
-            width: 210,
-            transition: 'filter 0.2s ease-in-out'
-          }}
-          opts={{
-            renderer: 'svg',
-            devicePixelRatio: window.devicePixelRatio || 1
-          }}
-          className="echarts-chart"
-          {...props}
-        />
-      </Box>
-    </LazyLoadComponent>
+        opts={{
+          renderer: 'svg',
+          devicePixelRatio: window.devicePixelRatio || 1
+        }}
+        className="echarts-chart"
+        {...props}
+      />
+    </Box>
   );
 };
 

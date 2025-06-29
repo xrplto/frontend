@@ -34,7 +34,7 @@ import PlaceOrder from './PlaceOrder';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import scientificToDecimal from 'scientific-to-decimal';
-import millify from 'millify';
+import { fNumberWithSuffix } from 'src/utils/formatNumber';
 
 // Utils
 
@@ -427,7 +427,7 @@ export default function TradePanel({ pair, bids, asks, bidId, askId }) {
                 color: theme.palette.text.primary
               }}
             >
-              {value < 1 ? value : millify(value)}
+              {value < 1 ? value : fNumberWithSuffix(value)}
             </Typography>
             <CurrencyChip label={curr2.name} size="small" color="primary" variant="outlined" />
           </Box>

@@ -28,7 +28,7 @@ import useWebSocket from 'react-use-websocket';
 import { isInstalled, submitTransaction, setTrustline } from '@gemwallet/api';
 import sdk from '@crossmarkio/sdk';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import Image from 'next/image';
 import { PuffLoader } from 'react-spinners';
 import { enqueueSnackbar } from 'notistack';
 
@@ -249,9 +249,11 @@ const ExchangeButton = styled(Button)(
 `
 );
 
-const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
+const TokenImage = styled(Image)(({ theme }) => ({
+  width: '32px',
+  height: '32px',
   borderRadius: '50%',
-  overflow: 'hidden'
+  objectFit: 'cover'
 }));
 
 const Swap = ({ token }) => {

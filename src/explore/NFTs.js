@@ -1,9 +1,10 @@
 import axios from 'axios';
 import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import Image from 'next/image';
 import debounce from 'lodash.debounce';
 import { alpha } from '@mui/material/styles';
+import { Typography } from '@mui/material';
 
 // Material
 import {
@@ -249,15 +250,8 @@ export default function NFTs({ collection }) {
             sx={{
               '& .MuiOutlinedInput-root': {
                 border: 'none',
-                borderRadius: 0,
-                backgroundColor: 'transparent',
-                fontSize: '0.95rem',
-                fontWeight: 400,
-                minHeight: 'auto',
+                borderRadius: 2,
                 '& fieldset': {
-                  border: 'none'
-                },
-                '&:hover fieldset': {
                   border: 'none'
                 },
                 '&.Mui-focused fieldset': {
@@ -265,87 +259,81 @@ export default function NFTs({ collection }) {
                 }
               },
               '& .MuiOutlinedInput-input': {
-                padding: '10px 0',
-                '&::placeholder': {
-                  color: alpha(theme.palette.text.primary, 0.6),
-                  opacity: 1,
-                  fontStyle: 'italic'
-                }
+                padding: '12px 14px',
+                fontSize: 14,
+                fontWeight: 500
               }
-            }}
-          />
-
-          {/* Search highlight bar */}
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 1.5,
-              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-              transform: search ? 'scaleX(1)' : 'scaleX(0)',
-              transformOrigin: 'left',
-              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           />
         </Paper>
       </Box>
-      <Grid container spacing={0} justifyContent="space-between">
-        {showFilter && (
-          <Grid item xs={12} md={3} xl={2}>
-            <FilterDetail
-              collection={collection}
-              filter={filter}
-              setFilter={setFilter}
-              subFilter={subFilter}
-              setSubFilter={setSubFilter}
-              setFilterAttrs={setFilterAttrs}
-              setPage={setPage}
-            />
-          </Grid>
-        )}
-        <Grid item xs={12} md={showFilter ? 9 : 12} xl={showFilter ? 10 : 12}>
-          <InfiniteScroll
-            dataLength={nfts.length}
-            next={loadMore}
-            hasMore={hasMore}
-            scrollThreshold={0.9}
-            loader={
-              <Box display="flex" justifyContent="center" my={4}>
-                <ClipLoader color={theme.palette.primary.main} size={30} />
-              </Box>
-            }
+
+      {showFilter && (
+        <FilterDetail
+          collection={collection}
+          filter={filter}
+          setFilter={setFilter}
+          subFilter={subFilter}
+          setSubFilter={setSubFilter}
+          filterAttrs={filterAttrs}
+          setFilterAttrs={setFilterAttrs}
+          sync={sync}
+          setSync={setSync}
+          attrSync={attrSync}
+          setAttrSync={setAttrSync}
+        />
+      )}
+
+      <InfiniteScroll
+        dataLength={nfts.length}
+        next={loadMore}
+        hasMore={hasMore}
+        loader={
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100px' // Adjust height as needed
+            }}
           >
-            <Box
-              sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '8px',
-                justifyContent: 'flex-start'
-              }}
-            >
-              {nfts.map((nft, index) => (
-                <Box key={nft.id || index} sx={{ flex: '0 0 auto' }}>
-                  <MemoizedNFTCard
-                    nft={nft}
-                    handleRemove={handleRemove}
-                    imageComponent={
-                      <LazyLoadImage
-                        src={nft.imageUrl}
-                        alt={nft.name}
-                        effect="blur"
-                        width="100%"
-                        height="auto"
-                      />
-                    }
-                  />
-                </Box>
-              ))}
-            </Box>
-          </InfiniteScroll>
-        </Grid>
-      </Grid>
+            <ClipLoader color={theme.palette.primary.main} size={30} />
+          </Box>
+        }
+        endMessage={
+          <Box sx={{ p: 4, textAlign: 'center' }}>
+            <Image
+              src="/static/empty-folder.png"
+              alt="No more NFTs"
+              width={120}
+              height={120}
+              style={{ marginBottom: '16px' }}
+            />
+            <Typography variant="h6" color="textSecondary">
+              No more NFTs to load
+            </Typography>
+          </Box>
+        }
+      >
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 3,
+            gridTemplateColumns: {
+              xs: 'repeat(1, 1fr)',
+              sm: 'repeat(2, 1fr)',
+              md: 'repeat(4, 1fr)',
+              lg: 'repeat(5, 1fr)'
+            }
+          }}
+        >
+          {nfts.map((nft) => (
+            <Grid key={nft.NFTokenID} item xs={1} sm={1} md={1}>
+              <MemoizedNFTCard nft={nft} collection={collection} onRemove={handleRemove} />
+            </Grid>
+          ))}
+        </Box>
+      </InfiniteScroll>
     </Box>
   );
 }

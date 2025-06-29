@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import Image from 'next/image';
 import { alpha, Box, Container, Grid, Link, Stack, styled, Typography } from '@mui/material';
 import { AppContext } from 'src/AppContext';
 
@@ -47,7 +47,7 @@ function Footer() {
               underline="none"
               rel="noreferrer noopener nofollow"
             >
-              <LazyLoadImage src={img} width={100} height={37} alt="XRPL.to Logo" />
+              <Image src={img} width={100} height={37} alt="XRPL.to Logo" />
             </Link>
           </Grid>
 

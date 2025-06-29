@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useState, useMemo, memo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { useTheme, alpha } from '@mui/material/styles';
-import { LazyLoadComponent } from 'react-lazy-load-image-component';
+import { useInView } from 'react-intersection-observer';
 import { Box, Skeleton } from '@mui/material';
 
 const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
@@ -10,6 +10,10 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
   const [chartOption, setChartOption] = useState(null);
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1
+  });
 
   // Memoize the chart options creation function
   const createChartOptions = useMemo(
@@ -183,11 +187,15 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
     [theme, showGradient, lineWidth]
   );
 
-  // Memoize the axios request
-  const fetchChartData = useMemo(() => {
+  useEffect(() => {
+    if (!inView) {
+      return;
+    }
+
+    let isMounted = true;
     const controller = new AbortController();
 
-    return async () => {
+    const fetchChartData = async () => {
       try {
         setIsLoading(true);
         const response = await axios.get(url, {
@@ -196,55 +204,58 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
             'Cache-Control': 'max-age=300'
           }
         });
-        return response.data;
+        if (isMounted) {
+          const options = createChartOptions(response.data);
+          if (options) {
+            setChartOption(options);
+          } else {
+            setIsError(true);
+          }
+        }
       } catch (err) {
-        if (err.name === 'AbortError') {
-          console.log('Request aborted');
-        } else {
+        if (err.name !== 'AbortError') {
           console.error('Error fetching chart data:', err);
           setIsError(true);
         }
-        return null;
       } finally {
-        setIsLoading(false);
-      }
-    };
-  }, [url]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadChart = async () => {
-      if (!url) return;
-
-      const data = await fetchChartData();
-      if (data && isMounted) {
-        const options = createChartOptions(data);
-        if (options) {
-          setChartOption(options);
+        if (isMounted) {
+          setIsLoading(false);
         }
       }
     };
 
-    loadChart();
+    if (url) {
+      fetchChartData();
+    } else {
+      setIsLoading(false);
+      setIsError(true);
+    }
 
     return () => {
       isMounted = false;
+      controller.abort();
     };
-  }, [url, fetchChartData, createChartOptions]);
+  }, [inView, url, createChartOptions]);
 
-  // Loading state with skeleton
-  if (isLoading) {
-    return (
-      <Box
-        sx={{
-          width: 140,
-          height: 80,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
+  return (
+    <Box
+      ref={ref}
+      sx={{
+        width: 140,
+        height: 80,
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: 1,
+        transition: 'all 0.2s ease-in-out',
+        '&:hover': {
+          transform: 'scale(1.02)',
+          '& .echarts-chart': {
+            filter: 'brightness(1.1)'
+          }
+        }
+      }}
+    >
+      {isLoading && (
         <Skeleton
           variant="rectangular"
           width={140}
@@ -258,85 +269,32 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
                 : alpha(theme.palette.common.black, 0.05)
           }}
         />
-      </Box>
-    );
-  }
-
-  // Error state
-  if (isError) {
-    return (
-      <Box
-        sx={{
-          width: 140,
-          height: 80,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: 0.3
-        }}
-      >
+      )}
+      {!isLoading && isError && (
         <Box
           sx={{
-            width: '80%',
-            height: '2px',
-            background: `linear-gradient(90deg, transparent, ${alpha(
-              theme.palette.divider,
-              0.5
-            )}, transparent)`,
-            borderRadius: 1
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: 0.3
           }}
-        />
-      </Box>
-    );
-  }
-
-  // No data state
-  if (!chartOption) {
-    return (
-      <Box
-        sx={{
-          width: 140,
-          height: 80,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <Skeleton
-          variant="rectangular"
-          width={140}
-          height={80}
-          animation={false}
-          sx={{
-            borderRadius: 1,
-            bgcolor:
-              theme.palette.mode === 'dark'
-                ? alpha(theme.palette.common.white, 0.02)
-                : alpha(theme.palette.common.black, 0.02)
-          }}
-        />
-      </Box>
-    );
-  }
-
-  return (
-    <LazyLoadComponent threshold={100}>
-      <Box
-        sx={{
-          width: 140,
-          height: 80,
-          position: 'relative',
-          overflow: 'hidden',
-          borderRadius: 1,
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            transform: 'scale(1.02)',
-            '& .echarts-chart': {
-              filter: 'brightness(1.1)'
-            }
-          }
-        }}
-      >
+        >
+          <Box
+            sx={{
+              width: '80%',
+              height: '2px',
+              background: `linear-gradient(90deg, transparent, ${alpha(
+                theme.palette.divider,
+                0.5
+              )}, transparent)`,
+              borderRadius: 1
+            }}
+          />
+        </Box>
+      )}
+      {!isLoading && !isError && chartOption && (
         <ReactECharts
           option={chartOption}
           style={{
@@ -351,8 +309,8 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
           className="echarts-chart"
           {...props}
         />
-      </Box>
-    </LazyLoadComponent>
+      )}
+    </Box>
   );
 };
 

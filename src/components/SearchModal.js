@@ -26,7 +26,7 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import Tooltip from '@mui/material/Tooltip';
 
 import { useContext, useEffect, useRef, useState } from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import Image from 'next/image';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
@@ -40,7 +40,7 @@ import useDebounce from 'src/hooks/useDebounce';
 const BASE_URL = process.env.API_URL;
 const NFT_BASE_URL = 'https://api.xrpnft.com/api';
 
-const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
+const TokenImage = styled(Image)(({ theme }) => ({
   borderRadius: '12px',
   overflow: 'hidden',
   aspectRatio: '1',

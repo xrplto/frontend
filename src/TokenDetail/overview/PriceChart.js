@@ -36,7 +36,7 @@ import { currencySymbols } from 'src/utils/constants';
 // import Highcharts from 'highcharts'
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
-import moment from 'moment';
+import { format } from 'date-fns';
 import { fCurrency5 } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
 
@@ -361,7 +361,7 @@ function PriceChart({ token }) {
         },
         formatter: function () {
           const date = new Date(this.value);
-          return range === '1MIN' ? moment(date).format('HH:mm') : moment(date).format('MMM DD');
+          return range === '1MIN' ? format(date, 'HH:mm') : format(date, 'MMM dd');
         }
       },
       lineColor: alpha(theme.palette.divider, 0.6),
@@ -554,12 +554,12 @@ function PriceChart({ token }) {
         fontWeight: 500
       },
       formatter: function () {
-        const formatString = range === '1MIN' ? 'MMM DD, YYYY HH:mm:ss' : 'MMM DD, YYYY HH:mm';
+        const formatString = range === '1MIN' ? 'MMM dd, yyyy HH:mm:ss' : 'MMM dd, yyyy HH:mm';
         return `<div style="padding: 8px;">
             <div style="font-weight: 600; color: ${
               theme.palette.primary.main
             }; margin-bottom: 4px;">
-              ${moment(this.x).format(formatString)}
+              ${format(this.x, formatString)}
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <div style="width: 8px; height: 8px; border-radius: 50%; background: ${
@@ -671,7 +671,7 @@ function PriceChart({ token }) {
         },
         formatter: function () {
           const date = new Date(this.value);
-          return range === '1MIN' ? moment(date).format('HH:mm') : moment(date).format('MMM DD');
+          return range === '1MIN' ? format(date, 'HH:mm') : format(date, 'MMM dd');
         }
       },
       lineColor: alpha(theme.palette.divider, 0.6),
@@ -744,12 +744,12 @@ function PriceChart({ token }) {
         fontWeight: 500
       },
       formatter: function () {
-        const formatString = range === '1MIN' ? 'MMM DD, YYYY HH:mm:ss' : 'MMM DD, YYYY HH:mm';
+        const formatString = range === '1MIN' ? 'MMM dd, yyyy HH:mm:ss' : 'MMM dd, yyyy HH:mm';
         return `<div style="padding: 8px;">
             <div style="font-weight: 600; color: ${
               theme.palette.primary.main
             }; margin-bottom: 6px;">
-              ${moment(this.x).format(formatString)}
+              ${format(this.x, formatString)}
             </div>
             <div style="display: grid; gap: 4px;">
               <div style="display: flex; justify-content: space-between;">
@@ -759,14 +759,14 @@ function PriceChart({ token }) {
               <div style="display: flex; justify-content: space-between;">
                 <span style="color: ${theme.palette.success.main};">High:</span>
                 <strong style="color: ${theme.palette.success.main};">${fCurrency5(
-          this.point.high
-        )}</strong>
+                  this.point.high
+                )}</strong>
               </div>
               <div style="display: flex; justify-content: space-between;">
                 <span style="color: ${theme.palette.error.main};">Low:</span>
                 <strong style="color: ${theme.palette.error.main};">${fCurrency5(
-          this.point.low
-        )}</strong>
+                  this.point.low
+                )}</strong>
               </div>
               <div style="display: flex; justify-content: space-between;">
                 <span style="color: ${theme.palette.text.secondary};">Close:</span>

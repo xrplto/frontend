@@ -27,7 +27,7 @@ import { fNumber } from 'src/utils/formatNumber';
 import { useEffect, useRef, useState } from 'react';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { LazyLoadComponent } from 'react-lazy-load-image-component';
+import { useInView } from 'react-intersection-observer';
 
 // ----------------------------------------------------------------------
 import StackStyle from 'src/components/StackStyle'; //Maybe need to disable?
@@ -127,6 +127,106 @@ const StyledTableRow = styled(TableRow, {
     }
   }
 }));
+
+const ChartCell = ({ darkMode, sparkline, id }) => {
+  const BASE_URL = process.env.API_URL;
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1
+  });
+
+  return (
+    <TableCell
+      align="left"
+      ref={ref}
+      sx={{
+        px: '12px',
+        width: '210px',
+        minWidth: '210px',
+        py: '12px'
+      }}
+    >
+      {inView ? (
+        sparkline ? (
+          <Box
+            sx={{
+              width: '180px',
+              height: '60px',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              border: `1px solid ${
+                darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
+              }`,
+              backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.8)',
+              position: 'relative',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                transform: 'scale(1.02)',
+                borderColor: darkMode ? 'rgba(145, 158, 171, 0.24)' : 'rgba(145, 158, 171, 0.48)'
+              }
+            }}
+          >
+            <LoadChart
+              url={`${BASE_URL}/sparkline/${sparkline}?period=24h`}
+              showGradient={true}
+              lineWidth={2}
+              style={{
+                width: '100%',
+                height: '100%'
+              }}
+              opts={{
+                renderer: 'svg',
+                width: 180,
+                height: 60,
+                animation: false, // Disable animation for better performance in table
+                devicePixelRatio: window.devicePixelRatio || 1
+              }}
+            />
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              width: '180px',
+              height: '60px',
+              borderRadius: '8px',
+              border: `1px solid ${
+                darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
+              }`,
+              backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: 0.5
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{
+                color: darkMode ? '#919EAB' : '#637381',
+                fontSize: '11px',
+                fontWeight: '500'
+              }}
+            >
+              No Chart Data
+            </Typography>
+          </Box>
+        )
+      ) : (
+        <Box
+          sx={{
+            width: '180px',
+            height: '60px',
+            borderRadius: '8px',
+            backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(145, 158, 171, 0.04)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        />
+      )}
+    </TableCell>
+  );
+};
 
 function truncate(str, n) {
   if (!str) return '';
@@ -609,111 +709,7 @@ export default function PairsList({ token, pairs }) {
                     </Stack>
                   </TableCell>
 
-                  <TableCell
-                    align="left"
-                    sx={{
-                      px: '12px',
-                      width: '210px',
-                      minWidth: '210px',
-                      py: '12px'
-                    }}
-                  >
-                    {sparkline ? (
-                      <LazyLoadComponent
-                        threshold={100}
-                        placeholder={
-                          <Box
-                            sx={{
-                              width: '180px',
-                              height: '60px',
-                              borderRadius: '8px',
-                              backgroundColor: darkMode
-                                ? 'rgba(255, 255, 255, 0.02)'
-                                : 'rgba(145, 158, 171, 0.04)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                          />
-                        }
-                      >
-                        <Box
-                          sx={{
-                            width: '180px',
-                            height: '60px',
-                            borderRadius: '8px',
-                            overflow: 'hidden',
-                            border: `1px solid ${
-                              darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-                            }`,
-                            backgroundColor: darkMode
-                              ? 'rgba(255, 255, 255, 0.02)'
-                              : 'rgba(255, 255, 255, 0.8)',
-                            position: 'relative',
-                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                            '&:hover': {
-                              transform: 'scale(1.02)',
-                              borderColor: darkMode
-                                ? 'rgba(145, 158, 171, 0.24)'
-                                : 'rgba(145, 158, 171, 0.48)'
-                            }
-                          }}
-                        >
-                          <LoadChart
-                            url={(() => {
-                              const url = `${BASE_URL}/sparkline/${sparkline}?period=24h`;
-                              console.log(`LoadChart URL for pair ${id}: ${url}`);
-                              return url;
-                            })()}
-                            showGradient={true}
-                            lineWidth={2}
-                            style={{
-                              width: '100%',
-                              height: '100%'
-                            }}
-                            opts={{
-                              renderer: 'svg',
-                              width: 180,
-                              height: 60,
-                              animation: false, // Disable animation for better performance in table
-                              devicePixelRatio: window.devicePixelRatio || 1
-                            }}
-                          />
-                        </Box>
-                      </LazyLoadComponent>
-                    ) : (
-                      <Box
-                        sx={{
-                          width: '180px',
-                          height: '60px',
-                          borderRadius: '8px',
-                          border: `1px solid ${
-                            darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-                          }`,
-                          backgroundColor: darkMode
-                            ? 'rgba(255, 255, 255, 0.02)'
-                            : 'rgba(255, 255, 255, 0.4)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          opacity: 0.5
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: darkMode ? '#919EAB' : '#637381',
-                            fontSize: '11px',
-                            fontWeight: '500'
-                          }}
-                        >
-                          {curr1.currency === 'XRP' && curr2.currency === 'XRP'
-                            ? 'XRP/XRP Pair'
-                            : 'No Chart Data'}
-                        </Typography>
-                      </Box>
-                    )}
-                  </TableCell>
+                  <ChartCell darkMode={darkMode} sparkline={sparkline} id={id} />
 
                   <TableCell align="left" sx={{ padding: '16px 12px' }}>
                     <Stack spacing={1}>

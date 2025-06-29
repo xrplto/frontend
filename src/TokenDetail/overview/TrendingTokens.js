@@ -32,9 +32,9 @@ import { AppContext } from 'src/AppContext';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import Image from 'next/image';
 
-const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
+const TokenImage = styled(Image)(({ theme }) => ({
   borderRadius: '6px',
   overflow: 'hidden',
   objectFit: 'cover',
@@ -301,18 +301,18 @@ const TrendingTokens = () => {
                             <TokenImage
                               className="token-image"
                               src={imgUrl}
+                              alt={name}
                               width={28}
                               height={28}
-                              onError={(event) => (event.target.src = '/static/alt.webp')}
                             />
                           </VerifiedBadge>
                         ) : (
                           <TokenImage
                             className="token-image"
                             src={imgUrl}
+                            alt={name}
                             width={28}
                             height={28}
-                            onError={(event) => (event.target.src = '/static/alt.webp')}
                           />
                         )}
                       </Box>

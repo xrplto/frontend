@@ -14,8 +14,7 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 
 // Loader
-import { PuffLoader } from "react-spinners";
-import { ProgressBar, Discuss } from 'react-loader-spinner';
+import { PuffLoader, BarLoader } from "react-spinners";
 
 // Utils
 import { NFToken } from "src/utils/constants";
@@ -133,27 +132,9 @@ export default function NFTActionsBulk({ nft }) {
                 sx={{ color: "#000", zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={loading}
             >
-                <Stack>
-                    <Discuss
-                        visible={true}
-                        height="80"
-                        width="80"
-                        ariaLabel="comment-loading"
-                        wrapperStyle={{}}
-                        wrapperClass="comment-wrapper"
-                        color="#fff"
-                        backgroundColor="#F4442E"
-                    />
-
-                    <ProgressBar
-                        height="80"
-                        width="80"
-                        ariaLabel="progress-bar-loading"
-                        wrapperStyle={{}}
-                        wrapperClass="progress-bar-wrapper"
-                        borderColor='#F4442E'
-                        barColor='#51E5FF'
-                    />
+                <Stack alignItems="center" spacing={2}>
+                    <PuffLoader color="white" />
+                    <BarLoader color="#51E5FF" width={80} />
                 </Stack>
             </Backdrop>
 

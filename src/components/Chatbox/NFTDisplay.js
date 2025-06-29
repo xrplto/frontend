@@ -31,7 +31,7 @@ import sdk from '@crossmarkio/sdk';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import QRDialog from 'src/components/QRDialog';
 import { normalizeAmount } from 'src/utils/normalizers';
-import { ProgressBar } from 'react-loader-spinner';
+import { PuffLoader, BarLoader } from 'react-spinners';
 
 const StyledTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -1079,15 +1079,10 @@ const NFTDisplay = ({ nftLink }) => {
         sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={pageLoading}
       >
-        <ProgressBar
-          height="80"
-          width="80"
-          ariaLabel="progress-bar-loading"
-          wrapperStyle={{}}
-          wrapperClass="progress-bar-wrapper"
-          borderColor="#F4442E"
-          barColor="#51E5FF"
-        />
+        <Stack alignItems="center" spacing={2}>
+          <PuffLoader color="white" />
+          <BarLoader color="#51E5FF" width={100} />
+        </Stack>
       </Backdrop>
       <ConfirmAcceptOfferDialog
         open={openConfirm}

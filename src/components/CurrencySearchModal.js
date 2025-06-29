@@ -10,9 +10,7 @@ import {
   Input
 } from './styles/uikit';
 
-import { styled } from 'styled-components';
-import { ThemeProvider } from 'styled-components';
-import { theme } from './styles/theme';
+import { styled, useTheme } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
 import { XRP_TOKEN, USD_TOKEN } from 'src/utils/constants';
 import axios from 'axios';
@@ -35,7 +33,7 @@ import searchFill from '@iconify/icons-eva/search-fill';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HistoryIcon from '@mui/icons-material/History';
 
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import Image from 'next/image';
 import Backdrop from '@mui/material/Backdrop';
 
 const CurrencyModalView = {
@@ -54,18 +52,18 @@ const StyledModalContainer = styled(ModalContainer)`
   max-height: 600px;
   display: flex;
   flex-direction: column;
-  background: ${(props) =>
-    props.theme.colors.background === '#08060B'
+  background: ${({ theme }) =>
+    theme.palette.mode === 'dark'
       ? '#000'
       : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)'};
   border-radius: 28px;
   position: relative;
   overflow: hidden;
   padding-bottom: 8px;
-  border: ${(props) =>
-    props.theme.colors.background === '#08060B' ? 'none' : '1px solid rgba(226, 232, 240, 0.8)'};
-  box-shadow: ${(props) =>
-    props.theme.colors.background === '#08060B'
+  border: ${({ theme }) =>
+    theme.palette.mode === 'dark' ? 'none' : '1px solid rgba(226, 232, 240, 0.8)'};
+  box-shadow: ${({ theme }) =>
+    theme.palette.mode === 'dark'
       ? 'none'
       : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'};
 
@@ -93,17 +91,15 @@ const StyledModalBody = styled(ModalBody)`
   &::-webkit-scrollbar {
     display: none;
   }
-  background: ${(props) =>
-    props.theme.colors.background === '#08060B'
+  background: ${({ theme }) =>
+    theme.palette.mode === 'dark'
       ? '#000'
       : 'linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%)'};
   border-radius: 0 0 28px 28px;
-  border: ${(props) =>
-    props.theme.colors.background === '#08060B'
-      ? '1px solid #222'
-      : '1px solid rgba(226, 232, 240, 0.6)'};
-  box-shadow: ${(props) =>
-    props.theme.colors.background === '#08060B'
+  border: ${({ theme }) =>
+    theme.palette.mode === 'dark' ? '1px solid #222' : '1px solid rgba(226, 232, 240, 0.6)'};
+  box-shadow: ${({ theme }) =>
+    theme.palette.mode === 'dark'
       ? '0 2px 8px rgba(0, 0, 0, 0.12)'
       : '0 -1px 3px 0 rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.7)'};
 `;
@@ -111,16 +107,14 @@ const StyledModalBody = styled(ModalBody)`
 const SearchTextField = styled(TextField)`
   & .MuiOutlinedInput-root {
     border-radius: 18px;
-    background: ${(props) =>
-      props.theme.colors.background === '#08060B'
+    background: ${({ theme }) =>
+      theme.palette.mode === 'dark'
         ? '#181818'
         : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)'};
-    border: ${(props) =>
-      props.theme.colors.background === '#08060B'
-        ? '1px solid #232'
-        : '1px solid rgba(203, 213, 225, 0.8)'};
-    box-shadow: ${(props) =>
-      props.theme.colors.background === '#08060B'
+    border: ${({ theme }) =>
+      theme.palette.mode === 'dark' ? '1px solid #232' : '1px solid rgba(203, 213, 225, 0.8)'};
+    box-shadow: ${({ theme }) =>
+      theme.palette.mode === 'dark'
         ? '0 1px 4px 0 rgba(0, 0, 0, 0.12) inset'
         : '0 1px 3px 0 rgba(0, 0, 0, 0.08), inset 0 1px 2px 0 rgba(255, 255, 255, 0.9)'};
     height: 52px;
@@ -128,8 +122,8 @@ const SearchTextField = styled(TextField)`
     &:hover,
     &.Mui-focused {
       border-color: #1db954;
-      box-shadow: ${(props) =>
-        props.theme.colors.background === '#08060B'
+      box-shadow: ${({ theme }) =>
+        theme.palette.mode === 'dark'
           ? '0 0 0 2px #1db95433'
           : '0 0 0 3px rgba(29, 185, 84, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.08)'};
     }
@@ -138,11 +132,11 @@ const SearchTextField = styled(TextField)`
     }
     & input {
       padding: 16px 20px;
-      color: ${(props) => (props.theme.colors.background === '#08060B' ? '#fff' : '#1a202c')};
+      color: ${({ theme }) => (theme.palette.mode === 'dark' ? '#fff' : '#1a202c')};
       font-weight: 500;
       font-size: 1.05rem;
       &::placeholder {
-        color: ${(props) => (props.theme.colors.background === '#08060B' ? '#aaa' : '#64748b')};
+        color: ${({ theme }) => (theme.palette.mode === 'dark' ? '#aaa' : '#64748b')};
         opacity: 1;
       }
     }
@@ -152,31 +146,29 @@ const SearchTextField = styled(TextField)`
 const TokenListItem = styled(Stack)`
   padding: 6px 8px;
   border-radius: 10px;
-  background: ${(props) =>
-    props.theme.colors.background === '#08060B'
+  background: ${({ theme }) =>
+    theme.palette.mode === 'dark'
       ? '#101010'
       : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.8) 100%)'};
   margin-bottom: 4px;
-  border: ${(props) =>
-    props.theme.colors.background === '#08060B'
-      ? '1px solid #232'
-      : '1px solid rgba(226, 232, 240, 0.6)'};
+  border: ${({ theme }) =>
+    theme.palette.mode === 'dark' ? '1px solid #232' : '1px solid rgba(226, 232, 240, 0.6)'};
   cursor: pointer;
   position: relative;
   overflow: hidden;
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: ${(props) =>
-    props.theme.colors.background === '#08060B'
+  box-shadow: ${({ theme }) =>
+    theme.palette.mode === 'dark'
       ? '0 1.5px 8px 0 rgba(29, 185, 84, 0.04)'
       : '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.7) inset'};
   &:hover {
-    background: ${(props) =>
-      props.theme.colors.background === '#08060B'
+    background: ${({ theme }) =>
+      theme.palette.mode === 'dark'
         ? '#181818'
         : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 249, 255, 0.9) 100%)'};
     border-color: #1db954;
-    box-shadow: ${(props) =>
-      props.theme.colors.background === '#08060B'
+    box-shadow: ${({ theme }) =>
+      theme.palette.mode === 'dark'
         ? '0 2px 16px 0 #1db95422'
         : '0 4px 12px 0 rgba(29, 185, 84, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.08)'};
     transform: translateY(-2px) scale(1.03);
@@ -204,30 +196,26 @@ const KYCBadge = styled('div')`
   box-shadow: none;
 `;
 
-const TokenImage = styled(LazyLoadImage)`
+const TokenImage = styled(Image)`
   border-radius: 50%;
   width: 26px;
   height: 26px;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid
-    ${(props) =>
-      props.theme.colors.background === '#08060B'
-        ? 'rgba(71, 85, 105, 0.4)'
-        : 'rgba(226, 232, 240, 0.6)'};
-  box-shadow: ${(props) =>
-    props.theme.colors.background === '#08060B'
+    ${({ theme }) =>
+      theme.palette.mode === 'dark' ? 'rgba(71, 85, 105, 0.4)' : 'rgba(226, 232, 240, 0.6)'};
+  box-shadow: ${({ theme }) =>
+    theme.palette.mode === 'dark'
       ? '0 4px 12px rgba(0, 0, 0, 0.3)'
       : '0 4px 12px rgba(0, 0, 0, 0.1)'};
 
   ${TokenListItem}:hover & {
     transform: scale(1.1) rotate(5deg);
-    border-color: ${(props) =>
-      props.theme.colors.background === '#08060B'
-        ? 'rgba(99, 102, 241, 0.6)'
-        : 'rgba(99, 102, 241, 0.4)'};
-    box-shadow: ${(props) =>
-      props.theme.colors.background === '#08060B'
+    border-color: ${({ theme }) =>
+      theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.6)' : 'rgba(99, 102, 241, 0.4)'};
+    box-shadow: ${({ theme }) =>
+      theme.palette.mode === 'dark'
         ? '0 8px 20px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(99, 102, 241, 0.3)'
         : '0 8px 20px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(99, 102, 241, 0.2)'};
   }
@@ -243,15 +231,13 @@ const RecentSearchesHeader = styled(Stack)`
   align-items: center;
   margin-bottom: 12px;
   padding: 10px 16px;
-  background: ${(props) =>
-    props.theme.colors.background === '#08060B'
+  background: ${({ theme }) =>
+    theme.palette.mode === 'dark'
       ? '#111'
       : 'linear-gradient(135deg, rgba(29, 185, 84, 0.08) 0%, rgba(0, 198, 251, 0.05) 100%)'};
   border-radius: 14px;
-  border: ${(props) =>
-    props.theme.colors.background === '#08060B'
-      ? '1px solid #222'
-      : '1px solid rgba(29, 185, 84, 0.2)'};
+  border: ${({ theme }) =>
+    theme.palette.mode === 'dark' ? '1px solid #222' : '1px solid rgba(29, 185, 84, 0.2)'};
   color: #1db954;
 `;
 
@@ -267,15 +253,15 @@ const ModalAccentLine = styled('div')`
   width: 100%;
   height: 2px;
   background: linear-gradient(90deg, #1db954 0%, #00c6fb 100%);
-  opacity: ${(props) => (props.theme.colors.background === '#08060B' ? '0.7' : '0.4')};
+  opacity: ${({ theme }) => (theme.palette.mode === 'dark' ? '0.7' : '0.4')};
   margin-bottom: 8px;
 `;
 
 const ModalHeaderStyled = styled(ModalHeader)`
   position: relative;
   z-index: 3;
-  background: ${(props) =>
-    props.theme.colors.background === '#08060B'
+  background: ${({ theme }) =>
+    theme.palette.mode === 'dark'
       ? 'transparent'
       : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)'};
   border-top-left-radius: 28px;
@@ -290,7 +276,9 @@ const ModalHeaderStyled = styled(ModalHeader)`
 `;
 
 const ModalCloseButtonStyled = styled(ModalCloseButton)`
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
   &:hover {
     transform: scale(1.15);
     box-shadow: 0 0 0 2px #1db95444;
@@ -309,26 +297,21 @@ export default function CurrencySearchModal({
   //   showCommonBases = false,
   //   commonBasesType,
 }) {
-  const [modalView, setModalView] = useState(CurrencyModalView.search);
-  // for token import view
-  const prevView = undefined;
-
-  const BASE_URL = process.env.API_URL;
   const { darkMode } = useContext(AppContext);
+  const [modalView, setModalView] = useState(CurrencyModalView.search);
 
+  const [searchFilter, setSearchFilter] = useState('');
+  const [filteredTokens, setFilteredTokens] = useState([]);
+  const [tokens, setTokens] = useState([]);
+  const [recentSearches, setRecentSearches] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [tokens, setTokens] = useState([XRP_TOKEN, USD_TOKEN]);
-  const [filter, setFilter] = useState('');
-  const [recentSearches, setRecentSearches] = useState([]);
+  const theme = useTheme();
 
   useEffect(() => {
-    // Load recent searches from localStorage
-    const savedSearches = localStorage.getItem('recentTokenSearches');
-    if (savedSearches) {
-      setRecentSearches(JSON.parse(savedSearches));
-    }
-  }, []);
+    const searches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+    setRecentSearches(searches);
+  }, [open, darkMode]);
 
   const addToRecentSearches = (token) => {
     const updatedSearches = [token, ...recentSearches.filter((t) => t.md5 !== token.md5)].slice(
@@ -336,7 +319,7 @@ export default function CurrencySearchModal({
       MAX_RECENT_SEARCHES
     );
     setRecentSearches(updatedSearches);
-    localStorage.setItem('recentTokenSearches', JSON.stringify(updatedSearches));
+    localStorage.setItem('recentSearches', JSON.stringify(updatedSearches));
   };
 
   const renderTokenItem = (row) => {
@@ -356,7 +339,8 @@ export default function CurrencySearchModal({
             <TokenImage
               src={imgUrl}
               alt={name}
-              effect="opacity"
+              width={26}
+              height={26}
               onError={(event) => (event.target.src = '/static/alt.webp')}
             />
             {kyc && (
@@ -461,97 +445,86 @@ export default function CurrencySearchModal({
   };
   const wrapperRef = useRef(null);
 
+  if (!open) return null;
   return (
-    <ThemeProvider theme={() => theme(darkMode)}>
-      <Backdrop
-        sx={(theme) => ({
-          color: theme.colors.text,
-          zIndex: theme.zIndex.drawer + 1,
-          backdropFilter: 'blur(8px)',
-          backgroundColor:
-            theme.colors.background === '#08060B' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.4)',
-          background:
-            theme.colors.background === '#08060B'
-              ? 'radial-gradient(circle at center, rgba(16, 16, 24, 0.9) 0%, rgba(0, 0, 0, 0.95) 100%)'
-              : 'radial-gradient(circle at center, rgba(248, 250, 252, 0.3) 0%, rgba(0, 0, 0, 0.5) 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-        })}
-        open={open}
-        onClick={onDismiss}
-      >
-        <StyledModalContainer ref={wrapperRef} onClick={(event) => event.stopPropagation()}>
-          <ModalHeaderStyled>
-            <ModalTitle>
-              {config[modalView].onBack && <ModalBackButton onBack={config[modalView].onBack} />}
-              <Heading
-                style={{
-                  color:
-                    theme(darkMode).colors.background === '#08060B'
-                      ? theme(darkMode).colors.text
-                      : '#1a202c',
-                  fontWeight: 700,
-                  fontSize: '1.45rem',
-                  letterSpacing: '-0.5px'
-                }}
-              >
-                {config[modalView].title}
-              </Heading>
-            </ModalTitle>
-            <ModalCloseButtonStyled onDismiss={onDismiss} />
-          </ModalHeaderStyled>
-          <ModalAccentLine />
-          <StyledModalBody>
-            <SearchTextField
-              fullWidth
-              placeholder="Search name or paste address"
-              autoComplete="off"
-              value={filter}
-              onChange={handleChangeFilter}
-              size="medium"
-              InputProps={{
-                autoComplete: 'off',
-                type: 'search',
-                startAdornment: (
-                  <InputAdornment position="start" sx={{ ml: 1 }}>
-                    <Box
-                      component={Icon}
-                      icon={searchFill}
-                      sx={{
-                        color: darkMode ? 'text.disabled' : '#64748b',
-                        fontSize: 20
-                      }}
-                    />
-                  </InputAdornment>
-                )
-              }}
-            />
-
-            {!filter && recentSearches.length > 0 && (
-              <RecentSearchesSection>
-                <RecentSearchesHeader>
-                  <HistoryIcon
+    <Backdrop
+      open={open}
+      onClick={onDismiss}
+      sx={{
+        zIndex: 9998,
+        backdropFilter: 'blur(8px)',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)'
+      }}
+    >
+      <StyledModalContainer onClick={(e) => e.stopPropagation()}>
+        <ModalHeader>
+          <ModalTitle>
+            <Heading>Select a Token</Heading>
+          </ModalTitle>
+          <ModalCloseButton onClick={onDismiss} />
+        </ModalHeader>
+        <StyledModalBody>
+          <SearchTextField
+            theme={theme}
+            id="token-search-input"
+            fullWidth
+            placeholder="Search name or paste address"
+            autoComplete="off"
+            value={searchFilter}
+            onChange={handleChangeFilter}
+            size="medium"
+            InputProps={{
+              autoComplete: 'off',
+              type: 'search',
+              startAdornment: (
+                <InputAdornment position="start" sx={{ ml: 1 }}>
+                  <Box
+                    component={Icon}
+                    icon={searchFill}
                     sx={{
-                      color: darkMode ? 'text.secondary' : '#1db954',
-                      fontSize: 20,
-                      mr: 1
+                      color: darkMode ? 'text.disabled' : '#64748b',
+                      fontSize: 20
                     }}
                   />
-                  <Typography variant="subtitle2" color={darkMode ? 'text.secondary' : '#1db954'}>
-                    Recent Searches
-                  </Typography>
-                </RecentSearchesHeader>
-                <Stack spacing={1}>{recentSearches.map((row) => renderTokenItem(row))}</Stack>
-                <Divider sx={{ my: 2 }} />
-              </RecentSearchesSection>
-            )}
+                </InputAdornment>
+              )
+            }}
+          />
 
-            <Stack spacing={0.5}>{tokens.map((row) => renderTokenItem(row))}</Stack>
-          </StyledModalBody>
-        </StyledModalContainer>
-      </Backdrop>
-    </ThemeProvider>
+          {!searchFilter && recentSearches.length > 0 && (
+            <RecentSearchesSection>
+              <RecentSearchesHeader>
+                <HistoryIcon
+                  sx={{
+                    color: darkMode ? 'text.secondary' : '#1db954',
+                    fontSize: 20,
+                    mr: 1
+                  }}
+                />
+                <Typography variant="subtitle2" color={darkMode ? 'text.secondary' : '#1db954'}>
+                  Recent Searches
+                </Typography>
+              </RecentSearchesHeader>
+              <Stack spacing={1}>{recentSearches.map((row) => renderTokenItem(row))}</Stack>
+              <Divider sx={{ my: 2 }} />
+            </RecentSearchesSection>
+          )}
+
+          <Divider sx={{ my: 2 }} />
+
+          <Stack spacing={0.5}>
+            {filteredTokens.length > 0 ? (
+              filteredTokens.map((row) => renderTokenItem(row))
+            ) : loading ? (
+              <Typography sx={{ textAlign: 'center', py: 2 }}>Loading...</Typography>
+            ) : (
+              <Typography sx={{ textAlign: 'center', py: 2, color: 'text.secondary' }}>
+                No results found
+              </Typography>
+            )}
+          </Stack>
+        </StyledModalBody>
+      </StyledModalContainer>
+    </Backdrop>
   );
 }

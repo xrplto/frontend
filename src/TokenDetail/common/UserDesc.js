@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { Image } from 'next/image';
 
 // Material
 import {
@@ -153,15 +153,6 @@ const CardOverlay = styled('div')(
     inset: 0;
 `
 );
-
-const AdminImage = styled(LazyLoadImage)(({ theme }) => ({
-  borderRadius: '50%',
-  overflow: 'hidden',
-  '&:hover': {
-    cursor: 'pointer',
-    opacity: 0.6
-  }
-}));
 
 // Dummy function to prevent ReferenceError since @mui/styles is removed
 const withStyles = (styles) => (Component) => Component;

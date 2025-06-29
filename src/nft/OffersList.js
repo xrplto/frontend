@@ -24,7 +24,6 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 // Loader
 import { PuffLoader, PulseLoader } from "react-spinners";
-import { ProgressBar, Discuss } from 'react-loader-spinner';
 
 // Utils
 // import { checkExpiration, getUnixTimeEpochFromRippleEpoch } from 'src/utils/parse';

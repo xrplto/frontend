@@ -47,7 +47,7 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import moment from 'moment';
+import { format } from 'date-fns';
 import { useTheme } from '@mui/material';
 
 // Updated styled components with zero top spacing on mobile
@@ -389,7 +389,7 @@ export default function Summary() {
           .reverse()
           .map((d) => {
             const baseData = {
-              date: moment(d.date).format('MM/DD'),
+              date: format(new Date(d.date), 'MM/dd'),
               Tokens: d.totalTokens,
               platforms: d.platforms,
               avgMarketcap: new Decimal(d.avgMarketcap || 0).div(fiatRate).toNumber(),
