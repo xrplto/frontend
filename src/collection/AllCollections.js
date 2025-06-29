@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Stack,
   Typography,
@@ -13,70 +14,34 @@ import {
   Button
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
-import { Line, Bar } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip as ChartTooltip,
-  Legend
-} from 'chart.js';
 import CollectionList from './CollectionList';
 import { CollectionListType } from 'src/utils/constants';
 import { alpha } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
 import Link from 'next/link';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  ChartTooltip,
-  Legend
-);
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top',
-      labels: {
-        font: {
-          size: 14
-        },
-        color: '#333'
-      }
-    },
-    tooltip: {
-      titleFont: { size: 16 },
-      bodyFont: { size: 14 }
-    }
+  chart: {
+    toolbar: { show: false },
+    background: 'transparent'
   },
-  scales: {
-    x: {
-      ticks: {
-        font: {
-          size: 12
-        },
-        color: '#666'
-      }
-    },
-    y: {
-      ticks: {
-        font: {
-          size: 12
-        },
-        color: '#666'
-      }
-    }
+  dataLabels: {
+    enabled: false
+  },
+  stroke: {
+    curve: 'smooth',
+    width: 2
+  },
+  legend: {
+    position: 'top',
+    horizontalAlign: 'right'
+  },
+  grid: {
+    show: true,
+    borderColor: '#e0e0e0',
+    strokeDashArray: 4
   }
 };
 
@@ -213,6 +178,73 @@ const LatestNFTActivity = ({
     setTab(newValue);
   };
 
+  const series = chartData.datasets.map((d) => ({
+    name: d.label,
+    data: d.data
+  }));
+
+  const options = {
+    ...chartOptions,
+    chart: {
+      ...chartOptions.chart,
+      type: chartType,
+      height: 300
+    },
+    xaxis: {
+      categories: chartData.labels,
+      labels: {
+        style: {
+          colors: theme.palette.text.secondary
+        }
+      }
+    },
+    yaxis: {
+      labels: {
+        style: {
+          colors: theme.palette.text.secondary
+        }
+      }
+    },
+    colors: chartData.datasets.map((d) => d.borderColor),
+    legend: {
+      ...chartOptions.legend,
+      labels: {
+        colors: theme.palette.text.primary
+      }
+    },
+    grid: {
+      ...chartOptions.grid,
+      borderColor: theme.palette.divider
+    }
+  };
+
+  if (chartType === 'bar') {
+    options.plotOptions = {
+      bar: {
+        horizontal: false,
+        columnWidth: '55%',
+        endingShape: 'rounded'
+      }
+    };
+    options.fill = {
+      colors: chartData.datasets.map((d) => d.backgroundColor)
+    };
+    options.stroke.show = false;
+  } else {
+    options.fill = {
+      type: 'gradient',
+      gradient: {
+        shade: 'dark',
+        type: 'vertical',
+        shadeIntensity: 0.5,
+        inverseColors: false,
+        opacityFrom: 0.7,
+        opacityTo: 0
+      },
+      colors: chartData.datasets.map((d) => d.borderColor)
+    };
+  }
+
   let displayedAmount = amount24h;
   switch (tab) {
     case '7d':
@@ -340,11 +372,7 @@ const LatestNFTActivity = ({
         <Tab label="All" value="all" />
       </Tabs>
       <Box sx={{ height: 300 }}>
-        {chartType === 'line' ? (
-          <Line data={chartData} options={chartOptions} />
-        ) : (
-          <Bar data={chartData} options={chartOptions} />
-        )}
+        <Chart options={options} series={series} type={chartType} height={300} />
       </Box>
     </Paper>
   );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import {
   useTheme,
   Box,
@@ -24,19 +25,6 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Verified as VerifiedIcon } from '@mui/icons-material';
-import { Line, Pie } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip as ChartTooltip,
-  Legend,
-  ArcElement
-} from 'chart.js';
 import styled from '@emotion/styled';
 import { getHashIcon } from 'src/utils/extra';
 import TrustLines from './TrustLines';
@@ -58,17 +46,7 @@ import {
   getTokenFallbackColor
 } from 'src/utils/colorExtractor';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  ChartTooltip,
-  Legend,
-  ArcElement
-);
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
@@ -181,49 +159,32 @@ export default function Portfolio({ account, limit, collection, type }) {
     );
 
     return {
-      labels: sortedHistory.map((item) =>
-        new Date(item.date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric'
-        })
-      ),
-      datasets: [
+      series: [
         {
-          label: 'Daily ROI',
-          data: sortedHistory.map((item) => item.dailyRoi),
-          fill: false,
-          backgroundColor: theme.palette.primary.light,
-          borderColor: theme.palette.primary.main,
-          tension: 0.4,
-          yAxisID: 'y',
+          name: 'Daily ROI',
           type: 'line',
-          pointRadius: 2,
-          pointHoverRadius: 4
+          data: sortedHistory.map((item) => item.dailyRoi)
         },
         {
-          label: 'Cumulative ROI',
-          data: sortedHistory.map((item) => item.cumulativeRoi),
-          fill: false,
-          backgroundColor: theme.palette.success.light,
-          borderColor: theme.palette.success.main,
-          tension: 0.4,
-          yAxisID: 'y1',
+          name: 'Cumulative ROI',
           type: 'line',
-          pointRadius: 2,
-          pointHoverRadius: 4
+          data: sortedHistory.map((item) => item.cumulativeRoi)
         },
         {
-          label: 'Volume',
-          data: sortedHistory.map((item) => item.volume),
-          fill: true,
-          backgroundColor: alpha(theme.palette.info.main, 0.1),
-          borderColor: theme.palette.info.main,
-          tension: 0.4,
-          yAxisID: 'y2',
-          type: 'bar'
+          name: 'Volume',
+          type: 'bar',
+          data: sortedHistory.map((item) => item.volume)
         }
-      ]
+      ],
+      xaxis: {
+        categories: sortedHistory.map((item) =>
+          new Date(item.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          })
+        )
+      }
     };
   };
 
@@ -236,36 +197,26 @@ export default function Portfolio({ account, limit, collection, type }) {
     );
 
     return {
-      labels: sortedHistory.map((item) =>
-        new Date(item.date).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric'
-        })
-      ),
-      datasets: [
+      series: [
         {
-          label: 'Daily Trades',
-          data: sortedHistory.map((item) => item.trades),
-          fill: false,
-          backgroundColor: theme.palette.primary.light,
-          borderColor: theme.palette.primary.main,
-          tension: 0.4,
-          yAxisID: 'y',
-          type: 'bar'
+          name: 'Daily Trades',
+          type: 'bar',
+          data: sortedHistory.map((item) => item.trades)
         },
         {
-          label: 'Cumulative Trades',
-          data: sortedHistory.map((item) => item.cumulativeTrades),
-          fill: false,
-          backgroundColor: theme.palette.success.light,
-          borderColor: theme.palette.success.main,
-          tension: 0.4,
-          yAxisID: 'y1',
+          name: 'Cumulative Trades',
           type: 'line',
-          pointRadius: 2,
-          pointHoverRadius: 4
+          data: sortedHistory.map((item) => item.cumulativeTrades)
         }
-      ]
+      ],
+      xaxis: {
+        categories: sortedHistory.map((item) =>
+          new Date(item.date).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
+          })
+        )
+      }
     };
   };
 
@@ -277,499 +228,348 @@ export default function Portfolio({ account, limit, collection, type }) {
     );
 
     return {
-      labels: sortedHistory.map((item) =>
-        new Date(item.date).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric'
-        })
-      ),
-      datasets: [
+      series: [
         {
-          label: 'Daily Volume',
-          data: sortedHistory.map((item) => item.h24Volume),
-          backgroundColor: alpha(theme.palette.primary.main, 0.2),
-          borderColor: theme.palette.primary.main,
+          name: 'Daily Volume',
           type: 'bar',
-          yAxisID: 'y'
+          data: sortedHistory.map((item) => item.h24Volume)
         },
         {
-          label: 'Cumulative Volume',
-          data: sortedHistory.map((item) => item.cumulativeVolume),
-          fill: false,
-          backgroundColor: theme.palette.success.light,
-          borderColor: theme.palette.success.main,
-          tension: 0.4,
+          name: 'Cumulative Volume',
           type: 'line',
-          yAxisID: 'y1',
-          pointRadius: 2,
-          pointHoverRadius: 4
+          data: sortedHistory.map((item) => item.cumulativeVolume)
         }
-      ]
+      ],
+      xaxis: {
+        categories: sortedHistory.map((item) =>
+          new Date(item.date).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
+          })
+        )
+      }
     };
   };
 
   const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: 'index',
-      intersect: false
+    chart: {
+      stacked: false,
+      toolbar: { show: false },
+      background: 'transparent'
     },
-    plugins: {
-      title: {
-        display: false
+    stroke: {
+      width: [2, 2, 0],
+      curve: 'smooth'
+    },
+    legend: {
+      position: 'bottom',
+      horizontalAlign: 'center',
+      markers: {
+        radius: 12
       },
-      legend: {
-        position: 'bottom',
-        labels: {
-          color: theme.palette.text.primary,
-          padding: 16,
-          usePointStyle: true,
-          pointStyle: 'circle',
-          font: {
-            size: 12,
-            weight: '500'
-          },
-          boxWidth: 8,
-          boxHeight: 8
-        }
+      itemMargin: {
+        horizontal: 10
       },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-        backgroundColor: alpha(theme.palette.background.paper, 0.95),
-        titleColor: theme.palette.text.primary,
-        bodyColor: theme.palette.text.secondary,
-        borderColor: alpha(theme.palette.primary.main, 0.2),
-        borderWidth: 1,
-        cornerRadius: 12,
-        padding: 16,
-        titleFont: {
-          size: 13,
-          weight: '600'
-        },
-        bodyFont: {
-          size: 12,
-          weight: '500'
-        },
-        displayColors: true,
-        boxWidth: 8,
-        boxHeight: 8,
-        callbacks: {
-          label: function (context) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            const value = context.parsed?.y;
-            if (!value) return label + '0%';
-
-            if (context.dataset.yAxisID === 'y2') {
-              return label + value.toLocaleString() + ' XRP';
-            } else {
-              return label + value.toFixed(2) + '%';
-            }
-          }
-        }
+      labels: {
+        colors: theme.palette.text.primary
       }
     },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-          drawBorder: false
-        },
-        ticks: {
-          color: alpha(theme.palette.text.secondary, 0.8),
-          maxRotation: 45,
-          minRotation: 45,
-          font: {
-            size: 11,
-            weight: '500'
-          },
-          padding: 8
-        }
-      },
+    tooltip: {
+      theme: theme.palette.mode,
+      shared: true,
+      intersect: false,
       y: {
-        type: 'linear',
-        display: true,
-        position: 'left',
-        title: {
-          display: true,
-          text: 'Daily ROI (%)',
-          color: alpha(theme.palette.text.secondary, 0.9),
-          font: {
-            size: 11,
-            weight: '600'
-          },
-          padding: 12
-        },
-        ticks: {
-          color: alpha(theme.palette.text.secondary, 0.8),
-          callback: (value) => `${value.toFixed(1)}%`,
-          font: {
-            size: 10,
-            weight: '500'
-          },
-          padding: 8
-        },
-        grid: {
-          color: alpha(theme.palette.divider, 0.08),
-          lineWidth: 1
-        },
-        border: {
-          display: false
-        }
-      },
-      y1: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        title: {
-          display: true,
-          text: 'Cumulative ROI (%)',
-          color: alpha(theme.palette.text.secondary, 0.9),
-          font: {
-            size: 11,
-            weight: '600'
-          },
-          padding: 12
-        },
-        ticks: {
-          color: alpha(theme.palette.text.secondary, 0.8),
-          callback: (value) => `${value.toFixed(1)}%`,
-          font: {
-            size: 10,
-            weight: '500'
-          },
-          padding: 8
-        },
-        grid: {
-          display: false
-        },
-        border: {
-          display: false
+        formatter: (val, { seriesIndex }) => {
+          if (typeof val === 'undefined' || val === null) return '0';
+          if (seriesIndex === 2) {
+            return `${val.toLocaleString()} XRP`;
+          }
+          return `${val.toFixed(2)}%`;
         }
       }
     },
-    elements: {
-      point: {
-        radius: 3,
-        hoverRadius: 6,
-        borderWidth: 2,
-        hoverBorderWidth: 3
-      },
-      line: {
-        borderWidth: 2.5,
-        tension: 0.4
+    xaxis: {
+      type: 'category',
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      labels: {
+        style: {
+          colors: alpha(theme.palette.text.secondary, 0.8),
+          fontSize: '11px',
+          fontWeight: '500'
+        },
+        rotate: -45
       }
+    },
+    yaxis: [
+      {
+        seriesName: 'Daily ROI',
+        title: {
+          text: 'Daily ROI (%)',
+          style: {
+            color: alpha(theme.palette.text.secondary, 0.9),
+            fontSize: '11px',
+            fontWeight: '600'
+          }
+        },
+        labels: {
+          style: {
+            colors: alpha(theme.palette.text.secondary, 0.8),
+            fontSize: '10px',
+            fontWeight: '500'
+          },
+          formatter: (val) => `${val.toFixed(1)}%`
+        }
+      },
+      {
+        seriesName: 'Cumulative ROI',
+        opposite: true,
+        title: {
+          text: 'Cumulative ROI (%)',
+          style: {
+            color: alpha(theme.palette.text.secondary, 0.9),
+            fontSize: '11px',
+            fontWeight: '600'
+          }
+        },
+        labels: {
+          style: {
+            colors: alpha(theme.palette.text.secondary, 0.8),
+            fontSize: '10px',
+            fontWeight: '500'
+          },
+          formatter: (val) => `${val.toFixed(1)}%`
+        }
+      },
+      {
+        seriesName: 'Volume',
+        opposite: true,
+        title: {
+          text: 'Volume (XRP)',
+          style: {
+            color: alpha(theme.palette.text.secondary, 0.9),
+            fontSize: '11px',
+            fontWeight: '600'
+          }
+        },
+        labels: {
+          show: false
+        }
+      }
+    ],
+    grid: {
+      borderColor: alpha(theme.palette.divider, 0.08),
+      strokeDashArray: 0
+    },
+    colors: [
+      theme.palette.primary.main,
+      theme.palette.success.main,
+      alpha(theme.palette.info.main, 0.4)
+    ],
+    plotOptions: {
+      bar: {
+        columnWidth: '20%',
+        borderRadius: 4
+      }
+    },
+    dataLabels: {
+      enabled: false
     }
   };
 
   const tradeHistoryOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: 'index',
-      intersect: false
+    chart: {
+      stacked: false,
+      toolbar: { show: false },
+      background: 'transparent'
     },
-    plugins: {
-      title: {
-        display: false
+    stroke: {
+      width: [0, 2.5],
+      curve: 'smooth'
+    },
+    legend: {
+      position: 'bottom',
+      horizontalAlign: 'center',
+      markers: {
+        radius: 12
       },
-      legend: {
-        position: 'bottom',
+      itemMargin: {
+        horizontal: 10
+      },
+      labels: {
+        colors: theme.palette.text.primary
+      }
+    },
+    tooltip: {
+      theme: theme.palette.mode,
+      shared: true,
+      intersect: false,
+      y: {
+        formatter: (val) => (val ? val.toLocaleString() : '0')
+      }
+    },
+    xaxis: {
+      type: 'category',
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      labels: {
+        style: {
+          colors: alpha(theme.palette.text.secondary, 0.8),
+          fontSize: '11px',
+          fontWeight: '500'
+        }
+      }
+    },
+    yaxis: [
+      {
+        seriesName: 'Daily Trades',
+        title: {
+          text: 'Daily Trades',
+          style: {
+            color: alpha(theme.palette.text.secondary, 0.9),
+            fontSize: '11px',
+            fontWeight: '600'
+          }
+        },
         labels: {
-          color: theme.palette.text.primary,
-          padding: 16,
-          usePointStyle: true,
-          pointStyle: 'circle',
-          font: {
-            size: 12,
-            weight: '500'
-          },
-          boxWidth: 8,
-          boxHeight: 8
+          style: {
+            colors: alpha(theme.palette.text.secondary, 0.8),
+            fontSize: '10px',
+            fontWeight: '500'
+          }
         }
       },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-        backgroundColor: alpha(theme.palette.background.paper, 0.95),
-        titleColor: theme.palette.text.primary,
-        bodyColor: theme.palette.text.secondary,
-        borderColor: alpha(theme.palette.primary.main, 0.2),
-        borderWidth: 1,
-        cornerRadius: 12,
-        padding: 16,
-        titleFont: {
-          size: 13,
-          weight: '600'
+      {
+        seriesName: 'Cumulative Trades',
+        opposite: true,
+        title: {
+          text: 'Cumulative Trades',
+          style: {
+            color: alpha(theme.palette.text.secondary, 0.9),
+            fontSize: '11px',
+            fontWeight: '600'
+          }
         },
-        bodyFont: {
-          size: 12,
-          weight: '500'
-        },
-        displayColors: true,
-        boxWidth: 8,
-        boxHeight: 8,
-        callbacks: {
-          label: function (context) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            const value = context.parsed?.y;
-            return label + (value ? value.toLocaleString() : '0');
+        labels: {
+          style: {
+            colors: alpha(theme.palette.text.secondary, 0.8),
+            fontSize: '10px',
+            fontWeight: '500'
           }
         }
       }
+    ],
+    grid: {
+      borderColor: alpha(theme.palette.divider, 0.08)
     },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-          drawBorder: false
-        },
-        ticks: {
-          color: alpha(theme.palette.text.secondary, 0.8),
-          font: {
-            size: 11,
-            weight: '500'
-          },
-          padding: 8
-        }
-      },
-      y: {
-        type: 'linear',
-        display: true,
-        position: 'left',
-        title: {
-          display: true,
-          text: 'Daily Trades',
-          color: alpha(theme.palette.text.secondary, 0.9),
-          font: {
-            size: 11,
-            weight: '600'
-          },
-          padding: 12
-        },
-        ticks: {
-          color: alpha(theme.palette.text.secondary, 0.8),
-          stepSize: 1,
-          font: {
-            size: 10,
-            weight: '500'
-          },
-          padding: 8
-        },
-        grid: {
-          color: alpha(theme.palette.divider, 0.08),
-          lineWidth: 1
-        },
-        border: {
-          display: false
-        }
-      },
-      y1: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        title: {
-          display: true,
-          text: 'Cumulative Trades',
-          color: alpha(theme.palette.text.secondary, 0.9),
-          font: {
-            size: 11,
-            weight: '600'
-          },
-          padding: 12
-        },
-        ticks: {
-          color: alpha(theme.palette.text.secondary, 0.8),
-          font: {
-            size: 10,
-            weight: '500'
-          },
-          padding: 8
-        },
-        grid: {
-          display: false
-        },
-        border: {
-          display: false
-        }
-      }
-    },
-    elements: {
-      point: {
-        radius: 3,
-        hoverRadius: 6,
-        borderWidth: 2,
-        hoverBorderWidth: 3
-      },
-      line: {
-        borderWidth: 2.5,
-        tension: 0.4
-      },
+    colors: [theme.palette.primary.main, theme.palette.success.main],
+    plotOptions: {
       bar: {
-        borderRadius: 4,
-        borderSkipped: false
+        columnWidth: '30%',
+        borderRadius: 4
       }
+    },
+    dataLabels: {
+      enabled: false
     }
   };
 
   const volumeHistoryOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: 'index',
-      intersect: false
+    chart: {
+      stacked: false,
+      toolbar: { show: false },
+      background: 'transparent'
     },
-    plugins: {
-      title: {
-        display: false
+    stroke: {
+      width: [0, 2.5],
+      curve: 'smooth'
+    },
+    legend: {
+      position: 'bottom',
+      horizontalAlign: 'center',
+      markers: {
+        radius: 12
       },
-      legend: {
-        position: 'bottom',
-        labels: {
-          color: theme.palette.text.primary,
-          padding: 16,
-          usePointStyle: true,
-          pointStyle: 'circle',
-          font: {
-            size: 12,
-            weight: '500'
-          },
-          boxWidth: 8,
-          boxHeight: 8
-        }
+      itemMargin: {
+        horizontal: 10
       },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-        backgroundColor: alpha(theme.palette.background.paper, 0.95),
-        titleColor: theme.palette.text.primary,
-        bodyColor: theme.palette.text.secondary,
-        borderColor: alpha(theme.palette.primary.main, 0.2),
-        borderWidth: 1,
-        cornerRadius: 12,
-        padding: 16,
-        titleFont: {
-          size: 13,
-          weight: '600'
-        },
-        bodyFont: {
-          size: 12,
-          weight: '500'
-        },
-        displayColors: true,
-        boxWidth: 8,
-        boxHeight: 8,
-        callbacks: {
-          label: function (context) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            const value = context.parsed?.y;
-            return label + (value ? value.toLocaleString() : '0') + ' XRP';
-          }
-        }
+      labels: {
+        colors: theme.palette.text.primary
       }
     },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-          drawBorder: false
-        },
-        ticks: {
-          color: alpha(theme.palette.text.secondary, 0.8),
-          font: {
-            size: 11,
-            weight: '500'
-          },
-          padding: 8
-        }
-      },
+    tooltip: {
+      theme: theme.palette.mode,
+      shared: true,
+      intersect: false,
       y: {
-        type: 'linear',
-        display: true,
-        position: 'left',
-        title: {
-          display: true,
-          text: 'Daily Volume (XRP)',
-          color: alpha(theme.palette.text.secondary, 0.9),
-          font: {
-            size: 11,
-            weight: '600'
-          },
-          padding: 12
-        },
-        ticks: {
-          color: alpha(theme.palette.text.secondary, 0.8),
-          callback: (value) => value.toLocaleString(),
-          font: {
-            size: 10,
-            weight: '500'
-          },
-          padding: 8
-        },
-        grid: {
-          color: alpha(theme.palette.divider, 0.08),
-          lineWidth: 1
-        },
-        border: {
-          display: false
-        }
-      },
-      y1: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        title: {
-          display: true,
-          text: 'Cumulative Volume (XRP)',
-          color: alpha(theme.palette.text.secondary, 0.9),
-          font: {
-            size: 11,
-            weight: '600'
-          },
-          padding: 12
-        },
-        ticks: {
-          color: alpha(theme.palette.text.secondary, 0.8),
-          callback: (value) => value.toLocaleString(),
-          font: {
-            size: 10,
-            weight: '500'
-          },
-          padding: 8
-        },
-        grid: {
-          display: false
-        },
-        border: {
-          display: false
+        formatter: (val) => `${val ? val.toLocaleString() : '0'} XRP`
+      }
+    },
+    xaxis: {
+      type: 'category',
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      labels: {
+        style: {
+          colors: alpha(theme.palette.text.secondary, 0.8),
+          fontSize: '11px',
+          fontWeight: '500'
         }
       }
     },
-    elements: {
-      point: {
-        radius: 3,
-        hoverRadius: 6,
-        borderWidth: 2,
-        hoverBorderWidth: 3
+    yaxis: [
+      {
+        seriesName: 'Daily Volume',
+        title: {
+          text: 'Daily Volume (XRP)',
+          style: {
+            color: alpha(theme.palette.text.secondary, 0.9),
+            fontSize: '11px',
+            fontWeight: '600'
+          }
+        },
+        labels: {
+          style: {
+            colors: alpha(theme.palette.text.secondary, 0.8),
+            fontSize: '10px',
+            fontWeight: '500'
+          },
+          formatter: (val) => val.toLocaleString()
+        }
       },
-      line: {
-        borderWidth: 2.5,
-        tension: 0.4
-      },
-      bar: {
-        borderRadius: 4,
-        borderSkipped: false
+      {
+        seriesName: 'Cumulative Volume',
+        opposite: true,
+        title: {
+          text: 'Cumulative Volume (XRP)',
+          style: {
+            color: alpha(theme.palette.text.secondary, 0.9),
+            fontSize: '11px',
+            fontWeight: '600'
+          }
+        },
+        labels: {
+          style: {
+            colors: alpha(theme.palette.text.secondary, 0.8),
+            fontSize: '10px',
+            fontWeight: '500'
+          },
+          formatter: (val) => val.toLocaleString()
+        }
       }
+    ],
+    grid: {
+      borderColor: alpha(theme.palette.divider, 0.08)
+    },
+    colors: [alpha(theme.palette.primary.main, 0.6), theme.palette.success.main],
+    plotOptions: {
+      bar: {
+        columnWidth: '30%',
+        borderRadius: 4
+      }
+    },
+    dataLabels: {
+      enabled: false
     }
   };
 
@@ -827,12 +627,20 @@ export default function Portfolio({ account, limit, collection, type }) {
     setSelectedChart(null);
   };
 
-  const renderChart = (chartData, options = chartOptions) => {
-    if (!chartData || !chartData.labels) {
+  const renderChart = (chartData, options, type = 'line') => {
+    if (!chartData || !chartData.series) {
       return <Box>Loading chart data...</Box>;
     }
 
-    return <Line data={chartData} options={{ ...options, maintainAspectRatio: false }} />;
+    const finalOptions = {
+      ...options,
+      xaxis: {
+        ...options.xaxis,
+        categories: chartData.xaxis.categories
+      }
+    };
+
+    return <Chart options={finalOptions} series={chartData.series} type={type} height="100%" />;
   };
 
   useEffect(() => {
@@ -916,47 +724,36 @@ export default function Portfolio({ account, limit, collection, type }) {
     }
 
     return {
+      series: data,
       labels,
-      datasets: [
-        {
-          data,
-          backgroundColor: backgroundColors,
-          borderColor: theme.palette.background.paper,
-          borderWidth: 2,
-          hoverOffset: 15
-        }
-      ]
+      colors: backgroundColors
     };
   };
 
   // Update pie chart options
   const pieChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    cutout: '60%', // Make it a donut chart for better aesthetics
-    plugins: {
-      legend: {
-        display: false // Hide the legend since we're showing custom labels below
-      },
-      tooltip: {
-        backgroundColor: alpha(theme.palette.background.paper, 0.9),
-        titleColor: theme.palette.text.primary,
-        bodyColor: theme.palette.text.secondary,
-        borderColor: theme.palette.divider,
-        borderWidth: 1,
-        padding: 12,
-        position: 'nearest',
-        z: 9999, // Add high z-index to ensure tooltip appears above other elements
-        callbacks: {
-          label: function (context) {
-            const value = context.raw;
-            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
-            return `${context.label}: ${value.toLocaleString()} XRP (${percentage}%)`;
-          },
-          title: function (context) {
-            return 'XRP Value';
-          }
+    chart: {
+      type: 'donut'
+    },
+    plotOptions: {
+      pie: {
+        donut: {
+          size: '60%'
+        }
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    legend: {
+      show: false
+    },
+    tooltip: {
+      y: {
+        formatter: (value, { series, seriesIndex, dataPointIndex, w }) => {
+          const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+          const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+          return `${w.globals.labels[dataPointIndex]}: ${value.toLocaleString()} XRP (${percentage}%)`;
         }
       }
     }
@@ -2280,7 +2077,23 @@ export default function Portfolio({ account, limit, collection, type }) {
                                     zIndex: 1
                                   }}
                                 >
-                                  <Pie data={assetDistribution} options={pieChartOptions} />
+                                  <Chart
+                                    options={{
+                                      ...pieChartOptions,
+                                      labels: assetDistribution.labels,
+                                      colors: assetDistribution.colors,
+                                      stroke: {
+                                        width: 2,
+                                        colors: [theme.palette.background.paper]
+                                      },
+                                      theme: {
+                                        mode: theme.palette.mode
+                                      }
+                                    }}
+                                    series={assetDistribution.series}
+                                    type="donut"
+                                    height="100%"
+                                  />
                                 </Box>
                                 <Box
                                   sx={{
@@ -2378,10 +2191,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                                           width: 12,
                                           height: 12,
                                           borderRadius: '50%',
-                                          bgcolor:
-                                            assetDistribution.datasets[0].backgroundColor[index],
+                                          bgcolor: assetDistribution.colors[index],
                                           boxShadow: `0 0 8px ${alpha(
-                                            assetDistribution.datasets[0].backgroundColor[index],
+                                            assetDistribution.colors[index],
                                             0.4
                                           )}`
                                         }}
@@ -2406,8 +2218,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                         fontSize: '0.8rem'
                                       }}
                                     >
-                                      {assetDistribution.datasets[0].data[index].toLocaleString()}{' '}
-                                      XRP
+                                      {assetDistribution.series[index].toLocaleString()} XRP
                                     </Typography>
                                   </Box>
                                 ))}
