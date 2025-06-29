@@ -406,8 +406,6 @@ export default function Wallet({ style }) {
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" spacing={2}>
                 <IconButton
-                  ref={anchorRef}
-                  onClick={handleOpen}
                   sx={{
                     padding: 0,
                     width: 44,
@@ -681,8 +679,6 @@ export default function Wallet({ style }) {
                     >
                       <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
                         <IconButton
-                          ref={anchorRef}
-                          onClick={handleOpen}
                           sx={{
                             padding: 0,
                             width: 44,
