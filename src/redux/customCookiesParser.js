@@ -1,15 +1,10 @@
-import jwt from "jsonwebtoken";
-import { persistJWT } from "src/utils/constants";
-
 const encodeJwt = (str) => {
-
-  return jwt.sign(JSON.stringify(str) || {}, persistJWT);
+  return JSON.stringify(str) || '{}';
 };
 
 export const decodeJwt = (str) => {
   try {
-    const decoded = jwt.verify(str, persistJWT);
-    if (decoded) return JSON.parse(decoded);
+    if (str) return JSON.parse(str);
     return {};
   } catch (error) {
     return {};
@@ -17,14 +12,12 @@ export const decodeJwt = (str) => {
 };
 
 var factory = function (window) {
-  if (typeof window.document !== "object") {
-    throw new Error("Cookies.js requires a `window` with a `document` object");
+  if (typeof window.document !== 'object') {
+    throw new Error('Cookies.js requires a `window` with a `document` object');
   }
 
   var Cookies = function (key, value, options) {
-    return arguments.length === 1
-      ? Cookies.get(key)
-      : Cookies.set(key, value, options);
+    return arguments.length === 1 ? Cookies.get(key) : Cookies.set(key, value, options);
   };
 
   // Allows for setter injection in unit tests
@@ -32,13 +25,13 @@ var factory = function (window) {
 
   // Used to ensure cookie keys do not collide with
   // built-in `Object` properties
-  Cookies._cacheKeyPrefix = "cookey."; // Hurr hurr, :)
+  Cookies._cacheKeyPrefix = 'cookey.'; // Hurr hurr, :)
 
-  Cookies._maxExpireDate = new Date("Fri, 31 Dec 9999 23:59:59 UTC");
+  Cookies._maxExpireDate = new Date('Fri, 31 Dec 9999 23:59:59 UTC');
 
   Cookies.defaults = {
-    path: "/",
-    secure: false,
+    path: '/',
+    secure: false
   };
 
   Cookies.get = function (key) {
@@ -53,15 +46,9 @@ var factory = function (window) {
 
   Cookies.set = function (key, value, options) {
     options = Cookies._getExtendedOptions(options);
-    options.expires = Cookies._getExpiresDate(
-      value === undefined ? -1 : options.expires
-    );
+    options.expires = Cookies._getExpiresDate(value === undefined ? -1 : options.expires);
 
-    Cookies._document.cookie = Cookies._generateCookieString(
-      key,
-      value,
-      options
-    );
+    Cookies._document.cookie = Cookies._generateCookieString(key, value, options);
 
     return Cookies;
   };
@@ -75,36 +62,26 @@ var factory = function (window) {
       path: (options && options.path) || Cookies.defaults.path,
       domain: (options && options.domain) || Cookies.defaults.domain,
       expires: (options && options.expires) || Cookies.defaults.expires,
-      secure:
-        options && options.secure !== undefined
-          ? options.secure
-          : Cookies.defaults.secure,
+      secure: options && options.secure !== undefined ? options.secure : Cookies.defaults.secure
     };
   };
 
   Cookies._isValidDate = function (date) {
-    return (
-      Object.prototype.toString.call(date) === "[object Date]" &&
-      !isNaN(date.getTime())
-    );
+    return Object.prototype.toString.call(date) === '[object Date]' && !isNaN(date.getTime());
   };
 
   Cookies._getExpiresDate = function (expires, now) {
     now = now || new Date();
 
-    if (typeof expires === "number") {
+    if (typeof expires === 'number') {
       expires =
-        expires === Infinity
-          ? Cookies._maxExpireDate
-          : new Date(now.getTime() + expires * 1000);
-    } else if (typeof expires === "string") {
+        expires === Infinity ? Cookies._maxExpireDate : new Date(now.getTime() + expires * 1000);
+    } else if (typeof expires === 'string') {
       expires = new Date(expires);
     }
 
     if (expires && !Cookies._isValidDate(expires)) {
-      throw new Error(
-        "`expires` parameter cannot be converted to a valid Date instance"
-      );
+      throw new Error('`expires` parameter cannot be converted to a valid Date instance');
     }
 
     return expires;
@@ -112,25 +89,23 @@ var factory = function (window) {
 
   Cookies._generateCookieString = function (key, value, options) {
     key = key.replace(/[^#$&+\^`|]/g, encodeURIComponent);
-    key = key.replace(/\(/g, "%28").replace(/\)/g, "%29");
+    key = key.replace(/\(/g, '%28').replace(/\)/g, '%29');
     //value = (value + "").replace(/[^!#$&-+\--:<-\[\]-~]/g, encodeURIComponent);
     value = encodeJwt(value);
     options = options || {};
 
-    var cookieString = key + "=" + value;
-    cookieString += options.path ? ";path=" + options.path : "";
-    cookieString += options.domain ? ";domain=" + options.domain : "";
-    cookieString += options.expires
-      ? ";expires=" + options.expires.toUTCString()
-      : "";
-    cookieString += options.secure ? ";secure" : "";
+    var cookieString = key + '=' + value;
+    cookieString += options.path ? ';path=' + options.path : '';
+    cookieString += options.domain ? ';domain=' + options.domain : '';
+    cookieString += options.expires ? ';expires=' + options.expires.toUTCString() : '';
+    cookieString += options.secure ? ';secure' : '';
 
     return cookieString;
   };
 
   Cookies._getCacheFromString = function (documentCookie) {
     var cookieCache = {};
-    var cookiesArray = documentCookie ? documentCookie.split("; ") : [];
+    var cookiesArray = documentCookie ? documentCookie.split('; ') : [];
 
     for (var i = 0; i < cookiesArray.length; i++) {
       var cookieKvp = Cookies._getKeyValuePairFromCookieString(cookiesArray[i]);
@@ -145,7 +120,7 @@ var factory = function (window) {
 
   Cookies._getKeyValuePairFromCookieString = function (cookieString) {
     // "=" is a valid character in a cookie value according to RFC6265, so cannot `split('=')`
-    var separatorIndex = cookieString.indexOf("=");
+    var separatorIndex = cookieString.indexOf('=');
 
     // IE omits the "=" when the cookie value is an empty string
     separatorIndex = separatorIndex < 0 ? cookieString.length : separatorIndex;
@@ -155,14 +130,14 @@ var factory = function (window) {
     try {
       decodedKey = decodeURIComponent(key);
     } catch (e) {
-      if (console && typeof console.error === "function") {
+      if (console && typeof console.error === 'function') {
         console.error('Could not decode cookie with key "' + key + '"', e);
       }
     }
 
     return {
       key: decodedKey,
-      value: cookieString.substr(separatorIndex + 1), // Defer decoding value until accessed
+      value: cookieString.substr(separatorIndex + 1) // Defer decoding value until accessed
     };
   };
 
@@ -172,8 +147,8 @@ var factory = function (window) {
   };
 
   Cookies._areEnabled = function () {
-    var testKey = "cookies.js";
-    var areEnabled = Cookies.set(testKey, 1).get(testKey) === "1";
+    var testKey = 'cookies.js';
+    var areEnabled = Cookies.set(testKey, 1).get(testKey) === '1';
     Cookies.expire(testKey);
     return areEnabled;
   };
@@ -182,7 +157,6 @@ var factory = function (window) {
 
   return Cookies;
 };
-var cookiesExport =
-  global && typeof global.document === "object" ? factory(global) : factory;
+var cookiesExport = global && typeof global.document === 'object' ? factory(global) : factory;
 
 export default cookiesExport;
