@@ -56,9 +56,7 @@ function Logo({ style }) {
           priority
           onError={handleImageError}
           style={{
-            objectFit: 'contain',
-            maxWidth: '100%',
-            height: 'auto'
+            objectFit: 'contain'
           }}
         />
       )}

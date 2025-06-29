@@ -44,7 +44,6 @@
     "@iconify/icons-teenyicons": "^1.2.2",
     "@iconify/icons-uil": "^1.2.3",
     "@iconify/react": "^3.2.2",
-    "@material-ui/core": "^4.12.4",
     "@mui/base": "5.0.0-alpha.87",
     "@mui/icons-material": "^5.11.11",
     "@mui/lab": "^5.0.0-alpha.88",
@@ -83,7 +82,6 @@
     "moving-median": "^1.0.0",
     "next": "^15.3.1",
     "next-images": "1.8.4",
-    "next-transpile-modules": "9.1.0",
     "nextjs-progressbar": "^0.0.16",
     "notistack": "^3.0.1",
     "nprogress": "0.2.0",
@@ -133,7 +131,7 @@
     "xrpl": "^3.1.0"
   },
   "scripts": {
-    "dev": "next dev --turbopack -p 3001",
+    "dev": "next dev -p 3001",
     "build": "next build",
     "builds": "next build && next export",
     "start": "next start -p 3001",
@@ -155,7 +153,6 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "jest": "^29.5.0",
-    "next-transpile-modules": "9.0.0",
     "prettier": "^3.6.1",
     "sass": "^1.60.0",
     "typescript": "4.9.5"
