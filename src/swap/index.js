@@ -5,7 +5,6 @@ import { ClipLoader } from 'react-spinners';
 
 // Set Decimal precision immediately after import
 Decimal.set({ precision: 50 });
-import { LazyLoadImage } from 'react-lazy-load-image-component';
 import SparklineChart from 'src/components/SparklineChart';
 
 // Material
@@ -177,17 +176,6 @@ const ConverterFrame = styled('div')(
     overflow: hidden;
     position: relative;
     display: flex;
-`
-);
-
-const ToggleContent = styled('div')(
-  ({ theme }) => `
-    cursor: pointer;
-    position: absolute;
-    left: 50%;
-    top: 51%;
-    transform: translate(-50%, -50%);
-    margin-top: 14px;
 `
 );
 
@@ -1291,13 +1279,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
 
-      const PaymentFlags = {
-        tfPartialPayment: 131072,
-        tfLimitQuality: 65536,
-        tfNoDirectRipple: 1048576
-      };
-
-      const Flags = PaymentFlags.tfPartialPayment;
+      const Flags = 131072; // tfPartialPayment
 
       let Amount, SendMax;
 
@@ -1321,10 +1303,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
       // Calculate slippage amounts
       const slippageDecimal = new Decimal(slippage).div(100);
-      let DeliverMin, DeliverMax;
-
-      // DeliverMax is the same as Amount (what we want to receive)
-      DeliverMax = Amount;
+      let DeliverMin;
 
       // DeliverMin is Amount minus slippage tolerance
       if (typeof Amount === 'object') {
@@ -1343,7 +1322,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
         Account,
         Destination: Account,
         Amount,
-        DeliverMax,
         DeliverMin,
         SendMax,
         Flags,
@@ -1383,7 +1361,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 Account,
                 Destination: Account,
                 Amount,
-                DeliverMax,
                 DeliverMin,
                 SendMax,
                 Flags,
@@ -1423,7 +1400,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
             Account,
             Destination: Account,
             Amount,
-            DeliverMax,
             DeliverMin,
             SendMax,
             Flags,
