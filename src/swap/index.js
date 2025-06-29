@@ -7,7 +7,6 @@ import { ClipLoader } from 'react-spinners';
 Decimal.set({ precision: 50 });
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import SparklineChart from 'src/components/SparklineChart';
-import useWebSocket from 'react-use-websocket';
 
 // Material
 import { withStyles } from '@mui/styles';
@@ -1481,136 +1480,42 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
       const amt = new Decimal(amount || 0);
       if (amt.eq(0)) return '';
 
-      console.log('calcQuantity debug:', {
-        amount: amt.toNumber(),
-        active,
-        revert,
-        tokenExch1,
-        tokenExch2,
-        curr1: curr1?.currency,
-        curr2: curr2?.currency,
-        token1Currency: token1?.currency,
-        token2Currency: token2?.currency
-      });
-
-      // Check if either currency is XRP
-      const curr1IsXRP = curr1?.currency === 'XRP';
-      const curr2IsXRP = curr2?.currency === 'XRP';
-
-      // Use token exchange rates for calculation
       const rate1 = new Decimal(tokenExch1 || 0);
       const rate2 = new Decimal(tokenExch2 || 0);
 
-      // For XRP pairs, use direct conversion
-      if (curr1IsXRP || curr2IsXRP) {
-        console.log('Handling XRP pair calculation:', {
-          curr1IsXRP,
-          curr2IsXRP,
-          rate1: rate1.toNumber(),
-          rate2: rate2.toNumber(),
-          active,
-          amount: amt.toNumber(),
-          revert
-        });
-
-        // For XRP pairs, use simple rate calculation - no orderbook
-        if (rate1.eq(0) && rate2.eq(0)) {
-          console.log('Both rates are 0, cannot calculate');
-          return '';
-        }
-
-        let result = new Decimal(0);
-
-        if (revert) {
-          // Currencies are swapped
-          if (curr2IsXRP && !curr1IsXRP) {
-            // Top is Token, Bottom is XRP
-            if (rate1.gt(0)) {
-              if (active === 'AMOUNT') {
-                result = amt.mul(rate1);
-              } else {
-                result = amt.div(rate1);
-              }
-            }
-          } else if (!curr2IsXRP && curr1IsXRP) {
-            // Top is XRP, Bottom is Token
-            if (rate2.gt(0)) {
-              if (active === 'AMOUNT') {
-                result = amt.div(rate2);
-              } else {
-                result = amt.mul(rate2);
-              }
-            }
-          } else {
-            result = amt;
-          }
-        } else {
-          // Normal order
-          if (curr1IsXRP && !curr2IsXRP) {
-            // Top is XRP, Bottom is Token
-            if (rate2.gt(0)) {
-              if (active === 'AMOUNT') {
-                result = amt.div(rate2);
-              } else {
-                result = amt.mul(rate2);
-              }
-            }
-          } else if (!curr1IsXRP && curr2IsXRP) {
-            // Top is Token, Bottom is XRP
-            if (rate2.gt(0)) {
-              if (active === 'AMOUNT') {
-                result = amt.mul(rate2);
-              } else {
-                result = amt.div(rate2);
-              }
-            }
-          } else {
-            result = amt;
-          }
-        }
-
-        // Validate result before formatting
-        if (result.isNaN() || !result.isFinite()) {
-          return '';
-        }
-
-        return result.toFixed(6, Decimal.ROUND_DOWN);
-      } else {
-        // Both are non-XRP tokens - use original logic
-        if (rate1.eq(0) || rate2.eq(0)) {
-          console.log('Exchange rates not available');
-          return '';
-        }
-
-        let result = new Decimal(0);
-
-        if (active === 'AMOUNT') {
-          // Calculate value from amount
-          if (revert) {
-            // When reverted: amount1 (top) is curr2, calculate curr1 value
-            result = amt.mul(rate2).div(rate1);
-          } else {
-            // Normal: amount1 (top) is curr1, calculate curr2 value
-            result = amt.mul(rate1).div(rate2);
-          }
-        } else {
-          // Calculate amount from value
-          if (revert) {
-            // When reverted: value is in curr1, calculate curr2 amount
-            result = amt.mul(rate1).div(rate2);
-          } else {
-            // Normal: value is in curr2, calculate curr1 amount
-            result = amt.mul(rate2).div(rate1);
-          }
-        }
-
-        // Validate result before formatting
-        if (result.isNaN() || !result.isFinite()) {
-          return '';
-        }
-
-        return result.toFixed(6, Decimal.ROUND_DOWN);
+      if (rate1.eq(0) || rate2.eq(0)) {
+        console.log('Exchange rates not available');
+        return '';
       }
+
+      let result = new Decimal(0);
+
+      if (active === 'AMOUNT') {
+        // Calculate value from amount
+        if (revert) {
+          // When reverted: amount is for token2, calculate token1 value
+          result = amt.mul(rate2).div(rate1);
+        } else {
+          // Normal: amount is for token1, calculate token2 value
+          result = amt.mul(rate1).div(rate2);
+        }
+      } else {
+        // active === 'VALUE'
+        // Calculate amount from value
+        if (revert) {
+          // When reverted: value is for token1, calculate token2 amount
+          result = amt.mul(rate1).div(rate2);
+        } else {
+          // Normal: value is for token2, calculate token1 amount
+          result = amt.mul(rate2).div(rate1);
+        }
+      }
+
+      if (result.isNaN() || !result.isFinite()) {
+        return '';
+      }
+
+      return result.toFixed(6, Decimal.ROUND_DOWN);
     } catch (e) {
       console.log('Error in price calculation:', e);
       return '';
