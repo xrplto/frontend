@@ -21,7 +21,7 @@ import DateRangeIcon from '@mui/icons-material/DateRange';
 import InfoIcon from '@mui/icons-material/Info';
 import LinkIcon from '@mui/icons-material/Link';
 import { FacebookShareButton, TwitterShareButton, FacebookIcon, TwitterIcon } from 'react-share';
-import moment from 'moment';
+import { formatDistanceToNow } from 'date-fns';
 import HistoryToolbar from './HistoryToolbar';
 import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
@@ -235,6 +235,8 @@ export default function HistoryData({ token }) {
                 {hists.map((row, idx) => {
                   const { maker, taker, seq, paid, got, ledger, hash, time } = row;
 
+                  const relativeTime = formatDistanceToNow(new Date(time), { addSuffix: true });
+
                   const paidName = normalizeCurrencyCodeXummImpl(paid.currency);
                   const gotName = normalizeCurrencyCodeXummImpl(got.currency);
                   const md51 = getMD5(paid.issuer, paid.currency);
@@ -251,7 +253,6 @@ export default function HistoryData({ token }) {
                   }
 
                   const strDateTime = formatDateTime(time);
-                  const relativeTime = moment(time).fromNow();
 
                   return (
                     <TableRow

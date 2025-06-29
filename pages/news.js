@@ -19,7 +19,7 @@ import {
   useMediaQuery
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import moment from 'moment';
+import { differenceInHours, differenceInDays, formatDistanceToNow } from 'date-fns';
 import Header from '../src/components/Header';
 import Footer from '../src/components/Footer';
 import Topbar from '../src/components/Topbar';
@@ -205,7 +205,7 @@ export default function News() {
         setSourcesStats(sourceCount);
 
         // Calculate sentiment statistics
-        const now = moment();
+        const now = new Date();
         const stats = {
           last24h: { bullish: 0, bearish: 0, neutral: 0 },
           last7d: { bullish: 0, bearish: 0, neutral: 0 },
@@ -213,16 +213,16 @@ export default function News() {
         };
 
         data.forEach((article) => {
-          const pubDate = moment(article.pubDate);
+          const pubDate = new Date(article.pubDate);
           const sentiment = article.sentiment?.toLowerCase() || 'neutral';
 
-          if (now.diff(pubDate, 'hours') <= 24) {
+          if (differenceInHours(now, pubDate) <= 24) {
             stats.last24h[sentiment]++;
           }
-          if (now.diff(pubDate, 'days') <= 7) {
+          if (differenceInDays(now, pubDate) <= 7) {
             stats.last7d[sentiment]++;
           }
-          if (now.diff(pubDate, 'days') <= 30) {
+          if (differenceInDays(now, pubDate) <= 30) {
             stats.last30d[sentiment]++;
           }
         });
@@ -595,7 +595,8 @@ export default function News() {
                                 : 'rgba(0,0,0,0.5)'
                           }}
                         >
-                          {article.sourceName} • {moment(article.pubDate).fromNow()}
+                          {article.sourceName} •{' '}
+                          {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
                         </Typography>
                         {article.articleBody && (
                           <Chip

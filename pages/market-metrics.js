@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useLayoutEffect, useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -10,7 +10,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import axios from 'axios';
-import moment from 'moment';
+import { format, subYears, isAfter, parse } from 'date-fns';
 import {
   Box,
   Typography,
@@ -680,38 +680,94 @@ const MarketMetricsContent = () => {
 
   // Add this function to handle token selection
   const handleTokenSelection = (event, newValue) => {
-    setSelectedTokens(newValue);
+    // Check if the input is a string (a new token)
+    if (typeof newValue === 'string') {
+      // Find the corresponding token object from available tokens
+      const tokenObject = availableTokens.find((token) => token.name === newValue);
+      if (tokenObject) {
+        setSelectedTokens((prev) =>
+          prev.find((t) => t.name === tokenObject.name) ? prev : [...prev, tokenObject]
+        );
+      }
+    } else if (Array.isArray(newValue)) {
+      setSelectedTokens(newValue);
+    }
+
+    // Set filter active state based on whether there are any selected tokens
+    setFilterActive(newValue.length > 0);
   };
+
+  const handleFilterChange = (isActive) => {
+    if (!isActive) {
+      setSelectedTokens([]); // Clear selected tokens when filter is deactivated
+    }
+    setFilterActive(isActive);
+  };
+
+  const handleDataPointClick = (data) => {
+    if (data && data.activePayload) {
+      const date = data.activeLabel;
+      const now = new Date();
+      // Additional logic for handling clicks
+    }
+  };
+
+  const handleAnimationEnd = () => {
+    setIsChartReady(true); // Chart is ready after initial animation
+  };
+
+  useEffect(() => {
+    const activeLines = Object.keys(visibleLines).filter((key) => visibleLines[key]);
+    if (activeLines.length === 0) {
+      const initialVisible = {};
+      const initialTokens = availableTokens.slice(0, 5).map((token) => token.name);
+      availableTokens.forEach((token) => {
+        initialVisible[token.name] = initialTokens.includes(token.name);
+      });
+      setVisibleLines(initialVisible);
+    }
+  }, [availableTokens, visibleLines]);
 
   // Add state for data sampling and time range
   const [sampledData, setSampledData] = useState([]);
   const [timeRange, setTimeRange] = useState('all'); // 'all', '5y', '1y', '6m', '1m'
 
   // Function to sample data based on time range
-  const sampleDataByTimeRange = useCallback((fullData, range) => {
-    if (!fullData || fullData.length === 0) return [];
+  const sampleDataByTimeRange = useCallback(
+    (fullData, range) => {
+      if (!fullData || fullData.length === 0) return [];
 
-    let filteredData = [...fullData];
-    const now = moment();
+      let filteredData = [...fullData];
+      const now = new Date();
 
-    // Filter data based on selected time range
-    if (range !== 'all') {
-      const rangeMap = {
-        '5y': 5,
-        '1y': 1,
-        '6m': 0.5,
-        '1m': 1 / 12
-      };
+      // Filter data based on selected time range
+      if (range !== 'all') {
+        const rangeMap = {
+          '5y': 5,
+          '1y': 1,
+          '6m': 0.5,
+          '1m': 1 / 12
+        };
 
-      const cutoffDate = now.clone().subtract(rangeMap[range], 'years');
-      filteredData = fullData.filter((item) =>
-        moment(item.date, 'MMM DD YYYY').isAfter(cutoffDate)
-      );
-    }
+        const cutoffDate = parse(now, 'yyyy-MM-dd');
+        cutoffDate.setDate(cutoffDate.getDate() - rangeMap[range]);
+        filteredData = filteredData.filter((item) =>
+          isAfter(parse(item.date, 'MMM dd yyyy', new Date()), cutoffDate)
+        );
+      }
 
-    // Return all data points without sampling to ensure daily data
-    return filteredData;
-  }, []);
+      // Further filter by token names if any are selected
+      if (selectedTokens.length > 0) {
+        filteredData = filteredData.filter((item) =>
+          selectedTokens.some((token) => item[`${token}_marketcap`] > 0)
+        );
+      }
+
+      // Return all data points without sampling to ensure daily data
+      return filteredData;
+    },
+    [selectedTokens]
+  );
 
   // Handle time range change
   const handleTimeRangeChange = useCallback(
@@ -725,19 +781,9 @@ const MarketMetricsContent = () => {
   // Add a new state to track the selected data point
   const [selectedDataPoint, setSelectedDataPoint] = useState(null);
 
-  // Add a function to handle data point click
-  const handleDataPointClick = (data) => {
-    setSelectedDataPoint(data);
-  };
-
   // Add this state and ref at the top
   const [animationComplete, setAnimationComplete] = useState(false);
   const chartRef = useRef(null);
-
-  // Add this function to handle animation completion
-  const handleAnimationEnd = () => {
-    setAnimationComplete(true);
-  };
 
   // Add this state for progressive data loading
   const [progressiveData, setProgressiveData] = useState([]);
@@ -789,9 +835,9 @@ const MarketMetricsContent = () => {
       setLoading(true); // Ensure loading is true at the start
       try {
         // Get current date
-        const endDate = moment().format('YYYY-MM-DD');
+        const endDate = format(new Date(), 'yyyy-MM-dd');
         // Get date 10 years ago
-        const startDate = moment().subtract(14, 'years').format('YYYY-MM-DD');
+        const startDate = format(subYears(new Date(), 14), 'yyyy-MM-dd');
 
         console.log('Fetching data from', startDate, 'to', endDate); // Debug log
 
@@ -877,7 +923,7 @@ const MarketMetricsContent = () => {
               ...tokenVolumes, // Add token-specific volumes to the data object
               ...tokenTrades, // Add token-specific trades to the data object
               // Fix the date format to match the API response format
-              date: moment.utc(item.date).format('MMM DD YYYY'), // Use UTC to avoid timezone issues
+              date: format(new Date(item.date), 'MMM dd yyyy'), // Use UTC to avoid timezone issues
               totalMarketcap: Number(filteredTotalMarketcap.toFixed(2)), // Use filtered marketcap
               firstLedgerMarketcap: Number(filteredFirstLedgerMarketcap.toFixed(2)), // Use filtered FirstLedger marketcap
               magneticXMarketcap: Number(item.magneticXMarketcap?.toFixed(2) || 0),
@@ -1033,6 +1079,218 @@ const MarketMetricsContent = () => {
       return null;
     }
   };
+
+  // This is where the error occurred in the previous attempt.
+  // Let's replace the whole useMemo.
+  const processedChartData = useMemo(() => {
+    let filteredData = [...fullData];
+    const now = new Date();
+
+    // Filter data based on selected time range
+    if (rangeMap[range]) {
+      const rangeInYears = {
+        '1Y': 1,
+        '2Y': 2,
+        '3Y': 3,
+        '4Y': 4,
+        '5Y': 5,
+        ALL: 14 // Assuming 'ALL' means 14 years
+      };
+
+      if (rangeInYears[range]) {
+        const cutoffDate = subYears(now, rangeInYears[range]);
+        filteredData = fullData.filter((item) =>
+          isAfter(parse(item.date, 'MMM dd yyyy', new Date()), cutoffDate)
+        );
+      }
+    }
+
+    // Further filter by token names if any are selected
+    if (selectedTokens.length > 0) {
+      filteredData = filteredData.filter((item) =>
+        selectedTokens.some((token) => item[`${token.name}_marketcap`] > 0)
+      );
+    }
+
+    // Return all data points without sampling to ensure daily data
+    return filteredData;
+  }, [fullData, range, selectedTokens]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Get current date
+        const endDate = format(new Date(), 'yyyy-MM-dd');
+        // Get date 10 years ago
+        const startDate = format(subYears(new Date(), 14), 'yyyy-MM-dd');
+
+        console.log('Fetching data from', startDate, 'to', endDate); // Debug log
+
+        const response = await axios.get('https://api.xrpl.to/api/analytics/market-metrics', {
+          params: {
+            startDate,
+            endDate
+          }
+        });
+
+        // Ensure response.data is an array
+        const marketData = Array.isArray(response.data) ? response.data : response.data.data || [];
+
+        if (!marketData.length) {
+          console.warn('No market metrics data received');
+          return;
+        }
+
+        // Track all unique tokens across all data points
+        const uniqueTokens = new Set();
+
+        const formattedData = marketData
+          .sort((a, b) => new Date(a.date) - new Date(b.date)) // Sort by date ascending
+          .map((item) => {
+            // Process token-specific market caps
+            const tokenMarketcaps = {};
+            const tokenAvgPrices = {}; // Add object to store average prices
+            const tokenVolumes = {}; // Add object to store token volumes
+            const tokenTrades = {}; // Add object to store token trades
+
+            // Filter out the tokens before calculating totalMarketcap
+            let filteredTotalMarketcap = item.totalMarketcap;
+            // Also filter FirstLedger marketcap
+            let filteredFirstLedgerMarketcap = item.firstLedgerMarketcap || 0;
+
+            if (item.dailyTokenMarketcaps && Array.isArray(item.dailyTokenMarketcaps)) {
+              // Find all tokens to filter out
+              const tokensToFilterOut = hideSpecificTokens
+                ? item.dailyTokenMarketcaps.filter((token) =>
+                    tokensToFilter.includes(token.tokenId)
+                  )
+                : [];
+
+              // Subtract their marketcaps from total if found
+              tokensToFilterOut.forEach((token) => {
+                if (token && token.marketcap) {
+                  filteredTotalMarketcap -= token.marketcap;
+
+                  // If this is the specific token to filter from FirstLedger
+                  if (token.tokenId === firstLedgerTokenToFilter) {
+                    filteredFirstLedgerMarketcap -= token.marketcap;
+                  }
+                }
+              });
+
+              // Filter tokens for individual display
+              const filteredTokens = hideSpecificTokens
+                ? item.dailyTokenMarketcaps.filter(
+                    (token) => !tokensToFilter.includes(token.tokenId)
+                  )
+                : item.dailyTokenMarketcaps;
+
+              filteredTokens.forEach((token) => {
+                if (token.name && token.marketcap) {
+                  const tokenKey = `${token.name}_marketcap`;
+                  const priceKey = `${token.name}_avgPrice`; // Create key for average price
+                  const volumeKey = `${token.name}_volume`; // Create key for volume
+                  const tradesKey = `${token.name}_trades`; // Create key for trades
+
+                  tokenMarketcaps[tokenKey] = Number(token.marketcap.toFixed(2));
+                  tokenAvgPrices[priceKey] = Number(token.avgPrice?.toFixed(6) || 0); // Store average price with 6 decimal places
+                  tokenVolumes[volumeKey] = Number(token.volume?.toFixed(2) || 0); // Store volume with 2 decimal places
+                  tokenTrades[tradesKey] = Number(token.trades || 0); // Store trades count
+                  uniqueTokens.add(token.name);
+                }
+              });
+            }
+
+            return {
+              ...item,
+              ...tokenMarketcaps, // Add token-specific market caps to the data object
+              ...tokenAvgPrices, // Add token-specific average prices to the data object
+              ...tokenVolumes, // Add token-specific volumes to the data object
+              ...tokenTrades, // Add token-specific trades to the data object
+              // Fix the date format to match the API response format
+              date: format(new Date(item.date), 'MMM dd yyyy'), // Use UTC to avoid timezone issues
+              totalMarketcap: Number(filteredTotalMarketcap.toFixed(2)), // Use filtered marketcap
+              firstLedgerMarketcap: Number(filteredFirstLedgerMarketcap.toFixed(2)), // Use filtered FirstLedger marketcap
+              magneticXMarketcap: Number(item.magneticXMarketcap?.toFixed(2) || 0),
+              xpMarketMarketcap: Number(item.xpMarketMarketcap?.toFixed(2) || 0),
+              ledgerMemeMarketcap: Number(item.ledgerMemeMarketcap?.toFixed(2) || 0),
+              volumeNonAMM: Number(item.volumeNonAMM.toFixed(2)),
+              volumeAMM: Number(item.volumeAMM.toFixed(2)),
+              totalVolume: Number((item.volumeAMM + item.volumeNonAMM).toFixed(2)),
+              tokenCount: Number(item.tokenCount),
+              firstLedgerTokens: Number(item.firstLedgerTokenCount || 0),
+              magneticXTokens: Number(item.magneticXTokenCount || 0),
+              xpMarketTokens: Number(item.xpMarketTokenCount || 0),
+              ledgerMemeTokens: Number(item.ledgerMemeTokenCount || 0),
+              tradesAMM: Number(item.tradesAMM),
+              tradesNonAMM: Number(item.tradesNonAMM),
+              totalTrades: Number(item.totalTrades),
+              uniqueActiveAddresses: Number(item.uniqueActiveAddresses || 0),
+              uniqueActiveAddressesAMM: Number(item.uniqueActiveAddressesAMM || 0),
+              uniqueActiveAddressesNonAMM: Number(item.uniqueActiveAddressesNonAMM || 0)
+            };
+          });
+
+        // Convert Set to Array and sort alphabetically
+        const tokenArray = Array.from(uniqueTokens).sort();
+
+        // Initialize visibility state for all tokens (default to true)
+        const tokenVisibility = {};
+        tokenArray.forEach((token) => {
+          tokenVisibility[`${token}_marketcap`] = true;
+        });
+
+        // Update state with the token list and visibility
+        setAvailableTokens(tokenArray);
+        setVisibleLines((prev) => ({
+          ...prev,
+          ...tokenVisibility
+        }));
+
+        let topTokensForDescription = []; // Initialize here
+
+        // Initialize with top tokens by market cap (if available)
+        if (tokenArray.length > 0) {
+          // Get the most recent data point
+          const latestData = formattedData[formattedData.length - 1];
+
+          // Sort tokens by market cap
+          const sortedTokens = tokenArray
+            .filter((token) => latestData[`${token}_marketcap`])
+            .sort(
+              (a, b) => (latestData[`${b}_marketcap`] || 0) - (latestData[`${a}_marketcap`] || 0)
+            );
+
+          // Select top N tokens for display and description
+          const topTokensToDisplay = sortedTokens.slice(0, maxTokensToDisplay);
+          topTokensForDescription = sortedTokens.slice(0, 5); // Get top 5 for description
+
+          setSelectedTokens(topTokensToDisplay);
+        }
+
+        setData(formattedData);
+        // Initialize sampled data with the full dataset
+        setSampledData(sampleDataByTimeRange(formattedData, timeRange));
+
+        // Set the dynamic description *after* top tokens are determined
+        // (This part is moved outside useEffect for clarity, see below)
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [
+    timeRange,
+    sampleDataByTimeRange,
+    hideSpecificTokens,
+    tokensToFilter,
+    firstLedgerTokenToFilter,
+    maxTokensToDisplay // Add dependency if maxTokensToDisplay changes
+  ]);
 
   return (
     <Box
@@ -1367,17 +1625,17 @@ const MarketMetricsContent = () => {
                         ? timeRange === 'all'
                           ? 60
                           : timeRange === '5y'
-                          ? 40
-                          : timeRange === '1y'
-                          ? 20
-                          : 10
+                            ? 40
+                            : timeRange === '1y'
+                              ? 20
+                              : 10
                         : timeRange === 'all'
-                        ? 30
-                        : timeRange === '5y'
-                        ? 20
-                        : timeRange === '1y'
-                        ? 10
-                        : 5
+                          ? 30
+                          : timeRange === '5y'
+                            ? 20
+                            : timeRange === '1y'
+                              ? 10
+                              : 5
                     }
                     tick={
                       isMobile ? { ...chartConfig.mobileAxisStyle } : { ...chartConfig.axisStyle }
@@ -1875,17 +2133,17 @@ const MarketMetricsContent = () => {
                         ? timeRange === 'all'
                           ? 60
                           : timeRange === '5y'
-                          ? 40
-                          : timeRange === '1y'
-                          ? 20
-                          : 10
+                            ? 40
+                            : timeRange === '1y'
+                              ? 20
+                              : 10
                         : timeRange === 'all'
-                        ? 30
-                        : timeRange === '5y'
-                        ? 20
-                        : timeRange === '1y'
-                        ? 10
-                        : 5
+                          ? 30
+                          : timeRange === '5y'
+                            ? 20
+                            : timeRange === '1y'
+                              ? 10
+                              : 5
                     }
                     tick={
                       isMobile ? { ...chartConfig.mobileAxisStyle } : { ...chartConfig.axisStyle }
@@ -2259,10 +2517,10 @@ const MarketMetricsContent = () => {
                       timeRange === 'all'
                         ? 30
                         : timeRange === '5y'
-                        ? 20
-                        : timeRange === '1y'
-                        ? 10
-                        : 5
+                          ? 20
+                          : timeRange === '1y'
+                            ? 10
+                            : 5
                     }
                     tick={{ ...chartConfig.axisStyle }}
                   />
@@ -2790,10 +3048,10 @@ const MarketMetricsContent = () => {
                       timeRange === 'all'
                         ? 30
                         : timeRange === '5y'
-                        ? 20
-                        : timeRange === '1y'
-                        ? 10
-                        : 5
+                          ? 20
+                          : timeRange === '1y'
+                            ? 10
+                            : 5
                     }
                     tick={{ ...chartConfig.axisStyle }}
                   />
@@ -3287,10 +3545,10 @@ const MarketMetricsContent = () => {
                       timeRange === 'all'
                         ? 30
                         : timeRange === '5y'
-                        ? 20
-                        : timeRange === '1y'
-                        ? 10
-                        : 5
+                          ? 20
+                          : timeRange === '1y'
+                            ? 10
+                            : 5
                     }
                     tick={{ ...chartConfig.axisStyle }}
                   />
