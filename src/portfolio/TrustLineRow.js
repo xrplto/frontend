@@ -87,22 +87,23 @@ const getOriginIcon = (origin) => {
   }
 };
 
-const TrustLineRow = ({
-  limit,
-  currencyName,
-  balance,
-  md5,
-  exchRate,
-  issuer,
-  account,
-  currency,
-  percentOwned,
-  verified,
-  rate,
-  value,
-  origin,
-  user
-}) => {
+const TrustLineRow = ({ line }) => {
+  const {
+    limit,
+    currencyName,
+    balance,
+    md5,
+    exchRate,
+    issuer,
+    account,
+    currency,
+    percentOwned,
+    verified,
+    rate,
+    value,
+    origin,
+    user
+  } = line;
   const BASE_URL = process.env.API_URL;
   const { darkMode, activeFiatCurrency, openSnackbar, accountProfile, setSync } =
     useContext(AppContext);
@@ -459,7 +460,7 @@ const TrustLineRow = ({
               >
                 <Tooltip title={issuer}>
                   <span>
-                    {user || `${issuer.substring(0, 6)}...${issuer.substring(issuer.length - 4)}`}
+                    {user || (issuer ? `${issuer.substring(0, 6)}...${issuer.substring(issuer.length - 4)}` : '')}
                   </span>
                 </Tooltip>
               </Typography>

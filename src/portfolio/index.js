@@ -666,18 +666,23 @@ export default function Portfolio({ account, limit, collection, type }) {
   const processAssetDistribution = async (trustlines) => {
     if (!trustlines || trustlines.length === 0) return null;
 
-    // Sort trustlines by value (descending)
-    const sortedTrustlines = [...trustlines].sort((a, b) => b.value - a.value);
+    // Filter out assets with no value and sort by value
+    const sortedTrustlines = trustlines
+      .filter((asset) => asset.value && parseFloat(asset.value) > 0)
+      .sort((a, b) => b.value - a.value);
 
-    // Take top 5 assets and group the rest as "Others"
-    const topAssets = sortedTrustlines.slice(0, 5);
-    const otherAssets = sortedTrustlines.slice(5);
+    // If no assets have value, return null
+    if (sortedTrustlines.length === 0) return null;
+
+    // Take top 10 assets and group the rest as "Others"
+    const topAssets = sortedTrustlines.slice(0, 10);
+    const otherAssets = sortedTrustlines.slice(10);
 
     // Ensure we have valid numeric values
     const labels = topAssets.map((asset) => asset.currency);
     const data = topAssets.map((asset) => parseFloat(asset.value) || 0);
 
-    // Add "Others" category if there are more than 5 assets
+    // Add "Others" category if there are more than 10 assets
     if (otherAssets.length > 0) {
       const othersValue = otherAssets.reduce(
         (sum, asset) => sum + (parseFloat(asset.value) || 0),
@@ -698,21 +703,20 @@ export default function Portfolio({ account, limit, collection, type }) {
       const asset = topAssets[i];
       let color = getTokenFallbackColor(asset.currency, i);
 
-      try {
-        // Try to extract color from token icon if md5 exists
-        if (asset.md5) {
-          const imageUrl = getTokenImageUrl(asset.md5);
-          const extractedColor = await extractDominantColor(imageUrl);
-          color = rgbToHex(extractedColor);
-        } else if (asset.currency === 'XRP') {
-          // Special case for XRP
-          const imageUrl = 'https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8';
-          const extractedColor = await extractDominantColor(imageUrl);
-          color = rgbToHex(extractedColor);
+      if (asset.currency === 'XRP') {
+        color = theme.palette.primary.main; // Use a specific color for XRP
+      } else {
+        try {
+          // Try to extract color from token icon if md5 exists
+          if (asset.md5) {
+            const imageUrl = getTokenImageUrl(asset.md5);
+            const extractedColor = await extractDominantColor(imageUrl);
+            color = rgbToHex(extractedColor);
+          }
+        } catch (error) {
+          console.warn(`Failed to extract color for ${asset.currency}:`, error);
+          // Keep the fallback color
         }
-      } catch (error) {
-        console.warn(`Failed to extract color for ${asset.currency}:`, error);
-        // Keep the fallback color
       }
 
       backgroundColors.push(alpha(color, 0.8));
@@ -733,7 +737,8 @@ export default function Portfolio({ account, limit, collection, type }) {
   // Update pie chart options
   const pieChartOptions = {
     chart: {
-      type: 'donut'
+      type: 'donut',
+      background: 'transparent'
     },
     plotOptions: {
       pie: {
@@ -749,8 +754,12 @@ export default function Portfolio({ account, limit, collection, type }) {
       show: false
     },
     tooltip: {
+      theme: theme.palette.mode,
       y: {
         formatter: (value, { series, seriesIndex, dataPointIndex, w }) => {
+          if (!w || !w.globals || !w.globals.seriesTotals) {
+            return `${value.toLocaleString()} XRP`;
+          }
           const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
           const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
           return `${w.globals.labels[dataPointIndex]}: ${value.toLocaleString()} XRP (${percentage}%)`;
@@ -2085,9 +2094,6 @@ export default function Portfolio({ account, limit, collection, type }) {
                                       stroke: {
                                         width: 2,
                                         colors: [theme.palette.background.paper]
-                                      },
-                                      theme: {
-                                        mode: theme.palette.mode
                                       }
                                     }}
                                     series={assetDistribution.series}
