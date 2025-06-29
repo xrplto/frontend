@@ -220,12 +220,11 @@ const ModalTitle = styled(Typography)(({ theme }) => ({
 }));
 
 const FeeTag = styled('div')(({ theme, isFree }) => ({
-  padding: theme.spacing(0.5, 1),
-  borderRadius: '12px',
-  fontSize: '0.75rem',
+  padding: theme.spacing(0.25, 0.75),
+  borderRadius: '8px',
+  fontSize: '0.65rem',
   fontWeight: 600,
   textTransform: 'uppercase',
-  letterSpacing: '0.5px',
   display: 'inline-block',
   background: isFree
     ? `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.15)} 0%, ${alpha(
@@ -241,14 +240,35 @@ const FeeTag = styled('div')(({ theme, isFree }) => ({
     isFree ? alpha(theme.palette.success.main, 0.3) : alpha(theme.palette.warning.main, 0.3)
   }`,
   boxShadow: isFree
-    ? `0 2px 8px ${alpha(theme.palette.success.main, 0.2)}`
-    : `0 2px 8px ${alpha(theme.palette.warning.main, 0.2)}`,
+    ? `0 1px 4px ${alpha(theme.palette.success.main, 0.2)}`
+    : `0 1px 4px ${alpha(theme.palette.warning.main, 0.2)}`,
   transition: 'all 0.2s ease',
   '&:hover': {
-    transform: 'scale(1.05)',
+    transform: 'scale(1.02)',
     boxShadow: isFree
-      ? `0 4px 12px ${alpha(theme.palette.success.main, 0.3)}`
-      : `0 4px 12px ${alpha(theme.palette.warning.main, 0.3)}`
+      ? `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`
+      : `0 2px 8px ${alpha(theme.palette.warning.main, 0.3)}`
+  }
+}));
+
+const RecommendedChip = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0.25, 0.75),
+  borderRadius: '8px',
+  fontSize: '0.65rem',
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  display: 'inline-block',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.15)} 0%, ${alpha(
+    theme.palette.info.main,
+    0.08
+  )} 100%)`,
+  color: theme.palette.info.main,
+  border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
+  boxShadow: `0 1px 4px ${alpha(theme.palette.info.main, 0.2)}`,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'scale(1.02)',
+    boxShadow: `0 2px 8px ${alpha(theme.palette.info.main, 0.3)}`
   }
 }));
 
@@ -405,6 +425,7 @@ const WalletConnectModal = () => {
                     >
                       Xaman
                     </Typography>
+                    <RecommendedChip>Recommended</RecommendedChip>
                     <Tooltip
                       title="Xaman charges fees for trading (0.8%) and some transactions (0.09 XRP). Most basic transfers remain free."
                       arrow
@@ -477,6 +498,7 @@ const WalletConnectModal = () => {
                     >
                       GemWallet
                     </Typography>
+                    <RecommendedChip>Recommended</RecommendedChip>
                     <Tooltip
                       title="GemWallet is completely free to use with no additional fees beyond standard XRPL network fees"
                       arrow
