@@ -670,15 +670,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           .toNumber()
       : 0;
 
-  // const color1 = revert?theme.currency.background2:theme.currency.background1;
-  // const color2 = revert?theme.currency.background1:theme.currency.background2;
-  var color1, color2;
-  if (typeof theme.currency !== 'undefined') {
-    // webxtor SEO fix
-    /*const */ color1 = theme.currency.background2;
-    /*const */ color2 = theme.currency.background2;
-  }
-
   // Helper function to convert hex currency code to readable name
   const getCurrencyDisplayName = (currency, tokenName) => {
     if (currency === 'XRP') return 'XRP';
