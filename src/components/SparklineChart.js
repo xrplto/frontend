@@ -250,49 +250,43 @@ const SparklineChart = ({
     [theme, showGradient, lineWidth]
   );
 
-  // Memoize the axios request
-  const fetchChartData = useMemo(() => {
+  useEffect(() => {
     const controller = new AbortController();
 
-    return async () => {
+    const loadChart = async () => {
+      if (!url || !inView) return;
+
+      setIsLoading(true);
+      setIsError(false);
+
       try {
-        setIsLoading(true);
         const response = await axios.get(url, {
           signal: controller.signal,
-          // Add caching headers
           headers: {
             'Cache-Control': 'max-age=300' // Cache for 5 minutes
           }
         });
-        return response.data;
+        if (response.data) {
+          setChartOption(createChartOptions(response.data));
+        }
       } catch (err) {
-        if (err.name === 'AbortError') {
-          console.log('Request aborted');
-        } else {
+        if (err.name !== 'AbortError') {
           console.error('Error fetching chart data:', err);
           setIsError(true);
         }
-        return null;
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
-  }, [url]);
 
-  useEffect(() => {
-    if (inView) {
-      loadChart();
-    }
-  }, [inView, loadChart]);
+    loadChart();
 
-  const loadChart = async () => {
-    if (!url) return;
-
-    const data = await fetchChartData();
-    if (data) {
-      setChartOption(createChartOptions(data));
-    }
-  };
+    return () => {
+      controller.abort();
+    };
+  }, [inView, url, createChartOptions]);
 
   // Loading state with skeleton
   if (isLoading) {

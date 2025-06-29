@@ -12,7 +12,7 @@ import {
 
 import { styled, useTheme } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
-import { XRP_TOKEN, USD_TOKEN } from 'src/utils/constants';
+import { XRP_TOKEN, USD_TOKEN, BASE_URL } from 'src/utils/constants';
 import axios from 'axios';
 import { Icon } from '@iconify/react';
 import {
@@ -375,11 +375,34 @@ export default function CurrencySearchModal({
     );
   };
 
+  useEffect(() => {
+    const searchTokens = async () => {
+      if (!searchFilter) {
+        setFilteredTokens(tokens);
+        return;
+      }
+      setLoading(true);
+      try {
+        const res = await axios.get(`${BASE_URL}/xrpnft/tokens?filter=${searchFilter}`);
+        if (res.status === 200 && res.data) {
+          const ret = res.data;
+          setFilteredTokens(ret.tokens || []);
+        }
+      } catch (err) {
+        console.error('err->>', err);
+        setFilteredTokens([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    searchTokens();
+  }, [searchFilter, tokens]);
+
   const loadTokens = () => {
     setLoading(true);
     // https://api.xrpl.to/api/xrpnft/tokens?filter=
     axios
-      .get(`${BASE_URL}/xrpnft/tokens?filter=${filter}`)
+      .get(`${BASE_URL}/xrpnft/tokens`)
       .then((res) => {
         try {
           if (res.status === 200 && res.data) {
@@ -410,11 +433,11 @@ export default function CurrencySearchModal({
   };
 
   useEffect(() => {
-    loadTokens();
-  }, [filter]);
+    if (open) loadTokens();
+  }, [open]);
 
   const handleChangeFilter = (e) => {
-    setFilter(e.target.value);
+    setSearchFilter(e.target.value);
   };
 
   const handleChangetoken = (_token) => {
