@@ -673,14 +673,26 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
   let value = revert ? amount1 : amount2;
   const setAmount = revert ? setAmount2 : setAmount1;
   const setValue = revert ? setAmount1 : setAmount2;
-  const tokenPrice1 = new Decimal(tokenExch1 || 0)
-    .mul(amount1 || 0)
-    .div(metrics[activeFiatCurrency] || 1)
-    .toNumber();
-  const tokenPrice2 = new Decimal(tokenExch2 || 0)
-    .mul(amount2 || 0)
-    .div(metrics[activeFiatCurrency] || 1)
-    .toNumber();
+  const tokenPrice1 = (() => {
+    try {
+      return new Decimal(tokenExch1 || 0)
+        .mul(amount1 || 0)
+        .div(metrics[activeFiatCurrency] || 1)
+        .toNumber();
+    } catch (e) {
+      return 0;
+    }
+  })();
+  const tokenPrice2 = (() => {
+    try {
+      return new Decimal(tokenExch2 || 0)
+        .mul(amount2 || 0)
+        .div(metrics[activeFiatCurrency] || 1)
+        .toNumber();
+    } catch (e) {
+      return 0;
+    }
+  })();
 
   const inputPrice = revert ? tokenPrice2 : tokenPrice1;
   const outputPrice = revert ? tokenPrice1 : tokenPrice2;
@@ -753,19 +765,17 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
     } else {
       // Check balance if trustlines exist
       try {
-        const fAmount = new Decimal(amount || 0).toNumber();
-        const fValue = new Decimal(value || 0).toNumber();
-        const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
-        const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
+        const fAmount = parseFloat(amount || 0);
+        const fValue = parseFloat(value || 0);
+        const accountAmount = parseFloat(accountPairBalance.curr1.value || 0);
+        const accountValue = parseFloat(accountPairBalance.curr2.value || 0);
 
         if (amount1 && amount2) {
           if (fAmount > 0 && fValue > 0) {
             // Check balance against the correct currency based on revert state
             // When revert=false: user spends curr1 (amount1), so check against accountAmount (curr1.value)
             // When revert=true: user spends curr2 (amount2), so check against accountValue (curr2.value)
-            const spendingAmount = revert
-              ? new Decimal(amount2 || 0).toNumber()
-              : new Decimal(amount1 || 0).toNumber();
+            const spendingAmount = revert ? parseFloat(amount2 || 0) : parseFloat(amount1 || 0);
             const availableBalance = revert ? accountValue : accountAmount;
 
             // Debug logging for balance check
@@ -1740,11 +1750,23 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
   };
 
   const handlePlaceOrder = (e) => {
-    const fAmount = Number(amount);
-    const fValue = Number(value);
-    if (fAmount > 0 && fValue > 0) onOfferCreateXumm();
-    else {
-      openSnackbar('Invalid values!', 'error');
+    const fAmount1 = Number(amount1);
+    const fAmount2 = Number(amount2);
+    console.log('handlePlaceOrder debug:', {
+      amount1,
+      amount2,
+      fAmount1,
+      fAmount2,
+      canPlaceOrder,
+      isLoggedIn,
+      isSufficientBalance,
+      errMsg
+    });
+
+    if (fAmount1 > 0 && fAmount2 > 0) {
+      onOfferCreateXumm();
+    } else {
+      openSnackbar('Invalid values! Please enter amounts for both currencies.', 'error');
     }
   };
 
