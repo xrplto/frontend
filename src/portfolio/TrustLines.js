@@ -309,7 +309,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                     <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
                       <Avatar
                         alt="XRP"
-                        src="/static/xrp.svg"
+                        src="/xrp.svg"
                         sx={{
                           width: isMobile ? 20 : 28,
                           height: isMobile ? 20 : 28,

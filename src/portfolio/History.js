@@ -94,8 +94,8 @@ const History = ({ account }) => {
             '&::-webkit-scrollbar': {
               display: 'none'
             },
-            '-ms-overflow-style': 'none',
-            'scrollbar-width': 'none'
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none'
           }}
         >
           {filter === 'token' ? (

@@ -650,8 +650,8 @@ export default function SearchModal({ onClose, open }) {
                 '&::-webkit-scrollbar': {
                   display: 'none'
                 },
-                '-ms-overflow-style': 'none',
-                'scrollbar-width': 'none'
+                msOverflowStyle: 'none',
+                scrollbarWidth: 'none'
               }}
             >
               {tokens
@@ -872,8 +872,8 @@ export default function SearchModal({ onClose, open }) {
                 '&::-webkit-scrollbar': {
                   display: 'none'
                 },
-                '-ms-overflow-style': 'none',
-                'scrollbar-width': 'none'
+                msOverflowStyle: 'none',
+                scrollbarWidth: 'none'
               }}
             >
               {collections.slice(0, activeTab == 'nft' ? collections.length : 3).map((nft, idx) => (

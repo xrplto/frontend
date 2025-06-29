@@ -89,6 +89,7 @@ export default function Portfolio({ account, limit, collection, type }) {
 
   const [activeTab, setActiveTab] = useState(collection ? '1' : '0');
   const [loadingCollections, setLoadingCollections] = useState(false);
+  const [collections, setCollections] = useState([]);
   const [totalValue, setTotalValue] = useState(0);
   const [selectedInterval, setSelectedInterval] = useState('24h');
   const [pageSize, setPageSize] = useState(10);
@@ -580,18 +581,19 @@ export default function Portfolio({ account, limit, collection, type }) {
     marginBottom: '16px'
   }));
 
-  useEffect(() => {
-    async function fetchActiveRanks() {
-      try {
-        const res = await axios.get('http://37.27.134.126:5000/api/fetch-active-ranks');
-        setActiveRanks(res.data);
-      } catch (error) {
-        console.error('Error fetching active ranks:', error);
-      }
-    }
+  // useEffect(() => {
+  //   async function fetchActiveRanks() {
+  //     try {
+  //       const res = await axios.get('http://37.27.134.126:5000/api/fetch-active-ranks');
+  //       setActiveRanks(res.data);
+  //     } catch (error) {
+  //       // Silently fail for active ranks as it's not critical
+  //       setActiveRanks({});
+  //     }
+  //   }
 
-    fetchActiveRanks();
-  }, []);
+  //   fetchActiveRanks();
+  // }, []);
 
   useEffect(() => {
     if (account) {
@@ -694,7 +696,6 @@ export default function Portfolio({ account, limit, collection, type }) {
 
     // Verify we have valid data
     const totalValue = data.reduce((sum, value) => sum + value, 0);
-    console.log('Pie chart data:', { labels, data, totalValue });
 
     // Extract colors from token icons
     const backgroundColors = [];

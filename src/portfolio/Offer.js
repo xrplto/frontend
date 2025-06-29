@@ -89,11 +89,11 @@ const formatNumber = (value) => {
   });
 };
 
-const Offer = ({ account, defaultExpanded = false }) => {
+const Offer = React.memo(({ account, defaultExpanded = false }) => {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
   const dispatch = useDispatch();
-  const { accountProfile, openSnackbar, sync, setSync, darkMode } = useContext(AppContext);
+  const { accountProfile, openSnackbar, setSync } = useContext(AppContext);
   const isLoggedIn = accountProfile && accountProfile.account;
   const [openScanQR, setOpenScanQR] = useState(false);
   const [uuid, setUuid] = useState(null);
@@ -109,54 +109,52 @@ const Offer = ({ account, defaultExpanded = false }) => {
   const tableRef = useRef(null);
   const [scrollLeft, setScrollLeft] = useState(0);
 
+  const hasLoadedRef = useRef(false);
+
   useEffect(() => {
+    // Only load once per account
+    if (!account || hasLoadedRef.current) {
+      return;
+    }
+
     let isMounted = true;
     const controller = new AbortController();
 
-    function getOffers() {
-      if (!account) {
-        return;
-      }
+    setLoading(true);
+    axios
+      .get(`https://api.xrpl.to/api/account/offers/${account}?page=0&limit=10`, {
+        signal: controller.signal
+      })
+      .then((res) => {
+        if (!isMounted) return;
 
-      setLoading(true);
-      axios
-        .get(`${BASE_URL}/account/offers/${account}?page=${page}&limit=${rows}`, {
-          signal: controller.signal
-        })
-        .then((res) => {
-          if (!isMounted) return;
-
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            setTotal(ret.total);
-            setOffers(ret.offers);
-          }
-        })
-        .catch((err) => {
-          if (axios.isCancel(err)) {
-            console.log('Request canceled');
-          } else {
-            console.log('Error on getting account offers!!!', err);
-          }
-        })
-        .finally(() => {
-          if (isMounted) {
-            setLoading(false);
-          }
-        });
-    }
-
-    // Debounce the API call
-    const timeoutId = setTimeout(() => {
-      getOffers();
-    }, 300); // 300ms debounce
+        if (res.status === 200 && res.data) {
+          setTotal(res.data.total || 0);
+          setOffers(res.data.offers || []);
+        }
+      })
+      .catch((err) => {
+        if (!axios.isCancel(err)) {
+          console.log('Error on getting account offers:', err);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setLoading(false);
+          hasLoadedRef.current = true;
+        }
+      });
 
     return () => {
       isMounted = false;
-      controller.abort(); // Cancel any in-flight requests
-      clearTimeout(timeoutId); // Clear the timeout if component unmounts
+      controller.abort();
     };
-  }, [account, sync, page, rows, BASE_URL]);
+  }, [account]);
+
+  // Reset loaded flag when account changes
+  useEffect(() => {
+    hasLoadedRef.current = false;
+  }, [account]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -196,7 +194,7 @@ const Offer = ({ account, defaultExpanded = false }) => {
         if (resolved_at) {
           setOpenScanQR(false);
           if (dispatched_result === 'tesSUCCESS') {
-            setSync(sync + 1);
+            setSync((prev) => prev + 1);
           }
           return;
         }
@@ -282,7 +280,7 @@ const Offer = ({ account, defaultExpanded = false }) => {
       alert(err);
     } finally {
       dispatch(updateProcess(0));
-      setSync(!sync);
+      setSync((prev) => prev + 1);
       setLoading(false);
     }
   };
@@ -489,6 +487,8 @@ const Offer = ({ account, defaultExpanded = false }) => {
       </CardContent>
     </StyledCard>
   );
-};
+});
+
+Offer.displayName = 'Offer';
 
 export default Offer;
