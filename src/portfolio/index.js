@@ -1180,11 +1180,13 @@ export default function Portfolio({ account, limit, collection, type }) {
                           noWrap
                           sx={{ fontWeight: 600, fontSize: '0.95rem' }}
                         >
-                          {`${(
-                            (traderStats?.profitableTrades /
-                              (traderStats?.profitableTrades + traderStats?.losingTrades || 1)) *
-                            100
-                          ).toFixed(1)}%`}
+                          {traderStats?.profitableTrades && traderStats?.losingTrades
+                            ? `${(
+                                (traderStats.profitableTrades /
+                                  (traderStats.profitableTrades + traderStats.losingTrades)) *
+                                100
+                              ).toFixed(1)}%`
+                            : '0.0%'}
                         </Typography>
                       </Box>
                     </Grid>
