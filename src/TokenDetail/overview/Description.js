@@ -365,7 +365,9 @@ export default function Description({
     }
   }));
 
-  const EditButton = styled(ActionButton)(({ theme, isActive }) => ({
+  const EditButton = styled(ActionButton, {
+    shouldForwardProp: (prop) => prop !== 'isActive'
+  })(({ theme, isActive }) => ({
     background: isActive
       ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.15)} 0%, ${alpha(
           theme.palette.error.main,

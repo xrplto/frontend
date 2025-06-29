@@ -102,7 +102,9 @@ const LiveCircle = styled('div')(({ theme }) => ({
   }
 }));
 
-const TradeCard = styled(Card)(({ theme, isNew }) => ({
+const TradeCard = styled(Card, {
+  shouldForwardProp: (prop) => prop !== 'isNew'
+})(({ theme, isNew }) => ({
   marginBottom: theme.spacing(0.5),
   borderRadius: '8px',
   backgroundColor:

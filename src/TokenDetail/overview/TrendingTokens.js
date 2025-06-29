@@ -58,7 +58,9 @@ const VerifiedBadge = styled(Badge)(({ theme }) => ({
   }
 }));
 
-const TrendingCard = styled(Card)(({ theme, darkMode, rank }) => ({
+const TrendingCard = styled(Card, {
+  shouldForwardProp: (prop) => prop !== 'darkMode' && prop !== 'rank'
+})(({ theme, darkMode, rank }) => ({
   position: 'relative',
   borderRadius: '12px',
   background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
@@ -108,7 +110,9 @@ const RankChip = styled(Chip)(({ theme, rank }) => ({
   }
 }));
 
-const HeaderSection = styled(Box)(({ theme, darkMode }) => ({
+const HeaderSection = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'darkMode'
+})(({ theme, darkMode }) => ({
   position: 'relative',
   background: darkMode
     ? `linear-gradient(135deg, ${alpha('#FF6B35', 0.15)} 0%, ${alpha('#F7931E', 0.15)} 50%, ${alpha(
@@ -126,7 +130,9 @@ const HeaderSection = styled(Box)(({ theme, darkMode }) => ({
   overflow: 'hidden'
 }));
 
-const GlowingButton = styled(Button)(({ theme, darkMode }) => ({
+const GlowingButton = styled(Button, {
+  shouldForwardProp: (prop) => prop !== 'darkMode'
+})(({ theme, darkMode }) => ({
   background: darkMode
     ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`
     : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(
