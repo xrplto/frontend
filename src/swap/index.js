@@ -2,8 +2,12 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
 import { ClipLoader } from 'react-spinners';
+
+// Set Decimal precision immediately after import
+Decimal.set({ precision: 50 });
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import SparklineChart from 'src/components/SparklineChart';
+import useWebSocket from 'react-use-websocket';
 
 // Material
 import { withStyles } from '@mui/styles';
@@ -599,6 +603,7 @@ const ShareButton = styled(Button)(
 export default function Swap({ pair, setPair, revert, setRevert }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
+  const WSS_URL = 'wss://xrplcluster.com';
   const QR_BLUR = '/static/blurqr.webp';
   const router = useRouter();
 
@@ -647,6 +652,22 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
   // Add state for latest sparkline prices
   const [latestPrice1, setLatestPrice1] = useState(null);
   const [latestPrice2, setLatestPrice2] = useState(null);
+
+  const [bids, setBids] = useState([]); // Orderbook Bids
+  const [asks, setAsks] = useState([]); // Orderbook Asks
+
+  const [wsReady, setWsReady] = useState(false);
+
+  const { sendJsonMessage /*, getWebSocket*/ } = useWebSocket(WSS_URL, {
+    onOpen: () => {
+      setWsReady(true);
+    },
+    onClose: () => {
+      setWsReady(false);
+    },
+    shouldReconnect: (closeEvent) => true,
+    onMessage: (event) => processMessages(event)
+  });
 
   const amount = revert ? amount2 : amount1;
   let value = revert ? amount1 : amount2;
@@ -781,6 +802,75 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
   }
 
   const canPlaceOrder = isLoggedIn && isSufficientBalance;
+
+  useEffect(() => {
+    let reqID = 1;
+    function sendRequest() {
+      if (!wsReady) return;
+
+      const curr1 = pair.curr1;
+      const curr2 = pair.curr2;
+
+      const cmdAsk = {
+        id: reqID,
+        command: 'book_offers',
+        taker_gets: {
+          currency: curr1.currency,
+          issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+        },
+        taker_pays: {
+          currency: curr2.currency,
+          issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+        },
+        ledger_index: 'validated',
+        limit: 60
+      };
+      const cmdBid = {
+        id: reqID + 1,
+        command: 'book_offers',
+        taker_gets: {
+          currency: curr2.currency,
+          issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+        },
+        taker_pays: {
+          currency: curr1.currency,
+          issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+        },
+        ledger_index: 'validated',
+        limit: 60
+      };
+      sendJsonMessage(cmdAsk);
+      sendJsonMessage(cmdBid);
+      reqID += 2;
+    }
+
+    sendRequest();
+
+    const timer = setInterval(() => sendRequest(), 4000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [wsReady, pair, revert, sendJsonMessage]);
+  // Orderbook related useEffect - END
+
+  // web socket process messages for orderbook
+  const processMessages = (event) => {
+    const orderBook = JSON.parse(event.data);
+
+    if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
+      const req = orderBook.id % 2;
+      //console.log(`Received id ${orderBook.id}`)
+      if (req === 1) {
+        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS);
+        setAsks(parsed);
+      }
+      if (req === 0) {
+        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS);
+        setBids(parsed);
+      }
+    }
+  };
 
   useEffect(() => {
     function getAccountInfo() {
@@ -1398,11 +1488,11 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               if (TakerGets.currency === 'XRP') {
-                TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
+                TakerGets = new Decimal(TakerGets.value).mul(1000000).toString();
               }
 
               if (TakerPays.currency === 'XRP') {
-                TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+                TakerPays = new Decimal(TakerPays.value).mul(1000000).toString();
               }
               let paymentTxData = {
                 TransactionType: 'Payment',
@@ -1445,11 +1535,11 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           break;
         case 'crossmark':
           if (TakerGets.currency === 'XRP') {
-            TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
+            TakerGets = new Decimal(TakerGets.value).mul(1000000).toString();
           }
 
           if (TakerPays.currency === 'XRP') {
-            TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+            TakerPays = new Decimal(TakerPays.value).mul(1000000).toString();
           }
           let paymentTxData = {
             TransactionType: 'Payment',
@@ -1505,11 +1595,11 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
   const calcQuantity = (amount, active) => {
     try {
-      const amt = new Decimal(amount || 0).toNumber();
-      if (amt === 0) return '';
+      const amt = new Decimal(amount || 0);
+      if (amt.eq(0)) return '';
 
       console.log('calcQuantity debug:', {
-        amount: amt,
+        amount: amt.toNumber(),
         active,
         revert,
         tokenExch1,
@@ -1528,7 +1618,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
       const rate1 = new Decimal(tokenExch1 || 0);
       const rate2 = new Decimal(tokenExch2 || 0);
 
-      // For XRP pairs, we need different handling
+      // For XRP pairs, use direct conversion
       if (curr1IsXRP || curr2IsXRP) {
         console.log('Handling XRP pair calculation:', {
           curr1IsXRP,
@@ -1536,88 +1626,72 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           rate1: rate1.toNumber(),
           rate2: rate2.toNumber(),
           active,
-          amount: amt
+          amount: amt.toNumber(),
+          revert
         });
 
-        // For XRP pairs, try to use a simple approach
-        // If one rate is 0 or both are 0, we can't calculate
+        // For XRP pairs, use simple rate calculation - no orderbook
         if (rate1.eq(0) && rate2.eq(0)) {
           console.log('Both rates are 0, cannot calculate');
           return '';
         }
 
-        let result = 0;
+        let result = new Decimal(0);
 
-        // Determine which rate represents XRP price in USD
-        // The API seems to return rate1 as "1" for XRP, so we should use rate2 as the actual price
-        let xrpPriceInUSD = 0;
-
-        if (curr1IsXRP && !curr2IsXRP) {
-          // curr1 = XRP (top), curr2 = USD (bottom)
-          // When revert=true, the rates are swapped, so we need to adjust
-          if (revert) {
-            // When reverted, rate1 is actually the USD rate
-            xrpPriceInUSD = rate1.toNumber() > 0 ? 1 / rate1.toNumber() : 0;
+        if (revert) {
+          // Currencies are swapped
+          if (curr2IsXRP && !curr1IsXRP) {
+            // Top is Token, Bottom is XRP
+            if (rate1.gt(0)) {
+              if (active === 'AMOUNT') {
+                result = amt.mul(rate1);
+              } else {
+                result = amt.div(rate1);
+              }
+            }
+          } else if (!curr2IsXRP && curr1IsXRP) {
+            // Top is XRP, Bottom is Token
+            if (rate2.gt(0)) {
+              if (active === 'AMOUNT') {
+                result = amt.div(rate2);
+              } else {
+                result = amt.mul(rate2);
+              }
+            }
           } else {
-            // Normal case: rate2 is USD exchange rate, so XRP price in USD = 1 / rate2
-            xrpPriceInUSD = rate2.toNumber() > 0 ? 1 / rate2.toNumber() : 0;
-          }
-
-          if (active === 'AMOUNT') {
-            // User typed in top field (XRP), calculate bottom field (USD)
-            // XRP_amount * XRP_price_in_USD = USD_amount
-            result = new Decimal(amt).mul(xrpPriceInUSD).toNumber();
-          } else {
-            // User typed in bottom field (USD), calculate top field (XRP)
-            // USD_amount / XRP_price_in_USD = XRP_amount
-            result = new Decimal(amt).div(xrpPriceInUSD).toNumber();
-          }
-        } else if (!curr1IsXRP && curr2IsXRP) {
-          // curr1 = USD (top), curr2 = XRP (bottom)
-          // When revert=true, the rates are swapped, so we need to adjust
-          if (revert) {
-            // When reverted, rate2 is actually the USD rate
-            xrpPriceInUSD = rate2.toNumber() > 0 ? 1 / rate2.toNumber() : 0;
-          } else {
-            // Normal case: rate1 is USD exchange rate, so XRP price in USD = 1 / rate1
-            xrpPriceInUSD = rate1.toNumber() > 0 ? 1 / rate1.toNumber() : 0;
-          }
-
-          if (active === 'AMOUNT') {
-            // User typed in top field (USD), calculate bottom field (XRP)
-            // USD_amount / XRP_price_in_USD = XRP_amount
-            result = new Decimal(amt).div(xrpPriceInUSD).toNumber();
-          } else {
-            // User typed in bottom field (XRP), calculate top field (USD)
-            // XRP_amount * XRP_price_in_USD = USD_amount
-            result = new Decimal(amt).mul(xrpPriceInUSD).toNumber();
+            result = amt;
           }
         } else {
-          // Both XRP (shouldn't happen)
-          result = amt;
+          // Normal order
+          if (curr1IsXRP && !curr2IsXRP) {
+            // Top is XRP, Bottom is Token
+            if (rate2.gt(0)) {
+              if (active === 'AMOUNT') {
+                result = amt.div(rate2);
+              } else {
+                result = amt.mul(rate2);
+              }
+            }
+          } else if (!curr1IsXRP && curr2IsXRP) {
+            // Top is Token, Bottom is XRP
+            if (rate2.gt(0)) {
+              if (active === 'AMOUNT') {
+                result = amt.mul(rate2);
+              } else {
+                result = amt.div(rate2);
+              }
+            }
+          } else {
+            result = amt;
+          }
         }
 
-        console.log('XRP calculation result:', {
-          input: amt,
-          xrpPriceInUSD,
-          rate1: rate1.toNumber(),
-          rate2: rate2.toNumber(),
-          result,
-          curr1IsXRP,
-          curr2IsXRP,
-          active,
-          inputField: active === 'AMOUNT' ? 'top' : 'bottom',
-          outputField: active === 'AMOUNT' ? 'bottom' : 'top',
-          calculation: curr1IsXRP
-            ? active === 'AMOUNT'
-              ? `${amt} XRP (top) * ${xrpPriceInUSD} = ${result} USD (bottom)`
-              : `${amt} USD (bottom) / ${xrpPriceInUSD} = ${result} XRP (top)`
-            : active === 'AMOUNT'
-              ? `${amt} USD (top) / ${xrpPriceInUSD} = ${result} XRP (bottom)`
-              : `${amt} XRP (bottom) * ${xrpPriceInUSD} = ${result} USD (top)`
-        });
+        // Validate result before formatting
+        if (result.isNaN() || !result.isFinite()) {
+          return '';
+        }
 
-        return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
+        return result.toFixed(6, Decimal.ROUND_DOWN);
       } else {
         // Both are non-XRP tokens - use original logic
         if (rate1.eq(0) || rate2.eq(0)) {
@@ -1625,29 +1699,34 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           return '';
         }
 
-        let result = 0;
+        let result = new Decimal(0);
 
         if (active === 'AMOUNT') {
           // Calculate value from amount
           if (revert) {
             // When reverted: amount1 (top) is curr2, calculate curr1 value
-            result = new Decimal(amt).mul(rate2).div(rate1).toNumber();
+            result = amt.mul(rate2).div(rate1);
           } else {
             // Normal: amount1 (top) is curr1, calculate curr2 value
-            result = new Decimal(amt).mul(rate1).div(rate2).toNumber();
+            result = amt.mul(rate1).div(rate2);
           }
         } else {
           // Calculate amount from value
           if (revert) {
             // When reverted: value is in curr1, calculate curr2 amount
-            result = new Decimal(amt).mul(rate1).div(rate2).toNumber();
+            result = amt.mul(rate1).div(rate2);
           } else {
             // Normal: value is in curr2, calculate curr1 amount
-            result = new Decimal(amt).mul(rate2).div(rate1).toNumber();
+            result = amt.mul(rate2).div(rate1);
           }
         }
 
-        return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
+        // Validate result before formatting
+        if (result.isNaN() || !result.isFinite()) {
+          return '';
+        }
+
+        return result.toFixed(6, Decimal.ROUND_DOWN);
       }
     } catch (e) {
       console.log('Error in price calculation:', e);
@@ -3037,3 +3116,88 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
     </Stack>
   );
 }
+
+const ORDER_TYPE_BIDS = 1;
+const ORDER_TYPE_ASKS = 2;
+
+const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
+  if (offers.length < 1) return [];
+
+  const getCurrency = offers[0].TakerGets?.currency || 'XRP';
+  const payCurrency = offers[0].TakerPays?.currency || 'XRP';
+
+  let multiplier = 1;
+  const isBID = orderType === ORDER_TYPE_BIDS;
+
+  // It's the same on each condition?
+  if (isBID) {
+    if (getCurrency === 'XRP') multiplier = 1_000_000;
+    else if (payCurrency === 'XRP') multiplier = 0.000_001;
+  } else {
+    if (getCurrency === 'XRP') multiplier = 1_000_000;
+    else if (payCurrency === 'XRP') multiplier = 0.000_001;
+  }
+
+  // let precision = maxDecimals(isBID ? Math.pow(offers[0].quality * multiplier, -1) : offers[0].quality * multiplier)
+
+  // let index = 0
+  const array = [];
+  let sumAmount = 0;
+  let sumValue = 0;
+
+  for (let i = 0; i < offers.length; i++) {
+    const offer = offers[i];
+    const obj = {
+      id: '',
+      price: 0,
+      amount: 0,
+      value: 0,
+      sumAmount: 0, // SOLO
+      sumValue: 0, // XRP
+      avgPrice: 0,
+      sumGets: 0,
+      sumPays: 0,
+      isNew: false
+    };
+
+    const id = `${offer.Account}:${offer.Sequence}`;
+    const gets = offer.taker_gets_funded || offer.TakerGets;
+    const pays = offer.taker_pays_funded || offer.TakerPays;
+    // const partial = (offer.taker_gets_funded || offer.taker_pays_funded) ? true: false;
+
+    const takerPays = pays.value || pays;
+    const takerGets = gets.value || gets;
+
+    const amount = Number(isBID ? takerPays : takerGets);
+    const price = isBID ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier;
+    const value = amount * price;
+
+    sumAmount += amount;
+    sumValue += value;
+    obj.id = id;
+    obj.price = price;
+    obj.amount = amount; // SOLO
+    obj.value = value; // XRP
+    obj.sumAmount = sumAmount;
+    obj.sumValue = sumValue;
+
+    if (sumAmount > 0) obj.avgPrice = sumValue / sumAmount;
+    else obj.avgPrice = 0;
+
+    //obj.partial = partial
+
+    if (amount > 0) array.push(obj);
+  }
+
+  const sortedArrayByPrice = [...array].sort((a, b) => {
+    let result = 0;
+    if (orderType === ORDER_TYPE_BIDS) {
+      result = b.price - a.price;
+    } else {
+      result = a.price - b.price;
+    }
+    return result;
+  });
+
+  return sortedArrayByPrice;
+};
