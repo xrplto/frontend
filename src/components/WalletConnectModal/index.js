@@ -22,254 +22,121 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(20px)',
   WebkitBackdropFilter: 'blur(20px)',
   '& .MuiBackdrop-root': {
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.4)'
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(0, 0, 0, 0.3)'
   },
   '& .MuiDialog-paper': {
-    borderRadius: '24px',
-    background:
-      theme.palette.mode === 'dark'
-        ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-            theme.palette.background.paper,
-            0.8
-          )} 100%)`
-        : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-            theme.palette.background.paper,
-            0.8
-          )} 100%)`,
+    borderRadius: '16px',
+    background: alpha(theme.palette.background.paper, 0.85),
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
-    border:
-      theme.palette.mode === 'dark'
-        ? `1px solid ${alpha(theme.palette.divider, 0.08)}`
-        : `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-    boxShadow:
-      theme.palette.mode === 'dark'
-        ? `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
-            theme.palette.primary.main,
-            0.04
-          )}`
-        : `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
-            theme.palette.primary.main,
-            0.04
-          )}`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
     overflow: 'hidden',
     width: '100%',
-    maxWidth: '450px',
-    position: 'relative',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: '2px',
-      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-      opacity: 0.8
-    }
+    maxWidth: '420px',
+    position: 'relative'
   }
 }));
 
 const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
-  padding: theme.spacing(2, 3),
-  background:
-    theme.palette.mode === 'dark'
-      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-          theme.palette.background.paper,
-          0.4
-        )} 100%)`
-      : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-          theme.palette.background.paper,
-          0.4
-        )} 100%)`,
-  backdropFilter: 'blur(10px)',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+  padding: theme.spacing(2, 2.5),
+  background: 'transparent',
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   position: 'relative'
 }));
 
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
-  padding: theme.spacing(3),
-  paddingBottom: theme.spacing(4),
+  padding: theme.spacing(2.5),
   background: 'transparent',
-  position: 'relative',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '60px',
-    height: '4px',
-    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
-    borderRadius: '2px',
-    opacity: 0.8
-  }
+  position: 'relative'
 }));
 
 const ActionButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: alpha(theme.palette.background.paper, 0.6),
-  borderRadius: '12px',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  backgroundColor: alpha(theme.palette.text.primary, 0.08),
+  borderRadius: '8px',
+  transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor: alpha(theme.palette.background.paper, 0.8),
-    transform: 'scale(1.05)',
-    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`
+    backgroundColor: alpha(theme.palette.text.primary, 0.12)
   },
   '& .MuiSvgIcon-root': {
-    color: theme.palette.text.primary
+    color: theme.palette.text.secondary,
+    fontSize: '1.2rem'
   }
 }));
 
 const WalletItem = styled(Stack)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(1.5, 2),
   cursor: 'pointer',
-  borderRadius: '16px',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.7
-  )} 100%)`,
-  backdropFilter: 'blur(20px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  position: 'relative',
-  overflow: 'hidden',
-  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-      theme.palette.success.main,
-      0.05
-    )} 100%)`,
-    opacity: 0,
-    transition: 'opacity 0.3s ease',
-    zIndex: -1
-  },
+  borderRadius: '12px',
+  background: alpha(theme.palette.background.paper, 0.6),
+  backdropFilter: 'blur(10px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  transition: 'all 0.2s ease',
   '&:hover': {
-    transform: 'translateY(-4px)',
-    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.8
-    )} 100%)`,
+    background: alpha(theme.palette.background.paper, 0.8),
     border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-    boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
-      theme.palette.primary.main,
-      0.1
-    )}`,
-    '&::before': {
-      opacity: 1
-    },
+    transform: 'translateY(-1px)',
     '& .wallet-name': {
       color: theme.palette.primary.main
-    },
-    '& .wallet-icon': {
-      transform: 'scale(1.1)',
-      filter: `drop-shadow(0 0 8px ${alpha(theme.palette.primary.main, 0.3)})`
     }
-  },
-  '&:active': {
-    transform: 'translateY(-2px) scale(0.98)'
   }
 }));
 
 const WalletIcon = styled('img')(({ theme }) => ({
-  width: '40px',
-  height: '40px',
-  borderRadius: '12px',
-  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
-  transition: 'all 0.3s ease',
-  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+  width: '36px',
+  height: '36px',
+  borderRadius: '8px',
+  transition: 'transform 0.2s ease'
 }));
 
 const DownloadButton = styled(IconButton)(({ theme }) => ({
   backgroundColor: alpha(theme.palette.primary.main, 0.1),
-  borderRadius: '8px',
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+  borderRadius: '6px',
+  padding: theme.spacing(0.5),
   transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.2),
-    transform: 'scale(1.1)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+    backgroundColor: alpha(theme.palette.primary.main, 0.15)
   },
   '& .MuiSvgIcon-root': {
     color: theme.palette.primary.main,
-    fontSize: 'inherit'
+    fontSize: '1rem'
   }
 }));
 
 const StyledDivider = styled(Divider)(({ theme }) => ({
-  borderColor: alpha(theme.palette.divider, 0.08),
-  margin: theme.spacing(1, 0),
-  '&::before, &::after': {
-    borderColor: 'inherit'
-  }
+  borderColor: alpha(theme.palette.divider, 0.06),
+  margin: theme.spacing(0.5, 0)
 }));
 
 const ModalTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 700,
-  fontSize: '1.5rem',
-  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  backgroundClip: 'text',
-  marginBottom: theme.spacing(2)
+  fontWeight: 600,
+  fontSize: '1.25rem',
+  color: theme.palette.text.primary,
+  marginBottom: theme.spacing(1.5)
 }));
 
 const FeeTag = styled('div')(({ theme, isFree }) => ({
-  padding: theme.spacing(0.25, 0.75),
-  borderRadius: '8px',
-  fontSize: '0.65rem',
-  fontWeight: 600,
+  padding: theme.spacing(0.25, 0.5),
+  borderRadius: '4px',
+  fontSize: '0.7rem',
+  fontWeight: 500,
   textTransform: 'uppercase',
   display: 'inline-block',
-  background: isFree
-    ? `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.15)} 0%, ${alpha(
-        theme.palette.success.main,
-        0.08
-      )} 100%)`
-    : `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.15)} 0%, ${alpha(
-        theme.palette.warning.main,
-        0.08
-      )} 100%)`,
+  background: alpha(isFree ? theme.palette.success.main : theme.palette.warning.main, 0.1),
   color: isFree ? theme.palette.success.main : theme.palette.warning.main,
-  border: `1px solid ${
-    isFree ? alpha(theme.palette.success.main, 0.3) : alpha(theme.palette.warning.main, 0.3)
-  }`,
-  boxShadow: isFree
-    ? `0 1px 4px ${alpha(theme.palette.success.main, 0.2)}`
-    : `0 1px 4px ${alpha(theme.palette.warning.main, 0.2)}`,
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    transform: 'scale(1.02)',
-    boxShadow: isFree
-      ? `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`
-      : `0 2px 8px ${alpha(theme.palette.warning.main, 0.3)}`
-  }
+  border: `1px solid ${alpha(isFree ? theme.palette.success.main : theme.palette.warning.main, 0.2)}`
 }));
 
 const RecommendedChip = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0.25, 0.75),
-  borderRadius: '8px',
-  fontSize: '0.65rem',
-  fontWeight: 600,
+  padding: theme.spacing(0.25, 0.5),
+  borderRadius: '4px',
+  fontSize: '0.7rem',
+  fontWeight: 500,
   textTransform: 'uppercase',
   display: 'inline-block',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.15)} 0%, ${alpha(
-    theme.palette.info.main,
-    0.08
-  )} 100%)`,
+  background: alpha(theme.palette.info.main, 0.1),
   color: theme.palette.info.main,
-  border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
-  boxShadow: `0 1px 4px ${alpha(theme.palette.info.main, 0.2)}`,
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    transform: 'scale(1.02)',
-    boxShadow: `0 2px 8px ${alpha(theme.palette.info.main, 0.3)}`
-  }
+  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
 }));
 
 const WalletConnectModal = () => {
@@ -409,74 +276,46 @@ const WalletConnectModal = () => {
         ) : (
           <>
             <ModalTitle variant="modal">Connect Wallet</ModalTitle>
-            <Stack spacing={2}>
+            <Stack spacing={1.5}>
               <WalletItem direction="row" spacing={2} alignItems="center" onClick={handleLogin}>
                 <WalletIcon src="/static/xaman.webp" alt="Xaman Wallet" className="wallet-icon" />
                 <Stack sx={{ flexGrow: 1 }}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
+                  <Stack direction="row" alignItems="center" spacing={0.8}>
                     <Typography
-                      variant="h6"
+                      variant="subtitle1"
                       component="div"
                       className="wallet-name"
                       sx={{
-                        fontWeight: 600,
-                        transition: 'color 0.3s ease'
+                        fontWeight: 500,
+                        transition: 'color 0.2s ease'
                       }}
                     >
                       Xaman
                     </Typography>
                     <RecommendedChip>Recommended</RecommendedChip>
-                    <Tooltip
-                      title="Xaman charges fees for trading (0.8%) and some transactions (0.09 XRP). Most basic transfers remain free."
-                      arrow
-                      placement="top"
-                      enterDelay={0}
-                      leaveDelay={0}
-                      PopperProps={{
-                        sx: {
-                          zIndex: 10000 // Higher than dialog
-                        }
-                      }}
-                    >
-                      <div style={{ display: 'inline-block' }}>
-                        <FeeTag
-                          isFree={false}
-                          title="Xaman charges fees for trading (0.8%) and some transactions (0.09 XRP). Most basic transfers remain free."
-                        >
-                          Fee
-                        </FeeTag>
-                      </div>
-                    </Tooltip>
+                    <FeeTag isFree={false}>Fee</FeeTag>
                   </Stack>
                   <Typography
                     variant="body2"
                     sx={{
-                      color: alpha(theme.palette.text.secondary, 0.8)
+                      color: theme.palette.text.secondary,
+                      fontSize: '0.8rem'
                     }}
                   >
                     Mobile Wallet
                   </Typography>
                 </Stack>
-                <Typography
+                <DownloadButton
                   component="a"
                   href="https://xaman.app/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  sx={{
-                    marginLeft: 'auto',
-                    color: alpha(theme.palette.text.secondary, 0.7),
-                    transition: 'color 0.2s ease',
-                    '&:hover': { color: theme.palette.primary.main }
-                  }}
                   onClick={(e) => e.stopPropagation()}
+                  aria-label="Download Xaman Wallet"
                 >
-                  <DownloadButton size="small" aria-label="Download Xaman Wallet">
-                    <DownloadIcon />
-                  </DownloadButton>
-                </Typography>
+                  <DownloadIcon />
+                </DownloadButton>
               </WalletItem>
-
-              <StyledDivider />
 
               <WalletItem
                 direction="row"
@@ -486,70 +325,42 @@ const WalletConnectModal = () => {
               >
                 <WalletIcon src="/static/gem.svg" alt="GemWallet" className="wallet-icon" />
                 <Stack sx={{ flexGrow: 1 }}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
+                  <Stack direction="row" alignItems="center" spacing={0.8}>
                     <Typography
-                      variant="h6"
+                      variant="subtitle1"
                       component="div"
                       className="wallet-name"
                       sx={{
-                        fontWeight: 600,
-                        transition: 'color 0.3s ease'
+                        fontWeight: 500,
+                        transition: 'color 0.2s ease'
                       }}
                     >
                       GemWallet
                     </Typography>
                     <RecommendedChip>Recommended</RecommendedChip>
-                    <Tooltip
-                      title="GemWallet is completely free to use with no additional fees beyond standard XRPL network fees"
-                      arrow
-                      placement="top"
-                      enterDelay={0}
-                      leaveDelay={0}
-                      PopperProps={{
-                        sx: {
-                          zIndex: 10000 // Higher than dialog
-                        }
-                      }}
-                    >
-                      <div style={{ display: 'inline-block' }}>
-                        <FeeTag
-                          isFree={true}
-                          title="GemWallet is completely free to use with no additional fees beyond standard XRPL network fees"
-                        >
-                          Free
-                        </FeeTag>
-                      </div>
-                    </Tooltip>
+                    <FeeTag isFree={true}>Free</FeeTag>
                   </Stack>
                   <Typography
                     variant="body2"
                     sx={{
-                      color: alpha(theme.palette.text.secondary, 0.8)
+                      color: theme.palette.text.secondary,
+                      fontSize: '0.8rem'
                     }}
                   >
                     Browser Wallet
                   </Typography>
                 </Stack>
-                <Typography
+                <DownloadButton
                   component="a"
                   href="https://gemwallet.app/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  sx={{
-                    marginLeft: 'auto',
-                    color: alpha(theme.palette.text.secondary, 0.7),
-                    transition: 'color 0.2s ease',
-                    '&:hover': { color: theme.palette.primary.main }
-                  }}
                   onClick={(e) => e.stopPropagation()}
+                  aria-label="Download GemWallet"
                 >
-                  <DownloadButton size="small" aria-label="Download GemWallet">
-                    <DownloadIcon />
-                  </DownloadButton>
-                </Typography>
+                  <DownloadIcon />
+                </DownloadButton>
               </WalletItem>
-
-              <StyledDivider />
 
               <WalletItem
                 direction="row"
@@ -563,66 +374,40 @@ const WalletConnectModal = () => {
                   className="wallet-icon"
                 />
                 <Stack sx={{ flexGrow: 1 }}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
+                  <Stack direction="row" alignItems="center" spacing={0.8}>
                     <Typography
-                      variant="h6"
+                      variant="subtitle1"
                       component="div"
                       className="wallet-name"
                       sx={{
-                        fontWeight: 600,
-                        transition: 'color 0.3s ease'
+                        fontWeight: 500,
+                        transition: 'color 0.2s ease'
                       }}
                     >
                       CrossMark
                     </Typography>
-                    <Tooltip
-                      title="CrossMark is free to use with no wallet fees, only standard XRPL network transaction fees apply"
-                      arrow
-                      placement="top"
-                      enterDelay={0}
-                      leaveDelay={0}
-                      PopperProps={{
-                        sx: {
-                          zIndex: 10000 // Higher than dialog
-                        }
-                      }}
-                    >
-                      <div style={{ display: 'inline-block' }}>
-                        <FeeTag
-                          isFree={true}
-                          title="CrossMark is free to use with no wallet fees, only standard XRPL network transaction fees apply"
-                        >
-                          Free
-                        </FeeTag>
-                      </div>
-                    </Tooltip>
+                    <FeeTag isFree={true}>Free</FeeTag>
                   </Stack>
                   <Typography
                     variant="body2"
                     sx={{
-                      color: alpha(theme.palette.text.secondary, 0.8)
+                      color: theme.palette.text.secondary,
+                      fontSize: '0.8rem'
                     }}
                   >
                     Browser Wallet
                   </Typography>
                 </Stack>
-                <Typography
+                <DownloadButton
                   component="a"
                   href="https://crossmark.io/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  sx={{
-                    marginLeft: 'auto',
-                    color: alpha(theme.palette.text.secondary, 0.7),
-                    transition: 'color 0.2s ease',
-                    '&:hover': { color: theme.palette.primary.main }
-                  }}
                   onClick={(e) => e.stopPropagation()}
+                  aria-label="Download CrossMark Wallet"
                 >
-                  <DownloadButton size="small" aria-label="Download CrossMark Wallet">
-                    <DownloadIcon />
-                  </DownloadButton>
-                </Typography>
+                  <DownloadIcon />
+                </DownloadButton>
               </WalletItem>
             </Stack>
           </>
