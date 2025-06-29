@@ -9,7 +9,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import SparklineChart from 'src/components/SparklineChart';
 
 // Material
-import { withStyles } from '@mui/styles';
+
 import {
   alpha,
   styled,
@@ -19,22 +19,19 @@ import {
   Input,
   Stack,
   Typography,
-  Snackbar,
-  Alert,
-  AlertTitle,
-  CircularProgress,
+
   Box,
   Tooltip
 } from '@mui/material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
+
 
 // Iconify
 import { Icon } from '@iconify/react';
 import exchangeIcon from '@iconify/icons-uil/exchange';
 import infoFill from '@iconify/icons-eva/info-fill';
 import shareIcon from '@iconify/icons-uil/share-alt';
-import copyIcon from '@iconify/icons-uil/copy';
+
 
 // Context
 import { useContext } from 'react';
