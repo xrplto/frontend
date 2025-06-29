@@ -603,7 +603,6 @@ const ShareButton = styled(Button)(
 export default function Swap({ pair, setPair, revert, setRevert }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
-  const WSS_URL = 'wss://xrplcluster.com';
   const QR_BLUR = '/static/blurqr.webp';
   const router = useRouter();
 
@@ -652,22 +651,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
   // Add state for latest sparkline prices
   const [latestPrice1, setLatestPrice1] = useState(null);
   const [latestPrice2, setLatestPrice2] = useState(null);
-
-  const [bids, setBids] = useState([]); // Orderbook Bids
-  const [asks, setAsks] = useState([]); // Orderbook Asks
-
-  const [wsReady, setWsReady] = useState(false);
-
-  const { sendJsonMessage /*, getWebSocket*/ } = useWebSocket(WSS_URL, {
-    onOpen: () => {
-      setWsReady(true);
-    },
-    onClose: () => {
-      setWsReady(false);
-    },
-    shouldReconnect: (closeEvent) => true,
-    onMessage: (event) => processMessages(event)
-  });
 
   const amount = revert ? amount2 : amount1;
   let value = revert ? amount1 : amount2;
@@ -812,75 +795,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
   }
 
   const canPlaceOrder = isLoggedIn && isSufficientBalance;
-
-  useEffect(() => {
-    let reqID = 1;
-    function sendRequest() {
-      if (!wsReady) return;
-
-      const curr1 = pair.curr1;
-      const curr2 = pair.curr2;
-
-      const cmdAsk = {
-        id: reqID,
-        command: 'book_offers',
-        taker_gets: {
-          currency: curr1.currency,
-          issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-        },
-        taker_pays: {
-          currency: curr2.currency,
-          issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-        },
-        ledger_index: 'validated',
-        limit: 60
-      };
-      const cmdBid = {
-        id: reqID + 1,
-        command: 'book_offers',
-        taker_gets: {
-          currency: curr2.currency,
-          issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-        },
-        taker_pays: {
-          currency: curr1.currency,
-          issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-        },
-        ledger_index: 'validated',
-        limit: 60
-      };
-      sendJsonMessage(cmdAsk);
-      sendJsonMessage(cmdBid);
-      reqID += 2;
-    }
-
-    sendRequest();
-
-    const timer = setInterval(() => sendRequest(), 4000);
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, [wsReady, pair, revert, sendJsonMessage]);
-  // Orderbook related useEffect - END
-
-  // web socket process messages for orderbook
-  const processMessages = (event) => {
-    const orderBook = JSON.parse(event.data);
-
-    if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
-      const req = orderBook.id % 2;
-      //console.log(`Received id ${orderBook.id}`)
-      if (req === 1) {
-        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS);
-        setAsks(parsed);
-      }
-      if (req === 0) {
-        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS);
-        setBids(parsed);
-      }
-    }
-  };
 
   useEffect(() => {
     function getAccountInfo() {
@@ -1383,32 +1297,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
       const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
-      let TakerGets, TakerPays;
-      /*if (buySell === 'BUY') {
-                // BUY logic
-                TakerGets = {currency:curr2.currency, issuer:curr2.issuer, value: value.toString()};
-                TakerPays = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
-            } else */
-      // {
-      // SELL logic
-      TakerGets = {
-        currency: curr1.currency,
-        issuer: curr1.issuer,
-        value: amount.toString()
-      };
-      TakerPays = {
-        currency: curr2.currency,
-        issuer: curr2.issuer,
-        value: value.toString()
-      };
-      // }
-
-      const OfferCreate = {
-        tfPassive: 0x00010000,
-        tfPartialPayment: 0x00020000,
-        tfLimitQuality: 0x00040000,
-        tfNoDirectRipple: 0x00080000
-      };
 
       const PaymentFlags = {
         tfPartialPayment: 131072,
@@ -1497,13 +1385,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
         case 'gem':
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
-              if (TakerGets.currency === 'XRP') {
-                TakerGets = new Decimal(TakerGets.value).mul(1000000).toString();
-              }
-
-              if (TakerPays.currency === 'XRP') {
-                TakerPays = new Decimal(TakerPays.value).mul(1000000).toString();
-              }
               let paymentTxData = {
                 TransactionType: 'Payment',
                 Account,
@@ -1544,13 +1425,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           });
           break;
         case 'crossmark':
-          if (TakerGets.currency === 'XRP') {
-            TakerGets = new Decimal(TakerGets.value).mul(1000000).toString();
-          }
-
-          if (TakerPays.currency === 'XRP') {
-            TakerPays = new Decimal(TakerPays.value).mul(1000000).toString();
-          }
           let paymentTxData = {
             TransactionType: 'Payment',
             Account,
@@ -1582,7 +1456,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               dispatch(updateProcess(3));
             }
           });
-          // }
           break;
       }
     } catch (err) {
@@ -3149,77 +3022,46 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
   const payCurrency = offers[0].TakerPays?.currency || 'XRP';
 
   let multiplier = 1;
-  const isBID = orderType === ORDER_TYPE_BIDS;
-
-  // It's the same on each condition?
-  if (isBID) {
-    if (getCurrency === 'XRP') multiplier = 1_000_000;
-    else if (payCurrency === 'XRP') multiplier = 0.000_001;
-  } else {
-    if (getCurrency === 'XRP') multiplier = 1_000_000;
-    else if (payCurrency === 'XRP') multiplier = 0.000_001;
+  if (getCurrency === 'XRP') {
+    multiplier = 1_000_000;
+  } else if (payCurrency === 'XRP') {
+    multiplier = 0.000_001;
   }
 
-  // let precision = maxDecimals(isBID ? Math.pow(offers[0].quality * multiplier, -1) : offers[0].quality * multiplier)
+  const isBID = orderType === ORDER_TYPE_BIDS;
 
-  // let index = 0
-  const array = [];
+  const processedOffers = offers
+    .map((offer) => {
+      const gets = offer.taker_gets_funded || offer.TakerGets;
+      const pays = offer.taker_pays_funded || offer.TakerPays;
+
+      const takerPays = pays.value || pays;
+      const takerGets = gets.value || gets;
+
+      const amount = Number(isBID ? takerPays : takerGets);
+      const price = isBID ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier;
+
+      return {
+        id: `${offer.Account}:${offer.Sequence}`,
+        price,
+        amount,
+        value: amount * price
+      };
+    })
+    .filter((offer) => offer.amount > 0)
+    .sort((a, b) => (isBID ? b.price - a.price : a.price - b.price));
+
   let sumAmount = 0;
   let sumValue = 0;
 
-  for (let i = 0; i < offers.length; i++) {
-    const offer = offers[i];
-    const obj = {
-      id: '',
-      price: 0,
-      amount: 0,
-      value: 0,
-      sumAmount: 0, // SOLO
-      sumValue: 0, // XRP
-      avgPrice: 0,
-      sumGets: 0,
-      sumPays: 0,
-      isNew: false
+  return processedOffers.map((offer) => {
+    sumAmount += offer.amount;
+    sumValue += offer.value;
+    return {
+      ...offer,
+      sumAmount, // SOLO
+      sumValue, // XRP
+      avgPrice: sumAmount > 0 ? sumValue / sumAmount : 0
     };
-
-    const id = `${offer.Account}:${offer.Sequence}`;
-    const gets = offer.taker_gets_funded || offer.TakerGets;
-    const pays = offer.taker_pays_funded || offer.TakerPays;
-    // const partial = (offer.taker_gets_funded || offer.taker_pays_funded) ? true: false;
-
-    const takerPays = pays.value || pays;
-    const takerGets = gets.value || gets;
-
-    const amount = Number(isBID ? takerPays : takerGets);
-    const price = isBID ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier;
-    const value = amount * price;
-
-    sumAmount += amount;
-    sumValue += value;
-    obj.id = id;
-    obj.price = price;
-    obj.amount = amount; // SOLO
-    obj.value = value; // XRP
-    obj.sumAmount = sumAmount;
-    obj.sumValue = sumValue;
-
-    if (sumAmount > 0) obj.avgPrice = sumValue / sumAmount;
-    else obj.avgPrice = 0;
-
-    //obj.partial = partial
-
-    if (amount > 0) array.push(obj);
-  }
-
-  const sortedArrayByPrice = [...array].sort((a, b) => {
-    let result = 0;
-    if (orderType === ORDER_TYPE_BIDS) {
-      result = b.price - a.price;
-    } else {
-      result = a.price - b.price;
-    }
-    return result;
   });
-
-  return sortedArrayByPrice;
 };
