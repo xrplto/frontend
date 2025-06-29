@@ -20,7 +20,6 @@ import {
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import InfoIcon from '@mui/icons-material/Info';
 import LinkIcon from '@mui/icons-material/Link';
-import { makeStyles } from '@mui/styles';
 import { FacebookShareButton, TwitterShareButton, FacebookIcon, TwitterIcon } from 'react-share';
 import moment from 'moment';
 import HistoryToolbar from './HistoryToolbar';
@@ -32,52 +31,6 @@ import StackStyle from 'src/components/StackStyle';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { currencySymbols } from 'src/utils/constants';
-
-const generateClassName = (rule, sheet) => {
-  return `my-component-${rule.key}`;
-};
-
-const useStyles = makeStyles(
-  () => ({
-    customComponent: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-start',
-      margin: '10px 0'
-    },
-    lineContainer: {
-      display: 'flex',
-      alignItems: 'center',
-      marginBottom: '5px',
-      width: '100%'
-    },
-    verticalLine: {
-      width: '2px',
-      height: '15px',
-      background: 'grey',
-      marginLeft: '11px'
-    },
-    icon: {
-      marginRight: '5px',
-      fontSize: '1.25rem',
-      color: 'grey'
-    },
-    yearsAgo: {
-      marginRight: '10px',
-      fontSize: '12px',
-      color: 'grey'
-    },
-    price: {
-      marginLeft: 'auto',
-      fontWeight: 'bold',
-      fontSize: '14px'
-    },
-    priceToday: {
-      fontSize: '17px'
-    }
-  }),
-  { generateClassName }
-);
 
 function truncate(str, n) {
   if (!str) return '';
@@ -207,7 +160,6 @@ export default function HistoryData({ token }) {
       });
   }, []);
 
-  const classes = useStyles();
   const title = `${user} price today: ${name} to ${activeFiatCurrency} conversion, live rates, trading volume, historical data, and interactive chart`;
   const desc = `Access up-to-date ${user} prices, ${name} market cap, trading pairs, interactive charts, and comprehensive data from the leading XRP Ledger token price-tracking platform.`;
   const url = typeof window !== 'undefined' && window.location.href ? window.location.href : '';
@@ -418,7 +370,14 @@ export default function HistoryData({ token }) {
               </Stack>
             </Stack>
 
-            <div className={classes.customComponent}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                margin: '10px 0'
+              }}
+            >
               {histsPrices.map((value, index) => {
                 const isToday = index === 0;
                 const yearsAgoText = isToday
@@ -426,25 +385,60 @@ export default function HistoryData({ token }) {
                   : `${index} ${index === 1 ? 'year' : 'years'} ago`;
 
                 return [
-                  <div className={classes.lineContainer} key={`lineContainer-${index}`}>
-                    <DateRangeIcon className={classes.icon} />
-                    <span className={classes.yearsAgo}>{yearsAgoText}</span>
-                    <span
-                      className={`${classes.price} ${isToday ? classes.priceToday : ''}`}
-                      style={{ textAlign: 'right' }}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginBottom: '5px',
+                      width: '100%'
+                    }}
+                    key={`lineContainer-${index}`}
+                  >
+                    <DateRangeIcon
+                      sx={{ marginRight: '5px', fontSize: '1.25rem', color: 'grey' }}
+                    />
+                    <Box
+                      component="span"
+                      sx={{ marginRight: '10px', fontSize: '12px', color: 'grey' }}
+                    >
+                      {yearsAgoText}
+                    </Box>
+                    <Box
+                      component="span"
+                      sx={{
+                        marginLeft: 'auto',
+                        fontWeight: 'bold',
+                        fontSize: isToday ? '17px' : '14px',
+                        textAlign: 'right'
+                      }}
                     >
                       {currencySymbols[activeFiatCurrency]}
                       {fNumberWithCurreny(value, metrics[activeFiatCurrency])}
-                    </span>
-                  </div>,
+                    </Box>
+                  </Box>,
                   index < histsPrices.length - 1 && (
-                    <div className={classes.lineContainer} key={`verticalLine-${index}`}>
-                      <div className={classes.verticalLine}></div>
-                    </div>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginBottom: '5px',
+                        width: '100%'
+                      }}
+                      key={`verticalLine-${index}`}
+                    >
+                      <Box
+                        sx={{
+                          width: '2px',
+                          height: '15px',
+                          background: 'grey',
+                          marginLeft: '11px'
+                        }}
+                      ></Box>
+                    </Box>
                   )
                 ];
               })}
-            </div>
+            </Box>
 
             <Stack
               direction="row"

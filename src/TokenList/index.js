@@ -2,7 +2,6 @@ import axios from 'axios';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { Box, Table, TableBody, useTheme, useMediaQuery } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,34 +17,6 @@ import { debounce } from 'lodash';
 import { throttle } from 'lodash';
 import { useRouter } from 'next/router';
 
-const useStyles = makeStyles({
-  tableContainer: {
-    display: 'flex',
-    gap: 0,
-    paddingTop: '4px',
-    paddingBottom: '4px',
-    overflow: 'auto',
-    width: '100%',
-    '& > *': {
-      scrollSnapAlign: 'center'
-    },
-    '::-webkit-scrollbar': { display: 'none' },
-    '& .MuiTableCell-root': {
-      padding: '4px 8px',
-      height: '40px' // Set a fixed height for table cells
-    },
-    '& .MuiTableRow-root': {
-      '&:hover': {
-        backgroundColor: 'rgba(0, 0, 0, 0.04)'
-      }
-    }
-  },
-  tableCell: {
-    borderBottom: 'none',
-    padding: (props) => (props.isMobile ? '2px' : '8px')
-  }
-});
-
 const MemoizedTokenRow = memo(TokenRow);
 
 export default function TokenList({ showWatchList, tag, tagName, tags, tokens, setTokens, tMap }) {
@@ -56,7 +27,6 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency];
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const classes = useStyles({ isMobile });
   const router = useRouter();
 
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
@@ -387,7 +357,30 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         />
       </Box>
 
-      <Box className={classes.tableContainer} ref={tableContainerRef}>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 0,
+          paddingTop: '4px',
+          paddingBottom: '4px',
+          overflow: 'auto',
+          width: '100%',
+          '& > *': {
+            scrollSnapAlign: 'center'
+          },
+          '::-webkit-scrollbar': { display: 'none' },
+          '& .MuiTableCell-root': {
+            padding: '4px 8px',
+            height: '40px' // Set a fixed height for table cells
+          },
+          '& .MuiTableRow-root': {
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)'
+            }
+          }
+        }}
+        ref={tableContainerRef}
+      >
         <Table ref={tableRef} size="small">
           <TokenListHead
             order={order}

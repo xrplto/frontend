@@ -7,7 +7,6 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Material
-import { withStyles } from '@mui/styles';
 import {
   Avatar,
   Box,
@@ -163,6 +162,9 @@ const AdminImage = styled(LazyLoadImage)(({ theme }) => ({
     opacity: 0.6
   }
 }));
+
+// Dummy function to prevent ReferenceError since @mui/styles is removed
+const withStyles = (styles) => (Component) => Component;
 
 const SupplyTypography = withStyles({
   root: {

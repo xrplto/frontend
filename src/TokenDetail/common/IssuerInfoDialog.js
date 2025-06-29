@@ -2,9 +2,7 @@ import Decimal from 'decimal.js';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 // Material
-import { withStyles } from '@mui/styles';
 import {
-  alpha,
   useTheme,
   useMediaQuery,
   styled,
@@ -85,24 +83,6 @@ const IssuerInfoDialogTitle = (props) => {
   );
 };
 
-const Label = withStyles({
-  root: {
-    color: alpha('#637381', 0.99)
-  }
-})(Typography);
-
-const BlackTypography = withStyles({
-  root: {
-    color: '#B72136',
-    borderRadius: '6px',
-    border: '0.1em solid #B72136',
-    paddingLeft: '8px',
-    paddingRight: '8px',
-    paddingTop: '6px',
-    paddingBottom: '6px'
-  }
-})(Typography);
-
 export default function IssuerInfoDialog({ open, setOpen, token }) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -146,9 +126,9 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
         <DialogContent>
           <Stack spacing={2.5} sx={{ px: 1 }}>
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
+              <Typography variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
                 Issuer:
-              </Label>
+              </Typography>
               <Stack direction="row" alignItems="center" spacing={0.5} sx={{ flex: 1 }}>
                 <Link
                   underline="hover"
@@ -185,11 +165,11 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
             </Stack>
 
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
+              <Typography variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
                 Currency:
-              </Label>
+              </Typography>
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Label
+                <Typography
                   variant="body2"
                   noWrap
                   sx={{
@@ -201,7 +181,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
                   }}
                 >
                   {currency}
-                </Label>
+                </Typography>
                 <CopyToClipboard
                   text={currency}
                   onCopy={() => openSnackbar('Currency code copied!', 'success')}
@@ -234,9 +214,9 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
 
             {info.domain && (
               <Stack direction="row" spacing={1} alignItems="center">
-                <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
+                <Typography variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
                   Domain:
-                </Label>
+                </Typography>
                 <Link
                   underline="hover"
                   color="inherit"
@@ -272,29 +252,29 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
               ([key, label]) =>
                 info[key] && (
                   <Stack key={key} direction="row" spacing={1} alignItems="center">
-                    <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
+                    <Typography variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
                       {label}:
-                    </Label>
+                    </Typography>
                     <Typography variant="body2" sx={{ color: 'text.primary' }}>
                       {key === 'transferRate'
                         ? `${fNumber(new Decimal(info[key]).sub(1).mul(100).toNumber())}%`
                         : key === 'tickSize'
-                        ? info[key]
-                        : key === 'globalFreeze'
-                        ? 'Freeze'
-                        : key === 'requireAuth'
-                        ? 'Required'
-                        : key === 'disableMaster'
-                        ? 'Disallowed'
-                        : key === 'depositAuth'
-                        ? 'Enabled'
-                        : key === 'requireDestTag'
-                        ? 'Required'
-                        : key === 'disallowXRP'
-                        ? 'Disabled'
-                        : key === 'noFreeze'
-                        ? 'True'
-                        : 'Enabled'}
+                          ? info[key]
+                          : key === 'globalFreeze'
+                            ? 'Freeze'
+                            : key === 'requireAuth'
+                              ? 'Required'
+                              : key === 'disableMaster'
+                                ? 'Disallowed'
+                                : key === 'depositAuth'
+                                  ? 'Enabled'
+                                  : key === 'requireDestTag'
+                                    ? 'Required'
+                                    : key === 'disallowXRP'
+                                      ? 'Disabled'
+                                      : key === 'noFreeze'
+                                        ? 'True'
+                                        : 'Enabled'}
                     </Typography>
                   </Stack>
                 )

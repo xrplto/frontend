@@ -1,5 +1,4 @@
 import { visuallyHidden } from '@mui/utils';
-import { withStyles } from '@mui/styles';
 import {
   useMediaQuery,
   useTheme,
@@ -10,7 +9,8 @@ import {
   TableSortLabel,
   Tooltip,
   Typography,
-  alpha
+  alpha,
+  styled
 } from '@mui/material';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -34,17 +34,15 @@ const SmallInfoIcon = (props) => {
   );
 };
 
-const StickyTableCell = withStyles((theme) => ({
-  head: {
-    position: 'sticky',
-    zIndex: 11,
-    top: 0,
-    fontWeight: '600',
-    fontSize: '13px',
-    letterSpacing: '0.02em',
-    textTransform: 'uppercase'
-  }
-}))(TableCell);
+const StickyTableCell = styled(TableCell)(({ theme }) => ({
+  position: 'sticky',
+  zIndex: 11,
+  top: 0,
+  fontWeight: '600',
+  fontSize: '13px',
+  letterSpacing: '0.02em',
+  textTransform: 'uppercase'
+}));
 
 const TABLE_HEAD = [
   { no: 0, id: 'star', label: '', align: 'left', width: '', order: false },

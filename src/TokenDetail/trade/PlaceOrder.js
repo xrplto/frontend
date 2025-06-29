@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
 
 // Material
-import { withStyles } from '@mui/styles';
-import { Button, Stack, Typography } from '@mui/material';
+import { Button, Stack, Typography, styled } from '@mui/material';
 
 // Context
 import { useContext } from 'react';
@@ -12,8 +11,8 @@ import { AppContext } from 'src/AppContext';
 
 // Redux
 import { useDispatch } from 'react-redux';
-import { createOffer, isInstalled } from "@gemwallet/api";
-import sdk from "@crossmarkio/sdk";
+import { createOffer, isInstalled } from '@gemwallet/api';
+import sdk from '@crossmarkio/sdk';
 
 // Components
 import ConnectWallet from 'src/components/ConnectWallet';
@@ -21,14 +20,12 @@ import QRDialog from 'src/components/QRDialog';
 import { enqueueSnackbar } from 'notistack';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 // ----------------------------------------------------------------------
-const DisabledButton = withStyles({
-  root: {
-    '&.Mui-disabled': {
-      pointerEvents: 'unset', // allow :hover styles to be triggered
-      cursor: 'not-allowed' // and custom cursor can be defined without :hover state
-    }
+const DisabledButton = styled(Button)({
+  '&.Mui-disabled': {
+    pointerEvents: 'unset', // allow :hover styles to be triggered
+    cursor: 'not-allowed' // and custom cursor can be defined without :hover state
   }
-})(Button);
+});
 
 export default function PlaceOrder({
   marketLimit,
@@ -40,15 +37,13 @@ export default function PlaceOrder({
 }) {
   const BASE_URL = process.env.API_URL;
   const dispatch = useDispatch();
-  const { accountProfile, setLoading, openSnackbar, sync, setSync } =
-    useContext(AppContext);
+  const { accountProfile, setLoading, openSnackbar, sync, setSync } = useContext(AppContext);
   const [openScanQR, setOpenScanQR] = useState(false);
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
 
-  const isLoggedIn =
-    accountProfile && accountProfile.account && accountPairBalance;
+  const isLoggedIn = accountProfile && accountProfile.account && accountPairBalance;
   let isSufficientBalance = false;
   let errMsg = '';
 
@@ -71,12 +66,8 @@ export default function PlaceOrder({
     const fValue = Number(value); // XRP
 
     if (fAmount > 0 && fValue > 0) {
-      const accountAmount = new Decimal(
-        accountPairBalance.curr1.value
-      ).toNumber();
-      const accountValue = new Decimal(
-        accountPairBalance.curr2.value
-      ).toNumber();
+      const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
+      const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
       if (buySell === 'BUY') {
         if (accountValue >= fValue) {
           isSufficientBalance = true;
@@ -119,7 +110,7 @@ export default function PlaceOrder({
         const dispatched_result = res.dispatched_result;
 
         return dispatched_result;
-      } catch (err) { }
+      } catch (err) {}
     }
 
     const startInterval = () => {
@@ -164,7 +155,7 @@ export default function PlaceOrder({
           startInterval();
           return;
         }
-      } catch (err) { }
+      } catch (err) {}
       isRunning = false;
       counter--;
       if (counter <= 0) {
@@ -252,7 +243,7 @@ export default function PlaceOrder({
       const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
 
       switch (wallet_type) {
-        case "xaman":
+        case 'xaman':
           setLoading(true);
           const res = await axios.post(`${BASE_URL}/offer/create`, body);
 
@@ -268,7 +259,7 @@ export default function PlaceOrder({
           }
 
           break;
-        case "gem":
+        case 'gem':
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               if (TakerGets.currency === 'XRP') {
@@ -282,59 +273,56 @@ export default function PlaceOrder({
                 flags: Flags,
                 takerGets: TakerGets,
                 takerPays: TakerPays
-              }
+              };
 
               dispatch(updateProcess(1));
 
               await createOffer(offer).then(({ type, result }) => {
-                if (type == "response") {
+                if (type == 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
-                }
-
-                else {
+                } else {
                   dispatch(updateProcess(3));
                 }
 
                 setSync(sync + 1);
               });
+            } else {
+              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
             }
-
-            else {
-              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
-            }
-          })
+          });
           break;
-        case "crossmark":
+        case 'crossmark':
           // if (!window.xrpl) {
           //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
           //   return;
           // }
           // const { isCrossmark } = window.xrpl;
           // if (isCrossmark) {
-            if (TakerGets.currency === 'XRP') {
-              TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
-            }
+          if (TakerGets.currency === 'XRP') {
+            TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
+          }
 
-            if (TakerPays.currency === 'XRP') {
-              TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
-            }
-            const offer = {
-              Flags: Flags,
-              TakerGets: TakerGets,
-              TakerPays: TakerPays,
-              Account: accountProfile?.account
-            }
-  
-            dispatch(updateProcess(1));
-            await sdk.methods.signAndSubmitAndWait({
+          if (TakerPays.currency === 'XRP') {
+            TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+          }
+          const offer = {
+            Flags: Flags,
+            TakerGets: TakerGets,
+            TakerPays: TakerPays,
+            Account: accountProfile?.account
+          };
+
+          dispatch(updateProcess(1));
+          await sdk.methods
+            .signAndSubmitAndWait({
               ...offer,
               TransactionType: 'OfferCreate'
-            }).then(({ response }) => {
+            })
+            .then(({ response }) => {
               if (response.data.meta.isSuccess) {
                 dispatch(updateProcess(2));
                 dispatch(updateTxHash(response.data.resp.result?.hash));
-
               } else {
                 dispatch(updateProcess(3));
               }
@@ -357,7 +345,7 @@ export default function PlaceOrder({
       if (res.status === 200) {
         setUuid(null);
       }
-    } catch (err) { }
+    } catch (err) {}
     setLoading(false);
   };
 

@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
 
 // Material
-import { withStyles } from '@mui/styles';
 import {
   alpha,
   useTheme,
@@ -148,12 +147,6 @@ const OfferDialogTitle = (props) => {
     </DialogTitle>
   );
 };
-
-const Label = withStyles({
-  root: {
-    color: alpha('#637381', 0.99)
-  }
-})(Typography);
 
 const CustomSelect = styled(Select)(({ theme }) => ({
   '& .MuiOutlinedInput-notchedOutline': {

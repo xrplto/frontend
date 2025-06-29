@@ -3,7 +3,6 @@ import { useState, useEffect, useContext } from 'react';
 import { Lightbox } from 'react-modal-image';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
-import { withStyles } from '@mui/styles';
 import {
   styled,
   useTheme,

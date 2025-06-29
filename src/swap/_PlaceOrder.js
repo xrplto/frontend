@@ -3,15 +3,15 @@ import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
 
 // Material
-import { withStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { Button, Stack, Typography } from '@mui/material';
 
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-import { createOffer, isInstalled, submitTransaction } from "@gemwallet/api";
-import sdk from "@crossmarkio/sdk";
+import { createOffer, isInstalled, submitTransaction } from '@gemwallet/api';
+import sdk from '@crossmarkio/sdk';
 
 // Redux
 import { useDispatch } from 'react-redux';
@@ -21,14 +21,12 @@ import QRDialog from 'src/components/QRDialog';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 // ----------------------------------------------------------------------
-const DisabledButton = withStyles({
-  root: {
-    '&.Mui-disabled': {
-      pointerEvents: 'unset', // allow :hover styles to be triggered
-      cursor: 'not-allowed' // and custom cursor can be defined without :hover state
-    }
+const DisabledButton = styled(Button)({
+  '&.Mui-disabled': {
+    pointerEvents: 'unset', // allow :hover styles to be triggered
+    cursor: 'not-allowed' // and custom cursor can be defined without :hover state
   }
-})(Button);
+});
 
 export default function PlaceOrder({
   marketLimit,
@@ -40,15 +38,13 @@ export default function PlaceOrder({
 }) {
   const BASE_URL = process.env.API_URL;
   const dispatch = useDispatch();
-  const { accountProfile, setLoading, openSnackbar, sync, setSync } =
-    useContext(AppContext);
+  const { accountProfile, setLoading, openSnackbar, sync, setSync } = useContext(AppContext);
   const [openScanQR, setOpenScanQR] = useState(false);
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
 
-  const isLoggedIn =
-    accountProfile && accountProfile.account && accountPairBalance;
+  const isLoggedIn = accountProfile && accountProfile.account && accountPairBalance;
   let isSufficientBalance = false;
   let errMsg = '';
 
@@ -71,12 +67,8 @@ export default function PlaceOrder({
     const fValue = Number(value); // XRP
 
     if (fAmount > 0 && fValue > 0) {
-      const accountAmount = new Decimal(
-        accountPairBalance.curr1.value
-      ).toNumber();
-      const accountValue = new Decimal(
-        accountPairBalance.curr2.value
-      ).toNumber();
+      const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
+      const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
       if (buySell === 'BUY') {
         if (accountValue >= fValue) {
           isSufficientBalance = true;
@@ -252,18 +244,18 @@ export default function PlaceOrder({
       const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
       let memoData = `Create offer via https://xrpl.to`;
       if (Flags & OfferCreate.tfImmediateOrCancel) {
-          memoData = `Token Exchange via https://xrpl.to`;
+        memoData = `Token Exchange via https://xrpl.to`;
       }
 
-      switch(wallet_type) {
-        case "xaman":
+      switch (wallet_type) {
+        case 'xaman':
           const res = await axios.post(`${BASE_URL}/offer/create`, body);
-    
+
           if (res.status === 200) {
             const uuid = res.data.data.uuid;
             const qrlink = res.data.data.qrUrl;
             const nextlink = res.data.data.next;
-    
+
             setUuid(uuid);
             setQrUrl(qrlink);
             setNextUrl(nextlink);
@@ -271,12 +263,11 @@ export default function PlaceOrder({
           }
 
           break;
-        case "gem":
-          isInstalled().then(async(response) => {
+        case 'gem':
+          isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
-              
               let offerTxData = {
-                TransactionType: "OfferCreate",
+                TransactionType: 'OfferCreate',
                 Account,
                 Flags,
                 TakerGets,
@@ -286,17 +277,14 @@ export default function PlaceOrder({
               const { response } = await submitTransaction({
                 transaction: offerTxData
               });
+            } else {
+              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
             }
-
-            else {
-              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
-            }
-          })
+          });
           break;
-        case "crossmark":
-          
+        case 'crossmark':
           let offerTxData = {
-            TransactionType: "OfferCreate",
+            TransactionType: 'OfferCreate',
             Account,
             Flags,
             TakerGets,

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { withStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { Chip, Tooltip, Typography, Stack } from '@mui/material';
 import { Icon } from '@iconify/react';
 import caretDown from '@iconify/icons-bx/caret-down';
@@ -43,31 +43,25 @@ BearBullChip.propTypes = {
   componentsProps: PropTypes.object
 };
 
-const BearishChip = withStyles({
-  root: {
-    backgroundColor: '#B72136 !important',
-    borderRadius: '4px !important',
-    '& .MuiChip-label': {
-      padding: '0 4px'
-    }
+const BearishChip = styled(Chip)({
+  backgroundColor: '#B72136 !important',
+  borderRadius: '4px !important',
+  '& .MuiChip-label': {
+    padding: '0 4px'
   }
-})(Chip);
+});
 
-const BullishChip = withStyles({
-  root: {
-    backgroundColor: '#007B55 !important',
-    borderRadius: '4px !important',
-    '& .MuiChip-label': {
-      padding: '0 4px'
-    }
+const BullishChip = styled(Chip)({
+  backgroundColor: '#007B55 !important',
+  borderRadius: '4px !important',
+  '& .MuiChip-label': {
+    padding: '0 4px'
   }
-})(Chip);
+});
 
-const WhiteTextTypography = withStyles({
-  root: {
-    color: '#FFFFFF !important',
-    fontSize: '0.85rem !important',
-    lineHeight: 1.2,
-    fontWeight: 500
-  }
-})(Typography);
+const WhiteTextTypography = styled(Typography)({
+  color: '#FFFFFF !important',
+  fontSize: '0.85rem !important',
+  lineHeight: 1.2,
+  fontWeight: 500
+});

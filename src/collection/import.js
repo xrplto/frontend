@@ -4,7 +4,6 @@ import FormData from 'form-data';
 import { useState, useEffect, useRef } from 'react';
 
 // Material
-import { withStyles } from '@mui/styles';
 import {
   styled,
   Avatar,
@@ -39,7 +38,6 @@ import PermIdentityIcon from '@mui/icons-material/PermIdentity';
 
 // Iconify
 import { Icon } from '@iconify/react';
-
 
 // Loader
 import { ClipLoader } from 'react-spinners';
@@ -130,15 +128,6 @@ const CardOverlayCircle = styled('div')(
 `
 );
 
-const DisabledButton = withStyles({
-  root: {
-    '&.Mui-disabled': {
-      pointerEvents: 'unset', // allow :hover styles to be triggered
-      cursor: 'not-allowed' // and custom cursor can be defined without :hover state
-    }
-  }
-})(Button);
-
 const CustomSelect = styled(Select)(({ theme }) => ({
   '& .MuiOutlinedInput-notchedOutline': {
     border_left: 'none'
@@ -190,14 +179,7 @@ export default function ImportCollection() {
   const [validPassword, setValidPassword] = useState(true);
 
   let canImport =
-    file1 &&
-    issuer &&
-    name &&
-    slug &&
-    valid1 &&
-    valid2 &&
-    validPassword &&
-    taxons.length > 0;
+    file1 && issuer && name && slug && valid1 && valid2 && validPassword && taxons.length > 0;
 
   const getTaxons = (issuer) => {
     if (!accountAdmin || !accountToken) {
@@ -343,7 +325,8 @@ export default function ImportCollection() {
         const reader = new FileReader();
         reader.readAsDataURL(pickedFile);
         reader.onloadend = function (e) {
-          if (idx === 1) setFileUrl1(reader.result); // data:image/jpeg;base64
+          if (idx === 1)
+            setFileUrl1(reader.result); // data:image/jpeg;base64
           else if (idx === 2) setFileUrl2(reader.result);
           else if (idx === 3) setFileUrl3(reader.result);
         };
@@ -449,9 +432,7 @@ export default function ImportCollection() {
         <Typography variant="p3">
           Input Issuer address that you want to import collection.
         </Typography>
-        <Typography variant="p3">
-          ex. rJeBz69krYh8sXb8uKsEE22ADzbi1Z4yF2
-        </Typography>
+        <Typography variant="p3">ex. rJeBz69krYh8sXb8uKsEE22ADzbi1Z4yF2</Typography>
         <TextField
           id="textIssuer"
           // autoFocus
@@ -495,27 +476,19 @@ export default function ImportCollection() {
             variant="outlined"
             sx={{ py: 0.5, px: 1.5 }}
             disabled={!taxons || taxons.length === 0}
-            onClick={() =>
-              handleClickSelectAllTaxons(
-                taxons.length !== selectedTaxons.length
-              )
-            }
+            onClick={() => handleClickSelectAllTaxons(taxons.length !== selectedTaxons.length)}
           >
             {taxons.length > 0 && taxons.length === selectedTaxons.length
               ? 'Unselect All'
               : 'Select All'}
           </Button>
         </Stack>
-        <Typography variant="p3">
-          Select taxon that you want to import.
-        </Typography>
+        <Typography variant="p3">Select taxon that you want to import.</Typography>
 
         {!taxons ||
           (taxons.length === 0 && (
             <Stack alignItems="center">
-              <Typography variant="s2">
-                [ Input issuer address to get Taxons list ]
-              </Typography>
+              <Typography variant="s2">[ Input issuer address to get Taxons list ]</Typography>
             </Stack>
           ))}
 
@@ -550,8 +523,7 @@ export default function ImportCollection() {
           Logo image <Typography variant="s2">*</Typography>
         </Typography>
         <Typography variant="p3">
-          This image will also be used for navigation. 350 x 350
-          recommended.(Max: 10MB)
+          This image will also be used for navigation. 350 x 350 recommended.(Max: 10MB)
         </Typography>
         <CardWrapperCircle>
           <input
@@ -613,9 +585,8 @@ export default function ImportCollection() {
           Featured image
         </Typography>
         <Typography variant="p3">
-          This image will be used for featuring your collection on the homepage,
-          category pages, or other promotional areas of XRPNFT.COM. 600 x 400
-          recommended.(Max: 10MB)
+          This image will be used for featuring your collection on the homepage, category pages, or
+          other promotional areas of XRPNFT.COM. 600 x 400 recommended.(Max: 10MB)
         </Typography>
         <CardWrapper>
           <input
@@ -678,9 +649,9 @@ export default function ImportCollection() {
           Banner image
         </Typography>
         <Typography variant="p3">
-          This image will appear at the top of your collection page. Avoid
-          including too much text in this banner image, as the dimensions change
-          on different devices. 1400 x 350 recommended.(Max: 10MB)
+          This image will appear at the top of your collection page. Avoid including too much text
+          in this banner image, as the dimensions change on different devices. 1400 x 350
+          recommended.(Max: 10MB)
         </Typography>
         <CardWrapper3>
           <input
@@ -758,8 +729,8 @@ export default function ImportCollection() {
       <Stack spacing={2} mb={3}>
         <Typography variant="p4">Category</Typography>
         <Typography variant="p3">
-          This helps your NFT to be found when people search by Category. Once
-          you set, you can not change Category when you edit your collection.
+          This helps your NFT to be found when people search by Category. Once you set, you can not
+          change Category when you edit your collection.
         </Typography>
         <CustomSelect
           id="select_category"
@@ -782,8 +753,8 @@ export default function ImportCollection() {
           URL <Typography variant="s2">*</Typography>
         </Typography>
         <Typography variant="p3">
-          Customize your URL on XRPNFT.COM. Must only contain lowercase letters,
-          numbers, and hyphens.
+          Customize your URL on XRPNFT.COM. Must only contain lowercase letters, numbers, and
+          hyphens.
         </Typography>
 
         <LoadingTextField
@@ -808,8 +779,8 @@ export default function ImportCollection() {
 
         <Stack spacing={1} pl={0}>
           <Typography variant="p3">
-            <Typography variant="s2">Normal:</Typography> Imported collections
-            will have Normal type.
+            <Typography variant="s2">Normal:</Typography> Imported collections will have Normal
+            type.
           </Typography>
         </Stack>
 
@@ -837,10 +808,8 @@ export default function ImportCollection() {
       <Stack spacing={2} mb={3}>
         <Typography variant="p4">Description</Typography>
         <Typography variant="p3">
-          <Link href="https://www.markdownguide.org/cheat-sheet/">
-            Markdown
-          </Link>{' '}
-          syntax is supported. 0 of 1000 characters used.
+          <Link href="https://www.markdownguide.org/cheat-sheet/">Markdown</Link> syntax is
+          supported. 0 of 1000 characters used.
         </Typography>
         <TextField
           placeholder=""
@@ -880,24 +849,24 @@ export default function ImportCollection() {
 
         <Stack spacing={1} pl={0}>
           <Typography variant="p3">
-            <Typography variant="s2">Standard:</Typography> Simply compare the
-            rarest trait of each NFT(%).
+            <Typography variant="s2">Standard:</Typography> Simply compare the rarest trait of each
+            NFT(%).
           </Typography>
           <Typography variant="p3">
-            <Typography variant="s2">Average:</Typography> Average the rarity of
-            traits that exist on the NFT(%).
+            <Typography variant="s2">Average:</Typography> Average the rarity of traits that exist
+            on the NFT(%).
           </Typography>
           <Typography variant="p3">
-            <Typography variant="s2">Statistical:</Typography> Multiply all of
-            its trait rarities together(%).
+            <Typography variant="s2">Statistical:</Typography> Multiply all of its trait rarities
+            together(%).
           </Typography>
           <Typography variant="p3">
-            <Typography variant="s2">Score:</Typography> Sum of the Rarity Score
-            of all of its trait values(not %, just a value).
+            <Typography variant="s2">Score:</Typography> Sum of the Rarity Score of all of its trait
+            values(not %, just a value).
           </Typography>
           <Typography variant="p3">
-            <Typography variant="s2">Self:</Typography> Rarity and Rank are
-            included in each NFT metadata.
+            <Typography variant="s2">Self:</Typography> Rarity and Rank are included in each NFT
+            metadata.
           </Typography>
         </Stack>
 
@@ -909,21 +878,9 @@ export default function ImportCollection() {
             value={rarity}
             onChange={handleChangeRarity}
           >
-            <FormControlLabel
-              value="standard"
-              control={<Radio />}
-              label="Standard"
-            />
-            <FormControlLabel
-              value="average"
-              control={<Radio />}
-              label="Average"
-            />
-            <FormControlLabel
-              value="statistical"
-              control={<Radio />}
-              label="Statistical"
-            />
+            <FormControlLabel value="standard" control={<Radio />} label="Standard" />
+            <FormControlLabel value="average" control={<Radio />} label="Average" />
+            <FormControlLabel value="statistical" control={<Radio />} label="Statistical" />
             <FormControlLabel value="score" control={<Radio />} label="Score" />
             <FormControlLabel value="self" control={<Radio />} label="Self" />
           </RadioGroup>

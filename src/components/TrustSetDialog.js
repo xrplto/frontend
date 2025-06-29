@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 // Material
-import { withStyles } from '@mui/styles';
 import {
   alpha,
   useTheme,
@@ -292,12 +291,6 @@ const CopyButton = styled(IconButton)(({ theme }) => ({
     color: theme.palette.text.primary
   }
 }));
-
-const Label = withStyles({
-  root: {
-    color: alpha('#637381', 0.99)
-  }
-})(Typography);
 
 export default function TrustSetDialog({ limit, token, setToken, balance }) {
   const theme = useTheme();
@@ -798,9 +791,9 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
         <DialogContent>
           <Stack spacing={2.5} sx={{ px: 1 }}>
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
+              <Typography variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
                 Issuer:
-              </Label>
+              </Typography>
               <Stack direction="row" alignItems="center" spacing={0.5} sx={{ flex: 1 }}>
                 <StyledLink
                   underline="hover"
@@ -827,9 +820,9 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
             </Stack>
 
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
+              <Typography variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
                 Currency:
-              </Label>
+              </Typography>
               <Stack direction="row" alignItems="center" spacing={0.5}>
                 <CurrencyChip variant="body2" noWrap>
                   {currency}

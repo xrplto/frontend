@@ -1,5 +1,5 @@
 import { visuallyHidden } from '@mui/utils';
-import { withStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import {
   Box,
   TableRow,
@@ -13,17 +13,15 @@ import {
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-const StickyTableCell = withStyles((theme) => ({
-  head: {
-    position: 'sticky',
-    zIndex: 1000,
-    top: 0,
-    fontWeight: '600',
-    fontSize: '13px',
-    letterSpacing: '0.02em',
-    textTransform: 'uppercase'
-  }
-}))(TableCell);
+const StickyTableCell = styled(TableCell)({
+  position: 'sticky',
+  zIndex: 1000,
+  top: 0,
+  fontWeight: '600',
+  fontSize: '13px',
+  letterSpacing: '0.02em',
+  textTransform: 'uppercase'
+});
 
 const TABLE_HEAD = (isMobile) => {
   if (isMobile) {

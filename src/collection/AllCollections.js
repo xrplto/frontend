@@ -27,10 +27,8 @@ import {
 } from 'chart.js';
 import CollectionList from './CollectionList';
 import { CollectionListType } from 'src/utils/constants';
-import { withStyles } from '@mui/styles';
 import { alpha } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import Link from 'next/link';
 
 ChartJS.register(
@@ -81,17 +79,6 @@ const chartOptions = {
     }
   }
 };
-
-const ContentTypography = withStyles((theme) => ({
-  root: {
-    color: alpha(theme.palette.text.secondary, 0.9),
-    display: 'inline',
-    verticalAlign: 'middle',
-    lineHeight: 1.6,
-    fontSize: '1rem',
-    fontWeight: 400
-  }
-}))(Typography);
 
 // Chart Container Component with updated styling (similar to market-metrics)
 const ChartContainer = ({ title, children, showFilter, onFilterChange, filterActive }) => {

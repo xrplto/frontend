@@ -1,6 +1,5 @@
-import { withStyles } from '@mui/styles';
+import { styled, alpha } from '@mui/material/styles';
 import {
-  alpha,
   Box,
   Button,
   Container,
@@ -24,11 +23,9 @@ import { AppContext } from 'src/AppContext';
 import { fNumber } from 'src/utils/formatNumber';
 
 // Components
-const ContentTypography = withStyles({
-  root: {
-    color: alpha('#919EAB', 0.99),
-  },
-})(Typography);
+const ContentTypography = styled(Typography)(({ theme }) => ({
+  color: alpha('#919EAB', 0.99),
+}));
 
 export default function TokenDirectoryPage({}) {
   const { accountProfile, openSnackbar, setLoading } = useContext(AppContext);

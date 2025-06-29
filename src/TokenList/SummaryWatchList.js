@@ -1,11 +1,6 @@
 // Material
-import { withStyles } from '@mui/styles';
-import {
-    alpha,
-    Link,
-    Stack,
-    Typography
-} from '@mui/material';
+import { styled, alpha } from '@mui/material/styles';
+import { Link, Stack, Typography } from '@mui/material';
 
 // Context
 import { useContext } from 'react';
@@ -16,27 +11,24 @@ import { fNumber } from 'src/utils/formatNumber';
 
 // Components
 
-const ContentTypography = withStyles({
-    root: {
-        color: alpha('#919EAB', 0.99)
-    }
-})(Typography);
-
+const ContentTypography = styled(Typography)({
+  color: alpha('#919EAB', 0.99)
+});
 
 export default function SummaryWatchList({}) {
-    const { accountProfile, openSnackbar, setLoading } = useContext(AppContext);
+  const { accountProfile, openSnackbar, setLoading } = useContext(AppContext);
 
-    const account = accountProfile?.account;
+  const account = accountProfile?.account;
 
-    return (
-        <Stack sx={{mt:2}}>
-            <Typography variant='h1'>My Token Watchlist</Typography>
+  return (
+    <Stack sx={{ mt: 2 }}>
+      <Typography variant="h1">My Token Watchlist</Typography>
 
-            {!account &&
-                <ContentTypography variant='subtitle1' sx={{mt:2}}>
-                    Please log in to view your Watchlist.
-                </ContentTypography>
-            }
-        </Stack>
-    )
+      {!account && (
+        <ContentTypography variant="subtitle1" sx={{ mt: 2 }}>
+          Please log in to view your Watchlist.
+        </ContentTypography>
+      )}
+    </Stack>
+  );
 }

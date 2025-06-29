@@ -1,18 +1,16 @@
 import Decimal from 'decimal.js';
 import React, { useState, useContext } from 'react';
 import { useSelector } from 'react-redux';
-import { withStyles } from '@mui/styles';
-import { alpha, Grid, Link, Stack, Typography } from '@mui/material';
+import { styled, alpha } from '@mui/material/styles';
+import { Grid, Link, Stack, Typography } from '@mui/material';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber } from 'src/utils/formatNumber';
 import WalletCard from './WalletCard';
 import { AppContext } from 'src/AppContext';
 
-const ContentTypography = withStyles({
-  root: {
-    color: alpha('#919EAB', 0.99)
-  }
-})(Typography);
+const ContentTypography = styled(Typography)({
+  color: alpha('#919EAB', 0.99)
+});
 
 function Rate(num, exch) {
   if (num === 0 || exch === 0) return 0;

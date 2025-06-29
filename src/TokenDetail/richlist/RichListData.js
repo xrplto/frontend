@@ -26,10 +26,10 @@ import {
   CircularProgress,
   Modal,
   useMediaQuery,
-  useTheme
+  useTheme,
+  styled
 } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
-import { withStyles } from '@mui/styles';
 
 // Context
 import { useContext } from 'react';
@@ -813,17 +813,15 @@ const CopyButton = ({ text }) => {
 };
 
 // Add styled components after imports
-const StickyTableCell = withStyles((theme) => ({
-  head: {
-    position: 'sticky',
-    zIndex: 1000,
-    top: 0,
-    fontWeight: '600',
-    fontSize: '13px',
-    letterSpacing: '0.02em',
-    textTransform: 'uppercase'
-  }
-}))(TableCell);
+const StickyTableCell = styled(TableCell)({
+  position: 'sticky',
+  zIndex: 1000,
+  top: 0,
+  fontWeight: '600',
+  fontSize: '13px',
+  letterSpacing: '0.02em',
+  textTransform: 'uppercase'
+});
 
 const SmallInfoIcon = (props) => (
   <InfoIcon

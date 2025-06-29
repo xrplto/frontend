@@ -1,17 +1,9 @@
 import { useState, useMemo } from 'react';
 // Material
-import { withStyles } from '@mui/styles';
 import { alpha, Link, Stack, Typography } from '@mui/material';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
-
-// CBCCD2
-const ContentTypography = withStyles({
-  root: {
-    color: alpha('#919EAB', 0.99)
-  }
-})(Typography);
 
 function Rate(num, exch) {
   if (num === 0 || exch === 0) return 0;
@@ -242,9 +234,9 @@ export default function HowWeWork({ data }) {
   return (
     <Stack sx={{ pt: 2 }}>
       <Stack direction="row" sx={{ mt: 1, mb: 6 }}>
-        <ContentTypography variant="subtitle1">
+        <Typography variant="subtitle1" sx={{ color: alpha('#919EAB', 0.99) }}>
           Discover our process by clicking here.
-        </ContentTypography>
+        </Typography>
         <Link
           component="button"
           underline="always"
@@ -252,9 +244,9 @@ export default function HowWeWork({ data }) {
           color="#637381"
           onClick={() => setShowContent(!showContent)}
         >
-          <ContentTypography variant="subtitle1" sx={{ ml: 1 }}>
+          <Typography variant="subtitle1" sx={{ ml: 1, color: alpha('#919EAB', 0.99) }}>
             {showContent ? 'Read Less' : 'Read More'}
-          </ContentTypography>
+          </Typography>
         </Link>
       </Stack>
 

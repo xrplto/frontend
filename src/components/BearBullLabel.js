@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 // Material
-import { withStyles, useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Stack, Typography } from '@mui/material';
 
 // Iconify
@@ -10,18 +10,6 @@ import caretDown from '@iconify/icons-bx/caret-down';
 import caretUp from '@iconify/icons-bx/caret-up';
 
 // ----------------------------------------------------------------------
-
-const BearishTypography = withStyles((theme) => ({
-  root: {
-    color: theme.palette.error.main
-  }
-}))(Typography);
-
-const BullishTypography = withStyles((theme) => ({
-  root: {
-    color: theme.palette.primary.light
-  }
-}))(Typography);
 
 BearBullLabel.propTypes = {
   value: PropTypes.number,
@@ -59,16 +47,16 @@ export default function BearBullLabel({ value, variant }) {
       {isBearish ? (
         <Stack direction="row" spacing={0.1} justifyContent="flex-end" alignItems="center">
           <Icon icon={caretDown} color={theme.palette.error.main} />
-          <BearishTypography variant={variant} noWrap>
+          <Typography variant={variant} noWrap sx={{ color: theme.palette.error.main }}>
             {strPro}
-          </BearishTypography>
+          </Typography>
         </Stack>
       ) : (
         <Stack direction="row" spacing={0.1} justifyContent="flex-end" alignItems="center">
           <Icon icon={caretUp} color={theme.palette.primary.light} />
-          <BullishTypography variant={variant} noWrap>
+          <Typography variant={variant} noWrap sx={{ color: theme.palette.primary.light }}>
             {strPro}
-          </BullishTypography>
+          </Typography>
         </Stack>
       )}
     </>

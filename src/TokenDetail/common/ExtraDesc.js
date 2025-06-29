@@ -3,7 +3,6 @@ import Decimal from 'decimal.js';
 import { useState, useEffect, useContext } from 'react';
 
 // Material
-import { withStyles } from '@mui/styles';
 import {
   useTheme,
   Checkbox,
