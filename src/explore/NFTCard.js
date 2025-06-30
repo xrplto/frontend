@@ -82,7 +82,7 @@ export default function NFTCard({ nft, handleRemove }) {
     MasterSequence
   } = nft;
 
-  const isSold = false;
+  const isSold = true;
   const imgUrl = getNftCoverUrl(nft, 'small');
   const name = nft.meta?.name || meta?.Name || 'No Name';
 
@@ -144,10 +144,13 @@ export default function NFTCard({ nft, handleRemove }) {
               textTransform: 'uppercase',
               borderRadius: '8px',
               fontWeight: 'bold',
-              backdropFilter: 'blur(4px)'
+              backdropFilter: 'blur(4px)',
+              padding: '2px 6px',
+              fontSize: '0.6rem',
+              height: 'auto'
             }}
           >
-            SOLD
+            SALE
           </Label>
         )}
         <Box
@@ -204,37 +207,24 @@ export default function NFTCard({ nft, handleRemove }) {
             {costb && costb.amount && (
               <Box
                 sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.success.main,
-                    0.15
-                  )} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`,
+                  background: alpha(theme.palette.success.dark, 0.8),
                   backdropFilter: 'blur(10px)',
                   border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
                   borderRadius: '12px',
-                  padding: '4px 8px',
+                  padding: '2px 8px',
                   marginBottom: '4px',
                   boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.15)}`,
                   position: 'relative',
-                  overflow: 'hidden',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '1px',
-                    background: `linear-gradient(90deg, transparent 0%, ${theme.palette.success.main} 50%, transparent 100%)`,
-                    opacity: 0.6
-                  }
+                  overflow: 'hidden'
                 }}
               >
                 <Typography
                   variant="caption"
                   sx={{
                     fontWeight: 700,
-                    color: theme.palette.success.main,
+                    color: theme.palette.common.white,
                     letterSpacing: '0.5px',
-                    fontSize: '0.7rem',
+                    fontSize: '0.65rem',
                     textShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.1)}`
                   }}
                   noWrap
