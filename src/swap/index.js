@@ -5,7 +5,7 @@ import { ClipLoader } from 'react-spinners';
 
 // Set Decimal precision immediately after import
 Decimal.set({ precision: 50 });
-import SparklineChart from 'src/components/SparklineChart';
+import LoadChart from 'src/components/LoadChart';
 
 // Material
 
@@ -2734,7 +2734,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   }
                 }}
               >
-                <SparklineChart
+                <LoadChart
                   url={`${BASE_URL}/sparkline/${revert ? token2.md5 : token1.md5}?period=24h&${
                     revert ? token2.pro24h : token1.pro24h
                   }`}
@@ -2854,7 +2854,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   }
                 }}
               >
-                <SparklineChart
+                <LoadChart
                   url={`${BASE_URL}/sparkline/${revert ? token1.md5 : token2.md5}?period=24h&${
                     revert ? token1.pro24h : token2.pro24h
                   }`}
