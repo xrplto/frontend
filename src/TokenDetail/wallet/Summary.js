@@ -217,7 +217,7 @@ export default function Summary() {
         {/* Grid items for WalletCards */}
         {/* Example for one Wallet Card */}
         <Grid item xs={12} md={6} lg={4} sx={{ pl: 0, position: 'relative' }}>
-          <WalletCard name="Xaman" link="https://xumm.app/" imgUrl="/static/xumm.webp" />
+          <WalletCard name="Xaman" link="https://xumm.app/" imgUrl="/static/xaman.webp" />
         </Grid>
 
         <Grid item xs={12} md={6} lg={4} sx={{ pl: 0 }}>

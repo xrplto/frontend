@@ -9,68 +9,73 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import LinkIcon from '@mui/icons-material/Link';
 
 // Material
-import {
-    Avatar,
-    IconButton,
-    Link,
-    ListItemText,
-    Menu,
-    MenuItem
-} from '@mui/material';
+import { Avatar, IconButton, Link, ListItemText, Menu, MenuItem } from '@mui/material';
 // ----------------------------------------------------------------------
 
-export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken}) {
-    const ref = useRef(null);
-    const {
-        issuer,
-        slug,
-        currency
-    } = token;
+export default function TokenMoreMenu({ token, admin, setEditToken, setTrustToken }) {
+  const ref = useRef(null);
+  const { issuer, slug, currency } = token;
 
-    const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-    return (
-        <>
-            <IconButton ref={ref} onClick={() => setIsOpen(true)}>
-                <Icon icon={moreVerticalFill} width={20} height={20} />
-            </IconButton>
+  return (
+    <>
+      <IconButton ref={ref} onClick={() => setIsOpen(true)}>
+        <Icon icon={moreVerticalFill} width={20} height={20} />
+      </IconButton>
 
-            <Menu
-                open={isOpen}
-                anchorEl={ref.current}
-                onClose={() => setIsOpen(false)}
-                PaperProps={{
-                    sx: { width: 170, maxWidth: '100%' }
-                }}
-                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-            >
-                {admin && (
-                    <MenuItem onClick={() => {setIsOpen(false);setEditToken(token);}} disableRipple sx={{ color: 'text.secondary' }}>
-                        <EditIcon color='error' sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="Edit Token" primaryTypographyProps={{ variant: 'subtitle2', color:'error' }} />
-                    </MenuItem>
-                )}
+      <Menu
+        open={isOpen}
+        anchorEl={ref.current}
+        onClose={() => setIsOpen(false)}
+        PaperProps={{
+          sx: { width: 170, maxWidth: '100%' }
+        }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        {admin && (
+          <MenuItem
+            onClick={() => {
+              setIsOpen(false);
+              setEditToken(token);
+            }}
+            disableRipple
+            sx={{ color: 'text.secondary' }}
+          >
+            <EditIcon color="error" sx={{ mr: 1, width: 24, height: 24 }} />
+            <ListItemText
+              primary="Edit Token"
+              primaryTypographyProps={{ variant: 'subtitle2', color: 'error' }}
+            />
+          </MenuItem>
+        )}
 
-                <MenuItem onClick={() => {setIsOpen(false);setTrustToken(token);}} disableRipple sx={{ color: 'text.secondary' }}>
-                    <LinkIcon sx={{ mr:1, width: 24, height: 24 }} />
-                    <ListItemText primary="Trust Set" primaryTypographyProps={{ variant: 'subtitle2' }} />
-                </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setIsOpen(false);
+            setTrustToken(token);
+          }}
+          disableRipple
+          sx={{ color: 'text.secondary' }}
+        >
+          <LinkIcon sx={{ mr: 1, width: 24, height: 24 }} />
+          <ListItemText primary="Trust Set" primaryTypographyProps={{ variant: 'subtitle2' }} />
+        </MenuItem>
 
-
-                <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`/token/${slug}/trade`}
-                    rel="noreferrer noopener nofollow"
-                >
-                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                    <SwapHorizIcon sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="DEX Trade" primaryTypographyProps={{ variant: 'subtitle2' }} />
-                    </MenuItem>
-                </Link>
-{/*
+        <Link
+          underline="none"
+          color="inherit"
+          target="_blank"
+          href={`/token/${slug}/trade`}
+          rel="noreferrer noopener nofollow"
+        >
+          <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
+            <SwapHorizIcon sx={{ mr: 1, width: 24, height: 24 }} />
+            <ListItemText primary="DEX Trade" primaryTypographyProps={{ variant: 'subtitle2' }} />
+          </MenuItem>
+        </Link>
+        {/*
                 <Link
                     underline="none"
                     color="inherit"
@@ -130,7 +135,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xumm" src="/static/xumm.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="xumm" src="/static/xaman.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Xumm DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -185,8 +190,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                         <ListItemText primary="Magnetic DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>*/}
-                
-            </Menu>
-        </>
-    );
+      </Menu>
+    </>
+  );
 }

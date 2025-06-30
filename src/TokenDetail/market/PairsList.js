@@ -930,7 +930,7 @@ export default function PairsList({ token, pairs }) {
                           >
                             <Avatar
                               alt="XUMM DEX"
-                              src="/static/xumm.webp"
+                              src="/static/xaman.webp"
                               sx={{ width: 28, height: 28 }}
                             />
                           </IconButton>

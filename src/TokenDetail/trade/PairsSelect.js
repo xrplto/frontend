@@ -199,7 +199,7 @@ const PairsSelect = memo(({ token, pair, setPair }) => {
           <CustomSelect
             labelId="demo-select-small"
             id="demo-select-small"
-            value={pair.pair}
+            value={pairs.find((p) => p.pair === pair.pair) ? pair.pair : ''}
             label="Pair"
             onChange={handleChangePair}
           >
@@ -249,7 +249,7 @@ const PairsSelect = memo(({ token, pair, setPair }) => {
                                 rel="noreferrer noopener nofollow"
                             >
                                 <IconButton edge="end" aria-label="solo">
-                                    <Avatar variant="rounded" alt="XUMM" src="/static/xumm.webp" sx={{ width: 24, height: 24 }} />
+                                    <Avatar variant="rounded" alt="XUMM" src="/static/xaman.webp" sx={{ width: 24, height: 24 }} />
                                 </IconButton>
                             </Link>
                         </Tooltip>
