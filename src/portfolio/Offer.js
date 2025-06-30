@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Box,
   Card,
@@ -77,10 +77,11 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   }
 }));
 
-function truncate(str, n) {
+// Utility functions
+const truncate = (str, n) => {
   if (!str) return '';
   return str.length > n ? str.substr(0, n - 1) + '...' : str;
-}
+};
 
 const formatNumber = (value) => {
   return Number(value).toLocaleString('en-US', {
@@ -89,217 +90,419 @@ const formatNumber = (value) => {
   });
 };
 
-const Offer = React.memo(({ account, defaultExpanded = false }) => {
+// Cache to prevent duplicate API calls
+const offersCache = new Map();
+const loadingAccounts = new Set();
+
+const Offer = React.memo(({ account }) => {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
   const dispatch = useDispatch();
   const { accountProfile, openSnackbar, setSync } = useContext(AppContext);
-  const isLoggedIn = accountProfile && accountProfile.account;
+
+  // State
+  const [offers, setOffers] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // QR Dialog state
   const [openScanQR, setOpenScanQR] = useState(false);
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(false);
-  const [page, setPage] = useState(0);
-  const [rows, setRows] = useState(10);
-  const [total, setTotal] = useState(0);
-  const [offers, setOffers] = useState([]);
 
-  const tableRef = useRef(null);
-  const [scrollLeft, setScrollLeft] = useState(0);
+  const isLoggedIn = useMemo(() => accountProfile && accountProfile.account, [accountProfile]);
 
-  const hasLoadedRef = useRef(false);
-
-  useEffect(() => {
-    // Only load once per account
-    if (!account || hasLoadedRef.current) {
+  // Fetch offers function with caching and duplicate prevention
+  const fetchOffers = useCallback(async (accountAddress) => {
+    if (!accountAddress) {
+      setOffers([]);
+      setTotal(0);
       return;
     }
 
-    let isMounted = true;
-    const controller = new AbortController();
+    // Check cache first
+    if (offersCache.has(accountAddress)) {
+      const cached = offersCache.get(accountAddress);
+      setOffers(cached.offers);
+      setTotal(cached.total);
+      return;
+    }
 
+    // Prevent duplicate calls
+    if (loadingAccounts.has(accountAddress)) {
+      return;
+    }
+
+    loadingAccounts.add(accountAddress);
     setLoading(true);
-    axios
-      .get(`https://api.xrpl.to/api/account/offers/${account}?page=0&limit=10`, {
-        signal: controller.signal
-      })
-      .then((res) => {
-        if (!isMounted) return;
+    setError(null);
 
-        if (res.status === 200 && res.data) {
-          setTotal(res.data.total || 0);
-          setOffers(res.data.offers || []);
-        }
-      })
-      .catch((err) => {
-        if (!axios.isCancel(err)) {
-          console.log('Error on getting account offers:', err);
-        }
-      })
-      .finally(() => {
-        if (isMounted) {
-          setLoading(false);
-          hasLoadedRef.current = true;
-        }
-      });
+    try {
+      const response = await axios.get(
+        `https://api.xrpl.to/api/account/offers/${accountAddress}?page=0&limit=10`,
+        { timeout: 10000 }
+      );
 
-    return () => {
-      isMounted = false;
-      controller.abort();
-    };
-  }, [account]);
+      if (response.status === 200 && response.data) {
+        const data = {
+          offers: response.data.offers || [],
+          total: response.data.total || 0
+        };
 
-  // Reset loaded flag when account changes
-  useEffect(() => {
-    hasLoadedRef.current = false;
-  }, [account]);
+        // Cache the result
+        offersCache.set(accountAddress, data);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollLeft(tableRef?.current?.scrollLeft > 0);
-    };
-
-    tableRef?.current?.addEventListener('scroll', handleScroll);
-
-    return () => {
-      tableRef?.current?.removeEventListener('scroll', handleScroll);
-    };
+        setOffers(data.offers);
+        setTotal(data.total);
+      }
+    } catch (err) {
+      console.error('Error fetching offers:', err);
+      setError('Failed to load offers');
+      setOffers([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+      loadingAccounts.delete(accountAddress);
+    }
   }, []);
 
-  const handleCancel = (event, account, seq) => {
-    if (!isLoggedIn) {
-      openSnackbar('Please connect wallet!', 'error');
-    } else if (accountProfile.account !== account) {
-      openSnackbar('You are not the owner of this offer!', 'error');
-    } else {
-      onOfferCancelXumm(seq);
-    }
-  };
-
+  // Load offers when account changes
   useEffect(() => {
-    var timer = null;
-    var isRunning = false;
-    var counter = 150;
-    async function getPayload() {
-      if (isRunning) return;
+    fetchOffers(account);
+  }, [account, fetchOffers]);
+
+  // QR Dialog polling effect
+  useEffect(() => {
+    if (!openScanQR || !uuid) return;
+
+    let timer;
+    let counter = 150;
+    let isRunning = false;
+
+    const checkPayload = async () => {
+      if (isRunning || counter <= 0) return;
+
       isRunning = true;
       try {
-        const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
-        const res = ret.data.data.response;
+        const response = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+        const data = response.data.data.response;
 
-        const resolved_at = res.resolved_at;
-        const dispatched_result = res.dispatched_result;
-        if (resolved_at) {
+        if (data.resolved_at) {
           setOpenScanQR(false);
-          if (dispatched_result === 'tesSUCCESS') {
+          if (data.dispatched_result === 'tesSUCCESS') {
             setSync((prev) => prev + 1);
+            // Invalidate cache to refresh data
+            if (account) {
+              offersCache.delete(account);
+              fetchOffers(account);
+            }
           }
           return;
         }
-      } catch (err) {}
+      } catch (err) {
+        console.error('Error checking payload:', err);
+      }
+
       isRunning = false;
       counter--;
+
       if (counter <= 0) {
         setOpenScanQR(false);
       }
-    }
-    if (openScanQR) {
-      timer = setInterval(getPayload, 2000);
-    }
-    return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
     };
-  }, [openScanQR, uuid]);
 
-  const onOfferCancelXumm = async (seq) => {
-    const wallet_type = accountProfile?.wallet_type;
-    try {
-      const OfferSequence = seq;
+    timer = setInterval(checkPayload, 2000);
 
-      const user_token = accountProfile.user_token;
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [openScanQR, uuid, BASE_URL, setSync, account, fetchOffers]);
 
-      const body = {
-        OfferSequence,
-        user_token,
-        Account: accountProfile?.account,
-        TransactionType: 'OfferCancel'
-      };
+  // Cancel offer handler
+  const handleCancel = useCallback(
+    async (event, offerAccount, seq) => {
+      event.preventDefault();
 
-      switch (wallet_type) {
-        case 'xaman':
-          setLoading(true);
-          const res = await axios.post(`${BASE_URL}/offer/cancel`, body);
+      if (!isLoggedIn) {
+        openSnackbar('Please connect wallet!', 'error');
+        return;
+      }
 
-          if (res.status === 200) {
-            const uuid = res.data.data.uuid;
-            const qrlink = res.data.data.qrUrl;
-            const nextlink = res.data.data.next;
+      if (accountProfile.account !== offerAccount) {
+        openSnackbar('You are not the owner of this offer!', 'error');
+        return;
+      }
 
-            setUuid(uuid);
-            setQrUrl(qrlink);
-            setNextUrl(nextlink);
-            setOpenScanQR(true);
+      const walletType = accountProfile?.wallet_type;
+
+      try {
+        const body = {
+          OfferSequence: seq,
+          user_token: accountProfile.user_token,
+          Account: accountProfile.account,
+          TransactionType: 'OfferCancel'
+        };
+
+        switch (walletType) {
+          case 'xaman': {
+            setLoading(true);
+            const response = await axios.post(`${BASE_URL}/offer/cancel`, body);
+
+            if (response.status === 200) {
+              setUuid(response.data.data.uuid);
+              setQrUrl(response.data.data.qrUrl);
+              setNextUrl(response.data.data.next);
+              setOpenScanQR(true);
+            }
+            break;
           }
-          break;
-        case 'gem':
-          dispatch(updateProcess(1));
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              await submitTransaction({
-                transaction: body
-              }).then(({ type, result }) => {
-                if (type == 'response') {
-                  dispatch(updateProcess(2));
-                  dispatch(updateTxHash(result?.hash));
-                } else {
-                  dispatch(updateProcess(3));
-                }
-              });
+
+          case 'gem': {
+            dispatch(updateProcess(1));
+            const gemResponse = await isInstalled();
+
+            if (gemResponse.result.isInstalled) {
+              const result = await submitTransaction({ transaction: body });
+
+              if (result.type === 'response') {
+                dispatch(updateProcess(2));
+                dispatch(updateTxHash(result.result?.hash));
+              } else {
+                dispatch(updateProcess(3));
+              }
             } else {
               enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
             }
-          });
-          break;
-        case 'crossmark':
-          dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
-            if (response.data.meta.isSuccess) {
+            break;
+          }
+
+          case 'crossmark': {
+            dispatch(updateProcess(1));
+            const result = await sdk.methods.signAndSubmitAndWait(body);
+
+            if (result.response.data.meta.isSuccess) {
               dispatch(updateProcess(2));
-              dispatch(updateTxHash(response.data.resp.result?.hash));
+              dispatch(updateTxHash(result.response.data.resp.result?.hash));
             } else {
               dispatch(updateProcess(3));
             }
-          });
-          break;
-      }
-    } catch (err) {
-      alert(err);
-    } finally {
-      dispatch(updateProcess(0));
-      setSync((prev) => prev + 1);
-      setLoading(false);
-    }
-  };
+            break;
+          }
 
-  const onDisconnectXumm = async (uuid) => {
-    setLoading(true);
-    try {
-      const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
-      if (res.status === 200) {
-        setUuid(null);
+          default:
+            openSnackbar('Unsupported wallet type', 'error');
+        }
+      } catch (err) {
+        console.error('Error canceling offer:', err);
+        openSnackbar('Failed to cancel offer', 'error');
+      } finally {
+        dispatch(updateProcess(0));
+        setLoading(false);
+        // Invalidate cache and refresh
+        if (account) {
+          offersCache.delete(account);
+          fetchOffers(account);
+        }
       }
-    } catch (err) {}
-    setLoading(false);
-  };
+    },
+    [isLoggedIn, accountProfile, openSnackbar, BASE_URL, dispatch, account, fetchOffers]
+  );
 
-  const handleScanQRClose = () => {
+  const handleScanQRClose = useCallback(async () => {
     setOpenScanQR(false);
-    onDisconnectXumm(uuid);
-  };
+
+    if (uuid) {
+      try {
+        await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
+        setUuid(null);
+      } catch (err) {
+        console.error('Error disconnecting XUMM:', err);
+      }
+    }
+  }, [uuid, BASE_URL]);
+
+  // Memoized content
+  const content = useMemo(() => {
+    if (!account) {
+      return (
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
+          spacing={1}
+          sx={{ py: 2, opacity: 0.8 }}
+        >
+          <ErrorOutlineIcon fontSize="small" />
+          <Typography variant="body2" color="text.secondary">
+            No account provided
+          </Typography>
+        </Stack>
+      );
+    }
+
+    if (loading) {
+      return (
+        <Stack alignItems="center" spacing={1} sx={{ py: 2 }}>
+          <PulseLoader color={theme.palette.primary.main} size={8} />
+          <Typography variant="body2" color="text.secondary">
+            Loading offers...
+          </Typography>
+        </Stack>
+      );
+    }
+
+    if (error) {
+      return (
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
+          spacing={1}
+          sx={{ py: 2, opacity: 0.8 }}
+        >
+          <ErrorOutlineIcon fontSize="small" />
+          <Typography variant="body2" color="text.secondary">
+            {error}
+          </Typography>
+        </Stack>
+      );
+    }
+
+    if (offers.length === 0) {
+      return (
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
+          spacing={1}
+          sx={{ py: 2, opacity: 0.8 }}
+        >
+          <ErrorOutlineIcon fontSize="small" />
+          <Typography variant="body2" color="text.secondary">
+            No active offers found
+          </Typography>
+        </Stack>
+      );
+    }
+
+    return (
+      <StyledTableContainer>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>Taker Gets</StyledTableCell>
+              <StyledTableCell>Taker Pays</StyledTableCell>
+              <StyledTableCell>Transaction</StyledTableCell>
+              {account && accountProfile?.account === account && (
+                <StyledTableCell align="center" sx={{ width: '60px' }}>
+                  Actions
+                </StyledTableCell>
+              )}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {offers.map((offer) => {
+              const { _id, account: offerAccount, seq, gets, pays, chash } = offer;
+
+              return (
+                <TableRow
+                  key={_id}
+                  sx={{
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.action.hover, 0.1)
+                    },
+                    '&:last-child td': {
+                      borderBottom: 0
+                    }
+                  }}
+                >
+                  <StyledTableCell>
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <Chip
+                        label={gets.name}
+                        size="small"
+                        sx={{
+                          height: '20px',
+                          backgroundColor: alpha(theme.palette.success.main, 0.1),
+                          color: theme.palette.success.main,
+                          fontWeight: 500,
+                          '& .MuiChip-label': { px: 1 }
+                        }}
+                      />
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {formatNumber(gets.value)}
+                      </Typography>
+                    </Stack>
+                  </StyledTableCell>
+
+                  <StyledTableCell>
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <Chip
+                        label={pays.name}
+                        size="small"
+                        sx={{
+                          height: '20px',
+                          backgroundColor: alpha(theme.palette.error.main, 0.1),
+                          color: theme.palette.error.main,
+                          fontWeight: 500,
+                          '& .MuiChip-label': { px: 1 }
+                        }}
+                      />
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {formatNumber(pays.value)}
+                      </Typography>
+                    </Stack>
+                  </StyledTableCell>
+
+                  <StyledTableCell>
+                    {chash && (
+                      <Link
+                        href={`https://bithomp.com/explorer/${chash}`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        sx={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          color: theme.palette.primary.main,
+                          textDecoration: 'none',
+                          '&:hover': { textDecoration: 'underline' }
+                        }}
+                      >
+                        {truncate(chash, 16)}
+                      </Link>
+                    )}
+                  </StyledTableCell>
+
+                  {account && accountProfile?.account === account && (
+                    <StyledTableCell align="center">
+                      <Tooltip title="Cancel Offer">
+                        <IconButton
+                          color="error"
+                          size="small"
+                          onClick={(e) => handleCancel(e, offerAccount, seq)}
+                          disabled={loading}
+                          sx={{
+                            padding: '4px',
+                            '&:hover': {
+                              backgroundColor: alpha(theme.palette.error.main, 0.1)
+                            }
+                          }}
+                        >
+                          <CancelIcon sx={{ fontSize: '18px' }} />
+                        </IconButton>
+                      </Tooltip>
+                    </StyledTableCell>
+                  )}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </StyledTableContainer>
+    );
+  }, [account, loading, error, offers, theme, accountProfile, handleCancel]);
 
   return (
     <StyledCard>
@@ -310,172 +513,17 @@ const Offer = React.memo(({ account, defaultExpanded = false }) => {
             <Typography sx={{ fontWeight: 'bold' }}>
               Active Offers {account && `(${account.slice(0, 8)}...)`}
             </Typography>
-            {/* Temporary debug info */}
             {process.env.NODE_ENV === 'development' && (
               <Typography variant="caption" sx={{ ml: 1, opacity: 0.7 }}>
-                {account ? `Account: ${account.slice(0, 8)}...` : 'No account'} |
-                {loading ? 'Loading...' : `${offers?.length || 0} offers`}
+                {loading ? 'Loading...' : `${offers.length} offers`}
               </Typography>
             )}
           </Box>
         }
       />
+
       <CardContent sx={{ p: 0 }}>
-        {!account ? (
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="center"
-            spacing={1}
-            sx={{
-              py: 2,
-              opacity: 0.8
-            }}
-          >
-            <ErrorOutlineIcon fontSize="small" />
-            <Typography variant="body2" color="text.secondary">
-              No account provided
-            </Typography>
-          </Stack>
-        ) : loading ? (
-          <Stack alignItems="center" spacing={1} sx={{ py: 2 }}>
-            <PulseLoader color={theme.palette.primary.main} size={8} />
-            <Typography variant="body2" color="text.secondary">
-              Loading offers...
-            </Typography>
-          </Stack>
-        ) : offers && offers.length === 0 ? (
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="center"
-            spacing={1}
-            sx={{
-              py: 2,
-              opacity: 0.8
-            }}
-          >
-            <ErrorOutlineIcon fontSize="small" />
-            <Typography variant="body2" color="text.secondary">
-              No active offers found
-            </Typography>
-          </Stack>
-        ) : (
-          <StyledTableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell>Taker Gets</StyledTableCell>
-                  <StyledTableCell>Taker Pays</StyledTableCell>
-                  <StyledTableCell></StyledTableCell>
-                  {account && accountProfile?.account === account && (
-                    <StyledTableCell align="center" sx={{ width: '60px' }}>
-                      Actions
-                    </StyledTableCell>
-                  )}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {offers.map((row) => {
-                  const { _id, account, seq, gets, pays, chash } = row;
-                  return (
-                    <TableRow
-                      key={_id}
-                      sx={{
-                        '&:hover': {
-                          backgroundColor: alpha(theme.palette.action.hover, 0.1)
-                        },
-                        '&:last-child td': {
-                          borderBottom: 0
-                        }
-                      }}
-                    >
-                      <StyledTableCell>
-                        <Stack direction="row" spacing={0.5} alignItems="center">
-                          <Chip
-                            label={gets.name}
-                            size="small"
-                            sx={{
-                              height: '20px',
-                              backgroundColor: alpha(theme.palette.success.main, 0.1),
-                              color: theme.palette.success.main,
-                              fontWeight: 500,
-                              '& .MuiChip-label': {
-                                px: 1
-                              }
-                            }}
-                          />
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatNumber(gets.value)}
-                          </Typography>
-                        </Stack>
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        <Stack direction="row" spacing={0.5} alignItems="center">
-                          <Chip
-                            label={pays.name}
-                            size="small"
-                            sx={{
-                              height: '20px',
-                              backgroundColor: alpha(theme.palette.error.main, 0.1),
-                              color: theme.palette.error.main,
-                              fontWeight: 500,
-                              '& .MuiChip-label': {
-                                px: 1
-                              }
-                            }}
-                          />
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatNumber(pays.value)}
-                          </Typography>
-                        </Stack>
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        {chash && (
-                          <Link
-                            href={`https://bithomp.com/explorer/${chash}`}
-                            target="_blank"
-                            rel="noreferrer noopener nofollow"
-                            sx={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              color: theme.palette.primary.main,
-                              textDecoration: 'none',
-                              '&:hover': {
-                                textDecoration: 'underline'
-                              }
-                            }}
-                          >
-                            {truncate(chash, 16)}
-                          </Link>
-                        )}
-                      </StyledTableCell>
-                      {account && accountProfile?.account === account && (
-                        <StyledTableCell align="center">
-                          <Tooltip title="Cancel Offer">
-                            <IconButton
-                              color="error"
-                              size="small"
-                              onClick={(e) => handleCancel(e, account, seq)}
-                              sx={{
-                                padding: '4px',
-                                '&:hover': {
-                                  backgroundColor: alpha(theme.palette.error.main, 0.1)
-                                }
-                              }}
-                            >
-                              <CancelIcon sx={{ fontSize: '18px' }} />
-                            </IconButton>
-                          </Tooltip>
-                        </StyledTableCell>
-                      )}
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </StyledTableContainer>
-        )}
+        {content}
 
         <QRDialog
           open={openScanQR}

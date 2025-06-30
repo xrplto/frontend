@@ -575,10 +575,13 @@ export default function Portfolio({ account, limit, collection, type }) {
   };
 
   const OuterBorderContainer = styled(Box)(({ theme }) => ({
-    padding: '16px',
-    borderRadius: '10px',
-    border: `1px solid ${dividerColor}`,
-    marginBottom: '16px'
+    padding: '12px',
+    borderRadius: '16px',
+    background: `${alpha(theme.palette.background.paper, 0.3)}`,
+    backdropFilter: 'blur(20px)',
+    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    marginBottom: '12px',
+    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`
   }));
 
   // useEffect(() => {
@@ -802,9 +805,11 @@ export default function Portfolio({ account, limit, collection, type }) {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      p: 1,
-                      borderRadius: '8px',
-                      border: `1px solid ${dividerColor}`
+                      p: 1.5,
+                      borderRadius: '12px',
+                      background: `${alpha(theme.palette.background.paper, 0.4)}`,
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -862,125 +867,77 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                   <Card
                     sx={{
-                      p: 1.5, // Reduced from 2
+                      p: 2,
                       borderRadius: '16px',
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.success.main,
-                        0.08
-                      )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                      background: `${alpha(theme.palette.background.paper, 0.5)}`,
                       backdropFilter: 'blur(20px)',
-                      border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
-                      position: 'relative',
-                      overflow: 'hidden',
-                      boxShadow: `0 8px 32px ${alpha(theme.palette.success.main, 0.12)}`,
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '2px',
-                        background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.primary.main}, ${theme.palette.info.main})`
-                      },
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        top: -50,
-                        right: -50,
-                        width: '100px',
-                        height: '100px',
-                        borderRadius: '50%',
-                        background: `radial-gradient(circle, ${alpha(
-                          theme.palette.success.main,
-                          0.1
-                        )} 0%, transparent 70%)`,
-                        filter: 'blur(20px)'
-                      }
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.05)}`
                     }}
                   >
                     <Box
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'space-between',
-                        mb: 0.5 // Reduced from 1
+                        gap: 1.5,
+                        mb: 1
                       }}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                        {' '}
-                        {/* Reduced gap from 1 */}
-                        <Box
+                      <Box
+                        sx={{
+                          p: 0.8,
+                          borderRadius: '10px',
+                          background: `${alpha(theme.palette.success.main, 0.1)}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <TrendingUpIcon
                           sx={{
-                            p: 0.7, // Reduced from 1
-                            borderRadius: '8px', // Reduced from 10px
-                            background: `linear-gradient(135deg, ${alpha(
-                              theme.palette.success.main,
-                              0.15
-                            )} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%)`,
-                            backdropFilter: 'blur(10px)',
-                            border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
+                            fontSize: '1rem',
+                            color: theme.palette.success.main
                           }}
-                        >
-                          <TrendingUpIcon
-                            sx={{
-                              fontSize: '1rem', // Reduced from 1.1rem
-                              color: theme.palette.success.main,
-                              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                            }}
-                          />
-                        </Box>
-                        <Typography
-                          variant="h6"
-                          color="text.primary"
-                          sx={{
-                            fontWeight: 600,
-                            fontSize: '0.8rem', // Reduced from 0.9rem
-                            letterSpacing: '-0.02em'
-                          }}
-                        >
-                          Total Trading Volume
-                        </Typography>
+                        />
                       </Box>
+                      <Typography
+                        variant="subtitle1"
+                        color="text.primary"
+                        sx={{
+                          fontWeight: 500,
+                          fontSize: '0.9rem'
+                        }}
+                      >
+                        Total Trading Volume
+                      </Typography>
                     </Box>
 
-                    <Box sx={{ textAlign: 'center', py: 0.5 }}>
-                      {' '}
-                      {/* Reduced from py: 1 */}
+                    <Box sx={{ textAlign: 'center', py: 1 }}>
                       {loading ? (
                         <Skeleton
-                          width={160} // Reduced from 200
-                          height={24} // Reduced from 32
+                          width={140}
+                          height={24}
                           sx={{ mx: 'auto', borderRadius: '8px' }}
                         />
                       ) : (
                         <Typography
-                          variant="h3"
+                          variant="h4"
                           sx={{
                             color: theme.palette.success.main,
-                            fontWeight: 700,
-                            fontSize: '1.5rem', // Reduced from 1.8rem
-                            letterSpacing: '-0.02em',
-                            textShadow: `0 4px 8px ${alpha(theme.palette.success.main, 0.25)}`,
-                            mb: 0.1, // Reduced from 0.3
-                            background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.primary.main} 100%)`,
-                            backgroundClip: 'text',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
+                            fontWeight: 600,
+                            fontSize: '1.4rem',
+                            mb: 0.5
                           }}
                         >
                           {`${traderStats?.totalVolume?.toLocaleString() || 0}`}
                         </Typography>
                       )}
                       <Typography
-                        variant="body1"
+                        variant="body2"
                         color="text.secondary"
                         sx={{
                           fontWeight: 500,
-                          letterSpacing: '0.1em',
-                          fontSize: '0.65rem', // Reduced from 0.75rem
+                          fontSize: '0.75rem',
                           textTransform: 'uppercase'
                         }}
                       >
@@ -994,13 +951,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                     sx={{
                       p: 2,
                       mb: 2,
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.primary.main,
-                        0.08
-                      )} 0%, ${alpha(theme.palette.info.main, 0.05)} 100%)`,
+                      background: `${alpha(theme.palette.background.paper, 0.5)}`,
                       backdropFilter: 'blur(10px)',
                       borderRadius: '12px',
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between'
@@ -1043,17 +997,13 @@ export default function Portfolio({ account, limit, collection, type }) {
                       <Box
                         sx={{
                           p: 2,
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.success.main,
-                            0.06
-                          )} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`,
+                          background: `${alpha(theme.palette.background.paper, 0.4)}`,
                           backdropFilter: 'blur(10px)',
                           borderRadius: '12px',
-                          border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+                          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                           transition: 'all 0.2s ease',
                           '&:hover': {
-                            transform: 'translateY(-2px)',
-                            boxShadow: `0 4px 16px ${alpha(theme.palette.success.main, 0.15)}`
+                            background: `${alpha(theme.palette.background.paper, 0.6)}`
                           }
                         }}
                       >
@@ -1080,17 +1030,13 @@ export default function Portfolio({ account, limit, collection, type }) {
                       <Box
                         sx={{
                           p: 2,
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.error.main,
-                            0.06
-                          )} 0%, ${alpha(theme.palette.error.main, 0.02)} 100%)`,
+                          background: `${alpha(theme.palette.background.paper, 0.4)}`,
                           backdropFilter: 'blur(10px)',
                           borderRadius: '12px',
-                          border: `1px solid ${alpha(theme.palette.error.main, 0.1)}`,
+                          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                           transition: 'all 0.2s ease',
                           '&:hover': {
-                            transform: 'translateY(-2px)',
-                            boxShadow: `0 4px 16px ${alpha(theme.palette.error.main, 0.15)}`
+                            background: `${alpha(theme.palette.background.paper, 0.6)}`
                           }
                         }}
                       >
@@ -1117,17 +1063,13 @@ export default function Portfolio({ account, limit, collection, type }) {
                       <Box
                         sx={{
                           p: 2,
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.info.main,
-                            0.06
-                          )} 0%, ${alpha(theme.palette.info.main, 0.02)} 100%)`,
+                          background: `${alpha(theme.palette.background.paper, 0.4)}`,
                           backdropFilter: 'blur(10px)',
                           borderRadius: '12px',
-                          border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
+                          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                           transition: 'all 0.2s ease',
                           '&:hover': {
-                            transform: 'translateY(-2px)',
-                            boxShadow: `0 4px 16px ${alpha(theme.palette.info.main, 0.15)}`
+                            background: `${alpha(theme.palette.background.paper, 0.6)}`
                           }
                         }}
                       >
@@ -1146,48 +1088,6 @@ export default function Portfolio({ account, limit, collection, type }) {
                           sx={{ fontWeight: 600, fontSize: '0.95rem' }}
                         >
                           {`${Math.round((traderStats?.avgHoldingTime || 0) / 3600)}h`}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Box
-                        sx={{
-                          p: 2,
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.warning.main,
-                            0.06
-                          )} 0%, ${alpha(theme.palette.warning.main, 0.02)} 100%)`,
-                          backdropFilter: 'blur(10px)',
-                          borderRadius: '12px',
-                          border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            transform: 'translateY(-2px)',
-                            boxShadow: `0 4px 16px ${alpha(theme.palette.warning.main, 0.15)}`
-                          }
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          display="block"
-                          noWrap
-                          sx={{ fontWeight: 500, mb: 0.5 }}
-                        >
-                          Win Rate
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          noWrap
-                          sx={{ fontWeight: 600, fontSize: '0.95rem' }}
-                        >
-                          {traderStats?.profitableTrades && traderStats?.losingTrades
-                            ? `${(
-                                (traderStats.profitableTrades /
-                                  (traderStats.profitableTrades + traderStats.losingTrades)) *
-                                100
-                              ).toFixed(1)}%`
-                            : '0.0%'}
                         </Typography>
                       </Box>
                     </Grid>
@@ -1245,15 +1145,12 @@ export default function Portfolio({ account, limit, collection, type }) {
                 <Card
                   sx={{
                     borderRadius: '16px',
-                    mt: 3,
-                    p: 3,
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.8
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                    mt: 2,
+                    p: 2.5,
+                    background: `${alpha(theme.palette.background.paper, 0.5)}`,
                     backdropFilter: 'blur(20px)',
                     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+                    boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.05)}`,
                     color: theme.palette.text.primary
                   }}
                 >
@@ -1276,9 +1173,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                       alignItems="center"
                       sx={{
                         p: 1.5,
-                        borderRadius: '8px',
-                        background: alpha(theme.palette.primary.main, 0.04),
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`
+                        borderRadius: '10px',
+                        background: alpha(theme.palette.background.paper, 0.3),
+                        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                       }}
                     >
                       <Typography sx={{ fontWeight: 500 }}>Total Trades</Typography>
@@ -1292,9 +1189,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                       alignItems="center"
                       sx={{
                         p: 1.5,
-                        borderRadius: '8px',
-                        background: alpha(theme.palette.success.main, 0.04),
-                        border: `1px solid ${alpha(theme.palette.success.main, 0.08)}`
+                        borderRadius: '10px',
+                        background: alpha(theme.palette.background.paper, 0.3),
+                        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                       }}
                     >
                       <Typography sx={{ fontWeight: 500 }}>Profitable Trades</Typography>
@@ -1314,9 +1211,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                       alignItems="center"
                       sx={{
                         p: 1.5,
-                        borderRadius: '8px',
-                        background: alpha(theme.palette.error.main, 0.04),
-                        border: `1px solid ${alpha(theme.palette.error.main, 0.08)}`
+                        borderRadius: '10px',
+                        background: alpha(theme.palette.background.paper, 0.3),
+                        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                       }}
                     >
                       <Typography sx={{ fontWeight: 500 }}>Losing Trades</Typography>
@@ -1336,9 +1233,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                       alignItems="center"
                       sx={{
                         p: 1.5,
-                        borderRadius: '8px',
-                        background: alpha(theme.palette.success.main, 0.04),
-                        border: `1px solid ${alpha(theme.palette.success.main, 0.08)}`
+                        borderRadius: '10px',
+                        background: alpha(theme.palette.background.paper, 0.3),
+                        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                       }}
                     >
                       <Typography sx={{ fontWeight: 500 }}>Best Trade</Typography>
@@ -1358,9 +1255,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                       alignItems="center"
                       sx={{
                         p: 1.5,
-                        borderRadius: '8px',
-                        background: alpha(theme.palette.error.main, 0.04),
-                        border: `1px solid ${alpha(theme.palette.error.main, 0.08)}`
+                        borderRadius: '10px',
+                        background: alpha(theme.palette.background.paper, 0.3),
+                        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                       }}
                     >
                       <Typography sx={{ fontWeight: 500 }}>Worst Trade</Typography>
@@ -1396,27 +1293,28 @@ export default function Portfolio({ account, limit, collection, type }) {
                       onChange={(e, newValue) => newValue && setSelectedInterval(newValue)}
                       size="small"
                       sx={{
-                        bgcolor: theme.palette.action.hover,
-                        borderRadius: '8px',
-                        padding: '2px',
+                        bgcolor: `${alpha(theme.palette.background.paper, 0.4)}`,
+                        backdropFilter: 'blur(10px)',
+                        borderRadius: '12px',
+                        padding: '4px',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                         '& .MuiToggleButton-root': {
                           border: 'none',
-                          borderRadius: '6px !important',
+                          borderRadius: '8px !important',
                           color: theme.palette.text.secondary,
                           fontSize: '0.875rem',
-                          fontWeight: 'normal',
+                          fontWeight: 500,
                           textTransform: 'none',
                           px: 2,
                           py: 0.5,
                           minWidth: '60px',
                           '&.Mui-selected': {
-                            bgcolor: theme.palette.background.paper,
-                            color: theme.palette.primary.main,
-                            fontWeight: 500,
-                            boxShadow: theme.shadows[1]
+                            bgcolor: theme.palette.primary.main,
+                            color: theme.palette.primary.contrastText,
+                            fontWeight: 600
                           },
                           '&:hover': {
-                            bgcolor: theme.palette.background.paper,
+                            bgcolor: `${alpha(theme.palette.primary.main, 0.1)}`,
                             color: theme.palette.primary.main
                           }
                         }
@@ -1430,18 +1328,12 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </ToggleButtonGroup>
                   </Box>
                   <Card
-                    elevation={3}
                     sx={{
-                      position: 'relative',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '2px',
-                        backgroundColor: theme.palette.primary.main
-                      }
+                      background: `${alpha(theme.palette.background.paper, 0.5)}`,
+                      backdropFilter: 'blur(20px)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.04)}`,
+                      borderRadius: '16px'
                     }}
                   >
                     <CardContent>
@@ -1525,39 +1417,17 @@ export default function Portfolio({ account, limit, collection, type }) {
               <Grid item xs={12} md={4}>
                 <Card
                   sx={{
-                    p: 3,
+                    p: 2.5,
                     height: '100%',
-                    borderRadius: '20px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.9
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                    borderRadius: '16px',
+                    background: `${alpha(theme.palette.background.paper, 0.5)}`,
                     backdropFilter: 'blur(20px)',
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                    boxShadow: `0 8px 32px ${alpha(
-                      theme.palette.common.black,
-                      0.08
-                    )}, 0 2px 8px ${alpha(theme.palette.primary.main, 0.05)}`,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.04)}`,
+                    transition: 'all 0.2s ease',
                     '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: `0 16px 48px ${alpha(
-                        theme.palette.common.black,
-                        0.12
-                      )}, 0 4px 16px ${alpha(theme.palette.primary.main, 0.1)}`,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-                    },
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '3px',
-                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-                      opacity: 0.8
+                      background: `${alpha(theme.palette.background.paper, 0.7)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`
                     }
                   }}
                 >
@@ -1611,39 +1481,17 @@ export default function Portfolio({ account, limit, collection, type }) {
               <Grid item xs={12} md={4}>
                 <Card
                   sx={{
-                    p: 3,
+                    p: 2.5,
                     height: '100%',
-                    borderRadius: '20px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.9
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                    borderRadius: '16px',
+                    background: `${alpha(theme.palette.background.paper, 0.5)}`,
                     backdropFilter: 'blur(20px)',
-                    border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
-                    boxShadow: `0 8px 32px ${alpha(
-                      theme.palette.common.black,
-                      0.08
-                    )}, 0 2px 8px ${alpha(theme.palette.success.main, 0.05)}`,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.04)}`,
+                    transition: 'all 0.2s ease',
                     '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: `0 16px 48px ${alpha(
-                        theme.palette.common.black,
-                        0.12
-                      )}, 0 4px 16px ${alpha(theme.palette.success.main, 0.1)}`,
-                      border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
-                    },
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '3px',
-                      background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.primary.main}, ${theme.palette.warning.main})`,
-                      borderRadius: '20px 20px 0 0'
+                      background: `${alpha(theme.palette.background.paper, 0.7)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`
                     }
                   }}
                 >
@@ -1697,39 +1545,17 @@ export default function Portfolio({ account, limit, collection, type }) {
               <Grid item xs={12} md={4}>
                 <Card
                   sx={{
-                    p: 3,
+                    p: 2.5,
                     height: '100%',
-                    borderRadius: '20px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.9
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                    borderRadius: '16px',
+                    background: `${alpha(theme.palette.background.paper, 0.5)}`,
                     backdropFilter: 'blur(20px)',
-                    border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
-                    boxShadow: `0 8px 32px ${alpha(
-                      theme.palette.common.black,
-                      0.08
-                    )}, 0 2px 8px ${alpha(theme.palette.info.main, 0.05)}`,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.04)}`,
+                    transition: 'all 0.2s ease',
                     '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: `0 16px 48px ${alpha(
-                        theme.palette.common.black,
-                        0.12
-                      )}, 0 4px 16px ${alpha(theme.palette.info.main, 0.1)}`,
-                      border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-                    },
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '3px',
-                      background: `linear-gradient(90deg, ${theme.palette.info.main}, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
-                      borderRadius: '20px 20px 0 0'
+                      background: `${alpha(theme.palette.background.paper, 0.7)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`
                     }
                   }}
                 >
@@ -1819,29 +1645,12 @@ export default function Portfolio({ account, limit, collection, type }) {
                 flex: 1,
                 mb: 2,
                 color: theme.palette.text.primary,
-                borderRadius: '24px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.background.paper,
-                  0.95
-                )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                borderRadius: '20px',
+                background: `${alpha(theme.palette.background.paper, 0.5)}`,
                 backdropFilter: 'blur(20px)',
-                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                boxShadow: `0 8px 32px ${alpha(
-                  theme.palette.common.black,
-                  0.06
-                )}, 0 2px 8px ${alpha(theme.palette.primary.main, 0.04)}`,
-                overflow: 'hidden',
-                position: 'relative',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '2px',
-                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-                  opacity: 0.8
-                }
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.04)}`,
+                overflow: 'hidden'
               }}
             >
               <CardContent sx={{ p: 0 }}>
