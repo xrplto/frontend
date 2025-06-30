@@ -321,7 +321,12 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                       </Typography>
                     </Stack>
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell
+                    align="right"
+                    sx={{
+                      display: { xs: 'none', sm: 'table-cell' }
+                    }}
+                  >
                     <Typography variant="body2" noWrap>
                       {new Decimal(xrpBalance).toDP(2, Decimal.ROUND_DOWN).toString()}
                     </Typography>
@@ -331,6 +336,33 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                       {new Decimal(xrpBalance).toDP(2, Decimal.ROUND_DOWN).toString()}
                     </Typography>
                   </TableCell>
+                  <TableCell
+                    align="right"
+                    sx={{
+                      display: { xs: 'none', md: 'table-cell' }
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      noWrap
+                      sx={{
+                        color: theme.palette.text.primary,
+                        fontWeight: 600
+                      }}
+                    >
+                      {totalValue > 0
+                        ? ((parseFloat(xrpBalance) / totalValue) * 100).toFixed(2)
+                        : '0.00'}
+                      %
+                    </Typography>
+                  </TableCell>
+                  {isLoggedIn && accountProfile?.account === account && (
+                    <TableCell align="center">
+                      <Typography variant="body2" color="text.secondary">
+                        -
+                      </Typography>
+                    </TableCell>
+                  )}
                 </TableRow>
               )}
               {paginatedLines
