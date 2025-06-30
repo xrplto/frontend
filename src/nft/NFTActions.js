@@ -46,6 +46,7 @@ import { Icon } from '@iconify/react';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 import infoFilled from '@iconify/icons-ep/info-filled';
 import xIcon from '@iconify/icons-bi/x';
+import alertTriangleFill from '@iconify/icons-eva/alert-triangle-fill';
 
 // Loader
 import { PuffLoader, PulseLoader } from 'react-spinners';
@@ -224,6 +225,23 @@ const OfferCountBadge = styled('span')(({ theme }) => ({
   fontWeight: 'bold',
   marginLeft: theme.spacing(1)
 }));
+
+// Add this new component to display the price warning
+function PriceWarningIcon({ discrepancy, floorPrice }) {
+  if (discrepancy <= 0.3) {
+    return null;
+  }
+
+  return (
+    <Tooltip
+      title={`This offer is ${Math.round(
+        discrepancy * 100
+      )}% below the floor price of ${fNumber(floorPrice)} XRP.`}
+    >
+      <Icon icon={alertTriangleFill} style={{ color: 'orange' }} width={24} height={24} />
+    </Tooltip>
+  );
+}
 
 // Update helper function to handle different decimal places based on broker
 const formatXRPAmount = (amount, includeSymbol = true, brokerAddress = null) => {
@@ -831,6 +849,8 @@ export default function NFTActions({ nft }) {
     setOpenShare(false);
   };
 
+  const parsedFloorPrice = cfloor?.amount ? parseFloat(cfloor.amount) : 0;
+
   return (
     <>
       <GlassPanel elevation={0}>
@@ -1291,6 +1311,12 @@ export default function NFTActions({ nft }) {
                   <Stack spacing={2}>
                     {buyOffers.map((offer, index) => {
                       const amount = normalizeAmount(offer.amount);
+                      const offerPrice = parseFloat(amount.amount);
+                      const discrepancy =
+                        parsedFloorPrice > 0
+                          ? (parsedFloorPrice - offerPrice) / parsedFloorPrice
+                          : 0;
+
                       return (
                         <Paper
                           key={index}
@@ -1310,6 +1336,10 @@ export default function NFTActions({ nft }) {
                                 <Typography variant="h6" fontWeight="bold">
                                   {formatXRPAmount(amount.amount, true, offer.destination)}
                                 </Typography>
+                                <PriceWarningIcon
+                                  discrepancy={discrepancy}
+                                  floorPrice={parsedFloorPrice}
+                                />
                               </Stack>
                               <Stack direction="row" spacing={1}>
                                 {isOwner ? (
