@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useRef, useState, useEffect } from 'react';
 import { FacebookShareButton, TwitterShareButton } from 'react-share';
-import { FacebookIcon, TwitterIcon } from 'react-share';
+import { FacebookIcon } from 'react-share';
 
 // Material
 import {
@@ -22,9 +22,9 @@ import {
   Popover,
   Stack,
   Typography,
-  Tooltip
+  Tooltip,
+  Chip
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
 import ListIcon from '@mui/icons-material/List';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -38,14 +38,18 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
 import MessageIcon from '@mui/icons-material/Message';
 import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
+import CheckIcon from '@mui/icons-material/Check';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 // Iconify
 import { Icon } from '@iconify/react';
-
+import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 import infoFilled from '@iconify/icons-ep/info-filled';
+import xIcon from '@iconify/icons-bi/x';
 
 // Loader
 import { PuffLoader, PulseLoader } from 'react-spinners';
+import { ProgressBar, Discuss } from 'react-loader-spinner';
 
 // Context
 import { useContext } from 'react';
@@ -68,11 +72,57 @@ import SelectPriceDialog from './SelectPriceDialog';
 import BurnNFT from './BurnNFT';
 import TransferDialog from './TransferDialog';
 import HistoryList from './HistoryList';
-import { isInstalled, submitTransaction } from '@gemwallet/api';
-import sdk from '@crossmarkio/sdk';
-import { configureMemos } from 'src/utils/parse/OfferChanges';
-import { useDispatch } from 'react-redux';
-import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
+
+// Add these imports
+import { alpha, styled } from '@mui/material/styles';
+import Glass from '@mui/material/Paper';
+
+// Add this import at the top of the file
+import Wallet from 'src/components/Wallet';
+
+// Add these imports at the top of the file
+import { Client } from 'xrpl';
+import { xrpToDrops, dropsToXrp } from 'xrpl';
+
+// Add this import at the top of the file
+import CreateOfferXRPCafe from './CreateOfferXRPCafe';
+
+// Add these constants at the top of the file
+const BROKER_ADDRESSES = {
+  rnPNSonfEN1TWkPH4Kwvkk3693sCT4tsZv: { fee: 0.015, name: 'Art Dept Fun' },
+  rpx9JThQ2y37FaGeeJP7PXDUVEXY3PHZSC: { fee: 0.01589, name: 'XRP Cafe' },
+  rpZqTPC8GvrSvEfFsUuHkmPCg29GdQuXhC: { fee: 0.015, name: 'BIDDS' },
+  rDeizxSRo6JHjKnih9ivpPkyD2EgXQvhSB: { fee: 0.015, name: 'XPMarket' },
+  rJcCJyJkiTXGcxU4Lt4ZvKJz8YmorZXu8r: { fee: 0.01, name: 'OpulenceX' }
+};
+
+// Create a styled component for the glass effect
+const GlassPanel = styled(Glass)(({ theme }) => ({
+  background: alpha(theme.palette.background.paper, 0.7),
+  backdropFilter: 'blur(10px)',
+  borderRadius: theme.shape.borderRadius * 2,
+  padding: theme.spacing(3),
+  boxShadow: `0 8px 32px 0 ${alpha(theme.palette.primary.main, 0.1)}`,
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
+  maxWidth: '90%', // Change this from 95% to 90%
+  margin: '0 auto'
+}));
+
+// Add this new styled component for the verification badge
+const VerificationBadge = styled('div')(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 16,
+  height: 16,
+  borderRadius: '50%',
+  backgroundColor: theme.palette.primary.main,
+  color: theme.palette.common.white,
+  boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+  '& svg': {
+    fontSize: 12
+  }
+}));
 
 // const NFT_FLAGS = {
 //     0x00000001: 'lsfBurnable',
@@ -89,7 +139,8 @@ function getCostFromOffers(nftOwner, offers, isSellOffer) {
 
     let validOffer = true;
 
-    if (destination) validOffer = false;
+    // Remove destination check to allow offers without brokers
+    // if (destination) validOffer = false;
 
     if (isSellOffer && nftOwner !== owner) validOffer = false;
 
@@ -127,17 +178,191 @@ function truncate(str, n) {
   return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
 }
 
+// Add this styled component near the top with other styled components
+const StyledAccordion = styled(Accordion)(({ theme }) => ({
+  backgroundColor: 'transparent',
+  boxShadow: 'none',
+  '&:before': {
+    display: 'none' // Removes the default divider
+  },
+  '& .MuiAccordionSummary-root': {
+    padding: theme.spacing(0, 1),
+    minHeight: 56,
+    '&.Mui-expanded': {
+      minHeight: 56
+    }
+  },
+  '& .MuiAccordionSummary-content': {
+    margin: '12px 0',
+    '&.Mui-expanded': {
+      margin: '12px 0'
+    }
+  },
+  '& .MuiAccordionDetails-root': {
+    padding: theme.spacing(1)
+  }
+}));
+
+// Add this styled component for the badge
+const OffersBadge = styled('span')(({ theme }) => ({
+  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  color: theme.palette.primary.main,
+  borderRadius: theme.shape.borderRadius,
+  padding: '2px 8px',
+  fontSize: '0.75rem',
+  fontWeight: 'bold',
+  marginLeft: theme.spacing(1)
+}));
+
+// Add this styled component for the offer count badge
+const OfferCountBadge = styled('span')(({ theme }) => ({
+  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  color: theme.palette.primary.main,
+  borderRadius: theme.shape.borderRadius,
+  padding: '2px 8px',
+  fontSize: '0.75rem',
+  fontWeight: 'bold',
+  marginLeft: theme.spacing(1)
+}));
+
+// Update helper function to handle different decimal places based on broker
+const formatXRPAmount = (amount, includeSymbol = true, brokerAddress = null) => {
+  // Always use 2 decimal places for both buy and sell offers
+  const num = parseFloat(amount);
+  const withTwoDecimals = num.toFixed(2);
+  // Remove trailing zero if it exists
+  const formatted = withTwoDecimals.endsWith('0')
+    ? withTwoDecimals.replace(/\.?0+$/, '')
+    : withTwoDecimals;
+  return includeSymbol ? `${formatted} XRP` : formatted;
+};
+
+// Add this new styled component near the top with other styled components
+const RankingBadge = styled(Paper)(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: theme.spacing(0.75, 1.5),
+  borderRadius: theme.shape.borderRadius * 2,
+  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+  gap: theme.spacing(1),
+  flex: 1
+}));
+
+// Add this new styled component near the top with other styled components
+const MasterSequenceBadge = styled(Paper)(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: theme.spacing(0.75, 1.5),
+  borderRadius: theme.shape.borderRadius * 2,
+  backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+  border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+  gap: theme.spacing(1),
+  flex: 1
+}));
+
+// Add this styled component near the top with other styled components
+const SquareAvatar = styled(Avatar)(({ theme }) => ({
+  borderRadius: theme.shape.borderRadius * 1.5, // Adjust the multiplier to control roundness
+  width: 48,
+  height: 48
+}));
+
+// Add this new styled component near the top with other styled components
+const OwnerCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  backgroundColor: alpha(theme.palette.background.default, 0.6),
+  borderRadius: theme.shape.borderRadius * 2,
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+}));
+
+const OwnerInfo = styled('div')(({ theme }) => ({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5)
+}));
+
+const OwnerAddress = styled(Link)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  color: theme.palette.text.primary,
+  textDecoration: 'none',
+  '&:hover': {
+    color: theme.palette.primary.main
+  }
+}));
+
+// Update the FloorPriceCard styling for a more prominent look
+const FloorPriceCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(1.5, 2),
+  backgroundColor: alpha(theme.palette.primary.main, 0.04),
+  borderRadius: theme.shape.borderRadius * 2,
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+  width: 'fit-content',
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.08),
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+  }
+}));
+
+// Update the FloorPriceValue styling for better alignment
+const FloorPriceValue = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  '& .icon': {
+    color: theme.palette.primary.main,
+    width: 20,
+    height: 20
+  },
+  '& .amount': {
+    fontWeight: 700,
+    fontSize: '1.1rem',
+    color: theme.palette.primary.main,
+    letterSpacing: '0.02em'
+  }
+}));
+
+// Add this new styled component near the top with other styled components
+const CollectionHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  marginBottom: theme.spacing(2)
+}));
+
+const CollectionInfo = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5)
+}));
+
+const NFTTitle = styled(Typography)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginTop: theme.spacing(0.5),
+  color: theme.palette.text.primary,
+  fontWeight: 'bold'
+}));
+
 export default function NFTActions({ nft }) {
+  const theme = useTheme();
   const anchorRef = useRef(null);
   const BASE_URL = 'https://api.xrpnft.com/api';
   const { accountProfile, openSnackbar } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
 
-  const theme = useTheme();
+  // const theme = useTheme();
   // const largescreen = useMediaQuery(theme => theme.breakpoints.up('md'));
 
-  const dispatch = useDispatch();
   const {
     uuid,
     name,
@@ -159,12 +384,13 @@ export default function NFTActions({ nft }) {
     // cost,
     destination,
     NFTokenID,
-    self
+    self,
+    MasterSequence
   } = nft;
 
-  const collectionName = collection || meta?.collection?.name || '[No Collection]';
+  const collectionName = collection || /*meta?.collection?.name ||*/ '[No Collection]';
 
-  const nftName = meta?.name || meta?.Name || '[No Name]';
+  const nftName = name || /*meta?.name || meta?.Name ||*/ '[No Name]';
 
   const floorPrice = cfloor?.amount || 0;
 
@@ -204,6 +430,18 @@ export default function NFTActions({ nft }) {
   const [cost, setCost] = useState(null);
 
   const [sync, setSync] = useState(0);
+
+  const [lowestSellOffer, setLowestSellOffer] = useState(null);
+
+  const [openCreateOfferXRPCafe, setOpenCreateOfferXRPCafe] = useState(false);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  // Add this callback function to handle successful offer creation
+  const handleOfferCreated = () => {
+    // Increment sync to trigger useEffect and refresh offers
+    setSync((prev) => prev + 1);
+  };
 
   useEffect(() => {
     function getOffers() {
@@ -308,6 +546,80 @@ export default function NFTActions({ nft }) {
     };
   }, [openScanQR, xummUuid, sync]);
 
+  useEffect(() => {
+    async function getLowestSellOffer() {
+      const client = new Client('wss://s1.ripple.com');
+
+      try {
+        await client.connect();
+        console.log('Connected to XRPL');
+
+        const request = {
+          command: 'nft_sell_offers',
+          nft_id: NFTokenID
+        };
+
+        const response = await client.request(request);
+        console.log('NFT Sell Offers:', JSON.stringify(response.result, null, 2));
+
+        // Find the lowest valid sell offer
+        let lowestOffer = null;
+        if (response.result.offers && response.result.offers.length > 0) {
+          lowestOffer = response.result.offers.reduce(
+            (min, offer) => {
+              const amount = BigInt(offer.amount);
+              const isValidAmount = amount > BigInt(0);
+              const isValidOwner = offer.owner === nft.account;
+
+              if (isValidAmount && isValidOwner && (!min.amount || amount < BigInt(min.amount))) {
+                return { amount, offer };
+              }
+              return min;
+            },
+            { amount: null, offer: null }
+          );
+        }
+
+        if (lowestOffer && lowestOffer.offer) {
+          const baseAmount = parseFloat(
+            parseFloat(dropsToXrp(lowestOffer.amount.toString())).toFixed(6)
+          );
+          const brokerAddress = lowestOffer.offer.destination;
+          const hasBroker = brokerAddress && BROKER_ADDRESSES[brokerAddress];
+          const brokerInfo = hasBroker ? BROKER_ADDRESSES[brokerAddress] : null;
+          const brokerFeePercentage = brokerInfo ? brokerInfo.fee : 0;
+
+          const brokerFee = hasBroker
+            ? parseFloat((baseAmount * brokerFeePercentage).toFixed(6))
+            : 0;
+          const totalAmount = parseFloat((baseAmount + brokerFee).toFixed(6));
+
+          setLowestSellOffer({
+            baseAmount,
+            totalAmount: hasBroker ? totalAmount : baseAmount,
+            brokerFee,
+            brokerFeePercentage,
+            hasBroker,
+            brokerName: brokerInfo ? brokerInfo.name : null,
+            offerIndex: lowestOffer.offer.nft_offer_index,
+            seller: lowestOffer.offer.owner,
+            destination: brokerAddress,
+            offer: lowestOffer.offer
+          });
+        } else {
+          setLowestSellOffer(null);
+        }
+      } catch (error) {
+        console.error('Error fetching NFT sell offers:', error);
+      } finally {
+        await client.disconnect();
+        console.log('Disconnected from XRPL');
+      }
+    }
+
+    getLowestSellOffer();
+  }, [NFTokenID, nft.account]);
+
   const doProcessOffer = async (offer, isAcceptOrCancel) => {
     if (!accountLogin || !accountToken) {
       openSnackbar('Please login', 'error');
@@ -338,98 +650,39 @@ export default function NFTActions({ nft }) {
       const { uuid, NFTokenID } = nft;
 
       const user_token = accountProfile.user_token;
-      const wallet_type = accountProfile.wallet_type;
 
-      let offerTxData = {
-        TransactionType: isAcceptOrCancel ? 'NFTokenAcceptOffer' : 'NFTokenCancelOffer',
-        Memos: isAcceptOrCancel
-          ? configureMemos(
-              isSell ? 'XRPNFT-nft-accept-sell-offer' : 'XRPNFT-nft-accept-buy-offer',
-              '',
-              `https://xrpnft.com/nft/${NFTokenID}`
-            )
-          : configureMemos(
-              isSell ? 'XRPNFT-nft-cancel-sell-offer' : 'XRPNFT-nft-cancel-buy-offer',
-              '',
-              `https://xrpnft.com/nft/${NFTokenID}`
-            ),
-        NFTokenOffers: !isAcceptOrCancel ? [index] : undefined,
-        Account: accountLogin
+      const body = {
+        account: accountLogin,
+        uuid,
+        NFTokenID,
+        index,
+        destination,
+        accept: isAcceptOrCancel ? 'yes' : 'no',
+        sell: isSell ? 'yes' : 'no',
+        user_token
       };
 
-      if (isAcceptOrCancel) {
-        if (isSell) {
-          offerTxData['NFTokenSellOffer'] = index;
-        } else {
-          offerTxData['NFTokenBuyOffer'] = index;
-        }
-      }
+      const res = await axios.post(`${BASE_URL}/offers/acceptcancel`, body, {
+        headers: { 'x-access-token': accountToken }
+      });
 
-      switch (wallet_type) {
-        case 'xaman':
-          const body = {
-            account: accountLogin,
-            uuid,
-            NFTokenID,
-            index,
-            destination,
-            accept: isAcceptOrCancel ? 'yes' : 'no',
-            sell: isSell ? 'yes' : 'no',
-            user_token
-          };
+      if (res.status === 200) {
+        const newUuid = res.data.data.uuid;
+        const qrlink = res.data.data.qrUrl;
+        const nextlink = res.data.data.next;
 
-          const res = await axios.post(`${BASE_URL}/offers/acceptcancel`, body, {
-            headers: { 'x-access-token': accountToken }
-          });
+        let newQrType = isAcceptOrCancel ? 'NFTokenAcceptOffer' : 'NFTokenCancelOffer';
+        if (isSell) newQrType += ' [Sell Offer]';
+        else newQrType += ' [Buy Offer]';
 
-          if (res.status === 200) {
-            const newUuid = res.data.data.uuid;
-            const qrlink = res.data.data.qrUrl;
-            const nextlink = res.data.data.next;
-
-            let newQrType = isAcceptOrCancel ? 'NFTokenAcceptOffer' : 'NFTokenCancelOffer';
-            if (isSell) newQrType += ' [Sell Offer]';
-            else newQrType += ' [Buy Offer]';
-
-            setQrType(newQrType);
-            setXummUuid(newUuid);
-            setQrUrl(qrlink);
-            setNextUrl(nextlink);
-            setOpenScanQR(true);
-          }
-          break;
-        case 'gem':
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              dispatch(updateProcess(1));
-              await submitTransaction({
-                transaction: offerTxData
-              }).then(({ type, result }) => {
-                if (type == 'response') {
-                  dispatch(updateProcess(2));
-                  dispatch(updateTxHash(result?.hash));
-                } else {
-                  dispatch(updateProcess(3));
-                }
-              });
-            }
-          });
-          break;
-        case 'crossmark':
-          dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(offerTxData).then(({ response }) => {
-            if (response.data.meta.isSuccess) {
-              dispatch(updateProcess(2));
-              dispatch(updateTxHash(response.data.resp.result?.hash));
-            } else {
-              dispatch(updateProcess(3));
-            }
-          });
-          break;
+        setQrType(newQrType);
+        setXummUuid(newUuid);
+        setQrUrl(qrlink);
+        setNextUrl(nextlink);
+        setOpenScanQR(true);
       }
     } catch (err) {
       console.error(err);
-      dispatch(updateProcess(0));
     }
     setPageLoading(false);
   };
@@ -466,28 +719,17 @@ export default function NFTActions({ nft }) {
           }
         } else {
           // I am not the Owner of NFT
-          if (accountLogin === offer.owner) {
+          // Remove the owner check to display all valid sell offers
+          if (nft.account === offer.owner) {
             newOffers.push(offer);
-          } else {
-            if (
-              nft.account === offer.owner &&
-              (!offer.destination || accountLogin === offer.destination)
-            ) {
-              newOffers.push(offer);
-            }
           }
         }
       } else {
         // Buy Offers
-        if (isOwner) {
-          // I am the Owner of NFT
-        } else {
-          // I am not the Owner of NFT
-        }
+        if (nft.account === offer.owner) continue; // orphaned
 
-        if (!offer.destination || accountLogin === offer.destination)
-          // if ((!offer.destination || accountLogin === offer.destination) && offer.)
-          newOffers.push(offer);
+        // Buy Offers - keep existing logic
+        newOffers.push(offer);
       }
     }
 
@@ -546,913 +788,740 @@ export default function NFTActions({ nft }) {
   };
 
   const handleBuyNow = async () => {
-    if (sellOffers.length > 1) {
-      setOpenSelectPrice(true);
+    if (!lowestSellOffer) {
+      openSnackbar('No valid sell offer available', 'error');
+      return;
+    }
+
+    if (lowestSellOffer.hasBroker) {
+      // Handle broker-mediated offers through XRP Cafe
+      setOpenCreateOfferXRPCafe(true);
     } else {
-      handleAcceptOffer(cost.offer);
+      // Handle direct offers through normal accept offer flow
+      handleAcceptOffer(lowestSellOffer.offer);
     }
   };
 
   const handleOpenShare = () => {
+    setAnchorEl(anchorRef.current);
     setOpenShare(true);
   };
 
   const handleCloseShare = () => {
+    setAnchorEl(null);
+    setOpenShare(false);
+  };
+
+  const handleCloseCreateOffer = () => {
+    setOpenCreateOffer(false);
+    setIsSellOffer(false);
+  };
+
+  const handleCloseTransfer = () => {
+    setOpenTransfer(false);
+  };
+
+  const handleShareClick = (event) => {
+    setAnchorEl(event.currentTarget);
+    setOpenShare(true);
+  };
+
+  const handleShareClose = () => {
+    setAnchorEl(null);
     setOpenShare(false);
   };
 
   return (
-    <Stack
-      spacing={3}
-      sx={{
-        p: { xs: 2, md: 3 },
-        background: `linear-gradient(135deg, ${alpha(
-          theme.palette.background.default,
-          0.4
-        )} 0%, ${alpha(theme.palette.background.default, 0.1)} 100%)`,
-        borderRadius: '24px',
-        position: 'relative'
-      }}
-    >
-      <Backdrop
-        sx={{
-          color: theme.palette.text.primary,
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          backgroundColor: alpha(theme.palette.common.black, 0.7),
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)'
-        }}
-        open={pageLoading}
-      >
-        <PuffLoader color={theme.palette.primary.main} size={80} />
-      </Backdrop>
-
-      <ConfirmAcceptOfferDialog
-        open={openConfirm}
-        setOpen={setOpenConfirm}
-        offer={acceptOffer}
-        onContinue={onContinueAccept}
-      />
-
-      <QRDialog
-        open={openScanQR}
-        type={qrType}
-        onClose={handleScanQRClose}
-        qrUrl={qrUrl}
-        nextUrl={nextUrl}
-      />
-
-      <CreateOfferDialog
-        open={openCreateOffer}
-        setOpen={setOpenCreateOffer}
-        nft={nft}
-        isSellOffer={isSellOffer}
-      />
-      <TransferDialog open={openTransfer} setOpen={setOpenTransfer} nft={nft} />
-
-      <SelectPriceDialog
-        open={openSelectPrice}
-        setOpen={setOpenSelectPrice}
-        offers={sellOffers}
-        handleAccept={handleAcceptOffer}
-      />
-
-      {self && (
-        <Box
-          sx={{
-            p: 3,
-            borderRadius: '16px',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.8
-            )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-            backdropFilter: 'blur(10px)',
-            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-            boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
-            mb: 2
-          }}
-        >
-          <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center">
-            <Stack spacing={2}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Link href={`/collection/${cslug}`} underline="none">
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                    {collectionName}
-                  </Typography>
-                </Link>
-                {cverified === 'yes' && (
-                  <Tooltip title="Verified">
-                    <VerifiedIcon fontSize="small" sx={{ color: 'primary.main' }} />
-                  </Tooltip>
-                )}
-              </Stack>
-
-              <Box
-                sx={{
-                  p: 2,
-                  borderRadius: '12px',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.info.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
-                  border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5
-                }}
-              >
-                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                  Global Floor
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontWeight: 700,
-                    color: theme.palette.info.main,
-                    fontSize: '1.1rem'
-                  }}
-                >
-                  {fNumber(floorPrice)} XRP
-                </Typography>
-              </Box>
-            </Stack>
-
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <Tooltip title="Share">
-                <IconButton
-                  size="large"
-                  sx={{
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.95
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-                    backdropFilter: 'blur(12px)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    borderRadius: '12px',
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.primary.main,
-                        0.12
-                      )} 0%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.2)}`
-                    }
-                  }}
-                  ref={anchorRef}
-                  onClick={handleOpenShare}
-                >
-                  <ShareIcon sx={{ color: 'primary.main' }} />
-                </IconButton>
-              </Tooltip>
-
-              <Popover
-                open={openShare}
-                onClose={handleCloseShare}
-                anchorEl={anchorRef.current}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                PaperProps={{
-                  elevation: 3,
-                  sx: {
-                    borderRadius: 2,
-                    p: 1,
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.98
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
-                    backdropFilter: 'blur(24px)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.15)}`
-                  }
-                }}
-              >
-                <Stack direction="row" spacing={2}>
-                  <FacebookShareButton
-                    url={shareUrl}
-                    quote={shareTitle}
-                    hashtag={'#'}
-                    description={shareDesc}
-                    onClick={handleCloseShare}
-                  >
-                    <FacebookIcon size={32} round />
-                  </FacebookShareButton>
-                  <TwitterShareButton
-                    title={shareTitle}
-                    url={shareUrl}
-                    hashtag={'#'}
-                    onClick={handleCloseShare}
-                  >
-                    <TwitterIcon size={32} round />
-                  </TwitterShareButton>
-                </Stack>
-              </Popover>
-            </Stack>
-          </Stack>
-        </Box>
-      )}
-
-      <Box
-        sx={{
-          p: 3,
-          borderRadius: '16px',
-          background: `linear-gradient(135deg, ${alpha(
-            theme.palette.background.paper,
-            0.6
-          )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-          backdropFilter: 'blur(10px)',
-          border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-          boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
-          mb: 2
-        }}
-      >
+    <>
+      <GlassPanel elevation={0}>
         <Stack spacing={3}>
-          <Typography
-            variant="h2a"
-            sx={{
-              fontWeight: 700,
-              fontSize: '1.8rem',
-              background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
-                theme.palette.primary.main,
-                0.8
-              )} 100%)`,
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}
-          >
-            {nftName}
-          </Typography>
-
-          {self && rarity_rank > 0 && (
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: '12px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.warning.main,
-                  0.08
-                )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.warning.main, 0.12)}`,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 1.5,
-                width: 'fit-content'
-              }}
-            >
-              <Tooltip title={`Rarity Rank #${fIntNumber(rarity_rank)} / ${fIntNumber(citems)}`}>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <LeaderboardOutlinedIcon
-                    sx={{
-                      width: '18px',
-                      height: '18px',
-                      color: theme.palette.warning.main
-                    }}
-                  />
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontWeight: 600,
-                      color: theme.palette.warning.main
-                    }}
-                  >
-                    Rank #{fIntNumber(rarity_rank)} / {fIntNumber(citems)}
-                  </Typography>
-                </Stack>
-              </Tooltip>
-            </Box>
-          )}
-
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: '12px',
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.secondary.main,
-                0.08
-              )} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.secondary.main, 0.12)}`,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2
-            }}
-          >
-            <Avatar
-              alt="Owner"
-              src={accountLogo}
-              variant="square"
-              sx={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '8px',
-                border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`
-              }}
-            />
-            <Stack spacing={0.5}>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'text.secondary',
-                  fontWeight: 500,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}
-              >
-                Owner
-              </Typography>
-              <Link
-                href={`/account/${account}`}
-                sx={{
-                  textDecoration: 'none',
-                  '&:hover': {
-                    textDecoration: 'underline'
-                  }
-                }}
-              >
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontWeight: 600,
-                    color: theme.palette.secondary.main,
-                    fontSize: '0.95rem'
-                  }}
-                  noWrap
-                >
-                  {truncate(account, 16)}
-                </Typography>
-              </Link>
-            </Stack>
-          </Box>
-        </Stack>
-      </Box>
-
-      {/* Make offer start */}
-      <Paper
-        sx={{
-          p: 3,
-          borderRadius: '20px',
-          background: `linear-gradient(135deg, ${alpha(
-            theme.palette.background.paper,
-            0.95
-          )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-          boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
-          position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '2px',
-            background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-            opacity: 0.8
-          }
-        }}
-      >
-        {burnt ? (
-          <Typography variant="s5">This NFT is burnt.</Typography>
-        ) : (
-          <>
-            {destination && getMinterName(account) ? (
-              <>
-                {destination === accountLogin ? (
-                  <Paper
-                    elevation={3}
-                    sx={{
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.success.main,
-                        0.08
-                      )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: '16px',
-                      border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
-                      padding: '20px',
-                      boxShadow: `0 8px 32px ${alpha(theme.palette.success.main, 0.12)}`
-                    }}
-                  >
-                    <Typography variant="h6" sx={{ fontWeight: 600, marginBottom: '8px' }}>
-                      Incoming NFT Transfer
-                    </Typography>
-                    <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
-                      This NFT is being transferred to you.
-                      <Button
-                        variant="contained"
-                        color="success"
-                        size="small"
-                        startIcon={<CheckCircleOutlineIcon />}
+          {self && (
+            <CollectionHeader>
+              <CollectionInfo>
+                {cslug ? (
+                  <Link href={`/collection/${cslug}`} underline="none">
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography
+                        variant="body2"
                         sx={{
-                          marginLeft: '8px',
-                          textTransform: 'none',
-                          borderRadius: '12px',
-                          boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.3)}`
+                          color: 'text.secondary'
                         }}
                       >
-                        Accept Transfer
-                      </Button>
-                    </Typography>
-                  </Paper>
+                        {collectionName}
+                      </Typography>
+                      {cverified === 'yes' && (
+                        <Tooltip title="Verified">
+                          <VerificationBadge>
+                            <CheckIcon />
+                          </VerificationBadge>
+                        </Tooltip>
+                      )}
+                    </Stack>
+                  </Link>
                 ) : (
-                  <Paper
-                    elevation={3}
-                    sx={{
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.info.main,
-                        0.08
-                      )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: '16px',
-                      border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
-                      padding: '20px',
-                      boxShadow: `0 8px 32px ${alpha(theme.palette.info.main, 0.12)}`
-                    }}
-                  >
-                    <Typography variant="h6" sx={{ fontWeight: 600, marginBottom: '8px' }}>
-                      Outgoing NFT Transfer
-                    </Typography>
-                    <Typography variant="body1">This NFT is being transferred to:</Typography>
-                    <Link
-                      href={`https://bithomp.com/explorer/${destination}`}
-                      target="_blank"
-                      rel="noreferrer noopener nofollow"
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography
+                      variant="body2"
                       sx={{
-                        textDecoration: 'none',
-                        '&:hover': { textDecoration: 'underline' }
+                        color: 'text.secondary'
                       }}
                     >
+                      {collectionName}
+                    </Typography>
+                    {cverified === 'yes' && (
+                      <Tooltip title="Verified">
+                        <VerificationBadge>
+                          <CheckIcon />
+                        </VerificationBadge>
+                      </Tooltip>
+                    )}
+                  </Stack>
+                )}
+
+                <NFTTitle variant="h5">{nftName}</NFTTitle>
+
+                <FloorPriceCard elevation={0}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Stack direction="row" spacing={1} alignItems="center">
                       <Typography
-                        variant="body1"
+                        variant="body2"
                         sx={{
-                          color: theme.palette.primary.main,
+                          color: 'primary.main',
                           fontWeight: 500,
-                          wordBreak: 'break-all'
+                          letterSpacing: '0.02em'
                         }}
                       >
-                        {destination}
+                        Global Floor
                       </Typography>
-                    </Link>
-                  </Paper>
-                )}
-              </>
-            ) : isOwner ? (
-              <Box
+                      <Tooltip title="Collection-wide floor price">
+                        <Icon
+                          icon="material-symbols:info-outline"
+                          width={16}
+                          height={16}
+                          style={{
+                            color: theme.palette.primary.main,
+                            opacity: 0.7,
+                            cursor: 'help'
+                          }}
+                        />
+                      </Tooltip>
+                    </Stack>
+                    <FloorPriceValue>
+                      <Icon icon={rippleSolid} className="icon" />
+                      <Typography className="amount">
+                        {floorPrice > 0 ? fNumber(floorPrice) : '- - -'}
+                      </Typography>
+                    </FloorPriceValue>
+                  </Stack>
+                </FloorPriceCard>
+              </CollectionInfo>
+
+              <IconButton
+                size="large"
                 sx={{
-                  display: 'flex',
-                  justifyContent: 'space-around',
-                  gap: 2,
-                  padding: '24px',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.primary.main,
-                    0.04
-                  )} 0%, ${alpha(theme.palette.primary.main, 0.01)} 100%)`,
-                  borderRadius: '16px',
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`
+                  backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+                  '&:hover': {
+                    backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.2)
+                  },
+                  color: 'primary.main'
                 }}
+                onClick={handleShareClick}
+                ref={anchorRef}
               >
+                <ShareIcon />
+              </IconButton>
+            </CollectionHeader>
+          )}
+
+          <Stack direction="row" spacing={2} sx={{ mt: 1, mb: 2 }}>
+            {self && rarity_rank > 0 && (
+              <RankingBadge elevation={0}>
+                <LeaderboardOutlinedIcon
+                  sx={{
+                    color: 'primary.main',
+                    fontSize: 18
+                  }}
+                />
+                <Stack>
+                  <Typography variant="caption" color="primary.main" fontWeight="medium">
+                    Rarity Rank
+                  </Typography>
+                  <Typography variant="body1" color="primary.main" fontWeight="bold">
+                    #{fIntNumber(rarity_rank)}
+                  </Typography>
+                </Stack>
+              </RankingBadge>
+            )}
+
+            {MasterSequence && (
+              <MasterSequenceBadge elevation={0}>
+                <Icon
+                  icon={rippleSolid}
+                  width={18}
+                  height={18}
+                  style={{ color: theme.palette.secondary.main }}
+                />
+                <Stack>
+                  <Typography variant="caption" color="secondary.main" fontWeight="medium">
+                    On-Chain Rank
+                  </Typography>
+                  <Typography variant="body1" color="secondary.main" fontWeight="bold">
+                    #{MasterSequence}
+                  </Typography>
+                </Stack>
+              </MasterSequenceBadge>
+            )}
+          </Stack>
+
+          <OwnerCard elevation={0}>
+            <SquareAvatar alt="C" src={accountLogo} />
+            <OwnerInfo>
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Typography variant="body2" color="text.secondary">
+                  Owned by
+                </Typography>
+                {isOwner && (
+                  <Chip
+                    label="You"
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    sx={{ height: 20 }}
+                  />
+                )}
+              </Stack>
+              <OwnerAddress href={`/profile/${account}`}>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  {truncate(account, 16)}
+                </Typography>
+                <Icon
+                  icon="material-symbols:arrow-outward"
+                  width={16}
+                  height={16}
+                  style={{ opacity: 0.7 }}
+                />
+              </OwnerAddress>
+              {minter && minter === account && (
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'primary.main',
+                      fontWeight: 'medium'
+                    }}
+                  >
+                    Original Creator
+                  </Typography>
+                  <VerifiedIcon
+                    sx={{
+                      fontSize: 14,
+                      color: 'primary.main'
+                    }}
+                  />
+                </Stack>
+              )}
+            </OwnerInfo>
+          </OwnerCard>
+
+          <Divider />
+
+          {/* Action buttons */}
+          <Stack spacing={2}>
+            {burnt ? (
+              <Typography variant="h6" color="error">
+                This NFT is burnt.
+              </Typography>
+            ) : isOwner ? (
+              <Stack direction="row" spacing={2}>
                 <Button
                   fullWidth
                   variant="contained"
                   startIcon={<LocalOfferIcon />}
                   onClick={handleCreateSellOffer}
-                  color="primary"
                   disabled={!accountLogin || burnt}
-                  sx={{
-                    height: '52px',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    borderRadius: '12px',
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`
-                    }
-                  }}
                 >
-                  List for Sale
+                  Sell
                 </Button>
                 <Button
                   fullWidth
                   variant="outlined"
                   startIcon={<SendIcon />}
                   onClick={handleTransfer}
-                  color="secondary"
                   disabled={!accountLogin || burnt}
-                  sx={{
-                    height: '52px',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    borderRadius: '12px',
-                    borderWidth: '2px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.8
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                    backdropFilter: 'blur(10px)',
-                    border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      borderWidth: '2px',
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.secondary.main,
-                        0.12
-                      )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-                      border: `2px solid ${alpha(theme.palette.secondary.main, 0.5)}`,
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 6px 20px ${alpha(theme.palette.secondary.main, 0.2)}`
-                    }
-                  }}
                 >
-                  Transfer Asset
+                  Transfer
                 </Button>
-                <BurnNFT
-                  nft={nft}
-                  onHandleBurn={onHandleBurn}
-                  sx={{
-                    height: '52px',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    borderRadius: '12px'
-                  }}
-                />
-              </Box>
+                <BurnNFT nft={nft} onHandleBurn={onHandleBurn} />
+              </Stack>
             ) : (
-              <Grid container>
-                <Grid item xs={12} sm={7}>
-                  <Typography variant="s7">Current Price</Typography>
-                  <Stack sx={{ mt: 0, mb: 2 }}>
-                    {loading ? (
-                      <PulseLoader color="#00AB55" size={10} />
-                    ) : cost ? (
-                      cost.currency === 'XRP' ? (
-                        <Stack direction="row" spacing={0.5} alignItems="center">
-                          <Typography variant="s9" pt={0.8}>
-                            <Typography>✕</Typography>
-                          </Typography>
-                          <Typography variant="s9">{fNumber(cost.amount)}</Typography>
-                        </Stack>
-                      ) : (
-                        <Typography variant="s3">
-                          {fNumber(cost.amount)} {cost.name}
-                        </Typography>
-                      )
-                    ) : (
-                      <Typography variant="s8">- - -</Typography>
+              <Stack spacing={2}>
+                <Stack direction="row" justifyContent="space-between" alignItems="baseline">
+                  <Typography variant="body2" color="text.secondary">
+                    Current Price
+                  </Typography>
+                  {loading ? (
+                    <PulseLoader color="#00AB55" size={10} />
+                  ) : lowestSellOffer ? (
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Icon icon={rippleSolid} width="24" height="24" />
+                      <Typography variant="h5" fontWeight="bold">
+                        {formatXRPAmount(
+                          lowestSellOffer.totalAmount,
+                          true,
+                          lowestSellOffer.destination
+                        )}
+                      </Typography>
+                    </Stack>
+                  ) : (
+                    <Typography variant="body1">- - -</Typography>
+                  )}
+                </Stack>
+                {accountLogin ? (
+                  <>
+                    {lowestSellOffer && !burnt && (
+                      <Button fullWidth variant="contained" size="large" onClick={handleBuyNow}>
+                        Buy Now
+                      </Button>
                     )}
-                  </Stack>
-                </Grid>
-                <Grid item xs={12} sm={5}>
-                  <Stack direction={{ xs: 'row', sm: 'column' }} spacing={{ xs: 1, sm: 2 }}>
                     <Button
                       fullWidth
-                      disabled={!cost || burnt}
-                      variant="contained"
-                      onClick={handleBuyNow}
-                      sx={{
-                        height: '48px',
-                        fontWeight: 600,
-                        textTransform: 'none',
-                        borderRadius: '12px',
-                        background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
-                        boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.3)}`,
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        '&:hover': {
-                          background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`,
-                          transform: 'translateY(-2px)',
-                          boxShadow: `0 6px 20px ${alpha(theme.palette.success.main, 0.4)}`
-                        },
-                        '&:disabled': {
-                          background: alpha(theme.palette.action.disabled, 0.12),
-                          color: theme.palette.action.disabled
-                        }
-                      }}
-                    >
-                      Buy Now
-                    </Button>
-                    <Button
-                      fullWidth
-                      disabled={!accountLogin || burnt}
+                      disabled={burnt}
                       variant="outlined"
+                      size="large"
                       onClick={handleCreateBuyOffer}
-                      sx={{
-                        height: '48px',
-                        fontWeight: 600,
-                        textTransform: 'none',
-                        borderRadius: '12px',
-                        background: `linear-gradient(135deg, ${alpha(
-                          theme.palette.background.paper,
-                          0.95
-                        )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-                        backdropFilter: 'blur(20px)',
-                        border: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                        color: theme.palette.primary.main,
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          height: '2px',
-                          background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.info.main})`,
-                          opacity: 0.6
-                        },
-                        '&:hover': {
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.primary.main,
-                            0.12
-                          )} 0%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
-                          border: `2px solid ${alpha(theme.palette.primary.main, 0.5)}`,
-                          transform: 'translateY(-2px)',
-                          boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.2)}`,
-                          '&::before': {
-                            opacity: 1
-                          }
-                        },
-                        '&:disabled': {
-                          background: alpha(theme.palette.action.disabled, 0.08),
-                          border: `2px solid ${alpha(theme.palette.action.disabled, 0.2)}`,
-                          color: theme.palette.action.disabled,
-                          '&::before': {
-                            display: 'none'
-                          }
-                        }
-                      }}
                     >
                       Make Offer
                     </Button>
-                  </Stack>
-                </Grid>
-              </Grid>
-            )}
-          </>
-        )}
-      </Paper>
-      {/* Make offer end */}
-
-      {isOwner && (
-        <Stack>
-          <Accordion
-            defaultExpanded
-            sx={{
-              borderRadius: '16px !important',
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.background.paper,
-                0.95
-              )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-              backdropFilter: 'blur(20px)',
-              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
-              mb: 2,
-              '&::before': {
-                display: 'none'
-              },
-              '& .MuiAccordionSummary-root': {
-                borderRadius: '16px 16px 0 0',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.primary.main,
-                  0.08
-                )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-                minHeight: '64px',
-                '&.Mui-expanded': {
-                  minHeight: '64px',
-                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-                }
-              },
-              '& .MuiAccordionDetails-root': {
-                borderRadius: '0 0 16px 16px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.background.paper,
-                  0.6
-                )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-                backdropFilter: 'blur(10px)'
-              }
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.primary.main }} />}
-              aria-controls="panel3a-content"
-              id="panel3a-header"
-            >
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Box
-                  sx={{
-                    p: 1,
-                    borderRadius: '10px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.primary.main,
-                      0.15
-                    )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <LocalOfferIcon sx={{ color: theme.palette.primary.main, fontSize: '1.2rem' }} />
-                </Box>
-                <Typography
-                  variant="s16"
-                  sx={{
-                    fontWeight: 600,
-                    color: theme.palette.primary.main,
-                    fontSize: '1.1rem'
-                  }}
-                >
-                  Sell Offers
-                </Typography>
+                  </>
+                ) : (
+                  <Wallet />
+                )}
               </Stack>
-            </AccordionSummary>
-            <AccordionDetails sx={{ textAlign: 'center' }}>
-              <OffersList
-                nft={nft}
-                offers={sellOffers}
-                handleAcceptOffer={handleAcceptOffer}
-                handleCancelOffer={handleCancelOffer}
-                isSell={true}
-              />
-            </AccordionDetails>
-          </Accordion>
+            )}
+          </Stack>
+
+          {/* Add this section to display the lowest sell offer */}
+          {!isOwner && lowestSellOffer && (
+            <Stack spacing={2}>
+              <Stack direction="row" justifyContent="space-between" alignItems="baseline">
+                <Typography variant="body2" color="text.secondary">
+                  Lowest Sell Offer
+                </Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Icon icon={rippleSolid} width="24" height="24" />
+                  <Typography variant="h5" fontWeight="bold">
+                    {formatXRPAmount(
+                      lowestSellOffer.totalAmount,
+                      true,
+                      lowestSellOffer.destination
+                    )}
+                  </Typography>
+                </Stack>
+              </Stack>
+              {lowestSellOffer.hasBroker && (
+                <>
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography variant="body2" color="text.secondary">
+                      Base Price
+                    </Typography>
+                    <Typography variant="body2">
+                      {formatXRPAmount(
+                        lowestSellOffer.baseAmount,
+                        true,
+                        lowestSellOffer.destination
+                      )}
+                    </Typography>
+                  </Stack>
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography variant="body2" color="text.secondary">
+                      Broker Fee ({(lowestSellOffer.brokerFeePercentage * 100).toFixed(3)}
+                      %)
+                    </Typography>
+                    <Typography variant="body2">
+                      {formatXRPAmount(
+                        lowestSellOffer.brokerFee,
+                        true,
+                        lowestSellOffer.destination
+                      )}
+                    </Typography>
+                  </Stack>
+                  <Typography variant="body2" color="text.secondary">
+                    Broker: {lowestSellOffer.brokerName} (
+                    {truncate(lowestSellOffer.destination, 16)})
+                  </Typography>
+                </>
+              )}
+            </Stack>
+          )}
+
+          {/* Offers and History sections */}
+          <Stack spacing={2}>
+            {isOwner && (
+              <StyledAccordion defaultExpanded>
+                <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" />}>
+                  <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <LocalOfferIcon color="primary" />
+                      <Typography variant="h6" color="primary.main">
+                        Sell Offers
+                      </Typography>
+                    </Stack>
+                    {sellOffers.length > 0 && (
+                      <OffersBadge>
+                        {sellOffers.length} {sellOffers.length === 1 ? 'Offer' : 'Offers'}
+                      </OffersBadge>
+                    )}
+                  </Stack>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {loading ? (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        py: 3
+                      }}
+                    >
+                      <PulseLoader color="#00AB55" size={10} />
+                    </Box>
+                  ) : sellOffers.length > 0 ? (
+                    <Stack spacing={2}>
+                      {sellOffers.map((offer, index) => {
+                        const amount = normalizeAmount(offer.amount);
+                        return (
+                          <Paper
+                            key={index}
+                            sx={{
+                              p: 2,
+                              backgroundColor: (theme) =>
+                                alpha(theme.palette.background.default, 0.6)
+                            }}
+                          >
+                            <Stack spacing={2}>
+                              <Stack
+                                direction="row"
+                                justifyContent="space-between"
+                                alignItems="center"
+                              >
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                  <Icon icon={rippleSolid} width="20" height="20" />
+                                  <Typography variant="h6" fontWeight="bold">
+                                    {formatXRPAmount(amount.amount, true, 'sell_offer')}
+                                  </Typography>
+                                </Stack>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  color="error"
+                                  onClick={() => handleCancelOffer(offer)}
+                                  startIcon={<Icon icon={infoFilled} />}
+                                >
+                                  Cancel
+                                </Button>
+                              </Stack>
+                              {offer.destination && (
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                  <Typography variant="body2" color="text.secondary">
+                                    Broker:
+                                  </Typography>
+                                  <Typography variant="body2">
+                                    {BROKER_ADDRESSES[offer.destination]?.name ||
+                                      truncate(offer.destination, 16)}
+                                  </Typography>
+                                </Stack>
+                              )}
+                            </Stack>
+                          </Paper>
+                        );
+                      })}
+                    </Stack>
+                  ) : (
+                    <Box
+                      sx={{
+                        py: 4,
+                        textAlign: 'center',
+                        backgroundColor: (theme) => alpha(theme.palette.background.default, 0.6),
+                        borderRadius: 1
+                      }}
+                    >
+                      <Typography color="text.secondary">No sell offers available</Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<LocalOfferIcon />}
+                        onClick={handleCreateSellOffer}
+                        sx={{ mt: 2 }}
+                      >
+                        Create Sell Offer
+                      </Button>
+                    </Box>
+                  )}
+                </AccordionDetails>
+              </StyledAccordion>
+            )}
+
+            <StyledAccordion defaultExpanded>
+              <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" />}>
+                <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
+                  <Stack direction="row" alignItems="center" spacing={2}>
+                    <PanToolIcon color="primary" />
+                    <Typography variant="h6" color="primary.main">
+                      Buy Offers
+                    </Typography>
+                  </Stack>
+                  {buyOffers.length > 0 && (
+                    <OfferCountBadge>
+                      {buyOffers.length} {buyOffers.length === 1 ? 'Offer' : 'Offers'}
+                    </OfferCountBadge>
+                  )}
+                </Stack>
+              </AccordionSummary>
+              <AccordionDetails>
+                {loading ? (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      py: 3
+                    }}
+                  >
+                    <PulseLoader color="#00AB55" size={10} />
+                  </Box>
+                ) : buyOffers.length > 0 ? (
+                  <Stack spacing={2}>
+                    {buyOffers.map((offer, index) => {
+                      const amount = normalizeAmount(offer.amount);
+                      return (
+                        <Paper
+                          key={index}
+                          sx={{
+                            p: 2,
+                            backgroundColor: (theme) => alpha(theme.palette.background.default, 0.6)
+                          }}
+                        >
+                          <Stack spacing={2}>
+                            <Stack
+                              direction="row"
+                              justifyContent="space-between"
+                              alignItems="center"
+                            >
+                              <Stack direction="row" spacing={1} alignItems="center">
+                                <Icon icon={rippleSolid} width="20" height="20" />
+                                <Typography variant="h6" fontWeight="bold">
+                                  {formatXRPAmount(amount.amount, true, offer.destination)}
+                                </Typography>
+                              </Stack>
+                              <Stack direction="row" spacing={1}>
+                                {isOwner ? (
+                                  <Button
+                                    variant="contained"
+                                    size="small"
+                                    color="primary"
+                                    onClick={() => handleAcceptOffer(offer)}
+                                    startIcon={<CheckIcon />}
+                                  >
+                                    Accept
+                                  </Button>
+                                ) : (
+                                  accountLogin === offer.owner && (
+                                    <Button
+                                      variant="outlined"
+                                      size="small"
+                                      color="error"
+                                      onClick={() => handleCancelOffer(offer)}
+                                      startIcon={<Icon icon={infoFilled} />}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  )
+                                )}
+                              </Stack>
+                            </Stack>
+                            <Stack spacing={1}>
+                              <Stack direction="row" spacing={1} alignItems="center">
+                                <Typography variant="body2" color="text.secondary">
+                                  From:
+                                </Typography>
+                                <Link href={`/account/${offer.owner}`} underline="hover">
+                                  <Typography variant="body2">
+                                    {truncate(offer.owner, 16)}
+                                  </Typography>
+                                </Link>
+                              </Stack>
+                              {offer.destination && (
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                  <Typography variant="body2" color="text.secondary">
+                                    Broker:
+                                  </Typography>
+                                  <Typography variant="body2">
+                                    {BROKER_ADDRESSES[offer.destination]?.name ||
+                                      truncate(offer.destination, 16)}
+                                  </Typography>
+                                </Stack>
+                              )}
+                            </Stack>
+                          </Stack>
+                        </Paper>
+                      );
+                    })}
+                  </Stack>
+                ) : (
+                  <Box
+                    sx={{
+                      py: 4,
+                      textAlign: 'center',
+                      backgroundColor: (theme) => alpha(theme.palette.background.default, 0.6),
+                      borderRadius: 1
+                    }}
+                  >
+                    <Typography color="text.secondary">No buy offers available</Typography>
+                    {!isOwner && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<PanToolIcon />}
+                        onClick={handleCreateBuyOffer}
+                        sx={{ mt: 2 }}
+                      >
+                        Make Offer
+                      </Button>
+                    )}
+                  </Box>
+                )}
+              </AccordionDetails>
+            </StyledAccordion>
+
+            <Accordion
+              defaultExpanded
+              sx={{
+                backgroundColor: 'transparent',
+                boxShadow: 'none'
+              }}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" />}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <HistoryIcon color="primary" />
+                  <Typography variant="h6" color="primary.main">
+                    History
+                  </Typography>
+                </Stack>
+              </AccordionSummary>
+              <AccordionDetails>
+                <HistoryList nft={nft} />
+              </AccordionDetails>
+            </Accordion>
+          </Stack>
         </Stack>
-      )}
+        <CreateOfferDialog
+          open={openCreateOffer}
+          setOpen={setOpenCreateOffer}
+          onClose={handleCloseCreateOffer}
+          nft={nft}
+          isSellOffer={isSellOffer}
+          onOfferCreated={handleOfferCreated}
+        />
+        <TransferDialog
+          open={openTransfer}
+          setOpen={setOpenTransfer}
+          onClose={handleCloseTransfer}
+          nft={nft}
+        />
+        <CreateOfferXRPCafe
+          open={openCreateOfferXRPCafe}
+          setOpen={setOpenCreateOfferXRPCafe}
+          nft={nft}
+          isSellOffer={false}
+          initialAmount={lowestSellOffer ? lowestSellOffer.totalAmount : 0}
+          brokerFeePercentage={lowestSellOffer ? lowestSellOffer.brokerFeePercentage : 0}
+          onOfferCreated={handleOfferCreated}
+        />
+        <ConfirmAcceptOfferDialog
+          open={openConfirm}
+          setOpen={setOpenConfirm}
+          offer={acceptOffer}
+          onContinue={onContinueAccept}
+        />
+      </GlassPanel>
 
-      <Stack>
-        {/* Buy Offers start */}
-        <Accordion
-          defaultExpanded
-          sx={{
-            borderRadius: '16px !important',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.95
-            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
-            mb: 2,
-            '&::before': {
-              display: 'none'
-            },
-            '& .MuiAccordionSummary-root': {
-              borderRadius: '16px 16px 0 0',
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.success.main,
-                0.08
-              )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.success.main, 0.12)}`,
-              minHeight: '64px',
-              '&.Mui-expanded': {
-                minHeight: '64px',
-                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-              }
-            },
-            '& .MuiAccordionDetails-root': {
-              borderRadius: '0 0 16px 16px',
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.background.paper,
-                0.6
-              )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-              backdropFilter: 'blur(10px)'
+      <Popover
+        open={openShare}
+        anchorEl={anchorEl}
+        onClose={handleShareClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right'
+        }}
+        PaperProps={{
+          sx: {
+            p: 1,
+            width: 200,
+            '& .MuiMenuItem-root': {
+              px: 1,
+              typography: 'body2',
+              borderRadius: 0.75
             }
-          }}
-        >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.success.main }} />}
-            aria-controls="panel3a-content"
-            id="panel3a-header"
+          }
+        }}
+      >
+        <Stack spacing={2} sx={{ p: 1 }}>
+          <TwitterShareButton
+            url={shareUrl}
+            title={shareTitle}
+            via="xrpnft"
+            hashtags={['XRPL', 'NFT', 'XRP']}
           >
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Box
-                sx={{
-                  p: 1,
-                  borderRadius: '10px',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.success.main,
-                    0.15
-                  )} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`,
-                  border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <PanToolIcon sx={{ color: theme.palette.success.main, fontSize: '1.2rem' }} />
-              </Box>
-              <Typography
-                variant="s16"
-                sx={{
-                  fontWeight: 600,
-                  color: theme.palette.success.main,
-                  fontSize: '1.1rem'
-                }}
-              >
-                Offers
-              </Typography>
-            </Stack>
-          </AccordionSummary>
-          <AccordionDetails>
-            <OffersList
-              nft={nft}
-              offers={buyOffers}
-              handleAcceptOffer={handleAcceptOffer}
-              handleCancelOffer={handleCancelOffer}
-              isSell={false}
-            />
-          </AccordionDetails>
-        </Accordion>
-        {/* Buy Offers end */}
-      </Stack>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={
+                <Icon
+                  icon={xIcon}
+                  width={24}
+                  height={24}
+                  style={{
+                    borderRadius: '50%',
+                    padding: 4,
+                    backgroundColor: 'black',
+                    color: 'white'
+                  }}
+                />
+              }
+              sx={{ justifyContent: 'flex-start' }}
+            >
+              Share on X
+            </Button>
+          </TwitterShareButton>
 
-      <Stack>
-        {/* History Start */}
-        <Accordion
-          defaultExpanded
-          sx={{
-            borderRadius: '16px !important',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.95
-            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
-            mb: 2,
-            '&::before': {
-              display: 'none'
-            },
-            '& .MuiAccordionSummary-root': {
-              borderRadius: '16px 16px 0 0',
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.info.main,
-                0.08
-              )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`,
-              minHeight: '64px',
-              '&.Mui-expanded': {
-                minHeight: '64px',
-                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-              }
-            },
-            '& .MuiAccordionDetails-root': {
-              borderRadius: '0 0 16px 16px',
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.background.paper,
-                0.6
-              )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-              backdropFilter: 'blur(10px)',
-              borderTop: 'none'
-            }
-          }}
-        >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.info.main }} />}
-            aria-controls="panel2a-content"
-            id="panel2a-header"
+          <FacebookShareButton url={shareUrl} quote={shareTitle}>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<FacebookIcon size={32} round />}
+              sx={{ justifyContent: 'flex-start' }}
+            >
+              Share on Facebook
+            </Button>
+          </FacebookShareButton>
+
+          <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<ContentCopyIcon />}
+            onClick={() => {
+              navigator.clipboard.writeText(shareUrl);
+              openSnackbar('Link copied to clipboard!', 'success');
+              handleShareClose();
+            }}
+            sx={{ justifyContent: 'flex-start' }}
           >
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Box
-                sx={{
-                  p: 1,
-                  borderRadius: '10px',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.info.main,
-                    0.15
-                  )} 0%, ${alpha(theme.palette.info.main, 0.08)} 100%)`,
-                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <HistoryIcon sx={{ color: theme.palette.info.main, fontSize: '1.2rem' }} />
-              </Box>
-              <Typography
-                variant="s16"
-                sx={{
-                  fontWeight: 600,
-                  color: theme.palette.info.main,
-                  fontSize: '1.1rem'
-                }}
-              >
-                History
-              </Typography>
-            </Stack>
-          </AccordionSummary>
-          <AccordionDetails>
-            <HistoryList nft={nft} />
-          </AccordionDetails>
-        </Accordion>
-        {/* History end */}
-      </Stack>
-    </Stack>
+            Copy Link
+          </Button>
+        </Stack>
+      </Popover>
+    </>
   );
 }
