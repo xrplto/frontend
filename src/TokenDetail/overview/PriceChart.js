@@ -392,7 +392,7 @@ function PriceChart({ token }) {
         events: {
           afterSetExtremes: handleAfterSetExtremes
         },
-        height: '85%',
+        height: '60%',
         plotLines: [
           {
             width: 1,
@@ -416,8 +416,8 @@ function PriceChart({ token }) {
         labels: {
           enabled: false
         },
-        top: '85%',
-        height: '15%',
+        top: '60%',
+        height: '40%',
         offset: 0,
         lineWidth: 0,
         gridLineWidth: 0,
@@ -474,9 +474,9 @@ function PriceChart({ token }) {
             fillColor: {
               linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
               stops: [
-                [0, `${theme.palette.error.light}30`],
-                [0.5, `${theme.palette.error.main}15`],
-                [1, `${theme.palette.error.light}05`]
+                [0, `${theme.palette.error.light}40`],
+                [0.5, `${theme.palette.error.main}25`],
+                [1, `${theme.palette.error.light}15`]
               ]
             }
           },
@@ -491,9 +491,9 @@ function PriceChart({ token }) {
             fillColor: {
               linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
               stops: [
-                [0, `${theme.palette.success.main}30`],
-                [0.5, `${theme.palette.success.light}15`],
-                [1, `${theme.palette.success.main}05`]
+                [0, `${theme.palette.success.main}40`],
+                [0.5, `${theme.palette.success.light}25`],
+                [1, `${theme.palette.success.main}15`]
               ]
             }
           }
@@ -520,15 +520,29 @@ function PriceChart({ token }) {
       {
         type: 'column',
         name: 'Volume',
-        data: data && data.length > 0 ? data.map((point) => [point[0], point[2]]) : [],
+        data:
+          data && data.length > 0
+            ? data.map((point, i) => {
+                let color;
+                if (i > 0) {
+                  if (point[1] > data[i - 1][1]) {
+                    color = alpha(theme.palette.success.main, 0.6); // Price up
+                  } else if (point[1] < data[i - 1][1]) {
+                    color = alpha(theme.palette.error.main, 0.6); // Price down
+                  } else {
+                    color = alpha(theme.palette.grey[500], 0.4); // No change
+                  }
+                } else {
+                  color = alpha(theme.palette.grey[500], 0.4); // First bar
+                }
+                return {
+                  x: point[0],
+                  y: point[2],
+                  color
+                };
+              })
+            : [],
         yAxis: 1,
-        color: {
-          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-          stops: [
-            [0, alpha(theme.palette.primary.main, 0.4)],
-            [1, alpha(theme.palette.primary.main, 0.1)]
-          ]
-        },
         showInLegend: false,
         borderWidth: 0
       }
