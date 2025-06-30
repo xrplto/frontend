@@ -319,7 +319,7 @@ export default function SearchModal({ onClose, open }) {
           left: '50%',
           top: open ? '15%' : '8%',
           transform: 'translateX(-50%)',
-          p: { xs: 2, sm: 4 },
+          p: { xs: 2, sm: 3 },
           zIndex: 12001,
           opacity: open ? 1 : 0,
           scale: open ? 1 : 0.95,
@@ -388,7 +388,7 @@ export default function SearchModal({ onClose, open }) {
         <Paper
           component="form"
           sx={{
-            p: '12px 16px',
+            p: '10px 16px',
             display: 'flex',
             alignItems: 'center',
             background: `linear-gradient(135deg, ${alpha(
@@ -458,7 +458,7 @@ export default function SearchModal({ onClose, open }) {
               ml: 1.5,
               flex: 1,
               '& input': {
-                py: 1.5,
+                py: 1,
                 fontSize: '1rem',
                 fontWeight: 500,
                 color: theme.palette.text.primary,
@@ -526,8 +526,8 @@ export default function SearchModal({ onClose, open }) {
             }}
             aria-label="search filters"
             sx={{
-              mt: 2,
-              mb: 1.5,
+              mt: 1.5,
+              mb: 1,
               background: `linear-gradient(135deg, ${alpha(
                 theme.palette.background.paper,
                 0.6
@@ -541,7 +541,7 @@ export default function SearchModal({ onClose, open }) {
                 border: 'none',
                 borderRadius: '9px !important',
                 px: 2,
-                py: 0.75,
+                py: 0.5,
                 typography: 'body2',
                 fontSize: '0.85rem',
                 fontWeight: 500,
@@ -590,7 +590,7 @@ export default function SearchModal({ onClose, open }) {
 
         {tokens.length > 0 && (
           <Stack
-            mt={2}
+            mt={1.5}
             spacing={1}
             sx={{ display: activeTab === 'token' || activeTab === 'all' ? 'flex' : 'none' }}
           >
@@ -600,7 +600,7 @@ export default function SearchModal({ onClose, open }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1,
-                  p: 1.5,
+                  p: 1,
                   borderRadius: '12px',
                   background: `linear-gradient(135deg, ${alpha(
                     theme.palette.primary.main,
@@ -641,12 +641,12 @@ export default function SearchModal({ onClose, open }) {
             </Stack>
             <MenuList
               sx={{
-                p: 1,
+                p: 0.5,
                 maxHeight: search.length > 0 ? '380px' : 'auto',
                 overflowY: 'auto',
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '12px',
+                gap: '8px',
                 '&::-webkit-scrollbar': {
                   display: 'none'
                 },
@@ -670,9 +670,9 @@ export default function SearchModal({ onClose, open }) {
                     >
                       <MenuItem
                         sx={{
-                          py: 1.5,
+                          py: 1,
                           px: 2,
-                          height: '60px',
+                          height: '56px',
                           borderRadius: '12px',
                           background: `linear-gradient(135deg, ${alpha(
                             theme.palette.background.paper,
@@ -781,8 +781,8 @@ export default function SearchModal({ onClose, open }) {
                 }}
                 variant="text"
                 sx={{
-                  mt: 2,
-                  py: 1.5,
+                  mt: 1,
+                  py: 1,
                   px: 3,
                   borderRadius: '12px',
                   background: `linear-gradient(135deg, ${alpha(
@@ -812,8 +812,8 @@ export default function SearchModal({ onClose, open }) {
 
         {collections.length > 0 && (
           <Stack
-            mt={3}
-            spacing={2}
+            mt={2}
+            spacing={1}
             sx={{ display: activeTab === 'nft' || activeTab === 'all' ? 'flex' : 'none' }}
           >
             <Stack direction="row" alignItems="center" sx={{ px: 1.5, mb: 0.5 }} spacing={1.5}>
@@ -822,7 +822,7 @@ export default function SearchModal({ onClose, open }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1,
-                  p: 1.5,
+                  p: 1,
                   borderRadius: '12px',
                   background: `linear-gradient(135deg, ${alpha(
                     theme.palette.success.main,
@@ -864,12 +864,12 @@ export default function SearchModal({ onClose, open }) {
 
             <MenuList
               sx={{
-                p: 1.5,
+                p: 1,
                 maxHeight: search.length > 0 ? '465px' : 'auto',
                 overflowY: 'auto',
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '16px',
+                gap: '12px',
                 '&::-webkit-scrollbar': {
                   display: 'none'
                 },
@@ -894,9 +894,9 @@ export default function SearchModal({ onClose, open }) {
                 >
                   <MenuItem
                     sx={{
-                      py: 2,
-                      px: 2.5,
-                      height: '88px',
+                      py: 1.5,
+                      px: 2,
+                      height: '72px',
                       borderRadius: '16px',
                       background: `linear-gradient(135deg, ${alpha(
                         theme.palette.background.paper,
@@ -945,8 +945,8 @@ export default function SearchModal({ onClose, open }) {
                           alt={nft.name}
                           src={`https://s1.xrpnft.com/collection/${nft.logoImage}`}
                           sx={{
-                            width: 48,
-                            height: 48,
+                            width: 40,
+                            height: 40,
                             backgroundColor: 'transparent',
                             borderRadius: '12px',
                             '& .MuiCardMedia-root': {
@@ -1007,8 +1007,8 @@ export default function SearchModal({ onClose, open }) {
                 }}
                 variant="text"
                 sx={{
-                  mt: 2,
-                  py: 1.5,
+                  mt: 1,
+                  py: 1,
                   px: 3,
                   borderRadius: '12px',
                   background: `linear-gradient(135deg, ${alpha(
@@ -1037,7 +1037,7 @@ export default function SearchModal({ onClose, open }) {
         )}
 
         <Stack
-          mt={2}
+          mt={1.5}
           spacing={1}
           sx={{
             display: (!search || activeTab === 'all') && searchHistory.length > 0 ? 'flex' : 'none'
@@ -1049,7 +1049,7 @@ export default function SearchModal({ onClose, open }) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1,
-                p: 1.5,
+                p: 1,
                 borderRadius: '10px',
                 background: `linear-gradient(135deg, ${alpha(
                   theme.palette.info.main,
@@ -1093,7 +1093,7 @@ export default function SearchModal({ onClose, open }) {
               px: 1,
               pb: 0.5,
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, 80px)',
+              gridTemplateColumns: 'repeat(auto-fill, 72px)',
               gap: '8px',
               justifyContent: 'start'
             }}
@@ -1103,9 +1103,9 @@ export default function SearchModal({ onClose, open }) {
                 <Paper
                   elevation={0}
                   sx={{
-                    width: '80px',
-                    height: '80px',
-                    padding: '8px',
+                    width: '72px',
+                    height: '72px',
+                    padding: '6px',
                     borderRadius: '16px',
                     background: `linear-gradient(135deg, ${alpha(
                       theme.palette.background.paper,
