@@ -1372,7 +1372,7 @@ export default function NFTActions({ nft }) {
                                 <Typography variant="body2" color="text.secondary">
                                   From:
                                 </Typography>
-                                <Link href={`/account/${offer.owner}`} underline="hover">
+                                <Link href={`/profile/${offer.owner}`} underline="hover">
                                   <Typography variant="body2">
                                     {truncate(offer.owner, 16)}
                                   </Typography>
