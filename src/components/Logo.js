@@ -1,14 +1,11 @@
 import { useContext, useState } from 'react';
 import { Box } from '@mui/material';
-import { useRouter } from 'next/router';
 import Image from 'next/image';
-import Link from 'next/link';
 
 import { AppContext } from 'src/AppContext';
 
 function Logo({ style }) {
   const { darkMode } = useContext(AppContext);
-  const router = useRouter();
   const [imageError, setImageError] = useState(false);
 
   const img_black = '/logo/xrpl-to-logo-black.svg';
@@ -33,7 +30,7 @@ function Logo({ style }) {
   };
 
   return (
-    <Link href="/" style={logoStyle}>
+    <a href="/" style={logoStyle}>
       {imageError ? (
         <Box
           sx={{
@@ -60,7 +57,7 @@ function Logo({ style }) {
           }}
         />
       )}
-    </Link>
+    </a>
   );
 }
 
