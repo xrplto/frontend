@@ -70,7 +70,7 @@ const CardWrapper = styled(Card)(({ theme }) => ({
     opacity: 0.8,
     zIndex: 1
   },
-  height: 220
+  height: 250
 }));
 
 export default function NFTCard({ nft, handleRemove }) {
@@ -113,9 +113,9 @@ export default function NFTCard({ nft, handleRemove }) {
     <Link href={`/nft/${NFTokenID}`} underline="none" sx={{ position: 'relative' }}>
       <CardWrapper
         sx={{
-          maxWidth: 160,
-          width: 160,
-          height: 220,
+          maxWidth: 180,
+          width: 180,
+          height: 250,
           '&:hover': {
             transform: 'translateY(-4px)',
             '& .card-media': {
