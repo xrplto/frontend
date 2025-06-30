@@ -217,33 +217,6 @@ export default function Summary() {
         </Stack>
       );
 
-      const renderPlatformMarketCap = (platform, color) => {
-        const marketCap = data[`${platform}_marketcap`] || 0;
-        if (marketCap <= 0) return null;
-
-        return (
-          <Stack key={platform} direction="row" justifyContent="space-between" alignItems="center">
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Box
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  backgroundColor: color
-                }}
-              />
-              <Typography variant="caption" display="block">
-                {platform}
-              </Typography>
-            </Stack>
-            <Typography variant="caption" display="block" sx={{ fontWeight: 'bold' }}>
-              {currencySymbols[activeFiatCurrency]}
-              {formatNumberWithDecimals(marketCap)}
-            </Typography>
-          </Stack>
-        );
-      };
-
       return (
         <Paper
           sx={{
@@ -266,6 +239,13 @@ export default function Summary() {
             {renderStat(FiberNewIcon, 'New Tokens', fNumber(data.Tokens))}
             {renderStat(
               MonetizationOnIcon,
+              'Total MCap',
+              `${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(
+                data.totalMarketcap
+              )}`
+            )}
+            {renderStat(
+              MonetizationOnIcon,
               'Avg MCap',
               `${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(data.avgMarketcap)}`
             )}
@@ -278,23 +258,6 @@ export default function Summary() {
               )}`
             )}
           </Stack>
-
-          {activePlatforms.length > 0 && (
-            <>
-              <Divider sx={{ my: 1.5 }} />
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                <BusinessIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-                <Typography variant="caption" color="text.secondary">
-                  Platform Market Caps
-                </Typography>
-              </Stack>
-              <Stack spacing={0.5} sx={{ pl: 1 }}>
-                {activePlatforms.map((platform) =>
-                  renderPlatformMarketCap(platform, platformColors[platform])
-                )}
-              </Stack>
-            </>
-          )}
 
           {platformEntries.length > 0 && (
             <>
@@ -381,46 +344,32 @@ export default function Summary() {
     Other: '#6b7280' // Gray for any other platforms
   };
 
-  // Process chart data to include platform-specific market cap data
+  // Process chart data using actual API data
   const chartData =
     tokenCreation && tokenCreation.length > 0
       ? tokenCreation
           .slice(0, 30)
           .reverse()
           .map((d) => {
-            const baseData = {
-              date: format(new Date(d.date), 'MM/dd'),
+            const processedData = {
+              date: d.date.substring(5, 7) + '/' + d.date.substring(8, 10),
+              originalDate: d.date,
               Tokens: d.totalTokens,
               platforms: d.platforms,
               avgMarketcap: new Decimal(d.avgMarketcap || 0).div(fiatRate).toNumber(),
+              rawAvgMarketcap: d.avgMarketcap,
               avgHolders: d.avgHolders || 0,
-              totalVolume24h: new Decimal(d.totalVolume24h || 0).div(fiatRate).toNumber()
+              totalVolume24h: new Decimal(d.totalVolume24h || 0).div(fiatRate).toNumber(),
+              totalMarketcap: d.totalMarketcap || 0
             };
-
-            // Add platform-specific market cap data
-            const platforms = d.platforms || {};
-            Object.keys(platformColors).forEach((platform) => {
-              if (platform !== 'Other') {
-                // For market cap, we'll simulate based on token count and avg market cap
-                // This is a simplified calculation - in real implementation you'd have actual platform market cap data
-                const platformTokens = platforms[platform] || 0;
-                const totalTokens = d.totalTokens || 1;
-                const avgMarketcap = new Decimal(d.avgMarketcap || 0).div(fiatRate).toNumber();
-
-                // Estimate platform market cap based on token distribution
-                baseData[`${platform}_marketcap`] =
-                  (platformTokens / totalTokens) * avgMarketcap * platformTokens;
-              }
-            });
-
-            return baseData;
+            return processedData;
           })
       : [];
 
-  // Get all platforms that have data
+  // Get all platforms that have token data
   const activePlatforms = Object.keys(platformColors).filter((platform) => {
     if (platform === 'Other') return false;
-    return chartData.some((d) => (d[`${platform}_marketcap`] || 0) > 0);
+    return chartData.some((d) => (d.platforms?.[platform] || 0) > 0);
   });
 
   // Show XRP price in USD when currency is XRP, otherwise show in active currency
@@ -740,7 +689,7 @@ export default function Summary() {
                   <Grid item xs={12} md={3}>
                     <MetricBox sx={{ p: 0 }}>
                       <Box sx={{ width: '100%', pt: 2, px: 2 }}>
-                        <MetricTitle>{t('Platform Trends & New Tokens (30-Day)')}</MetricTitle>
+                        <MetricTitle>{t('New Tokens Created (30-Day)')}</MetricTitle>
                       </Box>
                       <ResponsiveContainer width="100%" height={70}>
                         <LineChart
@@ -752,7 +701,7 @@ export default function Summary() {
                           <YAxis yAxisId="marketcap" orientation="right" hide />
                           <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 99999 }} />
 
-                          {/* New Tokens Line - using left Y-axis */}
+                          {/* New Tokens Line - left Y-axis */}
                           <Line
                             yAxisId="tokens"
                             type="monotone"
@@ -764,20 +713,18 @@ export default function Summary() {
                             connectNulls={false}
                           />
 
-                          {/* Platform Market Cap Lines - using right Y-axis */}
-                          {activePlatforms.map((platform) => (
-                            <Line
-                              key={platform}
-                              yAxisId="marketcap"
-                              type="monotone"
-                              dataKey={`${platform}_marketcap`}
-                              stroke={platformColors[platform]}
-                              strokeWidth={2}
-                              dot={false}
-                              name={`${platform} MCap`}
-                              connectNulls={false}
-                            />
-                          ))}
+                          {/* Average Market Cap Line - right Y-axis */}
+                          <Line
+                            yAxisId="marketcap"
+                            type="monotone"
+                            dataKey="avgMarketcap"
+                            stroke={theme.palette.secondary.main}
+                            strokeWidth={2}
+                            dot={false}
+                            name="Average Market Cap"
+                            connectNulls={false}
+                            strokeDasharray="5 5"
+                          />
                         </LineChart>
                       </ResponsiveContainer>
                     </MetricBox>
