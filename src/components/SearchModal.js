@@ -722,6 +722,7 @@ export default function SearchModal({ onClose, open }) {
                               src={imgUrl}
                               width={32}
                               height={32}
+                              alt={name}
                               style={{
                                 minWidth: '32px'
                               }}
@@ -1155,6 +1156,7 @@ export default function SearchModal({ onClose, open }) {
                         src={img}
                         width={32}
                         height={32}
+                        alt={name}
                         style={{
                           minWidth: '32px'
                         }}
