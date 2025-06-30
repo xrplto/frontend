@@ -105,7 +105,7 @@ const GlassPanel = styled(Glass)(({ theme }) => ({
   padding: theme.spacing(3),
   boxShadow: `0 8px 32px 0 ${alpha(theme.palette.primary.main, 0.1)}`,
   border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
-  maxWidth: '90%', // Change this from 95% to 90%
+  maxWidth: '95%',
   margin: '0 auto'
 }));
 

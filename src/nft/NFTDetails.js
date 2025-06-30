@@ -178,7 +178,7 @@ export default function NFTDetails({ nft }) {
   const properties = props || getProperties(meta);
 
   return (
-    <Box sx={{ maxWidth: 800, margin: 'auto', mt: 4 }}>
+    <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
       <Paper
         elevation={3}
         sx={{
