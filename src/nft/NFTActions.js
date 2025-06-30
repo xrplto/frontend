@@ -228,7 +228,7 @@ const OfferCountBadge = styled('span')(({ theme }) => ({
 
 // Add this new component to display the price warning
 function PriceWarningIcon({ discrepancy, floorPrice }) {
-  if (discrepancy <= 0.3) {
+  if (discrepancy <= 0.9) {
     return null;
   }
 
