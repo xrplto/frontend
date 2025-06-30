@@ -51,7 +51,6 @@ const CardWrapper = styled(Card)(({ theme }) => ({
   position: 'relative',
   '&:hover': {
     transform: 'translateY(-4px)',
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
     boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
       theme.palette.primary.main,
       0.1
@@ -59,17 +58,6 @@ const CardWrapper = styled(Card)(({ theme }) => ({
     '& .card-media': {
       transform: 'scale(1.05)'
     }
-  },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '2px',
-    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-    opacity: 0.8,
-    zIndex: 1
   }
 }));
 
