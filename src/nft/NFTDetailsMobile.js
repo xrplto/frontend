@@ -534,15 +534,7 @@ export default function NFTDetailsMobile({ nft }) {
         sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={pageLoading}
       >
-        <ProgressBar
-          height="80"
-          width="80"
-          ariaLabel="progress-bar-loading"
-          wrapperStyle={{}}
-          wrapperClass="progress-bar-wrapper"
-          borderColor="#F4442E"
-          barColor="#51E5FF"
-        />
+        <PuffLoader color={theme.palette.primary.main} size={80} />
       </Backdrop>
       <ConfirmAcceptOfferDialog
         open={openConfirm}
