@@ -11,7 +11,6 @@ import {
   useTheme,
   useMediaQuery,
   Box,
-  Grid,
   IconButton,
   InputAdornment,
   TextField,
@@ -142,8 +141,8 @@ export default function NFTs({ collection }) {
   }, [debouncedSearch]);
 
   return (
-    <Box sx={{ p: 3, backgroundColor: alpha(theme.palette.background.paper, 0.8) }}>
-      <Box display="flex" alignItems="center" mb={3} gap={2}>
+    <Box sx={{ p: 1, backgroundColor: alpha(theme.palette.background.paper, 0.8) }}>
+      <Box display="flex" alignItems="center" mb={1} gap={2}>
         <IconButton
           aria-label="filter"
           onClick={handleShowFilter}
@@ -318,19 +317,23 @@ export default function NFTs({ collection }) {
         <Box
           sx={{
             display: 'grid',
-            gap: 3,
+            gap: 0.5,
             gridTemplateColumns: {
-              xs: 'repeat(1, 1fr)',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(4, 1fr)',
-              lg: 'repeat(5, 1fr)'
+              xs: 'repeat(4, 1fr)',
+              sm: 'repeat(6, 1fr)',
+              md: 'repeat(9, 1fr)',
+              lg: 'repeat(11, 1fr)',
+              xl: 'repeat(13, 1fr)'
             }
           }}
         >
           {nfts.map((nft) => (
-            <Grid key={nft.NFTokenID} item xs={1} sm={1} md={1}>
-              <MemoizedNFTCard nft={nft} collection={collection} onRemove={handleRemove} />
-            </Grid>
+            <MemoizedNFTCard
+              key={nft.NFTokenID}
+              nft={nft}
+              collection={collection}
+              onRemove={handleRemove}
+            />
           ))}
         </Box>
       </InfiniteScroll>
