@@ -22,18 +22,44 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
     () => (data) => {
       const { chartColor, data: chartData } = data;
 
+      // If no data, return null to render nothing
+      if (!chartData?.prices?.length) {
+        return null;
+      }
+
+      // Find the index of the first significant price change to trim the leading flat line
+      let firstChangeIndex = 0;
+      if (chartData.prices.length > 1) {
+        const firstPriceDecimal = new Decimal(chartData.prices[0]);
+        for (let i = 1; i < chartData.prices.length; i++) {
+          const currentPriceDecimal = new Decimal(
+            typeof chartData.prices[i] === 'string'
+              ? chartData.prices[i]
+              : chartData.prices[i].toString()
+          );
+          if (!currentPriceDecimal.equals(firstPriceDecimal)) {
+            // Start one point before the change to show the start of the ramp-up
+            firstChangeIndex = i > 0 ? i - 1 : 0;
+            break;
+          }
+        }
+      }
+
+      const displayPrices = chartData.prices.slice(firstChangeIndex);
+      const displayTimestamps = chartData.timestamps.slice(firstChangeIndex);
+
       // Parse prices as Decimal objects to handle very small numbers correctly
       // Then normalize the values for display while preserving the shape
       const priceCoordinates = [];
       const originalPrices = [];
       let isPositiveTrend = false;
 
-      if (chartData?.prices?.length) {
+      if (displayPrices?.length) {
         // Find min and max to normalize values
-        let minPrice = new Decimal(chartData.prices[0]);
-        let maxPrice = new Decimal(chartData.prices[0]);
+        let minPrice = new Decimal(displayPrices[0]);
+        let maxPrice = new Decimal(displayPrices[0]);
 
-        chartData.prices.forEach((price) => {
+        displayPrices.forEach((price) => {
           const decPrice =
             typeof price === 'string' ? new Decimal(price) : new Decimal(price.toString());
           if (decPrice.lt(minPrice)) minPrice = decPrice;
@@ -44,12 +70,12 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         const range = maxPrice.minus(minPrice);
 
         // Determine trend direction
-        const firstPrice = new Decimal(chartData.prices[0]);
-        const lastPrice = new Decimal(chartData.prices[chartData.prices.length - 1]);
+        const firstPrice = new Decimal(displayPrices[0]);
+        const lastPrice = new Decimal(displayPrices[displayPrices.length - 1]);
         isPositiveTrend = lastPrice.gte(firstPrice);
 
         // Create normalized coordinates that preserve the shape
-        chartData.prices.forEach((price, index) => {
+        displayPrices.forEach((price, index) => {
           const decPrice =
             typeof price === 'string' ? new Decimal(price) : new Decimal(price.toString());
           // Store original price for tooltip
@@ -58,7 +84,8 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
           const normalizedValue = range.isZero()
             ? 50
             : decPrice.minus(minPrice).div(range).times(100).toNumber();
-          priceCoordinates.push([index, normalizedValue]);
+          const timestamp = displayTimestamps[index];
+          priceCoordinates.push([timestamp, normalizedValue]);
         });
       }
 
@@ -102,16 +129,16 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
             if (!params || !params[0]) return '';
 
             // Get the index from the x-value of the data point
-            const index = params[0].value[0];
+            const index = params[0].dataIndex;
             // Use the original price value from our stored array
             const originalPrice = originalPrices[index];
 
-            if (!chartData?.timestamps || !chartData.timestamps[index]) {
+            if (!displayTimestamps || !displayTimestamps[index]) {
               return `Price: ${originalPrice}`;
             }
 
             // Get the timestamp from the data
-            const timestamp = chartData.timestamps[index];
+            const timestamp = displayTimestamps[index];
             // Format timestamp to readable date/time
             const date = new Date(timestamp);
             const formattedDate = date.toLocaleString([], {
@@ -151,7 +178,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
           z: 99999
         },
         xAxis: {
-          type: 'category',
+          type: 'time',
           show: false,
           boundaryGap: false
         },
@@ -164,6 +191,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
           {
             data: priceCoordinates,
             type: 'line',
+            sampling: 'lttb',
             color: baseColor,
             showSymbol: false,
             symbolSize: 0,
