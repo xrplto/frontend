@@ -12,7 +12,8 @@ import {
   Menu,
   MenuItem,
   Divider,
-  SvgIcon
+  SvgIcon,
+  Typography
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
@@ -22,6 +23,7 @@ import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useTranslation } from 'react-i18next';
 import { useState, useContext, useEffect, forwardRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -451,6 +453,22 @@ export default function Header(props) {
                   </Box>
                 </StyledMenuItem>
 
+                <Divider sx={{ my: 1 }} />
+
+                <Typography
+                  variant="caption"
+                  sx={{
+                    px: 2,
+                    pt: 1,
+                    pb: 0,
+                    fontWeight: 'bold',
+                    color: 'text.secondary',
+                    display: 'block'
+                  }}
+                >
+                  {t('Launchpads')}
+                </Typography>
+
                 <StyledMenuItem
                   darkMode={darkMode}
                   theme={theme}
@@ -525,6 +543,20 @@ export default function Header(props) {
                 </StyledMenuItem>
 
                 <Divider sx={{ my: 1 }} />
+
+                <Typography
+                  variant="caption"
+                  sx={{
+                    px: 2,
+                    pt: 1,
+                    pb: 0,
+                    fontWeight: 'bold',
+                    color: 'text.secondary',
+                    display: 'block'
+                  }}
+                >
+                  {t('Token Discovery')}
+                </Typography>
 
                 <StyledMenuItem
                   darkMode={darkMode}
@@ -618,20 +650,54 @@ export default function Header(props) {
 
                 <Divider sx={{ my: 1 }} />
 
+                <Typography
+                  variant="caption"
+                  sx={{
+                    px: 2,
+                    pt: 1,
+                    pb: 0,
+                    fontWeight: 'bold',
+                    color: 'text.secondary',
+                    display: 'block'
+                  }}
+                >
+                  {t('Market Analysis')}
+                </Typography>
+
                 <StyledMenuItem
                   darkMode={darkMode}
                   theme={theme}
                   onClick={() => handleTokenOptionSelect('/market-metrics')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
                 >
-                  {t('Market Metrics')}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TroubleshootIcon
+                      sx={{ fontSize: '16px', color: darkMode ? '#2499EF' : '#0C53B7' }}
+                    />
+                    <span>{t('Market Metrics')}</span>
+                  </Box>
                 </StyledMenuItem>
 
                 <StyledMenuItem
                   darkMode={darkMode}
                   theme={theme}
                   onClick={() => handleTokenOptionSelect('/top-traders')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
                 >
-                  {t('Top Traders')}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <EmojiEventsIcon
+                      sx={{ fontSize: '16px', color: darkMode ? '#FFC107' : '#B78100' }}
+                    />
+                    <span>{t('Top Traders')}</span>
+                  </Box>
                 </StyledMenuItem>
               </Menu>
 
