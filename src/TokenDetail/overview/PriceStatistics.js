@@ -111,7 +111,8 @@ export default function PriceStatistics({ token }) {
     dom,
     issuer,
     issuer_info,
-    assessment
+    assessment,
+    creator
   } = token;
 
   const info = issuer_info || {};
@@ -324,6 +325,94 @@ export default function PriceStatistics({ token }) {
               </Stack>
             </ModernTableCell>
           </TableRow>
+
+          {/* Creator Row */}
+          {creator && (
+            <TableRow>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontSize: '0.875rem'
+                  }}
+                  noWrap
+                >
+                  Creator
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell align="left">
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Chip
+                    label={
+                      <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                        {truncate(creator, 16)}
+                      </Typography>
+                    }
+                    size="small"
+                    sx={{
+                      pl: 1,
+                      pr: 1,
+                      borderRadius: '8px',
+                      height: '28px',
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.secondary.main,
+                        0.08
+                      )} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
+                      backdropFilter: 'blur(8px)',
+                      border: `1px solid ${alpha(theme.palette.secondary.main, 0.15)}`,
+                      color: theme.palette.secondary.main,
+                      fontWeight: 500,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.secondary.main,
+                          0.12
+                        )} 0%, ${alpha(theme.palette.secondary.main, 0.06)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.secondary.main, 0.25)}`,
+                        transform: 'translateY(-1px)'
+                      }
+                    }}
+                  />
+                  <CopyToClipboard text={creator} onCopy={() => openSnackbar('Copied!', 'success')}>
+                    <Tooltip title="Copy creator address">
+                      <IconButton
+                        size="small"
+                        sx={{
+                          p: 0.75,
+                          borderRadius: '6px',
+                          background: `linear-gradient(135deg, ${alpha(
+                            theme.palette.background.paper,
+                            0.8
+                          )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                          backdropFilter: 'blur(8px)',
+                          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            background: `linear-gradient(135deg, ${alpha(
+                              theme.palette.secondary.main,
+                              0.08
+                            )} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
+                            border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+                            transform: 'translateY(-1px)'
+                          }
+                        }}
+                      >
+                        <ContentCopyIcon
+                          sx={{
+                            width: 14,
+                            height: 14,
+                            color: theme.palette.secondary.main
+                          }}
+                        />
+                      </IconButton>
+                    </Tooltip>
+                  </CopyToClipboard>
+                </Stack>
+              </ModernTableCell>
+            </TableRow>
+          )}
 
           {/* Price Row */}
           <TableRow>
