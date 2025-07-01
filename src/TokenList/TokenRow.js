@@ -468,6 +468,23 @@ function FTokenRow({
     [marketcap, vol24hxrp, tvl, amount, exchRate]
   );
 
+  const isOlderThanOneDay = useMemo(() => {
+    const tokenDate = dateon || date;
+    if (!tokenDate) return false;
+    const tokenCreationTimestamp = new Date(tokenDate).getTime();
+    if (isNaN(tokenCreationTimestamp)) return false;
+    const oneDayInMs = 24 * 60 * 60 * 1000;
+    return new Date().getTime() - tokenCreationTimestamp > oneDayInMs;
+  }, [dateon, date]);
+
+  const sparklineUrl = useMemo(() => {
+    let url = `${BASE_URL}/sparkline/${md5}?period=24h`;
+    if (isOlderThanOneDay) {
+      url += '&lightweight=true&maxPoints=30';
+    }
+    return url;
+  }, [BASE_URL, md5, isOlderThanOneDay]);
+
   useEffect(() => {
     setPriceColor(getPriceColor(memoizedToken.bearbull));
     const timer = setTimeout(() => {
@@ -846,7 +863,7 @@ function FTokenRow({
           }}
         >
           <LoadChart
-            url={`${BASE_URL}/sparkline/${md5}?period=24h`}
+            url={sparklineUrl}
             style={{ width: '100%', height: '100%' }}
             animation={false}
             opts={{

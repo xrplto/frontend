@@ -27,26 +27,32 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         return null;
       }
 
-      // Find the index of the first significant price change to trim the leading flat line
-      let firstChangeIndex = 0;
-      if (chartData.prices.length > 1) {
-        const firstPriceDecimal = new Decimal(chartData.prices[0]);
-        for (let i = 1; i < chartData.prices.length; i++) {
-          const currentPriceDecimal = new Decimal(
-            typeof chartData.prices[i] === 'string'
-              ? chartData.prices[i]
-              : chartData.prices[i].toString()
-          );
-          if (!currentPriceDecimal.equals(firstPriceDecimal)) {
-            // Start one point before the change to show the start of the ramp-up
-            firstChangeIndex = i > 0 ? i - 1 : 0;
-            break;
+      const isLightweight = url?.includes('lightweight=true');
+
+      let displayPrices = chartData.prices;
+      let displayTimestamps = chartData.timestamps;
+
+      if (!isLightweight) {
+        // Find the index of the first significant price change to trim the leading flat line
+        let firstChangeIndex = 0;
+        if (chartData.prices.length > 1) {
+          const firstPriceDecimal = new Decimal(chartData.prices[0]);
+          for (let i = 1; i < chartData.prices.length; i++) {
+            const currentPriceDecimal = new Decimal(
+              typeof chartData.prices[i] === 'string'
+                ? chartData.prices[i]
+                : chartData.prices[i].toString()
+            );
+            if (!currentPriceDecimal.equals(firstPriceDecimal)) {
+              // Start one point before the change to show the start of the ramp-up
+              firstChangeIndex = i > 0 ? i - 1 : 0;
+              break;
+            }
           }
         }
+        displayPrices = chartData.prices.slice(firstChangeIndex);
+        displayTimestamps = chartData.timestamps.slice(firstChangeIndex);
       }
-
-      const displayPrices = chartData.prices.slice(firstChangeIndex);
-      const displayTimestamps = chartData.timestamps.slice(firstChangeIndex);
 
       // Parse prices as Decimal objects to handle very small numbers correctly
       // Then normalize the values for display while preserving the shape
@@ -272,7 +278,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         ]
       };
     },
-    [theme, showGradient, lineWidth, animation]
+    [theme, showGradient, lineWidth, animation, url]
   );
 
   useEffect(() => {
