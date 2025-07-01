@@ -476,6 +476,10 @@ const Topbar = () => {
   const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
   const router = useRouter();
 
+  const [trades, setTrades] = useState([]);
+  const [wsError, setWsError] = useState(null);
+  const [isWsLoading, setIsWsLoading] = useState(false);
+
   // Memoize the mobile metrics to prevent recreation on every render
   const mobileMetrics = useMemo(
     () => [
@@ -570,28 +574,61 @@ const Topbar = () => {
     setTradeFilter(event.target.value);
   }, []);
 
-  // Update the useSWR hook to prevent revalidation issues
-  const { data: trades, error } = useSWR(
-    tradeDrawerOpen
-      ? 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=500&xrpOnly=true'
-      : null,
-    fetcher,
-    {
-      refreshInterval: tradeDrawerOpen ? 5000 : 0,
-      dedupingInterval: 2000,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      shouldRetryOnError: true,
-      errorRetryCount: 3
+  useEffect(() => {
+    if (!tradeDrawerOpen) {
+      return;
     }
-  );
+
+    setIsWsLoading(true);
+    setTrades([]);
+    setWsError(null);
+
+    const ws = new WebSocket('wss://api.xrpl.to/ws/sync');
+
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+      setIsWsLoading(false);
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        // Assuming the WS sends an array for initial data, and then single objects for updates.
+        if (Array.isArray(data)) {
+          setTrades(data.slice(0, 500));
+        } else if (typeof data === 'object' && data !== null) {
+          // Assuming new trades are sent as single objects
+          // And that they have a `time` property to be sorted.
+          if (data.time) {
+            setTrades((prevTrades) => [data, ...prevTrades].slice(0, 500));
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing websocket message', e);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setWsError('WebSocket connection error.');
+      setIsWsLoading(false);
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [tradeDrawerOpen]);
 
   // Fix the filtering logic in the useMemo
   const filteredTrades = useMemo(() => {
-    if (!trades?.hists) return [];
+    if (!trades) return [];
 
     // First sort by time
-    const sortedTrades = [...trades.hists].sort((a, b) => b.time - a.time);
+    const sortedTrades = [...trades].sort((a, b) => b.time - a.time);
 
     // Then filter by XRP amount if needed
     if (tradeFilter === 'All') {
@@ -787,14 +824,14 @@ const Topbar = () => {
           </Box>
           {FilterSelect}
         </Box>
-        {error ? (
+        {wsError ? (
           <Box p={2}>
             <Typography color="error">Failed to load trades</Typography>
             <Typography variant="body2" color="textSecondary">
-              Error: {error.message}
+              {wsError}
             </Typography>
           </Box>
-        ) : !trades ? (
+        ) : isWsLoading ? (
           <Box display="flex" justifyContent="center" p={2}>
             <CircularProgress />
           </Box>
