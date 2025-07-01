@@ -1159,8 +1159,9 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                 variant="body1"
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
-                Retrieve the image associated with a specific token. This endpoint provides
-                high-quality images for tokens, including PNG, JPEG, WebP, and SVG formats.
+                Retrieve the image associated with a specific token using its MD5 hash. This
+                endpoint provides high-quality images for tokens, including PNG, JPEG, WebP, and SVG
+                formats.
               </Typography>
             </Card>
 
@@ -1184,14 +1185,12 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                 </Typography>
               </Box>
               <CardContent>
-                <CodeBlock language="http">
-                  GET https://api.xrpl.to/api/token-image/&lt;issuer&gt;_&lt;currency&gt;
-                </CodeBlock>
+                <CodeBlock language="http">GET https://s1.xrpl.to/token/&lt;md5&gt;</CodeBlock>
                 <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
                   Example usage:
                 </Typography>
                 <CodeBlock language="http">
-                  GET https://api.xrpl.to/api/token-image/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD
+                  GET https://s1.xrpl.to/token/f34b16a00980d21c80e4b8b3dbf2424b
                 </CodeBlock>
               </CardContent>
             </Card>
@@ -1209,7 +1208,7 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                 }}
               >
                 <Typography variant="h6" sx={{ color: theme.palette.info.main, fontWeight: 600 }}>
-                  Query Parameters
+                  Path Parameters
                 </Typography>
               </Box>
               <TableContainer>
@@ -1252,16 +1251,10 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                   </TableHead>
                   <TableBody>
                     <TableRow>
-                      <TableCell>issuer</TableCell>
-                      <TableCell>Query</TableCell>
+                      <TableCell>md5</TableCell>
+                      <TableCell>Path</TableCell>
                       <TableCell>Required</TableCell>
-                      <TableCell>Issuer address of the token</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>currency</TableCell>
-                      <TableCell>Query</TableCell>
-                      <TableCell>Required</TableCell>
-                      <TableCell>Currency code of the token</TableCell>
+                      <TableCell>MD5 hash of the token identifier (issuer_currency)</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
