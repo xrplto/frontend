@@ -197,6 +197,10 @@ export default function Summary() {
 
       const platformEntries = Object.entries(platforms).filter(([, value]) => value > 0);
 
+      const tokensInvolved = (data.tokensInvolved || [])
+        .slice()
+        .sort((a, b) => (b.marketcap || 0) - (a.marketcap || 0));
+
       const renderStat = (Icon, label, value) => (
         <Stack
           direction="row"
@@ -280,6 +284,38 @@ export default function Summary() {
               </Stack>
             </>
           )}
+          {tokensInvolved.length > 0 && (
+            <>
+              <Divider sx={{ my: 1.5 }} />
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                <SentimentVerySatisfiedIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+                <Typography variant="caption" color="text.secondary">
+                  Top Tokens by Market Cap
+                </Typography>
+              </Stack>
+              <Stack spacing={0.5} sx={{ pl: 2 }}>
+                {tokensInvolved.slice(0, 3).map((token) => (
+                  <Stack key={token.name} direction="row" justifyContent="space-between">
+                    <Typography
+                      variant="caption"
+                      display="block"
+                      sx={{
+                        maxWidth: '120px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >{`• ${token.name}`}</Typography>
+                    <Typography variant="caption" display="block" sx={{ fontWeight: 'bold' }}>
+                      {`${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(
+                        new Decimal(token.marketcap || 0).div(fiatRate).toNumber()
+                      )}`}
+                    </Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            </>
+          )}
         </Paper>
       );
     }
@@ -351,6 +387,13 @@ export default function Summary() {
           .slice(0, 30)
           .reverse()
           .map((d) => {
+            const totalMarketcapFromInvolved = d.tokensInvolved?.reduce(
+              (sum, token) => sum + (token.marketcap || 0),
+              0
+            );
+
+            const totalMarketcap = totalMarketcapFromInvolved ?? d.totalMarketcap ?? 0;
+
             const processedData = {
               date: d.date.substring(5, 7) + '/' + d.date.substring(8, 10),
               originalDate: d.date,
@@ -359,8 +402,9 @@ export default function Summary() {
               avgMarketcap: new Decimal(d.avgMarketcap || 0).div(fiatRate).toNumber(),
               rawAvgMarketcap: d.avgMarketcap,
               avgHolders: d.avgHolders || 0,
-              totalVolume24h: new Decimal(d.totalVolume24h || 0).div(fiatRate).toNumber(),
-              totalMarketcap: d.totalMarketcap || 0
+              totalVolume24h: new Decimal(d.avgVolume24h || 0).div(fiatRate).toNumber(),
+              totalMarketcap: new Decimal(totalMarketcap || 0).div(fiatRate).toNumber(),
+              tokensInvolved: d.tokensInvolved || []
             };
             return processedData;
           })
