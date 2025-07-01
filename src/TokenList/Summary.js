@@ -3,6 +3,7 @@ import { useContext, useState, useEffect, useRef } from 'react';
 // Material
 import {
   alpha,
+  Avatar,
   Box,
   Grid,
   Stack,
@@ -293,20 +294,40 @@ export default function Summary() {
                   Top Tokens by Market Cap
                 </Typography>
               </Stack>
-              <Stack spacing={0.5} sx={{ pl: 2 }}>
+              <Stack spacing={1} sx={{ pl: 1 }}>
                 {tokensInvolved.slice(0, 3).map((token) => (
-                  <Stack key={token.name} direction="row" justifyContent="space-between">
+                  <Stack
+                    key={token.name}
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    spacing={1}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
+                      {token.md5 && (
+                        <Avatar
+                          alt={token.name}
+                          src={`https://s1.xrpl.to/token/${token.md5}`}
+                          sx={{ width: 24, height: 24 }}
+                        />
+                      )}
+                      <Typography
+                        variant="caption"
+                        display="block"
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {token.name}
+                      </Typography>
+                    </Stack>
                     <Typography
                       variant="caption"
                       display="block"
-                      sx={{
-                        maxWidth: '120px',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >{`• ${token.name}`}</Typography>
-                    <Typography variant="caption" display="block" sx={{ fontWeight: 'bold' }}>
+                      sx={{ fontWeight: 'bold', flexShrink: 0 }}
+                    >
                       {`${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(
                         new Decimal(token.marketcap || 0).div(fiatRate).toNumber()
                       )}`}
