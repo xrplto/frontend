@@ -561,7 +561,7 @@ export default function Header(props) {
                 <StyledMenuItem
                   darkMode={darkMode}
                   theme={theme}
-                  onClick={() => handleTokenOptionSelect('/?sort=trendingScore&order=desc')}
+                  onClick={() => handleTokenOptionSelect('/trending')}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -579,7 +579,7 @@ export default function Header(props) {
                 <StyledMenuItem
                   darkMode={darkMode}
                   theme={theme}
-                  onClick={() => handleTokenOptionSelect('/?sort=assessmentScore&order=desc')}
+                  onClick={() => handleTokenOptionSelect('/spotlight')}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -597,7 +597,7 @@ export default function Header(props) {
                 <StyledMenuItem
                   darkMode={darkMode}
                   theme={theme}
-                  onClick={() => handleTokenOptionSelect('/?sort=views&order=desc')}
+                  onClick={() => handleTokenOptionSelect('/most-viewed')}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -615,7 +615,7 @@ export default function Header(props) {
                 <StyledMenuItem
                   darkMode={darkMode}
                   theme={theme}
-                  onClick={() => handleTokenOptionSelect('/?sort=pro24h&order=desc')}
+                  onClick={() => handleTokenOptionSelect('/gainers/24h')}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -633,7 +633,7 @@ export default function Header(props) {
                 <StyledMenuItem
                   darkMode={darkMode}
                   theme={theme}
-                  onClick={() => handleTokenOptionSelect('/?sort=dateon&order=desc')}
+                  onClick={() => handleTokenOptionSelect('/new')}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
