@@ -1922,7 +1922,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                     textAlign: 'center',
                                     pointerEvents: 'none',
                                     zIndex: 0,
-                                    p: 2,
+                                    p: 1,
                                     borderRadius: '50%',
                                     background: `radial-gradient(circle, ${alpha(
                                       theme.palette.background.paper,
@@ -1935,7 +1935,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                     color="text.primary"
                                     sx={{
                                       fontWeight: 700,
-                                      fontSize: '1.1rem',
+                                      fontSize: '0.85rem',
                                       letterSpacing: '-0.02em'
                                     }}
                                   >
@@ -1945,10 +1945,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                                     variant="caption"
                                     color="text.secondary"
                                     sx={{
-                                      fontSize: '0.75rem',
+                                      fontSize: '0.65rem',
                                       fontWeight: 500,
                                       textTransform: 'uppercase',
-                                      letterSpacing: '0.05em'
+                                      letterSpacing: '0.02em'
                                     }}
                                   >
                                     XRP Value
