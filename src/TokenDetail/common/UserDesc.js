@@ -867,7 +867,8 @@ export default function UserDesc({ token }) {
     vol24htx,
     vol24hxrp,
     amount,
-    supply
+    supply,
+    uniqueTraders24h
   } = token;
 
   // Create enhanced tags array that includes origin-based tags
@@ -1771,12 +1772,12 @@ export default function UserDesc({ token }) {
                     color: theme.palette.error.main
                   },
                   {
-                    label: 'Offers',
-                    value: fNumberWithSuffix(offers),
-                    color: theme.palette.warning.main
+                    label: 'Unique Traders',
+                    value: fNumberWithSuffix(uniqueTraders24h || 0),
+                    color: theme.palette.primary.main
                   },
                   {
-                    label: 'Transactions',
+                    label: 'Trades',
                     value: fNumberWithSuffix(vol24htx),
                     color: theme.palette.secondary.main
                   },
@@ -1938,11 +1939,11 @@ export default function UserDesc({ token }) {
                     gradientTo: '#81C784'
                   },
                   {
-                    label: 'Txns',
-                    value: fNumberWithSuffix(vol24htx),
-                    color: theme.palette.secondary.main,
-                    gradientFrom: '#9C27B0',
-                    gradientTo: '#BA68C8'
+                    label: 'Traders',
+                    value: fNumberWithSuffix(uniqueTraders24h || 0),
+                    color: theme.palette.primary.main,
+                    gradientFrom: '#2196F3',
+                    gradientTo: '#42A5F5'
                   },
                   {
                     label: 'Offers',
@@ -2307,6 +2308,12 @@ export default function UserDesc({ token }) {
                               percentage: holders > 0 ? '100%' : '0%'
                             },
                             {
+                              label: 'Unique Traders (24h)',
+                              value: fNumberWithSuffix(uniqueTraders24h || 0),
+                              color: theme.palette.primary.main,
+                              percentage: uniqueTraders24h > 0 ? 'Active' : 'Inactive'
+                            },
+                            {
                               label: 'Open Offers',
                               value: fNumberWithSuffix(offers),
                               color: theme.palette.warning.main,
@@ -2316,7 +2323,7 @@ export default function UserDesc({ token }) {
                                   : '0%'
                             },
                             {
-                              label: '24h Transactions',
+                              label: '24h Trades',
                               value: fNumberWithSuffix(vol24htx),
                               color: theme.palette.secondary.main,
                               percentage: vol24htx > 0 ? 'Active' : 'Inactive'
@@ -2486,9 +2493,9 @@ export default function UserDesc({ token }) {
                     color: theme.palette.warning.main
                   },
                   {
-                    label: 'Vol/Market Ratio',
-                    value: fNumber(voldivmarket),
-                    color: theme.palette.warning.main
+                    label: 'Unique Traders (24h)',
+                    value: fNumberWithSuffix(uniqueTraders24h || 0),
+                    color: theme.palette.primary.main
                   },
                   {
                     label: 'Circulating Supply',
