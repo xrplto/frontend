@@ -90,8 +90,6 @@ const formatNumber = (value) => {
   });
 };
 
-// Cache to prevent duplicate API calls
-const offersCache = new Map();
 const loadingAccounts = new Set();
 
 const Offer = React.memo(({ account }) => {
@@ -102,7 +100,6 @@ const Offer = React.memo(({ account }) => {
 
   // State
   const [offers, setOffers] = useState([]);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -118,24 +115,9 @@ const Offer = React.memo(({ account }) => {
   const fetchOffers = useCallback(async (accountAddress) => {
     if (!accountAddress) {
       setOffers([]);
-      setTotal(0);
       return;
     }
 
-    // Check cache first
-    if (offersCache.has(accountAddress)) {
-      const cached = offersCache.get(accountAddress);
-      setOffers(cached.offers);
-      setTotal(cached.total);
-      return;
-    }
-
-    // Prevent duplicate calls
-    if (loadingAccounts.has(accountAddress)) {
-      return;
-    }
-
-    loadingAccounts.add(accountAddress);
     setLoading(true);
     setError(null);
 
@@ -146,25 +128,15 @@ const Offer = React.memo(({ account }) => {
       );
 
       if (response.status === 200 && response.data) {
-        const data = {
-          offers: response.data.offers || [],
-          total: response.data.total || 0
-        };
-
-        // Cache the result
-        offersCache.set(accountAddress, data);
-
-        setOffers(data.offers);
-        setTotal(data.total);
+        const newOffers = response.data.offers || [];
+        setOffers(newOffers);
       }
     } catch (err) {
       console.error('Error fetching offers:', err);
       setError('Failed to load offers');
       setOffers([]);
-      setTotal(0);
     } finally {
       setLoading(false);
-      loadingAccounts.delete(accountAddress);
     }
   }, []);
 
@@ -195,7 +167,6 @@ const Offer = React.memo(({ account }) => {
             setSync((prev) => prev + 1);
             // Invalidate cache to refresh data
             if (account) {
-              offersCache.delete(account);
               fetchOffers(account);
             }
           }
@@ -302,7 +273,6 @@ const Offer = React.memo(({ account }) => {
         setLoading(false);
         // Invalidate cache and refresh
         if (account) {
-          offersCache.delete(account);
           fetchOffers(account);
         }
       }
