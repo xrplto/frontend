@@ -57,6 +57,28 @@ const trustlineFlags = {
   lsfHighFreeze: 0x00800000
 };
 
+// Function to get color based on percentage
+const getPercentageColor = (percentage) => {
+  if (percentage <= 20) {
+    // Green for low percentages (0-20%)
+    return '#007B55';
+  } else if (percentage <= 50) {
+    // Transition from green to yellow (20-50%)
+    const ratio = (percentage - 20) / 30;
+    const r = Math.round(0 + (255 - 0) * ratio);
+    const g = Math.round(123 + (193 - 123) * ratio);
+    const b = Math.round(85 + (7 - 85) * ratio);
+    return `rgb(${r}, ${g}, ${b})`;
+  } else {
+    // Transition from yellow to red (50%+)
+    const ratio = Math.min((percentage - 50) / 30, 1);
+    const r = Math.round(255 + (244 - 255) * ratio);
+    const g = Math.round(193 + (67 - 193) * ratio);
+    const b = Math.round(7 + (54 - 7) * ratio);
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+};
+
 export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, onTrustlinesData }) {
   const BASE_URL = process.env.API_URL;
 
@@ -129,7 +151,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
       return acc + value;
     }, 0);
 
-    const xrpValue = xrpBalance || 0;
+    const xrpValue = (xrpBalance || 0) * (exchRate || 1);
     const totalSum = trustlinesSum + xrpValue;
 
     setTotalValue(totalSum);
@@ -266,7 +288,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                     background: alpha(theme.palette.primary.main, 0.03)
                   }}
                 >
-                  Value (XRP)
+                  Value ({activeFiatCurrency})
                 </TableCell>
                 <TableCell
                   align="right"
@@ -333,7 +355,10 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                   </TableCell>
                   <TableCell align="right">
                     <Typography variant="body2" noWrap>
-                      {new Decimal(xrpBalance).toDP(2, Decimal.ROUND_DOWN).toString()}
+                      {currencySymbols[activeFiatCurrency]}
+                      {new Decimal((xrpBalance || 0) * (exchRate || 1))
+                        .toDP(2, Decimal.ROUND_DOWN)
+                        .toString()}
                     </Typography>
                   </TableCell>
                   <TableCell
@@ -346,13 +371,20 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                       variant="body2"
                       noWrap
                       sx={{
-                        color: theme.palette.text.primary,
+                        color:
+                          totalValue > 0
+                            ? getPercentageColor(
+                                ((parseFloat(xrpBalance) * (exchRate || 1)) / totalValue) * 100
+                              )
+                            : theme.palette.text.primary,
                         fontWeight: 600
                       }}
                     >
                       {totalValue > 0
-                        ? ((parseFloat(xrpBalance) / totalValue) * 100).toFixed(2)
-                        : '0.00'}
+                        ? (((parseFloat(xrpBalance) * (exchRate || 1)) / totalValue) * 100).toFixed(
+                            6
+                          )
+                        : '0.000000'}
                       %
                     </Typography>
                   </TableCell>

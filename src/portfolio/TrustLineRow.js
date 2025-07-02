@@ -10,6 +10,28 @@ import {
   Tooltip,
   SvgIcon
 } from '@mui/material';
+
+// Function to get color based on percentage
+const getPercentageColor = (percentage) => {
+  if (percentage <= 20) {
+    // Green for low percentages (0-20%)
+    return '#007B55';
+  } else if (percentage <= 50) {
+    // Transition from green to yellow (20-50%)
+    const ratio = (percentage - 20) / 30;
+    const r = Math.round(0 + (255 - 0) * ratio);
+    const g = Math.round(123 + (193 - 123) * ratio);
+    const b = Math.round(85 + (7 - 85) * ratio);
+    return `rgb(${r}, ${g}, ${b})`;
+  } else {
+    // Transition from yellow to red (50%+)
+    const ratio = Math.min((percentage - 50) / 30, 1);
+    const r = Math.round(255 + (244 - 255) * ratio);
+    const g = Math.round(193 + (67 - 193) * ratio);
+    const b = Math.round(7 + (54 - 7) * ratio);
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+};
 import { useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { AppContext } from 'src/AppContext';
 import { fNumberWithCurreny } from 'src/utils/formatNumber';
@@ -460,7 +482,10 @@ const TrustLineRow = ({ line }) => {
               >
                 <Tooltip title={issuer}>
                   <span>
-                    {user || (issuer ? `${issuer.substring(0, 6)}...${issuer.substring(issuer.length - 4)}` : '')}
+                    {user ||
+                      (issuer
+                        ? `${issuer.substring(0, 6)}...${issuer.substring(issuer.length - 4)}`
+                        : '')}
                   </span>
                 </Tooltip>
               </Typography>
@@ -514,13 +539,10 @@ const TrustLineRow = ({ line }) => {
             sx={{
               fontWeight: 600,
               fontSize: '0.9rem',
-              color: (theme) =>
-                parseFloat(percentOwned) > 1
-                  ? theme.palette.success.main
-                  : theme.palette.text.primary
+              color: getPercentageColor(parseFloat(percentOwned) || 0)
             }}
           >
-            {parseFloat(percentOwned).toFixed(2)}%
+            {parseFloat(percentOwned).toFixed(6)}%
           </Typography>
         </TableCell>
 
