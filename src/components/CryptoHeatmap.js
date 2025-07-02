@@ -3,6 +3,7 @@ import Decimal from 'decimal.js';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsTreemap from 'highcharts/modules/treemap';
+import accessibility from 'highcharts/modules/accessibility';
 import { useContext, useEffect, useState } from 'react';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
@@ -92,6 +93,7 @@ const ChartContainer = styled(Box)(({ theme }) => ({
 function CryptoHeatmap({ exchRate }) {
   if (typeof Highcharts === 'object') {
     HighchartsTreemap(Highcharts);
+    accessibility(Highcharts);
   }
 
   const theme = useTheme();
@@ -237,8 +239,8 @@ function CryptoHeatmap({ exchRate }) {
           price < 0.001
             ? price.toFixed(8)
             : price < 1
-            ? price.toFixed(6)
-            : fNumberWithCurreny(price, exchRate);
+              ? price.toFixed(6)
+              : fNumberWithCurreny(price, exchRate);
 
         const priceChange = this.point.priceChange;
         const changeColor = priceChange >= 0 ? '#00D4AA' : '#FF4757';

@@ -36,9 +36,13 @@ import { currencySymbols } from 'src/utils/constants';
 // import Highcharts from 'highcharts'
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
+import accessibility from 'highcharts/modules/accessibility';
 import { format } from 'date-fns';
 import { fCurrency5 } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
+
+// Initialize the accessibility module
+accessibility(Highcharts);
 
 const fiatMapping = {
   USD: 'USD',
