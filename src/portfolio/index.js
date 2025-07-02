@@ -1265,17 +1265,13 @@ export default function Portfolio({ account, limit, collection, type }) {
                       background: `${alpha(theme.palette.background.paper, 0.5)}`,
                       backdropFilter: 'blur(20px)',
                       border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                      boxShadow: `0 2px 12px ${alpha(theme.palette.common.black, 0.05)}`
+                      boxShadow: `0 2px 12px ${alpha(theme.palette.common.black, 0.05)}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
                     }}
                   >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.5,
-                        mb: 1
-                      }}
-                    >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Box
                         sx={{
                           p: 0.8,
@@ -1305,21 +1301,15 @@ export default function Portfolio({ account, limit, collection, type }) {
                       </Typography>
                     </Box>
 
-                    <Box sx={{ textAlign: 'center', py: 1 }}>
+                    <Box sx={{ textAlign: 'right' }}>
                       {loading ? (
-                        <Skeleton
-                          width={140}
-                          height={24}
-                          sx={{ mx: 'auto', borderRadius: '8px' }}
-                        />
+                        <Skeleton width={80} height={24} sx={{ mx: 'auto', borderRadius: '8px' }} />
                       ) : (
                         <Typography
-                          variant="h4"
+                          variant="h6"
                           sx={{
                             color: theme.palette.success.main,
-                            fontWeight: 600,
-                            fontSize: '1.4rem',
-                            mb: 0.5
+                            fontWeight: 600
                           }}
                         >
                           {`${traderStats?.totalVolume?.toLocaleString() || 0}`}
@@ -1340,66 +1330,58 @@ export default function Portfolio({ account, limit, collection, type }) {
                   </Card>
 
                   {/* XRP Balance Display */}
-                  <Box
+                  <Card
                     sx={{
                       p: 1.5,
-                      mb: 1.5,
+                      mt: 1.5,
                       background: `${alpha(theme.palette.background.paper, 0.5)}`,
                       backdropFilter: 'blur(10px)',
                       borderRadius: '10px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
                     }}
                   >
-                    <Typography
-                      variant="body1"
-                      color="text.primary"
-                      display="flex"
-                      alignItems="center"
-                      sx={{ fontWeight: 500 }}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        mb: 1.5
+                      }}
                     >
-                      <AccountBalanceWalletIcon
-                        sx={{ fontSize: '1.2rem', mr: 1, color: theme.palette.primary.main }}
-                      />
-                      XRP Balance
-                    </Typography>
-                    {loadingBalance ? (
-                      <Skeleton width={100} height={24} sx={{ borderRadius: '6px' }} />
-                    ) : (
                       <Typography
-                        variant="h6"
-                        color="primary.main"
-                        fontWeight="600"
-                        sx={{ letterSpacing: '-0.01em' }}
+                        variant="body1"
+                        color="text.primary"
+                        display="flex"
+                        alignItems="center"
+                        sx={{ fontWeight: 500 }}
                       >
-                        {xrpBalance !== null
-                          ? xrpBalance.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2
-                            })
-                          : '0.00'}{' '}
-                        XRP
+                        <AccountBalanceWalletIcon
+                          sx={{ fontSize: '1.2rem', mr: 1, color: theme.palette.primary.main }}
+                        />
+                        XRP Balance
                       </Typography>
-                    )}
-                  </Box>
+                      {loadingBalance ? (
+                        <Skeleton width={100} height={24} sx={{ borderRadius: '6px' }} />
+                      ) : (
+                        <Typography
+                          variant="h6"
+                          color="primary.main"
+                          fontWeight="600"
+                          sx={{ letterSpacing: '-0.01em' }}
+                        >
+                          {xrpBalance !== null
+                            ? xrpBalance.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                              })
+                            : '0.00'}{' '}
+                          XRP
+                        </Typography>
+                      )}
+                    </Box>
 
-                  <Grid container spacing={1.5}>
-                    <Grid item xs={6}>
-                      <Box
-                        sx={{
-                          p: 1.5,
-                          background: `${alpha(theme.palette.background.paper, 0.4)}`,
-                          backdropFilter: 'blur(10px)',
-                          borderRadius: '10px',
-                          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            background: `${alpha(theme.palette.background.paper, 0.6)}`
-                          }
-                        }}
-                      >
+                    <Grid container spacing={1.5}>
+                      <Grid item xs={6}>
                         <Typography
                           variant="caption"
                           color="text.secondary"
@@ -1417,22 +1399,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                         >
                           {`${(traderStats?.buyVolume || 0).toLocaleString()} XRP`}
                         </Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Box
-                        sx={{
-                          p: 1.5,
-                          background: `${alpha(theme.palette.background.paper, 0.4)}`,
-                          backdropFilter: 'blur(10px)',
-                          borderRadius: '10px',
-                          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            background: `${alpha(theme.palette.background.paper, 0.6)}`
-                          }
-                        }}
-                      >
+                      </Grid>
+                      <Grid item xs={6}>
                         <Typography
                           variant="caption"
                           color="text.secondary"
@@ -1450,22 +1418,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                         >
                           {`${(traderStats?.sellVolume || 0).toLocaleString()} XRP`}
                         </Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Box
-                        sx={{
-                          p: 1.5,
-                          background: `${alpha(theme.palette.background.paper, 0.4)}`,
-                          backdropFilter: 'blur(10px)',
-                          borderRadius: '10px',
-                          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            background: `${alpha(theme.palette.background.paper, 0.6)}`
-                          }
-                        }}
-                      >
+                      </Grid>
+                      <Grid item xs={12}>
                         <Typography
                           variant="caption"
                           color="text.secondary"
@@ -1482,9 +1436,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                         >
                           {`${Math.round((traderStats?.avgHoldingTime || 0) / 3600)}h`}
                         </Typography>
-                      </Box>
+                      </Grid>
                     </Grid>
-                  </Grid>
+                  </Card>
                 </Stack>
 
                 <Box sx={{ mt: 1.5 }}>
@@ -1494,7 +1448,15 @@ export default function Portfolio({ account, limit, collection, type }) {
                   {loading ? (
                     <Skeleton variant="rectangular" height={200} />
                   ) : (
-                    <Table size="small">
+                    <Table
+                      size="small"
+                      sx={{
+                        '& .MuiTableCell-root': {
+                          fontSize: '0.8rem',
+                          padding: '6px 8px'
+                        }
+                      }}
+                    >
                       <TableHead>
                         <TableRow>
                           <TableCell>Token</TableCell>
