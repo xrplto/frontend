@@ -33,24 +33,8 @@ const SankeyModal = ({ open, onClose, account }) => {
   const [accountDetails, setAccountDetails] = useState(new Map());
   const [navigationHistory, setNavigationHistory] = useState([]); // Track navigation history
   const [currentAccount, setCurrentAccount] = useState(account); // Track current account being viewed
-  const [showDebug, setShowDebug] = useState(false); // Add debug toggle state
-  const [selectedDebugItem, setSelectedDebugItem] = useState(null); // Track selected item for debug
-  const [showSummary, setShowSummary] = useState(false); // Add summary toggle state
-  const [selectedSummaryItem, setSelectedSummaryItem] = useState(null); // Track selected item for summary
-  // Add custom tooltip state
-  const [customTooltip, setCustomTooltip] = useState({
-    visible: false,
-    x: 0,
-    y: 0,
-    content: '',
-    type: 'node'
-  });
-
-  // Add refs for debouncing
-  const tooltipTimeoutRef = useRef(null);
-  const mouseMoveTimeoutRef = useRef(null);
-  const lastPositionRef = useRef({ x: 0, y: 0 });
-  const showTimeoutRef = useRef(null); // Add show timeout for debouncing
+  const [showSummary, setShowSummary] = useState(false);
+  const [selectedSummaryItem, setSelectedSummaryItem] = useState(null);
 
   // Micro payment thresholds (in XRP)
   const spamThresholds = {
@@ -1577,51 +1561,51 @@ const SankeyModal = ({ open, onClose, account }) => {
         node === inflowHub
           ? 'inflow'
           : node === outflowHub
-          ? 'outflow'
-          : node.startsWith('DEX_')
-          ? 'dex'
-          : node.startsWith('TRUST_')
-          ? 'trust'
-          : node.startsWith('AMM_') && node.endsWith('_POOL')
-          ? 'amm_pool'
-          : node.startsWith('AMM_')
-          ? 'amm'
-          : node.startsWith('EXCHANGE_')
-          ? 'exchange'
-          : node.startsWith('FAILED_EXCHANGE_')
-          ? 'failed_exchange'
-          : node === 'FAILED_SELF_TRANSFER'
-          ? 'failed_self'
-          : node === 'SELF_TRANSFER'
-          ? 'self'
-          : node.endsWith('_OPS')
-          ? 'operations'
-          : 'account',
+            ? 'outflow'
+            : node.startsWith('DEX_')
+              ? 'dex'
+              : node.startsWith('TRUST_')
+                ? 'trust'
+                : node.startsWith('AMM_') && node.endsWith('_POOL')
+                  ? 'amm_pool'
+                  : node.startsWith('AMM_')
+                    ? 'amm'
+                    : node.startsWith('EXCHANGE_')
+                      ? 'exchange'
+                      : node.startsWith('FAILED_EXCHANGE_')
+                        ? 'failed_exchange'
+                        : node === 'FAILED_SELF_TRANSFER'
+                          ? 'failed_self'
+                          : node === 'SELF_TRANSFER'
+                            ? 'self'
+                            : node.endsWith('_OPS')
+                              ? 'operations'
+                              : 'account',
       value: accountStats.get(node)?.transactions || 0,
       displayName:
         node === inflowHub
           ? `TO ${targetAccount.substring(0, 8)}...`
           : node === outflowHub
-          ? `FROM ${targetAccount.substring(0, 8)}...`
-          : node.startsWith('DEX_')
-          ? `${node.replace('DEX_', '')}`
-          : node.startsWith('TRUST_')
-          ? `${node.replace('TRUST_', '')}`
-          : node.startsWith('AMM_') && node.endsWith('_POOL')
-          ? `${node.replace('AMM_', '').replace('_POOL', '')} Pool`
-          : node.startsWith('AMM_')
-          ? `${node.replace('AMM_', '')} Pool`
-          : node.startsWith('EXCHANGE_')
-          ? `${node.replace('EXCHANGE_', '')} Exchange`
-          : node.startsWith('FAILED_EXCHANGE_')
-          ? `${node.replace('FAILED_EXCHANGE_', '')} (Failed)`
-          : node === 'SELF_TRANSFER'
-          ? 'Self Transfer'
-          : node.endsWith('_OPS')
-          ? `${node.replace('_OPS', '')}`
-          : node.length > 25
-          ? `${node.substring(0, 10)}...${node.substring(node.length - 8)}`
-          : node
+            ? `FROM ${targetAccount.substring(0, 8)}...`
+            : node.startsWith('DEX_')
+              ? `${node.replace('DEX_', '')}`
+              : node.startsWith('TRUST_')
+                ? `${node.replace('TRUST_', '')}`
+                : node.startsWith('AMM_') && node.endsWith('_POOL')
+                  ? `${node.replace('AMM_', '').replace('_POOL', '')} Pool`
+                  : node.startsWith('AMM_')
+                    ? `${node.replace('AMM_', '')} Pool`
+                    : node.startsWith('EXCHANGE_')
+                      ? `${node.replace('EXCHANGE_', '')} Exchange`
+                      : node.startsWith('FAILED_EXCHANGE_')
+                        ? `${node.replace('FAILED_EXCHANGE_', '')} (Failed)`
+                        : node === 'SELF_TRANSFER'
+                          ? 'Self Transfer'
+                          : node.endsWith('_OPS')
+                            ? `${node.replace('_OPS', '')}`
+                            : node.length > 25
+                              ? `${node.substring(0, 10)}...${node.substring(node.length - 8)}`
+                              : node
     }));
 
     return {
@@ -1709,71 +1693,77 @@ const SankeyModal = ({ open, onClose, account }) => {
         }
       },
       tooltip: {
-        show: false // Disable tooltip entirely to prevent ECharts internal error
+        show: true,
+        trigger: 'item',
+        backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
+        borderColor: darkMode ? '#555' : '#ddd',
+        borderWidth: 1,
+        textStyle: {
+          color: darkMode ? '#fff' : '#333',
+          fontSize: 11
+        },
+        formatter: function (params) {
+          if (params.dataType === 'node') {
+            return `<strong>${params.data.displayName || params.data.name}</strong><br/>
+                    Transactions: ${params.data.value || 0}`;
+          } else if (params.dataType === 'edge') {
+            return `<strong>${params.data.source} → ${params.data.target}</strong><br/>
+                    Amount: ${params.data.value.toFixed(2)} ${params.data.currency}<br/>
+                    Count: ${params.data.count} transactions`;
+          }
+          return '';
+        }
       },
       series: [
         {
           type: 'sankey',
           layout: 'none',
-          top: 90, // Increased from 60 to 90 to provide more space for text labels
-          bottom: 20,
-          left: 50, // Increased from 20 to 50 to give icons more space
-          right: 80, // Reduced from 120 to 80 since labels are now inside nodes
-          nodeWidth: 25,
-          nodeGap: 10, // Reduced from 15 to 10 to make graph more compact
+          top: 60,
+          bottom: 15,
+          left: 30,
+          right: 40,
+          nodeWidth: 20,
+          nodeGap: 8,
           nodeAlign: 'justify',
           layoutIterations: 0,
           emphasis: {
             focus: 'adjacency',
             blurScope: 'coordinateSystem',
-            // Make emphasis more pronounced
-            scale: 1.1
+            scale: 1.02,
+            itemStyle: {
+              borderWidth: 2,
+              borderColor: 'rgba(255, 255, 255, 0.6)',
+              shadowBlur: 10,
+              shadowColor: 'rgba(0, 0, 0, 0.3)'
+            },
+            lineStyle: {
+              width: 65,
+              shadowBlur: 15,
+              shadowColor: 'rgba(0, 0, 0, 0.4)'
+            }
           },
           blur: {
             itemStyle: {
-              opacity: 0.2
+              opacity: 0.15
             },
             lineStyle: {
-              opacity: 0.1
+              opacity: 0.08
             },
             label: {
-              opacity: 0.2
+              opacity: 0.15
             }
           },
           animation: false,
           animationDuration: 0,
           animationEasing: 'linear',
-          // Add better hover detection
           triggerLineEvent: true,
-          hoverAnimation: false, // Disable hover animation to reduce jitter
-          // Improve selection sensitivity
+          hoverAnimation: false,
           lineStyle: {
-            // Make lines extremely thick for excellent hover detection
-            width: 50 // Increased from 35 to 50 for even better hover area
+            width: 55
           },
-          // Add more hover sensitivity settings
           selectMode: false,
           selectedMode: false,
-          // Make hover detection more sensitive
           triggerEvent: true,
-          emphasis: {
-            focus: 'adjacency',
-            blurScope: 'coordinateSystem',
-            scale: 1.02, // Reduced scale to minimize jumpiness
-            // Increase hover detection area
-            itemStyle: {
-              borderWidth: 2, // Reduced from 3
-              borderColor: 'rgba(255, 255, 255, 0.6)', // Reduced opacity
-              shadowBlur: 10, // Reduced shadow
-              shadowColor: 'rgba(0, 0, 0, 0.3)'
-            },
-            lineStyle: {
-              // Extremely thick lines on hover for excellent detection
-              width: 70, // Increased from 50 to 70 for even better hover area
-              shadowBlur: 15, // Reduced shadow
-              shadowColor: 'rgba(0, 0, 0, 0.5)'
-            }
-          },
           data: filteredNodes.map((node) => ({
             ...node,
             itemStyle: {
@@ -1843,63 +1833,16 @@ const SankeyModal = ({ open, onClose, account }) => {
           links: filteredLinks.map((link) => ({
             ...link,
             lineStyle: {
-              color: link.isSpam
-                ? '#FF1744' // Vibrant red for spam
-                : link.txType === 'TrustSet' || link.currency === 'TRUST'
-                ? '#E91E63' // Vibrant pink for TrustSet transactions
-                : link.txType === 'OfferCreate' || link.txType === 'OfferCancel'
-                ? '#00E676' // Vibrant green for DEX operations
-                : link.txType === 'AMMDeposit' || link.txType === 'AMMWithdraw'
-                ? '#FF6D00' // Vibrant orange for AMM operations
-                : link.currency === 'XRP'
-                ? '#2196F3' // Vibrant blue for XRP transactions
-                : link.currency && link.currency !== 'XRP'
-                ? '#9C27B0' // Vibrant purple for token transactions
-                : link.ammDirection === 'BUY'
-                ? '#4CAF50' // Vibrant green for token buying
-                : link.ammDirection === 'SELL'
-                ? '#FF5722' // Vibrant deep orange for token selling
-                : '#00BCD4', // Vibrant cyan as default
-              opacity: link.isSpam ? 0.9 : 0.8, // Increased opacity for more vibrant appearance
-              curveness: 0.5,
-              width: Math.max(link.isSpam ? 55 : 50, 50),
-              type: link.isSpam ? 'dashed' : 'solid',
-              shadowColor: link.isSpam
-                ? '#FF1744'
-                : link.txType === 'TrustSet' || link.currency === 'TRUST'
-                ? '#E91E63'
-                : link.txType === 'OfferCreate' || link.txType === 'OfferCancel'
-                ? '#00E676'
-                : link.txType === 'AMMDeposit' || link.txType === 'AMMWithdraw'
-                ? '#FF6D00'
-                : 'rgba(0, 188, 212, 0.3)',
-              shadowBlur: 8 // Increased shadow for more vibrant glow
+              color: link.isSpam ? '#F44336' : link.currency === 'XRP' ? '#2196F3' : '#9C27B0',
+              opacity: 0.7,
+              curveness: 0.3,
+              width: 35,
+              type: 'solid'
             },
             emphasis: {
               lineStyle: {
-                width: Math.max(link.isSpam ? 80 : 75, 75),
-                opacity: 1,
-                shadowBlur: 40, // Increased shadow blur for more dramatic effect
-                shadowColor: link.isSpam
-                  ? '#FF1744'
-                  : link.txType === 'TrustSet' || link.currency === 'TRUST'
-                  ? '#E91E63'
-                  : link.txType === 'OfferCreate' || link.txType === 'OfferCancel'
-                  ? '#00E676'
-                  : link.txType === 'AMMDeposit' || link.txType === 'AMMWithdraw'
-                  ? '#FF6D00'
-                  : 'rgba(0, 188, 212, 0.8)',
-                // Add glow effect with vibrant colors
-                borderColor: link.isSpam
-                  ? '#FF1744'
-                  : link.txType === 'TrustSet' || link.currency === 'TRUST'
-                  ? '#E91E63'
-                  : link.txType === 'OfferCreate' || link.txType === 'OfferCancel'
-                  ? '#00E676'
-                  : link.txType === 'AMMDeposit' || link.txType === 'AMMWithdraw'
-                  ? '#FF6D00'
-                  : '#00BCD4',
-                borderWidth: 3 // Increased border width for more vibrant effect
+                width: 45,
+                opacity: 0.9
               }
             }
           })),
@@ -2070,300 +2013,6 @@ const SankeyModal = ({ open, onClose, account }) => {
     onClose();
   };
 
-  // Helper function to generate tooltip content
-  const generateTooltipContent = (params) => {
-    try {
-      if (!params || typeof params !== 'object') {
-        return 'ERROR: No data available';
-      }
-
-      const data = params.data;
-      if (!data || typeof data !== 'object') {
-        return 'ERROR: No data available';
-      }
-
-      if (params.dataType === 'node') {
-        const name = String(data.displayName || data.name || 'Unknown');
-        const category = String(data.category || 'unknown');
-        const value = Number(data.value) || 0;
-
-        // Get account details if available - fix variable naming conflict
-        const nodeAccountDetails = accountDetails.get(data.name);
-
-        // Format content based on node type
-        let content = '';
-
-        if (category === 'inflow') {
-          content = `💰 INCOMING TRANSACTIONS\n`;
-          content += `📍 Target: ${name}\n`;
-          content += `📊 Total Transactions: ${value.toLocaleString()}\n`;
-          content += `\n💡 This represents all money flowing INTO your account`;
-        } else if (category === 'outflow') {
-          content = `💸 OUTGOING TRANSACTIONS\n`;
-          content += `📍 Source: ${name}\n`;
-          content += `📊 Total Transactions: ${value.toLocaleString()}\n`;
-          content += `\n💡 This represents all money flowing OUT of your account`;
-        } else if (category === 'account') {
-          content = `👤 ACCOUNT DETAILS\n`;
-          content += `📍 Address: ${name}\n`;
-          content += `📊 Transactions: ${value.toLocaleString()}\n`;
-
-          if (nodeAccountDetails) {
-            content += `🎯 Activity: ${nodeAccountDetails.mainActivity}\n`;
-            content += `💰 Total Volume: ${nodeAccountDetails.totalValue.toLocaleString()} XRP\n`;
-
-            if (nodeAccountDetails.isSpammer) {
-              content += `⚠️ WARNING: Detected as spam account!\n`;
-              content += `🚨 Spam Score: ${nodeAccountDetails.spamScore}/100\n`;
-            }
-
-            if (nodeAccountDetails.topTokens && nodeAccountDetails.topTokens.length > 0) {
-              content += `🪙 Top Tokens: ${nodeAccountDetails.topTokens.slice(0, 3).join(', ')}\n`;
-            }
-          }
-
-          content += `\n💡 Click to explore this account's transactions`;
-        } else if (category === 'dex') {
-          content = `🏪 DEX TRADING\n`;
-          content += `📍 Market: ${name}\n`;
-          content += `📊 Operations: ${value.toLocaleString()}\n`;
-          content += `\n💡 Decentralized exchange trading operations`;
-        } else if (category === 'amm_pool') {
-          content = `🌊 LIQUIDITY POOL\n`;
-          content += `📍 Pool: ${name}\n`;
-          content += `📊 Interactions: ${value.toLocaleString()}\n`;
-          content += `\n💡 Automated Market Maker pool operations`;
-        } else if (category === 'amm') {
-          content = `🔄 AMM OPERATIONS\n`;
-          content += `📍 Token: ${name}\n`;
-          content += `📊 Transactions: ${value.toLocaleString()}\n`;
-          content += `\n💡 Token swaps and liquidity operations`;
-        } else if (category === 'trust') {
-          content = `🔐 TRUST OPERATIONS\n`;
-          content += `📍 Token: ${name}\n`;
-          content += `📊 Operations: ${value.toLocaleString()}\n`;
-          content += `\n💡 Setting up trust lines for token trading`;
-        } else if (category === 'self') {
-          content = `🔄 SELF TRANSFERS\n`;
-          content += `📍 Type: ${name}\n`;
-          content += `📊 Operations: ${value.toLocaleString()}\n`;
-          content += `\n💡 Internal account operations`;
-        } else if (category === 'failed_exchange') {
-          content = `❌ FAILED EXCHANGES\n`;
-          content += `📍 Token: ${name}\n`;
-          content += `📊 Failed Attempts: ${value.toLocaleString()}\n`;
-          content += `\n💡 Unsuccessful token exchange attempts`;
-        } else if (category === 'operations') {
-          content = `⚙️ OTHER OPERATIONS\n`;
-          content += `📍 Type: ${name}\n`;
-          content += `📊 Operations: ${value.toLocaleString()}\n`;
-          content += `\n💡 Various blockchain operations`;
-        } else {
-          content = `📊 UNKNOWN NODE\n`;
-          content += `📍 Name: ${name}\n`;
-          content += `📊 Value: ${value.toLocaleString()}\n`;
-        }
-
-        return content;
-      } else if (params.dataType === 'edge') {
-        const source = String(data.source || 'Unknown');
-        const target = String(data.target || 'Unknown');
-        const value = Number(data.value) || 0;
-        const count = Number(data.count) || 0;
-        const currency = String(data.currency || 'Unknown');
-        const txType = String(data.txType || 'Unknown');
-
-        // Format the flow direction
-        let sourceDisplay = source;
-        let targetDisplay = target;
-
-        // Clean up hub names for display
-        if (source.includes('_INFLOW')) {
-          sourceDisplay = '💰 INCOMING';
-        } else if (source.includes('_OUTFLOW')) {
-          sourceDisplay = '💸 OUTGOING';
-        } else if (source.length > 20) {
-          sourceDisplay = `👤 ${source.substring(0, 8)}...${source.substring(source.length - 4)}`;
-        }
-
-        if (target.includes('_INFLOW')) {
-          targetDisplay = '💰 INCOMING';
-        } else if (target.includes('_OUTFLOW')) {
-          targetDisplay = '💸 OUTGOING';
-        } else if (target.length > 20) {
-          targetDisplay = `👤 ${target.substring(0, 8)}...${target.substring(target.length - 4)}`;
-        }
-
-        let content = `🔄 TRANSACTION FLOW\n`;
-        content += `📤 From: ${sourceDisplay}\n`;
-        content += `📥 To: ${targetDisplay}\n`;
-
-        // Add debugging information with transaction numbers
-        if (data.txNumbers && data.txNumbers.length > 0) {
-          content += `\n🔍 DEBUG INFO\n`;
-          content += `📝 Transaction Numbers: ${data.txNumbers.join(', ')}\n`;
-          if (data.txHashes && data.txHashes.length > 0) {
-            content += `🔗 Hash(es): `;
-            if (data.txHashes.length === 1) {
-              content += `${data.txHashes[0].substring(0, 8)}...${data.txHashes[0].substring(
-                data.txHashes[0].length - 4
-              )}\n`;
-            } else {
-              content += `${data.txHashes.length} hashes (tx #${data.txNumbers[0]}...#${
-                data.txNumbers[data.txNumbers.length - 1]
-              })\n`;
-            }
-          }
-        }
-
-        content += `\n💰 AMOUNTS\n`;
-
-        // Format currency and amount
-        if (currency === 'XRP') {
-          content += `💎 ${value.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 6
-          })} XRP\n`;
-        } else if (currency === 'TRUST') {
-          content += `🔐 Trust Line Operations\n`;
-        } else if (currency === 'SELF') {
-          content += `🔄 Self Transfer Operations\n`;
-        } else if (currency === 'FAILED') {
-          content += `❌ Failed Operations\n`;
-        } else if (currency.includes('→')) {
-          content += `🏪 ${currency} Trading\n`;
-        } else {
-          content += `🪙 ${formatTokenAmount(value)} ${currency}\n`;
-        }
-
-        content += `📊 Total Transactions: ${count.toLocaleString()}\n`;
-
-        // Add transaction type information
-        if (txType === 'Payment') {
-          content += `\n💳 TYPE: Payment Transaction\n`;
-        } else if (txType === 'OfferCreate') {
-          content += `\n🏪 TYPE: DEX Order Creation\n`;
-        } else if (txType === 'OfferCancel') {
-          content += `\n🏪 TYPE: DEX Order Cancellation\n`;
-        } else if (txType === 'TrustSet') {
-          content += `\n🔐 TYPE: Trust Line Setup\n`;
-        } else if (txType === 'AMMDeposit') {
-          content += `\n🌊 TYPE: Liquidity Pool Deposit\n`;
-        } else if (txType === 'AMMWithdraw') {
-          content += `\n🌊 TYPE: Liquidity Pool Withdrawal\n`;
-        } else if (txType !== 'Unknown') {
-          content += `\n⚙️ TYPE: ${txType}\n`;
-        }
-
-        // Add spam warning if applicable
-        if (data.isSpam) {
-          content += `\n⚠️ WARNING: SPAM DETECTED!\n`;
-          content += `🚨 Spam Score: ${data.spamScore || 0}/100\n`;
-          content += `🔢 Spam Count: ${data.spamCount || 0} transactions\n`;
-        }
-
-        // Add AMM direction if available
-        if (data.ammDirection && data.ammToken) {
-          if (data.ammDirection === 'BUY') {
-            content += `\n📈 AMM ACTION: Buying ${data.ammToken}\n`;
-            content += `💡 Spent XRP to acquire tokens`;
-          } else if (data.ammDirection === 'SELL') {
-            content += `\n📉 AMM ACTION: Selling ${data.ammToken}\n`;
-            content += `💡 Sold tokens to receive XRP`;
-          }
-        }
-
-        return content;
-      }
-
-      return '📊 Transaction Details';
-    } catch (error) {
-      console.warn('Tooltip content error:', error);
-      return '❌ Error loading details';
-    }
-  };
-
-  // Helper function to show custom tooltip
-  const showCustomTooltip = (event, params) => {
-    try {
-      // Clear any existing hide timeout immediately
-      if (tooltipTimeoutRef.current) {
-        clearTimeout(tooltipTimeoutRef.current);
-        tooltipTimeoutRef.current = null;
-      }
-
-      // Clear any existing show timeout
-      if (showTimeoutRef.current) {
-        clearTimeout(showTimeoutRef.current);
-        showTimeoutRef.current = null;
-      }
-
-      // Debounce the show function to prevent rapid show/hide cycles
-      showTimeoutRef.current = setTimeout(() => {
-        const content = generateTooltipContent(params);
-
-        // Use much larger distances to avoid cursor interference
-        let x = 50; // Increased base offset
-        let y = 50;
-
-        // Try to get mouse position from various event properties
-        if (event && typeof event === 'object') {
-          if (event.offsetX !== undefined && event.offsetY !== undefined) {
-            x = event.offsetX + 40; // Much larger offset to avoid cursor interference
-            y = event.offsetY - 60;
-          } else if (event.layerX !== undefined && event.layerY !== undefined) {
-            x = event.layerX + 40;
-            y = event.layerY - 60;
-          } else if (event.clientX !== undefined && event.clientY !== undefined) {
-            x = (event.clientX % 400) + 40;
-            y = (event.clientY % 300) - 60;
-          }
-        }
-
-        // Store last position for smooth updates
-        const newPosition = {
-          x: Math.max(50, Math.min(x, 800)), // Increased bounds
-          y: Math.max(50, Math.min(y, 500))
-        };
-        lastPositionRef.current = newPosition;
-
-        // Always show immediately after debounce delay
-        setCustomTooltip({
-          visible: true,
-          ...newPosition,
-          content: content,
-          type: params?.dataType || 'unknown'
-        });
-      }, 50); // 50ms debounce delay for show
-    } catch (error) {
-      console.warn('Custom tooltip error:', error);
-    }
-  };
-
-  // Helper function to hide custom tooltip with longer delay
-  const hideCustomTooltip = () => {
-    // Much longer delay to prevent flickering when moving quickly between elements
-    tooltipTimeoutRef.current = setTimeout(() => {
-      setCustomTooltip((prev) => ({ ...prev, visible: false }));
-    }, 500); // Increased from 200ms to 500ms for maximum stability
-  };
-
-  // Simplified mouse move handler - disable position updates to prevent jitter
-  const handleMouseMove = (params, event) => {
-    // Disable mousemove updates entirely to prevent flickering
-    // The tooltip will stay in its initial position once shown
-    return;
-  };
-
-  // Cleanup timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
-      if (mouseMoveTimeoutRef.current) clearTimeout(mouseMoveTimeoutRef.current);
-      if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
-    };
-  }, []);
-
   return (
     <Modal open={open} onClose={handleClose} aria-labelledby="sankey-modal-title">
       <Box
@@ -2493,12 +2142,12 @@ const SankeyModal = ({ open, onClose, account }) => {
                           bgcolor: accountInfo.mainActivity.includes('Spammer')
                             ? '#ff4444'
                             : accountInfo.mainActivity.includes('Trader')
-                            ? '#2196f3'
-                            : accountInfo.mainActivity.includes('Buyer')
-                            ? '#4caf50'
-                            : accountInfo.mainActivity.includes('Seller')
-                            ? '#ff9800'
-                            : '#9c27b0',
+                              ? '#2196f3'
+                              : accountInfo.mainActivity.includes('Buyer')
+                                ? '#4caf50'
+                                : accountInfo.mainActivity.includes('Seller')
+                                  ? '#ff9800'
+                                  : '#9c27b0',
                           color: 'white',
                           fontWeight: 600,
                           fontSize: '0.7rem',
@@ -2529,43 +2178,43 @@ const SankeyModal = ({ open, onClose, account }) => {
                                   theme.palette.primary.main.slice(1, 3),
                                   16
                                 )}, ${parseInt(
-                                theme.palette.primary.main.slice(3, 5),
-                                16
-                              )}, ${parseInt(
-                                theme.palette.primary.main.slice(5, 7),
-                                16
-                              )}, 0.15) 0%, 
+                                  theme.palette.primary.main.slice(3, 5),
+                                  16
+                                )}, ${parseInt(
+                                  theme.palette.primary.main.slice(5, 7),
+                                  16
+                                )}, 0.15) 0%, 
                                 rgba(${parseInt(
                                   theme.palette.primary.main.slice(1, 3),
                                   16
                                 )}, ${parseInt(
-                                theme.palette.primary.main.slice(3, 5),
-                                16
-                              )}, ${parseInt(
-                                theme.palette.primary.main.slice(5, 7),
-                                16
-                              )}, 0.08) 100%)`
+                                  theme.palette.primary.main.slice(3, 5),
+                                  16
+                                )}, ${parseInt(
+                                  theme.palette.primary.main.slice(5, 7),
+                                  16
+                                )}, 0.08) 100%)`
                             : `linear-gradient(135deg, 
                                 rgba(${parseInt(
                                   theme.palette.primary.main.slice(1, 3),
                                   16
                                 )}, ${parseInt(
-                                theme.palette.primary.main.slice(3, 5),
-                                16
-                              )}, ${parseInt(
-                                theme.palette.primary.main.slice(5, 7),
-                                16
-                              )}, 0.12) 0%, 
+                                  theme.palette.primary.main.slice(3, 5),
+                                  16
+                                )}, ${parseInt(
+                                  theme.palette.primary.main.slice(5, 7),
+                                  16
+                                )}, 0.12) 0%, 
                                 rgba(${parseInt(
                                   theme.palette.primary.main.slice(1, 3),
                                   16
                                 )}, ${parseInt(
-                                theme.palette.primary.main.slice(3, 5),
-                                16
-                              )}, ${parseInt(
-                                theme.palette.primary.main.slice(5, 7),
-                                16
-                              )}, 0.05) 100%)`,
+                                  theme.palette.primary.main.slice(3, 5),
+                                  16
+                                )}, ${parseInt(
+                                  theme.palette.primary.main.slice(5, 7),
+                                  16
+                                )}, 0.05) 100%)`,
                           borderRadius: 3,
                           border: `1px solid ${
                             darkMode
@@ -3111,7 +2760,8 @@ const SankeyModal = ({ open, onClose, account }) => {
                   <>
                     <ReactECharts
                       option={getChartOption}
-                      notMerge={true}
+                      notMerge={false}
+                      lazyUpdate={true}
                       style={{ height: '100%', width: '100%' }}
                       opts={{
                         renderer: 'canvas',
@@ -3119,15 +2769,6 @@ const SankeyModal = ({ open, onClose, account }) => {
                       }}
                       onEvents={{
                         click: (params) => {
-                          // Handle debug item selection
-                          if (showDebug) {
-                            setSelectedDebugItem({
-                              type: params.dataType,
-                              data: params.data,
-                              params: params
-                            });
-                          }
-
                           // Handle summary item selection
                           if (showSummary) {
                             setSelectedSummaryItem({
@@ -3138,118 +2779,39 @@ const SankeyModal = ({ open, onClose, account }) => {
                           }
 
                           // Handle click on account nodes to navigate to that account's Sankey
-                          if (params.dataType === 'node' && params.data.category === 'account') {
+                          if (
+                            params.dataType === 'node' &&
+                            (params.data.category === 'account' ||
+                              params.data.category === 'inflow' ||
+                              params.data.category === 'outflow')
+                          ) {
                             const clickedAccount = params.data.name;
-                            // Check if it's a valid XRPL address (starts with 'r' and is 25-34 characters)
+
+                            // Extract account from hub names
+                            let accountToNavigate = clickedAccount;
                             if (
-                              clickedAccount &&
-                              clickedAccount.length >= 25 &&
-                              clickedAccount.length <= 34 &&
-                              clickedAccount.startsWith('r') &&
-                              !showDebug &&
-                              !showSummary // Only navigate if not in debug or summary mode
+                              clickedAccount.includes('_INFLOW') ||
+                              clickedAccount.includes('_OUTFLOW')
                             ) {
-                              navigateToAccount(clickedAccount);
+                              accountToNavigate = clickedAccount
+                                .replace('_INFLOW', '')
+                                .replace('_OUTFLOW', '');
+                            }
+
+                            if (
+                              accountToNavigate &&
+                              accountToNavigate.length >= 25 &&
+                              accountToNavigate.length <= 34 &&
+                              accountToNavigate.startsWith('r') &&
+                              accountToNavigate !== currentAccount &&
+                              !showSummary
+                            ) {
+                              navigateToAccount(accountToNavigate);
                             }
                           }
-                        },
-                        mouseover: (params, event) => {
-                          showCustomTooltip(event.event, params);
-                        },
-                        mouseout: () => {
-                          hideCustomTooltip();
-                        },
-                        mousemove: (params, event) => {
-                          handleMouseMove(params, event);
                         }
                       }}
                     />
-
-                    {/* Custom Tooltip Overlay */}
-                    {customTooltip.visible && (
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          left: customTooltip.x,
-                          top: customTooltip.y,
-                          bgcolor: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.98)',
-                          border: `2px solid ${darkMode ? '#444444' : theme.palette.divider}`,
-                          borderRadius: 3,
-                          padding: '12px 16px',
-                          fontSize: '12px',
-                          fontWeight: 500,
-                          color: theme.palette.text.primary,
-                          boxShadow: `0 12px 48px ${
-                            darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.25)'
-                          }`,
-                          backdropFilter: 'blur(16px)',
-                          WebkitBackdropFilter: 'blur(16px)',
-                          zIndex: 10000,
-                          pointerEvents: 'none',
-                          maxWidth: 350,
-                          minWidth: 200,
-                          wordWrap: 'break-word',
-                          whiteSpace: 'pre-line',
-                          fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-                          transition: 'opacity 0.15s ease-out',
-                          transform: 'translateZ(0)',
-                          willChange: 'opacity',
-                          opacity: 1,
-                          lineHeight: 1.4,
-                          // Add subtle gradient background for depth
-                          background: darkMode
-                            ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%)'
-                            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 248, 248, 0.98) 100%)',
-                          // Add subtle inner shadow for depth
-                          '&::before': {
-                            content: '""',
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            borderRadius: 3,
-                            background: darkMode
-                              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)'
-                              : 'linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.05) 100%)',
-                            pointerEvents: 'none',
-                            zIndex: -1
-                          },
-                          // Enhanced text styling for better readability
-                          '& strong': {
-                            fontWeight: 700,
-                            color: theme.palette.primary.main
-                          },
-                          // Style for section headers (lines that end with :)
-                          '& > div': {
-                            '&:first-line': {
-                              fontWeight: 700,
-                              fontSize: '13px',
-                              color: theme.palette.primary.main
-                            }
-                          }
-                        }}
-                      >
-                        <Typography
-                          component="div"
-                          sx={{
-                            fontSize: '12px',
-                            lineHeight: 1.5,
-                            '& strong': {
-                              fontWeight: 700,
-                              color: theme.palette.primary.main
-                            },
-                            // Style lines that start with emojis differently
-                            '& > *:first-line': {
-                              fontWeight: 700,
-                              fontSize: '13px'
-                            }
-                          }}
-                        >
-                          {customTooltip.content}
-                        </Typography>
-                      </Box>
-                    )}
                   </>
                 ) : (
                   <Box
