@@ -42,7 +42,9 @@ import { fCurrency5 } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
 
 // Initialize the accessibility module
-accessibility(Highcharts);
+if (typeof Highcharts === 'object') {
+  accessibility(Highcharts);
+}
 
 const fiatMapping = {
   USD: 'USD',
@@ -266,8 +268,6 @@ function PriceChart({ token }) {
       setMediumValue((min + max) / 2);
     }
   }, [chartType, data, dataOHLC]);
-
-  console.log('data', data);
 
   const handleChange = (event, newRange) => {
     if (newRange) setRange(newRange);
