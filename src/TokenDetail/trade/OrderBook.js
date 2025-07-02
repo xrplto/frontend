@@ -256,7 +256,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
 
       return (
         <CompactTooltip
-          key={`${orderType}-${price}-${amount}`}
+          key={`${orderType}-${price}-${amount}-${idx}`}
           title={
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>

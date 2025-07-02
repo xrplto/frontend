@@ -578,9 +578,9 @@ export default function PairsList({ token, pairs }) {
               let sparklineToken = null;
 
               // Debug: Log the available MD5 values
-              console.log(
+              /* console.log(
                 `Pair ${id}: curr1(${curr1.name})=${curr1.md5}, curr2(${curr2.name})=${curr2.md5}`
-              );
+              ); */
 
               if (id === 1) {
                 // For primary pair (SOLO/XRP), show SOLO's chart
@@ -598,9 +598,9 @@ export default function PairsList({ token, pairs }) {
                 }
               }
 
-              console.log(
+              /* console.log(
                 `Selected sparkline for pair ${id}: ${sparkline} (${sparklineToken?.name})`
-              );
+              ); */
 
               return (
                 <StyledTableRow key={pair} darkMode={darkMode}>
