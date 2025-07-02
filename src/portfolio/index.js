@@ -306,6 +306,12 @@ export default function Portfolio({ account, limit, collection, type }) {
         fontSize: '13px',
         fontFamily: theme.typography.fontFamily
       },
+      x: {
+        show: false
+      },
+      marker: {
+        show: false
+      },
       custom: function ({ series, seriesIndex, dataPointIndex, w }) {
         const data = w.globals.initialSeries;
         const categories = w.globals.categoryLabels || w.globals.labels;
@@ -556,6 +562,12 @@ export default function Portfolio({ account, limit, collection, type }) {
         fontSize: '13px',
         fontFamily: theme.typography.fontFamily
       },
+      x: {
+        show: false
+      },
+      marker: {
+        show: false
+      },
       custom: function ({ series, seriesIndex, dataPointIndex, w }) {
         const categories = w.globals.categoryLabels || w.globals.labels;
 
@@ -778,6 +790,12 @@ export default function Portfolio({ account, limit, collection, type }) {
       style: {
         fontSize: '13px',
         fontFamily: theme.typography.fontFamily
+      },
+      x: {
+        show: false
+      },
+      marker: {
+        show: false
       },
       custom: function ({ series, seriesIndex, dataPointIndex, w }) {
         const categories = w.globals.categoryLabels || w.globals.labels;
