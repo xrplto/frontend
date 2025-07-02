@@ -376,7 +376,7 @@ const TrendingTokens = () => {
       >
         <GlowingButton
           component={Link}
-          href={`/?sort=trendingScore&order=desc`}
+          href={`/trending`}
           endIcon={<ArrowForwardIcon />}
           darkMode={darkMode}
         >
