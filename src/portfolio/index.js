@@ -28,7 +28,6 @@ import { Verified as VerifiedIcon } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import { getHashIcon } from 'src/utils/extra';
 import TrustLines from './TrustLines';
-import Offer from './Offer';
 import { TabContext, TabPanel } from '@mui/lab';
 import NFTPortfolio from './NFTPortfolio';
 import History from './History';
@@ -1588,50 +1587,6 @@ export default function Portfolio({ account, limit, collection, type }) {
                         border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                       }}
                     >
-                      <Typography sx={{ fontWeight: 500 }}>Profitable Trades</Typography>
-                      <Typography
-                        sx={{
-                          color: theme.palette.success.main,
-                          fontWeight: 600,
-                          fontSize: '1.1rem'
-                        }}
-                      >
-                        {traderStats?.profitableTrades || 0}
-                      </Typography>
-                    </Box>
-                    <Box
-                      display="flex"
-                      justifyContent="space-between"
-                      alignItems="center"
-                      sx={{
-                        p: 1.5,
-                        borderRadius: '10px',
-                        background: alpha(theme.palette.background.paper, 0.3),
-                        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-                      }}
-                    >
-                      <Typography sx={{ fontWeight: 500 }}>Losing Trades</Typography>
-                      <Typography
-                        sx={{
-                          color: theme.palette.error.main,
-                          fontWeight: 600,
-                          fontSize: '1.1rem'
-                        }}
-                      >
-                        {traderStats?.losingTrades || 0}
-                      </Typography>
-                    </Box>
-                    <Box
-                      display="flex"
-                      justifyContent="space-between"
-                      alignItems="center"
-                      sx={{
-                        p: 1.5,
-                        borderRadius: '10px',
-                        background: alpha(theme.palette.background.paper, 0.3),
-                        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-                      }}
-                    >
                       <Typography sx={{ fontWeight: 500 }}>Best Trade</Typography>
                       <Typography
                         sx={{
@@ -1667,8 +1622,6 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </Box>
                   </Stack>
                 </Card>
-
-                <Offer account={account} defaultExpanded={false} />
               </Stack>
             </OuterBorderContainer>
           </Grid>
