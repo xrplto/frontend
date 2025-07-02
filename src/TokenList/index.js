@@ -173,7 +173,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         .then((res) => {
           if (res.status === 200 && res.data) {
             const ret = res.data;
-            dispatch(update_metrics(ret));
+            // dispatch(update_metrics(ret)); // This is causing the issue. The WS will update the metrics.
             dispatch(update_filteredCount(ret));
             setTokens(ret.tokens);
           }
