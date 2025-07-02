@@ -136,8 +136,8 @@ export default function StatusComingSoon() {
               </Container>
               <Box position="relative" height={200} width="100%">
                 <Image
-                  alt="Coming Soon"
                   src="/static/status/coming-soon.svg"
+                  alt="Coming Soon"
                   priority
                   width={400}
                   height={200}

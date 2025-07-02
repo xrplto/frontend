@@ -195,7 +195,7 @@ export default function NFTCard({ nft, handleRemove }) {
               }}
             />
           )}
-          <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
+          <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} alt="" />
 
           <Stack
             direction="column"

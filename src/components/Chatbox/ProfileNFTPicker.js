@@ -191,7 +191,7 @@ const ChatCollectionCard = ({ collectionData, onSelect }) => {
           )}
         </Box>
       </Box>
-      <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
+      <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} alt="" />
     </CardWrapper>
   );
 };

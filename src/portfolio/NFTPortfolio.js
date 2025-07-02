@@ -323,7 +323,7 @@ function CollectionCard({ collectionData, type, account, handleRemove, smallSize
               transition: 'transform 0.3s ease'
             }}
           />
-          <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
+          <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} alt="" />
 
           <Box
             sx={{

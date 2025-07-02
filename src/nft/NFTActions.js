@@ -566,9 +566,11 @@ export default function NFTActions({ nft }) {
 
   useEffect(() => {
     async function getLowestSellOffer() {
-      const client = new Client('wss://s1.ripple.com');
+      if (!NFTokenID) return;
 
+      let client = null;
       try {
+        client = new Client('wss://s1.ripple.com');
         await client.connect();
         console.log('Connected to XRPL');
 
@@ -628,10 +630,27 @@ export default function NFTActions({ nft }) {
           setLowestSellOffer(null);
         }
       } catch (error) {
-        console.error('Error fetching NFT sell offers:', error);
+        // Check for the "notFound" error which is normal when NFT has no sell offers
+        const isNotFoundError =
+          (error.name === 'RippledError' && error.data?.error === 'notFound') ||
+          (error.message && error.message.includes('notFound')) ||
+          error.toString().includes('notFound');
+
+        if (isNotFoundError) {
+          // This is normal - NFT has no sell offers
+          setLowestSellOffer(null);
+        } else {
+          console.error('Error with XRPL connection or fetching NFT sell offers:', error);
+        }
       } finally {
-        await client.disconnect();
-        console.log('Disconnected from XRPL');
+        if (client && client.isConnected()) {
+          try {
+            await client.disconnect();
+            console.log('Disconnected from XRPL');
+          } catch (disconnectError) {
+            console.warn('Error disconnecting from XRPL:', disconnectError);
+          }
+        }
       }
     }
 
