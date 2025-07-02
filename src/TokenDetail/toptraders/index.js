@@ -82,13 +82,6 @@ function descendingComparator(a, b, orderBy) {
   let aValue = a[orderBy];
   let bValue = b[orderBy];
 
-  if (orderBy === 'winRate') {
-    const aTotal = a.profitableTrades + a.losingTrades;
-    const bTotal = b.profitableTrades + b.losingTrades;
-    aValue = aTotal > 0 ? (a.profitableTrades / aTotal) * 100 : 0;
-    bValue = bTotal > 0 ? (b.profitableTrades / bTotal) * 100 : 0;
-  }
-
   if (orderBy === 'firstTradeDate' || orderBy === 'lastTradeDate') {
     aValue = aValue ? new Date(aValue).getTime() : 0;
     bValue = bValue ? new Date(bValue).getTime() : 0;
@@ -164,13 +157,6 @@ const headCells = [
     tooltip: 'Total number of trades for this token'
   },
   { id: 'roi', label: 'ROI', numeric: true, sortable: true, tooltip: 'Return on Investment' },
-  {
-    id: 'winRate',
-    label: 'Win Rate',
-    numeric: true,
-    sortable: true,
-    tooltip: 'Percentage of profitable trades'
-  },
   {
     id: 'lastTradeDate',
     label: 'Last Trade',
@@ -527,13 +513,6 @@ export default function TopTraders({ token }) {
               </TableHead>
               <TableBody>
                 {paginatedTraders.map((safeTrader, index) => {
-                  const totalTradesForWinRate =
-                    safeTrader.profitableTrades + safeTrader.losingTrades;
-                  const winRateValue =
-                    totalTradesForWinRate > 0
-                      ? (safeTrader.profitableTrades / totalTradesForWinRate) * 100
-                      : 0;
-
                   return (
                     <TableRow
                       key={safeTrader.address + '-' + index}
@@ -624,29 +603,6 @@ export default function TopTraders({ token }) {
                             {fPercent(safeTrader.roi)}
                           </Typography>
                         </Stack>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          {totalTradesForWinRate > 0 ? (
-                            <Chip
-                              label={fPercent(winRateValue)}
-                              size="small"
-                              sx={{
-                                bgcolor: 'rgba(84, 214, 44, 0.16)',
-                                color: '#54D62C',
-                                height: '20px',
-                                '& .MuiChip-label': {
-                                  px: 0.75,
-                                  fontSize: '0.7rem'
-                                }
-                              }}
-                            />
-                          ) : (
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              -
-                            </Typography>
-                          )}
-                        </Box>
                       </TableCell>
                       <TableCell align="right">
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>

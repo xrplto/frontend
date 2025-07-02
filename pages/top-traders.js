@@ -183,11 +183,6 @@ const TraderRow = memo(
         {formatCurrency(trader.profit24h)}
       </TableCell>
       <TableCell align="right">{trader.totalTrades}</TableCell>
-      <TableCell align="right">
-        {formatPercentage(
-          (trader.profitableTrades / (trader.profitableTrades + trader.losingTrades)) * 100
-        )}
-      </TableCell>
       <TableCell
         align="right"
         sx={{
@@ -469,11 +464,6 @@ export default function Analytics() {
 
       let aValue = a[orderBy];
       let bValue = b[orderBy];
-
-      if (orderBy === 'winRate') {
-        aValue = (a.profitableTrades / (a.profitableTrades + a.losingTrades)) * 100;
-        bValue = (b.profitableTrades / (b.profitableTrades + b.losingTrades)) * 100;
-      }
 
       if (aValue == null) return 1;
       if (bValue == null) return -1;
@@ -1483,15 +1473,6 @@ export default function Analytics() {
                             </TableCell>
                             <TableCell align="right">
                               <TableSortLabel
-                                active={orderBy === 'winRate'}
-                                direction={orderBy === 'winRate' ? order : 'asc'}
-                                onClick={() => handleRequestSort('winRate')}
-                              >
-                                Win Rate
-                              </TableSortLabel>
-                            </TableCell>
-                            <TableCell align="right">
-                              <TableSortLabel
                                 active={orderBy === 'totalProfit'}
                                 direction={orderBy === 'totalProfit' ? order : 'asc'}
                                 onClick={() => handleRequestSort('totalProfit')}
@@ -1914,14 +1895,6 @@ export default function Analytics() {
                           Losing Trades: {roiModalTrader.losingTrades}
                         </Typography>
                         <Typography variant="body2">
-                          Win Rate:{' '}
-                          {formatPercentage(
-                            (roiModalTrader.profitableTrades /
-                              (roiModalTrader.profitableTrades + roiModalTrader.losingTrades)) *
-                              100
-                          )}
-                        </Typography>
-                        <Typography variant="body2">
                           Avg Holding Time: {(roiModalTrader.avgHoldingTime / 3600).toFixed(1)}h
                         </Typography>
                       </Grid>
@@ -2025,25 +1998,6 @@ export default function Analytics() {
                           Total Tokens Traded
                         </Typography>
                         <Typography variant="body1">{roiModalTrader.totalTokensTraded}</Typography>
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Typography variant="body2" color="text.secondary">
-                          Success Rate
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          color={
-                            roiModalTrader.profitableTrades > roiModalTrader.losingTrades
-                              ? 'success.main'
-                              : 'error.main'
-                          }
-                        >
-                          {formatPercentage(
-                            (roiModalTrader.profitableTrades /
-                              (roiModalTrader.profitableTrades + roiModalTrader.losingTrades)) *
-                              100
-                          )}
-                        </Typography>
                       </Grid>
                     </Grid>
                   </Box>
