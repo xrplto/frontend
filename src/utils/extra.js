@@ -1,20 +1,5 @@
 import hashicon from 'hashicon';
-
-const Activity = {
-  // 04:12 PM 03/26/2023
-  LOGIN: 1,
-  LOGOUT: 2,
-  UPDATE_PROFILE: 3,
-
-  // Tx parse section
-  CREATE_OFFER: 21,
-  CANCEL_OFFER: 23,
-
-  CREATE_TRUSTLINE: 25,
-  REMOVE_TRUSTLINE: 27,
-
-  TRADE_EXCHANGE: 29
-};
+import axios from 'axios';
 
 function getHashIcon(account) {
   let url = '/static/account_logo.webp';
@@ -36,4 +21,67 @@ export function checkExpiration(expiration) {
   }
 }
 
-export { Activity, getHashIcon };
+async function getTokens(
+  sortBy = 'vol24hxrp',
+  sortType = 'desc',
+  tags = 'yes',
+  showNew = false,
+  showSlug = false
+) {
+  const BASE_URL = process.env.API_URL;
+  let data = null;
+  try {
+    const res = await axios.get(
+      `${BASE_URL}/tokens?start=0&limit=100&sortBy=${sortBy}&sortType=${sortType}&filter=&tags=${tags}&showNew=${showNew}&showSlug=${showSlug}`
+    );
+
+    const essentialTokenFields = [
+      'md5',
+      'currency',
+      'issuer',
+      'name',
+      'pro24h',
+      'pro1h',
+      'pro5m',
+      'pro7d',
+      'vol24hxrp',
+      'vol24htx',
+      'exch',
+      'tags',
+      'holders',
+      'amount',
+      'id',
+      'user',
+      'slug',
+      'date',
+      'dateon',
+      'tvl',
+      'origin',
+      'isOMCF',
+      'marketcap'
+    ];
+
+    data = {
+      ...res.data,
+      tokens: res.data.tokens.map((token) => {
+        const filteredToken = {};
+        essentialTokenFields.forEach((field) => {
+          if (token[field] !== undefined) {
+            filteredToken[field] = token[field];
+          }
+        });
+
+        // Add calculated fields
+        filteredToken.bearbull = token.pro24h < 0 ? -1 : 1;
+        filteredToken.time = Date.now();
+
+        return filteredToken;
+      })
+    };
+  } catch (error) {
+    console.error(`Error fetching tokens (sortBy: ${sortBy}):`, error);
+  }
+  return data;
+}
+
+export { getHashIcon, getTokens };

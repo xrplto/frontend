@@ -1,6 +1,4 @@
-import axios from 'axios';
-import { performance } from 'perf_hooks';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Box, Container, Grid, styled, Toolbar, useMediaQuery } from '@mui/material';
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
@@ -11,6 +9,7 @@ import AppMenu from 'src/components/AppMenu';
 import Summary from 'src/TokenList/Summary';
 import HowWeWork from 'src/TokenList/HowWeWork';
 import { useRouter } from 'next/router';
+import { getTokens } from 'src/utils/extra';
 
 // import i18n (needs to be bundled ;))
 import 'src/utils/i18n';
@@ -81,7 +80,13 @@ function MaintenanceView({ isMobile }) {
 
 function Overview({ data }) {
   const [tokens, setTokens] = useState(() => getInitialTokens(data));
-  const tMap = new Map();
+  const tMap = useMemo(() => {
+    const map = new Map();
+    for (const t of tokens) {
+      map.set(t.md5, t);
+    }
+    return map;
+  }, [tokens]);
   const isMobile = useMediaQuery('(max-width:600px)');
   const router = useRouter();
 
@@ -96,10 +101,6 @@ function Overview({ data }) {
 
   if (MAINTENANCE_MODE) {
     return <MaintenanceView isMobile={isMobile} />;
-  }
-
-  for (var t of tokens) {
-    tMap.set(t.md5, t);
   }
 
   return (
@@ -156,75 +157,8 @@ function Overview({ data }) {
 export default Overview;
 
 export async function getStaticProps() {
-  const BASE_URL = process.env.API_URL;
-  let data = null;
-  try {
-    var t1 = performance.now();
+  const data = await getTokens('vol24hxrp', 'desc');
 
-    const res = await axios.get(
-      `${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
-    );
-
-    // Filter the API response to only keep necessary fields
-    const essentialTokenFields = [
-      'md5',
-      'currency',
-      'issuer',
-      'name',
-      'domain',
-      'kyc',
-      'verified',
-      'marketcap',
-      'p24h',
-      'pro24h',
-      'pro1h',
-      'pro5m',
-      'pro7d',
-      'vol24hxrp',
-      'vol24htx',
-      'vol24hx',
-      'usd',
-      'exch',
-      'tags',
-      'holders',
-      'trustlines',
-      'supply',
-      'amount',
-      'id',
-      'user',
-      'slug',
-      'date',
-      'dateon',
-      'tvl',
-      'origin',
-      'isOMCF'
-    ];
-
-    data = {
-      ...res.data,
-      tokens: res.data.tokens.map((token) => {
-        const filteredToken = {};
-        essentialTokenFields.forEach((field) => {
-          if (token[field] !== undefined) {
-            filteredToken[field] = token[field];
-          }
-        });
-
-        // Add calculated fields
-        filteredToken.bearbull = token.pro24h < 0 ? -1 : 1;
-        filteredToken.time = Date.now();
-
-        return filteredToken;
-      })
-    };
-
-    var t2 = performance.now();
-    var dt = (t2 - t1).toFixed(2);
-
-    console.log(`1. getStaticProps tokens: ${data.tokens.length} took: ${dt}ms`);
-  } catch (e) {
-    console.error('Error fetching data:', e);
-  }
   let ret = {};
   if (data) {
     let ogp = {};

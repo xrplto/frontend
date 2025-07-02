@@ -130,14 +130,24 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
       newTokens.forEach((newToken) => {
         const existingToken = tokenMap.get(newToken.md5);
         if (existingToken) {
-          const updatedToken = {
-            ...existingToken,
-            ...newToken,
-            time: Date.now(),
-            bearbull: existingToken.exch > newToken.exch ? -1 : 1
-          };
+          let isChanged = false;
+          for (const key in newToken) {
+            if (
+              Object.prototype.hasOwnProperty.call(newToken, key) &&
+              newToken[key] !== existingToken[key]
+            ) {
+              isChanged = true;
+              break;
+            }
+          }
 
-          if (JSON.stringify(existingToken) !== JSON.stringify(updatedToken)) {
+          if (isChanged) {
+            const updatedToken = {
+              ...existingToken,
+              ...newToken,
+              time: Date.now(),
+              bearbull: existingToken.exch > newToken.exch ? -1 : 1
+            };
             tokenMap.set(newToken.md5, updatedToken);
             hasChanges = true;
           }
