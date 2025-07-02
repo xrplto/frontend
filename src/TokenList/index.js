@@ -279,11 +279,14 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   );
 
   const handleRequestSort = (event, id) => {
-    const isDesc = orderBy === id && order === 'desc';
-    setOrder(isDesc ? 'asc' : 'desc');
-    setOrderBy(id);
+    if (orderBy === id) {
+      setOrder(order === 'asc' ? 'desc' : 'asc');
+    } else {
+      setOrderBy(id);
+      setOrder('desc');
+    }
     setPage(0);
-    setSync(sync + 1);
+    setSync((prev) => prev + 1);
   };
 
   const updatePage = (newPage) => {
