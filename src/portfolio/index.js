@@ -256,37 +256,122 @@ export default function Portfolio({ account, limit, collection, type }) {
     chart: {
       stacked: false,
       toolbar: { show: false },
-      background: 'transparent'
+      background: 'transparent',
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 350
+        }
+      }
     },
     stroke: {
-      width: [2, 2, 0],
-      curve: 'smooth'
+      width: [3, 3, 0],
+      curve: 'smooth',
+      lineCap: 'round'
     },
     legend: {
       position: 'bottom',
       horizontalAlign: 'center',
       markers: {
-        radius: 12
+        radius: 12,
+        strokeWidth: 2,
+        strokeColor: theme.palette.background.paper
       },
       itemMargin: {
-        horizontal: 10
+        horizontal: 15,
+        vertical: 5
       },
       labels: {
-        colors: theme.palette.text.primary
+        colors: theme.palette.text.primary,
+        useSeriesColors: false
+      },
+      onItemHover: {
+        highlightDataSeries: true
       }
     },
     tooltip: {
       theme: theme.palette.mode,
       shared: true,
       intersect: false,
-      y: {
-        formatter: (val, { seriesIndex }) => {
-          if (typeof val === 'undefined' || val === null) return '0';
-          if (seriesIndex === 2) {
-            return `${val.toLocaleString()} XRP`;
-          }
-          return `${val.toFixed(2)}%`;
-        }
+      followCursor: true,
+      fillSeriesColor: false,
+      style: {
+        fontSize: '13px',
+        fontFamily: theme.typography.fontFamily
+      },
+      custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+        const data = w.globals.initialSeries;
+        const categories = w.globals.categoryLabels || w.globals.labels;
+
+        return `
+          <div style="
+            background: ${alpha(theme.palette.background.paper, 0.95)};
+            backdrop-filter: blur(20px);
+            border: 1px solid ${alpha(theme.palette.divider, 0.2)};
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.12)};
+            min-width: 200px;
+          ">
+            <div style="
+              color: ${theme.palette.text.secondary};
+              font-size: 12px;
+              font-weight: 500;
+              margin-bottom: 8px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            ">${categories[dataPointIndex] || ''}</div>
+            ${series
+              .map((val, index) => {
+                const color = w.globals.colors[index];
+                const seriesName = w.globals.seriesNames[index];
+                const value = val[dataPointIndex];
+                const formattedValue =
+                  index === 2
+                    ? `${(value || 0).toLocaleString()} XRP`
+                    : `${(value || 0).toFixed(2)}%`;
+
+                return `
+                <div style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  margin: 4px 0;
+                ">
+                  <div style="display: flex; align-items: center;">
+                    <div style="
+                      width: 8px;
+                      height: 8px;
+                      border-radius: 50%;
+                      background: ${color};
+                      margin-right: 8px;
+                      box-shadow: 0 0 6px ${alpha(color, 0.4)};
+                    "></div>
+                    <span style="
+                      color: ${theme.palette.text.primary};
+                      font-weight: 500;
+                      font-size: 13px;
+                    ">${seriesName}</span>
+                  </div>
+                  <span style="
+                    color: ${color};
+                    font-weight: 600;
+                    font-size: 13px;
+                    margin-left: 12px;
+                  ">${formattedValue}</span>
+                </div>
+              `;
+              })
+              .join('')}
+          </div>
+        `;
       }
     },
     xaxis: {
@@ -360,7 +445,13 @@ export default function Portfolio({ account, limit, collection, type }) {
     ],
     grid: {
       borderColor: alpha(theme.palette.divider, 0.08),
-      strokeDashArray: 0
+      strokeDashArray: 0,
+      padding: {
+        top: 10,
+        right: 10,
+        bottom: 10,
+        left: 10
+      }
     },
     colors: [
       theme.palette.primary.main,
@@ -369,44 +460,164 @@ export default function Portfolio({ account, limit, collection, type }) {
     ],
     plotOptions: {
       bar: {
-        columnWidth: '20%',
-        borderRadius: 4
+        columnWidth: '25%',
+        borderRadius: 6,
+        borderRadiusApplication: 'end',
+        borderRadiusWhenStacked: 'last'
       }
     },
     dataLabels: {
       enabled: false
-    }
+    },
+    states: {
+      hover: {
+        filter: {
+          type: 'lighten',
+          value: 0.15
+        }
+      },
+      active: {
+        allowMultipleDataPointsSelection: false,
+        filter: {
+          type: 'darken',
+          value: 0.7
+        }
+      }
+    },
+    responsive: [
+      {
+        breakpoint: 768,
+        options: {
+          legend: {
+            position: 'bottom',
+            offsetY: 0
+          },
+          plotOptions: {
+            bar: {
+              columnWidth: '35%'
+            }
+          }
+        }
+      }
+    ]
   };
 
   const tradeHistoryOptions = {
     chart: {
       stacked: false,
       toolbar: { show: false },
-      background: 'transparent'
+      background: 'transparent',
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 350
+        }
+      }
     },
     stroke: {
-      width: [0, 2.5],
-      curve: 'smooth'
+      width: [0, 3],
+      curve: 'smooth',
+      lineCap: 'round'
     },
     legend: {
       position: 'bottom',
       horizontalAlign: 'center',
       markers: {
-        radius: 12
+        radius: 12,
+        strokeWidth: 2,
+        strokeColor: theme.palette.background.paper
       },
       itemMargin: {
-        horizontal: 10
+        horizontal: 15,
+        vertical: 5
       },
       labels: {
-        colors: theme.palette.text.primary
+        colors: theme.palette.text.primary,
+        useSeriesColors: false
+      },
+      onItemHover: {
+        highlightDataSeries: true
       }
     },
     tooltip: {
       theme: theme.palette.mode,
       shared: true,
       intersect: false,
-      y: {
-        formatter: (val) => (val ? val.toLocaleString() : '0')
+      followCursor: true,
+      fillSeriesColor: false,
+      style: {
+        fontSize: '13px',
+        fontFamily: theme.typography.fontFamily
+      },
+      custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+        const categories = w.globals.categoryLabels || w.globals.labels;
+
+        return `
+          <div style="
+            background: ${alpha(theme.palette.background.paper, 0.95)};
+            backdrop-filter: blur(20px);
+            border: 1px solid ${alpha(theme.palette.divider, 0.2)};
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.12)};
+            min-width: 200px;
+          ">
+            <div style="
+              color: ${theme.palette.text.secondary};
+              font-size: 12px;
+              font-weight: 500;
+              margin-bottom: 8px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            ">${categories[dataPointIndex] || ''}</div>
+            ${series
+              .map((val, index) => {
+                const color = w.globals.colors[index];
+                const seriesName = w.globals.seriesNames[index];
+                const value = val[dataPointIndex];
+                const formattedValue = (value || 0).toLocaleString();
+
+                return `
+                <div style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  margin: 4px 0;
+                ">
+                  <div style="display: flex; align-items: center;">
+                    <div style="
+                      width: 8px;
+                      height: 8px;
+                      border-radius: 50%;
+                      background: ${color};
+                      margin-right: 8px;
+                      box-shadow: 0 0 6px ${alpha(color, 0.4)};
+                    "></div>
+                    <span style="
+                      color: ${theme.palette.text.primary};
+                      font-weight: 500;
+                      font-size: 13px;
+                    ">${seriesName}</span>
+                  </div>
+                  <span style="
+                    color: ${color};
+                    font-weight: 600;
+                    font-size: 13px;
+                    margin-left: 12px;
+                  ">${formattedValue}</span>
+                </div>
+              `;
+              })
+              .join('')}
+          </div>
+        `;
       }
     },
     xaxis: {
@@ -461,49 +672,175 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     ],
     grid: {
-      borderColor: alpha(theme.palette.divider, 0.08)
+      borderColor: alpha(theme.palette.divider, 0.08),
+      padding: {
+        top: 10,
+        right: 10,
+        bottom: 10,
+        left: 10
+      }
     },
     colors: [theme.palette.primary.main, theme.palette.success.main],
     plotOptions: {
       bar: {
-        columnWidth: '30%',
-        borderRadius: 4
+        columnWidth: '35%',
+        borderRadius: 6,
+        borderRadiusApplication: 'end',
+        borderRadiusWhenStacked: 'last'
       }
     },
     dataLabels: {
       enabled: false
-    }
+    },
+    states: {
+      hover: {
+        filter: {
+          type: 'lighten',
+          value: 0.15
+        }
+      },
+      active: {
+        allowMultipleDataPointsSelection: false,
+        filter: {
+          type: 'darken',
+          value: 0.7
+        }
+      }
+    },
+    responsive: [
+      {
+        breakpoint: 768,
+        options: {
+          legend: {
+            position: 'bottom',
+            offsetY: 0
+          },
+          plotOptions: {
+            bar: {
+              columnWidth: '45%'
+            }
+          }
+        }
+      }
+    ]
   };
 
   const volumeHistoryOptions = {
     chart: {
       stacked: false,
       toolbar: { show: false },
-      background: 'transparent'
+      background: 'transparent',
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 350
+        }
+      }
     },
     stroke: {
-      width: [0, 2.5],
-      curve: 'smooth'
+      width: [0, 3],
+      curve: 'smooth',
+      lineCap: 'round'
     },
     legend: {
       position: 'bottom',
       horizontalAlign: 'center',
       markers: {
-        radius: 12
+        radius: 12,
+        strokeWidth: 2,
+        strokeColor: theme.palette.background.paper
       },
       itemMargin: {
-        horizontal: 10
+        horizontal: 15,
+        vertical: 5
       },
       labels: {
-        colors: theme.palette.text.primary
+        colors: theme.palette.text.primary,
+        useSeriesColors: false
+      },
+      onItemHover: {
+        highlightDataSeries: true
       }
     },
     tooltip: {
       theme: theme.palette.mode,
       shared: true,
       intersect: false,
-      y: {
-        formatter: (val) => `${val ? val.toLocaleString() : '0'} XRP`
+      followCursor: true,
+      fillSeriesColor: false,
+      style: {
+        fontSize: '13px',
+        fontFamily: theme.typography.fontFamily
+      },
+      custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+        const categories = w.globals.categoryLabels || w.globals.labels;
+
+        return `
+          <div style="
+            background: ${alpha(theme.palette.background.paper, 0.95)};
+            backdrop-filter: blur(20px);
+            border: 1px solid ${alpha(theme.palette.divider, 0.2)};
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.12)};
+            min-width: 200px;
+          ">
+            <div style="
+              color: ${theme.palette.text.secondary};
+              font-size: 12px;
+              font-weight: 500;
+              margin-bottom: 8px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            ">${categories[dataPointIndex] || ''}</div>
+            ${series
+              .map((val, index) => {
+                const color = w.globals.colors[index];
+                const seriesName = w.globals.seriesNames[index];
+                const value = val[dataPointIndex];
+                const formattedValue = `${(value || 0).toLocaleString()} XRP`;
+
+                return `
+                <div style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  margin: 4px 0;
+                ">
+                  <div style="display: flex; align-items: center;">
+                    <div style="
+                      width: 8px;
+                      height: 8px;
+                      border-radius: 50%;
+                      background: ${color};
+                      margin-right: 8px;
+                      box-shadow: 0 0 6px ${alpha(color, 0.4)};
+                    "></div>
+                    <span style="
+                      color: ${theme.palette.text.primary};
+                      font-weight: 500;
+                      font-size: 13px;
+                    ">${seriesName}</span>
+                  </div>
+                  <span style="
+                    color: ${color};
+                    font-weight: 600;
+                    font-size: 13px;
+                    margin-left: 12px;
+                  ">${formattedValue}</span>
+                </div>
+              `;
+              })
+              .join('')}
+          </div>
+        `;
       }
     },
     xaxis: {
@@ -560,18 +897,57 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     ],
     grid: {
-      borderColor: alpha(theme.palette.divider, 0.08)
+      borderColor: alpha(theme.palette.divider, 0.08),
+      padding: {
+        top: 10,
+        right: 10,
+        bottom: 10,
+        left: 10
+      }
     },
     colors: [alpha(theme.palette.primary.main, 0.6), theme.palette.success.main],
     plotOptions: {
       bar: {
-        columnWidth: '30%',
-        borderRadius: 4
+        columnWidth: '35%',
+        borderRadius: 6,
+        borderRadiusApplication: 'end',
+        borderRadiusWhenStacked: 'last'
       }
     },
     dataLabels: {
       enabled: false
-    }
+    },
+    states: {
+      hover: {
+        filter: {
+          type: 'lighten',
+          value: 0.15
+        }
+      },
+      active: {
+        allowMultipleDataPointsSelection: false,
+        filter: {
+          type: 'darken',
+          value: 0.7
+        }
+      }
+    },
+    responsive: [
+      {
+        breakpoint: 768,
+        options: {
+          legend: {
+            position: 'bottom',
+            offsetY: 0
+          },
+          plotOptions: {
+            bar: {
+              columnWidth: '45%'
+            }
+          }
+        }
+      }
+    ]
   };
 
   const OuterBorderContainer = styled(Box)(({ theme }) => ({
