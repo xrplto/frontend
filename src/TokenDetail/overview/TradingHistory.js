@@ -473,12 +473,6 @@ const TradingHistory = ({ tokenId, amm }) => {
                 <strong>Net Profit:</strong> {wt.netProfit.toFixed(2)}
               </Typography>
               <Typography variant="caption" component="div">
-                <strong>Type:</strong> {wt.detectionType}
-              </Typography>
-              <Typography variant="caption" component="div">
-                <strong>Time Window:</strong> {wt.timeWindowSeconds}s
-              </Typography>
-              <Typography variant="caption" component="div">
                 <strong>Detected:</strong>{' '}
                 {formatRelativeTime(new Date(wt.firstDetected).getTime())}
               </Typography>
