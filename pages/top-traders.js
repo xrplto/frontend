@@ -47,9 +47,9 @@ const StyledModal = styled(Modal)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   padding: theme.spacing(2),
-  backdropFilter: 'blur(8px)',
+  backdropFilter: 'blur(16px)',
   '& .MuiBackdrop-root': {
-    backgroundColor: alpha(theme.palette.common.black, 0.7)
+    backgroundColor: alpha(theme.palette.common.black, 0.5)
   }
 }));
 
@@ -60,12 +60,13 @@ const ModalContent = styled(Paper)(({ theme }) => ({
   height: '90vh',
   display: 'flex',
   flexDirection: 'column',
-  backgroundColor: theme.palette.background.paper,
+  backgroundColor: alpha(theme.palette.background.paper, 0.85),
+  backdropFilter: 'blur(20px)',
   borderRadius: '24px',
   boxShadow: `0 24px 48px ${alpha(theme.palette.common.black, 0.15)}`,
   padding: theme.spacing(3),
   overflow: 'hidden',
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -73,12 +74,12 @@ const ModalContent = styled(Paper)(({ theme }) => ({
     left: 0,
     right: 0,
     height: '3px',
-    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+    background: theme.palette.primary.main,
     borderRadius: '24px 24px 0 0'
   },
   '& .MuiTabs-root': {
     marginBottom: theme.spacing(2),
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
   },
   '& .tab-panel': {
     height: 'calc(90vh - 120px)',
@@ -88,11 +89,8 @@ const ModalContent = styled(Paper)(({ theme }) => ({
     height: '55vh',
     borderRadius: '16px',
     overflow: 'hidden',
-    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.6
-    )} 100%)`,
-    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+    background: alpha(theme.palette.background.paper, 0.5),
+    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
   },
   '& .metrics-section': {
     height: '35vh',
@@ -100,7 +98,7 @@ const ModalContent = styled(Paper)(({ theme }) => ({
     padding: theme.spacing(2),
     backgroundColor: alpha(theme.palette.background.default, 0.5),
     borderRadius: '16px',
-    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
     backdropFilter: 'blur(10px)'
   }
 }));
@@ -122,7 +120,7 @@ const TraderRow = memo(
         '&:last-child td, &:last-child th': { border: 0 },
         cursor: 'pointer',
         '&:hover': {
-          backgroundColor: 'action.hover'
+          backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.04)
         }
       }}
       onClick={() => onRoiClick(trader)}
@@ -228,7 +226,6 @@ TraderRow.displayName = 'TraderRow';
 
 export default function Analytics() {
   const dispatch = useDispatch();
-  const metrics = useSelector((state) => state.status.metrics);
   const [traders, setTraders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [roiModalTrader, setRoiModalTrader] = useState(null);
@@ -238,7 +235,7 @@ export default function Analytics() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage] = useState(50);
+  const [itemsPerPage] = useState(25);
   const [searchAddress, setSearchAddress] = useState('');
   const [debouncedSearchAddress, setDebouncedSearchAddress] = useState('');
   const [activeTab, setActiveTab] = useState(0);
@@ -442,44 +439,18 @@ export default function Analytics() {
     });
   }, []);
 
-  // Limit the number of rendered items to prevent UI freezing
-  const RENDER_LIMIT = 100; // Only render first 100 items for performance
-
-  // Memoize the sorted and filtered data with render limit
+  // Memoize the filtered data. Sorting is handled by the API.
   const sortedTraders = useMemo(() => {
     if (!Array.isArray(traders)) {
-      console.error('sortData received non-array:', traders);
       return [];
     }
 
-    let filteredData = hideAmm ? traders.filter((trader) => !trader.AMM) : traders;
+    if (hideAmm) {
+      return traders.filter((trader) => !trader.AMM);
+    }
 
-    console.log('Sorting data:', { orderBy, order, dataLength: filteredData.length });
-
-    const sorted = filteredData.sort((a, b) => {
-      if (!a || !b) {
-        console.error('Invalid trader objects in sort:', { a, b });
-        return 0;
-      }
-
-      let aValue = a[orderBy];
-      let bValue = b[orderBy];
-
-      if (aValue == null) return 1;
-      if (bValue == null) return -1;
-
-      if (orderBy.includes('Date')) {
-        aValue = new Date(aValue).getTime();
-        bValue = new Date(bValue).getTime();
-      }
-
-      const result = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      return order === 'desc' ? -result : result;
-    });
-
-    // Limit rendering to prevent UI freezing
-    return sorted.slice(0, RENDER_LIMIT);
-  }, [traders, hideAmm, orderBy, order]);
+    return traders;
+  }, [traders, hideAmm]);
 
   // Memoize chart options to prevent recreation on every render
   const createChartOptions = useCallback(
@@ -882,12 +853,9 @@ export default function Analytics() {
               gap: 3,
               p: 6,
               borderRadius: '24px',
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.background.paper,
-                0.9
-              )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+              background: alpha(theme.palette.background.paper, 0.7),
               backdropFilter: 'blur(20px)',
-              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`
             }}
           >
             <CircularProgress
@@ -951,8 +919,8 @@ export default function Analytics() {
             backgroundColor: 'transparent',
             backgroundImage: `linear-gradient(135deg, ${alpha(
               theme.palette.background.default,
-              0.95
-            )} 0%, ${alpha(theme.palette.background.default, 0.8)} 100%)`,
+              0.98
+            )} 0%, ${alpha(theme.palette.background.default, 0.9)} 100%)`,
             minHeight: '100vh',
             position: 'relative',
             '&::before': {
@@ -964,10 +932,10 @@ export default function Analytics() {
               bottom: 0,
               background: `radial-gradient(circle at 20% 50%, ${alpha(
                 theme.palette.primary.main,
-                0.03
+                0.02
               )} 0%, transparent 50%), radial-gradient(circle at 80% 20%, ${alpha(
-                theme.palette.success.main,
-                0.03
+                theme.palette.primary.main,
+                0.02
               )} 0%, transparent 50%)`,
               pointerEvents: 'none'
             }
@@ -993,13 +961,10 @@ export default function Analytics() {
                   mb: 1.5,
                   p: 3,
                   borderRadius: '20px',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.background.paper,
-                    0.9
-                  )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                  background: alpha(theme.palette.background.paper, 0.75),
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
                   boxShadow: `0 8px 32px ${alpha(
                     theme.palette.common.black,
                     0.06
@@ -1013,7 +978,7 @@ export default function Analytics() {
                     left: 0,
                     right: 0,
                     height: '2px',
-                    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                    background: theme.palette.primary.main,
                     opacity: 0.8
                   }
                 }}
@@ -1026,12 +991,6 @@ export default function Analytics() {
                       fontWeight: 700,
                       fontSize: { xs: '1.6rem', sm: '1.8rem', md: '2.1rem' },
                       letterSpacing: '-0.02em',
-                      background: `linear-gradient(135deg, ${
-                        theme.palette.text.primary
-                      } 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
                       mb: 1
                     }}
                   >
@@ -1051,47 +1010,16 @@ export default function Analytics() {
                     timeframes and strategies.
                   </Typography>
                 </Box>
-                <Link href="/api-docs">
-                  <Button
-                    variant="contained"
-                    size="medium"
-                    sx={{
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.primary.main,
-                        0.9
-                      )} 0%, ${alpha(theme.palette.primary.dark, 0.8)} 100%)`,
-                      color: theme.palette.primary.contrastText,
-                      '&:hover': {
-                        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                        transform: 'translateY(-2px)',
-                        boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`
-                      },
-                      borderRadius: '12px',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                      padding: { xs: '8px 16px', sm: '10px 20px' },
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                      backdropFilter: 'blur(10px)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}
-                  >
-                    See API Details
-                  </Button>
-                </Link>
               </Box>
             </Box>
 
             <Card
               sx={{
                 borderRadius: '24px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.background.paper,
-                  0.95
-                )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                background: alpha(theme.palette.background.paper, 0.7),
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: `3px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                 boxShadow: `0 16px 48px ${alpha(
                   theme.palette.common.black,
                   0.12
@@ -1105,7 +1033,7 @@ export default function Analytics() {
                     theme.palette.common.black,
                     0.18
                   )}, 0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`,
-                  border: `3px solid ${alpha(theme.palette.primary.main, 0.25)}`
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
                 },
                 '&::before': {
                   content: '""',
@@ -1114,7 +1042,7 @@ export default function Analytics() {
                   left: 0,
                   right: 0,
                   height: '3px',
-                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                  background: theme.palette.primary.main,
                   opacity: 0.9
                 }
               }}
@@ -1128,12 +1056,9 @@ export default function Analytics() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       py: 8,
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.background.paper,
-                        0.8
-                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                      background: alpha(theme.palette.background.paper, 0.4),
                       borderRadius: '16px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                       backdropFilter: 'blur(10px)'
                     }}
                   >
@@ -1252,15 +1177,12 @@ export default function Analytics() {
                           maxWidth: 450,
                           '& .MuiOutlinedInput-root': {
                             borderRadius: '16px',
-                            background: `linear-gradient(135deg, ${alpha(
-                              theme.palette.background.paper,
-                              0.8
-                            )} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                            background: alpha(theme.palette.background.paper, 0.6),
                             backdropFilter: 'blur(10px)',
-                            border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                            border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                             '&:hover': {
-                              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                              border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
                               boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
                               transform: 'translateY(-1px)'
                             },
@@ -1278,11 +1200,8 @@ export default function Analytics() {
                           gap: 2,
                           p: 2,
                           borderRadius: '16px',
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.background.paper,
-                            0.8
-                          )} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-                          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                          background: alpha(theme.palette.background.paper, 0.6),
+                          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                           backdropFilter: 'blur(10px)'
                         }}
                       >
@@ -1329,12 +1248,9 @@ export default function Analytics() {
                     <TableContainer
                       sx={{
                         borderRadius: '20px',
-                        background: `linear-gradient(135deg, ${alpha(
-                          theme.palette.background.paper,
-                          0.7
-                        )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
+                        background: alpha(theme.palette.background.paper, 0.5),
                         backdropFilter: 'blur(10px)',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
                         overflow: 'hidden',
                         boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`
                       }}
@@ -1354,10 +1270,7 @@ export default function Analytics() {
                             position: 'sticky',
                             top: 0,
                             zIndex: 999,
-                            background: `linear-gradient(135deg, ${alpha(
-                              theme.palette.background.paper,
-                              0.95
-                            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                            background: alpha(theme.palette.background.paper, 0.85),
                             backdropFilter: 'blur(20px)',
                             '&::after': {
                               content: '""',
@@ -1402,10 +1315,6 @@ export default function Analytics() {
                             borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                             '&:hover': {
-                              '& .MuiTableCell-root': {
-                                backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                                backdropFilter: 'blur(6px)'
-                              },
                               cursor: 'pointer',
                               transform: 'translateY(-1px)',
                               boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`
@@ -1578,12 +1487,9 @@ export default function Analytics() {
                         mt: 3,
                         p: 3,
                         borderRadius: '16px',
-                        background: `linear-gradient(135deg, ${alpha(
-                          theme.palette.background.paper,
-                          0.6
-                        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                        background: alpha(theme.palette.background.paper, 0.5),
                         backdropFilter: 'blur(10px)',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`
                       }}
                     >
                       <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 600 }}>
@@ -1707,11 +1613,8 @@ export default function Analytics() {
                     mb: 3,
                     p: 3,
                     borderRadius: '16px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.8
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                    background: alpha(theme.palette.background.paper, 0.6),
+                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
