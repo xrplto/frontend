@@ -1290,18 +1290,50 @@ export default function Analytics() {
           <ModalContent>
             {roiModalTrader && (
               <>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
-                  <Typography
-                    variant="h5"
-                    component="div"
-                    sx={{
-                      flexGrow: 1,
-                      fontWeight: 700,
-                      color: theme.palette.text.primary
-                    }}
-                  >
-                    Trader Analytics
-                  </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: 2
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography
+                      variant="h5"
+                      component="div"
+                      sx={{
+                        fontWeight: 700,
+                        color: theme.palette.text.primary
+                      }}
+                    >
+                      Trader Analytics
+                    </Typography>
+                    <Typography
+                      component="a"
+                      href={`/profile/${roiModalTrader.address}`}
+                      sx={{
+                        textDecoration: 'none',
+                        color: theme.palette.primary.main,
+                        fontWeight: 600,
+                        fontSize: '1rem',
+                        '&:hover': {
+                          textDecoration: 'underline'
+                        }
+                      }}
+                    >
+                      {abbreviateAddress(roiModalTrader.address)}
+                    </Typography>
+                    {roiModalTrader.AMM && (
+                      <Chip
+                        label="AMM"
+                        size="small"
+                        color="secondary"
+                        sx={{ height: 22, fontSize: '0.7rem' }}
+                      />
+                    )}
+                  </Box>
+
                   <IconButton
                     onClick={handleCloseRoiModal}
                     sx={{
@@ -1320,77 +1352,34 @@ export default function Analytics() {
 
                 <Box
                   sx={{
-                    mb: 3,
-                    p: 3,
-                    borderRadius: '16px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2,
+                    p: 1.5,
+                    borderRadius: '12px',
                     background: alpha(theme.palette.background.paper, 0.6),
                     border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                    <Typography
-                      component="a"
-                      href={`/profile/${roiModalTrader.address}`}
-                      sx={{
-                        textDecoration: 'none',
-                        color: theme.palette.primary.main,
-                        fontWeight: 700,
-                        fontSize: '1.1rem',
-                        '&:hover': {
-                          textDecoration: 'underline'
-                        }
-                      }}
-                    >
-                      {roiModalTrader.address}
-                    </Typography>
-                    {roiModalTrader.AMM && (
-                      <Chip
-                        label="AMM"
-                        size="small"
-                        sx={{
-                          height: 24,
-                          fontSize: '0.75rem',
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.secondary.main,
-                            0.15
-                          )} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
-                          color: theme.palette.secondary.main,
-                          border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-                          fontWeight: 600
-                        }}
-                      />
-                    )}
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        fontWeight: 500,
-                        px: 1.5,
-                        py: 0.5,
-                        borderRadius: '8px',
-                        background: alpha(theme.palette.background.default, 0.5),
-                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-                      }}
-                    >
-                      First Trade: {new Date(roiModalTrader.firstTradeDate).toLocaleDateString()}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        fontWeight: 500,
-                        px: 1.5,
-                        py: 0.5,
-                        borderRadius: '8px',
-                        background: alpha(theme.palette.background.default, 0.5),
-                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-                      }}
-                    >
-                      Last Trade: {new Date(roiModalTrader.lastTradeDate).toLocaleDateString()}
-                    </Typography>
-                  </Box>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontWeight: 500
+                    }}
+                  >
+                    First Trade: {new Date(roiModalTrader.firstTradeDate).toLocaleDateString()}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontWeight: 500
+                    }}
+                  >
+                    Last Trade: {new Date(roiModalTrader.lastTradeDate).toLocaleDateString()}
+                  </Typography>
                 </Box>
 
                 <Tabs
