@@ -460,11 +460,6 @@ const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
-  const totalAddresses = metrics.H24.totalAddresses;
-  const activeAddresses = metrics.H24.activeAddresses24H;
-  let percentAddress = 0;
-  if (totalAddresses > 0)
-    percentAddress = new Decimal(activeAddresses).mul(100).div(totalAddresses).toString();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -484,23 +479,18 @@ const Topbar = () => {
   const mobileMetrics = useMemo(
     () => [
       {
-        label: 'Tokens',
-        value: abbreviateNumber(metrics.total),
-        color: 'inherit'
-      },
-      {
         label: 'Addresses',
-        value: abbreviateNumber(metrics.H24.totalAddresses),
+        value: abbreviateNumber(metrics.global.totalAddresses),
         color: '#54D62C'
       },
       {
         label: 'Offers',
-        value: abbreviateNumber(metrics.H24.totalOffers),
+        value: abbreviateNumber(metrics.global.totalOffers),
         color: '#FFC107'
       },
       {
         label: 'Trustlines',
-        value: abbreviateNumber(metrics.H24.totalTrustLines),
+        value: abbreviateNumber(metrics.global.totalTrustLines),
         color: '#FFA48D'
       },
       {
@@ -528,6 +518,11 @@ const Topbar = () => {
         label: 'Active Addresses',
         value: abbreviateNumber(metrics.H24.activeAddresses24H),
         color: '#54D62C'
+      },
+      {
+        label: 'Unique Traders',
+        value: abbreviateNumber(metrics?.H24?.uniqueTraders24H || 0),
+        color: '#2196F3'
       },
       {
         label: 'Total TVL',
@@ -681,7 +676,7 @@ const Topbar = () => {
                 <Typography variant="body2" color={mobileMetrics[currentMetricIndex].color}>
                   {mobileMetrics[currentMetricIndex].value}
                 </Typography>
-                {currentMetricIndex === 0 && (
+                {currentMetricIndex >= 3 && (
                   <H24Style>
                     <Typography variant="body2" color="#ececec">
                       24h
@@ -693,28 +688,23 @@ const Topbar = () => {
           ) : (
             <Stack direction="row" spacing={2} alignItems="center" sx={{ flex: 1 }}>
               <MetricContainer direction="row" spacing={1} alignItems="center">
-                <MetricLabel>{t('Tokens')}</MetricLabel>
-                <MetricValue>{abbreviateNumber(metrics.total)}</MetricValue>
-              </MetricContainer>
-
-              <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Addresses')}</MetricLabel>
                 <MetricValue sx={{ color: '#54D62C' }}>
-                  {abbreviateNumber(metrics.H24.totalAddresses)}
+                  {abbreviateNumber(metrics.global.totalAddresses)}
                 </MetricValue>
               </MetricContainer>
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Offers')}</MetricLabel>
                 <MetricValue sx={{ color: '#FFC107' }}>
-                  {abbreviateNumber(metrics.H24.totalOffers)}
+                  {abbreviateNumber(metrics.global.totalOffers)}
                 </MetricValue>
               </MetricContainer>
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Trustlines')}</MetricLabel>
                 <MetricValue sx={{ color: '#FFA48D' }}>
-                  {abbreviateNumber(metrics.H24.totalTrustLines)}
+                  {abbreviateNumber(metrics.global.totalTrustLines)}
                 </MetricValue>
               </MetricContainer>
 
@@ -758,6 +748,13 @@ const Topbar = () => {
                 <MetricLabel>{t('Active Addresses')}</MetricLabel>
                 <MetricValue sx={{ color: '#54D62C' }}>
                   {abbreviateNumber(metrics.H24.activeAddresses24H)}
+                </MetricValue>
+              </MetricContainer>
+
+              <MetricContainer direction="row" spacing={1} alignItems="center">
+                <MetricLabel>{t('Unique Traders')}</MetricLabel>
+                <MetricValue sx={{ color: '#2196F3' }}>
+                  {abbreviateNumber(metrics?.H24?.uniqueTraders24H || 0)}
                 </MetricValue>
               </MetricContainer>
 
