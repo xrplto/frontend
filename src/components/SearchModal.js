@@ -656,7 +656,7 @@ export default function SearchModal({ onClose, open }) {
             >
               {tokens
                 .slice(0, activeTab == 'token' ? tokens.length : 8)
-                .map(({ md5, name, slug, isOMCF, user, kyc, pro24h, exch }, idx) => {
+                .map(({ md5, name, slug, isOMCF, user, verified, pro24h, exch }, idx) => {
                   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
                   const link = `/token/${slug}?fromSearch=1`;
 
@@ -751,10 +751,17 @@ export default function SearchModal({ onClose, open }) {
                                 noWrap
                               >
                                 {truncate(name, 13)}
-                                {kyc && (
-                                  <Typography variant="kyc" sx={{ ml: 0.5 }}>
-                                    KYC
-                                  </Typography>
+                                {verified && (
+                                  <Tooltip title="Verified">
+                                    <VerifiedIcon
+                                      fontSize="small"
+                                      style={{
+                                        color: '#4589ff',
+                                        marginLeft: '4px',
+                                        verticalAlign: 'middle'
+                                      }}
+                                    />
+                                  </Tooltip>
                                 )}
                               </Typography>
                             </Stack>
