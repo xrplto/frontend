@@ -150,19 +150,6 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage }
             }}
           />
         )}
-        <IconButton
-          size="small"
-          onClick={(e) => onRoiClick(trader, e)}
-          title={trader.address}
-          sx={{
-            color: 'primary.main',
-            '&:hover': {
-              color: 'primary.dark'
-            }
-          }}
-        >
-          <ShowChartIcon fontSize="small" />
-        </IconButton>
       </Box>
     </TableCell>
     <TableCell align="right">{formatCurrency(trader.volume24h)}</TableCell>
@@ -190,6 +177,21 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage }
       }}
     >
       {formatPercentage(trader.avgROI)}
+    </TableCell>
+    <TableCell align="right">
+      <IconButton
+        size="small"
+        onClick={(e) => onRoiClick(trader, e)}
+        title="Show trader analytics"
+        sx={{
+          color: 'primary.main',
+          '&:hover': {
+            color: 'primary.dark'
+          }
+        }}
+      >
+        <ShowChartIcon fontSize="small" />
+      </IconButton>
     </TableCell>
   </TableRow>
 ));
@@ -1251,6 +1253,7 @@ export default function Analytics() {
                                 ROI
                               </TableSortLabel>
                             </TableCell>
+                            <TableCell align="right" />
                           </TableRow>
                         </TableHead>
                         <TableBody>
