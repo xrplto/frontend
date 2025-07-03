@@ -50,7 +50,7 @@ const StyledModal = styled(Modal)(({ theme }) => ({
   padding: theme.spacing(2),
   backdropFilter: 'blur(16px)',
   '& .MuiBackdrop-root': {
-    backgroundColor: alpha(theme.palette.common.black, 0.5)
+    backgroundColor: 'transparent'
   }
 }));
 
@@ -61,13 +61,12 @@ const ModalContent = styled(Paper)(({ theme }) => ({
   height: '90vh',
   display: 'flex',
   flexDirection: 'column',
-  backgroundColor: alpha(theme.palette.background.paper, 0.85),
-  backdropFilter: 'blur(20px)',
+  backgroundColor: alpha(theme.palette.grey[900], 0.85),
   borderRadius: '24px',
-  boxShadow: `0 24px 48px ${alpha(theme.palette.common.black, 0.15)}`,
+  boxShadow: `0 16px 40px ${alpha(theme.palette.common.black, 0.2)}`,
   padding: theme.spacing(3),
   overflow: 'hidden',
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.25)}`,
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -99,8 +98,7 @@ const ModalContent = styled(Paper)(({ theme }) => ({
     padding: theme.spacing(2),
     backgroundColor: alpha(theme.palette.background.default, 0.5),
     borderRadius: '16px',
-    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    backdropFilter: 'blur(10px)'
+    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
   }
 }));
 
@@ -199,6 +197,34 @@ const TraderRow = memo(
 );
 
 TraderRow.displayName = 'TraderRow';
+
+const MetricItem = ({ label, value, valueColor }) => (
+  <Box
+    sx={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      py: 0.75,
+      '&:not(:last-of-type)': {
+        borderBottom: (theme) => `1px solid ${alpha(theme.palette.divider, 0.08)}`
+      }
+    }}
+  >
+    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+      {label}
+    </Typography>
+    <Typography
+      variant="body2"
+      sx={{
+        fontWeight: 600,
+        fontSize: '0.8rem',
+        color: valueColor || 'text.primary'
+      }}
+    >
+      {value}
+    </Typography>
+  </Box>
+);
 
 export default function Analytics() {
   const dispatch = useDispatch();
@@ -886,7 +912,10 @@ export default function Analytics() {
           sx={{
             flex: 1,
             py: { xs: 1, sm: 2, md: 3 },
-            backgroundColor: theme.palette.background.default,
+            background:
+              theme.palette.mode === 'dark'
+                ? `linear-gradient(to bottom, ${theme.palette.background.paper}, ${theme.palette.background.default})`
+                : theme.palette.background.default,
             minHeight: '100vh'
           }}
         >
@@ -928,7 +957,11 @@ export default function Analytics() {
             <Card
               sx={{
                 borderRadius: '16px',
-                p: { xs: 1, sm: 2 }
+                p: { xs: 1, sm: 2 },
+                backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                backdropFilter: 'blur(12px)',
+                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.15)}`
               }}
             >
               <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
@@ -940,7 +973,7 @@ export default function Analytics() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       py: 8,
-                      background: alpha(theme.palette.background.paper, 0.4),
+                      background: alpha(theme.palette.background.paper, 0.7),
                       borderRadius: '16px',
                       border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                       backdropFilter: 'blur(10px)'
@@ -985,10 +1018,10 @@ export default function Analytics() {
                       textAlign: 'center',
                       background: `linear-gradient(135deg, ${alpha(
                         theme.palette.error.main,
-                        0.1
-                      )} 0%, ${alpha(theme.palette.error.main, 0.05)} 100%)`,
+                        0.15
+                      )} 0%, ${alpha(theme.palette.error.main, 0.1)} 100%)`,
                       borderRadius: '16px',
-                      border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+                      border: `1px solid ${alpha(theme.palette.error.main, 0.25)}`,
                       backdropFilter: 'blur(10px)'
                     }}
                   >
@@ -1059,7 +1092,14 @@ export default function Analytics() {
                         sx={{
                           maxWidth: 450,
                           '& .MuiOutlinedInput-root': {
-                            borderRadius: '12px'
+                            borderRadius: '12px',
+                            backgroundColor: alpha(theme.palette.background.default, 0.6),
+                            '& fieldset': {
+                              borderColor: alpha(theme.palette.divider, 0.3)
+                            },
+                            '&:hover fieldset': {
+                              borderColor: theme.palette.primary.main
+                            }
                           }
                         }}
                       />
@@ -1144,10 +1184,12 @@ export default function Analytics() {
                             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                             '&:hover': {
                               transform: 'translateY(-2px)',
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`,
                               '& .MuiTableCell-root': {
-                                backgroundColor: darkMode
-                                  ? alpha(theme.palette.grey[500], 0.12)
-                                  : alpha(theme.palette.grey[500], 0.08)
+                                backgroundColor:
+                                  theme.palette.mode === 'dark'
+                                    ? alpha(theme.palette.common.white, 0.08)
+                                    : alpha(theme.palette.primary.main, 0.08)
                               },
                               cursor: 'pointer'
                             }
@@ -1282,395 +1324,424 @@ export default function Analytics() {
           </Container>
         </Box>
 
-        <StyledModal
-          open={Boolean(roiModalTrader)}
-          onClose={handleCloseRoiModal}
-          aria-labelledby="roi-history-modal"
-        >
-          <ModalContent>
-            {roiModalTrader && (
-              <>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    mb: 2
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Typography
-                      variant="h5"
-                      component="div"
+        {roiModalTrader && (
+          <StyledModal
+            open={Boolean(roiModalTrader)}
+            onClose={handleCloseRoiModal}
+            aria-labelledby="roi-history-modal"
+          >
+            <ModalContent>
+              {roiModalTrader && (
+                <>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      mb: 2
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography
+                        variant="h5"
+                        component="div"
+                        sx={{
+                          fontWeight: 700,
+                          color: 'text.primary'
+                        }}
+                      >
+                        Trader Analytics
+                      </Typography>
+                      <Typography
+                        component="a"
+                        href={`/profile/${roiModalTrader.address}`}
+                        sx={{
+                          textDecoration: 'none',
+                          color: 'primary.main',
+                          fontWeight: 600,
+                          fontSize: '1rem',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }}
+                      >
+                        {abbreviateAddress(roiModalTrader.address)}
+                      </Typography>
+                      {roiModalTrader.AMM && (
+                        <Chip
+                          label="AMM"
+                          size="small"
+                          color="secondary"
+                          sx={{ height: 22, fontSize: '0.7rem' }}
+                        />
+                      )}
+                    </Box>
+
+                    <IconButton
+                      onClick={handleCloseRoiModal}
                       sx={{
-                        fontWeight: 700,
-                        color: theme.palette.text.primary
-                      }}
-                    >
-                      Trader Analytics
-                    </Typography>
-                    <Typography
-                      component="a"
-                      href={`/profile/${roiModalTrader.address}`}
-                      sx={{
-                        textDecoration: 'none',
-                        color: theme.palette.primary.main,
-                        fontWeight: 600,
-                        fontSize: '1rem',
+                        borderRadius: '12px',
+                        background: (theme) => alpha(theme.palette.background.paper, 0.8),
+                        border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                         '&:hover': {
-                          textDecoration: 'underline'
+                          background: (theme) => alpha(theme.palette.error.main, 0.1),
+                          border: (theme) => `1px solid ${alpha(theme.palette.error.main, 0.2)}`
                         }
                       }}
                     >
-                      {abbreviateAddress(roiModalTrader.address)}
-                    </Typography>
-                    {roiModalTrader.AMM && (
-                      <Chip
-                        label="AMM"
-                        size="small"
-                        color="secondary"
-                        sx={{ height: 22, fontSize: '0.7rem' }}
-                      />
-                    )}
+                      <ClearIcon />
+                    </IconButton>
                   </Box>
 
-                  <IconButton
-                    onClick={handleCloseRoiModal}
+                  <Box
                     sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      mb: 2,
+                      p: 1.5,
                       borderRadius: '12px',
-                      background: alpha(theme.palette.background.paper, 0.8),
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                      '&:hover': {
-                        background: alpha(theme.palette.error.main, 0.1),
-                        border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
-                      }
+                      background: (theme) => alpha(theme.palette.background.paper, 0.7),
+                      border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.2)}`
                     }}
                   >
-                    <ClearIcon />
-                  </IconButton>
-                </Box>
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 2,
-                    p: 1.5,
-                    borderRadius: '12px',
-                    background: alpha(theme.palette.background.paper, 0.6),
-                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      fontWeight: 500
-                    }}
-                  >
-                    First Trade: {new Date(roiModalTrader.firstTradeDate).toLocaleDateString()}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      fontWeight: 500
-                    }}
-                  >
-                    Last Trade: {new Date(roiModalTrader.lastTradeDate).toLocaleDateString()}
-                  </Typography>
-                </Box>
-
-                <Tabs
-                  value={activeTab}
-                  onChange={handleTabChange}
-                  variant="scrollable"
-                  scrollButtons="auto"
-                  sx={{
-                    mb: 3,
-                    '& .MuiTab-root': {
-                      borderRadius: '12px 12px 0 0',
-                      transition: 'all 0.2s ease',
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      minHeight: 48,
-                      '&:hover': {
-                        background: alpha(theme.palette.primary.main, 0.04)
-                      },
-                      '&.Mui-selected': {
-                        background: `linear-gradient(135deg, ${alpha(
-                          theme.palette.primary.main,
-                          0.1
-                        )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
-                        color: theme.palette.primary.main
-                      }
-                    }
-                  }}
-                >
-                  <Tab label="Overview & ROI" />
-                  <Tab label="Token Performance" />
-                  <Tab label="Trade History" />
-                  <Tab label="Volume History" />
-                </Tabs>
-
-                <TabPanel value={activeTab} index={0}>
-                  <Box className="chart-section">
-                    {roiModalTrader.roiHistory && roiModalTrader.roiHistory.length > 0 ? (
-                      <ReactECharts
-                        option={modalChartOptions}
-                        style={{ height: '100%', width: '100%' }}
-                        opts={{ renderer: 'svg' }}
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          height: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        <Typography color="text.secondary">No ROI history available</Typography>
-                      </Box>
-                    )}
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'text.secondary',
+                        fontWeight: 500
+                      }}
+                    >
+                      First Trade: {new Date(roiModalTrader.firstTradeDate).toLocaleDateString()}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'text.secondary',
+                        fontWeight: 500
+                      }}
+                    >
+                      Last Trade: {new Date(roiModalTrader.lastTradeDate).toLocaleDateString()}
+                    </Typography>
                   </Box>
-                  <Box className="metrics-section">
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Volume Metrics
-                        </Typography>
-                        <Typography variant="body2">
-                          Total Volume: {formatCurrency(roiModalTrader.totalVolume)}
-                        </Typography>
-                        <Typography variant="body2" color="success.main">
-                          Buy Volume: {formatCurrency(roiModalTrader.buyVolume)}
-                        </Typography>
-                        <Typography variant="body2" color="error.main">
-                          Sell Volume: {formatCurrency(roiModalTrader.sellVolume)}
-                        </Typography>
-                        <Typography variant="body2">
-                          Active Tokens (24h): {roiModalTrader.activeTokens24h}
-                        </Typography>
-                        <Typography variant="body2">
-                          Active Tokens (7d): {roiModalTrader.activeTokens7d}
-                        </Typography>
-                        <Typography variant="body2">
-                          Active Tokens (1m): {roiModalTrader.activeTokens1m}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Profit Metrics
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color={roiModalTrader.totalProfit >= 0 ? 'success.main' : 'error.main'}
+
+                  <Tabs
+                    value={activeTab}
+                    onChange={handleTabChange}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    sx={{
+                      mb: 3,
+                      '& .MuiTab-root': {
+                        borderRadius: '12px 12px 0 0',
+                        transition: 'all 0.2s ease',
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        minHeight: 48,
+                        '&:hover': {
+                          background: (theme) => alpha(theme.palette.primary.main, 0.04)
+                        },
+                        '&.Mui-selected': {
+                          background: (theme) =>
+                            `linear-gradient(135deg, ${alpha(
+                              theme.palette.primary.main,
+                              0.2
+                            )} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%)`,
+                          color: 'primary.main',
+                          borderBottom: (theme) => `2px solid ${theme.palette.primary.main}`
+                        }
+                      }
+                    }}
+                  >
+                    <Tab label="Overview & ROI" />
+                    <Tab label="Token Performance" />
+                    <Tab label="Trade History" />
+                    <Tab label="Volume History" />
+                  </Tabs>
+
+                  <TabPanel value={activeTab} index={0}>
+                    <Box className="chart-section">
+                      {roiModalTrader.roiHistory && roiModalTrader.roiHistory.length > 0 ? (
+                        <ReactECharts
+                          option={modalChartOptions}
+                          style={{ height: '100%', width: '100%' }}
+                          opts={{ renderer: 'svg' }}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
                         >
-                          Total Profit: {formatCurrency(roiModalTrader.totalProfit)}
-                        </Typography>
-                        <Typography variant="body2">
-                          Unrealized Profit: {formatCurrency(roiModalTrader.unrealizedProfit)}
-                        </Typography>
-                        <Typography variant="body2" color="success.main">
-                          Max Profit Trade: {formatCurrency(roiModalTrader.maxProfitTrade)}
-                        </Typography>
-                        <Typography variant="body2" color="error.main">
-                          Max Loss Trade: {formatCurrency(roiModalTrader.maxLossTrade)}
-                        </Typography>
-                        <Typography variant="body2">
-                          Avg ROI: {formatPercentage(roiModalTrader.avgROI)}
-                        </Typography>
+                          <Typography color="text.secondary">No ROI history available</Typography>
+                        </Box>
+                      )}
+                    </Box>
+                    <Box className="metrics-section">
+                      <Grid container spacing={3}>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
+                            Volume
+                          </Typography>
+                          <MetricItem
+                            label="Total Volume"
+                            value={formatCurrency(roiModalTrader.totalVolume)}
+                          />
+                          <MetricItem
+                            label="Buy Volume"
+                            value={formatCurrency(roiModalTrader.buyVolume)}
+                            valueColor="success.main"
+                          />
+                          <MetricItem
+                            label="Sell Volume"
+                            value={formatCurrency(roiModalTrader.sellVolume)}
+                            valueColor="error.main"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
+                            Profit
+                          </Typography>
+                          <MetricItem
+                            label="Total Profit"
+                            value={formatCurrency(roiModalTrader.totalProfit)}
+                            valueColor={
+                              roiModalTrader.totalProfit >= 0 ? 'success.main' : 'error.main'
+                            }
+                          />
+                          <MetricItem
+                            label="Unrealized Profit"
+                            value={formatCurrency(roiModalTrader.unrealizedProfit)}
+                          />
+                          <MetricItem
+                            label="Max Profit"
+                            value={formatCurrency(roiModalTrader.maxProfitTrade)}
+                            valueColor="success.main"
+                          />
+                          <MetricItem
+                            label="Max Loss"
+                            value={formatCurrency(roiModalTrader.maxLossTrade)}
+                            valueColor="error.main"
+                          />
+                          <MetricItem
+                            label="Avg. ROI"
+                            value={formatPercentage(roiModalTrader.avgROI)}
+                            valueColor={roiModalTrader.avgROI >= 0 ? 'success.main' : 'error.main'}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
+                            Trades
+                          </Typography>
+                          <MetricItem label="Total" value={roiModalTrader.totalTrades} />
+                          <MetricItem
+                            label="Avg. Holding"
+                            value={`${(roiModalTrader.avgHoldingTime / 3600).toFixed(1)}h`}
+                          />
+                          <MetricItem
+                            label="Active Tokens (24h)"
+                            value={roiModalTrader.activeTokens24h}
+                          />
+                          <MetricItem
+                            label="Active Tokens (7d)"
+                            value={roiModalTrader.activeTokens7d}
+                          />
+                          <MetricItem
+                            label="Active Tokens (1m)"
+                            value={roiModalTrader.activeTokens1m}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
+                            Recent Activity
+                          </Typography>
+                          <MetricItem
+                            label="24h Volume"
+                            value={formatCurrency(roiModalTrader.volume24h)}
+                          />
+                          <MetricItem
+                            label="24h Profit"
+                            value={formatCurrency(roiModalTrader.profit24h)}
+                            valueColor={
+                              roiModalTrader.profit24h >= 0 ? 'success.main' : 'error.main'
+                            }
+                          />
+                          <MetricItem label="24h Trades" value={roiModalTrader.trades24h} />
+                          <MetricItem
+                            label="7d Volume"
+                            value={formatCurrency(roiModalTrader.volume7d)}
+                          />
+                          <MetricItem
+                            label="7d Profit"
+                            value={formatCurrency(roiModalTrader.profit7d)}
+                            valueColor={
+                              roiModalTrader.profit7d >= 0 ? 'success.main' : 'error.main'
+                            }
+                          />
+                          <MetricItem label="7d Trades" value={roiModalTrader.trades7d} />
+                        </Grid>
                       </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Trade Metrics
-                        </Typography>
-                        <Typography variant="body2">
-                          Total Trades: {roiModalTrader.totalTrades}
-                        </Typography>
-                        <Typography variant="body2">
-                          Avg Holding Time: {(roiModalTrader.avgHoldingTime / 3600).toFixed(1)}h
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Recent Activity
-                        </Typography>
-                        <Typography variant="body2">
-                          24h Volume: {formatCurrency(roiModalTrader.volume24h)}
-                        </Typography>
-                        <Typography variant="body2">
-                          7d Volume: {formatCurrency(roiModalTrader.volume7d)}
-                        </Typography>
-                        <Typography variant="body2">
-                          24h Profit: {formatCurrency(roiModalTrader.profit24h)}
-                        </Typography>
-                        <Typography variant="body2">
-                          7d Profit: {formatCurrency(roiModalTrader.profit7d)}
-                        </Typography>
-                        <Typography variant="body2">
-                          24h Trades: {roiModalTrader.trades24h}
-                        </Typography>
-                        <Typography variant="body2">
-                          7d Trades: {roiModalTrader.trades7d}
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                </TabPanel>
+                    </Box>
+                  </TabPanel>
 
-                <TabPanel value={activeTab} index={1}>
-                  <TableContainer sx={{ height: '100%' }}>
-                    <Table size="small" stickyHeader>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Token</TableCell>
-                          <TableCell align="right">Volume</TableCell>
-                          <TableCell align="right">Profit/Loss</TableCell>
-                          <TableCell align="right">ROI</TableCell>
-                          <TableCell align="right">Trades</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {roiModalTrader.tokenPerformance?.map((token) => (
-                          <TableRow key={token.tokenId}>
-                            <TableCell component="th" scope="row">
-                              {token.name}
-                            </TableCell>
-                            <TableCell align="right">{formatCurrency(token.volume)}</TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: token.profit >= 0 ? 'success.main' : 'error.main' }}
-                            >
-                              {formatCurrency(token.profit)}
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{ color: token.roi >= 0 ? 'success.main' : 'error.main' }}
-                            >
-                              {formatPercentage(token.roi)}
-                            </TableCell>
-                            <TableCell align="right">{token.trades}</TableCell>
+                  <TabPanel value={activeTab} index={1}>
+                    <TableContainer sx={{ height: '100%' }}>
+                      <Table size="small" stickyHeader>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Token</TableCell>
+                            <TableCell align="right">Volume</TableCell>
+                            <TableCell align="right">Profit/Loss</TableCell>
+                            <TableCell align="right">ROI</TableCell>
+                            <TableCell align="right">Trades</TableCell>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </TabPanel>
+                        </TableHead>
+                        <TableBody>
+                          {roiModalTrader.tokenPerformance?.map((token) => (
+                            <TableRow key={token.tokenId}>
+                              <TableCell component="th" scope="row">
+                                {token.name}
+                              </TableCell>
+                              <TableCell align="right">{formatCurrency(token.volume)}</TableCell>
+                              <TableCell
+                                align="right"
+                                sx={{ color: token.profit >= 0 ? 'success.main' : 'error.main' }}
+                              >
+                                {formatCurrency(token.profit)}
+                              </TableCell>
+                              <TableCell
+                                align="right"
+                                sx={{ color: token.roi >= 0 ? 'success.main' : 'error.main' }}
+                              >
+                                {formatPercentage(token.roi)}
+                              </TableCell>
+                              <TableCell align="right">{token.trades}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </TabPanel>
 
-                <TabPanel value={activeTab} index={2}>
-                  <Box className="chart-section">
-                    {roiModalTrader.tradeHistory && roiModalTrader.tradeHistory.length > 0 ? (
-                      <ReactECharts
-                        option={modalTradeHistoryOptions}
-                        style={{ height: '100%', width: '100%' }}
-                        opts={{ renderer: 'svg' }}
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          height: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        <Typography color="text.secondary">No trade history available</Typography>
-                      </Box>
-                    )}
-                  </Box>
-                  <Box className="metrics-section">
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Typography variant="body2" color="text.secondary">
-                          Total Trades
-                        </Typography>
-                        <Typography variant="body1">{roiModalTrader.totalTrades}</Typography>
+                  <TabPanel value={activeTab} index={2}>
+                    <Box className="chart-section">
+                      {roiModalTrader.tradeHistory && roiModalTrader.tradeHistory.length > 0 ? (
+                        <ReactECharts
+                          option={modalTradeHistoryOptions}
+                          style={{ height: '100%', width: '100%' }}
+                          opts={{ renderer: 'svg' }}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <Typography color="text.secondary">No trade history available</Typography>
+                        </Box>
+                      )}
+                    </Box>
+                    <Box className="metrics-section">
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <Typography variant="body2" color="text.secondary">
+                            Total Trades
+                          </Typography>
+                          <Typography variant="body1">{roiModalTrader.totalTrades}</Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <Typography variant="body2" color="text.secondary">
+                            Total Tokens Traded
+                          </Typography>
+                          <Typography variant="body1">
+                            {roiModalTrader.totalTokensTraded}
+                          </Typography>
+                        </Grid>
                       </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <Typography variant="body2" color="text.secondary">
-                          Total Tokens Traded
-                        </Typography>
-                        <Typography variant="body1">{roiModalTrader.totalTokensTraded}</Typography>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                </TabPanel>
+                    </Box>
+                  </TabPanel>
 
-                <TabPanel value={activeTab} index={3}>
-                  <Box className="chart-section">
-                    {roiModalTrader.volumeHistory && roiModalTrader.volumeHistory.length > 0 ? (
-                      <ReactECharts
-                        option={modalVolumeHistoryOptions}
-                        style={{ height: '100%', width: '100%' }}
-                        opts={{ renderer: 'svg' }}
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          height: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        <Typography color="text.secondary">No volume history available</Typography>
-                      </Box>
-                    )}
-                  </Box>
-                  <Box className="metrics-section">
-                    <Grid container spacing={2}>
-                      <Grid item xs={6} sm={4} md={2}>
-                        <Typography variant="body2" color="text.secondary">
-                          24h Volume
-                        </Typography>
-                        <Typography variant="body1">
-                          {formatCurrency(roiModalTrader.volume24h)}
-                        </Typography>
+                  <TabPanel value={activeTab} index={3}>
+                    <Box className="chart-section">
+                      {roiModalTrader.volumeHistory && roiModalTrader.volumeHistory.length > 0 ? (
+                        <ReactECharts
+                          option={modalVolumeHistoryOptions}
+                          style={{ height: '100%', width: '100%' }}
+                          opts={{ renderer: 'svg' }}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <Typography color="text.secondary">
+                            No volume history available
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                    <Box className="metrics-section">
+                      <Grid container spacing={2}>
+                        <Grid item xs={6} sm={4} md={2}>
+                          <Typography variant="body2" color="text.secondary">
+                            24h Volume
+                          </Typography>
+                          <Typography variant="body1">
+                            {formatCurrency(roiModalTrader.volume24h)}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6} sm={4} md={2}>
+                          <Typography variant="body2" color="text.secondary">
+                            7d Volume
+                          </Typography>
+                          <Typography variant="body1">
+                            {formatCurrency(roiModalTrader.volume7d)}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6} sm={4} md={2}>
+                          <Typography variant="body2" color="text.secondary">
+                            1m Volume
+                          </Typography>
+                          <Typography variant="body1">
+                            {formatCurrency(roiModalTrader.volume1m)}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6} sm={4} md={2}>
+                          <Typography variant="body2" color="text.secondary">
+                            24h Trades
+                          </Typography>
+                          <Typography variant="body1">{roiModalTrader.trades24h}</Typography>
+                        </Grid>
+                        <Grid item xs={6} sm={4} md={2}>
+                          <Typography variant="body2" color="text.secondary">
+                            7d Trades
+                          </Typography>
+                          <Typography variant="body1">{roiModalTrader.trades7d}</Typography>
+                        </Grid>
+                        <Grid item xs={6} sm={4} md={2}>
+                          <Typography variant="body2" color="text.secondary">
+                            1m Trades
+                          </Typography>
+                          <Typography variant="body1">{roiModalTrader.trades1m}</Typography>
+                        </Grid>
                       </Grid>
-                      <Grid item xs={6} sm={4} md={2}>
-                        <Typography variant="body2" color="text.secondary">
-                          7d Volume
-                        </Typography>
-                        <Typography variant="body1">
-                          {formatCurrency(roiModalTrader.volume7d)}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={6} sm={4} md={2}>
-                        <Typography variant="body2" color="text.secondary">
-                          1m Volume
-                        </Typography>
-                        <Typography variant="body1">
-                          {formatCurrency(roiModalTrader.volume1m)}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={6} sm={4} md={2}>
-                        <Typography variant="body2" color="text.secondary">
-                          24h Trades
-                        </Typography>
-                        <Typography variant="body1">{roiModalTrader.trades24h}</Typography>
-                      </Grid>
-                      <Grid item xs={6} sm={4} md={2}>
-                        <Typography variant="body2" color="text.secondary">
-                          7d Trades
-                        </Typography>
-                        <Typography variant="body1">{roiModalTrader.trades7d}</Typography>
-                      </Grid>
-                      <Grid item xs={6} sm={4} md={2}>
-                        <Typography variant="body2" color="text.secondary">
-                          1m Trades
-                        </Typography>
-                        <Typography variant="body1">{roiModalTrader.trades1m}</Typography>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                </TabPanel>
-              </>
-            )}
-          </ModalContent>
-        </StyledModal>
+                    </Box>
+                  </TabPanel>
+                </>
+              )}
+            </ModalContent>
+          </StyledModal>
+        )}
       </Container>
       <Footer />
     </>
