@@ -29,6 +29,7 @@ import { rippleTimeToISO8601, dropsToXrp, normalizeCurrencyCode } from 'src/util
 import { formatDistanceToNow } from 'date-fns';
 import BigNumber from 'bignumber.js';
 import CryptoJS from 'crypto-js';
+import { getHashIcon } from 'src/utils/extra';
 
 // Helper to render key-value pairs and make certain values clickable
 const JsonViewer = ({ data }) => (
@@ -154,6 +155,16 @@ const TokenLinkWithTooltip = ({ slug, currency, md5 }) => {
       {link}
     </Tooltip>
   );
+};
+
+const AccountAvatar = ({ account }) => {
+  const [imgSrc, setImgSrc] = useState(`https://s1.xrpl.to/account/${account}`);
+
+  const handleImageError = () => {
+    setImgSrc(getHashIcon(account));
+  };
+
+  return <Avatar src={imgSrc} onError={handleImageError} sx={{ width: 32, height: 32, mr: 1 }} />;
 };
 
 const TokenDisplay = ({ slug, currency }) => {
@@ -431,10 +442,7 @@ const TransactionDetails = ({ txData, theme }) => {
         </DetailRow>
         <DetailRow label="Offer Maker">
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar
-              src={`https://s1.xrpl.to/account/${Account}`}
-              sx={{ width: 32, height: 32, mr: 1 }}
-            />
+            <AccountAvatar account={Account} />
             <Link href={`/profile/${Account}`} passHref>
               <Typography
                 component="a"
@@ -532,23 +540,28 @@ const TransactionDetails = ({ txData, theme }) => {
               <Grid container key={account} sx={{ mt: 2, alignItems: 'center' }}>
                 <Grid item xs={12} md={3}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar
-                      src={`https://s1.xrpl.to/account/${account}`}
-                      sx={{ width: 32, height: 32, mr: 1 }}
-                    />
-                    <Link href={`/profile/${account}`} passHref>
+                    <AccountAvatar account={account} />
+                    <Box>
+                      <Link href={`/profile/${account}`} passHref>
+                        <Typography
+                          component="a"
+                          variant="body1"
+                          sx={{
+                            color: theme.palette.primary.main,
+                            textDecoration: 'none',
+                            '&:hover': { textDecoration: 'underline' }
+                          }}
+                        >
+                          {account === Account ? 'Initiator' : `Account ${index + 1}`}
+                        </Typography>
+                      </Link>
                       <Typography
-                        component="a"
-                        variant="body1"
-                        sx={{
-                          color: theme.palette.primary.main,
-                          textDecoration: 'none',
-                          '&:hover': { textDecoration: 'underline' }
-                        }}
+                        variant="body2"
+                        sx={{ color: 'text.secondary', wordBreak: 'break-all' }}
                       >
-                        {account === Account ? 'Initiator' : `Account ${index + 1}`}
+                        {account}
                       </Typography>
-                    </Link>
+                    </Box>
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={9}>
