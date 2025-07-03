@@ -1,7 +1,6 @@
 import Decimal from 'decimal.js';
 import PropTypes from 'prop-types';
 import { useState, useEffect, useContext } from 'react';
-import Image from 'next/image';
 // Material
 import {
   alpha,
@@ -112,7 +111,6 @@ export default function PriceStatistics({ token }) {
     dom,
     issuer,
     issuer_info,
-    assessment,
     creator
   } = token;
 
@@ -137,8 +135,6 @@ export default function PriceStatistics({ token }) {
   }, [creator]);
 
   const info = issuer_info || {};
-  const img_xrplf =
-    theme.palette.mode === 'dark' ? '/static/xrplf_white.svg' : '/static/xrplf_black.svg';
 
   function truncate(str, n) {
     if (!str) return '';
@@ -161,8 +157,6 @@ export default function PriceStatistics({ token }) {
   const handleOpenIssuerInfo = () => {
     setOpenIssuerInfo(true);
   };
-
-  const [imgSrc, setImgSrc] = useState(img_xrplf);
 
   return (
     <Box
@@ -307,42 +301,6 @@ export default function PriceStatistics({ token }) {
                     </IconButton>
                   </Tooltip>
                 </CopyToClipboard>
-                {assessment && (
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={assessment}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Tooltip title="View XRPL Foundation Assessment">
-                      <IconButton
-                        size="small"
-                        sx={{
-                          p: 0.75,
-                          borderRadius: '6px',
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.background.paper,
-                            0.8
-                          )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                          backdropFilter: 'blur(8px)',
-                          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            background: `linear-gradient(135deg, ${alpha(
-                              theme.palette.info.main,
-                              0.08
-                            )} 0%, ${alpha(theme.palette.info.main, 0.04)} 100%)`,
-                            border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                            transform: 'translateY(-1px)'
-                          }
-                        }}
-                      >
-                        <Image alt="icon" src={imgSrc} width={14} height={14} />
-                      </IconButton>
-                    </Tooltip>
-                  </Link>
-                )}
               </Stack>
             </ModernTableCell>
           </TableRow>
