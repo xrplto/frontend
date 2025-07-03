@@ -40,34 +40,18 @@ const getThemeColors = (theme) => {
   const isDarkMode = theme.palette.mode === 'dark';
 
   return {
-    background: isDarkMode ? 'transparent' : 'transparent',
-    backgroundGradient: isDarkMode
-      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-          theme.palette.background.paper,
-          0.8
-        )} 100%)`
-      : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 1)} 0%, ${alpha(
-          theme.palette.background.paper,
-          0.95
-        )} 100%)`,
+    background: theme.palette.background.default, // Use default background
+    backgroundGradient: 'none', // Remove gradient
     cardBg: isDarkMode
-      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
-          theme.palette.background.paper,
-          0.7
-        )} 100%)`
-      : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-          theme.palette.background.paper,
-          0.8
-        )} 100%)`,
-    cardBorder: isDarkMode
-      ? alpha(theme.palette.divider, 0.08)
-      : alpha(theme.palette.divider, 0.06),
+      ? `rgba(255, 255, 255, 0.05)` // Subtle glass effect
+      : `rgba(255, 255, 255, 0.6)`,
+    cardBorder: isDarkMode ? alpha(theme.palette.divider, 0.1) : alpha(theme.palette.divider, 0.1),
     cardHoverBorder: isDarkMode
-      ? alpha(theme.palette.primary.main, 0.2)
-      : alpha(theme.palette.primary.main, 0.15),
+      ? alpha(theme.palette.primary.main, 0.3)
+      : alpha(theme.palette.primary.main, 0.2),
     text: theme.palette.text.primary,
     textSecondary: theme.palette.text.secondary,
-    grid: isDarkMode ? alpha(theme.palette.divider, 0.08) : alpha(theme.palette.divider, 0.06)
+    grid: isDarkMode ? alpha(theme.palette.divider, 0.1) : alpha(theme.palette.divider, 0.1)
   };
 };
 
@@ -76,16 +60,16 @@ const getChartColors = (theme) => {
   const isDarkMode = theme.palette.mode === 'dark';
 
   return {
-    totalLine: theme.palette.text.primary,
+    totalLine: theme.palette.primary.main, // Use primary color for main line
     totalLineFill: isDarkMode
-      ? alpha(theme.palette.background.paper, 0.3)
-      : alpha(theme.palette.background.paper, 0.8),
+      ? alpha(theme.palette.primary.main, 0.1)
+      : alpha(theme.palette.primary.main, 0.1),
     cursorColor: isDarkMode
-      ? alpha(theme.palette.text.primary, 0.2)
-      : alpha(theme.palette.text.primary, 0.1),
-    legendBg: alpha(theme.palette.background.paper, 0.6),
-    scrollThumb: alpha(theme.palette.text.secondary, 0.2),
-    // Add these color sets
+      ? alpha(theme.palette.text.primary, 0.1)
+      : alpha(theme.palette.text.primary, 0.05),
+    legendBg: `transparent`, // Transparent legend background
+    scrollThumb: alpha(theme.palette.text.secondary, 0.3),
+    // Simplified color sets
     primary: {
       main: theme.palette.primary.main,
       light: alpha(theme.palette.primary.main, 0.1),
@@ -195,19 +179,11 @@ const CustomTooltip = ({ active, payload, label }) => {
           ref={contentRef}
           elevation={6}
           sx={{
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.95
-            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+            background: alpha(theme.palette.background.paper, 0.9),
             border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
             p: { xs: 1, sm: 2 },
             borderRadius: '16px',
-            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.15)}, 0 4px 16px ${alpha(
-              theme.palette.primary.main,
-              0.1
-            )}`,
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
+            boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`,
             maxWidth: { xs: 250, sm: 300 },
             maxHeight: '80vh',
             overflow: 'auto',
@@ -221,7 +197,7 @@ const CustomTooltip = ({ active, payload, label }) => {
               height: '2px',
               background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
               borderRadius: '16px 16px 0 0',
-              opacity: 0.6
+              opacity: 0
             }
           }}
         >
@@ -275,17 +251,11 @@ const CustomTooltip = ({ active, payload, label }) => {
                   justifyContent: 'space-between',
                   p: 1,
                   borderRadius: '8px',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.background.paper,
-                    0.6
-                  )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                  background: alpha(theme.palette.background.paper, 0.4),
                   border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
                   transition: 'all 0.2s ease',
                   '&:hover': {
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.primary.main,
-                      0.08
-                    )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                    background: alpha(theme.palette.primary.main, 0.05),
                     border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
                   }
                 }}
@@ -482,6 +452,7 @@ const CustomLegend = ({ payload, visibleLines, handleLegendClick }) => {
 const ChartContainer = ({ title, children, showFilter, onFilterChange, filterActive }) => {
   const theme = useTheme();
   const themeColors = getThemeColors(theme);
+  const chartColors = getChartColors(theme);
 
   return (
     <Paper
@@ -490,27 +461,18 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
         p: { xs: 2, sm: 3, md: 4 },
         mb: { xs: 2, sm: 3, md: 4 },
         borderRadius: '24px',
-        background: `linear-gradient(135deg, ${alpha(
-          theme.palette.background.paper,
-          0.95
-        )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+        background: 'transparent',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
-          theme.palette.primary.main,
-          0.04
-        )}`,
+        border: `1px solid ${themeColors.cardBorder}`,
+        boxShadow: `none`,
         position: 'relative',
         overflow: 'hidden',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
-            theme.palette.primary.main,
-            0.1
-          )}`,
-          border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+          transform: 'none',
+          boxShadow: `none`,
+          border: `1px solid ${themeColors.cardHoverBorder}`
         },
         '&::before': {
           content: '""',
@@ -519,8 +481,8 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
           left: 0,
           right: 0,
           height: '2px',
-          background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-          opacity: 0.8
+          background: `linear-gradient(90deg, ${chartColors.primary.main}, ${chartColors.secondary.main}, ${chartColors.tertiary.main})`,
+          opacity: 0
         }
       }}
     >
@@ -539,13 +501,9 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
             fontWeight: 600,
             fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' },
             letterSpacing: '-0.02em',
-            background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
-              theme.palette.primary.main,
-              0.8
-            )} 100%)`,
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
+            background: 'none',
+            WebkitBackgroundClip: 'unset',
+            WebkitTextFillColor: 'unset'
           }}
         >
           {title}
@@ -1099,17 +1057,9 @@ const MarketMetricsContent = () => {
               mb: 1.5,
               p: 3,
               borderRadius: '20px',
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.background.paper,
-                0.9
-              )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
+              background: 'transparent',
               border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
-                theme.palette.primary.main,
-                0.04
-              )}`,
+              boxShadow: 'none',
               position: 'relative',
               overflow: 'hidden',
               '&::before': {
@@ -1157,36 +1107,6 @@ const MarketMetricsContent = () => {
                 {generateDescription()}
               </Typography>
             </Box>
-            {/* Wrap Button with Link */}
-            <Link href="/api-docs">
-              <Button
-                variant="contained"
-                size="medium"
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.primary.main,
-                    0.9
-                  )} 0%, ${alpha(theme.palette.primary.dark, 0.8)} 100%)`,
-                  color: theme.palette.primary.contrastText,
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`
-                  },
-                  borderRadius: '12px',
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                  padding: { xs: '8px 16px', sm: '10px 20px' },
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                  backdropFilter: 'blur(10px)',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}
-              >
-                {/* Change button text */}
-                See API Details
-              </Button>
-            </Link>
           </Box>
         </Box>
 
@@ -1196,17 +1116,9 @@ const MarketMetricsContent = () => {
           sx={{
             mb: { xs: 2, sm: 3, md: 4 },
             borderRadius: '20px',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.9
-            )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
+            background: 'transparent',
             border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
-              theme.palette.primary.main,
-              0.04
-            )}`,
+            boxShadow: 'none',
             position: 'relative',
             overflow: 'hidden',
             '&::before': {
