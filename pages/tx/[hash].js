@@ -1,6 +1,9 @@
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import useWebSocket from 'react-use-websocket';
+import { update_metrics } from 'src/redux/statusSlice';
 import {
   Container,
   Box,
@@ -664,6 +667,21 @@ const TransactionDetails = ({ txData, theme }) => {
 const TxPage = ({ txData, error }) => {
   const router = useRouter();
   const theme = useTheme();
+
+  const dispatch = useDispatch();
+
+  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
+  useWebSocket(WSS_FEED_URL, {
+    onMessage: (event) => {
+      try {
+        const json = JSON.parse(event.data);
+        dispatch(update_metrics(json));
+      } catch (err) {
+        console.error('Error processing WebSocket message:', err);
+      }
+    },
+    shouldReconnect: () => true
+  });
 
   if (router.isFallback) {
     return <div>Loading...</div>;

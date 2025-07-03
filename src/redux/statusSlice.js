@@ -14,9 +14,8 @@ const initialState = {
       tradedXRP24H: 0,
       tradedTokens24H: 0,
       activeAddresses24H: 0,
-      totalAddresses: 0,
-      totalOffers: 0,
-      totalTrustLines: 0
+      totalTVL: 0,
+      uniqueTraders24H: 0
     },
     global: {
       gMarketcap: 0,
@@ -29,7 +28,10 @@ const initialState = {
       gStableVolumePro: 0,
       gXRPdominance: 0,
       gXRPdominancePro: 0,
-      sentimentScore: 0
+      sentimentScore: 0,
+      totalAddresses: 0,
+      totalOffers: 0,
+      totalTrustLines: 0
     },
     tokenCreation: []
   },
