@@ -532,8 +532,6 @@ export default function Analytics() {
       const dates = tradeHistory.map((item) => formatDate(item.date));
       const dailyTrades = tradeHistory.map((item) => item.trades);
       const cumulativeTrades = tradeHistory.map((item) => item.cumulativeTrades);
-      const profitableTrades = tradeHistory.map((item) => item.profitableTrades);
-      const losingTrades = tradeHistory.map((item) => item.losingTrades);
 
       return {
         grid: {
@@ -552,8 +550,6 @@ export default function Analytics() {
             const date = dates[params[0].dataIndex];
             const dailyTradesValue = params[0].value;
             const cumulativeTradesValue = params[1].value;
-            const profitableTradesValue = profitableTrades[params[0].dataIndex];
-            const losingTradesValue = losingTrades[params[0].dataIndex];
 
             return `
             <div style="font-size: 14px; margin-bottom: 4px;">${date}</div>
@@ -564,10 +560,6 @@ export default function Analytics() {
             <div style="display: flex; justify-content: space-between;">
               <span>${params[1].marker} Cumulative Trades:</span>
               <span>${cumulativeTradesValue}</span>
-            </div>
-            <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.2);">
-              <div style="color: #4caf50">Profitable: ${profitableTradesValue}</div>
-              <div style="color: #f44336">Losing: ${losingTradesValue}</div>
             </div>
           `;
           }
@@ -1369,17 +1361,17 @@ export default function Analytics() {
                       />
                     )}
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 3 }}>
+                  <Box sx={{ display: 'flex', gap: 2 }}>
                     <Typography
                       variant="body2"
                       sx={{
                         color: theme.palette.text.secondary,
                         fontWeight: 500,
-                        px: 2,
-                        py: 1,
+                        px: 1.5,
+                        py: 0.5,
                         borderRadius: '8px',
-                        background: alpha(theme.palette.success.main, 0.1),
-                        border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                        background: alpha(theme.palette.background.default, 0.5),
+                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
                       }}
                     >
                       First Trade: {new Date(roiModalTrader.firstTradeDate).toLocaleDateString()}
@@ -1389,11 +1381,11 @@ export default function Analytics() {
                       sx={{
                         color: theme.palette.text.secondary,
                         fontWeight: 500,
-                        px: 2,
-                        py: 1,
+                        px: 1.5,
+                        py: 0.5,
                         borderRadius: '8px',
-                        background: alpha(theme.palette.info.main, 0.1),
-                        border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                        background: alpha(theme.palette.background.default, 0.5),
+                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
                       }}
                     >
                       Last Trade: {new Date(roiModalTrader.lastTradeDate).toLocaleDateString()}
@@ -1508,12 +1500,6 @@ export default function Analytics() {
                         </Typography>
                         <Typography variant="body2">
                           Total Trades: {roiModalTrader.totalTrades}
-                        </Typography>
-                        <Typography variant="body2" color="success.main">
-                          Profitable Trades: {roiModalTrader.profitableTrades}
-                        </Typography>
-                        <Typography variant="body2" color="error.main">
-                          Losing Trades: {roiModalTrader.losingTrades}
                         </Typography>
                         <Typography variant="body2">
                           Avg Holding Time: {(roiModalTrader.avgHoldingTime / 3600).toFixed(1)}h
