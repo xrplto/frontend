@@ -86,12 +86,12 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
         )}
         {token.marketcap > 0 && (
           <Typography variant="body2">
-            Market Cap: ${new BigNumber(token.marketcap).toFormat(2)}
+            Market Cap: {new BigNumber(token.marketcap).toFormat(2)} XRP
           </Typography>
         )}
         {token.vol24h > 0 && (
           <Typography variant="body2">
-            24h Volume: ${new BigNumber(token.vol24h).toFormat(2)}
+            24h Volume: {new BigNumber(token.vol24h).toFormat(2)} XRP
           </Typography>
         )}
       </Box>
@@ -271,7 +271,9 @@ const TransactionDetails = ({ txData, theme }) => {
     Amount,
     Destination,
     SendMax,
-    Paths
+    Paths,
+    Memos,
+    SourceTag
   } = txData;
 
   const { meta: metaToExclude, ...rawData } = txData;
@@ -293,6 +295,18 @@ const TransactionDetails = ({ txData, theme }) => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const getCurrency = (amount) => {
+    if (typeof amount === 'string') return 'XRP';
+    if (typeof amount === 'object' && amount && amount.currency) {
+      return normalizeCurrencyCode(amount.currency);
+    }
+    return 'XRP';
+  };
+
+  const isConversion =
+    TransactionType === 'Payment' &&
+    (Boolean(Paths) || (SendMax && getCurrency(Amount) !== getCurrency(SendMax)));
 
   const getBalanceChanges = () => {
     if (!meta || !meta.AffectedNodes) return { balanceChanges: [], exchanges: [] };
@@ -397,6 +411,31 @@ const TransactionDetails = ({ txData, theme }) => {
 
   const initiatorChanges = balanceChanges.find((bc) => bc.account === Account);
 
+  let conversionExchange;
+  if (isConversion && exchanges.length === 0 && deliveredAmount) {
+    // Find initiator's XRP balance change
+    const initiatorXrpChange = balanceChanges
+      .find((bc) => bc.account === Account)
+      ?.changes.find((c) => c.currency === 'XRP');
+
+    if (initiatorXrpChange) {
+      const paidValue = new BigNumber(initiatorXrpChange.value).abs().minus(dropsToXrp(Fee));
+
+      conversionExchange = {
+        paid: {
+          value: paidValue.toString(),
+          currency: 'XRP'
+        },
+        got: {
+          value: deliveredAmount.value,
+          currency: normalizeCurrencyCode(deliveredAmount.currency),
+          rawCurrency: deliveredAmount.currency,
+          issuer: deliveredAmount.issuer
+        }
+      };
+    }
+  }
+
   const getFlagExplanation = (flags, type) => {
     const explanations = [];
     if (type === 'OfferCreate') {
@@ -420,10 +459,35 @@ const TransactionDetails = ({ txData, theme }) => {
       : getFlagExplanation(Flags, TransactionType);
 
   const mainExchange = exchanges.find((e) => e.maker === Account);
+  const displayExchange = mainExchange || conversionExchange;
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
   };
+
+  const isSuccess = txResult === 'tesSUCCESS';
+
+  let failureReason = {};
+  if (!isSuccess) {
+    if (txResult === 'tecPATH_DRY') {
+      failureReason = {
+        title: 'Path dry',
+        description:
+          'The transaction failed because the provided paths did not have enough liquidity to send anything at all. This could mean that the source and destination accounts are not linked by trust lines.'
+      };
+    } else if (txResult === 'tecUNFUNDED_PAYMENT') {
+      failureReason = {
+        title: 'Unfunded payment',
+        description:
+          'The transaction failed because the sending account is trying to send more XRP than it holds, not counting the reserve.'
+      };
+    } else {
+      failureReason = {
+        title: 'Transaction Failed',
+        description: `The transaction failed with result code: ${txResult}`
+      };
+    }
+  }
 
   return (
     <Paper
@@ -447,10 +511,10 @@ const TransactionDetails = ({ txData, theme }) => {
       </Box>
       <Typography variant="body1" sx={{ mb: 2 }}>
         The transaction was{' '}
-        <Typography component="span" color="success.main">
-          successful
+        <Typography component="span" color={isSuccess ? 'success.main' : 'error.main'}>
+          {isSuccess ? 'successful' : 'FAILED'}
         </Typography>{' '}
-        and validated in ledger{' '}
+        and {isSuccess ? 'validated' : 'included'} in ledger{' '}
         <Link href={`/ledgers/${ledger_index}`} passHref>
           <Typography component="a" color="primary.main">
             #{ledger_index}
@@ -462,10 +526,10 @@ const TransactionDetails = ({ txData, theme }) => {
       <Grid container>
         <DetailRow label="Type">
           <Typography variant="body1">
-            {TransactionType === 'Payment' && Paths ? 'Conversion Payment' : TransactionType}
+            {isConversion ? 'Conversion Payment' : TransactionType}
           </Typography>
         </DetailRow>
-        <DetailRow label="Validated">
+        <DetailRow label={isSuccess ? 'Validated' : 'Rejected'}>
           <Typography variant="body1">
             {formatDistanceToNow(new Date(rippleTimeToISO8601(date)))} ago (
             {new Date(rippleTimeToISO8601(date)).toLocaleString()})
@@ -473,45 +537,83 @@ const TransactionDetails = ({ txData, theme }) => {
         </DetailRow>
         {TransactionType === 'Payment' && (
           <>
-            <DetailRow label="From">
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <AccountAvatar account={Account} />
-                <Link href={`/profile/${Account}`} passHref>
-                  <Typography
-                    component="a"
-                    variant="body1"
-                    sx={{
-                      color: theme.palette.primary.main,
-                      textDecoration: 'none',
-                      '&:hover': { textDecoration: 'underline' }
-                    }}
-                  >
-                    {Account}
-                  </Typography>
-                </Link>
-              </Box>
-            </DetailRow>
-            <DetailRow label="To">
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <AccountAvatar account={Destination} />
-                <Link href={`/profile/${Destination}`} passHref>
-                  <Typography
-                    component="a"
-                    variant="body1"
-                    sx={{
-                      color: theme.palette.primary.main,
-                      textDecoration: 'none',
-                      '&:hover': { textDecoration: 'underline' }
-                    }}
-                  >
-                    {Destination}
-                  </Typography>
-                </Link>
-              </Box>
-            </DetailRow>
-            <DetailRow label="Amount">
-              <AmountDisplay amount={deliveredAmount || Amount} />
-            </DetailRow>
+            {isConversion && Account === Destination ? (
+              <DetailRow label="Address">
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <AccountAvatar account={Account} />
+                  <Link href={`/profile/${Account}`} passHref>
+                    <Typography
+                      component="a"
+                      variant="body1"
+                      sx={{
+                        color: theme.palette.primary.main,
+                        textDecoration: 'none',
+                        '&:hover': { textDecoration: 'underline' }
+                      }}
+                    >
+                      {Account}
+                    </Typography>
+                  </Link>
+                </Box>
+              </DetailRow>
+            ) : (
+              <>
+                <DetailRow label="Source">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <AccountAvatar account={Account} />
+                    <Link href={`/profile/${Account}`} passHref>
+                      <Typography
+                        component="a"
+                        variant="body1"
+                        sx={{
+                          color: theme.palette.primary.main,
+                          textDecoration: 'none',
+                          '&:hover': { textDecoration: 'underline' }
+                        }}
+                      >
+                        {Account}
+                      </Typography>
+                    </Link>
+                  </Box>
+                </DetailRow>
+                <DetailRow label="Destination">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <AccountAvatar account={Destination} />
+                    <Link href={`/profile/${Destination}`} passHref>
+                      <Typography
+                        component="a"
+                        variant="body1"
+                        sx={{
+                          color: theme.palette.primary.main,
+                          textDecoration: 'none',
+                          '&:hover': { textDecoration: 'underline' }
+                        }}
+                      >
+                        {Destination}
+                      </Typography>
+                    </Link>
+                  </Box>
+                </DetailRow>
+              </>
+            )}
+
+            {SourceTag && (
+              <DetailRow label="Source Tag">
+                <Typography variant="body1">{SourceTag}</Typography>
+              </DetailRow>
+            )}
+            {!isConversion ? (
+              <DetailRow label={deliveredAmount ? 'Delivered Amount' : 'Amount'}>
+                <AmountDisplay amount={deliveredAmount || Amount} />
+              </DetailRow>
+            ) : (
+              !displayExchange &&
+              isSuccess && (
+                <DetailRow label="Amount">
+                  <AmountDisplay amount={deliveredAmount || Amount} />
+                </DetailRow>
+              )
+            )}
             {SendMax && (
               <DetailRow label="Max amount">
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -556,50 +658,54 @@ const TransactionDetails = ({ txData, theme }) => {
           </>
         )}
 
-        {mainExchange && (
+        {displayExchange && isSuccess && (
           <>
             <DetailRow label="Exchanged">
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography variant="body1" color="error.main">
-                  -{mainExchange.paid.value}
+                  -{new BigNumber(displayExchange.paid.value).toFormat()}
                 </Typography>
-                {mainExchange.paid.rawCurrency ? (
+                {displayExchange.paid.rawCurrency ? (
                   <TokenDisplay
-                    slug={`${mainExchange.paid.issuer}-${mainExchange.paid.rawCurrency}`}
-                    currency={mainExchange.paid.currency}
+                    slug={`${displayExchange.paid.issuer}-${displayExchange.paid.rawCurrency}`}
+                    currency={displayExchange.paid.currency}
                   />
                 ) : (
                   <Typography variant="body1" component="span" sx={{ ml: 0.5 }}>
-                    {mainExchange.paid.currency}
+                    {displayExchange.paid.currency}
                   </Typography>
                 )}
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography variant="body1" color="success.main">
-                  +{mainExchange.got.value}
+                  +{new BigNumber(displayExchange.got.value).toFormat()}
                 </Typography>
-                {mainExchange.got.rawCurrency ? (
+                {displayExchange.got.rawCurrency ? (
                   <TokenDisplay
-                    slug={`${mainExchange.got.issuer}-${mainExchange.got.rawCurrency}`}
-                    currency={mainExchange.got.currency}
+                    slug={`${displayExchange.got.issuer}-${displayExchange.got.rawCurrency}`}
+                    currency={displayExchange.got.currency}
                   />
                 ) : (
                   <Typography variant="body1" component="span" sx={{ ml: 0.5 }}>
-                    {mainExchange.got.currency}
+                    {displayExchange.got.currency}
                   </Typography>
                 )}
               </Box>
             </DetailRow>
             <DetailRow label="Rate">
               <Typography variant="body2">
-                1 {mainExchange.got.currency} ={' '}
-                {new BigNumber(mainExchange.paid.value).div(mainExchange.got.value).toFormat()}{' '}
-                {mainExchange.paid.currency}
+                1 {displayExchange.got.currency} ={' '}
+                {new BigNumber(displayExchange.paid.value)
+                  .div(displayExchange.got.value)
+                  .toFormat()}{' '}
+                {displayExchange.paid.currency}
               </Typography>
               <Typography variant="body2">
-                1 {mainExchange.paid.currency} ={' '}
-                {new BigNumber(mainExchange.got.value).div(mainExchange.paid.value).toFormat()}{' '}
-                {mainExchange.got.currency}
+                1 {displayExchange.paid.currency} ={' '}
+                {new BigNumber(displayExchange.got.value)
+                  .div(displayExchange.paid.value)
+                  .toFormat()}{' '}
+                {displayExchange.got.currency}
               </Typography>
             </DetailRow>
           </>
@@ -625,7 +731,29 @@ const TransactionDetails = ({ txData, theme }) => {
           <Typography variant="body1">{dropsToXrp(Fee)} XRP</Typography>
         </DetailRow>
 
-        {balanceChanges.length > 0 && (
+        {!isSuccess && failureReason.title && (
+          <>
+            <DetailRow label="Failure">
+              <Typography variant="body1">{failureReason.title}</Typography>
+            </DetailRow>
+            <DetailRow label="Description">
+              <Typography variant="body2">{failureReason.description}</Typography>
+            </DetailRow>
+          </>
+        )}
+
+        {Memos && Memos.length > 0 && (
+          <DetailRow label="Memo">
+            {Memos.map((memo, i) => (
+              <Typography key={i} variant="body1" sx={{ wordBreak: 'break-all' }}>
+                {memo.Memo.MemoData &&
+                  CryptoJS.enc.Hex.parse(memo.Memo.MemoData).toString(CryptoJS.enc.Utf8)}
+              </Typography>
+            ))}
+          </DetailRow>
+        )}
+
+        {balanceChanges.length > 0 && isSuccess && (
           <DetailRow label="Affected Accounts" sx={{ borderBottom: 'none', pb: 0 }}>
             <Typography variant="body1">
               There are {balanceChanges.length} accounts that were affected by this transaction.
@@ -840,12 +968,12 @@ export async function getServerSideProps(context) {
     }
 
     const { meta, ...rest } = response.data.result;
-    if (meta) {
-      const deliveredAmount = meta.delivered_amount;
-      if (typeof deliveredAmount === 'object' && deliveredAmount.value) {
-        meta.delivered_amount.value = new BigNumber(deliveredAmount.value).toFormat();
-      }
-    }
+    // if (meta) {
+    //   const deliveredAmount = meta.delivered_amount;
+    //   if (typeof deliveredAmount === 'object' && deliveredAmount.value) {
+    //     meta.delivered_amount.value = new BigNumber(deliveredAmount.value).toFormat();
+    //   }
+    // }
 
     return {
       props: {
