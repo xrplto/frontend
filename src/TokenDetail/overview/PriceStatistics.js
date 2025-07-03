@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js';
 import PropTypes from 'prop-types';
-import { useState, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Image from 'next/image';
 // Material
 import {
@@ -95,6 +95,7 @@ export default function PriceStatistics({ token }) {
   const { activeFiatCurrency, openSnackbar } = useContext(AppContext);
   const [openIssuerInfo, setOpenIssuerInfo] = useState(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [creations, setCreations] = useState(0);
 
   const {
     id,
@@ -114,6 +115,26 @@ export default function PriceStatistics({ token }) {
     assessment,
     creator
   } = token;
+
+  useEffect(() => {
+    if (creator) {
+      fetch(`https://api.xrpscan.com/api/v1/account/${creator}/activated`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.accounts) {
+            let count = 0;
+            const hasLegacy = data.accounts.some((acc) => acc.ledger_index <= 91444888);
+            if (hasLegacy) {
+              count = 1;
+            } else {
+              count = data.accounts.filter((acc) => acc.initial_balance > 98).length;
+            }
+            setCreations(count);
+          }
+        })
+        .catch((err) => console.error('Failed to fetch account creations:', err));
+    }
+  }, [creator]);
 
   const info = issuer_info || {};
   const img_xrplf =
@@ -409,6 +430,26 @@ export default function PriceStatistics({ token }) {
                       </IconButton>
                     </Tooltip>
                   </CopyToClipboard>
+                  {creations > 0 && (
+                    <Tooltip title="Number of tokens created by this creator.">
+                      <Chip
+                        label={`${creations} creation${creations > 1 ? 's' : ''}`}
+                        size="small"
+                        sx={{
+                          borderRadius: '8px',
+                          height: '28px',
+                          background: `linear-gradient(135deg, ${alpha(
+                            theme.palette.info.main,
+                            0.1
+                          )} 0%, ${alpha(theme.palette.info.main, 0.05)} 100%)`,
+                          backdropFilter: 'blur(8px)',
+                          border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                          color: theme.palette.info.main,
+                          fontWeight: 500
+                        }}
+                      />
+                    </Tooltip>
+                  )}
                 </Stack>
               </ModernTableCell>
             </TableRow>
