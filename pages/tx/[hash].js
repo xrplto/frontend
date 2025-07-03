@@ -213,6 +213,24 @@ const AmountDisplay = ({ amount }) => {
   return null;
 };
 
+function getPaymentFlagExplanation(flags) {
+  const explanations = [];
+  if (flags & 0x00020000)
+    // tfPartialPayment
+    explanations.push({
+      title: 'Allow partial payment',
+      description:
+        'The payment is allowed to be partially executed, delivering less than the Amount.'
+    });
+  if (flags & 0x00010000)
+    // tfNoDirectRipple
+    explanations.push({
+      title: 'No direct ripple',
+      description: 'The payment is not allowed to use a direct path between sender and receiver.'
+    });
+  return explanations;
+}
+
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -249,10 +267,15 @@ const TransactionDetails = ({ txData, theme }) => {
     Fee,
     Flags,
     LastLedgerSequence,
-    ctid
+    ctid,
+    Amount,
+    Destination,
+    SendMax,
+    Paths
   } = txData;
 
   const { meta: metaToExclude, ...rawData } = txData;
+  const deliveredAmount = meta?.delivered_amount || meta?.DeliveredAmount;
 
   const txUrl = `https://xrpl.to/tx/${hash}`;
 
@@ -391,7 +414,10 @@ const TransactionDetails = ({ txData, theme }) => {
     }
     return explanations;
   };
-  const flagExplanations = getFlagExplanation(Flags, TransactionType);
+  const flagExplanations =
+    TransactionType === 'Payment'
+      ? getPaymentFlagExplanation(Flags)
+      : getFlagExplanation(Flags, TransactionType);
 
   const mainExchange = exchanges.find((e) => e.maker === Account);
 
@@ -435,7 +461,9 @@ const TransactionDetails = ({ txData, theme }) => {
 
       <Grid container>
         <DetailRow label="Type">
-          <Typography variant="body1">{TransactionType}</Typography>
+          <Typography variant="body1">
+            {TransactionType === 'Payment' && Paths ? 'Conversion Payment' : TransactionType}
+          </Typography>
         </DetailRow>
         <DetailRow label="Validated">
           <Typography variant="body1">
@@ -443,33 +471,90 @@ const TransactionDetails = ({ txData, theme }) => {
             {new Date(rippleTimeToISO8601(date)).toLocaleString()})
           </Typography>
         </DetailRow>
-        <DetailRow label="Offer Maker">
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <AccountAvatar account={Account} />
-            <Link href={`/profile/${Account}`} passHref>
-              <Typography
-                component="a"
-                variant="body1"
-                sx={{
-                  color: theme.palette.primary.main,
-                  textDecoration: 'none',
-                  '&:hover': { textDecoration: 'underline' }
-                }}
-              >
-                {Account}
-              </Typography>
-            </Link>
-          </Box>
-        </DetailRow>
-        <DetailRow label="Offer Sequence">
-          <Typography variant="body1">#{Sequence}</Typography>
-        </DetailRow>
-        <DetailRow label="Taker Gets">
-          <AmountDisplay amount={TakerGets} />
-        </DetailRow>
-        <DetailRow label="Taker Pays">
-          <AmountDisplay amount={TakerPays} />
-        </DetailRow>
+        {TransactionType === 'Payment' && (
+          <>
+            <DetailRow label="From">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={Account} />
+                <Link href={`/profile/${Account}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {Account}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+            <DetailRow label="To">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={Destination} />
+                <Link href={`/profile/${Destination}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {Destination}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+            <DetailRow label="Amount">
+              <AmountDisplay amount={deliveredAmount || Amount} />
+            </DetailRow>
+            {SendMax && (
+              <DetailRow label="Max amount">
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography variant="body2" sx={{ mr: 1 }}>
+                    It was instructed to spend up to
+                  </Typography>
+                  <AmountDisplay amount={SendMax} />
+                </Box>
+              </DetailRow>
+            )}
+          </>
+        )}
+        {TransactionType === 'OfferCreate' && (
+          <>
+            <DetailRow label="Offer Maker">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={Account} />
+                <Link href={`/profile/${Account}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {Account}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+            <DetailRow label="Offer Sequence">
+              <Typography variant="body1">#{Sequence}</Typography>
+            </DetailRow>
+            <DetailRow label="Taker Gets">
+              <AmountDisplay amount={TakerGets} />
+            </DetailRow>
+            <DetailRow label="Taker Pays">
+              <AmountDisplay amount={TakerPays} />
+            </DetailRow>
+          </>
+        )}
 
         {mainExchange && (
           <>
@@ -520,7 +605,13 @@ const TransactionDetails = ({ txData, theme }) => {
           </>
         )}
 
-        {flagExplanations.length > 0 && (
+        {flagExplanations.length > 0 && TransactionType === 'Payment' ? (
+          flagExplanations.map((flag, i) => (
+            <DetailRow key={i} label={flag.title}>
+              <Typography variant="body2">{flag.description}</Typography>
+            </DetailRow>
+          ))
+        ) : flagExplanations.length > 0 ? (
           <DetailRow label={TransactionType + ' Flags'}>
             {flagExplanations.map((text, i) => (
               <Typography key={i} variant="body2">
@@ -528,7 +619,7 @@ const TransactionDetails = ({ txData, theme }) => {
               </Typography>
             ))}
           </DetailRow>
-        )}
+        ) : null}
 
         <DetailRow label="Ledger Fee">
           <Typography variant="body1">{dropsToXrp(Fee)} XRP</Typography>
@@ -639,9 +730,11 @@ const TransactionDetails = ({ txData, theme }) => {
             <DetailRow label="Sequence">
               <Typography variant="body1">#{Sequence}</Typography>
             </DetailRow>
-            <DetailRow label="Compact Tx ID">
-              <Typography variant="body1">{ctid}</Typography>
-            </DetailRow>
+            {TransactionType === 'OfferCreate' && (
+              <DetailRow label="Compact Tx ID">
+                <Typography variant="body1">{ctid}</Typography>
+              </DetailRow>
+            )}
             <DetailRow label="Last ledger" sx={{ borderBottom: 'none' }}>
               <Typography variant="body1">
                 #{LastLedgerSequence} ({LastLedgerSequence - ledger_index} ledgers)
@@ -746,9 +839,17 @@ export async function getServerSideProps(context) {
       };
     }
 
+    const { meta, ...rest } = response.data.result;
+    if (meta) {
+      const deliveredAmount = meta.delivered_amount;
+      if (typeof deliveredAmount === 'object' && deliveredAmount.value) {
+        meta.delivered_amount.value = new BigNumber(deliveredAmount.value).toFormat();
+      }
+    }
+
     return {
       props: {
-        txData: response.data.result,
+        txData: { ...rest, meta },
         error: null
       }
     };
