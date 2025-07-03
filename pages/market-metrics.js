@@ -481,16 +481,6 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
           transform: 'none',
           boxShadow: `none`,
           border: `1px solid ${themeColors.cardHoverBorder}`
-        },
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '2px',
-          background: `linear-gradient(90deg, ${chartColors.primary.main}, ${chartColors.secondary.main}, ${chartColors.tertiary.main})`,
-          opacity: 0
         }
       }}
     >
@@ -561,6 +551,8 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
   );
 };
 
+const tokenColorMap = {};
+
 const MarketMetricsContent = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -587,34 +579,44 @@ const MarketMetricsContent = () => {
   const [availableTokens, setAvailableTokens] = useState([]);
 
   // Function to get a color for a token (either from map or generate one)
-  const getTokenColor = (tokenName, index) => {
+  const getTokenColor = (tokenName) => {
     if (tokenColorMap[tokenName]) {
       return tokenColorMap[tokenName];
     }
     // Using a more minimalist and programmatic color generation
     const colors = [
-      '#4E79A7', // Blue
-      '#F28E2B', // Orange
-      '#E15759', // Red
-      '#76B7B2', // Teal
-      '#59A14F', // Green
-      '#EDC948', // Yellow
-      '#B07AA1', // Purple
-      '#FF9DA7', // Pink
-      '#9C755F', // Brown
-      '#BAB0AC' // Grey
+      '#e6194B',
+      '#3cb44b',
+      '#ffe119',
+      '#4363d8',
+      '#f58231',
+      '#911eb4',
+      '#42d4f4',
+      '#f032e6',
+      '#bfef45',
+      '#fabed4',
+      '#469990',
+      '#dcbeff',
+      '#9A6324',
+      '#fffac8',
+      '#800000',
+      '#aaffc3',
+      '#808000',
+      '#ffd8b1',
+      '#000075',
+      '#a9a9a9'
     ];
 
-    // Simple hash function to get a somewhat consistent color for a token
-    let hash = 0;
-    if (tokenName) {
-      for (let i = 0; i < tokenName.length; i++) {
-        hash = tokenName.charCodeAt(i) + ((hash << 5) - hash);
-      }
-    }
-    const colorIndex = Math.abs(hash % colors.length);
+    // Use the token's index in the master list of available tokens for a consistent color.
+    const tokenIndex = availableTokens.indexOf(tokenName);
 
-    return colors[colorIndex];
+    // Use modulo to wrap around the color list if there are more tokens than colors.
+    // Fallback to 0 if token is not found (should not happen in normal flow).
+    const colorIndex = tokenIndex !== -1 ? tokenIndex % colors.length : 0;
+
+    const color = colors[colorIndex];
+    tokenColorMap[tokenName] = color;
+    return color;
   };
 
   const handleLegendClick = (entry) => {
@@ -1063,17 +1065,7 @@ const MarketMetricsContent = () => {
               border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
               boxShadow: 'none',
               position: 'relative',
-              overflow: 'hidden',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '2px',
-                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-                opacity: 0.8
-              }
+              overflow: 'hidden'
             }}
           >
             <Box sx={{ flex: 1 }}>
@@ -1122,17 +1114,7 @@ const MarketMetricsContent = () => {
             border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
             boxShadow: 'none',
             position: 'relative',
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '2px',
-              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-              opacity: 0.6
-            }
+            overflow: 'hidden'
           }}
         >
           <Tabs
@@ -1532,10 +1514,7 @@ const MarketMetricsContent = () => {
                                   width: 12,
                                   height: 12,
                                   borderRadius: '50%',
-                                  backgroundColor: getTokenColor(
-                                    tokenName,
-                                    availableTokens.indexOf(tokenName)
-                                  ),
+                                  backgroundColor: getTokenColor(tokenName),
                                   mr: 1.5,
                                   display: tokenId !== 'Unknown' ? 'none' : 'block'
                                 }}
@@ -1659,7 +1638,7 @@ const MarketMetricsContent = () => {
                         {...getTagProps({ index })}
                         size={isMobile ? 'small' : 'medium'} // Smaller chips on mobile
                         sx={{
-                          backgroundColor: getTokenColor(option, availableTokens.indexOf(option)),
+                          backgroundColor: getTokenColor(option),
                           color: 'white',
                           fontSize: isMobile ? '0.65rem' : '0.75rem',
                           height: isMobile ? '20px' : '32px'
@@ -1835,7 +1814,7 @@ const MarketMetricsContent = () => {
                         key={tokenKey}
                         type="monotone"
                         dataKey={tokenKey}
-                        stroke={getTokenColor(token, index)}
+                        stroke={getTokenColor(token)}
                         name={token}
                         strokeWidth={2}
                         dot={false}
@@ -1844,7 +1823,7 @@ const MarketMetricsContent = () => {
                         activeDot={{
                           r: 6,
                           strokeWidth: 2,
-                          stroke: getTokenColor(token, index),
+                          stroke: getTokenColor(token),
                           fill: themeColors.background,
                           onClick: (data) => handleDataPointClick(data.payload)
                         }}
@@ -2007,10 +1986,7 @@ const MarketMetricsContent = () => {
                                 width: 12,
                                 height: 12,
                                 borderRadius: '50%',
-                                backgroundColor: getTokenColor(
-                                  token,
-                                  availableTokens.indexOf(token)
-                                ),
+                                backgroundColor: getTokenColor(token),
                                 mr: 1.5,
                                 display: tokenId !== 'Unknown' ? 'none' : 'block'
                               }}
