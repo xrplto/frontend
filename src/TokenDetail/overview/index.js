@@ -92,7 +92,7 @@ export default function Overview({ token }) {
         <PriceChart token={token} />
         {!isMobile && !isTablet && (
           <>
-            <TradingHistory tokenId={token.md5} />
+            <TradingHistory tokenId={token.md5} amm={token.AMM} />
             {showEditor && (
               <MDEditor
                 value={description}

@@ -28,7 +28,8 @@ import {
   Card,
   CardContent,
   FormControlLabel,
-  Switch
+  Switch,
+  Popover
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -303,21 +304,7 @@ const filterTrades = (trades, selectedFilter) => {
   return filteredTrades.sort((a, b) => b.time - a.time);
 };
 
-const BOT_ADDRESSES = [
-  'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6',
-  'rfmdBKhtJw2J22rw1JxQcchQTM68qzE4N2',
-  'rpiFwLYi6Gb1ESHYorn2QG1WU5vw2u4exQ',
-  'rpP3jobib3bCGbK1EHUsyeFJF1LXcUBymq',
-  'rhubarbMVC2nzASf3qSGQcUKtLnAzqcBjp',
-  'rBYuQZgRnsSNTuGsxz7wmGt53GYDEg1qzf',
-  'rippLE4uy7r898MzuHTeTe7sPfuUDafLB',
-  'raKT8yExRhuK9xAqYeWezH8RAp6vNoU3Jo',
-  'rhB5snxAxsZ2cKf8iDJYiBpX8nrTxJfHoH',
-  'rN7SthSu7RZXo2LNmsh4QPgXcBzhTgmDDg',
-  'raKTPwoUnGbdSquoiZLX5bLZwY2JAvS5o9'
-];
-
-const TradingHistory = ({ tokenId }) => {
+const TradingHistory = ({ tokenId, amm }) => {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -327,6 +314,24 @@ const TradingHistory = ({ tokenId }) => {
   const previousTradesRef = useRef(new Set());
   const theme = useTheme();
   const limit = 20;
+
+  const [washTradingData, setWashTradingData] = useState({});
+  const checkedAddressesRef = useRef(new Set());
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedTrade, setSelectedTrade] = useState(null);
+
+  const handleIconClick = (event, trade) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedTrade(trade);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+    setSelectedTrade(null);
+  };
+
+  const openPopover = Boolean(anchorEl);
 
   const handleXrpOnlyChange = (event) => {
     setXrpOnly(event.target.checked);
@@ -376,6 +381,51 @@ const TradingHistory = ({ tokenId }) => {
     return () => clearInterval(intervalId);
   }, [fetchTradingHistory]);
 
+  useEffect(() => {
+    if (trades.length === 0) return;
+
+    const addressesToCheck = [];
+    const allAddresses = new Set();
+    trades.forEach((trade) => {
+      if (trade.maker) allAddresses.add(trade.maker);
+      if (trade.taker) allAddresses.add(trade.taker);
+    });
+
+    allAddresses.forEach((address) => {
+      if (address && !checkedAddressesRef.current.has(address)) {
+        addressesToCheck.push(address);
+        checkedAddressesRef.current.add(address);
+      }
+    });
+
+    if (addressesToCheck.length === 0) return;
+
+    const fetchWashTradingData = async () => {
+      const newWashTradingData = {};
+      await Promise.all(
+        addressesToCheck.map(async (address) => {
+          try {
+            const response = await fetch(
+              `https://api.xrpl.to/api/analytics/wash-trading?address=${address}`
+            );
+            const result = await response.json();
+            if (result && result.data && result.data.length > 0) {
+              newWashTradingData[address] = result.data;
+            }
+          } catch (error) {
+            console.error(`Failed to fetch wash trading data for ${address}`, error);
+          }
+        })
+      );
+
+      if (Object.keys(newWashTradingData).length > 0) {
+        setWashTradingData((prev) => ({ ...prev, ...newWashTradingData }));
+      }
+    };
+
+    fetchWashTradingData();
+  }, [trades]);
+
   const handlePageChange = (event, newPage) => {
     setPage(newPage);
   };
@@ -384,6 +434,59 @@ const TradingHistory = ({ tokenId }) => {
     const xrpAmount = trade.got.currency === 'XRP' ? trade.got.value : trade.paid.value;
     const tokenAmount = trade.got.currency === 'XRP' ? trade.paid.value : trade.got.value;
     return parseFloat(xrpAmount) / parseFloat(tokenAmount);
+  };
+
+  const renderWashTradeDetails = (address, trades, abbreviateNumber) => {
+    if (!trades || trades.length === 0) return null;
+
+    const highConfidenceTrades = trades.filter((t) => t.confidence >= 0.8);
+    if (highConfidenceTrades.length === 0) return null;
+
+    return (
+      <Box sx={{ mt: 1 }}>
+        <Typography variant="subtitle2" component="div">
+          {address.slice(0, 6)}...
+          <Typography variant="caption" sx={{ color: 'warning.main', ml: 1 }}>
+            (wash trader)
+          </Typography>
+        </Typography>
+        {highConfidenceTrades.map((wt) => {
+          const otherAddress = wt.addresses.find((a) => a !== address);
+          return (
+            <Box
+              key={wt._id}
+              sx={{ pl: 1.5, py: 1, borderLeft: '2px solid', borderColor: 'warning.main', my: 1 }}
+            >
+              {otherAddress && (
+                <Typography variant="caption" component="div">
+                  <strong>Counterparty:</strong>{' '}
+                  {`${otherAddress.slice(0, 4)}...${otherAddress.slice(-4)}`}
+                </Typography>
+              )}
+              <Typography variant="caption" component="div">
+                <strong>Volume:</strong> {abbreviateNumber(wt.totalVolume)}
+              </Typography>
+              <Typography variant="caption" component="div">
+                <strong>Confidence:</strong> {(wt.confidence * 100).toFixed(0)}%
+              </Typography>
+              <Typography variant="caption" component="div">
+                <strong>Net Profit:</strong> {wt.netProfit.toFixed(2)}
+              </Typography>
+              <Typography variant="caption" component="div">
+                <strong>Type:</strong> {wt.detectionType}
+              </Typography>
+              <Typography variant="caption" component="div">
+                <strong>Time Window:</strong> {wt.timeWindowSeconds}s
+              </Typography>
+              <Typography variant="caption" component="div">
+                <strong>Detected:</strong>{' '}
+                {formatRelativeTime(new Date(wt.firstDetected).getTime())}
+              </Typography>
+            </Box>
+          );
+        })}
+      </Box>
+    );
   };
 
   if (loading) {
@@ -479,6 +582,32 @@ const TradingHistory = ({ tokenId }) => {
           const price = calculatePrice(trade);
           const volumePercentage = Math.min(100, Math.max(5, (xrpAmount / 50000) * 100));
 
+          const amountData = isBuy ? trade.got : trade.paid;
+          const totalData = isBuy ? trade.paid : trade.got;
+
+          const makerDetails = renderWashTradeDetails(
+            trade.maker,
+            washTradingData[trade.maker],
+            abbreviateNumber
+          );
+          const takerDetails = renderWashTradeDetails(
+            trade.taker,
+            washTradingData[trade.taker],
+            abbreviateNumber
+          );
+
+          const makerIsWashTrader = !!makerDetails;
+          const takerIsWashTrader = !!takerDetails;
+
+          let addressToShow = trade.maker;
+          if (amm) {
+            if (trade.maker === amm) {
+              addressToShow = trade.taker;
+            } else if (trade.taker === amm) {
+              addressToShow = trade.maker;
+            }
+          }
+
           return (
             <TradeCard key={trade._id} isNew={newTradeIds.has(trade._id)}>
               <VolumeIndicator volume={volumePercentage} />
@@ -534,8 +663,8 @@ const TradingHistory = ({ tokenId }) => {
                   {/* Amount */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <img
-                      src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
-                      alt={decodeCurrency(trade.paid.currency)}
+                      src={getTokenImageUrl(amountData.issuer, amountData.currency)}
+                      alt={decodeCurrency(amountData.currency)}
                       style={{ width: 16, height: 16, borderRadius: '50%' }}
                     />
                     <Box>
@@ -552,7 +681,7 @@ const TradingHistory = ({ tokenId }) => {
                         color="text.primary"
                         sx={{ fontSize: '0.85rem' }}
                       >
-                        {formatTradeValue(trade.paid.value)} {decodeCurrency(trade.paid.currency)}
+                        {formatTradeValue(amountData.value)} {decodeCurrency(amountData.currency)}
                       </Typography>
                     </Box>
                   </Box>
@@ -560,8 +689,8 @@ const TradingHistory = ({ tokenId }) => {
                   {/* Total */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <img
-                      src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
-                      alt={decodeCurrency(trade.got.currency)}
+                      src={getTokenImageUrl(totalData.issuer, totalData.currency)}
+                      alt={decodeCurrency(totalData.currency)}
                       style={{ width: 16, height: 16, borderRadius: '50%' }}
                     />
                     <Box>
@@ -578,7 +707,7 @@ const TradingHistory = ({ tokenId }) => {
                         color="text.primary"
                         sx={{ fontSize: '0.85rem' }}
                       >
-                        {formatTradeValue(trade.got.value)} {decodeCurrency(trade.got.currency)}
+                        {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
                       </Typography>
                     </Box>
                   </Box>
@@ -586,45 +715,51 @@ const TradingHistory = ({ tokenId }) => {
                   {/* Maker/Taker */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <Tooltip title={`Maker: ${trade.maker}\nTaker: ${trade.taker}`} arrow>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                        <Link
-                          href={`/profile/${trade.maker}`}
-                          sx={{
-                            textDecoration: 'none',
-                            color: 'primary.main',
-                            fontWeight: '500',
-                            '&:hover': {
-                              textDecoration: 'underline',
-                              color: 'primary.dark'
-                            }
-                          }}
+                      <Link
+                        href={`/profile/${addressToShow}`}
+                        sx={{
+                          textDecoration: 'none',
+                          color: 'primary.main',
+                          fontWeight: '500',
+                          '&:hover': {
+                            textDecoration: 'underline',
+                            color: 'primary.dark'
+                          }
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          fontWeight="500"
+                          sx={{ fontSize: '0.8rem', color: 'primary.main' }}
                         >
-                          <Typography
-                            variant="body2"
-                            fontWeight="500"
-                            sx={{ fontSize: '0.8rem', color: 'primary.main' }}
-                          >
-                            {`${trade.maker.slice(0, 4)}...${trade.maker.slice(-4)}`}
-                          </Typography>
-                        </Link>
-                        <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
-                          {getTradeSizeEmoji(xrpAmount)}
+                          {addressToShow
+                            ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}`
+                            : ''}
                         </Typography>
-                        {(BOT_ADDRESSES.includes(trade.maker) ||
-                          BOT_ADDRESSES.includes(trade.taker)) && (
-                          <SmartToy
-                            sx={{
-                              color: theme.palette.warning.main,
-                              fontSize: '0.9rem'
-                            }}
-                          />
-                        )}
-                      </Box>
+                      </Link>
                     </Tooltip>
+                    <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                      {getTradeSizeEmoji(xrpAmount)}
+                    </Typography>
+                    {(makerIsWashTrader || takerIsWashTrader) && (
+                      <SmartToy
+                        fontSize="small"
+                        sx={{ color: theme.palette.warning.main, fontSize: '0.9rem' }}
+                      />
+                    )}
                   </Box>
 
                   {/* Actions */}
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    {(makerIsWashTrader || takerIsWashTrader) && (
+                      <IconButton
+                        onClick={(e) => handleIconClick(e, trade)}
+                        size="small"
+                        sx={{ padding: '4px' }}
+                      >
+                        <SmartToy fontSize="small" sx={{ color: theme.palette.warning.main }} />
+                      </IconButton>
+                    )}
                     <Tooltip title="View on Bithomp" arrow>
                       <IconButton
                         size="small"
@@ -674,6 +809,36 @@ const TradingHistory = ({ tokenId }) => {
           />
         </Stack>
       )}
+      <Popover
+        open={openPopover}
+        anchorEl={anchorEl}
+        onClose={handlePopoverClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center'
+        }}
+      >
+        <Box sx={{ p: 2, maxWidth: 320, border: `1px solid ${theme.palette.divider}` }}>
+          {selectedTrade && (
+            <React.Fragment>
+              {renderWashTradeDetails(
+                selectedTrade.maker,
+                washTradingData[selectedTrade.maker],
+                abbreviateNumber
+              )}
+              {renderWashTradeDetails(
+                selectedTrade.taker,
+                washTradingData[selectedTrade.taker],
+                abbreviateNumber
+              )}
+            </React.Fragment>
+          )}
+        </Box>
+      </Popover>
     </Stack>
   );
 };
