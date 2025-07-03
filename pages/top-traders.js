@@ -111,90 +111,88 @@ function TabPanel({ children, value, index }) {
 }
 
 // Memoized TraderRow component to prevent unnecessary re-renders
-const TraderRow = memo(
-  ({ trader, onRoiClick, abbreviateAddress, formatCurrency, formatPercentage }) => (
-    <TableRow
-      key={trader._id}
-      sx={{
-        '&:last-child td, &:last-child th': { border: 0 },
-        cursor: 'pointer'
-      }}
-      onClick={() => onRoiClick(trader)}
-    >
-      <TableCell component="th" scope="row">
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography
-            component="a"
-            href={`/profile/${trader.address}`}
-            sx={{
-              textDecoration: 'none',
-              color: 'primary.main',
-              '&:hover': {
-                textDecoration: 'underline'
-              }
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {abbreviateAddress(trader.address)}
-          </Typography>
-          {trader.AMM && (
-            <Chip
-              label="AMM"
-              size="small"
-              color="secondary"
-              sx={{
-                height: 20,
-                fontSize: '0.65rem',
-                '& .MuiChip-label': {
-                  px: 1
-                }
-              }}
-            />
-          )}
-          <IconButton
+const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage }) => (
+  <TableRow
+    key={trader._id}
+    sx={{
+      '&:last-child td, &:last-child th': { border: 0 },
+      cursor: 'pointer'
+    }}
+    onClick={() => onRoiClick(trader)}
+  >
+    <TableCell component="th" scope="row">
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          component="a"
+          href={`/profile/${trader.address}`}
+          sx={{
+            textDecoration: 'none',
+            color: 'primary.main',
+            '&:hover': {
+              textDecoration: 'underline'
+            }
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {trader.address}
+        </Typography>
+        {trader.AMM && (
+          <Chip
+            label="AMM"
             size="small"
-            onClick={(e) => onRoiClick(trader, e)}
-            title={trader.address}
+            color="secondary"
             sx={{
-              color: 'primary.main',
-              '&:hover': {
-                color: 'primary.dark'
+              height: 20,
+              fontSize: '0.65rem',
+              '& .MuiChip-label': {
+                px: 1
               }
             }}
-          >
-            <ShowChartIcon fontSize="small" />
-          </IconButton>
-        </Box>
-      </TableCell>
-      <TableCell align="right">{formatCurrency(trader.volume24h)}</TableCell>
-      <TableCell
-        align="right"
-        sx={{
-          color: trader.profit24h >= 0 ? 'success.main' : 'error.main'
-        }}
-      >
-        {formatCurrency(trader.profit24h)}
-      </TableCell>
-      <TableCell align="right">{trader.totalTrades}</TableCell>
-      <TableCell
-        align="right"
-        sx={{
-          color: trader.totalProfit >= 0 ? 'success.main' : 'error.main'
-        }}
-      >
-        {formatCurrency(trader.totalProfit)}
-      </TableCell>
-      <TableCell
-        align="right"
-        sx={{
-          color: trader.avgROI >= 0 ? 'success.main' : 'error.main'
-        }}
-      >
-        {formatPercentage(trader.avgROI)}
-      </TableCell>
-    </TableRow>
-  )
-);
+          />
+        )}
+        <IconButton
+          size="small"
+          onClick={(e) => onRoiClick(trader, e)}
+          title={trader.address}
+          sx={{
+            color: 'primary.main',
+            '&:hover': {
+              color: 'primary.dark'
+            }
+          }}
+        >
+          <ShowChartIcon fontSize="small" />
+        </IconButton>
+      </Box>
+    </TableCell>
+    <TableCell align="right">{formatCurrency(trader.volume24h)}</TableCell>
+    <TableCell
+      align="right"
+      sx={{
+        color: trader.profit24h >= 0 ? 'success.main' : 'error.main'
+      }}
+    >
+      {formatCurrency(trader.profit24h)}
+    </TableCell>
+    <TableCell align="right">{trader.totalTrades}</TableCell>
+    <TableCell
+      align="right"
+      sx={{
+        color: trader.totalProfit >= 0 ? 'success.main' : 'error.main'
+      }}
+    >
+      {formatCurrency(trader.totalProfit)}
+    </TableCell>
+    <TableCell
+      align="right"
+      sx={{
+        color: trader.avgROI >= 0 ? 'success.main' : 'error.main'
+      }}
+    >
+      {formatPercentage(trader.avgROI)}
+    </TableCell>
+  </TableRow>
+));
 
 TraderRow.displayName = 'TraderRow';
 
@@ -425,11 +423,6 @@ export default function Analytics() {
         maximumFractionDigits: 2
       }).format(value || 0) + ' Ꭓ'
     );
-  }, []);
-
-  const abbreviateAddress = useCallback((address) => {
-    if (!address) return '';
-    return `${address.substring(0, 4)}...${address.substring(address.length - 4)}`;
   }, []);
 
   const formatPercentage = useCallback((value) => {
@@ -1266,7 +1259,6 @@ export default function Analytics() {
                               key={trader._id}
                               trader={trader}
                               onRoiClick={handleRoiClick}
-                              abbreviateAddress={abbreviateAddress}
                               formatCurrency={formatCurrency}
                               formatPercentage={formatPercentage}
                             />
@@ -1365,7 +1357,7 @@ export default function Analytics() {
                           }
                         }}
                       >
-                        {abbreviateAddress(roiModalTrader.address)}
+                        {roiModalTrader.address}
                       </Typography>
                       {roiModalTrader.AMM && (
                         <Chip
