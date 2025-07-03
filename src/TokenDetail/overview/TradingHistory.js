@@ -754,11 +754,11 @@ const TradingHistory = ({ tokenId, amm }) => {
                         <SmartToy fontSize="small" sx={{ color: theme.palette.warning.main }} />
                       </IconButton>
                     )}
-                    <Tooltip title="View on Bithomp" arrow>
+                    <Tooltip title="View Transaction" arrow>
                       <IconButton
                         size="small"
                         component={Link}
-                        href={`https://bithomp.com/explorer/${trade.hash}`}
+                        href={`/tx/${trade.hash}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         sx={{
