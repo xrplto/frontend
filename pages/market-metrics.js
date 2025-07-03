@@ -788,19 +788,10 @@ const MarketMetricsContent = () => {
   // Add this state for progressive data loading
   const [progressiveData, setProgressiveData] = useState([]);
 
-  // Modify the useLayoutEffect implementation to load data all at once
+  // Set progressive data without flickering
   useLayoutEffect(() => {
-    if (sampledData.length > 0) {
-      // Clear any existing progressive data
-      setProgressiveData([]);
-
-      // Use a short timeout to allow the component to render first
-      setTimeout(() => {
-        // Load all data at once without animation
-        setProgressiveData(sampledData);
-        setAnimationComplete(true);
-      }, 10); // Shorter timeout for faster loading
-    }
+    setProgressiveData(sampledData);
+    setAnimationComplete(true);
   }, [sampledData]);
 
   // Add theme hook
@@ -809,30 +800,13 @@ const MarketMetricsContent = () => {
   const chartColors = getChartColors(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Add state for tokens to filter - include all token IDs
-  const [tokensToFilter, setTokensToFilter] = useState([
-    'fdd462474370466edf2c879fa33cd4a8',
-    'd5dd9c3ee8fb34acb88a6d0f0982c755',
-    '47727f3ad701921a0feb30a9db1b031d',
-    '87cbb38f7ec6e7e95982f68360b08e87',
-    '8a1caeb4a52abcd3772585401412c87d',
-    '96935914a0610d9c4c2b5b0f7488debd', // Added new token ID
-    '1fbcf69faec66d5eb88c27a7e1316079', // Added new token ID
-    'f3c2dc1b7a0b62c2814ac54ac41fc164', // Added new token ID
-    'a75642e117c7e85b35a9f03ea90c6ef1', // Added new token ID
-    '0ecd5784928aaaf81aa713c12965a271', // Added new token ID
-    '670c423b61a765804c6c8f2c1a68aa63', // Added new token ID
-    'de5789574e9d3248e14689bba1082db3', // Added new token ID
-    '5d40bfc18aad5dd42ace246cd0af665a', // Added new token ID
-    '33d41a287177d13f69da580dde9b968b' // Added new token ID
-  ]);
-  // Specify which token should be deducted from FirstLedger
-  const [firstLedgerTokenToFilter] = useState('d5dd9c3ee8fb34acb88a6d0f0982c755');
-  const [hideSpecificTokens, setHideSpecificTokens] = useState(true);
+  useEffect(() => {
+    setSampledData(sampleDataByTimeRange(data, timeRange));
+  }, [data, timeRange, selectedTokens, sampleDataByTimeRange]);
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Ensure loading is true at the start
+      setLoading(true);
       try {
         // Get current date
         const endDate = format(new Date(), 'yyyy-MM-dd');
@@ -868,39 +842,8 @@ const MarketMetricsContent = () => {
             const tokenVolumes = {}; // Add object to store token volumes
             const tokenTrades = {}; // Add object to store token trades
 
-            // Filter out the tokens before calculating totalMarketcap
-            let filteredTotalMarketcap = item.totalMarketcap;
-            // Also filter FirstLedger marketcap
-            let filteredFirstLedgerMarketcap = item.firstLedgerMarketcap || 0;
-
             if (item.dailyTokenMarketcaps && Array.isArray(item.dailyTokenMarketcaps)) {
-              // Find all tokens to filter out
-              const tokensToFilterOut = hideSpecificTokens
-                ? item.dailyTokenMarketcaps.filter((token) =>
-                    tokensToFilter.includes(token.tokenId)
-                  )
-                : [];
-
-              // Subtract their marketcaps from total if found
-              tokensToFilterOut.forEach((token) => {
-                if (token && token.marketcap) {
-                  filteredTotalMarketcap -= token.marketcap;
-
-                  // If this is the specific token to filter from FirstLedger
-                  if (token.tokenId === firstLedgerTokenToFilter) {
-                    filteredFirstLedgerMarketcap -= token.marketcap;
-                  }
-                }
-              });
-
-              // Filter tokens for individual display
-              const filteredTokens = hideSpecificTokens
-                ? item.dailyTokenMarketcaps.filter(
-                    (token) => !tokensToFilter.includes(token.tokenId)
-                  )
-                : item.dailyTokenMarketcaps;
-
-              filteredTokens.forEach((token) => {
+              item.dailyTokenMarketcaps.forEach((token) => {
                 if (token.name && token.marketcap) {
                   const tokenKey = `${token.name}_marketcap`;
                   const priceKey = `${token.name}_avgPrice`; // Create key for average price
@@ -924,8 +867,8 @@ const MarketMetricsContent = () => {
               ...tokenTrades, // Add token-specific trades to the data object
               // Fix the date format to match the API response format
               date: format(new Date(item.date), 'MMM dd yyyy'), // Use UTC to avoid timezone issues
-              totalMarketcap: Number(filteredTotalMarketcap.toFixed(2)), // Use filtered marketcap
-              firstLedgerMarketcap: Number(filteredFirstLedgerMarketcap.toFixed(2)), // Use filtered FirstLedger marketcap
+              totalMarketcap: Number(item.totalMarketcap.toFixed(2)), // Use filtered marketcap
+              firstLedgerMarketcap: Number((item.firstLedgerMarketcap || 0).toFixed(2)), // Use filtered FirstLedger marketcap
               magneticXMarketcap: Number(item.magneticXMarketcap?.toFixed(2) || 0),
               xpMarketMarketcap: Number(item.xpMarketMarketcap?.toFixed(2) || 0),
               ledgerMemeMarketcap: Number(item.ledgerMemeMarketcap?.toFixed(2) || 0),
@@ -997,14 +940,7 @@ const MarketMetricsContent = () => {
     };
 
     fetchData();
-  }, [
-    timeRange,
-    sampleDataByTimeRange,
-    hideSpecificTokens,
-    tokensToFilter,
-    firstLedgerTokenToFilter,
-    maxTokensToDisplay // Add dependency if maxTokensToDisplay changes
-  ]);
+  }, [maxTokensToDisplay]);
 
   // Generate dynamic description text
   const generateDescription = () => {
@@ -1083,214 +1019,34 @@ const MarketMetricsContent = () => {
   // This is where the error occurred in the previous attempt.
   // Let's replace the whole useMemo.
   const processedChartData = useMemo(() => {
-    let filteredData = [...fullData];
+    let filteredData = [...data];
     const now = new Date();
 
-    // Filter data based on selected time range
-    if (rangeMap[range]) {
-      const rangeInYears = {
-        '1Y': 1,
-        '2Y': 2,
-        '3Y': 3,
-        '4Y': 4,
-        '5Y': 5,
-        ALL: 14 // Assuming 'ALL' means 14 years
-      };
+    const rangeMap = {
+      '5y': 5,
+      '1y': 1,
+      '6m': 0.5,
+      '1m': 1 / 12
+    };
 
-      if (rangeInYears[range]) {
-        const cutoffDate = subYears(now, rangeInYears[range]);
-        filteredData = fullData.filter((item) =>
-          isAfter(parse(item.date, 'MMM dd yyyy', new Date()), cutoffDate)
-        );
-      }
+    // Filter data based on selected time range
+    if (rangeMap[timeRange]) {
+      const cutoffDate = subYears(now, rangeMap[timeRange]);
+      filteredData = data.filter((item) =>
+        isAfter(parse(item.date, 'MMM dd yyyy', new Date()), cutoffDate)
+      );
     }
 
     // Further filter by token names if any are selected
     if (selectedTokens.length > 0) {
       filteredData = filteredData.filter((item) =>
-        selectedTokens.some((token) => item[`${token.name}_marketcap`] > 0)
+        selectedTokens.some((token) => item[`${token}_marketcap`] > 0)
       );
     }
 
     // Return all data points without sampling to ensure daily data
     return filteredData;
-  }, [fullData, range, selectedTokens]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Get current date
-        const endDate = format(new Date(), 'yyyy-MM-dd');
-        // Get date 10 years ago
-        const startDate = format(subYears(new Date(), 14), 'yyyy-MM-dd');
-
-        console.log('Fetching data from', startDate, 'to', endDate); // Debug log
-
-        const response = await axios.get('https://api.xrpl.to/api/analytics/market-metrics', {
-          params: {
-            startDate,
-            endDate
-          }
-        });
-
-        // Ensure response.data is an array
-        const marketData = Array.isArray(response.data) ? response.data : response.data.data || [];
-
-        if (!marketData.length) {
-          console.warn('No market metrics data received');
-          return;
-        }
-
-        // Track all unique tokens across all data points
-        const uniqueTokens = new Set();
-
-        const formattedData = marketData
-          .sort((a, b) => new Date(a.date) - new Date(b.date)) // Sort by date ascending
-          .map((item) => {
-            // Process token-specific market caps
-            const tokenMarketcaps = {};
-            const tokenAvgPrices = {}; // Add object to store average prices
-            const tokenVolumes = {}; // Add object to store token volumes
-            const tokenTrades = {}; // Add object to store token trades
-
-            // Filter out the tokens before calculating totalMarketcap
-            let filteredTotalMarketcap = item.totalMarketcap;
-            // Also filter FirstLedger marketcap
-            let filteredFirstLedgerMarketcap = item.firstLedgerMarketcap || 0;
-
-            if (item.dailyTokenMarketcaps && Array.isArray(item.dailyTokenMarketcaps)) {
-              // Find all tokens to filter out
-              const tokensToFilterOut = hideSpecificTokens
-                ? item.dailyTokenMarketcaps.filter((token) =>
-                    tokensToFilter.includes(token.tokenId)
-                  )
-                : [];
-
-              // Subtract their marketcaps from total if found
-              tokensToFilterOut.forEach((token) => {
-                if (token && token.marketcap) {
-                  filteredTotalMarketcap -= token.marketcap;
-
-                  // If this is the specific token to filter from FirstLedger
-                  if (token.tokenId === firstLedgerTokenToFilter) {
-                    filteredFirstLedgerMarketcap -= token.marketcap;
-                  }
-                }
-              });
-
-              // Filter tokens for individual display
-              const filteredTokens = hideSpecificTokens
-                ? item.dailyTokenMarketcaps.filter(
-                    (token) => !tokensToFilter.includes(token.tokenId)
-                  )
-                : item.dailyTokenMarketcaps;
-
-              filteredTokens.forEach((token) => {
-                if (token.name && token.marketcap) {
-                  const tokenKey = `${token.name}_marketcap`;
-                  const priceKey = `${token.name}_avgPrice`; // Create key for average price
-                  const volumeKey = `${token.name}_volume`; // Create key for volume
-                  const tradesKey = `${token.name}_trades`; // Create key for trades
-
-                  tokenMarketcaps[tokenKey] = Number(token.marketcap.toFixed(2));
-                  tokenAvgPrices[priceKey] = Number(token.avgPrice?.toFixed(6) || 0); // Store average price with 6 decimal places
-                  tokenVolumes[volumeKey] = Number(token.volume?.toFixed(2) || 0); // Store volume with 2 decimal places
-                  tokenTrades[tradesKey] = Number(token.trades || 0); // Store trades count
-                  uniqueTokens.add(token.name);
-                }
-              });
-            }
-
-            return {
-              ...item,
-              ...tokenMarketcaps, // Add token-specific market caps to the data object
-              ...tokenAvgPrices, // Add token-specific average prices to the data object
-              ...tokenVolumes, // Add token-specific volumes to the data object
-              ...tokenTrades, // Add token-specific trades to the data object
-              // Fix the date format to match the API response format
-              date: format(new Date(item.date), 'MMM dd yyyy'), // Use UTC to avoid timezone issues
-              totalMarketcap: Number(filteredTotalMarketcap.toFixed(2)), // Use filtered marketcap
-              firstLedgerMarketcap: Number(filteredFirstLedgerMarketcap.toFixed(2)), // Use filtered FirstLedger marketcap
-              magneticXMarketcap: Number(item.magneticXMarketcap?.toFixed(2) || 0),
-              xpMarketMarketcap: Number(item.xpMarketMarketcap?.toFixed(2) || 0),
-              ledgerMemeMarketcap: Number(item.ledgerMemeMarketcap?.toFixed(2) || 0),
-              volumeNonAMM: Number(item.volumeNonAMM.toFixed(2)),
-              volumeAMM: Number(item.volumeAMM.toFixed(2)),
-              totalVolume: Number((item.volumeAMM + item.volumeNonAMM).toFixed(2)),
-              tokenCount: Number(item.tokenCount),
-              firstLedgerTokens: Number(item.firstLedgerTokenCount || 0),
-              magneticXTokens: Number(item.magneticXTokenCount || 0),
-              xpMarketTokens: Number(item.xpMarketTokenCount || 0),
-              ledgerMemeTokens: Number(item.ledgerMemeTokenCount || 0),
-              tradesAMM: Number(item.tradesAMM),
-              tradesNonAMM: Number(item.tradesNonAMM),
-              totalTrades: Number(item.totalTrades),
-              uniqueActiveAddresses: Number(item.uniqueActiveAddresses || 0),
-              uniqueActiveAddressesAMM: Number(item.uniqueActiveAddressesAMM || 0),
-              uniqueActiveAddressesNonAMM: Number(item.uniqueActiveAddressesNonAMM || 0)
-            };
-          });
-
-        // Convert Set to Array and sort alphabetically
-        const tokenArray = Array.from(uniqueTokens).sort();
-
-        // Initialize visibility state for all tokens (default to true)
-        const tokenVisibility = {};
-        tokenArray.forEach((token) => {
-          tokenVisibility[`${token}_marketcap`] = true;
-        });
-
-        // Update state with the token list and visibility
-        setAvailableTokens(tokenArray);
-        setVisibleLines((prev) => ({
-          ...prev,
-          ...tokenVisibility
-        }));
-
-        let topTokensForDescription = []; // Initialize here
-
-        // Initialize with top tokens by market cap (if available)
-        if (tokenArray.length > 0) {
-          // Get the most recent data point
-          const latestData = formattedData[formattedData.length - 1];
-
-          // Sort tokens by market cap
-          const sortedTokens = tokenArray
-            .filter((token) => latestData[`${token}_marketcap`])
-            .sort(
-              (a, b) => (latestData[`${b}_marketcap`] || 0) - (latestData[`${a}_marketcap`] || 0)
-            );
-
-          // Select top N tokens for display and description
-          const topTokensToDisplay = sortedTokens.slice(0, maxTokensToDisplay);
-          topTokensForDescription = sortedTokens.slice(0, 5); // Get top 5 for description
-
-          setSelectedTokens(topTokensToDisplay);
-        }
-
-        setData(formattedData);
-        // Initialize sampled data with the full dataset
-        setSampledData(sampleDataByTimeRange(formattedData, timeRange));
-
-        // Set the dynamic description *after* top tokens are determined
-        // (This part is moved outside useEffect for clarity, see below)
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [
-    timeRange,
-    sampleDataByTimeRange,
-    hideSpecificTokens,
-    tokensToFilter,
-    firstLedgerTokenToFilter,
-    maxTokensToDisplay // Add dependency if maxTokensToDisplay changes
-  ]);
+  }, [data, timeRange, selectedTokens]);
 
   return (
     <Box
@@ -1515,12 +1271,7 @@ const MarketMetricsContent = () => {
 
         {/* Tab Panel 0: Market Cap by DEX */}
         {activeTab === 0 && (
-          <ChartContainer
-            title="Market Cap by DEX (XRP)"
-            showFilter={true}
-            onFilterChange={() => setHideSpecificTokens(!hideSpecificTokens)}
-            filterActive={hideSpecificTokens}
-          >
+          <ChartContainer title="Market Cap by DEX (XRP)">
             {/* Add time range selector */}
             <Box
               sx={{
@@ -1811,9 +1562,6 @@ const MarketMetricsContent = () => {
                   {/* Filter out the tokens from the breakdown display */}
                   {selectedDataPoint.dailyTokenMarketcaps &&
                     selectedDataPoint.dailyTokenMarketcaps
-                      .filter((token) =>
-                        hideSpecificTokens ? !tokensToFilter.includes(token.tokenId) : true
-                      )
                       .filter((token) => token.marketcap > 0)
                       .sort((a, b) => b.marketcap - a.marketcap)
                       .map((token) => {
@@ -1936,12 +1684,7 @@ const MarketMetricsContent = () => {
 
         {/* Tab Panel 1: Token Market Caps */}
         {activeTab === 1 && (
-          <ChartContainer
-            title="Token Market Caps (XRP)"
-            showFilter={true}
-            onFilterChange={() => setHideSpecificTokens(!hideSpecificTokens)}
-            filterActive={hideSpecificTokens}
-          >
+          <ChartContainer title="Token Market Caps (XRP)">
             {/* Add time range selector and token selector in a more compact layout */}
             <Box
               sx={{
@@ -1962,14 +1705,8 @@ const MarketMetricsContent = () => {
                 <Autocomplete
                   multiple
                   id="token-selector"
-                  options={
-                    hideSpecificTokens
-                      ? availableTokens.filter((token) => !tokensToFilter.includes(token))
-                      : availableTokens
-                  }
-                  value={selectedTokens.filter(
-                    (token) => !hideSpecificTokens || !tokensToFilter.includes(token)
-                  )}
+                  options={availableTokens}
+                  value={selectedTokens}
                   onChange={handleTokenSelection}
                   size={isMobile ? 'small' : 'medium'} // Use smaller input on mobile
                   renderInput={(params) => (
