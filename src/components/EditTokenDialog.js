@@ -382,21 +382,6 @@ export default function EditTokenDialog({ token, setToken }) {
                   <Label variant="subtitle2" noWrap>
                     {issuer}
                   </Label>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://bithomp.com/explorer/${issuer}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <IconButton edge="end" aria-label="bithomp">
-                      <Avatar
-                        alt="bithomp"
-                        src="/static/bithomp.ico"
-                        sx={{ width: 16, height: 16 }}
-                      />
-                    </IconButton>
-                  </Link>
                 </Stack>
               </TableCell>
             </TableRow>

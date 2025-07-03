@@ -391,23 +391,6 @@ export default function NFTDetails({ nft }) {
                   >
                     <Typography sx={{ ml: 1 }}>{account}</Typography>
                   </Link>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://bithomp.com/explorer/${account}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Tooltip title="Check on Bithomp">
-                      <IconButton edge="end" aria-label="bithomp" size="small">
-                        <Avatar
-                          alt="bithomp"
-                          src="/static/bithomp.ico"
-                          sx={{ width: 16, height: 16 }}
-                        />
-                      </IconButton>
-                    </Tooltip>
-                  </Link>
                   <CopyToClipboard text={account} onCopy={() => openSnackbar('Copied!', 'success')}>
                     <Tooltip title="Click to copy">
                       <IconButton size="small">
@@ -436,23 +419,6 @@ export default function NFTDetails({ nft }) {
                   >
                     <Typography sx={{ ml: 1 }}>{issuer}</Typography>
                   </Link>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://bithomp.com/explorer/${issuer}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Tooltip title="Check on Bithomp">
-                      <IconButton edge="end" aria-label="bithomp" size="small">
-                        <Avatar
-                          alt="bithomp"
-                          src="/static/bithomp.ico"
-                          sx={{ width: 16, height: 16 }}
-                        />
-                      </IconButton>
-                    </Tooltip>
-                  </Link>
                   <CopyToClipboard text={issuer} onCopy={() => openSnackbar('Copied!', 'success')}>
                     <Tooltip title="Click to copy">
                       <IconButton size="small">
@@ -467,7 +433,7 @@ export default function NFTDetails({ nft }) {
               <Stack spacing={1}>
                 <Typography variant="caption">NFTokenID</Typography>
                 <Link
-                  href={`https://bithomp.com/explorer/${NFTokenID}`}
+                  href={`https://livenet.xrpl.org/nfts/${NFTokenID}`}
                   target="_blank"
                   variant="info"
                   rel="noreferrer noopener nofollow"

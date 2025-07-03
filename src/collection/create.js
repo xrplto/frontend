@@ -781,28 +781,6 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                         </Stack>
                         <Stack direction="row" alignItems="center">
                           <Typography variant="p3">{cost.issuer}</Typography>
-                          {cost.currency !== 'XRP' && (
-                            <Link
-                              underline="none"
-                              color="inherit"
-                              target="_blank"
-                              href={`https://bithomp.com/explorer/${cost.issuer}`}
-                              rel="noreferrer noopener nofollow"
-                            >
-                              <Tooltip title="Check on Bithomp">
-                                <IconButton edge="end" aria-label="bithomp" size="small">
-                                  <Avatar
-                                    alt="bithomp"
-                                    src="/static/bithomp.ico"
-                                    sx={{
-                                      width: 16,
-                                      height: 16
-                                    }}
-                                  />
-                                </IconButton>
-                              </Tooltip>
-                            </Link>
-                          )}
                         </Stack>
                       </Stack>
                     </Stack>

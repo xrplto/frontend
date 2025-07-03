@@ -464,21 +464,19 @@ export default function History({ token }) {
                         <TableCell align="left">
                           <AddressLink
                             target="_blank"
-                            href={`https://bithomp.com/explorer/${taker}`}
+                            href={`https://livenet.xrpl.org/accounts/${taker}`}
                             rel="noreferrer noopener nofollow"
                           >
                             {truncate(taker, 12)}
-                            <OpenInNewIcon sx={{ fontSize: '0.75rem' }} />
                           </AddressLink>
                         </TableCell>
                         <TableCell align="left">
                           <AddressLink
                             target="_blank"
-                            href={`https://bithomp.com/explorer/${maker}`}
+                            href={`https://livenet.xrpl.org/accounts/${maker}`}
                             rel="noreferrer noopener nofollow"
                           >
                             {truncate(maker, 12)}
-                            <OpenInNewIcon sx={{ fontSize: '0.75rem' }} />
                           </AddressLink>
                         </TableCell>
                         <TableCell align="left">
@@ -496,26 +494,11 @@ export default function History({ token }) {
                           <HashLinkContainer>
                             <HashLink
                               target="_blank"
-                              href={`https://bithomp.com/explorer/${hash}`}
+                              href={`https://livenet.xrpl.org/transactions/${hash}`}
                               rel="noreferrer noopener nofollow"
                             >
                               {truncate(hash, 16)}
                             </HashLink>
-                            <Tooltip title="View on Bithomp Explorer" arrow>
-                              <ExplorerIconButton
-                                component="a"
-                                href={`https://bithomp.com/explorer/${hash}`}
-                                target="_blank"
-                                rel="noreferrer noopener nofollow"
-                                size="small"
-                              >
-                                <Avatar
-                                  alt="Bithomp Explorer"
-                                  src="/static/bithomp.ico"
-                                  sx={{ width: 16, height: 16 }}
-                                />
-                              </ExplorerIconButton>
-                            </Tooltip>
                             <Tooltip title="View on XRPL Explorer" arrow>
                               <ExplorerIconButton
                                 component="a"

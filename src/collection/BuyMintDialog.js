@@ -356,42 +356,6 @@ export default function BuyMintDialog({
                     </MenuItem>
                   ))}
                 </CustomSelect>
-                {cost.currency !== 'XRP' && (
-                  <>
-                    <Link
-                      underline="none"
-                      color="inherit"
-                      target="_blank"
-                      href={`https://bithomp.com/explorer/${cost.issuer}`}
-                      rel="noreferrer noopener nofollow"
-                    >
-                      <Tooltip title="Check on Bithomp">
-                        <IconButton edge="end" aria-label="bithomp">
-                          <Avatar
-                            alt="bithomp"
-                            src="/static/bithomp.ico"
-                            sx={{ width: 24, height: 24 }}
-                          />
-                        </IconButton>
-                      </Tooltip>
-                    </Link>
-                    {/* 
-                        <Link
-                            underline="none"
-                            color="inherit"
-                            target="_blank"
-                            href={`https://xrpl.to/trade/${cost.md5}`}
-                            rel="noreferrer noopener nofollow"
-                        >
-                            <Tooltip title='Trade on XRPL.to'>
-                                <IconButton edge="end" aria-label="trade">
-                                    <ShoppingCartIcon fontSize="medium" />
-                                </IconButton>
-                            </Tooltip>
-                        </Link>
-                        */}
-                  </>
-                )}
               </Stack>
             </Stack>
 
