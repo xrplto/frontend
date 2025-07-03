@@ -59,6 +59,14 @@ const getThemeColors = (theme) => {
 const getChartColors = (theme) => {
   const isDarkMode = theme.palette.mode === 'dark';
 
+  // A more professional and harmonious color palette
+  const platformColors = {
+    firstLedger: '#4E79A7', // Muted Blue
+    magneticX: '#59A14F', // Muted Green
+    xpMarket: '#F28E2B', // Muted Orange
+    ledgerMeme: '#B07AA1' // Muted Purple
+  };
+
   return {
     totalLine: theme.palette.primary.main, // Use primary color for main line
     totalLineFill: isDarkMode
@@ -69,26 +77,26 @@ const getChartColors = (theme) => {
       : alpha(theme.palette.text.primary, 0.05),
     legendBg: `transparent`, // Transparent legend background
     scrollThumb: alpha(theme.palette.text.secondary, 0.3),
-    // Simplified color sets
+    // Updated color sets for platforms
     primary: {
-      main: theme.palette.primary.main,
-      light: alpha(theme.palette.primary.main, 0.1),
-      dark: theme.palette.primary.dark
+      main: platformColors.firstLedger,
+      light: alpha(platformColors.firstLedger, 0.1),
+      dark: alpha(platformColors.firstLedger, 0.8)
     },
     secondary: {
-      main: theme.palette.success.main,
-      light: alpha(theme.palette.success.main, 0.1),
-      dark: theme.palette.success.dark
+      main: platformColors.magneticX,
+      light: alpha(platformColors.magneticX, 0.1),
+      dark: alpha(platformColors.magneticX, 0.8)
     },
     tertiary: {
-      main: theme.palette.warning.main,
-      light: alpha(theme.palette.warning.main, 0.1),
-      dark: theme.palette.warning.dark
+      main: platformColors.xpMarket,
+      light: alpha(platformColors.xpMarket, 0.1),
+      dark: alpha(platformColors.xpMarket, 0.8)
     },
     quaternary: {
-      main: theme.palette.info.main,
-      light: alpha(theme.palette.info.main, 0.1),
-      dark: theme.palette.info.dark
+      main: platformColors.ledgerMeme,
+      light: alpha(platformColors.ledgerMeme, 0.1),
+      dark: alpha(platformColors.ledgerMeme, 0.8)
     }
   };
 };
@@ -578,41 +586,35 @@ const MarketMetricsContent = () => {
   // Add state to track available tokens
   const [availableTokens, setAvailableTokens] = useState([]);
 
-  // Token color map - will be used to assign consistent colors to tokens
-  const tokenColorMap = {
-    SOLO: '#FF6B6B',
-    BTC: '#F7931A',
-    CORE: '#4BC0C0',
-    ETH: '#627EEA',
-    USD: '#26A17B',
-    CNY: '#E91E63',
-    XCORE: '#9C27B0'
-    // Add more colors as needed
-  };
-
   // Function to get a color for a token (either from map or generate one)
   const getTokenColor = (tokenName, index) => {
     if (tokenColorMap[tokenName]) {
       return tokenColorMap[tokenName];
     }
-
-    // Generate colors for tokens not in the map
+    // Using a more minimalist and programmatic color generation
     const colors = [
-      '#8884d8',
-      '#82ca9d',
-      '#ffc658',
-      '#ff7300',
-      '#0088FE',
-      '#00C49F',
-      '#FFBB28',
-      '#FF8042',
-      '#a4de6c',
-      '#d0ed57',
-      '#8dd1e1',
-      '#83a6ed'
+      '#4E79A7', // Blue
+      '#F28E2B', // Orange
+      '#E15759', // Red
+      '#76B7B2', // Teal
+      '#59A14F', // Green
+      '#EDC948', // Yellow
+      '#B07AA1', // Purple
+      '#FF9DA7', // Pink
+      '#9C755F', // Brown
+      '#BAB0AC' // Grey
     ];
 
-    return colors[index % colors.length];
+    // Simple hash function to get a somewhat consistent color for a token
+    let hash = 0;
+    if (tokenName) {
+      for (let i = 0; i < tokenName.length; i++) {
+        hash = tokenName.charCodeAt(i) + ((hash << 5) - hash);
+      }
+    }
+    const colorIndex = Math.abs(hash % colors.length);
+
+    return colors[colorIndex];
   };
 
   const handleLegendClick = (entry) => {
