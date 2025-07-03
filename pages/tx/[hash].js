@@ -99,7 +99,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
   );
 };
 
-const TokenLinkWithTooltip = ({ slug, currency, md5 }) => {
+const TokenLinkWithTooltip = ({ slug, currency, md5, variant = 'body1' }) => {
   const theme = useTheme();
   const [tokenInfo, setTokenInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -124,7 +124,7 @@ const TokenLinkWithTooltip = ({ slug, currency, md5 }) => {
     <Link href={`/token/${slug}`} passHref>
       <Typography
         component="a"
-        variant="body1"
+        variant={variant}
         sx={{
           color: theme.palette.primary.main,
           textDecoration: 'none',
@@ -170,7 +170,7 @@ const AccountAvatar = ({ account }) => {
   return <Avatar src={imgSrc} onError={handleImageError} sx={{ width: 32, height: 32, mr: 1 }} />;
 };
 
-const TokenDisplay = ({ slug, currency }) => {
+const TokenDisplay = ({ slug, currency, variant = 'body1' }) => {
   const stringToHash = slug.replace('-', '_');
   const md5 = CryptoJS.MD5(stringToHash).toString();
   const imageUrl = `https://s1.xrpl.to/token/${md5}`;
@@ -178,29 +178,29 @@ const TokenDisplay = ({ slug, currency }) => {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <Avatar src={imageUrl} sx={{ width: 20, height: 20, mr: 0.5 }} />
-      <TokenLinkWithTooltip slug={slug} currency={currency} md5={md5} />
+      <TokenLinkWithTooltip slug={slug} currency={currency} md5={md5} variant={variant} />
     </Box>
   );
 };
 
-const AmountDisplay = ({ amount }) => {
+const AmountDisplay = ({ amount, variant = 'body1' }) => {
   const theme = useTheme();
   if (typeof amount === 'string') {
-    return <Typography variant="body1">{dropsToXrp(amount)} XRP</Typography>;
+    return <Typography variant={variant}>{dropsToXrp(amount)} XRP</Typography>;
   }
   if (typeof amount === 'object') {
     const currency = normalizeCurrencyCode(amount.currency);
     const slug = amount.issuer ? `${amount.issuer}-${amount.currency}` : null;
     return (
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Typography variant="body1" component="span">
-          {amount.value}{' '}
+        <Typography variant={variant} component="span">
+          {new BigNumber(amount.value).toFormat()}{' '}
         </Typography>
         {slug ? (
-          <TokenDisplay slug={slug} currency={currency} />
+          <TokenDisplay slug={slug} currency={currency} variant={variant} />
         ) : (
           <Typography
-            variant="body1"
+            variant={variant}
             component="span"
             sx={{ color: theme.palette.primary.main, ml: 0.5 }}
           >
@@ -273,7 +273,8 @@ const TransactionDetails = ({ txData, theme }) => {
     SendMax,
     Paths,
     Memos,
-    SourceTag
+    SourceTag,
+    OfferSequence
   } = txData;
 
   const { meta: metaToExclude, ...rawData } = txData;
@@ -339,6 +340,7 @@ const TransactionDetails = ({ txData, theme }) => {
           if (!balanceChanges[lowAccount]) balanceChanges[lowAccount] = [];
           balanceChanges[lowAccount].push({
             currency: normCurr,
+            rawCurrency: currency,
             value: change.toString(),
             issuer: highAccount
           });
@@ -346,6 +348,7 @@ const TransactionDetails = ({ txData, theme }) => {
           if (!balanceChanges[highAccount]) balanceChanges[highAccount] = [];
           balanceChanges[highAccount].push({
             currency: normCurr,
+            rawCurrency: currency,
             value: change.negated().toString(),
             issuer: lowAccount
           });
@@ -407,6 +410,19 @@ const TransactionDetails = ({ txData, theme }) => {
     return { balanceChanges: finalChanges, exchanges };
   };
 
+  const getCancelledOfferDetails = () => {
+    if (TransactionType !== 'OfferCancel' || !meta || !meta.AffectedNodes) {
+      return null;
+    }
+    const deletedOfferNode = meta.AffectedNodes.find(
+      (node) => node.DeletedNode && node.DeletedNode.LedgerEntryType === 'Offer'
+    );
+    if (deletedOfferNode) {
+      return deletedOfferNode.DeletedNode.FinalFields;
+    }
+    return null;
+  };
+
   const { balanceChanges, exchanges } = getBalanceChanges();
 
   const initiatorChanges = balanceChanges.find((bc) => bc.account === Account);
@@ -436,6 +452,8 @@ const TransactionDetails = ({ txData, theme }) => {
     }
   }
 
+  const cancelledOffer = getCancelledOfferDetails();
+
   const getFlagExplanation = (flags, type) => {
     const explanations = [];
     if (type === 'OfferCreate') {
@@ -459,7 +477,51 @@ const TransactionDetails = ({ txData, theme }) => {
       : getFlagExplanation(Flags, TransactionType);
 
   const mainExchange = exchanges.find((e) => e.maker === Account);
-  const displayExchange = mainExchange || conversionExchange;
+  let displayExchange = mainExchange || conversionExchange;
+
+  if (
+    !displayExchange &&
+    TransactionType === 'OfferCreate' &&
+    initiatorChanges?.changes.length >= 2
+  ) {
+    const changes = initiatorChanges.changes;
+    const paidChange = changes.find((c) => new BigNumber(c.value).isNegative());
+    const gotChange = changes.find((c) => new BigNumber(c.value).isPositive());
+
+    if (paidChange && gotChange) {
+      const paidValue = new BigNumber(paidChange.value).abs();
+      const gotValue = new BigNumber(gotChange.value);
+
+      let gotAmountFromChanges;
+      if (gotChange.currency === 'XRP') {
+        gotAmountFromChanges = gotValue.plus(dropsToXrp(Fee));
+      } else {
+        gotAmountFromChanges = gotValue;
+      }
+
+      let paidAmountFromChanges;
+      if (paidChange.currency === 'XRP') {
+        paidAmountFromChanges = paidValue.minus(dropsToXrp(Fee));
+      } else {
+        paidAmountFromChanges = paidValue;
+      }
+
+      displayExchange = {
+        paid: {
+          value: paidAmountFromChanges.toString(),
+          currency: paidChange.currency,
+          rawCurrency: paidChange.rawCurrency,
+          issuer: paidChange.issuer
+        },
+        got: {
+          value: gotAmountFromChanges.toString(),
+          currency: gotChange.currency,
+          rawCurrency: gotChange.rawCurrency,
+          issuer: gotChange.issuer
+        }
+      };
+    }
+  }
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
@@ -526,7 +588,13 @@ const TransactionDetails = ({ txData, theme }) => {
       <Grid container>
         <DetailRow label="Type">
           <Typography variant="body1">
-            {isConversion ? 'Conversion Payment' : TransactionType}
+            {TransactionType === 'OfferCreate'
+              ? `OfferCreate - ${Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
+              : TransactionType === 'OfferCancel' && cancelledOffer
+                ? `OfferCancel - ${cancelledOffer.Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
+                : isConversion
+                  ? 'Conversion Payment'
+                  : TransactionType}
           </Typography>
         </DetailRow>
         <DetailRow label={isSuccess ? 'Validated' : 'Rejected'}>
@@ -655,6 +723,75 @@ const TransactionDetails = ({ txData, theme }) => {
             <DetailRow label="Taker Pays">
               <AmountDisplay amount={TakerPays} />
             </DetailRow>
+
+            {OfferSequence > 0 && (
+              <DetailRow label="Offer to Cancel">
+                <Typography variant="body1">#{OfferSequence}</Typography>
+              </DetailRow>
+            )}
+
+            <DetailRow label={Flags & 0x00080000 ? 'Sell Order' : 'Buy Order'}>
+              <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <Typography variant="body2" component="span" sx={{ mr: 0.5 }}>
+                  {Flags & 0x00080000
+                    ? 'The priority is to fully Sell'
+                    : 'The priority is to Buy only'}
+                </Typography>
+                <AmountDisplay
+                  amount={Flags & 0x00080000 ? TakerGets : TakerPays}
+                  variant="body2"
+                />
+                <Typography variant="body2" component="span" sx={{ ml: 0.5, mr: 0.5 }}>
+                  {Flags & 0x00080000
+                    ? ', even if doing so results in receiving more than'
+                    : ', not need to spend'}
+                </Typography>
+                <AmountDisplay
+                  amount={Flags & 0x00080000 ? TakerPays : TakerGets}
+                  variant="body2"
+                />
+                {!(Flags & 0x00080000) && (
+                  <Typography variant="body2" component="span" sx={{ ml: 0.5 }}>
+                    fully.
+                  </Typography>
+                )}
+              </Box>
+            </DetailRow>
+          </>
+        )}
+
+        {TransactionType === 'OfferCancel' && cancelledOffer && (
+          <>
+            <DetailRow label="Offer Maker">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={Account} />
+                <Link href={`/profile/${Account}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {Account}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+            <DetailRow label="Taker Gets">
+              <AmountDisplay amount={cancelledOffer.TakerGets} />
+            </DetailRow>
+            <DetailRow label="Taker Pays">
+              <AmountDisplay amount={cancelledOffer.TakerPays} />
+            </DetailRow>
+            <DetailRow label="Offer Sequence">
+              <Typography variant="body1">#{OfferSequence}</Typography>
+            </DetailRow>
+            <DetailRow label="Offer Status">
+              <Typography variant="body1">Cancelled</Typography>
+            </DetailRow>
           </>
         )}
 
@@ -744,12 +881,19 @@ const TransactionDetails = ({ txData, theme }) => {
 
         {Memos && Memos.length > 0 && (
           <DetailRow label="Memo">
-            {Memos.map((memo, i) => (
-              <Typography key={i} variant="body1" sx={{ wordBreak: 'break-all' }}>
-                {memo.Memo.MemoData &&
-                  CryptoJS.enc.Hex.parse(memo.Memo.MemoData).toString(CryptoJS.enc.Utf8)}
-              </Typography>
-            ))}
+            {Memos.map((memo, i) => {
+              const memoType =
+                memo.Memo.MemoType &&
+                CryptoJS.enc.Hex.parse(memo.Memo.MemoType).toString(CryptoJS.enc.Utf8);
+              const memoData =
+                memo.Memo.MemoData &&
+                CryptoJS.enc.Hex.parse(memo.Memo.MemoData).toString(CryptoJS.enc.Utf8);
+              return (
+                <Typography key={i} variant="body1" sx={{ wordBreak: 'break-all' }}>
+                  {[memoType, memoData].filter(Boolean).join(' ')}
+                </Typography>
+              );
+            })}
           </DetailRow>
         )}
 
