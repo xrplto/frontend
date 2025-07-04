@@ -571,7 +571,7 @@ export default function News() {
                           (paragraph, index) =>
                             paragraph.trim() && (
                               <Typography
-                                key={`${article._id}-para-${index}`}
+                                key={`${article._id}-para-${paragraph.substring(0, 20).replace(/\s+/g, '')}`}
                                 paragraph
                                 sx={{ mb: 1 }}
                               >

@@ -161,7 +161,7 @@ function PrivacyPage() {
                       </Typography>
                       <Stack spacing={3}>
                         {section.content.map((item, itemIndex) => (
-                          <Box key={itemIndex}>
+                          <Box key={`${section.title}-${item.subtitle}`}>
                             <Typography
                               variant="h6"
                               sx={{ fontWeight: 600, mb: 1, color: 'secondary.main' }}
@@ -181,7 +181,7 @@ function PrivacyPage() {
 
               {/* Additional Sections */}
               {additionalSections.map((section, index) => (
-                <Grid item xs={12} md={6} key={index}>
+                <Grid item xs={12} md={6} key={section.title}>
                   <Card elevation={2} sx={{ height: '100%' }}>
                     <CardContent sx={{ p: 4 }}>
                       <Typography
