@@ -23,6 +23,13 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 // Icons for menu items
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import SearchIcon from '@mui/icons-material/Search';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import FiberNewIcon from '@mui/icons-material/FiberNew';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 // All other icons previously imported for market and resource links are no longer needed
 
 const LedgerMemeIcon = forwardRef((props, ref) => {
@@ -121,6 +128,86 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <LedgerMemeIcon sx={{ fontSize: '16px', color: '#cfff04' }} />
               <span>LedgerMeme</span>
+            </Box>
+          </MenuItem>
+          <Divider sx={{ my: 1 }} />
+
+          <Typography
+            variant="caption"
+            sx={{
+              px: 2,
+              pt: 1,
+              pb: 0,
+              fontWeight: 'bold',
+              color: 'text.secondary',
+              display: 'block'
+            }}
+          >
+            Token Discovery
+          </Typography>
+
+          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/trending">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <LocalFireDepartmentIcon sx={{ fontSize: '16px', color: '#B71D18' }} />
+              <span>Trending</span>
+            </Box>
+          </MenuItem>
+
+          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/spotlight">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <SearchIcon sx={{ fontSize: '16px', color: '#0C53B7' }} />
+              <span>Spotlight</span>
+            </Box>
+          </MenuItem>
+
+          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/most-viewed">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <VisibilityIcon sx={{ fontSize: '16px', color: '#7635DC' }} />
+              <span>Most Viewed</span>
+            </Box>
+          </MenuItem>
+
+          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/gainers/24h">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TrendingUpIcon sx={{ fontSize: '16px', color: '#007B55' }} />
+              <span>Gainers</span>
+            </Box>
+          </MenuItem>
+
+          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/new">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <FiberNewIcon sx={{ fontSize: '16px', color: '#B76E00' }} />
+              <span>New</span>
+            </Box>
+          </MenuItem>
+
+          <Divider sx={{ my: 1 }} />
+
+          <Typography
+            variant="caption"
+            sx={{
+              px: 2,
+              pt: 1,
+              pb: 0,
+              fontWeight: 'bold',
+              color: 'text.secondary',
+              display: 'block'
+            }}
+          >
+            Market Analysis
+          </Typography>
+
+          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/market-metrics">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TroubleshootIcon sx={{ fontSize: '16px', color: '#0C53B7' }} />
+              <span>Market Metrics</span>
+            </Box>
+          </MenuItem>
+
+          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/top-traders">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <EmojiEventsIcon sx={{ fontSize: '16px', color: '#B78100' }} />
+              <span>Top Traders</span>
             </Box>
           </MenuItem>
         </AccordionDetails>
