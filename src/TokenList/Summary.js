@@ -64,14 +64,20 @@ const ContentTypography = styled(Typography)(({ theme }) => ({
     fontSize: '0.75rem'
   },
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.65rem'
+    fontSize: '0.5rem' // Even smaller font size
   }
 }));
 
 // Enhanced MetricBox with modern styling
 const MetricBox = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(1.5),
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(0.1) // Even more aggressive smaller padding on mobile
+  },
   height: '100%',
+  [theme.breakpoints.down('sm')]: {
+    minHeight: '50px' // Aggressive height reduction on mobile
+  },
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
@@ -89,6 +95,10 @@ const MetricBox = styled(Paper)(({ theme }) => ({
       theme.palette.primary.main,
       0.3
     )}`
+  },
+  marginBottom: 0,
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '1.2rem' // Slightly smaller on mobile for very tight spaces
   }
 }));
 
@@ -97,7 +107,11 @@ const MetricTitle = styled(Typography)(({ theme }) => ({
   fontSize: '0.75rem',
   fontWeight: 500,
   color: theme.palette.text.secondary,
-  marginBottom: theme.spacing(0.5)
+  marginBottom: theme.spacing(0.5),
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '0.45rem', // Even smaller font size on mobile
+    marginBottom: 0 // Remove bottom margin for metric title on mobile
+  }
 }));
 
 // Ultra-compact MetricValue
@@ -106,7 +120,10 @@ const MetricValue = styled(Typography)(({ theme }) => ({
   fontWeight: 700,
   color: theme.palette.text.primary,
   lineHeight: 1.2,
-  marginBottom: 0
+  marginBottom: 0,
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '0.65rem' // Even smaller on mobile for very tight spaces
+  }
 }));
 
 // Ultra-compact PercentageChange
@@ -119,7 +136,7 @@ const PercentageChange = styled(Typography, {
     fontSize: '0.55rem'
   },
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.5rem'
+    fontSize: '0.45rem' // Already very small
   },
   color: isPositive ? theme.palette.success.main : theme.palette.error.main,
   display: 'flex',
@@ -151,7 +168,7 @@ const VolumePercentage = styled(Typography)(({ theme }) => ({
     fontSize: '0.55rem'
   },
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.5rem'
+    fontSize: '0.45rem' // Already very small
   },
   color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.7) : alpha('#637381', 0.9),
   display: 'flex',
@@ -207,16 +224,23 @@ export default function Summary() {
           direction="row"
           alignItems="center"
           justifyContent="space-between"
-          spacing={2}
+          spacing={0.5}
           sx={{ width: '100%' }}
         >
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Icon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-            <Typography variant="caption" color="text.secondary">
+          <Stack direction="row" alignItems="center" spacing={0.25}>
+            <Icon sx={{ fontSize: '0.7rem', color: 'text.secondary' }} />
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}
+            >
               {label}
             </Typography>
           </Stack>
-          <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+          <Typography
+            variant="caption"
+            sx={{ fontWeight: 'bold', fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+          >
             {value}
           </Typography>
         </Stack>
@@ -225,7 +249,7 @@ export default function Summary() {
       return (
         <Paper
           sx={{
-            p: 1.5,
+            p: { xs: 0.1, sm: 1.5 },
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.95
@@ -234,13 +258,16 @@ export default function Summary() {
             borderRadius: '12px',
             boxShadow: theme.shadows[5],
             border: `1px solid ${theme.palette.divider}`,
-            minWidth: 220
+            minWidth: { xs: 150, sm: 220 }
           }}
         >
-          <Typography variant="subtitle2" sx={{ mb: 1.5, textAlign: 'center' }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ mb: 0.5, textAlign: 'center', fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+          >
             {data.date}
           </Typography>
-          <Stack spacing={1.5}>
+          <Stack spacing={0.25}>
             {renderStat(FiberNewIcon, 'New Tokens', fNumber(data.Tokens))}
             {renderStat(
               MonetizationOnIcon,
@@ -266,18 +293,30 @@ export default function Summary() {
 
           {platformEntries.length > 0 && (
             <>
-              <Divider sx={{ my: 1.5 }} />
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                <BusinessIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-                <Typography variant="caption" color="text.secondary">
+              <Divider sx={{ my: 0.5 }} />
+              <Stack direction="row" alignItems="center" spacing={0.25} sx={{ mb: 0.25 }}>
+                <BusinessIcon sx={{ fontSize: '0.7rem', color: 'text.secondary' }} />
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}
+                >
                   New Tokens by Platform
                 </Typography>
               </Stack>
-              <Stack spacing={0.5} sx={{ pl: 2 }}>
+              <Stack spacing={0} sx={{ pl: 0.5 }}>
                 {platformEntries.map(([platform, count]) => (
                   <Stack key={platform} direction="row" justifyContent="space-between">
-                    <Typography variant="caption" display="block">{`• ${platform}`}</Typography>
-                    <Typography variant="caption" display="block" sx={{ fontWeight: 'bold' }}>
+                    <Typography
+                      variant="caption"
+                      display="block"
+                      sx={{ fontSize: { xs: '0.55rem', sm: '0.65rem' } }}
+                    >{`• ${platform}`}</Typography>
+                    <Typography
+                      variant="caption"
+                      display="block"
+                      sx={{ fontWeight: 'bold', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}
+                    >
                       {count}
                     </Typography>
                   </Stack>
@@ -287,28 +326,32 @@ export default function Summary() {
           )}
           {tokensInvolved.length > 0 && (
             <>
-              <Divider sx={{ my: 1.5 }} />
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                <SentimentVerySatisfiedIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-                <Typography variant="caption" color="text.secondary">
+              <Divider sx={{ my: 0.5 }} />
+              <Stack direction="row" alignItems="center" spacing={0.25} sx={{ mb: 0.25 }}>
+                <SentimentVerySatisfiedIcon sx={{ fontSize: '0.7rem', color: 'text.secondary' }} />
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}
+                >
                   Top Tokens by Market Cap
                 </Typography>
               </Stack>
-              <Stack spacing={1} sx={{ pl: 1 }}>
+              <Stack spacing={0} sx={{ pl: 0.25 }}>
                 {tokensInvolved.slice(0, 3).map((token) => (
                   <Stack
                     key={token.name}
                     direction="row"
                     justifyContent="space-between"
                     alignItems="center"
-                    spacing={1}
+                    spacing={0}
                   >
-                    <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
+                    <Stack direction="row" alignItems="center" spacing={0} sx={{ minWidth: 0 }}>
                       {token.md5 && (
                         <Avatar
                           alt={token.name}
                           src={`https://s1.xrpl.to/token/${token.md5}`}
-                          sx={{ width: 24, height: 24 }}
+                          sx={{ width: 14, height: 14 }}
                         />
                       )}
                       <Typography
@@ -317,7 +360,8 @@ export default function Summary() {
                         sx={{
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
+                          whiteSpace: 'nowrap',
+                          fontSize: { xs: '0.5rem', sm: '0.65rem' }
                         }}
                       >
                         {token.name}
@@ -326,7 +370,11 @@ export default function Summary() {
                     <Typography
                       variant="caption"
                       display="block"
-                      sx={{ fontWeight: 'bold', flexShrink: 0 }}
+                      sx={{
+                        fontWeight: 'bold',
+                        flexShrink: 0,
+                        fontSize: { xs: '0.5rem', sm: '0.65rem' }
+                      }}
                     >
                       {`${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(
                         new Decimal(token.marketcap || 0).div(fiatRate).toNumber()
@@ -453,7 +501,7 @@ export default function Summary() {
         position: 'relative',
         zIndex: 2,
         // EXTREMELY AGGRESSIVE negative margins on mobile to eliminate ALL top spacing
-        mt: { xs: '-24px', sm: '-20px', md: 0 }, // Even more aggressive negative margin
+        mt: { xs: '-32px', sm: '-24px', md: 0 }, // Even more aggressive negative margin
         mb: 0,
         pt: 0,
         pb: 0,
@@ -467,11 +515,11 @@ export default function Summary() {
         // Extremely aggressive mobile-specific positioning
         [(theme) => theme.breakpoints.down('sm')]: {
           position: 'relative',
-          top: '-12px' // Pull entire component up extremely aggressively on mobile
+          top: '-16px' // Pull entire component up extremely aggressively on mobile
         },
         [(theme) => theme.breakpoints.down('md')]: {
           position: 'relative',
-          top: '-10px' // Pull up more on medium screens
+          top: '-12px' // Pull up more on medium screens
         }
       }}
     >
@@ -496,9 +544,7 @@ export default function Summary() {
           fontWeight: 700,
           width: '100%',
           letterSpacing: '-0.02em',
-          background: `linear-gradient(135deg, ${(theme) => theme.palette.text.primary} 0%, ${(
-            theme
-          ) => alpha(theme.palette.primary.main, 0.8)} 100%)`,
+          background: `linear-gradient(135deg, ${(theme) => theme.palette.text.primary} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent'
@@ -507,7 +553,7 @@ export default function Summary() {
         {t("Today's Top XRPL Token Prices by Volume")}
       </Typography>
 
-      <Stack spacing={3} sx={{ width: '100%' }}>
+      <Stack spacing={{ xs: 0, sm: 1 }} sx={{ width: '100%' }}>
         {/* Main Metrics Section */}
         {isLoading ? (
           <Box
@@ -516,7 +562,7 @@ export default function Summary() {
               width: '100%',
               maxWidth: '100vw',
               pb: 0, // Zero padding on mobile
-              mt: { xs: '-12px', sm: '-8px', md: 0 }, // Extremely aggressive negative margin on loading state
+              mt: { xs: '-16px', sm: '-12px', md: 0 }, // Even more aggressive negative margin on loading state
               [(theme) => theme.breakpoints.up('md')]: {
                 pb: 1
               },
@@ -536,7 +582,7 @@ export default function Summary() {
                   minWidth: 'unset',
                   width: '100%',
                   margin: 0,
-                  gap: '1px' // Ultra-minimal gap
+                  gap: '0px' // Ultra-minimal gap - removed gap entirely
                 },
                 [(theme) => theme.breakpoints.down('md')]: {
                   minWidth: '700px'
@@ -555,19 +601,19 @@ export default function Summary() {
                     flex: '1 0 auto',
                     [(theme) => theme.breakpoints.down('sm')]: {
                       flex: 'none',
-                      width: 'calc(50% - 0.5px)', // Even tighter width
-                      maxWidth: 'calc(50% - 0.5px)',
+                      width: 'calc(50%)', // Make width exactly 50% without gap consideration
+                      maxWidth: 'calc(50%)',
                       padding: '0 !important'
                     }
                   }}
                 >
                   <Skeleton
                     variant="rectangular"
-                    height={90}
+                    height={25}
                     sx={{
-                      borderRadius: '20px',
+                      borderRadius: '3px',
                       [(theme) => theme.breakpoints.down('sm')]: {
-                        height: 32, // Even smaller height
+                        height: 28, // Even smaller height
                         borderRadius: '3px'
                       },
                       minWidth: '140px',
@@ -594,7 +640,7 @@ export default function Summary() {
             sx={{
               width: '100%',
               pb: 0,
-              mt: { xs: '-12px', sm: '-8px', md: 0 },
+              mt: { xs: '-16px', sm: '-12px', md: 0 }, // Even more aggressive negative margin
               [(theme) => theme.breakpoints.up('md')]: {
                 pb: 2
               }
@@ -607,14 +653,17 @@ export default function Summary() {
                 flexWrap: 'wrap',
                 width: '100%',
                 [(theme) => theme.breakpoints.down('sm')]: {
-                  spacing: 1,
-                  gap: '1px'
+                  spacing: 0, // Remove spacing
+                  gap: '0px' // Remove gap
                 }
               }}
             >
               {/* Main metrics taking full width */}
               <Grid item xs={12}>
-                <Grid container spacing={1.5}>
+                <Grid
+                  container
+                  spacing={{ xs: 0.5, md: 1.5 }} // Reduced spacing for metric boxes on mobile
+                >
                   {/* Market Cap Box */}
                   <Grid item xs={6} md={1.5}>
                     <MetricBox>
@@ -654,6 +703,9 @@ export default function Summary() {
                       <ContentTypography
                         sx={{
                           fontSize: '0.7rem',
+                          [theme.breakpoints.down('xs')]: {
+                            fontSize: '0.6rem' // Even smaller font size for XRP price desc on tiny screens
+                          },
                           color: 'text.secondary'
                         }}
                       >
@@ -689,22 +741,30 @@ export default function Summary() {
                   {/* Sentiment Score */}
                   <Grid item xs={6} md={1.5}>
                     <MetricBox>
-                      <MetricTitle>{t('Sentiment Score')}</MetricTitle>
+                      <MetricTitle
+                        sx={{
+                          [theme.breakpoints.down('sm')]: {
+                            marginBottom: 0 // Remove bottom margin for metric title on mobile
+                          }
+                        }}
+                      >
+                        {t('Sentiment Score')}
+                      </MetricTitle>
                       <Box
                         sx={{
                           position: 'relative',
                           display: 'inline-flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          height: 50,
-                          width: 50
+                          height: 25, // Even smaller height
+                          width: 25 // Even smaller width
                         }}
                       >
                         <CircularProgress
                           variant="determinate"
                           value={100}
-                          size={50}
-                          thickness={2.5}
+                          size={25} // Even smaller size
+                          thickness={1.5}
                           sx={{
                             color: (theme) => alpha(theme.palette.divider, 0.1),
                             position: 'absolute'
@@ -713,28 +773,28 @@ export default function Summary() {
                         <CircularProgress
                           variant="determinate"
                           value={sentimentScore}
-                          size={50}
-                          thickness={2.5}
+                          size={25} // Even smaller size
+                          thickness={1.5}
                           color={
                             sentimentScore > 66
                               ? 'success'
                               : sentimentScore > 33
-                              ? 'warning'
-                              : 'error'
+                                ? 'warning'
+                                : 'error'
                           }
                           sx={{
                             strokeLinecap: 'round',
                             position: 'absolute',
                             filter: (theme) =>
-                              `drop-shadow(0 0 4px ${alpha(
+                              `drop-shadow(0 0 2px ${alpha(
                                 theme.palette[
                                   sentimentScore > 66
                                     ? 'success'
                                     : sentimentScore > 33
-                                    ? 'warning'
-                                    : 'error'
+                                      ? 'warning'
+                                      : 'error'
                                 ].main,
-                                0.7
+                                0.5
                               )})`
                           }}
                         />
@@ -742,7 +802,7 @@ export default function Summary() {
                           variant="h6"
                           component="div"
                           color="text.primary"
-                          sx={{ fontWeight: 'bold', fontSize: '1rem' }}
+                          sx={{ fontWeight: 'bold', fontSize: '0.6rem' }} // Even smaller font size
                         >
                           {`${sentimentScore}`}
                         </Typography>
@@ -753,10 +813,10 @@ export default function Summary() {
                   {/* Combined Platform Chart */}
                   <Grid item xs={12} md={3}>
                     <MetricBox sx={{ p: 0 }}>
-                      <Box sx={{ width: '100%', pt: 2, px: 2 }}>
+                      <Box sx={{ width: '100%', pt: 0.5, px: 0.5 }}>
                         <MetricTitle>{t('New Tokens Created (30-Day)')}</MetricTitle>
                       </Box>
-                      <ResponsiveContainer width="100%" height={70}>
+                      <ResponsiveContainer width="100%" height={40}>
                         <LineChart
                           key={`combined-${chartData.length}`}
                           data={chartData}

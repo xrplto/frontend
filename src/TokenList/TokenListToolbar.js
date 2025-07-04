@@ -23,15 +23,15 @@ const StyledToolbar = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: theme.spacing(2, 0),
-  gap: theme.spacing(2),
+  padding: theme.spacing(1, 0),
+  gap: theme.spacing(1),
   flexWrap: 'wrap',
   [theme.breakpoints.down('md')]: {
     flexDirection: 'row',
     alignItems: 'stretch',
     flexWrap: 'wrap',
-    gap: theme.spacing(1),
-    padding: theme.spacing(1)
+    gap: theme.spacing(0.5),
+    padding: theme.spacing(0.5)
   }
 }));
 
@@ -46,7 +46,8 @@ const PaginationContainer = styled(Box)(({ theme }) => ({
   boxShadow: theme.shadows[1],
   [theme.breakpoints.down('md')]: {
     width: '100%',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    padding: theme.spacing(0.25, 0.5)
   }
 }));
 
@@ -63,7 +64,8 @@ const RowsSelector = styled(Box)(({ theme }) => ({
     flex: 1,
     minWidth: 'calc(50% - 8px)',
     justifyContent: 'center',
-    padding: theme.spacing(1, 2)
+    padding: theme.spacing(0.5, 1),
+    gap: theme.spacing(0.25)
   }
 }));
 
@@ -72,11 +74,11 @@ const CustomSelect = styled(Select)(({ theme }) => ({
     border: 'none'
   },
   '& .MuiSelect-select': {
-    paddingRight: theme.spacing(3),
-    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+    paddingLeft: 0,
     fontWeight: 600,
     color: theme.palette.primary.main,
-    minWidth: 60
+    minWidth: 40
   },
   '&:hover': {
     backgroundColor: alpha(theme.palette.primary.main, 0.04)
@@ -84,8 +86,8 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 }));
 
 const NavButton = styled(IconButton)(({ theme }) => ({
-  width: 32,
-  height: 32,
+  width: 28,
+  height: 28,
   borderRadius: theme.shape.borderRadius,
   '&:hover': {
     backgroundColor: alpha(theme.palette.primary.main, 0.08)
@@ -160,7 +162,7 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
             minWidth: 'calc(50% - 8px)',
             justifyContent: 'flex-start',
             gap: theme.spacing(0.5),
-            padding: theme.spacing(1, 2)
+            padding: theme.spacing(0.5, 1)
           }
         }}
       >
@@ -171,19 +173,22 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
           sx={{
             fontWeight: 600,
             '& .MuiChip-label': {
-              px: 1
+              px: 0.5
             }
           }}
         />
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
           tokens
         </Typography>
       </Box>
 
       {/* Section 2: Rows Selector */}
       <RowsSelector>
-        <ViewList fontSize="small" color="action" />
-        <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>
+        <ViewList sx={{ fontSize: '0.875rem' }} color="action" />
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 500, color: 'text.secondary', fontSize: '0.75rem' }}
+        >
           Rows
         </Typography>
         <CustomSelect value={rows} onChange={handleChangeRows} size="small">
@@ -196,7 +201,7 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
       {/* Section 3: Pagination controls */}
       <PaginationContainer>
         <NavButton onClick={handleFirstPage} disabled={page === 0} size="small" title="First page">
-          <FirstPage fontSize="small" />
+          <FirstPage sx={{ fontSize: '0.875rem' }} />
         </NavButton>
 
         <Pagination
@@ -208,8 +213,8 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
           boundaryCount={1}
           sx={{
             '& .MuiPaginationItem-root': {
-              minWidth: '24px',
-              height: '24px',
+              minWidth: '20px',
+              height: '20px',
               borderRadius: 1.5,
               margin: '0 0px',
               padding: '0 1px',
@@ -235,7 +240,7 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
           size="small"
           title="Last page"
         >
-          <LastPage fontSize="small" />
+          <LastPage sx={{ fontSize: '0.875rem' }} />
         </NavButton>
       </PaginationContainer>
     </StyledToolbar>
