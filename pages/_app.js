@@ -39,6 +39,13 @@ function XRPLToApp({ Component, pageProps, router }) {
   const isUnderMaintenance = process.env.MAINTENANCE;
   const { isOpen, msg, variant, openSnackbar, closeSnackbar } = useSnackbar();
 
+  // Memoize ogp to prevent unnecessary re-renders
+  const ogp = useMemo(() => pageProps.ogp || {}, [pageProps.ogp]);
+  const data = pageProps.data;
+
+  // Memoize JSON-LD script content
+  const jsonLdScript = useMemo(() => JSON.stringify(jsonLdSchema), []);
+
   // Early return for maintenance mode
   if (isUnderMaintenance && router.pathname !== '/status/maintenance') {
     if (typeof window !== 'undefined') {
@@ -46,13 +53,6 @@ function XRPLToApp({ Component, pageProps, router }) {
     }
     return null;
   }
-
-  // Memoize ogp to prevent unnecessary re-renders
-  const ogp = useMemo(() => pageProps.ogp || {}, [pageProps.ogp]);
-  const data = pageProps.data;
-
-  // Memoize JSON-LD script content
-  const jsonLdScript = useMemo(() => JSON.stringify(jsonLdSchema), []);
 
   return (
     <>

@@ -23,6 +23,8 @@ import { Icon } from '@iconify/react';
 
 const CryptoJS = require('crypto-js');
 
+export const BASE_URL = 'https://api.xrpl.to/api';
+
 export const SUPPORTED_FILE_TYPES = [
   'JPG',
   'PNG'

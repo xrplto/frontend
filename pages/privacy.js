@@ -10,13 +10,16 @@ import {
   Chip,
   Divider,
   Stack,
-  useTheme
+  useTheme,
+  List,
+  ListItem
 } from '@mui/material';
 import axios from 'axios';
-import { performance } from 'perf_hooks';
+// import { performance } from 'perf_hooks';
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
+import { BASE_URL } from 'src/utils/constants';
 
 function PrivacyPage() {
   const theme = useTheme();
@@ -282,19 +285,15 @@ export default PrivacyPage;
 // revalidation is enabled and a new request comes in
 export async function getStaticProps() {
   // https://api.xrpl.to/api/banxa/currencies
-  const BASE_URL = process.env.API_URL;
+  // const BASE_URL = process.env.API_URL;
   let data = null;
   try {
-    var t1 = performance.now();
-
-    const res = await axios.get(`${BASE_URL}/banxa/currencies`);
-
-    data = res.data;
-
-    var t2 = performance.now();
-    var dt = (t2 - t1).toFixed(2);
-
-    console.log(`2. getStaticProps fiats: ${data.fiats.length} took: ${dt}ms`);
+    // var t1 = performance.now();
+    // const res = await axios.get(`${BASE_URL}/banxa/currencies`);
+    // data = res.data;
+    // var t2 = performance.now();
+    // var dt = (t2 - t1).toFixed(2);
+    // console.log(`2. getStaticProps fiats: ${data.fiats.length} took: ${dt}ms`);
   } catch (e) {
     console.log(e);
   }

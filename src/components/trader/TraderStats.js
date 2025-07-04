@@ -346,6 +346,7 @@ export const DailyVolumeChart = ({ data }) => {
 
                 return [
                   <span
+                    key={`${name}-value`}
                     style={{
                       color: colors[name] || theme.palette.text.primary,
                       fontWeight: 600,
@@ -355,6 +356,7 @@ export const DailyVolumeChart = ({ data }) => {
                     {name === 'avgPrice' ? fNumber(value, 6) : fNumber(value)} XRP
                   </span>,
                   <span
+                    key={`${name}-label`}
                     style={{
                       color: colors[name] || theme.palette.text.primary,
                       fontWeight: 500,

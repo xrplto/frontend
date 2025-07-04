@@ -12,10 +12,11 @@ import {
   AlertTitle
 } from '@mui/material';
 import axios from 'axios';
-import { performance } from 'perf_hooks';
+// import { performance } from 'perf_hooks';
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
+import { BASE_URL } from 'src/utils/constants';
 
 function DisclaimerPage() {
   const theme = useTheme();
@@ -102,14 +103,14 @@ function DisclaimerPage() {
                         section.type === 'warning'
                           ? `linear-gradient(135deg, ${theme.palette.warning.main}08, ${theme.palette.error.main}08)`
                           : section.type === 'success'
-                          ? `linear-gradient(135deg, ${theme.palette.success.main}08, ${theme.palette.info.main}08)`
-                          : `linear-gradient(135deg, ${theme.palette.info.main}08, ${theme.palette.primary.main}08)`,
+                            ? `linear-gradient(135deg, ${theme.palette.success.main}08, ${theme.palette.info.main}08)`
+                            : `linear-gradient(135deg, ${theme.palette.info.main}08, ${theme.palette.primary.main}08)`,
                       border: `1px solid ${
                         section.type === 'warning'
                           ? theme.palette.warning.main + '30'
                           : section.type === 'success'
-                          ? theme.palette.success.main + '30'
-                          : theme.palette.info.main + '30'
+                            ? theme.palette.success.main + '30'
+                            : theme.palette.info.main + '30'
                       }`
                     }}
                   >
@@ -124,8 +125,8 @@ function DisclaimerPage() {
                             section.type === 'warning'
                               ? 'warning.main'
                               : section.type === 'success'
-                              ? 'success.main'
-                              : 'info.main'
+                                ? 'success.main'
+                                : 'info.main'
                         }}
                       >
                         {section.title}
@@ -187,19 +188,15 @@ export default DisclaimerPage;
 // revalidation is enabled and a new request comes in
 export async function getStaticProps() {
   // https://api.xrpl.to/api/banxa/currencies
-  const BASE_URL = process.env.API_URL;
+  // const BASE_URL = process.env.API_URL;
   let data = null;
   try {
-    var t1 = performance.now();
-
-    const res = await axios.get(`${BASE_URL}/banxa/currencies`);
-
-    data = res.data;
-
-    var t2 = performance.now();
-    var dt = (t2 - t1).toFixed(2);
-
-    console.log(`2. getStaticProps fiats: ${data.fiats.length} took: ${dt}ms`);
+    // var t1 = performance.now();
+    // const res = await axios.get(`${BASE_URL}/banxa/currencies`);
+    // data = res.data;
+    // var t2 = performance.now();
+    // var dt = (t2 - t1).toFixed(2);
+    // console.log(`2. getStaticProps fiats: ${data.fiats.length} took: ${dt}ms`);
   } catch (e) {
     console.log(e);
   }

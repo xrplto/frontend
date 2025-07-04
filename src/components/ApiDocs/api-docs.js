@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { ThemeProvider, createTheme, alpha } from '@mui/material/styles';
@@ -5185,11 +5185,14 @@ const ApiDocs = () => {
 
 // Wrapper component to provide AppContext for Logo component
 const ApiDocsWithContext = () => {
-  const contextValue = {
-    darkMode: true, // API docs uses dark theme
-    openSnackbar: () => {}, // Mock function for context completeness
-    accountProfile: null
-  };
+  const contextValue = useMemo(
+    () => ({
+      darkMode: true, // API docs uses dark theme
+      openSnackbar: () => {}, // Mock function for context completeness
+      accountProfile: null
+    }),
+    []
+  );
 
   return (
     <AppContext.Provider value={contextValue}>
