@@ -27,9 +27,11 @@ const StyledToolbar = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2),
   flexWrap: 'wrap',
   [theme.breakpoints.down('md')]: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     alignItems: 'stretch',
-    gap: theme.spacing(1)
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
+    padding: theme.spacing(1)
   }
 }));
 
@@ -41,7 +43,11 @@ const PaginationContainer = styled(Box)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius * 2,
   backgroundColor: theme.palette.background.paper,
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  boxShadow: theme.shadows[1]
+  boxShadow: theme.shadows[1],
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    justifyContent: 'center'
+  }
 }));
 
 const RowsSelector = styled(Box)(({ theme }) => ({
@@ -52,7 +58,13 @@ const RowsSelector = styled(Box)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius * 2,
   backgroundColor: theme.palette.background.paper,
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  boxShadow: theme.shadows[1]
+  boxShadow: theme.shadows[1],
+  [theme.breakpoints.down('md')]: {
+    flex: 1,
+    minWidth: 'calc(50% - 8px)',
+    justifyContent: 'center',
+    padding: theme.spacing(1, 2)
+  }
 }));
 
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -139,15 +151,16 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
           alignItems: 'center',
           gap: 0.5,
           flexWrap: 'wrap',
+          border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+          borderRadius: theme.shape.borderRadius * 2,
+          backgroundColor: theme.palette.background.paper,
+          boxShadow: theme.shadows[1],
           [theme.breakpoints.down('md')]: {
-            width: '100%',
+            flex: 1,
+            minWidth: 'calc(50% - 8px)',
             justifyContent: 'flex-start',
             gap: theme.spacing(0.5),
-            padding: theme.spacing(0.5, 1),
-            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-            borderRadius: theme.shape.borderRadius * 2,
-            backgroundColor: theme.palette.background.paper,
-            boxShadow: theme.shadows[1]
+            padding: theme.spacing(1, 2)
           }
         }}
       >
@@ -167,21 +180,21 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
         </Typography>
       </Box>
 
-      {/* Section 2: Pagination controls */}
-      <PaginationContainer
-        sx={{
-          [theme.breakpoints.down('md')]: {
-            width: '100%',
-            justifyContent: 'center',
-            gap: theme.spacing(0.5),
-            padding: theme.spacing(0.5, 1),
-            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-            borderRadius: theme.shape.borderRadius * 2,
-            backgroundColor: theme.palette.background.paper,
-            boxShadow: theme.shadows[1]
-          }
-        }}
-      >
+      {/* Section 2: Rows Selector */}
+      <RowsSelector>
+        <ViewList fontSize="small" color="action" />
+        <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>
+          Rows
+        </Typography>
+        <CustomSelect value={rows} onChange={handleChangeRows} size="small">
+          <MenuItem value={100}>100</MenuItem>
+          <MenuItem value={50}>50</MenuItem>
+          <MenuItem value={20}>20</MenuItem>
+        </CustomSelect>
+      </RowsSelector>
+
+      {/* Section 3: Pagination controls */}
+      <PaginationContainer>
         <NavButton onClick={handleFirstPage} disabled={page === 0} size="small" title="First page">
           <FirstPage fontSize="small" />
         </NavButton>
@@ -225,32 +238,6 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
           <LastPage fontSize="small" />
         </NavButton>
       </PaginationContainer>
-
-      {/* Section 3: Rows Selector */}
-      <RowsSelector
-        sx={{
-          [theme.breakpoints.down('md')]: {
-            width: '100%',
-            justifyContent: 'center',
-            gap: theme.spacing(0.5),
-            padding: theme.spacing(0.5, 1),
-            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-            borderRadius: theme.shape.borderRadius * 2,
-            backgroundColor: theme.palette.background.paper,
-            boxShadow: theme.shadows[1]
-          }
-        }}
-      >
-        <ViewList fontSize="small" color="action" />
-        <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>
-          Rows
-        </Typography>
-        <CustomSelect value={rows} onChange={handleChangeRows} size="small">
-          <MenuItem value={100}>100</MenuItem>
-          <MenuItem value={50}>50</MenuItem>
-          <MenuItem value={20}>20</MenuItem>
-        </CustomSelect>
-      </RowsSelector>
     </StyledToolbar>
   );
 }
