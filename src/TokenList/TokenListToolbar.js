@@ -182,7 +182,60 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
         </Typography>
       </Box>
 
-      {/* Section 2: Rows Selector */}
+      {/* Section 3: Pagination controls - Wrapped in a new Box for centering */}
+      <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
+        <PaginationContainer>
+          <NavButton
+            onClick={handleFirstPage}
+            disabled={page === 0}
+            size="small"
+            title="First page"
+          >
+            <FirstPage sx={{ fontSize: '0.875rem' }} />
+          </NavButton>
+
+          <Pagination
+            page={page + 1}
+            onChange={handleChangePage}
+            count={page_count}
+            size="small"
+            siblingCount={1}
+            boundaryCount={1}
+            sx={{
+              '& .MuiPaginationItem-root': {
+                minWidth: '20px',
+                height: '20px',
+                borderRadius: 1.5,
+                margin: '0 0px',
+                padding: '0 1px',
+                fontWeight: 500,
+                '&:hover': {
+                  backgroundColor: 'primary.lighter'
+                },
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  fontWeight: 600,
+                  '&:hover': {
+                    backgroundColor: 'primary.dark'
+                  }
+                }
+              }
+            }}
+          />
+
+          <NavButton
+            onClick={handleLastPage}
+            disabled={page === page_count - 1}
+            size="small"
+            title="Last page"
+          >
+            <LastPage sx={{ fontSize: '0.875rem' }} />
+          </NavButton>
+        </PaginationContainer>
+      </Box>
+
+      {/* Section 2: Rows Selector - Moved to the end */}
       <RowsSelector>
         <ViewList sx={{ fontSize: '0.875rem' }} color="action" />
         <Typography
@@ -197,52 +250,6 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
           <MenuItem value={20}>20</MenuItem>
         </CustomSelect>
       </RowsSelector>
-
-      {/* Section 3: Pagination controls */}
-      <PaginationContainer>
-        <NavButton onClick={handleFirstPage} disabled={page === 0} size="small" title="First page">
-          <FirstPage sx={{ fontSize: '0.875rem' }} />
-        </NavButton>
-
-        <Pagination
-          page={page + 1}
-          onChange={handleChangePage}
-          count={page_count}
-          size="small"
-          siblingCount={1}
-          boundaryCount={1}
-          sx={{
-            '& .MuiPaginationItem-root': {
-              minWidth: '20px',
-              height: '20px',
-              borderRadius: 1.5,
-              margin: '0 0px',
-              padding: '0 1px',
-              fontWeight: 500,
-              '&:hover': {
-                backgroundColor: 'primary.lighter'
-              },
-              '&.Mui-selected': {
-                backgroundColor: 'primary.main',
-                color: 'white',
-                fontWeight: 600,
-                '&:hover': {
-                  backgroundColor: 'primary.dark'
-                }
-              }
-            }
-          }}
-        />
-
-        <NavButton
-          onClick={handleLastPage}
-          disabled={page === page_count - 1}
-          size="small"
-          title="Last page"
-        >
-          <LastPage sx={{ fontSize: '0.875rem' }} />
-        </NavButton>
-      </PaginationContainer>
     </StyledToolbar>
   );
 }

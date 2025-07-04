@@ -456,7 +456,14 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           </TableBody>
         </Table>
       </Box>
-      <Box sx={{ mt: 1 }}>
+      <Box
+        sx={{
+          mt: 1,
+          display: isMobile ? 'block' : 'flex',
+          justifyContent: isMobile ? 'flex-start' : 'center',
+          width: '100%'
+        }}
+      >
         <TokenListToolbar
           rows={rows}
           setRows={updateRows}
