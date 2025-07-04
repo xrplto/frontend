@@ -255,7 +255,7 @@ export async function getStaticProps() {
     const [tokensResponse, metricsResponse] = await Promise.all([
       axios.get(`${BASE_URL}/tokens?limit=100&offset=0`),
       axios.get(
-        `${BASE_URL}/simple/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`
+        `${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`
       )
     ]);
 

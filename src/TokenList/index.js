@@ -122,6 +122,40 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     }
   });
 
+  // Add a state to track if metrics have been loaded
+  const [metricsLoaded, setMetricsLoaded] = useState(false);
+
+  // Fallback to REST API for metrics if not loaded via WebSocket
+  useEffect(() => {
+    // Only fetch if metrics are not yet loaded and we have a BASE_URL
+    if (!metricsLoaded && BASE_URL) {
+      const fetchMetrics = async () => {
+        try {
+          const metricsResponse = await axios.get(
+            `${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`
+          );
+          if (metricsResponse.status === 200 && metricsResponse.data) {
+            dispatch(update_metrics(metricsResponse.data));
+            setMetricsLoaded(true); // Mark metrics as loaded
+          }
+        } catch (error) {
+          console.error('Error fetching metrics via REST API:', error);
+        }
+      };
+      // Check if metrics are already in Redux state from SSR or previous WS update
+      if (
+        metrics.global &&
+        metrics[activeFiatCurrency] &&
+        metrics.tokenCreation &&
+        metrics.tokenCreation.length > 0
+      ) {
+        setMetricsLoaded(true);
+      } else {
+        fetchMetrics();
+      }
+    }
+  }, [metricsLoaded, BASE_URL, dispatch, metrics, activeFiatCurrency]);
+
   const tokenMap = useMemo(() => new Map(tokens.map((token) => [token.md5, token])), [tokens]);
 
   const applyTokenChanges = useCallback(
