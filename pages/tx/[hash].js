@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import useWebSocket from 'react-use-websocket';
 import { update_metrics } from 'src/redux/statusSlice';
@@ -103,11 +103,31 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
   );
 };
 
-const TokenLinkWithTooltip = ({ slug, currency, md5, variant = 'body1' }) => {
+const TokenLinkWithTooltip = ({ slug, currency, rawCurrency, md5, variant = 'body1' }) => {
   const theme = useTheme();
   const [tokenInfo, setTokenInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const isLpToken = rawCurrency && rawCurrency.length === 40 && /^[A-F0-9]{40}$/i.test(rawCurrency);
+
+  useEffect(() => {
+    const fetchTokenName = async () => {
+      if (isLpToken) {
+        setLoading(true);
+        try {
+          const response = await axios.get(`https://api.xrpl.to/api/token/${md5}`);
+          setTokenInfo(response.data);
+        } catch (err) {
+          console.error('Failed to fetch token info for LP token', err);
+          setError('Could not load token data.');
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    fetchTokenName();
+  }, [isLpToken, md5]);
 
   const handleFetchTokenInfo = async () => {
     if (tokenInfo || loading) return;
@@ -124,6 +144,17 @@ const TokenLinkWithTooltip = ({ slug, currency, md5, variant = 'body1' }) => {
     }
   };
 
+  let displayText = currency;
+  if (isLpToken) {
+    if (loading) {
+      displayText = '...';
+    } else if (tokenInfo?.token) {
+      displayText = tokenInfo.token.name || tokenInfo.token.user || 'LP Token';
+    } else {
+      displayText = 'LP Token';
+    }
+  }
+
   const link = (
     <Link href={`/token/${slug}`} passHref>
       <Typography
@@ -136,7 +167,7 @@ const TokenLinkWithTooltip = ({ slug, currency, md5, variant = 'body1' }) => {
           ml: 0.5
         }}
       >
-        {currency}
+        {displayText}
       </Typography>
     </Link>
   );
@@ -174,7 +205,7 @@ const AccountAvatar = ({ account }) => {
   return <Avatar src={imgSrc} onError={handleImageError} sx={{ width: 32, height: 32, mr: 1 }} />;
 };
 
-const TokenDisplay = ({ slug, currency, variant = 'body1' }) => {
+const TokenDisplay = ({ slug, currency, rawCurrency, variant = 'body1' }) => {
   const stringToHash = slug.replace('-', '_');
   const md5 = CryptoJS.MD5(stringToHash).toString();
   const imageUrl = `https://s1.xrpl.to/token/${md5}`;
@@ -182,7 +213,13 @@ const TokenDisplay = ({ slug, currency, variant = 'body1' }) => {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <Avatar src={imageUrl} sx={{ width: 20, height: 20, mr: 0.5 }} />
-      <TokenLinkWithTooltip slug={slug} currency={currency} md5={md5} variant={variant} />
+      <TokenLinkWithTooltip
+        slug={slug}
+        currency={currency}
+        rawCurrency={rawCurrency}
+        md5={md5}
+        variant={variant}
+      />
     </Box>
   );
 };
@@ -190,7 +227,15 @@ const TokenDisplay = ({ slug, currency, variant = 'body1' }) => {
 const AmountDisplay = ({ amount, variant = 'body1' }) => {
   const theme = useTheme();
   if (typeof amount === 'string') {
-    return <Typography variant={variant}>{dropsToXrp(amount)} XRP</Typography>;
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Avatar
+          src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
+          sx={{ width: 20, height: 20, mr: 0.5 }}
+        />
+        <Typography variant={variant}>{dropsToXrp(amount)} XRP</Typography>
+      </Box>
+    );
   }
   if (typeof amount === 'object') {
     const currency = normalizeCurrencyCode(amount.currency);
@@ -201,7 +246,12 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
           {new BigNumber(amount.value).toFormat()}{' '}
         </Typography>
         {slug ? (
-          <TokenDisplay slug={slug} currency={currency} variant={variant} />
+          <TokenDisplay
+            slug={slug}
+            currency={currency}
+            rawCurrency={amount.currency}
+            variant={variant}
+          />
         ) : (
           <Typography
             variant={variant}
@@ -356,12 +406,26 @@ const TransactionDetails = ({ txData, theme }) => {
 
         if (!change.isZero()) {
           const normCurr = normalizeCurrencyCode(currency);
+
+          let issuer = highAccount;
+          // If balance is negative, the low account is the issuer.
+          if (new BigNumber(finalFields.Balance.value).isNegative()) {
+            issuer = lowAccount;
+          } else if (
+            finalBalance.isZero() &&
+            previousFields.Balance &&
+            new BigNumber(previousFields.Balance.value).isNegative()
+          ) {
+            // If final balance is 0 and previous was negative, low account was issuer.
+            issuer = lowAccount;
+          }
+
           if (!balanceChanges[lowAccount]) balanceChanges[lowAccount] = [];
           balanceChanges[lowAccount].push({
             currency: normCurr,
             rawCurrency: currency,
             value: change.toString(),
-            issuer: highAccount
+            issuer
           });
 
           if (!balanceChanges[highAccount]) balanceChanges[highAccount] = [];
@@ -369,7 +433,7 @@ const TransactionDetails = ({ txData, theme }) => {
             currency: normCurr,
             rawCurrency: currency,
             value: change.negated().toString(),
-            issuer: lowAccount
+            issuer
           });
         }
       } else if (
@@ -1212,11 +1276,18 @@ const TransactionDetails = ({ txData, theme }) => {
                   <TokenDisplay
                     slug={`${displayExchange.paid.issuer}-${displayExchange.paid.rawCurrency}`}
                     currency={displayExchange.paid.currency}
+                    rawCurrency={displayExchange.paid.rawCurrency}
                   />
                 ) : (
-                  <Typography variant="body1" component="span" sx={{ ml: 0.5 }}>
-                    {displayExchange.paid.currency}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', ml: 0.5 }}>
+                    <Avatar
+                      src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
+                      sx={{ width: 20, height: 20, mr: 0.5 }}
+                    />
+                    <Typography variant="body1" component="span">
+                      {displayExchange.paid.currency}
+                    </Typography>
+                  </Box>
                 )}
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -1227,11 +1298,18 @@ const TransactionDetails = ({ txData, theme }) => {
                   <TokenDisplay
                     slug={`${displayExchange.got.issuer}-${displayExchange.got.rawCurrency}`}
                     currency={displayExchange.got.currency}
+                    rawCurrency={displayExchange.got.rawCurrency}
                   />
                 ) : (
-                  <Typography variant="body1" component="span" sx={{ ml: 0.5 }}>
-                    {displayExchange.got.currency}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', ml: 0.5 }}>
+                    <Avatar
+                      src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
+                      sx={{ width: 20, height: 20, mr: 0.5 }}
+                    />
+                    <Typography variant="body1" component="span">
+                      {displayExchange.got.currency}
+                    </Typography>
+                  </Box>
                 )}
               </Box>
             </DetailRow>
@@ -1271,7 +1349,7 @@ const TransactionDetails = ({ txData, theme }) => {
         ) : null}
 
         <DetailRow label="Ledger Fee">
-          <Typography variant="body1">{dropsToXrp(Fee)} XRP</Typography>
+          <AmountDisplay amount={Fee} />
         </DetailRow>
 
         {clientInfo && (
@@ -1355,18 +1433,43 @@ const TransactionDetails = ({ txData, theme }) => {
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={9}>
-                  {changes.map((change, i) => (
-                    <Typography
-                      key={i}
-                      variant="body2"
-                      color={
-                        new BigNumber(change.value).isPositive() ? 'success.main' : 'error.main'
-                      }
-                    >
-                      {new BigNumber(change.value).isPositive() ? '+' : ''}
-                      {change.value} {change.currency}
-                    </Typography>
-                  ))}
+                  {changes.map((change, i) => {
+                    const isPositive = new BigNumber(change.value).isPositive();
+                    const sign = isPositive ? '+' : '';
+                    const color = isPositive ? 'success.main' : 'error.main';
+
+                    if (change.currency === 'XRP') {
+                      return (
+                        <Box key={i} sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Typography variant="body2" color={color}>
+                            {sign}
+                            {new BigNumber(change.value).toFormat()}{' '}
+                          </Typography>
+                          <Avatar
+                            src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
+                            sx={{ width: 20, height: 20, ml: 0.5, mr: 0.5 }}
+                          />
+                          <Typography variant="body2">{change.currency}</Typography>
+                        </Box>
+                      );
+                    }
+
+                    const slug = `${change.issuer}-${change.rawCurrency}`;
+                    return (
+                      <Box key={i} sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography variant="body2" color={color} component="span">
+                          {sign}
+                          {new BigNumber(change.value).toFormat()}{' '}
+                        </Typography>
+                        <TokenDisplay
+                          slug={slug}
+                          currency={change.currency}
+                          rawCurrency={change.rawCurrency}
+                          variant="body2"
+                        />
+                      </Box>
+                    );
+                  })}
                 </Grid>
               </Grid>
             ))}
