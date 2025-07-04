@@ -1382,8 +1382,8 @@ export default function UserDesc({ token }) {
                     onClick={() => openGoogleLens(imgUrl)}
                     size="small"
                     sx={{
-                      width: isXsMobile ? 16 : 20,
-                      height: isXsMobile ? 16 : 20,
+                      width: isXsMobile ? 20 : 24,
+                      height: isXsMobile ? 20 : 24,
                       p: 0,
                       background: `linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)`,
                       color: 'white',
@@ -1393,7 +1393,7 @@ export default function UserDesc({ token }) {
                       }
                     }}
                   >
-                    <SearchIcon sx={{ fontSize: isXsMobile ? 9 : 11 }} />
+                    <SearchIcon sx={{ fontSize: isXsMobile ? 12 : 16 }} />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -1608,8 +1608,8 @@ export default function UserDesc({ token }) {
                         onClick={() => openGoogleLens(imgUrl)}
                         size="small"
                         sx={{
-                          width: isXsMobile ? 36 : 40,
-                          height: isXsMobile ? 36 : 40,
+                          width: isXsMobile ? 24 : 28,
+                          height: isXsMobile ? 24 : 28,
                           p: 0,
                           background: `linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)`,
                           color: 'white',
@@ -1619,7 +1619,7 @@ export default function UserDesc({ token }) {
                           }
                         }}
                       >
-                        <SearchIcon sx={{ fontSize: isXsMobile ? 29 : 31 }} />
+                        <SearchIcon sx={{ fontSize: isXsMobile ? 12 : 16 }} />
                       </IconButton>
                     </Tooltip>
                   </Box>
@@ -1653,8 +1653,8 @@ export default function UserDesc({ token }) {
                         onClick={() => openGoogleLens(imgUrl)}
                         size="small"
                         sx={{
-                          width: 62,
-                          height: 62,
+                          width: 40,
+                          height: 40,
                           p: 0,
                           background: `linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)`,
                           color: 'white',
@@ -1664,7 +1664,7 @@ export default function UserDesc({ token }) {
                           }
                         }}
                       >
-                        <SearchIcon sx={{ fontSize: 50 }} />
+                        <SearchIcon sx={{ fontSize: 28 }} />
                       </IconButton>
                     </Tooltip>
                   </Box>
@@ -1672,7 +1672,6 @@ export default function UserDesc({ token }) {
               )}
             </>
           )}
-
           {/* Token Details - Desktop with integrated tags and social */}
           {!isMobile && (
             <Stack spacing={0.75} sx={{ flex: 1, minWidth: 0 }}>
