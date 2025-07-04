@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import useWebSocket from 'react-use-websocket';
 import { update_metrics } from 'src/redux/statusSlice';
@@ -274,7 +274,11 @@ const TransactionDetails = ({ txData, theme }) => {
     Paths,
     Memos,
     SourceTag,
-    OfferSequence
+    OfferSequence,
+    LimitAmount,
+    Amount2,
+    Asset,
+    Asset2
   } = txData;
 
   const { meta: metaToExclude, ...rawData } = txData;
@@ -453,6 +457,42 @@ const TransactionDetails = ({ txData, theme }) => {
   }
 
   const cancelledOffer = getCancelledOfferDetails();
+  const trustSetState = useMemo(() => {
+    if (TransactionType !== 'TrustSet' || !meta || !meta.AffectedNodes) {
+      return null;
+    }
+
+    const rippleStateNode = meta.AffectedNodes.find((node) => {
+      const n = node.ModifiedNode || node.DeletedNode || node.CreatedNode;
+      return n && n.LedgerEntryType === 'RippleState';
+    });
+
+    if (!rippleStateNode) return null;
+
+    let fields;
+    if (rippleStateNode.CreatedNode) {
+      fields = rippleStateNode.CreatedNode.NewFields;
+    } else {
+      const node = rippleStateNode.ModifiedNode || rippleStateNode.DeletedNode;
+      fields = rippleStateNode.DeletedNode ? node.PreviousFields : node.FinalFields;
+    }
+
+    if (!fields || typeof fields.Flags === 'undefined' || !fields.LowLimit) return null;
+
+    const flags = fields.Flags;
+    const lowIssuer = fields.LowLimit.issuer;
+    const isLowAccount = Account === lowIssuer;
+
+    const noRipple = isLowAccount ? (flags & 0x00100000) !== 0 : (flags & 0x00200000) !== 0;
+    const frozen = isLowAccount ? (flags & 0x00400000) !== 0 : (flags & 0x00800000) !== 0;
+    const authorized = isLowAccount ? (flags & 0x00040000) !== 0 : (flags & 0x00080000) !== 0;
+
+    return {
+      rippling: !noRipple,
+      frozen,
+      authorized
+    };
+  }, [TransactionType, meta, Account]);
 
   const getFlagExplanation = (flags, type) => {
     const explanations = [];
@@ -792,6 +832,98 @@ const TransactionDetails = ({ txData, theme }) => {
             <DetailRow label="Offer Status">
               <Typography variant="body1">Cancelled</Typography>
             </DetailRow>
+          </>
+        )}
+
+        {TransactionType === 'TrustSet' && (
+          <>
+            <DetailRow label="Initiated by">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={Account} />
+                <Link href={`/profile/${Account}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {Account}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+            {LimitAmount && (
+              <>
+                <DetailRow label="Trust to the issuer">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <AccountAvatar account={LimitAmount.issuer} />
+                    <Link href={`/profile/${LimitAmount.issuer}`} passHref>
+                      <Typography
+                        component="a"
+                        variant="body1"
+                        sx={{
+                          color: theme.palette.primary.main,
+                          textDecoration: 'none',
+                          '&:hover': { textDecoration: 'underline' }
+                        }}
+                      >
+                        {LimitAmount.issuer}
+                      </Typography>
+                    </Link>
+                  </Box>
+                </DetailRow>
+                <DetailRow label="Limit">
+                  <AmountDisplay amount={LimitAmount} />
+                </DetailRow>
+              </>
+            )}
+            {trustSetState && (
+              <>
+                <DetailRow label="Rippling">
+                  <Typography variant="body1">
+                    {trustSetState.rippling ? 'Enabled' : 'Disabled'}
+                  </Typography>
+                </DetailRow>
+                <DetailRow label="Frozen">
+                  <Typography variant="body1">{trustSetState.frozen ? 'Yes' : 'No'}</Typography>
+                </DetailRow>
+                <DetailRow label="Authorized">
+                  <Typography variant="body1">{trustSetState.authorized ? 'Yes' : 'No'}</Typography>
+                </DetailRow>
+              </>
+            )}
+          </>
+        )}
+
+        {TransactionType === 'AMMDeposit' && (
+          <>
+            <DetailRow label="Initiated by">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={Account} />
+                <Link href={`/profile/${Account}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {Account}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+            {(Amount || Amount2) && (
+              <DetailRow label="Amount Deposited">
+                {Amount && <AmountDisplay amount={Amount} />}
+                {Amount2 && <AmountDisplay amount={Amount2} />}
+              </DetailRow>
+            )}
           </>
         )}
 
