@@ -752,14 +752,14 @@ export default function Summary() {
                           display: 'inline-flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          height: 25, // Even smaller height
-                          width: 25 // Even smaller width
+                          height: 40, // Increased height
+                          width: 40 // Increased width
                         }}
                       >
                         <CircularProgress
                           variant="determinate"
                           value={100}
-                          size={25} // Even smaller size
+                          size={40} // Increased size
                           thickness={1.5}
                           sx={{
                             color: (theme) => alpha(theme.palette.divider, 0.1),
@@ -769,27 +769,27 @@ export default function Summary() {
                         <CircularProgress
                           variant="determinate"
                           value={sentimentScore}
-                          size={25} // Even smaller size
+                          size={40} // Increased size
                           thickness={1.5}
-                          color={
-                            sentimentScore > 66
-                              ? 'success'
-                              : sentimentScore > 33
-                                ? 'warning'
-                                : 'error'
-                          }
+                          color={(() => {
+                            if (sentimentScore > 80) return 'success'; // Dark green
+                            if (sentimentScore > 60) return 'primary'; // Light green
+                            if (sentimentScore > 40) return 'warning'; // Yellow
+                            if (sentimentScore > 20) return '#FFA500'; // Orange
+                            return 'error'; // Red
+                          })()}
                           sx={{
                             strokeLinecap: 'round',
                             position: 'absolute',
                             filter: (theme) =>
                               `drop-shadow(0 0 2px ${alpha(
-                                theme.palette[
-                                  sentimentScore > 66
-                                    ? 'success'
-                                    : sentimentScore > 33
-                                      ? 'warning'
-                                      : 'error'
-                                ].main,
+                                (() => {
+                                  if (sentimentScore > 80) return theme.palette.success.main;
+                                  if (sentimentScore > 60) return theme.palette.primary.main;
+                                  if (sentimentScore > 40) return theme.palette.warning.main;
+                                  if (sentimentScore > 20) return '#FFA500'; // Orange
+                                  return theme.palette.error.main;
+                                })(),
                                 0.5
                               )})`
                           }}
@@ -798,7 +798,7 @@ export default function Summary() {
                           variant="h6"
                           component="div"
                           color="text.primary"
-                          sx={{ fontWeight: 'bold', fontSize: '0.55rem' }} // Even smaller font size
+                          sx={{ fontWeight: 'bold', fontSize: '0.85rem' }} // Increased font size
                         >
                           {`${sentimentScore}`}
                         </Typography>
