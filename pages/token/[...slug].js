@@ -152,15 +152,15 @@ export async function getServerSideProps(ctx) {
     }
 
     // Create SEO-optimized title with dynamic data
-    let seoTitle = `${name} Price: ${priceDisplay}`;
+    let seoTitle = `${name}: ${priceDisplay}`;
     if (changeDisplay) {
       seoTitle += ` ${changeDisplay}`;
     }
-    seoTitle += ` | Live Chart & Trading Data`;
+    seoTitle += ` | xrpl.to`;
 
     // Fallback shorter title if too long (keep under 60 chars when possible)
-    if (seoTitle.length > 55) {
-      seoTitle = `${name}: ${priceDisplay}${changeDisplay ? ` ${changeDisplay}` : ''} | XRPL.to`;
+    if (seoTitle.length > 65) {
+      seoTitle = `${name}: ${priceDisplay}${changeDisplay ? ` ${changeDisplay}` : ''} | xrpl.to`;
     }
 
     // Enhanced Open Graph image handling with fallbacks
@@ -186,8 +186,8 @@ export async function getServerSideProps(ctx) {
             ext === 'png'
               ? 'image/png'
               : ext === 'jpg' || ext === 'jpeg'
-              ? 'image/jpeg'
-              : 'image/webp',
+                ? 'image/jpeg'
+                : 'image/webp',
           alt: `${name} token logo`
         };
       }
