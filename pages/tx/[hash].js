@@ -34,6 +34,10 @@ import BigNumber from 'bignumber.js';
 import CryptoJS from 'crypto-js';
 import { getHashIcon } from 'src/utils/extra';
 
+const KNOWN_SOURCE_TAGS = {
+  101102979: { name: 'xrp.cafe', url: 'https://xrp.cafe' }
+};
+
 // Helper to render key-value pairs and make certain values clickable
 const JsonViewer = ({ data }) => (
   <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: '#fff' }}>
@@ -278,8 +282,19 @@ const TransactionDetails = ({ txData, theme }) => {
     LimitAmount,
     Amount2,
     Asset,
-    Asset2
+    Asset2,
+    NFTokenOffers,
+    NFTokenTaxon,
+    TransferFee,
+    URI,
+    OracleDocumentID,
+    LastUpdateTime,
+    PriceDataSeries,
+    Provider,
+    LPTokenIn
   } = txData;
+
+  const clientInfo = KNOWN_SOURCE_TAGS[SourceTag];
 
   const { meta: metaToExclude, ...rawData } = txData;
   const deliveredAmount = meta?.delivered_amount || meta?.DeliveredAmount;
@@ -511,6 +526,23 @@ const TransactionDetails = ({ txData, theme }) => {
     }
     return explanations;
   };
+
+  const getNFTokenMintFlagExplanation = (flags) => {
+    const explanations = [];
+    if (flags & 1) explanations.push('Burnable');
+    if (flags & 2) explanations.push('OnlyXRP');
+    if (flags & 8) explanations.push('Transferable');
+    return explanations.join(', ');
+  };
+
+  const getAMMWithdrawFlagExplanation = (flags) => {
+    if (flags & 0x00010000) return 'Withdraw all tokens';
+    if (flags & 0x00100000) return 'Withdraw single asset by LP amount';
+    if (flags & 0x00040000) return 'Withdraw single asset by asset amount';
+    if (flags & 0x00200000) return 'Withdraw up to LP amount';
+    return null;
+  };
+
   const flagExplanations =
     TransactionType === 'Payment'
       ? getPaymentFlagExplanation(Flags)
@@ -705,11 +737,6 @@ const TransactionDetails = ({ txData, theme }) => {
               </>
             )}
 
-            {SourceTag && (
-              <DetailRow label="Source Tag">
-                <Typography variant="body1">{SourceTag}</Typography>
-              </DetailRow>
-            )}
             {!isConversion ? (
               <DetailRow label={deliveredAmount ? 'Delivered Amount' : 'Amount'}>
                 <AmountDisplay amount={deliveredAmount || Amount} />
@@ -927,6 +954,253 @@ const TransactionDetails = ({ txData, theme }) => {
           </>
         )}
 
+        {TransactionType === 'NFTokenCancelOffer' && (
+          <>
+            <DetailRow label="Initiated by">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={Account} />
+                <Link href={`/profile/${Account}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {Account}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+            {NFTokenOffers && NFTokenOffers.length > 0 && (
+              <DetailRow label={NFTokenOffers.length > 1 ? 'Offers' : 'Offer'}>
+                {NFTokenOffers.map((offer) => (
+                  <Typography key={offer} variant="body1" sx={{ wordBreak: 'break-all' }}>
+                    {offer}
+                  </Typography>
+                ))}
+              </DetailRow>
+            )}
+          </>
+        )}
+
+        {TransactionType === 'NFTokenMint' && (
+          <>
+            <DetailRow label="Initiated by">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={Account} />
+                <Link href={`/profile/${Account}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {Account}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+
+            <DetailRow label="NFT Data">
+              <Paper sx={{ p: 2, width: '100%' }}>
+                <Grid container spacing={1}>
+                  {meta.nftoken_id && (
+                    <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Link href={`/nft/${meta.nftoken_id}`} passHref>
+                        <Typography
+                          component="a"
+                          variant="body1"
+                          sx={{
+                            color: theme.palette.primary.main,
+                            textDecoration: 'none',
+                            '&:hover': { textDecoration: 'underline' },
+                            wordBreak: 'break-all'
+                          }}
+                        >
+                          {meta.nftoken_id}
+                        </Typography>
+                      </Link>
+                    </DetailRow>
+                  )}
+                  {typeof TransferFee !== 'undefined' && (
+                    <DetailRow label="Transfer Fee" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Typography variant="body1">{TransferFee / 1000}%</Typography>
+                    </DetailRow>
+                  )}
+                  {Flags > 0 && (
+                    <DetailRow label="Flag" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Typography variant="body1">
+                        {getNFTokenMintFlagExplanation(Flags)}
+                      </Typography>
+                    </DetailRow>
+                  )}
+                  {typeof NFTokenTaxon !== 'undefined' && (
+                    <DetailRow label="NFT Taxon" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Typography variant="body1">{NFTokenTaxon}</Typography>
+                    </DetailRow>
+                  )}
+                  {URI && (
+                    <DetailRow label="URI" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Link
+                        href={CryptoJS.enc.Hex.parse(URI).toString(CryptoJS.enc.Utf8)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        passHref
+                      >
+                        <Typography
+                          component="a"
+                          variant="body1"
+                          sx={{
+                            color: theme.palette.primary.main,
+                            textDecoration: 'none',
+                            '&:hover': { textDecoration: 'underline' },
+                            wordBreak: 'break-all'
+                          }}
+                        >
+                          {CryptoJS.enc.Hex.parse(URI).toString(CryptoJS.enc.Utf8)}
+                        </Typography>
+                      </Link>
+                    </DetailRow>
+                  )}
+                </Grid>
+              </Paper>
+            </DetailRow>
+          </>
+        )}
+
+        {TransactionType === 'OracleSet' && (
+          <>
+            <DetailRow label="Initiated by">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={Account} />
+                <Link href={`/profile/${Account}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {Account}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+
+            <DetailRow label="Oracle Data">
+              <Paper sx={{ p: 2, width: '100%' }}>
+                <Grid container spacing={1}>
+                  {typeof OracleDocumentID !== 'undefined' && (
+                    <DetailRow label="Document ID" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Typography variant="body1">{OracleDocumentID}</Typography>
+                    </DetailRow>
+                  )}
+                  {Provider && (
+                    <DetailRow label="Provider" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Typography variant="body1">
+                        {CryptoJS.enc.Hex.parse(Provider).toString(CryptoJS.enc.Utf8)}
+                      </Typography>
+                    </DetailRow>
+                  )}
+                  {typeof LastUpdateTime !== 'undefined' && (
+                    <DetailRow label="Last Update Time" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Typography variant="body1">
+                        {formatDistanceToNow(new Date(LastUpdateTime * 1000))} ago (
+                        {new Date(LastUpdateTime * 1000).toLocaleString()})
+                      </Typography>
+                    </DetailRow>
+                  )}
+                  {URI && (
+                    <DetailRow label="URI" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Link
+                        href={CryptoJS.enc.Hex.parse(URI).toString(CryptoJS.enc.Utf8)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        passHref
+                      >
+                        <Typography
+                          component="a"
+                          variant="body1"
+                          sx={{
+                            color: theme.palette.primary.main,
+                            textDecoration: 'none',
+                            '&:hover': { textDecoration: 'underline' },
+                            wordBreak: 'break-all'
+                          }}
+                        >
+                          {CryptoJS.enc.Hex.parse(URI).toString(CryptoJS.enc.Utf8)}
+                        </Typography>
+                      </Link>
+                    </DetailRow>
+                  )}
+                </Grid>
+              </Paper>
+            </DetailRow>
+
+            {PriceDataSeries && PriceDataSeries.length > 0 && (
+              <DetailRow label="Price Data Series">
+                <Box>
+                  {PriceDataSeries.map((series, index) => {
+                    const { AssetPrice, BaseAsset, QuoteAsset, Scale } = series.PriceData;
+                    if (!AssetPrice) return null;
+                    const price = new BigNumber(parseInt(AssetPrice, 16)).dividedBy(
+                      new BigNumber(10).pow(Scale)
+                    );
+                    const base = BaseAsset === 'XRP' ? 'XRP' : normalizeCurrencyCode(BaseAsset);
+                    const quote = QuoteAsset === 'XRP' ? 'XRP' : normalizeCurrencyCode(QuoteAsset);
+                    return (
+                      <Typography key={index} variant="body2">
+                        1 {base} = {price.toFormat()} {quote}
+                      </Typography>
+                    );
+                  })}
+                </Box>
+              </DetailRow>
+            )}
+          </>
+        )}
+
+        {TransactionType === 'AMMWithdraw' && (
+          <>
+            <DetailRow label="Initiated by">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={Account} />
+                <Link href={`/profile/${Account}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {Account}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+            {LPTokenIn && (
+              <DetailRow label="LP Tokens Withdrawn">
+                <AmountDisplay amount={LPTokenIn} />
+              </DetailRow>
+            )}
+            {Flags > 0 && getAMMWithdrawFlagExplanation(Flags) && (
+              <DetailRow label="Withdrawal Mode">
+                <Typography variant="body1">{getAMMWithdrawFlagExplanation(Flags)}</Typography>
+              </DetailRow>
+            )}
+          </>
+        )}
+
         {displayExchange && isSuccess && (
           <>
             <DetailRow label="Exchanged">
@@ -999,6 +1273,24 @@ const TransactionDetails = ({ txData, theme }) => {
         <DetailRow label="Ledger Fee">
           <Typography variant="body1">{dropsToXrp(Fee)} XRP</Typography>
         </DetailRow>
+
+        {clientInfo && (
+          <DetailRow label="Client">
+            <Link href={clientInfo.url} target="_blank" rel="noopener noreferrer" passHref>
+              <Typography
+                component="a"
+                variant="body1"
+                sx={{
+                  color: 'primary.main',
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' }
+                }}
+              >
+                {clientInfo.name}
+              </Typography>
+            </Link>
+          </DetailRow>
+        )}
 
         {!isSuccess && failureReason.title && (
           <>
@@ -1144,6 +1436,11 @@ const TransactionDetails = ({ txData, theme }) => {
                 #{LastLedgerSequence} ({LastLedgerSequence - ledger_index} ledgers)
               </Typography>
             </DetailRow>
+            {SourceTag && (
+              <DetailRow label="Source Tag">
+                <Typography variant="body1">{SourceTag}</Typography>
+              </DetailRow>
+            )}
           </TabPanel>
           <TabPanel value={selectedTab} index={1}>
             <Paper sx={{ p: 2, background: alpha(theme.palette.common.black, 0.2) }}>
