@@ -245,11 +245,11 @@ const OriginStatusIndicator = ({ origin, isBlackholed, isBurned, verified, size 
           sx={{
             display: 'flex',
             alignItems: 'center',
-            minHeight: isCompact ? '22px' : '28px',
+            minHeight: isCompact ? '18px' : '28px',
             position: 'relative'
           }}
         >
-          <Box sx={{ fontSize: isCompact ? '14px' : '16px', display: 'flex' }}>
+          <Box sx={{ fontSize: isCompact ? '12px' : '16px', display: 'flex' }}>
             {getOriginIcon(origin)}
           </Box>
         </Box>
@@ -535,17 +535,17 @@ LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 const getOriginIcon = (origin) => {
   switch (origin) {
     case 'FirstLedger':
-      return <OpenInNewIcon sx={{ fontSize: '16px', color: '#013CFE' }} />;
+      return <OpenInNewIcon sx={{ fontSize: '14px', color: '#013CFE' }} />;
     case 'XPMarket':
       return (
         <XPMarketIcon
-          sx={{ fontSize: '18px', color: '#6D1FEE', marginRight: '2px', marginBottom: '2px' }}
+          sx={{ fontSize: '14px', color: '#6D1FEE', marginRight: '2px', marginBottom: '2px' }}
         />
       );
     case 'LedgerMeme':
       return (
         <LedgerMemeIcon
-          sx={{ fontSize: '18px', color: '#cfff04', marginRight: '2px', marginBottom: '2px' }}
+          sx={{ fontSize: '14px', color: '#cfff04', marginRight: '2px', marginBottom: '2px' }}
         />
       );
     case 'aigent.run':
@@ -555,8 +555,8 @@ const getOriginIcon = (origin) => {
           src="/static/aigentrun.gif"
           alt="Aigent.Run"
           sx={{
-            width: '16px',
-            height: '16px',
+            width: '12px',
+            height: '12px',
             objectFit: 'contain'
           }}
         />
@@ -568,8 +568,8 @@ const getOriginIcon = (origin) => {
           src="/magneticx-logo.webp"
           alt="Magnetic X"
           sx={{
-            width: '18px',
-            height: '18px',
+            width: '14px',
+            height: '14px',
             objectFit: 'contain',
             marginRight: '2px',
             marginBottom: '2px'
@@ -581,7 +581,7 @@ const getOriginIcon = (origin) => {
         <Icon
           icon={chartLineUp}
           style={{
-            fontSize: '18px',
+            fontSize: '14px',
             color: '#B72136',
             marginRight: '2px',
             marginBottom: '2px'
@@ -589,7 +589,7 @@ const getOriginIcon = (origin) => {
         />
       );
     default:
-      return <AutoAwesomeIcon sx={{ fontSize: '11px', color: '#637381' }} />;
+      return <AutoAwesomeIcon sx={{ fontSize: '9px', color: '#637381' }} />;
   }
 };
 
@@ -1314,22 +1314,22 @@ export default function UserDesc({ token }) {
             sx={{ width: '100%' }}
           >
             {/* Avatar */}
-            <Box sx={{ position: 'relative', zIndex: 1, flexShrink: 0, p: 0.75 }}>
+            <Box sx={{ position: 'relative', zIndex: 1, flexShrink: 0, p: 0.5 }}>
               <Avatar
                 alt={`${user} ${name} Logo`}
                 src={imgUrl}
                 sx={{
-                  width: isXsMobile ? 76 : 84,
-                  height: isXsMobile ? 76 : 84,
-                  borderRadius: '14px',
+                  width: isXsMobile ? 60 : 70,
+                  height: isXsMobile ? 60 : 70,
+                  borderRadius: '12px',
                   border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`
                 }}
               />
               <Box
                 sx={{
                   position: 'absolute',
-                  top: 0,
-                  left: 0,
+                  top: -4,
+                  left: -4,
                   zIndex: 2,
                   background: theme.palette.background.paper,
                   borderRadius: '50%',
@@ -1342,8 +1342,8 @@ export default function UserDesc({ token }) {
                     onClick={() => openGoogleLens(imgUrl)}
                     size="small"
                     sx={{
-                      width: isXsMobile ? 18 : 22,
-                      height: isXsMobile ? 18 : 22,
+                      width: isXsMobile ? 16 : 20,
+                      height: isXsMobile ? 16 : 20,
                       p: 0,
                       background: `linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)`,
                       color: 'white',
@@ -1353,7 +1353,7 @@ export default function UserDesc({ token }) {
                       }
                     }}
                   >
-                    <SearchIcon sx={{ fontSize: isXsMobile ? 10 : 12 }} />
+                    <SearchIcon sx={{ fontSize: isXsMobile ? 9 : 11 }} />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -1369,15 +1369,15 @@ export default function UserDesc({ token }) {
                 justifyContent: 'flex-start'
               }}
             >
-              {/* Name and Rank Row */}
-              <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
+              {/* Name and User Row */}
+              <Stack direction="column" spacing={0.25} sx={{ minWidth: 0 }}>
                 <Typography
                   variant="h6"
                   sx={{
                     fontSize: isXsMobile ? '1.35rem' : '1.45rem',
                     fontWeight: 700,
-                    background: `linear-gradient(135deg, 
-                      ${theme.palette.primary.main} 0%, 
+                    background: `linear-gradient(135deg,
+                      ${theme.palette.primary.main} 0%,
                       ${theme.palette.success.main} 50%,
                       ${theme.palette.info.main} 100%
                     )`,
@@ -1395,105 +1395,104 @@ export default function UserDesc({ token }) {
                 >
                   {name}
                 </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: isXsMobile ? '1rem' : '1.1rem',
+                    fontWeight: 500,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    color: alpha(theme.palette.text.primary, 0.7),
+                    lineHeight: 1.1,
+                    mb: 0.25
+                  }}
+                >
+                  {user}
+                </Typography>
+              </Stack>
 
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <Tooltip title={`Rank by 24h Volume: #${id - 1}`}>
-                    <Chip
-                      label={`#${id - 1}`}
-                      color="primary"
-                      variant="outlined"
-                      size="small"
-                      sx={{
-                        borderRadius: '6px',
-                        height: isXsMobile ? '26px' : '30px',
-                        fontSize: isXsMobile ? '0.8rem' : '0.9rem',
-                        background: `linear-gradient(135deg, 
-                          ${alpha(theme.palette.primary.main, 0.12)} 0%, 
-                          ${alpha(theme.palette.primary.main, 0.06)} 100%
-                        )`,
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                        fontWeight: 600,
-                        px: 0.75,
-                        minWidth: 'auto',
-                        flexShrink: 0
-                      }}
-                    />
-                  </Tooltip>
-
-                  {/* Origin status indicator next to rank */}
-                  <OriginStatusIndicator
-                    origin={token.origin}
-                    isBlackholed={!!token.origin}
-                    isBurned={!!token.origin}
-                    verified={verified}
-                    size="compact"
+              {/* Rank and Status Icons Row */}
+              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
+                <Tooltip title={`Rank by 24h Volume: #${id - 1}`}>
+                  <Chip
+                    label={`#${id - 1}`}
+                    color="primary"
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      borderRadius: '6px',
+                      height: isXsMobile ? '20px' : '24px',
+                      fontSize: isXsMobile ? '0.65rem' : '0.75rem',
+                      background: `linear-gradient(135deg,
+                        ${alpha(theme.palette.primary.main, 0.12)} 0%,
+                        ${alpha(theme.palette.primary.main, 0.06)} 100%
+                      )`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      fontWeight: 600,
+                      px: 0.75,
+                      minWidth: 'auto',
+                      flexShrink: 0
+                    }}
                   />
+                </Tooltip>
 
-                  {/* Liquidity Status */}
-                  {token.origin && token.origin !== 'xrp.fun' && (
-                    <Tooltip
-                      title={
-                        token.origin === 'LedgerMeme' && holders === 1
-                          ? 'Liquidity Not Burned'
-                          : 'Burned Liquidity Pool'
-                      }
-                    >
-                      {token.origin === 'LedgerMeme' && holders === 1 ? (
-                        <Icon
-                          icon="mdi:water-outline"
-                          style={{
-                            fontSize: '18px',
-                            color: '#FFC107',
-                            marginRight: '2px',
-                            marginBottom: '2px'
-                          }}
-                        />
-                      ) : (
-                        <LocalFireDepartmentIcon
-                          sx={{
-                            fontSize: '18px',
-                            color: '#1890FF',
-                            marginRight: '2px',
-                            marginBottom: '2px'
-                          }}
-                        />
-                      )}
-                    </Tooltip>
-                  )}
+                {/* Origin status indicator */}
+                <OriginStatusIndicator
+                  origin={token.origin}
+                  isBlackholed={!!token.origin}
+                  isBurned={!!token.origin}
+                  verified={verified}
+                  size="compact"
+                />
 
-                  {/* Blackholed Status */}
-                  {(info.blackholed || token.origin) && (
-                    <Tooltip title="Blackholed Issuer">
-                      <LockIcon
-                        sx={{
+                {/* Liquidity Status */}
+                {token.origin && token.origin !== 'xrp.fun' && (
+                  <Tooltip
+                    title={
+                      token.origin === 'LedgerMeme' && holders === 1
+                        ? 'Liquidity Not Burned'
+                        : 'Burned Liquidity Pool'
+                    }
+                  >
+                    {token.origin === 'LedgerMeme' && holders === 1 ? (
+                      <Icon
+                        icon="mdi:water-outline"
+                        style={{
                           fontSize: '18px',
-                          color: '#00AB55',
+                          color: '#FFC107',
                           marginRight: '2px',
                           marginBottom: '2px'
                         }}
                       />
-                    </Tooltip>
-                  )}
-                </Stack>
-              </Stack>
+                    ) : (
+                      <LocalFireDepartmentIcon
+                        sx={{
+                          fontSize: '18px',
+                          color: '#1890FF',
+                          marginRight: '2px',
+                          marginBottom: '2px'
+                        }}
+                      />
+                    )}
+                  </Tooltip>
+                )}
 
-              {/* User Row */}
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{
-                  fontSize: isXsMobile ? '1rem' : '1.1rem',
-                  fontWeight: 500,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  color: alpha(theme.palette.text.primary, 0.7),
-                  lineHeight: 1.1,
-                  mb: 0.25
-                }}
-              >
-                {user}
-              </Typography>
+                {/* Blackholed Status */}
+                {(info.blackholed || token.origin) && (
+                  <Tooltip title="Blackholed Issuer">
+                    <LockIcon
+                      sx={{
+                        fontSize: '18px',
+                        color: '#00AB55',
+                        marginRight: '2px',
+                        marginBottom: '2px'
+                      }}
+                    />
+                  </Tooltip>
+                )}
+              </Stack>
 
               {/* Compact Tags and Social Row */}
               <Stack
@@ -1588,17 +1587,17 @@ export default function UserDesc({ token }) {
                     alt={`${user} ${name} Logo`}
                     src={imgUrl}
                     sx={{
-                      width: 120,
-                      height: 120,
-                      borderRadius: '22px',
+                      width: 100,
+                      height: 100,
+                      borderRadius: '18px',
                       border: `3px solid ${alpha(theme.palette.primary.main, 0.15)}`
                     }}
                   />
                   <Box
                     sx={{
                       position: 'absolute',
-                      top: 0,
-                      left: 0,
+                      top: -4,
+                      left: -4,
                       zIndex: 2,
                       background: theme.palette.background.paper,
                       borderRadius: '50%',
@@ -1611,8 +1610,8 @@ export default function UserDesc({ token }) {
                         onClick={() => openGoogleLens(imgUrl)}
                         size="small"
                         sx={{
-                          width: 30,
-                          height: 30,
+                          width: 26,
+                          height: 26,
                           p: 0,
                           background: `linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)`,
                           color: 'white',
@@ -1622,7 +1621,7 @@ export default function UserDesc({ token }) {
                           }
                         }}
                       >
-                        <SearchIcon sx={{ fontSize: 16 }} />
+                        <SearchIcon sx={{ fontSize: 14 }} />
                       </IconButton>
                     </Tooltip>
                   </Box>

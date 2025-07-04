@@ -63,60 +63,64 @@ import copyIcon from '@iconify/icons-fad/copy';
 import { fNumber } from 'src/utils/formatNumber';
 import { currencySymbols } from 'src/utils/constants';
 
-const ShareButton = styled(IconButton)(({ theme }) => ({
-  position: 'relative',
-  borderRadius: '8px',
-  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.7
-  )} 100%)`,
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  overflow: 'hidden',
-  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
-  padding: '6px',
-  minWidth: '36px',
-  minHeight: '36px',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-      theme.palette.success.main,
-      0.05
+const ShareButton = styled(IconButton)(({ theme }) => {
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  return {
+    position: 'relative',
+    borderRadius: '8px',
+    border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
+    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.7
     )} 100%)`,
-    opacity: 0,
-    transition: 'opacity 0.3s ease',
-    zIndex: -1
-  },
-  '&:hover': {
-    transform: 'translateY(-4px) scale(1.02)',
-    border: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-    boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
-      theme.palette.primary.main,
-      0.1
-    )}`,
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    overflow: 'hidden',
+    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+    padding: isMobile ? '4px' : '6px',
+    minWidth: isMobile ? '32px' : '36px',
+    minHeight: isMobile ? '32px' : '36px',
     '&::before': {
-      opacity: 1
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+        theme.palette.success.main,
+        0.05
+      )} 100%)`,
+      opacity: 0,
+      transition: 'opacity 0.3s ease',
+      zIndex: -1
+    },
+    '&:hover': {
+      transform: 'translateY(-4px) scale(1.02)',
+      border: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+      boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
+        theme.palette.primary.main,
+        0.1
+      )}`,
+      '&::before': {
+        opacity: 1
+      },
+      '& .MuiSvgIcon-root': {
+        color: theme.palette.primary.main
+      }
+    },
+    '&:active': {
+      transform: 'translateY(-2px) scale(0.98)'
     },
     '& .MuiSvgIcon-root': {
-      color: theme.palette.primary.main
+      fontSize: isMobile ? '16px' : '18px',
+      color: alpha(theme.palette.text.primary, 0.8),
+      transition: 'color 0.3s ease'
     }
-  },
-  '&:active': {
-    transform: 'translateY(-2px) scale(0.98)'
-  },
-  '& .MuiSvgIcon-root': {
-    fontSize: '18px',
-    color: alpha(theme.palette.text.primary, 0.8),
-    transition: 'color 0.3s ease'
-  }
-}));
+  };
+});
 
 const ShareDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(20px)',
