@@ -223,7 +223,10 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
     const regex = new RegExp(`(${searchTerm})`, 'gi');
     return text.split(regex).map((part, index) =>
       regex.test(part) ? (
-        <mark key={`highlight-${part}-${index}`} style={{ backgroundColor: '#FFD54F' }}>
+        <mark
+          key={`highlight-${part}-${index}-${part.length}`}
+          style={{ backgroundColor: '#FFD54F' }}
+        >
           {part}
         </mark>
       ) : (
@@ -310,12 +313,12 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
               {/* Quick Stats - More Compact */}
               <Grid container spacing={1.5} sx={{ mt: 1 }}>
                 {[
-                  { label: '16000+', desc: 'Tokens', color: 'primary' },
-                  { label: '99.9%', desc: 'Uptime', color: 'success' },
-                  { label: 'Real-time', desc: 'Data', color: 'info' },
-                  { label: '5', desc: 'Languages', color: 'warning' }
-                ].map((stat, index) => (
-                  <Grid item xs={6} sm={3} key={index}>
+                  { label: '16000+', desc: 'Tokens', color: 'primary', id: 'stat-tokens' },
+                  { label: '99.9%', desc: 'Uptime', color: 'success', id: 'stat-uptime' },
+                  { label: 'Real-time', desc: 'Data', color: 'info', id: 'stat-realtime' },
+                  { label: '5', desc: 'Languages', color: 'warning', id: 'stat-languages' }
+                ].map((stat) => (
+                  <Grid item xs={6} sm={3} key={stat.id}>
                     <Card
                       sx={{
                         background: alpha(theme.palette[stat.color].main, 0.1),
@@ -363,22 +366,25 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                   icon: <AccountBalanceWalletIcon />,
                   title: 'Token Support',
                   description: 'Access data for all XRP Ledger tokens',
-                  color: theme.palette.primary.main
+                  color: theme.palette.primary.main,
+                  id: 'feature-token'
                 },
                 {
                   icon: <TrendingUpIcon />,
                   title: 'Price Feeds',
                   description: 'Multi-currency price data',
-                  color: theme.palette.success.main
+                  color: theme.palette.success.main,
+                  id: 'feature-price'
                 },
                 {
                   icon: <DataUsageIcon />,
                   title: 'Volume Tracking',
                   description: 'DEX and AMM trading volumes',
-                  color: theme.palette.info.main
+                  color: theme.palette.info.main,
+                  id: 'feature-volume'
                 }
-              ].map((feature, index) => (
-                <Grid item xs={12} sm={4} key={index}>
+              ].map((feature) => (
+                <Grid item xs={12} sm={4} key={feature.id}>
                   <Card
                     sx={{
                       height: '100%',
@@ -1961,14 +1967,34 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                 </Typography>
                 <Grid container spacing={2}>
                   {[
-                    { range: '1D', desc: '1 Day - Last 24 hours', color: 'primary' },
-                    { range: '7D', desc: '7 Days - Last week', color: 'success' },
-                    { range: '1M', desc: '1 Month - Last 30 days', color: 'info' },
-                    { range: '3M', desc: '3 Months - Last quarter', color: 'warning' },
-                    { range: '1Y', desc: '1 Year - Last 12 months', color: 'error' },
-                    { range: 'ALL', desc: 'All Time - Complete history', color: 'secondary' }
-                  ].map((item, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={index}>
+                    {
+                      range: '1D',
+                      desc: '1 Day - Last 24 hours',
+                      color: 'primary',
+                      id: 'range-1d'
+                    },
+                    { range: '7D', desc: '7 Days - Last week', color: 'success', id: 'range-7d' },
+                    { range: '1M', desc: '1 Month - Last 30 days', color: 'info', id: 'range-1m' },
+                    {
+                      range: '3M',
+                      desc: '3 Months - Last quarter',
+                      color: 'warning',
+                      id: 'range-3m'
+                    },
+                    {
+                      range: '1Y',
+                      desc: '1 Year - Last 12 months',
+                      color: 'error',
+                      id: 'range-1y'
+                    },
+                    {
+                      range: 'ALL',
+                      desc: 'All Time - Complete history',
+                      color: 'secondary',
+                      id: 'range-all'
+                    }
+                  ].map((item) => (
+                    <Grid item xs={12} sm={6} md={4} key={item.id}>
                       <Card
                         sx={{
                           background: alpha(theme.palette[item.color].main, 0.08),

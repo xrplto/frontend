@@ -179,8 +179,8 @@ function TermsPage() {
 
             <Grid container spacing={4}>
               {/* Main Terms Sections */}
-              {termsSections.map((section, index) => (
-                <Grid item xs={12} md={6} key={index}>
+              {termsSections.map((section) => (
+                <Grid item xs={12} md={6} key={section.title}>
                   <Card
                     elevation={3}
                     sx={{
@@ -203,8 +203,8 @@ function TermsPage() {
                         </Typography>
                       ) : (
                         <Stack spacing={3}>
-                          {section.subsections.map((item, itemIndex) => (
-                            <Box key={itemIndex}>
+                          {section.subsections.map((item) => (
+                            <Box key={`${section.title}-${item.subtitle}`}>
                               <Typography
                                 variant="h6"
                                 sx={{ fontWeight: 600, mb: 1, color: 'primary.main' }}
@@ -224,8 +224,8 @@ function TermsPage() {
               ))}
 
               {/* Additional Sections */}
-              {additionalSections.map((section, index) => (
-                <Grid item xs={12} md={6} key={index}>
+              {additionalSections.map((section) => (
+                <Grid item xs={12} md={6} key={section.title}>
                   <Card elevation={2} sx={{ height: '100%' }}>
                     <CardContent sx={{ p: 4 }}>
                       <Typography
@@ -261,8 +261,8 @@ function TermsPage() {
                       Disclaimer and Limitation of Liability
                     </Typography>
                     <Stack spacing={3}>
-                      {disclaimerSubsections.map((item, index) => (
-                        <Box key={index}>
+                      {disclaimerSubsections.map((item) => (
+                        <Box key={item.subtitle}>
                           <Typography
                             variant="h6"
                             sx={{ fontWeight: 600, mb: 1, color: 'error.main' }}

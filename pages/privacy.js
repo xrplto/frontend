@@ -141,8 +141,8 @@ function PrivacyPage() {
 
             <Grid container spacing={4}>
               {/* Main Policy Sections */}
-              {sections.map((section, index) => (
-                <Grid item xs={12} md={6} key={index}>
+              {sections.map((section) => (
+                <Grid item xs={12} md={6} key={section.title}>
                   <Card
                     elevation={3}
                     sx={{

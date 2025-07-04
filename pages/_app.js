@@ -105,7 +105,7 @@ function XRPLToApp({ Component, pageProps, router }) {
         {/* Additional Open Graph images for better fallback support */}
         {ogp.images &&
           ogp.images.slice(1).map((img, index) => (
-            <React.Fragment key={index}>
+            <React.Fragment key={img.url}>
               <meta property="og:image" content={img.url} />
               <meta property="og:image:type" content={img.type} />
               <meta property="og:image:width" content={img.width} />
