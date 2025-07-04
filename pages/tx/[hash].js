@@ -39,7 +39,30 @@ const ipfsToGateway = (uri) => {
     return uri;
   }
   // Use a public IPFS gateway to display the image
-  return `https://ipfs.io/ipfs/${uri.substring(7)}`;
+  const path = uri.substring(7);
+  const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+  return `https://ipfs.io/ipfs/${encodedPath}`;
+};
+
+const getNftImageUrl = (nftInfo) => {
+  if (!nftInfo) {
+    return null;
+  }
+  // Prefer meta.image as it's often the intended primary display
+  const primaryImage = nftInfo.meta?.image;
+  if (primaryImage) {
+    return primaryImage;
+  }
+
+  // Fallback to the first image in files array
+  if (Array.isArray(nftInfo.files) && nftInfo.files.length > 0) {
+    const imageFile = nftInfo.files.find((file) => file.parsedType === 'image' && file.parsedUrl);
+    if (imageFile) {
+      return imageFile.parsedUrl;
+    }
+  }
+
+  return null;
 };
 
 const KNOWN_SOURCE_TAGS = {
@@ -376,6 +399,10 @@ const TransactionDetails = ({ txData, theme }) => {
   const [nftInfoLoading, setNftInfoLoading] = useState(false);
   const [offerNftInfo, setOfferNftInfo] = useState(null);
   const [offerNftInfoLoading, setOfferNftInfoLoading] = useState(false);
+  const [mintedNftInfo, setMintedNftInfo] = useState(null);
+  const [mintedNftInfoLoading, setMintedNftInfoLoading] = useState(false);
+  const [cancelledNftInfo, setCancelledNftInfo] = useState({});
+  const [cancelledNftInfoLoading, setCancelledNftInfoLoading] = useState({});
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(hash);
@@ -558,6 +585,15 @@ const TransactionDetails = ({ txData, theme }) => {
     return null;
   }, [TransactionType, meta, Account]);
 
+  const cancelledNftOffers = useMemo(() => {
+    if (TransactionType !== 'NFTokenCancelOffer' || !meta || !meta.AffectedNodes) {
+      return [];
+    }
+    return meta.AffectedNodes.filter(
+      (node) => node.DeletedNode && node.DeletedNode.LedgerEntryType === 'NFTokenOffer'
+    ).map((node) => ({ ...node.DeletedNode.FinalFields, offerId: node.DeletedNode.LedgerIndex }));
+  }, [TransactionType, meta]);
+
   useEffect(() => {
     if (acceptedOfferDetails?.nftokenID) {
       const fetchNftInfo = async () => {
@@ -601,6 +637,57 @@ const TransactionDetails = ({ txData, theme }) => {
       fetchNftInfo();
     }
   }, [TransactionType, NFTokenID]);
+
+  useEffect(() => {
+    if (TransactionType === 'NFTokenMint' && meta?.nftoken_id) {
+      const fetchNftInfo = async () => {
+        setMintedNftInfoLoading(true);
+        try {
+          const response = await axios.get(`https://api.xrpnft.com/api/nft/${meta.nftoken_id}`);
+          if (response.data.res === 'success') {
+            setMintedNftInfo(response.data.nft);
+          }
+        } catch (err) {
+          // silent fail is ok
+        } finally {
+          setMintedNftInfoLoading(false);
+        }
+      };
+      fetchNftInfo();
+    }
+  }, [TransactionType, meta]);
+
+  useEffect(() => {
+    if (TransactionType === 'NFTokenCancelOffer' && cancelledNftOffers.length > 0) {
+      cancelledNftOffers.forEach((offer) => {
+        if (!cancelledNftInfo[offer.NFTokenID] && !cancelledNftInfoLoading[offer.NFTokenID]) {
+          setCancelledNftInfoLoading((prev) => ({ ...prev, [offer.NFTokenID]: true }));
+          axios
+            .get(`https://api.xrpnft.com/api/nft/${offer.NFTokenID}`)
+            .then((response) => {
+              if (response.data.res === 'success') {
+                setCancelledNftInfo((prev) => ({
+                  ...prev,
+                  [offer.NFTokenID]: response.data.nft
+                }));
+              } else {
+                setCancelledNftInfo((prev) => ({ ...prev, [offer.NFTokenID]: { error: true } }));
+              }
+            })
+            .catch((err) => {
+              console.error(`Failed to fetch NFT info for ${offer.NFTokenID}`, err);
+              setCancelledNftInfo((prev) => ({ ...prev, [offer.NFTokenID]: { error: true } }));
+            })
+            .finally(() => {
+              setCancelledNftInfoLoading((prev) => ({
+                ...prev,
+                [offer.NFTokenID]: false
+              }));
+            });
+        }
+      });
+    }
+  }, [cancelledNftOffers]);
 
   const { balanceChanges, exchanges } = getBalanceChanges();
 
@@ -1136,14 +1223,113 @@ const TransactionDetails = ({ txData, theme }) => {
                 </Link>
               </Box>
             </DetailRow>
-            {NFTokenOffers && NFTokenOffers.length > 0 && (
-              <DetailRow label={NFTokenOffers.length > 1 ? 'Offers' : 'Offer'}>
-                {NFTokenOffers.map((offer) => (
-                  <Typography key={offer} variant="body1" sx={{ wordBreak: 'break-all' }}>
-                    {offer}
-                  </Typography>
-                ))}
+            {cancelledNftOffers.length > 0 ? (
+              <DetailRow
+                label={cancelledNftOffers.length > 1 ? 'Cancelled Offers' : 'Cancelled Offer'}
+              >
+                {cancelledNftOffers.map((offer, i) => {
+                  const nftInfo = cancelledNftInfo[offer.NFTokenID];
+                  const isLoading = cancelledNftInfoLoading[offer.NFTokenID];
+                  const fallbackView = (
+                    <Grid container spacing={1}>
+                      <DetailRow label="Offer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                        <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
+                          {offer.offerId}
+                        </Typography>
+                      </DetailRow>
+                      <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                        <Link href={`/nft/${offer.NFTokenID}`} passHref>
+                          <Typography
+                            component="a"
+                            variant="body1"
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textDecoration: 'none',
+                              '&:hover': { textDecoration: 'underline' },
+                              wordBreak: 'break-all'
+                            }}
+                          >
+                            {offer.NFTokenID}
+                          </Typography>
+                        </Link>
+                      </DetailRow>
+                      <DetailRow label="Amount" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                        <AmountDisplay amount={offer.Amount} />
+                      </DetailRow>
+                      {offer.Destination && (
+                        <DetailRow label="Destination" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <AccountAvatar account={offer.Destination} />
+                            <Link href={`/profile/${offer.Destination}`} passHref>
+                              <Typography
+                                component="a"
+                                variant="body1"
+                                sx={{
+                                  color: theme.palette.primary.main,
+                                  textDecoration: 'none',
+                                  '&:hover': { textDecoration: 'underline' }
+                                }}
+                              >
+                                {offer.Destination}
+                              </Typography>
+                            </Link>
+                          </Box>
+                        </DetailRow>
+                      )}
+                    </Grid>
+                  );
+                  return (
+                    <Paper key={i} sx={{ p: 2, width: '100%', mb: 2 }}>
+                      <Grid container spacing={2}>
+                        {isLoading ? (
+                          <Grid item xs={12}>
+                            <Typography>Loading NFT data...</Typography>
+                          </Grid>
+                        ) : nftInfo && !nftInfo.error ? (
+                          <>
+                            <Grid item xs={12} md={4}>
+                              {(() => {
+                                const imageUrl = getNftImageUrl(nftInfo);
+                                if (!imageUrl) return null;
+                                return (
+                                  <Box
+                                    component="img"
+                                    src={ipfsToGateway(imageUrl)}
+                                    alt={nftInfo.meta?.name || 'NFT Image'}
+                                    sx={{
+                                      width: '100%',
+                                      maxWidth: '220px',
+                                      borderRadius: 2
+                                    }}
+                                  />
+                                );
+                              })()}
+                            </Grid>
+                            <Grid item xs={12} md={8}>
+                              {fallbackView}
+                            </Grid>
+                          </>
+                        ) : (
+                          <Grid item xs={12}>
+                            {fallbackView}
+                          </Grid>
+                        )}
+                      </Grid>
+                    </Paper>
+                  );
+                })}
               </DetailRow>
+            ) : (
+              NFTokenOffers &&
+              NFTokenOffers.length > 0 && (
+                <DetailRow label={NFTokenOffers.length > 1 ? 'Offers' : 'Offer'}>
+                  {NFTokenOffers.map((offer) => (
+                    <Typography key={offer} variant="body1" sx={{ wordBreak: 'break-all' }}>
+                      {offer}
+                    </Typography>
+                  ))}
+                </DetailRow>
+              )
             )}
           </>
         )}
@@ -1224,18 +1410,22 @@ const TransactionDetails = ({ txData, theme }) => {
               ) : acceptedNftInfo ? (
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={4}>
-                    {acceptedNftInfo.meta?.image && (
-                      <Box
-                        component="img"
-                        src={ipfsToGateway(acceptedNftInfo.meta.image)}
-                        alt={acceptedNftInfo.meta?.name || 'NFT Image'}
-                        sx={{
-                          width: '100%',
-                          maxWidth: '220px',
-                          borderRadius: 2
-                        }}
-                      />
-                    )}
+                    {(() => {
+                      const imageUrl = getNftImageUrl(acceptedNftInfo);
+                      if (!imageUrl) return null;
+                      return (
+                        <Box
+                          component="img"
+                          src={ipfsToGateway(imageUrl)}
+                          alt={acceptedNftInfo.meta?.name || 'NFT Image'}
+                          sx={{
+                            width: '100%',
+                            maxWidth: '220px',
+                            borderRadius: 2
+                          }}
+                        />
+                      );
+                    })()}
                   </Grid>
                   <Grid item xs={12} md={8}>
                     <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
@@ -1395,18 +1585,22 @@ const TransactionDetails = ({ txData, theme }) => {
               <DetailRow label="NFT Data">
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={4}>
-                    {offerNftInfo.meta?.image && (
-                      <Box
-                        component="img"
-                        src={ipfsToGateway(offerNftInfo.meta.image)}
-                        alt={offerNftInfo.meta?.name || 'NFT Image'}
-                        sx={{
-                          width: '100%',
-                          maxWidth: '220px',
-                          borderRadius: 2
-                        }}
-                      />
-                    )}
+                    {(() => {
+                      const imageUrl = getNftImageUrl(offerNftInfo);
+                      if (!imageUrl) return null;
+                      return (
+                        <Box
+                          component="img"
+                          src={ipfsToGateway(imageUrl)}
+                          alt={offerNftInfo.meta?.name || 'NFT Image'}
+                          sx={{
+                            width: '100%',
+                            maxWidth: '220px',
+                            borderRadius: 2
+                          }}
+                        />
+                      );
+                    })()}
                   </Grid>
                   <Grid item xs={12} md={8}>
                     <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
@@ -1525,8 +1719,30 @@ const TransactionDetails = ({ txData, theme }) => {
             </DetailRow>
 
             <DetailRow label="NFT Data">
-              <Paper sx={{ p: 2, width: '100%' }}>
-                <Grid container spacing={1}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={4}>
+                  {mintedNftInfoLoading ? (
+                    <Typography>Loading NFT image...</Typography>
+                  ) : (
+                    (() => {
+                      const imageUrl = getNftImageUrl(mintedNftInfo);
+                      if (!imageUrl) return null;
+                      return (
+                        <Box
+                          component="img"
+                          src={ipfsToGateway(imageUrl)}
+                          alt={mintedNftInfo.meta?.name || 'NFT Image'}
+                          sx={{
+                            width: '100%',
+                            maxWidth: '220px',
+                            borderRadius: 2
+                          }}
+                        />
+                      );
+                    })()
+                  )}
+                </Grid>
+                <Grid item xs={12} md={8}>
                   {meta.nftoken_id && (
                     <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
                       <Link href={`/nft/${meta.nftoken_id}`} passHref>
@@ -1586,7 +1802,7 @@ const TransactionDetails = ({ txData, theme }) => {
                     </DetailRow>
                   )}
                 </Grid>
-              </Paper>
+              </Grid>
             </DetailRow>
           </>
         )}
