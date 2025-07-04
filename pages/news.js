@@ -570,7 +570,11 @@ export default function News() {
                         {article.articleBody?.split('\n').map(
                           (paragraph, index) =>
                             paragraph.trim() && (
-                              <Typography key={index} paragraph sx={{ mb: 1 }}>
+                              <Typography
+                                key={`${article._id}-para-${index}`}
+                                paragraph
+                                sx={{ mb: 1 }}
+                              >
                                 {paragraph}
                               </Typography>
                             )

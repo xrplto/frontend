@@ -93,8 +93,8 @@ function DisclaimerPage() {
             </Alert>
 
             <Grid container spacing={4}>
-              {disclaimerSections.map((section, index) => (
-                <Grid item xs={12} md={6} key={index}>
+              {disclaimerSections.map((section) => (
+                <Grid item xs={12} md={6} key={section.title}>
                   <Card
                     elevation={3}
                     sx={{

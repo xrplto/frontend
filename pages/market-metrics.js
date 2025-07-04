@@ -251,7 +251,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
             return (
               <Box
-                key={index}
+                key={entry.dataKey || `${entry.name}-${index}`}
                 sx={{
                   display: 'flex',
                   alignItems: 'flex-start',

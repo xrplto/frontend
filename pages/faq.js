@@ -111,9 +111,9 @@ function FAQPage() {
             </Box>
 
             <Box sx={{ maxWidth: '900px', mx: 'auto' }}>
-              {faqs.map((faq, index) => (
+              {faqs.map((faq) => (
                 <Accordion
-                  key={index}
+                  key={faq.question}
                   elevation={2}
                   sx={{
                     mb: 2,

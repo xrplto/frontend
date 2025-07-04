@@ -136,8 +136,11 @@ function AboutPage() {
                       Our Journey
                     </Typography>
                     <Stack spacing={3}>
-                      {timelineData.map((item, index) => (
-                        <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
+                      {timelineData.map((item) => (
+                        <Box
+                          key={item.date}
+                          sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}
+                        >
                           <Chip
                             label={item.date}
                             color="primary"
