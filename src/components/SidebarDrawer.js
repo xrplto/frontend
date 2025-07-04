@@ -19,13 +19,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export default function SidebarDrawer({ toggleDrawer, isOpen }) {
   return (
-    <Drawer
-      toggleDrawer={toggleDrawer}
-      isOpen={isOpen}
-      title={
-        <Logo style={{ marginRight: 10, paddingTop: 15, paddingBottom: 15 }} />
-      }
-    >
+    <Drawer toggleDrawer={toggleDrawer} isOpen={isOpen} title={' '}>
       <Accordion>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
@@ -38,13 +32,8 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
           <PhoneDropDown />
         </AccordionDetails>
       </Accordion>
-      <Link
-        underline="none"
-        color="inherit"
-        href="/swap"
-        rel="noreferrer noopener nofollow"
-      >
-        <MenuItem divider={true} sx={{ py: 1.5, px: 3 }}>
+      <Link underline="none" color="inherit" href="/swap" rel="noreferrer noopener nofollow">
+        <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
           <Typography variant="s6">Swap</Typography>
         </MenuItem>
       </Link>
@@ -53,20 +42,17 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
         color="inherit"
         href="/buy-xrp"
         rel="noreferrer noopener nofollow"
-        sx={{
-          marginBottom: '25px'
-        }}
+        sx={
+          {
+            // marginBottom: '25px'
+          }
+        }
       >
-        <MenuItem divider={true} sx={{ py: 1.5, px: 3 }}>
+        <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
           <Typography variant="s6">Fiat</Typography>
         </MenuItem>
       </Link>
-      <Stack
-        direction="row"
-        spacing={1}
-        sx={{ mr: 2, pl: 3 }}
-        alignItems="center"
-      >
+      <Stack direction="row" spacing={0.5} sx={{ mr: 2, pl: 2 }} alignItems="center">
         <Wallet />
         <ThemeSwitcher />
         <CurrencySwithcer />

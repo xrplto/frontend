@@ -15,10 +15,10 @@ const DrawerHeader = styled('div', {
     0.8
   )} 100%)`,
   backdropFilter: 'blur(20px)',
-  paddingLeft: 24,
-  paddingRight: 24,
-  paddingTop: 16,
-  paddingBottom: 16,
+  paddingLeft: 16,
+  paddingRight: 16,
+  paddingTop: 10,
+  paddingBottom: 10,
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 2px 8px ${alpha(
     theme.palette.primary.main,
@@ -79,6 +79,7 @@ export default function Drawer({ toggleDrawer, isOpen, title, children, headerSt
 
   return (
     <MuiDrawer
+      anchor="bottom"
       open={isOpen}
       onClose={handleClose}
       PaperProps={{
