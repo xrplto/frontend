@@ -1869,9 +1869,20 @@ export default function UserDesc({ token }) {
             </Stack>
           )}
 
-          {/* Mobile Stats Grid - Enhanced Version */}
+          {/* CONSOLIDATED MOBILE SECTIONS START HERE */}
+          {/* Mobile Price & Extra Buttons and Mobile Stats Grid - Combined and Reordered */}
           {isMobile && (
             <Stack spacing={0.75} sx={{ width: '100%' }}>
+              {/* Price & Extra Buttons */}
+              <Stack direction="column" spacing={0.75} sx={{ width: '100%', mt: 0.5 }}>
+                <Box sx={{ width: '100%' }}>
+                  <PriceDesc token={token} />
+                </Box>
+                <Box sx={{ width: '100%' }}>
+                  <ExtraButtons token={token} />
+                </Box>
+              </Stack>
+
               {/* Primary Stats Row - Always Visible */}
               <Box
                 sx={{
@@ -2000,11 +2011,13 @@ export default function UserDesc({ token }) {
                           fontWeight: 500,
                           color: alpha(theme.palette.text.secondary, 0.8),
                           textTransform: 'uppercase',
-                          letterSpacing: '0.3px',
-                          mb: 0.25
+                          letterSpacing: '0.2px',
+                          display: 'block',
+                          mb: 0.5,
+                          lineHeight: 1
                         }}
                       >
-                        {stat.label}:
+                        {stat.label}
                       </Typography>
                       <Typography
                         variant="caption"
@@ -2012,7 +2025,8 @@ export default function UserDesc({ token }) {
                           fontSize: '0.85rem',
                           fontWeight: 700,
                           color: stat.color,
-                          textShadow: `0 1px 2px ${alpha(stat.color, 0.3)}`
+                          lineHeight: 1,
+                          wordBreak: 'break-all'
                         }}
                       >
                         {stat.value}
@@ -2423,183 +2437,7 @@ export default function UserDesc({ token }) {
         )}
       </Stack>
 
-      {/* Mobile Price & Extra Buttons */}
-      {isTablet && (
-        <Stack direction="column" spacing={0.75} sx={{ width: '100%', mt: 0.5 }}>
-          <Box sx={{ width: '100%' }}>
-            <PriceDesc token={token} />
-          </Box>
-          <Box sx={{ width: '100%' }}>
-            <ExtraButtons token={token} />
-          </Box>
-        </Stack>
-      )}
-
-      {/* Mobile Expanded Stats - Only for detailed view */}
-      {isMobile && (
-        <Box
-          sx={{
-            borderRadius: '8px',
-            background: `linear-gradient(135deg, 
-              ${alpha(theme.palette.background.paper, 0.6)} 0%, 
-              ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-            overflow: 'hidden'
-          }}
-        >
-          {/* Toggle Button */}
-          <Button
-            onClick={() => setShowStat(!showStat)}
-            fullWidth
-            sx={{
-              p: 1,
-              justifyContent: 'space-between',
-              color: theme.palette.text.primary,
-              fontWeight: 500,
-              fontSize: '0.75rem',
-              textTransform: 'none',
-              borderRadius: 0,
-              minHeight: '44px',
-
-              '&:hover': {
-                background: `linear-gradient(135deg, 
-                  ${alpha(theme.palette.primary.main, 0.08)} 0%, 
-                  ${alpha(theme.palette.primary.main, 0.04)} 100%)`
-              }
-            }}
-          >
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
-                {showStat ? 'Hide' : 'Show'} Market Stats
-              </Typography>
-            </Stack>
-            <KeyboardArrowRightIcon
-              sx={{
-                width: 14,
-                height: 14,
-                color: theme.palette.primary.main,
-                transform: showStat ? 'rotate(90deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s ease'
-              }}
-            />
-          </Button>
-
-          {/* Expanded Stats */}
-          {showStat && (
-            <Box
-              sx={{
-                p: 1,
-                borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                background: `linear-gradient(135deg, 
-                  ${alpha(theme.palette.background.paper, 0.4)} 0%, 
-                  ${alpha(theme.palette.background.paper, 0.2)} 100%)`,
-                animation: 'fadeInUp 0.3s ease-out',
-                '@keyframes fadeInUp': {
-                  '0%': {
-                    opacity: 0,
-                    transform: 'translateY(-10px)'
-                  },
-                  '100%': {
-                    opacity: 1,
-                    transform: 'translateY(0)'
-                  }
-                }
-              }}
-            >
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, 1fr)',
-                  gap: 0.75
-                }}
-              >
-                {[
-                  {
-                    label: 'Market Cap',
-                    value: fNumberWithSuffix(convertedMarketCap),
-                    color: theme.palette.info.main
-                  },
-                  {
-                    label: 'Volume (24h)',
-                    value: fNumberWithSuffix(vol24hx),
-                    color: theme.palette.warning.main
-                  },
-                  {
-                    label: 'Unique Traders (24h)',
-                    value: fNumberWithSuffix(uniqueTraders24h || 0),
-                    color: theme.palette.primary.main
-                  },
-                  {
-                    label: 'Circulating Supply',
-                    value: fNumberWithSuffix(supply),
-                    color: theme.palette.primary.main
-                  },
-                  {
-                    label: 'Total Supply',
-                    value: fNumberWithSuffix(amount),
-                    color: theme.palette.success.main
-                  },
-                  {
-                    label: 'Trustlines',
-                    value: fNumberWithSuffix(trustlines),
-                    color: theme.palette.info.main
-                  }
-                ].map((stat, index) => (
-                  <Box
-                    key={stat.label}
-                    sx={{
-                      p: 1,
-                      borderRadius: '8px',
-                      background: `linear-gradient(135deg, 
-                        ${alpha(stat.color, 0.06)} 0%, 
-                        ${alpha(stat.color, 0.02)} 100%)`,
-                      border: `1px solid ${alpha(stat.color, 0.1)}`,
-                      transition: 'all 0.2s ease',
-
-                      '&:hover': {
-                        background: `linear-gradient(135deg, 
-                          ${alpha(stat.color, 0.1)} 0%, 
-                          ${alpha(stat.color, 0.04)} 100%)`,
-                        border: `1px solid ${alpha(stat.color, 0.15)}`,
-                        transform: 'translateY(-1px)'
-                      }
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontSize: '0.7rem',
-                        fontWeight: 500,
-                        color: alpha(theme.palette.text.secondary, 0.8),
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.2px',
-                        display: 'block',
-                        mb: 0.5,
-                        lineHeight: 1
-                      }}
-                    >
-                      {stat.label}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontSize: '0.8rem',
-                        fontWeight: 700,
-                        color: stat.color,
-                        lineHeight: 1,
-                        wordBreak: 'break-all'
-                      }}
-                    >
-                      {stat.value}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-          )}
-        </Box>
-      )}
-
+      {/* TagsDrawer, LinksDrawer, and Dialogs (these remain at the end) */}
       <TagsDrawer
         isOpen={openTagsDrawer}
         toggleDrawer={toggleTagsDrawer}
@@ -2950,8 +2788,6 @@ export default function UserDesc({ token }) {
               fontWeight: 700,
               fontSize: '1rem',
               px: 4,
-              py: 1.5,
-              minWidth: '200px',
               background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
 
               '&:hover': {
