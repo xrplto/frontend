@@ -148,7 +148,7 @@ function Overview({ data }) {
       </Container>
 
       <ScrollToTop />
-      {isMobile ? <AppMenu /> : ''}
+      {/* {isMobile ? <AppMenu /> : ''} */}
       <Footer />
     </OverviewWrapper>
   );
