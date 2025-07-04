@@ -532,6 +532,34 @@ const LedgerMemeIcon = React.forwardRef((props, ref) => {
 
 LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 
+const HorizonIcon = React.forwardRef((props, ref) => {
+  const { darkMode, ...otherProps } = props;
+  return (
+    <SvgIcon
+      {...otherProps}
+      ref={ref}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#f97316"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2" />
+      <path d="M12 20v2" />
+      <path d="M4.93 4.93l1.41 1.41" />
+      <path d="M17.66 17.66l1.41 1.41" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+      <path d="M6.34 17.66l-1.41 1.41" />
+      <path d="M19.07 4.93l-1.41 1.41" />
+    </SvgIcon>
+  );
+});
+
+HorizonIcon.displayName = 'HorizonIcon';
+
 const getOriginIcon = (origin) => {
   switch (origin) {
     case 'FirstLedger':
@@ -546,6 +574,12 @@ const getOriginIcon = (origin) => {
       return (
         <LedgerMemeIcon
           sx={{ fontSize: '14px', color: '#cfff04', marginRight: '2px', marginBottom: '2px' }}
+        />
+      );
+    case 'Horizon':
+      return (
+        <HorizonIcon
+          sx={{ fontSize: '14px', color: '#f97316', marginRight: '2px', marginBottom: '2px' }}
         />
       );
     case 'aigent.run':
@@ -880,6 +914,8 @@ export default function UserDesc({ token }) {
         return 'XPMarket';
       case 'LedgerMeme':
         return 'LedgerMeme';
+      case 'Horizon':
+        return 'Horizon';
       case 'Magnetic X':
         return 'Magnetic X';
       case 'xrp.fun':
