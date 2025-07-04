@@ -3,8 +3,6 @@ import {
   alpha,
   styled,
   Box,
-  Grid,
-  Stack,
   Pagination,
   Select,
   MenuItem,
@@ -17,8 +15,7 @@ import { FirstPage, LastPage, ViewList } from '@mui/icons-material';
 // Redux
 import { useSelector, useDispatch } from 'react-redux';
 import { selectFilteredCount } from 'src/redux/statusSlice';
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useCallback } from 'react';
 // ----------------------------------------------------------------------
 
 const StyledToolbar = styled(Box)(({ theme }) => ({
@@ -26,7 +23,8 @@ const StyledToolbar = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'space-between',
   padding: theme.spacing(2, 0),
-  gap: theme.spacing(2)
+  gap: theme.spacing(2),
+  flexWrap: 'wrap' // Allow items to wrap on smaller screens
 }));
 
 const PaginationContainer = styled(Box)(({ theme }) => ({
@@ -82,7 +80,6 @@ const NavButton = styled(IconButton)(({ theme }) => ({
 export default function TokenListToolbar({ rows, setRows, page, setPage, tokens }) {
   const filteredCount = useSelector(selectFilteredCount);
   const dispatch = useDispatch();
-  const router = useRouter();
 
   const currentFilteredCount = filteredCount ?? 0;
   const num = currentFilteredCount / rows;
@@ -98,12 +95,7 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
     setRows(parseInt(event.target.value, 10));
   };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage - 1);
-    gotoTop(event);
-  };
-
-  const gotoTop = (event) => {
+  const gotoTop = useCallback((event) => {
     const anchor = (event.target.ownerDocument || document).querySelector('#back-to-top-anchor');
     if (anchor) {
       anchor.scrollIntoView({
@@ -111,66 +103,30 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
         block: 'center'
       });
     }
-  };
+  }, []);
 
-  const handleFirstPage = () => {
+  const handleChangePage = useCallback(
+    (event, newPage) => {
+      setPage(newPage - 1);
+      gotoTop(event);
+    },
+    [setPage, gotoTop]
+  );
+
+  const handleFirstPage = useCallback(() => {
     setPage(0);
     gotoTop({ target: document });
-  };
+  }, [setPage, gotoTop]);
 
-  const handleLastPage = () => {
+  const handleLastPage = useCallback(() => {
     setPage(page_count - 1);
     gotoTop({ target: document });
-  };
-
-  const PaginationControls = () => (
-    <PaginationContainer>
-      <NavButton onClick={handleFirstPage} disabled={page === 0} size="small" title="First page">
-        <FirstPage fontSize="small" />
-      </NavButton>
-
-      <Pagination
-        page={page + 1}
-        onChange={handleChangePage}
-        count={page_count}
-        size="small"
-        siblingCount={1}
-        boundaryCount={1}
-        sx={{
-          '& .MuiPaginationItem-root': {
-            borderRadius: 1.5,
-            margin: '0 1px',
-            fontWeight: 500,
-            '&:hover': {
-              backgroundColor: 'primary.lighter'
-            },
-            '&.Mui-selected': {
-              backgroundColor: 'primary.main',
-              color: 'white',
-              fontWeight: 600,
-              '&:hover': {
-                backgroundColor: 'primary.dark'
-              }
-            }
-          }
-        }}
-      />
-
-      <NavButton
-        onClick={handleLastPage}
-        disabled={page === page_count - 1}
-        size="small"
-        title="Last page"
-      >
-        <LastPage fontSize="small" />
-      </NavButton>
-    </PaginationContainer>
-  );
+  }, [setPage, gotoTop, page_count]);
 
   return (
     <StyledToolbar>
-      {/* Results Info */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      {/* Left section: Results Info and Pagination */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
         <Chip
           label={`${start}-${end} of ${currentFilteredCount.toLocaleString()}`}
           variant="outlined"
@@ -185,14 +141,56 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
         <Typography variant="body2" color="text.secondary">
           tokens
         </Typography>
+        {/* Pagination controls */}
+        <PaginationContainer>
+          <NavButton
+            onClick={handleFirstPage}
+            disabled={page === 0}
+            size="small"
+            title="First page"
+          >
+            <FirstPage fontSize="small" />
+          </NavButton>
+
+          <Pagination
+            page={page + 1}
+            onChange={handleChangePage}
+            count={page_count}
+            size="small"
+            siblingCount={1}
+            boundaryCount={1}
+            sx={{
+              '& .MuiPaginationItem-root': {
+                borderRadius: 1.5,
+                margin: '0 1px',
+                fontWeight: 500,
+                '&:hover': {
+                  backgroundColor: 'primary.lighter'
+                },
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  fontWeight: 600,
+                  '&:hover': {
+                    backgroundColor: 'primary.dark'
+                  }
+                }
+              }
+            }}
+          />
+
+          <NavButton
+            onClick={handleLastPage}
+            disabled={page === page_count - 1}
+            size="small"
+            title="Last page"
+          >
+            <LastPage fontSize="small" />
+          </NavButton>
+        </PaginationContainer>
       </Box>
 
-      {/* Pagination - Hidden on mobile */}
-      <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-        <PaginationControls />
-      </Box>
-
-      {/* Rows Selector */}
+      {/* Right section: Rows Selector */}
       <RowsSelector>
         <ViewList fontSize="small" color="action" />
         <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>
@@ -204,20 +202,6 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
           <MenuItem value={20}>20</MenuItem>
         </CustomSelect>
       </RowsSelector>
-
-      {/* Mobile Pagination */}
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: 16,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 999,
-          display: { xs: 'block', md: 'none' }
-        }}
-      >
-        <PaginationControls />
-      </Box>
     </StyledToolbar>
   );
 }
