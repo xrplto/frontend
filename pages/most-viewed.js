@@ -5,7 +5,6 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/components/ScrollToTop';
-import AppMenu from 'src/components/AppMenu';
 import Summary from 'src/TokenList/Summary';
 import HowWeWork from 'src/TokenList/HowWeWork';
 import { useRouter } from 'next/router';
@@ -87,7 +86,7 @@ function MostViewedPage({ data }) {
       </Container>
 
       <ScrollToTop />
-      {isMobile ? <AppMenu /> : ''}
+      {/* {isMobile ? <AppMenu /> : ''} */}
       <Footer />
     </OverviewWrapper>
   );
