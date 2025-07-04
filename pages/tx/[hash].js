@@ -34,6 +34,14 @@ import BigNumber from 'bignumber.js';
 import CryptoJS from 'crypto-js';
 import { getHashIcon } from 'src/utils/extra';
 
+const ipfsToGateway = (uri) => {
+  if (!uri || !uri.startsWith('ipfs://')) {
+    return uri;
+  }
+  // Use a public IPFS gateway to display the image
+  return `https://ipfs.io/ipfs/${uri.substring(7)}`;
+};
+
 const KNOWN_SOURCE_TAGS = {
   101102979: { name: 'xrp.cafe', url: 'https://xrp.cafe' }
 };
@@ -341,7 +349,10 @@ const TransactionDetails = ({ txData, theme }) => {
     LastUpdateTime,
     PriceDataSeries,
     Provider,
-    LPTokenIn
+    LPTokenIn,
+    NFTokenSellOffer,
+    NFTokenBuyOffer,
+    NFTokenID
   } = txData;
 
   const clientInfo = KNOWN_SOURCE_TAGS[SourceTag];
@@ -359,6 +370,11 @@ const TransactionDetails = ({ txData, theme }) => {
 
   const txResult = meta?.TransactionResult;
   const transactionIndex = meta?.TransactionIndex;
+
+  const [acceptedNftInfo, setAcceptedNftInfo] = useState(null);
+  const [nftInfoLoading, setNftInfoLoading] = useState(false);
+  const [offerNftInfo, setOfferNftInfo] = useState(null);
+  const [offerNftInfoLoading, setOfferNftInfoLoading] = useState(false);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(hash);
@@ -505,6 +521,85 @@ const TransactionDetails = ({ txData, theme }) => {
     }
     return null;
   };
+
+  const acceptedOfferDetails = useMemo(() => {
+    if (TransactionType !== 'NFTokenAcceptOffer' || !meta || !meta.AffectedNodes) {
+      return null;
+    }
+    const offerNode = meta.AffectedNodes.find(
+      (node) => node.DeletedNode && node.DeletedNode.LedgerEntryType === 'NFTokenOffer'
+    );
+    if (offerNode) {
+      const { NFTokenID, Owner, Destination } = offerNode.DeletedNode.FinalFields;
+      let uri = null;
+
+      for (const affectedNode of meta.AffectedNodes) {
+        const node = affectedNode.ModifiedNode || affectedNode.DeletedNode;
+        if (node?.LedgerEntryType === 'NFTokenPage') {
+          const nftList = node.PreviousFields?.NFTokens || node.FinalFields?.NFTokens;
+          if (nftList) {
+            const nft = nftList.find((item) => item.NFToken.NFTokenID === NFTokenID);
+            if (nft?.NFToken.URI) {
+              uri = nft.NFToken.URI;
+              break;
+            }
+          }
+        }
+      }
+
+      return {
+        nftokenID: NFTokenID,
+        seller: Owner,
+        buyer: Destination || Account,
+        uri
+      };
+    }
+    return null;
+  }, [TransactionType, meta, Account]);
+
+  useEffect(() => {
+    if (acceptedOfferDetails?.nftokenID) {
+      const fetchNftInfo = async () => {
+        setNftInfoLoading(true);
+        try {
+          const response = await axios.get(
+            `https://api.xrpnft.com/api/nft/${acceptedOfferDetails.nftokenID}`
+          );
+          if (response.data.res === 'success') {
+            setAcceptedNftInfo(response.data.nft);
+          }
+        } catch (err) {
+          if (err.response?.status === 404) {
+            // NFT not found via API, this is handled gracefully by falling back to metadata.
+          } else {
+            console.error('Failed to fetch accepted NFT info', err);
+          }
+        } finally {
+          setNftInfoLoading(false);
+        }
+      };
+      fetchNftInfo();
+    }
+  }, [acceptedOfferDetails]);
+
+  useEffect(() => {
+    if (TransactionType === 'NFTokenCreateOffer' && NFTokenID) {
+      const fetchNftInfo = async () => {
+        setOfferNftInfoLoading(true);
+        try {
+          const response = await axios.get(`https://api.xrpnft.com/api/nft/${NFTokenID}`);
+          if (response.data.res === 'success') {
+            setOfferNftInfo(response.data.nft);
+          }
+        } catch (err) {
+          // silent fail is ok
+        } finally {
+          setOfferNftInfoLoading(false);
+        }
+      };
+      fetchNftInfo();
+    }
+  }, [TransactionType, NFTokenID]);
 
   const { balanceChanges, exchanges } = getBalanceChanges();
 
@@ -726,11 +821,13 @@ const TransactionDetails = ({ txData, theme }) => {
           <Typography variant="body1">
             {TransactionType === 'OfferCreate'
               ? `OfferCreate - ${Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
-              : TransactionType === 'OfferCancel' && cancelledOffer
-                ? `OfferCancel - ${cancelledOffer.Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
-                : isConversion
-                  ? 'Conversion Payment'
-                  : TransactionType}
+              : TransactionType === 'NFTokenCreateOffer'
+                ? `NFTokenCreateOffer - ${Flags & 1 ? 'Sell' : 'Buy'} Offer`
+                : TransactionType === 'OfferCancel' && cancelledOffer
+                  ? `OfferCancel - ${cancelledOffer.Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
+                  : isConversion
+                    ? 'Conversion Payment'
+                    : TransactionType}
           </Typography>
         </DetailRow>
         <DetailRow label={isSuccess ? 'Validated' : 'Rejected'}>
@@ -1047,6 +1144,361 @@ const TransactionDetails = ({ txData, theme }) => {
                 ))}
               </DetailRow>
             )}
+          </>
+        )}
+
+        {TransactionType === 'NFTokenAcceptOffer' && acceptedOfferDetails && (
+          <>
+            <DetailRow label="Initiated by">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={Account} />
+                <Link href={`/profile/${Account}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {Account}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+            {NFTokenSellOffer && (
+              <DetailRow label="Sell Offer">
+                <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
+                  {NFTokenSellOffer}
+                </Typography>
+              </DetailRow>
+            )}
+            {NFTokenBuyOffer && (
+              <DetailRow label="Buy Offer">
+                <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
+                  {NFTokenBuyOffer}
+                </Typography>
+              </DetailRow>
+            )}
+            <DetailRow label="Transfer from">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={acceptedOfferDetails.seller} />
+                <Link href={`/profile/${acceptedOfferDetails.seller}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {acceptedOfferDetails.seller}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+            <DetailRow label="Transfer to">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={acceptedOfferDetails.buyer} />
+                <Link href={`/profile/${acceptedOfferDetails.buyer}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {acceptedOfferDetails.buyer}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+            <DetailRow label="NFT Data">
+              {nftInfoLoading ? (
+                <Typography>Loading NFT data...</Typography>
+              ) : acceptedNftInfo ? (
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={4}>
+                    {acceptedNftInfo.meta?.image && (
+                      <Box
+                        component="img"
+                        src={ipfsToGateway(acceptedNftInfo.meta.image)}
+                        alt={acceptedNftInfo.meta?.name || 'NFT Image'}
+                        sx={{
+                          width: '100%',
+                          maxWidth: '220px',
+                          borderRadius: 2
+                        }}
+                      />
+                    )}
+                  </Grid>
+                  <Grid item xs={12} md={8}>
+                    <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Link href={`/nft/${acceptedNftInfo.NFTokenID}`} passHref>
+                        <Typography
+                          component="a"
+                          variant="body1"
+                          sx={{
+                            color: theme.palette.primary.main,
+                            textDecoration: 'none',
+                            '&:hover': { textDecoration: 'underline' },
+                            wordBreak: 'break-all'
+                          }}
+                        >
+                          {acceptedNftInfo.NFTokenID}
+                        </Typography>
+                      </Link>
+                    </DetailRow>
+                    <DetailRow label="Issuer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <AccountAvatar account={acceptedNftInfo.issuer} />
+                        <Link href={`/profile/${acceptedNftInfo.issuer}`} passHref>
+                          <Typography
+                            component="a"
+                            variant="body1"
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textDecoration: 'none',
+                              '&:hover': { textDecoration: 'underline' }
+                            }}
+                          >
+                            {acceptedNftInfo.issuer}
+                          </Typography>
+                        </Link>
+                      </Box>
+                    </DetailRow>
+                    {typeof acceptedNftInfo.royalty !== 'undefined' && (
+                      <DetailRow label="Transfer Fee" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                        <Typography variant="body1">{acceptedNftInfo.royalty / 1000}%</Typography>
+                      </DetailRow>
+                    )}
+                    <DetailRow label="Flag" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Typography variant="body1">
+                        {getNFTokenMintFlagExplanation(acceptedNftInfo.flag)}
+                      </Typography>
+                    </DetailRow>
+                    <DetailRow label="NFT Taxon" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Typography variant="body1">{acceptedNftInfo.taxon}</Typography>
+                    </DetailRow>
+                    {(() => {
+                      const decodedUri =
+                        acceptedNftInfo.meta?.image ||
+                        (acceptedNftInfo.URI
+                          ? CryptoJS.enc.Hex.parse(acceptedNftInfo.URI).toString(CryptoJS.enc.Utf8)
+                          : null);
+                      if (!decodedUri) return null;
+                      return (
+                        <DetailRow label="URI" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                          <Link
+                            href={decodedUri}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            passHref
+                          >
+                            <Typography
+                              component="a"
+                              variant="body1"
+                              sx={{
+                                color: theme.palette.primary.main,
+                                textDecoration: 'none',
+                                '&:hover': { textDecoration: 'underline' },
+                                wordBreak: 'break-all'
+                              }}
+                            >
+                              {decodedUri}
+                            </Typography>
+                          </Link>
+                        </DetailRow>
+                      );
+                    })()}
+                  </Grid>
+                </Grid>
+              ) : (
+                <Grid container spacing={1}>
+                  <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                    <Link href={`/nft/${acceptedOfferDetails.nftokenID}`} passHref>
+                      <Typography
+                        component="a"
+                        variant="body1"
+                        sx={{
+                          color: theme.palette.primary.main,
+                          textDecoration: 'none',
+                          '&:hover': { textDecoration: 'underline' },
+                          wordBreak: 'break-all'
+                        }}
+                      >
+                        {acceptedOfferDetails.nftokenID}
+                      </Typography>
+                    </Link>
+                  </DetailRow>
+                  {(() => {
+                    const decodedUri = acceptedOfferDetails.uri
+                      ? CryptoJS.enc.Hex.parse(acceptedOfferDetails.uri).toString(CryptoJS.enc.Utf8)
+                      : null;
+                    if (!decodedUri) return null;
+                    return (
+                      <DetailRow label="URI" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                        <Link href={decodedUri} target="_blank" rel="noopener noreferrer" passHref>
+                          <Typography
+                            component="a"
+                            variant="body1"
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textDecoration: 'none',
+                              '&:hover': { textDecoration: 'underline' },
+                              wordBreak: 'break-all'
+                            }}
+                          >
+                            {decodedUri}
+                          </Typography>
+                        </Link>
+                      </DetailRow>
+                    );
+                  })()}
+                </Grid>
+              )}
+            </DetailRow>
+          </>
+        )}
+
+        {TransactionType === 'NFTokenCreateOffer' && (
+          <>
+            <DetailRow label="Initiated by">
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountAvatar account={Account} />
+                <Link href={`/profile/${Account}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {Account}
+                  </Typography>
+                </Link>
+              </Box>
+            </DetailRow>
+
+            {offerNftInfoLoading ? (
+              <DetailRow label="NFT">
+                <Typography>Loading NFT data...</Typography>
+              </DetailRow>
+            ) : offerNftInfo ? (
+              <DetailRow label="NFT Data">
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={4}>
+                    {offerNftInfo.meta?.image && (
+                      <Box
+                        component="img"
+                        src={ipfsToGateway(offerNftInfo.meta.image)}
+                        alt={offerNftInfo.meta?.name || 'NFT Image'}
+                        sx={{
+                          width: '100%',
+                          maxWidth: '220px',
+                          borderRadius: 2
+                        }}
+                      />
+                    )}
+                  </Grid>
+                  <Grid item xs={12} md={8}>
+                    <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Link href={`/nft/${offerNftInfo.NFTokenID}`} passHref>
+                        <Typography
+                          component="a"
+                          variant="body1"
+                          sx={{
+                            color: theme.palette.primary.main,
+                            textDecoration: 'none',
+                            '&:hover': { textDecoration: 'underline' },
+                            wordBreak: 'break-all'
+                          }}
+                        >
+                          {offerNftInfo.NFTokenID}
+                        </Typography>
+                      </Link>
+                    </DetailRow>
+                    <DetailRow label="Issuer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <AccountAvatar account={offerNftInfo.issuer} />
+                        <Link href={`/profile/${offerNftInfo.issuer}`} passHref>
+                          <Typography
+                            component="a"
+                            variant="body1"
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textDecoration: 'none',
+                              '&:hover': { textDecoration: 'underline' }
+                            }}
+                          >
+                            {offerNftInfo.issuer}
+                          </Typography>
+                        </Link>
+                      </Box>
+                    </DetailRow>
+                  </Grid>
+                </Grid>
+              </DetailRow>
+            ) : (
+              <DetailRow label="NFT">
+                <Link href={`/nft/${NFTokenID}`} passHref>
+                  <Typography
+                    component="a"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {NFTokenID}
+                  </Typography>
+                </Link>
+              </DetailRow>
+            )}
+
+            <DetailRow label="NFT Offer Details">
+              <Paper sx={{ p: 2, width: '100%' }}>
+                <Grid container spacing={1}>
+                  {meta.offer_id && (
+                    <DetailRow label="Offer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
+                        {meta.offer_id}
+                      </Typography>
+                    </DetailRow>
+                  )}
+                  <DetailRow label="Amount" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                    <AmountDisplay amount={Amount} />
+                  </DetailRow>
+                  {Destination && (
+                    <DetailRow label="Destination" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <AccountAvatar account={Destination} />
+                        <Link href={`/profile/${Destination}`} passHref>
+                          <Typography
+                            component="a"
+                            variant="body1"
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textDecoration: 'none',
+                              '&:hover': { textDecoration: 'underline' }
+                            }}
+                          >
+                            {Destination}
+                          </Typography>
+                        </Link>
+                      </Box>
+                    </DetailRow>
+                  )}
+                </Grid>
+              </Paper>
+            </DetailRow>
           </>
         )}
 
