@@ -43,7 +43,8 @@ const ipfsToGateway = (uri) => {
 };
 
 const KNOWN_SOURCE_TAGS = {
-  101102979: { name: 'xrp.cafe', url: 'https://xrp.cafe' }
+  101102979: { name: 'xrp.cafe', url: 'https://xrp.cafe' },
+  20221212: { name: 'XPMarket', url: 'https://xpmarket.com' }
 };
 
 // Helper to render key-value pairs and make certain values clickable
