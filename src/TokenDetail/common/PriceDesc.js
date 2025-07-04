@@ -180,6 +180,8 @@ export default function PriceDesc({ token }) {
             spacing={{ xs: 0.75, md: 1 }}
           >
             <Stack
+              direction={{ xs: 'row', md: 'column' }}
+              alignItems={{ xs: 'center', md: 'flex-start' }}
               spacing={0.03125}
               sx={{ flex: { xs: 'none', md: '0 0 auto' }, minWidth: { xs: 'auto', md: '160px' } }}
             >
@@ -197,7 +199,9 @@ export default function PriceDesc({ token }) {
                   alignItems: 'center',
                   gap: 0.15,
                   flexWrap: 'wrap',
-                  mb: 0.0625
+                  mb: 0.0625,
+                  lineHeight: 1,
+                  whiteSpace: 'nowrap'
                 }}
               >
                 Price
@@ -220,7 +224,7 @@ export default function PriceDesc({ token }) {
                 noWrap
                 component="h2"
                 sx={{
-                  fontSize: { xs: '1.85rem', sm: '2.2rem', md: '2.5rem' },
+                  fontSize: { xs: '1.25rem', sm: '2.2rem', md: '2.5rem' },
                   fontWeight: 800,
                   letterSpacing: '-0.03em',
                   background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${alpha(
@@ -230,7 +234,8 @@ export default function PriceDesc({ token }) {
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  lineHeight: 1
+                  lineHeight: 1,
+                  ml: { xs: 0.5, md: 0 }
                 }}
               >
                 <NumberTooltip
