@@ -63,15 +63,18 @@ const badge24hStyle = {
 // Enhanced styled components
 const ModernTableCell = styled(TableCell)(({ theme }) => ({
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  padding: theme.spacing(1.5, { xs: 1, sm: 1.5 }),
+  padding: theme.spacing(1.5),
   '&:first-of-type': {
-    paddingLeft: theme.spacing({ xs: 1.5, sm: 2 })
+    paddingLeft: theme.spacing(1.5)
   },
   '&:last-of-type': {
-    paddingRight: theme.spacing({ xs: 1.5, sm: 2 }),
-    [theme.breakpoints.down('sm')]: {
-      paddingLeft: theme.spacing(4)
-    }
+    paddingRight: theme.spacing(1.5)
+  },
+  [theme.breakpoints.down('sm')]: {
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+    paddingTop: theme.spacing(1.5),
+    paddingBottom: theme.spacing(1.5)
   }
 }));
 
