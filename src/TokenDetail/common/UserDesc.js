@@ -509,7 +509,7 @@ const LedgerMemeIcon = React.forwardRef((props, ref) => {
             ></path>
             <path
               fill="#262626"
-              d="M27.43,10.62c-0.45-0.46-1.05-0.72-1.69-0.72s-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78Z"
+              d="M27.43,10.62c-0.45-0.46-1.05-0.72-1.69-0.72s-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78c-0.45-0.46-1.05-0.72-1.69-0.72Z"
             ></path>
             <path
               fill="#262626"
@@ -1325,6 +1325,10 @@ export default function UserDesc({ token }) {
                   border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`
                 }}
               />
+              {/* Social Links - New position under the image */}
+              <Box sx={{ mt: 0.5, display: 'flex', justifyContent: 'center' }}>
+                <CompactSocialLinks size="small" />
+              </Box>
               <Box
                 sx={{
                   position: 'absolute',
@@ -1412,6 +1416,8 @@ export default function UserDesc({ token }) {
                   {user}
                 </Typography>
               </Stack>
+
+              {/* Removed Social Links from here */}
 
               {/* Rank and Status Icons Row */}
               <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
@@ -1502,7 +1508,7 @@ export default function UserDesc({ token }) {
                 sx={{ mt: 0.5, flexWrap: 'wrap', gap: 0.5 }}
               >
                 <CompactTags maxTags={isXsMobile ? 2 : 3} />
-                <CompactSocialLinks size="small" />
+                {/* Removed CompactSocialLinks to save space on mobile */}
               </Stack>
             </Stack>
 
@@ -1510,6 +1516,7 @@ export default function UserDesc({ token }) {
             <Stack direction="row" spacing={0.5} alignItems="flex-start" sx={{ flexShrink: 0 }}>
               <Watch token={token} />
               <Share token={token} />
+              {/* Removed CompactSocialLinks from here */}
             </Stack>
           </Stack>
         )}
@@ -1811,19 +1818,24 @@ export default function UserDesc({ token }) {
                     key={stat.label}
                     sx={{
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
-                      gap: 0.75,
-                      px: 1.25,
-                      py: 0.75,
+                      p: 0.75,
                       borderRadius: '10px',
                       border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
                       background: alpha(theme.palette.background.paper, 0.6),
+                      minHeight: '50px',
                       transition: 'all 0.2s ease',
+                      cursor: 'pointer',
 
                       '&:hover': {
                         border: `1px solid ${alpha(stat.color, 0.3)}`,
                         background: alpha(stat.color, 0.04),
-                        transform: 'translateY(-1px)'
+                        transform: 'translateY(-2px)'
+                      },
+
+                      '&:active': {
+                        transform: isMobile ? 'scale(0.98)' : 'none'
                       }
                     }}
                   >
@@ -1834,7 +1846,8 @@ export default function UserDesc({ token }) {
                         fontWeight: 500,
                         color: alpha(theme.palette.text.secondary, 0.8),
                         textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
+                        letterSpacing: '0.3px',
+                        mb: 0.25
                       }}
                     >
                       {stat.label}:
@@ -1842,9 +1855,10 @@ export default function UserDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.9rem',
-                        fontWeight: 600,
-                        color: stat.color
+                        fontSize: '0.95rem',
+                        fontWeight: 700,
+                        color: stat.color,
+                        textShadow: `0 1px 2px ${alpha(stat.color, 0.3)}`
                       }}
                     >
                       {stat.value}
@@ -1863,7 +1877,7 @@ export default function UserDesc({ token }) {
                 sx={{
                   display: 'grid',
                   gridTemplateColumns: isXsMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
-                  gap: 0.5,
+                  gap: 0.25, // Reduced gap for more compactness
                   p: 0.75,
                   borderRadius: '10px',
                   background: `linear-gradient(135deg, 
@@ -1960,11 +1974,11 @@ export default function UserDesc({ token }) {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        p: 1.25,
+                        p: 0.25, // Further reduced padding for more compactness
                         borderRadius: '10px',
                         border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
                         background: alpha(theme.palette.background.paper, 0.6),
-                        minHeight: '68px',
+                        minHeight: '50px',
                         transition: 'all 0.2s ease',
                         cursor: 'pointer',
 
@@ -1982,12 +1996,12 @@ export default function UserDesc({ token }) {
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.8rem',
+                          fontSize: '0.7rem',
                           fontWeight: 500,
                           color: alpha(theme.palette.text.secondary, 0.8),
                           textTransform: 'uppercase',
                           letterSpacing: '0.3px',
-                          mb: 0.5
+                          mb: 0.25
                         }}
                       >
                         {stat.label}:
@@ -1995,7 +2009,7 @@ export default function UserDesc({ token }) {
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.95rem',
+                          fontSize: '0.85rem',
                           fontWeight: 700,
                           color: stat.color,
                           textShadow: `0 1px 2px ${alpha(stat.color, 0.3)}`
@@ -2086,7 +2100,7 @@ export default function UserDesc({ token }) {
                             color: theme.palette.primary.main,
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px',
-                            mb: 1,
+                            mb: 0.5, // Reduced margin-bottom for compactness
                             display: 'block'
                           }}
                         >
@@ -2286,7 +2300,7 @@ export default function UserDesc({ token }) {
                             color: theme.palette.success.main,
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px',
-                            mb: 1,
+                            mb: 0.5,
                             display: 'block'
                           }}
                         >
@@ -2372,6 +2386,25 @@ export default function UserDesc({ token }) {
                             </Box>
                           ))}
                         </Box>
+                      </Box>
+
+                      {/* Social Media Links */}
+                      <Box mt={2}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            color: theme.palette.info.main,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            mb: 0.5,
+                            display: 'block'
+                          }}
+                        >
+                          Social Links
+                        </Typography>
+                        <CompactSocialLinks size="small" />
                       </Box>
                     </Stack>
                   </Box>
