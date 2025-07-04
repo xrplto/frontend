@@ -156,12 +156,14 @@ export async function getServerSideProps(ctx) {
     if (changeDisplay) {
       seoTitle += ` ${changeDisplay}`;
     }
-    seoTitle += ` | xrpl.to`;
 
     // Fallback shorter title if too long (keep under 60 chars when possible)
-    if (seoTitle.length > 65) {
-      seoTitle = `${name}: ${priceDisplay}${changeDisplay ? ` ${changeDisplay}` : ''} | xrpl.to`;
+    if (seoTitle.length > 60) {
+      seoTitle = `${name}: ${priceDisplay}${changeDisplay ? ` ${changeDisplay}` : ''}`;
     }
+
+    // Add xrpl.to suffix to final title
+    seoTitle += ` | xrpl.to`;
 
     // Enhanced Open Graph image handling with optimized dimensions
     const getOptimalImage = () => {
