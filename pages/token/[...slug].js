@@ -162,9 +162,6 @@ export async function getServerSideProps(ctx) {
       seoTitle = `${name}: ${priceDisplay}${changeDisplay ? ` ${changeDisplay}` : ''}`;
     }
 
-    // Add xrpl.to suffix to final title
-    seoTitle += ` | xrpl.to`;
-
     // Enhanced Open Graph image handling with optimized dimensions
     const getOptimalImage = () => {
       // Optimal dimensions for social media (1.91:1 ratio, smaller for performance)
@@ -182,7 +179,7 @@ export async function getServerSideProps(ctx) {
         };
       }
 
-      // Fallback: XRPL.to logo when no md5
+      // Fallback: XRPL.to logo when no md5r
       return {
         url: 'https://xrpl.to/logo/xrpl-to-logo-white.svg',
         width,
