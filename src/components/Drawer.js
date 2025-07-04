@@ -17,8 +17,8 @@ const DrawerHeader = styled('div', {
   backdropFilter: 'blur(20px)',
   paddingLeft: 16,
   paddingRight: 16,
-  paddingTop: 10,
-  paddingBottom: 10,
+  paddingTop: 5,
+  paddingBottom: 5,
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 2px 8px ${alpha(
     theme.palette.primary.main,
@@ -33,7 +33,7 @@ const DrawerHeader = styled('div', {
     right: 0,
     height: '2px',
     background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-    opacity: 0.8
+    opacity: 0.5
   }
 }));
 
@@ -91,7 +91,9 @@ export default function Drawer({ toggleDrawer, isOpen, title, children, headerSt
               0.95
             )} 100%)`,
           backdropFilter: 'blur(20px)',
-          borderLeft: (theme) => `1px solid ${alpha(theme.palette.divider, 0.08)}`
+          borderLeft: (theme) => `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+          pt: 3,
+          pb: 2
         }
       }}
     >

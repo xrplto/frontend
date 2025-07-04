@@ -14,7 +14,8 @@ export default function ThemeSwitcher() {
       size="small"
       sx={{
         backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
-        borderRadius: 1,
+        borderRadius: '8px',
+        padding: '6px',
         '&:hover': {
           backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.2)
         }

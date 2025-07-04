@@ -39,8 +39,8 @@ export default function CurrencySwithcer() {
           size="small"
           sx={{
             backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
-            borderRadius: 1,
-            padding: '6px 8px',
+            borderRadius: '8px',
+            padding: '3px 5px',
             '&:hover': {
               backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.2)
             }
@@ -76,10 +76,10 @@ export default function CurrencySwithcer() {
         PaperProps={{
           elevation: 3,
           sx: {
-            mt: 1,
-            minWidth: 120,
+            mt: 0.5,
+            minWidth: 100,
             '& .MuiList-root': {
-              padding: '4px'
+              padding: '2px'
             }
           }
         }}
@@ -90,10 +90,10 @@ export default function CurrencySwithcer() {
             onClick={() => handleChange(option)}
             selected={option === activeCurrency}
             sx={{
-              minHeight: 36,
+              minHeight: 30,
               borderRadius: 1,
-              px: 1.5,
-              py: 0.75,
+              px: 1,
+              py: 0.5,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',

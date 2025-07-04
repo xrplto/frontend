@@ -47,6 +47,9 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
+// Internationalization
+import { useTranslation } from 'react-i18next';
+
 // Iconify
 // import { Icon } from '@iconify/react';
 // import userLock from '@iconify/icons-fa-solid/user-lock';
@@ -230,6 +233,7 @@ function truncateAccount(str, length = 9) {
 
 export default function Wallet({ style }) {
   const theme = useTheme();
+  const { t } = useTranslation();
   // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const anchorRef = useRef(null);
   const {
@@ -262,126 +266,60 @@ export default function Wallet({ style }) {
 
   return (
     <Box style={style}>
-      <Button
-        direction="row"
-        spacing={1}
-        sx={{
-          position: 'relative',
-          overflow: 'hidden',
-          padding: '4px 12px',
-          borderRadius: '16px',
-          backgroundColor: 'transparent',
-          transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          minHeight: '32px',
-          background: accountLogin
-            ? `linear-gradient(145deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%, ${theme.palette.success.main} 100%)`
-            : `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.85)} 0%, ${alpha(
-                theme.palette.primary.dark,
-                0.95
-              )} 50%, ${alpha(theme.palette.success.main, 0.8)} 100%)`,
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${alpha(theme.palette.primary.light, 0.25)}`,
-          boxShadow: accountLogin
-            ? `0 8px 32px ${alpha(theme.palette.primary.main, 0.35)}, 0 4px 16px ${alpha(
-                theme.palette.common.black,
-                0.1
-              )}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}`
-            : `0 6px 24px ${alpha(theme.palette.primary.main, 0.3)}, 0 3px 12px ${alpha(
-                theme.palette.common.black,
-                0.08
-              )}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.15)}`,
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '1px',
-            background: `linear-gradient(90deg, 
-              ${theme.palette.primary.main} 0%, 
-              ${theme.palette.success.main} 25%, 
-              ${theme.palette.info.main} 50%, 
-              ${theme.palette.warning.main} 75%, 
-              ${theme.palette.error.main} 100%
-            )`,
-            borderRadius: '16px 16px 0 0',
-            opacity: 0.8,
-            animation: 'shimmer 3s ease-in-out infinite'
-          },
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: '-100%',
-            width: '100%',
-            height: '100%',
-            background: `linear-gradient(90deg, transparent, ${alpha(
-              theme.palette.common.white,
-              0.1
-            )}, transparent)`,
-            transition: 'left 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
-          },
-          '@keyframes shimmer': {
-            '0%, 100%': { opacity: 0.8 },
-            '50%': { opacity: 0.5 }
-          },
-          '&:hover': {
-            transform: 'translateY(-2px) scale(1.02)',
-            boxShadow: accountLogin
-              ? `0 12px 40px ${alpha(theme.palette.primary.main, 0.45)}, 0 6px 20px ${alpha(
-                  theme.palette.common.black,
-                  0.12
-                )}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.25)}`
-              : `0 10px 36px ${alpha(theme.palette.primary.main, 0.4)}, 0 4px 16px ${alpha(
-                  theme.palette.common.black,
-                  0.1
-                )}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}`,
-            background: accountLogin
-              ? `linear-gradient(145deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.success.light} 100%)`
-              : `linear-gradient(145deg, ${theme.palette.primary.main} 0%, ${alpha(
-                  theme.palette.primary.dark,
-                  0.9
-                )} 50%, ${theme.palette.success.main} 100%)`,
-            '&::after': {
-              left: '100%'
-            }
-          },
-          '&:active': {
-            transform: 'translateY(-1px) scale(0.98)',
-            transition: 'transform 0.1s'
-          }
-        }}
-        ref={anchorRef}
-        onClick={accountLogin ? handleOpen : () => setOpenWalletModal(true)}
-      >
-        <AccountBalanceWalletIcon
-          fontSize="small"
-          sx={{
-            color: '#fff',
-            fontSize: '14px',
-            filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.3))'
+      <Tooltip title={t('Connect Wallet')} arrow>
+        <Button
+          onClick={() => {
+            setOpenWalletModal(true);
           }}
-        />
-        <Typography
-          variant="s3"
-          fontSize={12}
-          color="#fff"
+          ref={anchorRef}
           sx={{
-            fontWeight: 600,
-            letterSpacing: '0.1px',
-            textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
-            lineHeight: 1.2
+            background: theme.palette.common.black,
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
+            borderRadius: '12px',
+            height: '32px',
+            minWidth: 'unset',
+            padding: '6px 12px',
+            color: theme.palette.common.white,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '100%',
+              height: '100%',
+              background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.common.white, 0.1)}, transparent)`,
+              transition: 'left 0.6s ease'
+            },
+            '&:hover': {
+              color: theme.palette.common.white,
+              background: alpha(theme.palette.common.black, 0.8),
+              border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
+              transform: 'translateY(-2px)',
+              boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.4)}, 0 4px 12px ${alpha(theme.palette.common.black, 0.2)}`,
+              cursor: 'pointer',
+              '&::before': {
+                left: '100%'
+              }
+            },
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px'
           }}
         >
-          {accountLogin ? truncateAccount(accountLogin, 4) : 'Connect Wallet'}
-        </Typography>
-        {accountLogin && <ActiveIndicator sx={{ ml: 0.25, width: 6, height: 6 }} />}
-      </Button>
+          <AccountBalanceWalletIcon fontSize="small" sx={{ color: theme.palette.common.white }} />
+          <Typography variant="body2" sx={{ color: theme.palette.common.white, fontWeight: 500 }}>
+            {t('Connect Wallet')}
+          </Typography>
+        </Button>
+      </Tooltip>
 
-      {accountLogin && (
+      {accountProfile && (
         <Popover
           open={open}
           onClose={handleClose}
@@ -392,7 +330,7 @@ export default function Wallet({ style }) {
           transitionDuration={300}
           PaperProps={{
             sx: {
-              mt: 1.5,
+              mt: 5.5,
               ml: 0.5,
               background: 'transparent',
               boxShadow: 'none',
