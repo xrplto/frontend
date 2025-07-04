@@ -8,7 +8,8 @@ import {
   MenuItem,
   IconButton,
   Typography,
-  Chip
+  Chip,
+  useTheme
 } from '@mui/material';
 import { FirstPage, LastPage, ViewList } from '@mui/icons-material';
 // ----------------------------------------------------------------------
@@ -24,14 +25,19 @@ const StyledToolbar = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   padding: theme.spacing(2, 0),
   gap: theme.spacing(2),
-  flexWrap: 'wrap' // Allow items to wrap on smaller screens
+  flexWrap: 'wrap',
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: theme.spacing(1)
+  }
 }));
 
 const PaginationContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1),
-  padding: theme.spacing(1, 2),
+  gap: theme.spacing(0.5),
+  padding: theme.spacing(0.5, 1),
   borderRadius: theme.shape.borderRadius * 2,
   backgroundColor: theme.palette.background.paper,
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
@@ -42,8 +48,8 @@ const RowsSelector = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(0.5),
-  padding: theme.spacing(0.5, 1.5),
-  borderRadius: theme.shape.borderRadius,
+  padding: theme.spacing(0.5, 1),
+  borderRadius: theme.shape.borderRadius * 2,
   backgroundColor: theme.palette.background.paper,
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
   boxShadow: theme.shadows[1]
@@ -66,8 +72,8 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 }));
 
 const NavButton = styled(IconButton)(({ theme }) => ({
-  width: 36,
-  height: 36,
+  width: 32,
+  height: 32,
   borderRadius: theme.shape.borderRadius,
   '&:hover': {
     backgroundColor: alpha(theme.palette.primary.main, 0.08)
@@ -80,6 +86,7 @@ const NavButton = styled(IconButton)(({ theme }) => ({
 export default function TokenListToolbar({ rows, setRows, page, setPage, tokens }) {
   const filteredCount = useSelector(selectFilteredCount);
   const dispatch = useDispatch();
+  const theme = useTheme();
 
   const currentFilteredCount = filteredCount ?? 0;
   const num = currentFilteredCount / rows;
@@ -125,8 +132,25 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
 
   return (
     <StyledToolbar>
-      {/* Left section: Results Info and Pagination */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+      {/* Section 1: Results Info */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          flexWrap: 'wrap',
+          [theme.breakpoints.down('md')]: {
+            width: '100%',
+            justifyContent: 'flex-start',
+            gap: theme.spacing(0.5),
+            padding: theme.spacing(0.5, 1),
+            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+            borderRadius: theme.shape.borderRadius * 2,
+            backgroundColor: theme.palette.background.paper,
+            boxShadow: theme.shadows[1]
+          }
+        }}
+      >
         <Chip
           label={`${start}-${end} of ${currentFilteredCount.toLocaleString()}`}
           variant="outlined"
@@ -134,64 +158,89 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
           sx={{
             fontWeight: 600,
             '& .MuiChip-label': {
-              px: 1.5
+              px: 1
             }
           }}
         />
         <Typography variant="body2" color="text.secondary">
           tokens
         </Typography>
-        {/* Pagination controls */}
-        <PaginationContainer>
-          <NavButton
-            onClick={handleFirstPage}
-            disabled={page === 0}
-            size="small"
-            title="First page"
-          >
-            <FirstPage fontSize="small" />
-          </NavButton>
-
-          <Pagination
-            page={page + 1}
-            onChange={handleChangePage}
-            count={page_count}
-            size="small"
-            siblingCount={1}
-            boundaryCount={1}
-            sx={{
-              '& .MuiPaginationItem-root': {
-                borderRadius: 1.5,
-                margin: '0 1px',
-                fontWeight: 500,
-                '&:hover': {
-                  backgroundColor: 'primary.lighter'
-                },
-                '&.Mui-selected': {
-                  backgroundColor: 'primary.main',
-                  color: 'white',
-                  fontWeight: 600,
-                  '&:hover': {
-                    backgroundColor: 'primary.dark'
-                  }
-                }
-              }
-            }}
-          />
-
-          <NavButton
-            onClick={handleLastPage}
-            disabled={page === page_count - 1}
-            size="small"
-            title="Last page"
-          >
-            <LastPage fontSize="small" />
-          </NavButton>
-        </PaginationContainer>
       </Box>
 
-      {/* Right section: Rows Selector */}
-      <RowsSelector>
+      {/* Section 2: Pagination controls */}
+      <PaginationContainer
+        sx={{
+          [theme.breakpoints.down('md')]: {
+            width: '100%',
+            justifyContent: 'center',
+            gap: theme.spacing(0.5),
+            padding: theme.spacing(0.5, 1),
+            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+            borderRadius: theme.shape.borderRadius * 2,
+            backgroundColor: theme.palette.background.paper,
+            boxShadow: theme.shadows[1]
+          }
+        }}
+      >
+        <NavButton onClick={handleFirstPage} disabled={page === 0} size="small" title="First page">
+          <FirstPage fontSize="small" />
+        </NavButton>
+
+        <Pagination
+          page={page + 1}
+          onChange={handleChangePage}
+          count={page_count}
+          size="small"
+          siblingCount={1}
+          boundaryCount={1}
+          sx={{
+            '& .MuiPaginationItem-root': {
+              minWidth: '24px',
+              height: '24px',
+              borderRadius: 1.5,
+              margin: '0 0px',
+              padding: '0 1px',
+              fontWeight: 500,
+              '&:hover': {
+                backgroundColor: 'primary.lighter'
+              },
+              '&.Mui-selected': {
+                backgroundColor: 'primary.main',
+                color: 'white',
+                fontWeight: 600,
+                '&:hover': {
+                  backgroundColor: 'primary.dark'
+                }
+              }
+            }
+          }}
+        />
+
+        <NavButton
+          onClick={handleLastPage}
+          disabled={page === page_count - 1}
+          size="small"
+          title="Last page"
+        >
+          <LastPage fontSize="small" />
+        </NavButton>
+      </PaginationContainer>
+
+      {/* Section 3: Rows Selector */}
+      <RowsSelector
+        sx={{
+          [theme.breakpoints.down('md')]: {
+            width: '100%',
+            justifyContent: 'center',
+            gap: theme.spacing(0.5),
+            padding: theme.spacing(0.5, 1),
+            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+            borderRadius: theme.shape.borderRadius * 2,
+            backgroundColor: theme.palette.background.paper,
+            boxShadow: theme.shadows[1]
+          }
+        }}
+      >
         <ViewList fontSize="small" color="action" />
         <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>
           Rows
