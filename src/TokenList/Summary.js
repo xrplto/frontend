@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js';
-import { useContext, useState, useEffect, useRef } from 'react';
+import { useContext, useState, useEffect, useRef, useMemo } from 'react';
 // Material
 import {
   alpha,
@@ -446,8 +446,8 @@ export default function Summary() {
   };
 
   // Process chart data using actual API data
-  const chartData =
-    tokenCreation && tokenCreation.length > 0
+  const chartData = useMemo(() => {
+    return tokenCreation && tokenCreation.length > 0
       ? tokenCreation
           .slice(0, 30)
           .reverse()
@@ -474,6 +474,7 @@ export default function Summary() {
             return processedData;
           })
       : [];
+  }, [tokenCreation, fiatRate]);
 
   // Get all platforms that have token data
   const activePlatforms = Object.keys(platformColors).filter((platform) => {

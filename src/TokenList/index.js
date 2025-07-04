@@ -156,15 +156,18 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     }
   }, [metricsLoaded, BASE_URL, dispatch, metrics, activeFiatCurrency]);
 
-  const tokenMap = useMemo(() => new Map(tokens.map((token) => [token.md5, token])), [tokens]);
-
   const applyTokenChanges = useCallback(
     (newTokens) => {
+      // Create a new Map based on the current 'tokens' state.
+      // This ensures we're working with the latest data immutably.
+      const updatedMap = new Map(tokens.map((token) => [token.md5, token]));
       let hasChanges = false;
+
       newTokens.forEach((newToken) => {
-        const existingToken = tokenMap.get(newToken.md5);
+        const existingToken = updatedMap.get(newToken.md5);
         if (existingToken) {
           let isChanged = false;
+          // Compare properties to check for actual value changes
           for (const key in newToken) {
             if (
               Object.prototype.hasOwnProperty.call(newToken, key) &&
@@ -176,23 +179,26 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           }
 
           if (isChanged) {
-            const updatedToken = {
+            // Create a new object for the updated token to maintain immutability
+            const newObj = {
               ...existingToken,
               ...newToken,
               time: Date.now(),
               bearbull: existingToken.exch > newToken.exch ? -1 : 1
             };
-            tokenMap.set(newToken.md5, updatedToken);
+            updatedMap.set(newToken.md5, newObj);
             hasChanges = true;
           }
         }
       });
 
       if (hasChanges) {
-        setTokens(Array.from(tokenMap.values()));
+        // Only update state if there were actual changes,
+        // and convert the updated Map back to an array.
+        setTokens(Array.from(updatedMap.values()));
       }
     },
-    [tokenMap, setTokens]
+    [tokens, setTokens] // `tokens` is a dependency to ensure `updatedMap` is based on the latest state.
   );
 
   useEffect(() => {

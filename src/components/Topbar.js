@@ -35,6 +35,7 @@ import ThemeSwitcher from './ThemeSwitcher';
 import { currencySymbols, getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 import useSWR from 'swr';
 import axios from 'axios';
+import { throttle } from 'lodash';
 
 const TopWrapper = styled(Box)(
   ({ theme }) => `
@@ -585,17 +586,22 @@ const Topbar = () => {
       setIsWsLoading(false);
     };
 
+    const throttledSetTrades = throttle((newTrades) => {
+      setTrades(newTrades);
+    }, 200); // Throttle to update every 200ms
+
+    const throttledAddTrade = throttle((newTrade) => {
+      setTrades((prevTrades) => [newTrade, ...prevTrades].slice(0, 500));
+    }, 200); // Throttle to update every 200ms
+
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        // Assuming the WS sends an array for initial data, and then single objects for updates.
         if (Array.isArray(data)) {
-          setTrades(data.slice(0, 500));
+          throttledSetTrades(data.slice(0, 500));
         } else if (typeof data === 'object' && data !== null) {
-          // Assuming new trades are sent as single objects
-          // And that they have a `time` property to be sorted.
           if (data.time) {
-            setTrades((prevTrades) => [data, ...prevTrades].slice(0, 500));
+            throttledAddTrade(data);
           }
         }
       } catch (e) {
@@ -615,6 +621,8 @@ const Topbar = () => {
 
     return () => {
       ws.close();
+      throttledSetTrades.cancel(); // Cancel any pending throttled calls
+      throttledAddTrade.cancel(); // Cancel any pending throttled calls
     };
   }, [tradeDrawerOpen]);
 
