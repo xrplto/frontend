@@ -63,12 +63,15 @@ const badge24hStyle = {
 // Enhanced styled components
 const ModernTableCell = styled(TableCell)(({ theme }) => ({
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  padding: theme.spacing(1.5),
+  padding: theme.spacing(1.5, { xs: 1, sm: 1.5 }),
   '&:first-of-type': {
-    paddingLeft: theme.spacing(2)
+    paddingLeft: theme.spacing({ xs: 1.5, sm: 2 })
   },
   '&:last-of-type': {
-    paddingRight: theme.spacing(2)
+    paddingRight: theme.spacing({ xs: 1.5, sm: 2 }),
+    [theme.breakpoints.down('sm')]: {
+      paddingLeft: theme.spacing(4)
+    }
   }
 }));
 
@@ -138,7 +141,8 @@ export default function PriceStatistics({ token }) {
 
   function truncate(str, n) {
     if (!str) return '';
-    return str.length > n ? str.substr(0, n - 1) + '... ' : str;
+    const effectiveN = isMobile ? Math.floor(n * 0.7) : n; // Make truncation more aggressive on mobile
+    return str.length > effectiveN ? str.substr(0, effectiveN - 1) + '... ' : str;
   }
 
   let user = token.user;
@@ -213,7 +217,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -221,11 +225,14 @@ export default function PriceStatistics({ token }) {
               </Typography>
             </ModernTableCell>
             <ModernTableCell align="left">
-              <Stack direction="row" alignItems="center" spacing={1}>
+              <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
                 <Chip
                   label={
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                    <Stack direction="row" alignItems="center" spacing={isMobile ? 0.25 : 0.5}>
+                      <Typography
+                        variant="caption"
+                        sx={{ fontWeight: 500, fontSize: isMobile ? '0.65rem' : '0.75rem' }}
+                      >
                         {truncate(issuer, 16)}
                       </Typography>
                       {info.blackholed && (
@@ -242,10 +249,10 @@ export default function PriceStatistics({ token }) {
                   }
                   size="small"
                   sx={{
-                    pl: 1,
-                    pr: 1,
+                    pl: isMobile ? 0.75 : 1,
+                    pr: isMobile ? 0.75 : 1,
                     borderRadius: '8px',
-                    height: '28px',
+                    height: isMobile ? '24px' : '28px',
                     cursor: 'pointer',
                     background: `linear-gradient(135deg, ${alpha(
                       theme.palette.primary.main,
@@ -272,7 +279,7 @@ export default function PriceStatistics({ token }) {
                     <IconButton
                       size="small"
                       sx={{
-                        p: 0.75,
+                        p: isMobile ? 0.5 : 0.75,
                         borderRadius: '6px',
                         background: `linear-gradient(135deg, ${alpha(
                           theme.palette.background.paper,
@@ -293,8 +300,8 @@ export default function PriceStatistics({ token }) {
                     >
                       <ContentCopyIcon
                         sx={{
-                          width: 14,
-                          height: 14,
+                          width: isMobile ? 12 : 14,
+                          height: isMobile ? 12 : 14,
                           color: theme.palette.primary.main
                         }}
                       />
@@ -314,7 +321,7 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     fontWeight: 600,
                     color: alpha(theme.palette.text.primary, 0.9),
-                    fontSize: '0.875rem'
+                    fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                   noWrap
                 >
@@ -322,19 +329,22 @@ export default function PriceStatistics({ token }) {
                 </Typography>
               </ModernTableCell>
               <ModernTableCell align="left">
-                <Stack direction="row" alignItems="center" spacing={1}>
+                <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
                   <Chip
                     label={
-                      <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ fontWeight: 500, fontSize: isMobile ? '0.65rem' : '0.75rem' }}
+                      >
                         {truncate(creator, 16)}
                       </Typography>
                     }
                     size="small"
                     sx={{
-                      pl: 1,
-                      pr: 1,
+                      pl: isMobile ? 0.75 : 1,
+                      pr: isMobile ? 0.75 : 1,
                       borderRadius: '8px',
-                      height: '28px',
+                      height: isMobile ? '24px' : '28px',
                       background: `linear-gradient(135deg, ${alpha(
                         theme.palette.secondary.main,
                         0.08
@@ -359,7 +369,7 @@ export default function PriceStatistics({ token }) {
                       <IconButton
                         size="small"
                         sx={{
-                          p: 0.75,
+                          p: isMobile ? 0.5 : 0.75,
                           borderRadius: '6px',
                           background: `linear-gradient(135deg, ${alpha(
                             theme.palette.background.paper,
@@ -380,8 +390,8 @@ export default function PriceStatistics({ token }) {
                       >
                         <ContentCopyIcon
                           sx={{
-                            width: 14,
-                            height: 14,
+                            width: isMobile ? 12 : 14,
+                            height: isMobile ? 12 : 14,
                             color: theme.palette.secondary.main
                           }}
                         />
@@ -391,11 +401,13 @@ export default function PriceStatistics({ token }) {
                   {creations > 0 && (
                     <Tooltip title="Number of tokens created by this creator.">
                       <Chip
-                        label={`${creations} creation${creations > 1 ? 's' : ''}`}
+                        label={
+                          isMobile ? creations : `${creations} creation${creations > 1 ? 's' : ''}`
+                        }
                         size="small"
                         sx={{
                           borderRadius: '8px',
-                          height: '28px',
+                          height: isMobile ? '18px' : '28px',
                           background: `linear-gradient(135deg, ${alpha(
                             theme.palette.info.main,
                             0.1
@@ -403,7 +415,12 @@ export default function PriceStatistics({ token }) {
                           backdropFilter: 'blur(8px)',
                           border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
                           color: theme.palette.info.main,
-                          fontWeight: 500
+                          fontWeight: 500,
+                          fontSize: isMobile ? '0.65rem' : '0.75rem',
+                          minWidth: isMobile ? '18px' : 'unset',
+                          justifyContent: isMobile ? 'center' : 'flex-start',
+                          pl: isMobile ? 0 : 1,
+                          pr: isMobile ? 0 : 1
                         }}
                       />
                     </Tooltip>
@@ -421,7 +438,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -439,7 +456,8 @@ export default function PriceStatistics({ token }) {
                   )} 100%)`,
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: isMobile ? '0.9rem' : '1rem'
                 }}
               >
                 <NumberTooltip
@@ -458,7 +476,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -468,8 +486,8 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     display: 'inline-block',
                     ml: 0.5,
-                    px: 0.5,
-                    py: 0.25,
+                    px: isMobile ? 0.4 : 0.5,
+                    py: isMobile ? 0.15 : 0.25,
                     borderRadius: '4px',
                     background: `linear-gradient(135deg, ${alpha(
                       theme.palette.background.paper,
@@ -477,7 +495,7 @@ export default function PriceStatistics({ token }) {
                     )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
                     backdropFilter: 'blur(8px)',
                     border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    fontSize: '0.7rem',
+                    fontSize: isMobile ? '0.6rem' : '0.7rem',
                     fontWeight: 500,
                     color: alpha(theme.palette.text.secondary, 0.8)
                   }}
@@ -492,7 +510,8 @@ export default function PriceStatistics({ token }) {
                   variant="body2"
                   sx={{
                     fontWeight: 600,
-                    color: pro24h >= 0 ? theme.palette.success.main : theme.palette.error.main
+                    color: pro24h >= 0 ? theme.palette.success.main : theme.palette.error.main,
+                    fontSize: isMobile ? '0.9rem' : '1rem'
                   }}
                 >
                   <NumberTooltip
@@ -513,7 +532,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -521,12 +540,13 @@ export default function PriceStatistics({ token }) {
               </Typography>
             </ModernTableCell>
             <ModernTableCell align="left">
-              <Stack direction="row" alignItems="center" spacing={1}>
+              <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
                 <Typography
                   variant="body2"
                   sx={{
                     fontWeight: 500,
-                    color: theme.palette.success.main
+                    color: theme.palette.success.main,
+                    fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                 >
                   <NumberTooltip
@@ -541,7 +561,10 @@ export default function PriceStatistics({ token }) {
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}
+                  sx={{
+                    color: alpha(theme.palette.text.secondary, 0.6),
+                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                  }}
                 >
                   /
                 </Typography>
@@ -549,7 +572,8 @@ export default function PriceStatistics({ token }) {
                   variant="body2"
                   sx={{
                     fontWeight: 500,
-                    color: theme.palette.info.main
+                    color: theme.palette.info.main,
+                    fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                 >
                   <NumberTooltip
@@ -574,7 +598,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -584,8 +608,8 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     display: 'inline-block',
                     ml: 0.5,
-                    px: 0.5,
-                    py: 0.25,
+                    px: isMobile ? 0.4 : 0.5,
+                    py: isMobile ? 0.15 : 0.25,
                     borderRadius: '4px',
                     background: `linear-gradient(135deg, ${alpha(
                       theme.palette.background.paper,
@@ -593,7 +617,7 @@ export default function PriceStatistics({ token }) {
                     )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
                     backdropFilter: 'blur(8px)',
                     border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    fontSize: '0.7rem',
+                    fontSize: isMobile ? '0.6rem' : '0.7rem',
                     fontWeight: 500,
                     color: alpha(theme.palette.text.secondary, 0.8)
                   }}
@@ -613,7 +637,8 @@ export default function PriceStatistics({ token }) {
                   )} 100%)`,
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: isMobile ? '0.9rem' : '1rem'
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}
@@ -630,7 +655,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -642,7 +667,8 @@ export default function PriceStatistics({ token }) {
                 variant="body2"
                 sx={{
                   fontWeight: 600,
-                  color: theme.palette.warning.main
+                  color: theme.palette.warning.main,
+                  fontSize: isMobile ? '0.9rem' : '1rem'
                 }}
               >
                 <NumberTooltip number={fNumber(voldivmarket)} />
@@ -658,7 +684,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -670,7 +696,8 @@ export default function PriceStatistics({ token }) {
                 variant="body2"
                 sx={{
                   fontWeight: 600,
-                  color: theme.palette.secondary.main
+                  color: theme.palette.secondary.main,
+                  fontSize: isMobile ? '0.9rem' : '1rem'
                 }}
               >
                 <NumberTooltip number={fNumber(dom || 0)} /> %
@@ -686,7 +713,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -699,8 +726,8 @@ export default function PriceStatistics({ token }) {
                 size="small"
                 sx={{
                   borderRadius: '6px',
-                  height: '24px',
-                  fontSize: '0.75rem',
+                  height: isMobile ? '22px' : '24px',
+                  fontSize: isMobile ? '0.65rem' : '0.75rem',
                   background: `linear-gradient(135deg, ${alpha(
                     theme.palette.primary.main,
                     0.08
@@ -708,7 +735,9 @@ export default function PriceStatistics({ token }) {
                   backdropFilter: 'blur(10px)',
                   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                   color: theme.palette.primary.main,
-                  fontWeight: 600
+                  fontWeight: 600,
+                  pl: isMobile ? 0.75 : 1,
+                  pr: isMobile ? 0.75 : 1
                 }}
               />
             </ModernTableCell>
@@ -722,7 +751,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -740,7 +769,8 @@ export default function PriceStatistics({ token }) {
                   )} 100%)`,
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: isMobile ? '0.9rem' : '1rem'
                 }}
               >
                 {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
@@ -756,7 +786,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -774,7 +804,8 @@ export default function PriceStatistics({ token }) {
                   )} 100%)`,
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: isMobile ? '0.9rem' : '1rem'
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{' '}
