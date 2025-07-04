@@ -64,7 +64,7 @@ const ContentTypography = styled(Typography)(({ theme }) => ({
     fontSize: '0.75rem'
   },
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.5rem' // Even smaller font size
+    fontSize: '0.55rem' // Even smaller font size
   }
 }));
 
@@ -76,7 +76,7 @@ const MetricBox = styled(Paper)(({ theme }) => ({
   },
   height: '100%',
   [theme.breakpoints.down('sm')]: {
-    minHeight: '50px' // Aggressive height reduction on mobile
+    minHeight: '45px' // Even more aggressive height reduction on mobile
   },
   display: 'flex',
   flexDirection: 'column',
@@ -95,10 +95,6 @@ const MetricBox = styled(Paper)(({ theme }) => ({
       theme.palette.primary.main,
       0.3
     )}`
-  },
-  marginBottom: 0,
-  [theme.breakpoints.down('sm')]: {
-    fontSize: '1.2rem' // Slightly smaller on mobile for very tight spaces
   }
 }));
 
@@ -136,7 +132,7 @@ const PercentageChange = styled(Typography, {
     fontSize: '0.55rem'
   },
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.45rem' // Already very small
+    fontSize: '0.4rem' // Even smaller font size
   },
   color: isPositive ? theme.palette.success.main : theme.palette.error.main,
   display: 'flex',
@@ -168,7 +164,7 @@ const VolumePercentage = styled(Typography)(({ theme }) => ({
     fontSize: '0.55rem'
   },
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.45rem' // Already very small
+    fontSize: '0.4rem' // Even smaller font size
   },
   color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.7) : alpha('#637381', 0.9),
   display: 'flex',
@@ -704,7 +700,7 @@ export default function Summary() {
                         sx={{
                           fontSize: '0.7rem',
                           [theme.breakpoints.down('xs')]: {
-                            fontSize: '0.6rem' // Even smaller font size for XRP price desc on tiny screens
+                            fontSize: '0.55rem' // Even smaller font size for XRP price desc on tiny screens
                           },
                           color: 'text.secondary'
                         }}
@@ -802,7 +798,7 @@ export default function Summary() {
                           variant="h6"
                           component="div"
                           color="text.primary"
-                          sx={{ fontWeight: 'bold', fontSize: '0.6rem' }} // Even smaller font size
+                          sx={{ fontWeight: 'bold', fontSize: '0.55rem' }} // Even smaller font size
                         >
                           {`${sentimentScore}`}
                         </Typography>
@@ -816,7 +812,7 @@ export default function Summary() {
                       <Box sx={{ width: '100%', pt: 0.5, px: 0.5 }}>
                         <MetricTitle>{t('New Tokens Created (30-Day)')}</MetricTitle>
                       </Box>
-                      <ResponsiveContainer width="100%" height={40}>
+                      <ResponsiveContainer width="100%" height={35}>
                         <LineChart
                           key={`combined-${chartData.length}`}
                           data={chartData}
