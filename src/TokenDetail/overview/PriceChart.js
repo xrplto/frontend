@@ -419,6 +419,56 @@ function PriceChart({ token }) {
     detectAndFilterOHLCOutliers
   ]);
 
+  // Real-time price update effect
+  useEffect(() => {
+    if (!token || token.exch === undefined) return;
+
+    const newPrice = Number(token.exch);
+    if (isNaN(newPrice) || newPrice <= 0) return;
+
+    const now = Date.now();
+
+    setLastPrice((prevLastPrice) => {
+      const change = newPrice - (prevLastPrice || newPrice);
+      setPriceChange(change);
+      return newPrice;
+    });
+
+    if (range === '12h' || range === '1D') {
+      // Update line chart data
+      setData((prevData) => {
+        const newDataPoint = [now, newPrice, token.vol24h || 0]; // Assuming volume from token or 0
+        const updatedData = [...prevData, newDataPoint];
+        // Keep only the last 500 points for 12h and 1440 for 1D to prevent endless growth
+        const maxPoints = range === '12h' ? 500 : 1440;
+        return updatedData.slice(-maxPoints);
+      });
+
+      // Update OHLC chart data (update last candlestick's close price, or add new one)
+      setDataOHLC((prevOHLCData) => {
+        const lastOHLC = prevOHLCData[prevOHLCData.length - 1];
+        if (lastOHLC && now - lastOHLC[0] < (range === '12h' ? 5000 : 60000)) {
+          // 5 sec for 12h, 1 min for 1D
+          // Update the last candlestick's close price, and adjust high/low if needed
+          const updatedLastOHLC = [
+            lastOHLC[0],
+            lastOHLC[1],
+            Math.max(lastOHLC[2], newPrice),
+            Math.min(lastOHLC[3], newPrice),
+            newPrice
+          ];
+          return [...prevOHLCData.slice(0, -1), updatedLastOHLC];
+        } else {
+          // Add a new candlestick (open, high, low, close all as newPrice initially)
+          const newOHLCPoint = [now, newPrice, newPrice, newPrice, newPrice];
+          const updatedOHLCData = [...prevOHLCData, newOHLCPoint];
+          const maxPoints = range === '12h' ? 500 : 1440;
+          return updatedOHLCData.slice(-maxPoints);
+        }
+      });
+    }
+  }, [token.exch, range]);
+
   let user = token.user;
   if (!user) user = token.name;
   let name = token.name;
