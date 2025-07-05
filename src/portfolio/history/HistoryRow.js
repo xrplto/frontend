@@ -1,4 +1,4 @@
-import { Chip, Stack, Typography, IconButton, Box, SvgIcon, Tooltip } from '@mui/material';
+import { Chip, Stack, Typography, IconButton, Box, SvgIcon, Tooltip, Avatar } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useTheme, TableCell, TableRow } from '@mui/material';
 import EastIcon from '@mui/icons-material/East';
@@ -10,6 +10,7 @@ import { Icon } from '@iconify/react';
 import chartLineUp from '@iconify/icons-ph/chart-line-up';
 import numeral from 'numeral';
 import { alpha } from '@mui/material/styles';
+import { getTokenImageUrl } from 'src/utils/constants';
 
 // XPMarket icon component
 const XPMarketIcon = (props) => {
@@ -200,32 +201,56 @@ const HistoryRow = (props) => {
     valueAfterDot: ''
   });
   const [assetColor2, setAssetColor2] = useState('');
+  const [tokenImageUrl, setTokenImageUrl] = useState('');
+  const [tokenImageUrl2, setTokenImageUrl2] = useState('');
 
   useEffect(() => {
     if (TransactionType === 'AMMDeposit') {
       if (Amount?.currency && Amount?.value) {
         setAssetName(normalizeCurrencyCode(Amount.currency));
         setAssetValue(getFormat(Number(Amount.value)));
+        // Generate token image URL
+        if (Amount.issuer) {
+          setTokenImageUrl(getTokenImageUrl(Amount.issuer, Amount.currency));
+        }
       } else {
         setAssetName('XRP');
         setAssetValue(getFormat(Number(Amount) / 1000000));
+        setTokenImageUrl(getTokenImageUrl('', 'XRP'));
       }
 
       if (Amount2?.currency && Amount2?.value) {
         setAssetName2(normalizeCurrencyCode(Amount2.currency));
         setAssetValue2(getFormat(Number(Amount2.value)));
+        // Generate token image URL
+        if (Amount2.issuer) {
+          setTokenImageUrl2(getTokenImageUrl(Amount2.issuer, Amount2.currency));
+        }
       } else {
         setAssetName2('XRP');
         setAssetValue2(getFormat(Number(Amount2) / 1000000));
+        setTokenImageUrl2(getTokenImageUrl('', 'XRP'));
       }
     }
 
     if (TransactionType === 'AMMWithdraw') {
       if (Asset.currency) {
         setAssetName(normalizeCurrencyCode(Asset.currency));
+        // Generate token image URL
+        if (Asset.issuer) {
+          setTokenImageUrl(getTokenImageUrl(Asset.issuer, Asset.currency));
+        } else if (Asset.currency === 'XRP') {
+          setTokenImageUrl(getTokenImageUrl('', 'XRP'));
+        }
       }
       if (Asset2.currency) {
         setAssetName2(normalizeCurrencyCode(Asset2.currency));
+        // Generate token image URL
+        if (Asset2.issuer) {
+          setTokenImageUrl2(getTokenImageUrl(Asset2.issuer, Asset2.currency));
+        } else if (Asset2.currency === 'XRP') {
+          setTokenImageUrl2(getTokenImageUrl('', 'XRP'));
+        }
       }
 
       if (Amount?.value) {
@@ -247,10 +272,15 @@ const HistoryRow = (props) => {
         if (SendMax.currency === 'MAG') setAssetColor1('#3b82f6');
         else if (typeof Amount === 'string') setAssetColor1('#de0f3e');
         else setAssetColor1('#009b0a');
+        // Generate token image URL
+        if (SendMax.issuer) {
+          setTokenImageUrl(getTokenImageUrl(SendMax.issuer, SendMax.currency));
+        }
       } else {
         setAssetName('XRP');
         setAssetColor1('#3b82f6');
         setAssetValue(getFormat(Number(SendMax) / 1000000));
+        setTokenImageUrl(getTokenImageUrl('', 'XRP'));
       }
 
       if (DeliveredAmount.currency && DeliveredAmount.value) {
@@ -260,19 +290,28 @@ const HistoryRow = (props) => {
           setAssetColor2('#3b82f6');
         else if (typeof Amount === 'string') setAssetColor2('#de0f3e');
         else setAssetColor2('#009b0a');
+        // Generate token image URL
+        if (DeliveredAmount.issuer) {
+          setTokenImageUrl2(getTokenImageUrl(DeliveredAmount.issuer, DeliveredAmount.currency));
+        }
       } else {
         setAssetName2('XRP');
         setAssetColor2('#3b82f6');
         setAssetValue2(getFormat(Number(DeliveredAmount) / 1000000));
+        setTokenImageUrl2(getTokenImageUrl('', 'XRP'));
       }
     }
 
     if (TransactionType === 'TrustSet') {
       // Extract currency from LimitAmount
-      if (LimitAmount?.currency) {
+      if (LimitAmount?.currency && LimitAmount?.issuer) {
         const decodedCurrency = normalizeCurrencyCode(LimitAmount.currency);
         setAssetName(decodedCurrency);
         setAssetColor1('#0C53B7');
+
+        // Generate token image URL using issuer and currency
+        const imageUrl = getTokenImageUrl(LimitAmount.issuer, LimitAmount.currency);
+        setTokenImageUrl(imageUrl);
 
         // Set limit value if available
         if (LimitAmount.value) {
@@ -286,6 +325,7 @@ const HistoryRow = (props) => {
       } else {
         setAssetName('Unknown');
         setAssetColor1('#0C53B7');
+        setTokenImageUrl('');
         setAssetValue({
           valueBeforeDot: '∞',
           valueAfterDot: ''
@@ -297,17 +337,27 @@ const HistoryRow = (props) => {
       if (SendMax?.currency && SendMax?.value) {
         setAssetName(normalizeCurrencyCode(SendMax.currency));
         setAssetValue(getFormat(Number(SendMax.value)));
+        // Generate token image URL
+        if (SendMax.issuer) {
+          setTokenImageUrl(getTokenImageUrl(SendMax.issuer, SendMax.currency));
+        }
       } else if (SendMax) {
         setAssetName('XRP');
         setAssetValue(getFormat(Number(SendMax) / 1000000));
+        setTokenImageUrl(getTokenImageUrl('', 'XRP'));
       }
 
       if (Amount?.currency && Amount?.value) {
         setAssetName2(normalizeCurrencyCode(Amount.currency));
         setAssetValue2(getFormat(Number(Amount.value)));
+        // Generate token image URL
+        if (Amount.issuer) {
+          setTokenImageUrl2(getTokenImageUrl(Amount.issuer, Amount.currency));
+        }
       } else if (Amount) {
         setAssetName2('XRP');
         setAssetValue2(getFormat(Number(Amount) / 1000000));
+        setTokenImageUrl2(getTokenImageUrl('', 'XRP'));
       }
     }
   }, [TransactionType, LimitAmount]);
@@ -534,6 +584,9 @@ const HistoryRow = (props) => {
                 <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
+            {tokenImageUrl && (
+              <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16, mr: 0.5 }} alt={assetName} />
+            )}
             <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
               {assetName}
             </Typography>
@@ -546,6 +599,13 @@ const HistoryRow = (props) => {
                 <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue2.valueAfterDot}</Typography>
               )}
             </Stack>
+            {tokenImageUrl2 && (
+              <Avatar
+                src={tokenImageUrl2}
+                sx={{ width: 16, height: 16, mr: 0.5 }}
+                alt={assetName2}
+              />
+            )}
             <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
               {assetName2}
             </Typography>
@@ -555,6 +615,13 @@ const HistoryRow = (props) => {
           <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
             {assetValue.valueAfterDot === '' && assetValue2.valueAfterDot === '' ? (
               <Stack direction="row" spacing={0.25}>
+                {tokenImageUrl && (
+                  <Avatar
+                    src={tokenImageUrl}
+                    sx={{ width: 16, height: 16, mr: 0.5 }}
+                    alt={assetName}
+                  />
+                )}
                 <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
                   {assetName}
                 </Typography>
@@ -563,6 +630,13 @@ const HistoryRow = (props) => {
                 >
                   /
                 </Typography>
+                {tokenImageUrl2 && (
+                  <Avatar
+                    src={tokenImageUrl2}
+                    sx={{ width: 16, height: 16, mr: 0.5 }}
+                    alt={assetName2}
+                  />
+                )}
                 <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
                   {assetName2}
                 </Typography>
@@ -577,6 +651,13 @@ const HistoryRow = (props) => {
                     </Typography>
                   )}
                 </Stack>
+                {tokenImageUrl && (
+                  <Avatar
+                    src={tokenImageUrl}
+                    sx={{ width: 16, height: 16, mr: 0.5 }}
+                    alt={assetName}
+                  />
+                )}
                 <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
                   {assetName}
                 </Typography>
@@ -593,6 +674,13 @@ const HistoryRow = (props) => {
                     </Typography>
                   )}
                 </Stack>
+                {tokenImageUrl2 && (
+                  <Avatar
+                    src={tokenImageUrl2}
+                    sx={{ width: 16, height: 16, mr: 0.5 }}
+                    alt={assetName2}
+                  />
+                )}
                 <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
                   {assetName2}
                 </Typography>
@@ -608,6 +696,9 @@ const HistoryRow = (props) => {
                 <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
+            {tokenImageUrl && (
+              <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16, mr: 0.5 }} alt={assetName} />
+            )}
             <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
               {assetName}
             </Typography>
@@ -618,6 +709,13 @@ const HistoryRow = (props) => {
                 <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue2.valueAfterDot}</Typography>
               )}
             </Stack>
+            {tokenImageUrl2 && (
+              <Avatar
+                src={tokenImageUrl2}
+                sx={{ width: 16, height: 16, mr: 0.5 }}
+                alt={assetName2}
+              />
+            )}
             <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
               {assetName2}
             </Typography>
@@ -632,6 +730,9 @@ const HistoryRow = (props) => {
                 <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
+            {tokenImageUrl && (
+              <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16, mr: 0.5 }} alt={assetName} />
+            )}
             <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
               {assetName}
             </Typography>
@@ -645,6 +746,9 @@ const HistoryRow = (props) => {
                 <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
+            {tokenImageUrl && (
+              <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16, mr: 0.5 }} alt={assetName} />
+            )}
             <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
               {assetName}
             </Typography>
@@ -655,6 +759,13 @@ const HistoryRow = (props) => {
                 <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue2.valueAfterDot}</Typography>
               )}
             </Stack>
+            {tokenImageUrl2 && (
+              <Avatar
+                src={tokenImageUrl2}
+                sx={{ width: 16, height: 16, mr: 0.5 }}
+                alt={assetName2}
+              />
+            )}
             <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
               {assetName2}
             </Typography>
