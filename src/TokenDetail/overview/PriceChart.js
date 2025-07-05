@@ -98,8 +98,7 @@ const INTERVAL_CONFIG = [
   ['1M', 30 * 60 * 1000], // 30 min difference / 1M
   ['7D', 5 * 60 * 1000], // 5 Mins difference / 7D
   ['1D', 1 * 60 * 1000], // 1 Mins difference / 1D
-  ['SPARK', 5 * 1000], // 5 Secs difference / SPARK (more real-time)
-  ['1MIN', 15 * 1000] // 15 Secs difference / 1MIN (more real-time)
+  ['12H', 5 * 1000] // 5 Secs difference / SPARK (more real-time)
 ];
 
 const shimmer = keyframes`
@@ -206,15 +205,13 @@ const LoadingSkeleton = styled(Box)(({ theme }) => ({
 
 function PriceChart({ token }) {
   const BASE_URL = process.env.API_URL;
-  const WS_URL = process.env.WS_URL || 'wss://api.xrpl.to/ws';
   const theme = useTheme();
 
   const [data, setData] = useState([]);
   const [dataOHLC, setDataOHLC] = useState([]);
   const [chartType, setChartType] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [range, setRange] = useState('1D');
-  const [isStreaming, setIsStreaming] = useState(false);
+  const [range, setRange] = useState('12h');
   const [lastPrice, setLastPrice] = useState(null);
   const [priceChange, setPriceChange] = useState(0);
   const [volumeChange, setVolumeChange] = useState(0);
@@ -222,24 +219,11 @@ function PriceChart({ token }) {
   const [minTime, setMinTime] = useState(0);
   const [maxTime, setMaxTime] = useState(0);
 
-  // High-frequency trading refs
-  const wsRef = useRef(null);
-  const chartRef = useRef(null);
-  const dataBufferRef = useRef([]);
-  const updateQueueRef = useRef([]);
-  const lastUpdateTimeRef = useRef(0);
-  const animationFrameRef = useRef(null);
-
   const { accountProfile, activeFiatCurrency, darkMode } = useContext(AppContext);
   const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
   const router = useRouter();
   const fromSearch = router.query.fromSearch ? '&fromSearch=1' : '';
-
-  // High-frequency trading constants
-  const MAX_DATA_POINTS = 10000; // Limit for performance
-  const UPDATE_THROTTLE_MS = 100; // Throttle updates to 10 FPS
-  const STREAMING_RANGES = ['1MIN', 'SPARK']; // Ranges that support streaming
 
   const [chartControls, setChartControls] = useState({
     animationsEnabled: false,
@@ -258,125 +242,6 @@ function PriceChart({ token }) {
       max: maxTime || 0
     }
   });
-
-  // WebSocket connection management
-  const connectWebSocket = useCallback(() => {
-    if (!STREAMING_RANGES.includes(range) || wsRef.current?.readyState === WebSocket.OPEN) return;
-
-    try {
-      wsRef.current = new WebSocket(WS_URL);
-
-      wsRef.current.onopen = () => {
-        console.log('WebSocket connected for real-time data');
-        setIsStreaming(true);
-
-        // Subscribe to price updates
-        wsRef.current.send(
-          JSON.stringify({
-            action: 'subscribe',
-            channel: 'price',
-            token: token.md5,
-            range: range === '5s' ? 'SPARK' : range === '15s' ? '1MIN' : range,
-            vs_currency: fiatMapping[activeFiatCurrency]
-          })
-        );
-      };
-
-      wsRef.current.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          if (message.channel === 'price' && message.data) {
-            handleRealTimeUpdate(message.data);
-          }
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
-        }
-      };
-
-      wsRef.current.onclose = () => {
-        console.log('WebSocket disconnected');
-        setIsStreaming(false);
-
-        // Attempt to reconnect after 5 seconds
-        setTimeout(() => {
-          if (STREAMING_RANGES.includes(range)) {
-            connectWebSocket();
-          }
-        }, 5000);
-      };
-
-      wsRef.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        setIsStreaming(false);
-      };
-    } catch (error) {
-      console.error('Failed to connect WebSocket:', error);
-      setIsStreaming(false);
-    }
-  }, [range, token.md5, activeFiatCurrency, WS_URL]);
-
-  // Handle real-time data updates
-  const handleRealTimeUpdate = useCallback(
-    (newData) => {
-      const now = Date.now();
-      if (now - lastUpdateTimeRef.current < UPDATE_THROTTLE_MS) {
-        // Queue update for later processing
-        updateQueueRef.current.push(newData);
-        return;
-      }
-
-      lastUpdateTimeRef.current = now;
-
-      // Process queued updates
-      const allUpdates = [newData, ...updateQueueRef.current];
-      updateQueueRef.current = [];
-
-      // Process updates in batches for better performance
-      allUpdates.forEach((update) => {
-        const [timestamp, price, volume] = update;
-
-        // Update price change indicators
-        if (lastPrice !== null) {
-          setPriceChange(price - lastPrice);
-          setVolumeChange(volume - (data[data.length - 1]?.[2] || 0));
-        }
-        setLastPrice(price);
-
-        // Add to data buffer
-        dataBufferRef.current.push([timestamp, price, volume]);
-
-        // Limit buffer size for performance
-        if (dataBufferRef.current.length > MAX_DATA_POINTS) {
-          dataBufferRef.current = dataBufferRef.current.slice(-MAX_DATA_POINTS);
-        }
-      });
-
-      // Update chart data with throttled animation frame
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-
-      animationFrameRef.current = requestAnimationFrame(() => {
-        setData((prev) => {
-          const newData = [...prev, ...dataBufferRef.current];
-          dataBufferRef.current = [];
-
-          // Keep only recent data points for performance
-          return newData.length > MAX_DATA_POINTS ? newData.slice(-MAX_DATA_POINTS) : newData;
-        });
-      });
-    },
-    [lastPrice, data]
-  );
-
-  // Disconnect WebSocket
-  const disconnectWebSocket = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    setIsStreaming(false);
-  }, []);
 
   // Add outlier detection function
   const detectAndFilterOutliers = useCallback((data, threshold = 10) => {
@@ -452,8 +317,7 @@ function PriceChart({ token }) {
       setIsLoading(true);
 
       try {
-        const apiRange = range === '5s' ? 'SPARK' : range === '15s' ? '1MIN' : range;
-        console.log('Fetching data for API Range:', apiRange);
+        const apiRange = range === '12h' ? 'SPARK' : range;
         const [lineRes, ohlcRes] = await Promise.all([
           axios.get(
             `${BASE_URL}/graph-with-metrics/${token.md5}?range=${apiRange}&vs_currency=${fiatMapping[activeFiatCurrency]}${fromSearch}`,
@@ -526,20 +390,6 @@ function PriceChart({ token }) {
         } else {
           setDataOHLC([]);
         }
-
-        // Connect WebSocket for real-time updates if supported
-        if (STREAMING_RANGES.includes(range)) {
-          connectWebSocket();
-        } else {
-          disconnectWebSocket();
-        }
-
-        // 7D and 1M specific optimizations
-        if (range === '7D' || range === '1M') {
-          // Clear any buffered real-time data when switching to 7D/1M
-          dataBufferRef.current = [];
-          updateQueueRef.current = [];
-        }
       } catch (err) {
         if (!controller.signal.aborted && isMounted) {
           console.error('Error fetching graph data:', err);
@@ -558,11 +408,6 @@ function PriceChart({ token }) {
     return () => {
       isMounted = false;
       controller.abort();
-      disconnectWebSocket();
-
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
     };
   }, [
     range,
@@ -570,8 +415,6 @@ function PriceChart({ token }) {
     token.md5,
     BASE_URL,
     fromSearch,
-    connectWebSocket,
-    disconnectWebSocket,
     detectAndFilterOutliers,
     detectAndFilterOHLCOutliers
   ]);
@@ -636,18 +479,14 @@ function PriceChart({ token }) {
     [data, user, name, range, activeFiatCurrency]
   );
 
-  const handleAfterSetExtremes = useCallback((e) => {
+  const handleAfterSetExtremes = useCallback(() => {
     // This function is no longer needed since we use useMemo for mediumValue
     // Kept for backward compatibility with chart options
   }, []);
 
   const toggleStreaming = useCallback(() => {
-    if (isStreaming) {
-      disconnectWebSocket();
-    } else if (STREAMING_RANGES.includes(range)) {
-      connectWebSocket();
-    }
-  }, [isStreaming, range, connectWebSocket, disconnectWebSocket]);
+    // WebSocket removed
+  }, []);
 
   // Development helper for 7D/1M data validation
   const validateTimeSeriesData = useCallback(() => {
@@ -743,14 +582,14 @@ function PriceChart({ token }) {
         zoomType: 'x',
         marginBottom: 40,
         animation: {
-          duration: STREAMING_RANGES.includes(range) ? 0 : 1200, // Disable animation for real-time
+          duration: 1200,
           easing: 'easeOutCubic'
         },
         style: {
           fontFamily: theme.typography.fontFamily
         },
         // High-frequency trading optimizations
-        turboThreshold: MAX_DATA_POINTS,
+        turboThreshold: 10000,
         boostThreshold: 1000,
         plotBorderWidth: 0,
         reflow: true
@@ -775,7 +614,7 @@ function PriceChart({ token }) {
           },
           formatter: function () {
             const date = new Date(this.value);
-            if (range === '15s' || range === '5s') {
+            if (range === '12h') {
               return format(date, 'HH:mm');
             } else if (range === '1D') {
               return format(date, 'HH:mm');
@@ -993,20 +832,14 @@ function PriceChart({ token }) {
           fontWeight: 500
         },
         formatter: function () {
-          const formatString = STREAMING_RANGES.includes(
-            range === '5s' ? 'SPARK' : range === '15s' ? '1MIN' : range
-          )
-            ? 'MMM dd, yyyy HH:mm:ss.SSS'
-            : range === '15s'
+          const formatString =
+            range === '12h'
               ? 'MMM dd, yyyy HH:mm:ss'
               : range === '7D'
                 ? 'MMM dd, yyyy HH:mm'
                 : range === '1M'
                   ? 'MMM dd, yyyy HH:mm'
                   : 'MMM dd, yyyy HH:mm';
-          const isRealTime =
-            isStreaming &&
-            STREAMING_RANGES.includes(range === '5s' ? 'SPARK' : range === '15s' ? '1MIN' : range);
           const volumeData = data.find((d) => d[0] === this.x)?.[2] || 0;
 
           return `<div style="padding: 8px;">
@@ -1014,7 +847,6 @@ function PriceChart({ token }) {
               theme.palette.primary.main
             }; margin-bottom: 4px;">
               ${format(this.x, formatString)}
-              ${isRealTime ? '<span style="color: ' + theme.palette.success.main + '; font-size: 10px; margin-left: 4px;">●LIVE</span>' : ''}
             </div>
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
               <div style="width: 8px; height: 8px; border-radius: 50%; background: ${
@@ -1115,14 +947,14 @@ function PriceChart({ token }) {
           }
         },
         animation: {
-          duration: STREAMING_RANGES.includes(range) ? 0 : 1200, // Disable animation for real-time
+          duration: 1200,
           easing: 'easeOutCubic'
         },
         style: {
           fontFamily: theme.typography.fontFamily
         },
         // High-frequency trading optimizations
-        turboThreshold: MAX_DATA_POINTS,
+        turboThreshold: 10000,
         boostThreshold: 1000,
         plotBorderWidth: 0,
         reflow: true
@@ -1146,7 +978,7 @@ function PriceChart({ token }) {
           },
           formatter: function () {
             const date = new Date(this.value);
-            if (range === '15s' || range === '5s') {
+            if (range === '12h') {
               return format(date, 'HH:mm');
             } else if (range === '1D') {
               return format(date, 'HH:mm');
@@ -1230,8 +1062,7 @@ function PriceChart({ token }) {
         },
         formatter: function () {
           const formatString =
-            (range === '15s' || range === '5s') &&
-            STREAMING_RANGES.includes(range === '5s' ? 'SPARK' : range === '15s' ? '1MIN' : range)
+            range === '12h'
               ? 'MMM dd, yyyy HH:mm:ss'
               : range === '7D'
                 ? 'MMM dd, yyyy HH:mm'
@@ -1261,7 +1092,7 @@ function PriceChart({ token }) {
                   this.point.low
                 )}</strong>
               </div>
-              <div style="display: flex; justify-content: space-between;">
+              <div style="display: flex; justify-items: space-between;">
                 <span style="color: ${theme.palette.text.secondary};">Close:</span>
                 <strong>${fCurrency5(this.point.close)}</strong>
               </div>
@@ -1296,8 +1127,7 @@ function PriceChart({ token }) {
   const rangeConfig = useMemo(
     () => ({
       colors: {
-        '15s': theme.palette.info.main,
-        '5s': theme.palette.secondary.main,
+        '12h': theme.palette.info.main,
         '1D': theme.palette.primary.main,
         '7D': theme.palette.success.main,
         '1M': theme.palette.warning.main,
@@ -1312,8 +1142,7 @@ function PriceChart({ token }) {
         '1M': '30 Minute intervals - Detailed price movements over a month',
         '7D': '5 Minute intervals - Detailed 7-day price history',
         '1D': '1 Minute intervals - High-frequency data for one day',
-        SPARK: '5 Second intervals - Ultra real-time spark data',
-        '1MIN': '15 Second intervals - High-frequency real-time movements'
+        '12H': '5 Second intervals - Ultra real-time spark data'
       }
     }),
     [theme]
@@ -1409,50 +1238,6 @@ function PriceChart({ token }) {
                 }
               />
 
-              {/* Real-time streaming indicator */}
-              {STREAMING_RANGES.includes(
-                range === '5s' ? 'SPARK' : range === '15s' ? '1MIN' : range
-              ) && (
-                <Chip
-                  size="small"
-                  label={isStreaming ? 'LIVE' : 'OFFLINE'}
-                  sx={{
-                    bgcolor: alpha(
-                      isStreaming ? theme.palette.success.main : theme.palette.error.main,
-                      0.1
-                    ),
-                    color: isStreaming ? theme.palette.success.main : theme.palette.error.main,
-                    fontWeight: 700,
-                    fontSize: '0.65rem',
-                    height: '20px',
-                    animation: isStreaming ? 'pulse 2s infinite' : 'none',
-                    '& .MuiChip-label': {
-                      px: 0.75
-                    },
-                    '@keyframes pulse': {
-                      '0%': { opacity: 1 },
-                      '50%': { opacity: 0.7 },
-                      '100%': { opacity: 1 }
-                    }
-                  }}
-                  icon={
-                    <Box
-                      sx={{
-                        width: '5px',
-                        height: '5px',
-                        borderRadius: '50%',
-                        bgcolor: isStreaming
-                          ? theme.palette.success.main
-                          : theme.palette.error.main,
-                        boxShadow: isStreaming
-                          ? `0 0 10px ${alpha(theme.palette.success.main, 0.8)}`
-                          : 'none'
-                      }}
-                    />
-                  }
-                />
-              )}
-
               {/* Price change indicator */}
               {lastPrice !== null && priceChange !== 0 && (
                 <Chip
@@ -1494,59 +1279,6 @@ function PriceChart({ token }) {
                 }}
               >
                 <DownloadIcon fontSize="small" />
-              </IconButton>
-            )}
-
-            {/* Streaming control for high-frequency trading */}
-            {STREAMING_RANGES.includes(
-              range === '5s' ? 'SPARK' : range === '15s' ? '1MIN' : range
-            ) && (
-              <IconButton
-                size="small"
-                onClick={toggleStreaming}
-                sx={{
-                  bgcolor: alpha(
-                    isStreaming ? theme.palette.success.main : theme.palette.grey[500],
-                    0.1
-                  ),
-                  color: isStreaming ? theme.palette.success.main : theme.palette.grey[500],
-                  border: `1px solid ${alpha(isStreaming ? theme.palette.success.main : theme.palette.grey[500], 0.2)}`,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  width: '28px',
-                  height: '28px',
-                  '&:hover': {
-                    bgcolor: alpha(
-                      isStreaming ? theme.palette.success.main : theme.palette.grey[500],
-                      0.15
-                    ),
-                    transform: 'translateY(-1px)',
-                    boxShadow: `0 4px 12px ${alpha(isStreaming ? theme.palette.success.main : theme.palette.grey[500], 0.3)}`
-                  }
-                }}
-              >
-                {isStreaming ? (
-                  <Box
-                    component="div"
-                    sx={{
-                      width: '8px',
-                      height: '8px',
-                      bgcolor: theme.palette.success.main,
-                      borderRadius: '50%',
-                      animation: 'pulse 1s infinite'
-                    }}
-                  />
-                ) : (
-                  <Box
-                    component="div"
-                    sx={{
-                      width: '0',
-                      height: '0',
-                      borderLeft: '6px solid currentColor',
-                      borderTop: '4px solid transparent',
-                      borderBottom: '4px solid transparent'
-                    }}
-                  />
-                )}
               </IconButton>
             )}
 
@@ -1623,7 +1355,7 @@ function PriceChart({ token }) {
                 size="small"
                 sx={{ m: 0 }}
               >
-                <Tooltip title={getIntervalTooltip('5s')} arrow placement="top">
+                <Tooltip title={getIntervalTooltip('12h')} arrow placement="top">
                   <EnhancedToggleButton
                     sx={{
                       minWidth: '42px',
@@ -1633,7 +1365,7 @@ function PriceChart({ token }) {
                       position: 'relative',
                       overflow: 'hidden',
                       '&::after':
-                        isStreaming && range === '5s'
+                        range === '12h'
                           ? {
                               content: '""',
                               position: 'absolute',
@@ -1650,20 +1382,10 @@ function PriceChart({ token }) {
                         '100%': { left: '100%' }
                       }
                     }}
-                    value="5s"
+                    value="12h"
                   >
                     <Typography variant="caption" fontWeight={700} fontSize="0.65rem">
-                      5s
-                    </Typography>
-                  </EnhancedToggleButton>
-                </Tooltip>
-                <Tooltip title={getIntervalTooltip('15s')} arrow placement="top">
-                  <EnhancedToggleButton
-                    sx={{ minWidth: '38px', p: 0.5, height: '28px', borderRadius: 1 }}
-                    value="15s"
-                  >
-                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
-                      15s
+                      12h
                     </Typography>
                   </EnhancedToggleButton>
                 </Tooltip>
