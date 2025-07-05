@@ -3,7 +3,6 @@ import { currencyConfig } from 'src/utils/constants';
 
 const initialState = {
   metrics: {
-    total: 0,
     USD: 100,
     EUR: 100,
     JPY: 100,
@@ -18,6 +17,7 @@ const initialState = {
       uniqueTraders24H: 0
     },
     global: {
+      total: 0,
       gMarketcap: 0,
       gMarketcapPro: 0,
       gDexVolume: 0,
@@ -45,18 +45,15 @@ const statusSlice = createSlice({
   reducers: {
     update_metrics: (state, action) => {
       const data = action.payload;
-      const metrics = {
-        total: data.total || 0,
-        USD: data.exch?.USD || 100,
-        EUR: data.exch?.EUR || 100,
-        JPY: data.exch?.JPY || 100,
-        CNY: data.exch?.CNY || 100,
-        XRP: 1,
-        H24: data.H24 || initialState.metrics.H24,
-        global: data.global || initialState.metrics.global,
-        tokenCreation: data.tokenCreation || state.metrics.tokenCreation
-      };
-      Object.assign(state.metrics, metrics);
+      state.metrics.global.total = data.total || 0;
+      state.metrics.USD = data.exch?.USD || 100;
+      state.metrics.EUR = data.exch?.EUR || 100;
+      state.metrics.JPY = data.exch?.JPY || 100;
+      state.metrics.CNY = data.exch?.CNY || 100;
+      state.metrics.XRP = 1;
+      state.metrics.H24 = data.H24 || initialState.metrics.H24;
+      state.metrics.global = { ...state.metrics.global, ...data.global };
+      state.metrics.tokenCreation = data.tokenCreation || state.metrics.tokenCreation;
     },
     update_filteredCount: (state, action) => {
       const data = action.payload;
