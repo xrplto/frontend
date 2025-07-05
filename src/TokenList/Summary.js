@@ -776,7 +776,7 @@ export default function Summary() {
                             if (sentimentScore > 80) return 'success'; // Dark green
                             if (sentimentScore > 60) return 'primary'; // Light green
                             if (sentimentScore > 40) return 'warning'; // Yellow
-                            if (sentimentScore > 20) return '#FFA500'; // Orange
+                            if (sentimentScore > 20) return 'warning'; // Orange - use warning instead of hex
                             return 'error'; // Red
                           })()}
                           sx={{
@@ -788,7 +788,7 @@ export default function Summary() {
                                   if (sentimentScore > 80) return theme.palette.success.main;
                                   if (sentimentScore > 60) return theme.palette.primary.main;
                                   if (sentimentScore > 40) return theme.palette.warning.main;
-                                  if (sentimentScore > 20) return '#FFA500'; // Orange
+                                  if (sentimentScore > 20) return theme.palette.warning.main; // Orange - use warning theme color
                                   return theme.palette.error.main;
                                 })(),
                                 0.5
