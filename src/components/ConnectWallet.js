@@ -2,9 +2,11 @@ import { useContext } from 'react';
 import { Button, alpha } from '@mui/material';
 import { AccountBalanceWallet as AccountBalanceWalletIcon } from '@mui/icons-material';
 import { AppContext } from 'src/AppContext';
+import { useTranslation } from 'react-i18next';
 
 const ConnectWallet = () => {
   const { setOpenWalletModal } = useContext(AppContext);
+  const { t } = useTranslation();
 
   return (
     <>
@@ -97,7 +99,7 @@ const ConnectWallet = () => {
           }
         }}
       >
-        Connect Wallet
+        {t('Connect Wallet')}
       </Button>
     </>
   );

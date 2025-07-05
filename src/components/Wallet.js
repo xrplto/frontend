@@ -266,16 +266,24 @@ export default function Wallet({ style }) {
 
   return (
     <Box style={style}>
-      <Tooltip title={t('Connect Wallet')} arrow>
+      <Tooltip title={accountProfile ? 'Account Details' : t('Connect Wallet')} arrow>
         <Button
           onClick={() => {
-            setOpenWalletModal(true);
+            if (accountProfile) {
+              handleOpen();
+            } else {
+              setOpenWalletModal(true);
+            }
           }}
           ref={anchorRef}
           sx={{
-            background: theme.palette.common.black,
+            background: accountProfile
+              ? `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`
+              : theme.palette.common.black,
             backdropFilter: 'blur(10px)',
-            border: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
+            border: accountProfile
+              ? `1px solid ${alpha(theme.palette.success.main, 0.3)}`
+              : `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
             borderRadius: '12px',
             height: '32px',
             minWidth: 'unset',
@@ -298,10 +306,16 @@ export default function Wallet({ style }) {
             },
             '&:hover': {
               color: theme.palette.common.white,
-              background: alpha(theme.palette.common.black, 0.8),
-              border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
+              background: accountProfile
+                ? `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`
+                : alpha(theme.palette.common.black, 0.8),
+              border: accountProfile
+                ? `1px solid ${alpha(theme.palette.success.main, 0.5)}`
+                : `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
               transform: 'translateY(-2px)',
-              boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.4)}, 0 4px 12px ${alpha(theme.palette.common.black, 0.2)}`,
+              boxShadow: accountProfile
+                ? `0 8px 24px ${alpha(theme.palette.success.main, 0.4)}, 0 4px 12px ${alpha(theme.palette.success.main, 0.2)}`
+                : `0 8px 24px ${alpha(theme.palette.common.black, 0.4)}, 0 4px 12px ${alpha(theme.palette.common.black, 0.2)}`,
               cursor: 'pointer',
               '&::before': {
                 left: '100%'
@@ -314,7 +328,7 @@ export default function Wallet({ style }) {
         >
           <AccountBalanceWalletIcon fontSize="small" sx={{ color: theme.palette.common.white }} />
           <Typography variant="body2" sx={{ color: theme.palette.common.white, fontWeight: 500 }}>
-            {t('Connect Wallet')}
+            {accountProfile ? truncateAccount(accountLogin, 6) : t('Connect Wallet')}
           </Typography>
         </Button>
       </Tooltip>
