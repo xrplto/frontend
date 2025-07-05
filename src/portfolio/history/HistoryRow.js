@@ -92,7 +92,8 @@ const HistoryRow = (props) => {
     hash,
     date,
     source,
-    offerType
+    offerType,
+    LimitAmount
   } = props;
 
   const theme = useTheme();
@@ -266,6 +267,32 @@ const HistoryRow = (props) => {
       }
     }
 
+    if (TransactionType === 'TrustSet') {
+      // Extract currency from LimitAmount
+      if (LimitAmount?.currency) {
+        const decodedCurrency = normalizeCurrencyCode(LimitAmount.currency);
+        setAssetName(decodedCurrency);
+        setAssetColor1('#0C53B7');
+
+        // Set limit value if available
+        if (LimitAmount.value) {
+          setAssetValue(getFormat(Number(LimitAmount.value)));
+        } else {
+          setAssetValue({
+            valueBeforeDot: '∞',
+            valueAfterDot: ''
+          });
+        }
+      } else {
+        setAssetName('Unknown');
+        setAssetColor1('#0C53B7');
+        setAssetValue({
+          valueBeforeDot: '∞',
+          valueAfterDot: ''
+        });
+      }
+    }
+
     if (TransactionType === 'OfferCreate') {
       if (SendMax?.currency && SendMax?.value) {
         setAssetName(normalizeCurrencyCode(SendMax.currency));
@@ -283,7 +310,7 @@ const HistoryRow = (props) => {
         setAssetValue2(getFormat(Number(Amount) / 1000000));
       }
     }
-  }, [TransactionType]);
+  }, [TransactionType, LimitAmount]);
 
   const getRelativeTime = (timestamp) => {
     const now = new Date();
@@ -598,7 +625,16 @@ const HistoryRow = (props) => {
         )}
         {TransactionType === 'TrustSet' && (
           <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
-            <Typography sx={{ fontSize: '0.75rem', color: '#0C53B7' }}>Trust Line Set</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: '#0C53B7' }}>Trustline for</Typography>
+            <Stack direction="row" alignItems="baseline">
+              <Typography sx={{ fontSize: '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
+              {assetValue.valueAfterDot && (
+                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
+              )}
+            </Stack>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
+              {assetName}
+            </Typography>
           </Stack>
         )}
         {TransactionType === 'OfferCreate' && (
