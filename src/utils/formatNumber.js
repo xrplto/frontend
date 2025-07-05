@@ -13,11 +13,14 @@ export function fNumber(num, flag = false) {
       return trimDecimal(num); //webxtor: no more exponential
     }
 
-    if (flag)
-      return trimDecimal(BigNumber(strNum).toFixed());
+    if (flag) return trimDecimal(BigNumber(strNum).toFixed());
     else {
-      const splitNum = strNum.split("e");
-      const result = <span>{Number(splitNum[0]).toFixed(2)} x 10<sup>{Number(splitNum[1])}</sup></span>;
+      const splitNum = strNum.split('e');
+      const result = (
+        <span>
+          {Number(splitNum[0]).toFixed(2)} x 10<sup>{Number(splitNum[1])}</sup>
+        </span>
+      );
       return result;
     }
 
@@ -27,10 +30,9 @@ export function fNumber(num, flag = false) {
 }
 
 export function fNumberWithCurreny(num, exchRate) {
+  if (!num || !exchRate) return 0;
 
-  if(!num || !exchRate) return 0
-
-  return fCurrency5(Decimal.div(num,exchRate).toNumber());
+  return fCurrency5(Decimal.div(num, exchRate).toNumber());
 }
 
 // Trims x numbers after zeroes, ie from 456.000000000027213246546 to 456.00000000002721 when the threshold is 4
@@ -63,7 +65,8 @@ export function fCurrency3(number) {
 }
 
 export function fCurrency5(number) {
-  if (number < 1) return trimDecimal(number); //f(number);
+  if (number < 1)
+    return trimDecimal(number); //f(number);
   else {
     const res = BigNumber(number).toFormat(Number.isInteger(number) ? 0 : 2); //former numeral()
     if (res === 'NaN') return 0; // not sure about BigNumber's NaN
@@ -118,20 +121,24 @@ export function fNumberWithSuffix(number) {
 export function fVolume(vol) {
   let volume = new Decimal(vol).toNumber();
   if (volume > 1) {
-      volume = new Decimal(volume).toDP(0, Decimal.ROUND_DOWN).toNumber();
-      if (volume > 1000000) {
-          volume = new Decimal(volume).div(1000000).toDP(2, Decimal.ROUND_DOWN).toString() + "M";
-      } else if (volume > 1000) {
-          volume = new Decimal(volume).div(1000).toDP(2, Decimal.ROUND_DOWN).toString() + "K";
-      } else {
-          volume = fIntNumber(volume);
-      }
+    if (volume >= 1e9) {
+      // Billion
+      volume = (volume / 1e9).toFixed(2) + 'B';
+    } else if (volume >= 1e6) {
+      // Million
+      volume = (volume / 1e6).toFixed(2) + 'M';
+    } else if (volume >= 1e3) {
+      // Thousand
+      volume = (volume / 1e3).toFixed(2) + 'K';
+    } else {
+      volume = volume.toFixed(2); // For numbers between 1 and 1000, show 2 decimal places
+    }
   } else {
-      volume = fNumber(volume);
+    // For numbers less than or equal to 1, use fNumber which trims decimals
+    volume = fNumber(volume);
   }
   return volume;
 }
-
 
 // ----------------------------------------------------------------------
 /*function processBigNumber(number, language, currency = undefined) {

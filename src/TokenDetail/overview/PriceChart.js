@@ -40,7 +40,7 @@ import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
 import accessibility from 'highcharts/modules/accessibility';
 import { format } from 'date-fns';
-import { fCurrency5 } from 'src/utils/formatNumber';
+import { fCurrency5, fVolume } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
 
 // Initialize the accessibility module
@@ -729,6 +729,7 @@ function PriceChart({ token }) {
           labels: {
             enabled: false
           },
+          type: 'logarithmic',
           top: '60%',
           height: '40%',
           offset: 0,
@@ -905,7 +906,7 @@ function PriceChart({ token }) {
               <span>Price: <strong>${fCurrency5(this.y)}</strong></span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px; font-size: 10px; color: ${theme.palette.text.secondary};">
-              <span>Volume: <strong>${fCurrency5(volumeData)}</strong></span>
+              <span>Volume: <strong>${fVolume(volumeData)}</strong></span>
             </div>
             ${
               priceChange !== 0
