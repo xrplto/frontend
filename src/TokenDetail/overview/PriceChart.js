@@ -375,12 +375,13 @@ function PriceChart({ token }) {
             validatedItems = items.filter(
               (item) =>
                 item &&
-                item.length === 5 &&
+                item.length === 6 && // Updated from 5 to 6 to include volume
                 typeof item[0] === 'number' && // timestamp
                 typeof item[1] === 'number' && // open
                 typeof item[2] === 'number' && // high
                 typeof item[3] === 'number' && // low
-                typeof item[4] === 'number' // close
+                typeof item[4] === 'number' && // close
+                typeof item[5] === 'number' // volume
             );
           }
 
@@ -455,12 +456,13 @@ function PriceChart({ token }) {
             lastOHLC[1],
             Math.max(lastOHLC[2], newPrice),
             Math.min(lastOHLC[3], newPrice),
-            newPrice
+            newPrice,
+            lastOHLC[5] || 0 // Carry over existing volume or default to 0
           ];
           return [...prevOHLCData.slice(0, -1), updatedLastOHLC];
         } else {
           // Add a new candlestick (open, high, low, close all as newPrice initially)
-          const newOHLCPoint = [now, newPrice, newPrice, newPrice, newPrice];
+          const newOHLCPoint = [now, newPrice, newPrice, newPrice, newPrice, token.vol24h || 0];
           const updatedOHLCData = [...prevOHLCData, newOHLCPoint];
           const maxPoints = range === '12h' ? 500 : 1440;
           return updatedOHLCData.slice(-maxPoints);
@@ -555,12 +557,13 @@ function PriceChart({ token }) {
     const ohlcDataValid = dataOHLC.every(
       (item) =>
         item &&
-        item.length === 5 &&
+        item.length === 6 &&
         typeof item[0] === 'number' &&
         typeof item[1] === 'number' &&
         typeof item[2] === 'number' &&
         typeof item[3] === 'number' &&
-        typeof item[4] === 'number'
+        typeof item[4] === 'number' &&
+        typeof item[5] === 'number'
     );
 
     return {
@@ -727,9 +730,10 @@ function PriceChart({ token }) {
             text: null
           },
           labels: {
-            enabled: false
+            enabled: true
           },
           type: 'logarithmic',
+          min: 0.001,
           top: '60%',
           height: '40%',
           offset: 0,
@@ -971,6 +975,7 @@ function PriceChart({ token }) {
       chart: {
         backgroundColor: 'transparent',
         height: '350px',
+        alignTicks: false,
         events: {
           render: function () {
             const chart = this;
@@ -1050,37 +1055,59 @@ function PriceChart({ token }) {
         gridLineWidth: 1,
         gridLineColor: alpha(theme.palette.divider, 0.1)
       },
-      yAxis: {
-        crosshair: {
-          width: 1,
-          dashStyle: 'Solid',
-          color: alpha(theme.palette.primary.main, 0.6)
-        },
-        title: {
-          text: null
-        },
-        labels: {
-          style: {
-            color: theme.palette.text.primary,
-            fontWeight: 500,
-            fontSize: '10px'
+      yAxis: [
+        {
+          crosshair: {
+            width: 1,
+            dashStyle: 'Solid',
+            color: alpha(theme.palette.primary.main, 0.6)
           },
-          formatter: function () {
-            return fCurrency5(this.value);
-          }
+          title: {
+            text: null
+          },
+          labels: {
+            style: {
+              color: theme.palette.text.primary,
+              fontWeight: 500,
+              fontSize: '10px'
+            },
+            formatter: function () {
+              return fCurrency5(this.value);
+            }
+          },
+          gridLineColor: alpha(theme.palette.divider, 0.1),
+          plotLines: mediumValue
+            ? [
+                {
+                  width: 1,
+                  value: mediumValue,
+                  dashStyle: 'Dash',
+                  color: alpha(theme.palette.warning.main, 0.7)
+                }
+              ]
+            : []
         },
-        gridLineColor: alpha(theme.palette.divider, 0.1),
-        plotLines: mediumValue
-          ? [
-              {
-                width: 1,
-                value: mediumValue,
-                dashStyle: 'Dash',
-                color: alpha(theme.palette.warning.main, 0.7)
-              }
-            ]
-          : []
-      },
+        {
+          title: {
+            text: null
+          },
+          labels: {
+            enabled: true,
+            formatter: function () {
+              return fVolume(this.value);
+            }
+          },
+          type: 'logarithmic',
+          min: 0.001,
+          tickPixelInterval: 50,
+          top: '60%',
+          height: '40%',
+          offset: 0,
+          lineWidth: 0,
+          gridLineWidth: 0,
+          gridLineColor: alpha(theme.palette.divider, 0.1)
+        }
+      ],
       series: [
         {
           type: 'candlestick',
@@ -1090,6 +1117,45 @@ function PriceChart({ token }) {
             duration: 1200,
             easing: 'easeOutCubic'
           }
+        },
+        {
+          type: 'column',
+          name: 'Volume',
+          data:
+            dataOHLC?.length > 0
+              ? dataOHLC.map((item, i) => {
+                  let color;
+                  if (i > 0) {
+                    const prevClose = dataOHLC[i - 1][4]; // Previous close price
+                    const currentClose = item[4]; // Current close price
+                    if (currentClose > prevClose) {
+                      color = alpha(theme.palette.success.main, 0.6); // Price up
+                    } else if (currentClose < prevClose) {
+                      color = alpha(theme.palette.error.main, 0.6); // Price down
+                    } else {
+                      color = alpha(theme.palette.grey[500], 0.4); // No change
+                    }
+                  } else {
+                    color = alpha(theme.palette.grey[500], 0.4); // First bar
+                  }
+                  const volumeValue = Math.max(item[5] || 0, 0.001);
+                  console.log(
+                    `OHLC Volume Data Point: Timestamp=${item[0]}, Raw Volume=${item[5]}, Formatted Volume=${volumeValue}`
+                  );
+                  return {
+                    x: item[0], // Timestamp
+                    y: volumeValue, // Volume (index 5), ensure positive for log scale
+                    color
+                  };
+                })
+              : [],
+          yAxis: 1,
+          showInLegend: false,
+          borderWidth: 0,
+          pointPadding: 0.1,
+          groupPadding: 0.2,
+          minPointLength: 3,
+          zIndex: 1
         }
       ],
       tooltip: {
@@ -1147,6 +1213,17 @@ function PriceChart({ token }) {
               <div style="display: flex; justify-items: space-between;">
                 <span style="color: ${theme.palette.text.secondary};">Close:</span>
                 <strong>${fCurrency5(this.point.close)}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: ${theme.palette.text.secondary};">Volume:</span>
+                <strong>${fVolume(
+                  this.point.options &&
+                    Array.isArray(this.point.options) &&
+                    this.point.options.length > 5 &&
+                    typeof this.point.options[5] === 'number'
+                    ? this.point.options[5]
+                    : 0
+                )}</strong>
               </div>
             </div>
           </div>`;
