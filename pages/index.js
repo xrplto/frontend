@@ -185,7 +185,6 @@ export async function getStaticProps() {
   }
 
   return {
-    props: ret,
-    revalidate: 10
+    props: ret
   };
 }
