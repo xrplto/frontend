@@ -6,21 +6,26 @@ import useKeypress from 'react-use-keypress';
 
 import { Box } from '@mui/material';
 import { AppContext } from 'src/AppContext';
-import SearchModal from './SearchModal';
 
-const NavSearchBar = ({ id, placeholder, fullSearch, setFullSearch, ...props }) => {
+const NavSearchBar = ({
+  id,
+  placeholder,
+  fullSearch,
+  setFullSearch,
+  onOpenSearchModal,
+  ...props
+}) => {
   const { darkMode } = useContext(AppContext);
   const theme = useTheme();
-  const [open, setOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   useKeypress('/', () => {
-    setOpen(true);
+    onOpenSearchModal();
   });
 
   const openModal = (event) => {
     event.stopPropagation();
-    setOpen(true);
+    onOpenSearchModal();
   };
 
   return (
@@ -108,7 +113,6 @@ const NavSearchBar = ({ id, placeholder, fullSearch, setFullSearch, ...props }) 
           /
         </Box>
       </Stack>
-      <SearchModal open={open} onClose={() => setOpen(false)} />
     </>
   );
 };

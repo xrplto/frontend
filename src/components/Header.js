@@ -33,6 +33,7 @@ import Logo from 'src/components/Logo';
 import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
 import WalletConnectModal from './WalletConnectModal';
+import SearchModal from './SearchModal';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 
 // Iconify
@@ -299,9 +300,11 @@ export default function Header(props) {
   const { darkMode, setDarkMode } = useContext(AppContext);
   const [tokensAnchorEl, setTokensAnchorEl] = useState(null);
   const openTokensMenu = Boolean(tokensAnchorEl);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   const handleFullSearch = (e) => {
     setFullSearch(true);
+    setSearchModalOpen(true);
   };
 
   const toggleDrawer = (isOpen = true) => {
@@ -789,6 +792,7 @@ export default function Header(props) {
               placeholder="Search XRPL Tokens"
               fullSearch={fullSearch}
               setFullSearch={setFullSearch}
+              onOpenSearchModal={() => setSearchModalOpen(true)}
             />
           )}
 
@@ -819,6 +823,7 @@ export default function Header(props) {
                   placeholder="Search XRPL Tokens"
                   fullSearch={fullSearch}
                   setFullSearch={setFullSearch}
+                  onOpenSearchModal={() => setSearchModalOpen(true)}
                 />
               </Stack>
             )}
@@ -920,6 +925,8 @@ export default function Header(props) {
         message={snackbarMessage}
         severity={snackbarSeverity}
       />
+
+      <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
     </HeaderWrapper>
   );
 }

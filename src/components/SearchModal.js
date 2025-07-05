@@ -219,9 +219,16 @@ export default function SearchModal({ onClose, open }) {
   };
 
   useEffect(() => {
-    getData(debouncedSearch);
-    getNFTs(debouncedSearch);
-  }, [debouncedSearch]);
+    if (open) {
+      getData(debouncedSearch);
+      getNFTs(debouncedSearch);
+    } else {
+      // Clear search results and input when modal closes
+      setTokens([]);
+      setCollections([]);
+      setSearch('');
+    }
+  }, [debouncedSearch, open]);
 
   useEffect(() => {
     if (!search.length) setActiveTab('all');
