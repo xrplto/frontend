@@ -47,6 +47,31 @@ import {
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
+// Format holding time from seconds to human readable format
+const formatHoldingTime = (seconds) => {
+  if (!seconds || seconds === 0) return '0m';
+
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (days > 0) {
+    if (hours > 0) {
+      return `${days}d ${hours}h`;
+    }
+    return `${days}d`;
+  }
+
+  if (hours > 0) {
+    if (minutes > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${hours}h`;
+  }
+
+  return `${minutes}m`;
+};
+
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
     flex: 1;
@@ -1332,112 +1357,274 @@ export default function Portfolio({ account, limit, collection, type }) {
                   {/* XRP Balance Display */}
                   <Card
                     sx={{
-                      p: 1.5,
+                      p: 0,
                       mt: 1.5,
-                      background: `${alpha(theme.palette.background.paper, 0.5)}`,
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: '10px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                      background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                      backdropFilter: 'blur(20px)',
+                      borderRadius: '16px',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                      boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+                      overflow: 'hidden',
+                      position: 'relative',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: `0 12px 48px ${alpha(theme.palette.common.black, 0.12)}`,
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                      },
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '3px',
+                        background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.warning.main})`,
+                        opacity: 0.8
+                      }
                     }}
                   >
+                    {/* Header Section */}
                     <Box
                       sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        mb: 1.5
+                        p: 2.5,
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                       }}
                     >
-                      <Typography
-                        variant="body1"
-                        color="text.primary"
-                        display="flex"
-                        alignItems="center"
-                        sx={{ fontWeight: 500 }}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between'
+                        }}
                       >
-                        <AccountBalanceWalletIcon
-                          sx={{ fontSize: '1.2rem', mr: 1, color: theme.palette.primary.main }}
-                        />
-                        XRP Balance
-                      </Typography>
-                      {loadingBalance ? (
-                        <Skeleton width={100} height={24} sx={{ borderRadius: '6px' }} />
-                      ) : (
-                        <Typography
-                          variant="h6"
-                          color="primary.main"
-                          fontWeight="600"
-                          sx={{ letterSpacing: '-0.01em' }}
-                        >
-                          {xrpBalance !== null
-                            ? xrpBalance.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                              })
-                            : '0.00'}{' '}
-                          XRP
-                        </Typography>
-                      )}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box
+                            sx={{
+                              p: 1,
+                              borderRadius: '12px',
+                              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+                            }}
+                          >
+                            <AccountBalanceWalletIcon
+                              sx={{
+                                fontSize: '1.2rem',
+                                color: 'white',
+                                filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))'
+                              }}
+                            />
+                          </Box>
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              fontWeight: 600,
+                              color: theme.palette.text.primary,
+                              fontSize: '1.1rem',
+                              letterSpacing: '-0.01em'
+                            }}
+                          >
+                            XRP Balance
+                          </Typography>
+                        </Box>
+                        {loadingBalance ? (
+                          <Skeleton width={120} height={32} sx={{ borderRadius: '8px' }} />
+                        ) : (
+                          <Box sx={{ textAlign: 'right' }}>
+                            <Typography
+                              variant="h5"
+                              sx={{
+                                fontWeight: 700,
+                                color: theme.palette.primary.main,
+                                fontSize: '1.4rem',
+                                letterSpacing: '-0.02em',
+                                lineHeight: 1.2
+                              }}
+                            >
+                              {xrpBalance !== null
+                                ? xrpBalance.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                  })
+                                : '0.00'}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: alpha(theme.palette.text.secondary, 0.8),
+                                fontWeight: 500,
+                                fontSize: '0.75rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                              }}
+                            >
+                              XRP
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
                     </Box>
 
-                    <Grid container spacing={1.5}>
-                      <Grid item xs={6}>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          display="block"
-                          noWrap
-                          sx={{ fontWeight: 500, mb: 0.5 }}
-                        >
-                          Buy Volume
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          color="success.main"
-                          noWrap
-                          sx={{ fontWeight: 600, fontSize: '0.95rem' }}
-                        >
-                          {`${(traderStats?.buyVolume || 0).toLocaleString()} XRP`}
-                        </Typography>
+                    {/* Stats Section */}
+                    <Box sx={{ p: 2.5 }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                          <Box
+                            sx={{
+                              p: 2,
+                              borderRadius: '12px',
+                              background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                transform: 'translateY(-1px)',
+                                boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.15)}`
+                              }
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: alpha(theme.palette.text.secondary, 0.9),
+                                fontWeight: 600,
+                                fontSize: '0.7rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                mb: 0.5,
+                                display: 'block'
+                              }}
+                            >
+                              Buy Volume
+                            </Typography>
+                            <Typography
+                              variant="h6"
+                              sx={{
+                                color: theme.palette.success.main,
+                                fontWeight: 700,
+                                fontSize: '1rem',
+                                letterSpacing: '-0.01em'
+                              }}
+                            >
+                              {`${(traderStats?.buyVolume || 0).toLocaleString()}`}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: alpha(theme.palette.success.main, 0.7),
+                                fontWeight: 500,
+                                fontSize: '0.7rem'
+                              }}
+                            >
+                              XRP
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Box
+                            sx={{
+                              p: 2,
+                              borderRadius: '12px',
+                              background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.08)} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.error.main, 0.1)}`,
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                transform: 'translateY(-1px)',
+                                boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.15)}`
+                              }
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: alpha(theme.palette.text.secondary, 0.9),
+                                fontWeight: 600,
+                                fontSize: '0.7rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                mb: 0.5,
+                                display: 'block'
+                              }}
+                            >
+                              Sell Volume
+                            </Typography>
+                            <Typography
+                              variant="h6"
+                              sx={{
+                                color: theme.palette.error.main,
+                                fontWeight: 700,
+                                fontSize: '1rem',
+                                letterSpacing: '-0.01em'
+                              }}
+                            >
+                              {`${(traderStats?.sellVolume || 0).toLocaleString()}`}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: alpha(theme.palette.error.main, 0.7),
+                                fontWeight: 500,
+                                fontSize: '0.7rem'
+                              }}
+                            >
+                              XRP
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Box
+                            sx={{
+                              p: 2,
+                              borderRadius: '12px',
+                              background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.08)} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                transform: 'translateY(-1px)',
+                                boxShadow: `0 4px 12px ${alpha(theme.palette.info.main, 0.15)}`
+                              }
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between'
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: alpha(theme.palette.text.secondary, 0.9),
+                                  fontWeight: 600,
+                                  fontSize: '0.7rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px'
+                                }}
+                              >
+                                Avg Holding Time
+                              </Typography>
+                              <Box sx={{ textAlign: 'right' }}>
+                                <Typography
+                                  variant="h6"
+                                  sx={{
+                                    color: theme.palette.info.main,
+                                    fontWeight: 700,
+                                    fontSize: '1.1rem',
+                                    letterSpacing: '-0.01em'
+                                  }}
+                                >
+                                  {formatHoldingTime(traderStats?.avgHoldingTime || 0)}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Box>
+                        </Grid>
                       </Grid>
-                      <Grid item xs={6}>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          display="block"
-                          noWrap
-                          sx={{ fontWeight: 500, mb: 0.5 }}
-                        >
-                          Sell Volume
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          color="error.main"
-                          noWrap
-                          sx={{ fontWeight: 600, fontSize: '0.95rem' }}
-                        >
-                          {`${(traderStats?.sellVolume || 0).toLocaleString()} XRP`}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          display="block"
-                          noWrap
-                          sx={{ fontWeight: 500, mb: 0.5 }}
-                        >
-                          Holding Time
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          noWrap
-                          sx={{ fontWeight: 600, fontSize: '0.95rem' }}
-                        >
-                          {`${Math.round((traderStats?.avgHoldingTime || 0) / 3600)}h`}
-                        </Typography>
-                      </Grid>
-                    </Grid>
+                    </Box>
                   </Card>
                 </Stack>
 
