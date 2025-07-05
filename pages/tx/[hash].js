@@ -1588,27 +1588,55 @@ const TransactionDetails = ({ txData, theme }) => {
   const initiatorChanges = balanceChanges.find((bc) => bc.account === Account);
 
   let conversionExchange;
-  if (isConversion && exchanges.length === 0 && deliveredAmount) {
-    // Find initiator's XRP balance change
-    const initiatorXrpChange = balanceChanges
-      .find((bc) => bc.account === Account)
-      ?.changes.find((c) => c.currency === 'XRP');
-
-    if (initiatorXrpChange) {
-      const paidValue = new BigNumber(initiatorXrpChange.value).abs().minus(dropsToXrp(Fee));
-
+  if (isConversion && exchanges.length === 0 && deliveredAmount && SendMax) {
+    // For self-conversion, the user sent SendMax and received DeliveredAmount
+    if (typeof deliveredAmount === 'string') {
+      // User sent SendMax (token) and received XRP
       conversionExchange = {
         paid: {
-          value: paidValue.toString(),
-          currency: 'XRP'
+          value: SendMax.value,
+          currency: normalizeCurrencyCode(SendMax.currency),
+          rawCurrency: SendMax.currency,
+          issuer: SendMax.issuer
         },
         got: {
-          value: deliveredAmount.value,
-          currency: normalizeCurrencyCode(deliveredAmount.currency),
-          rawCurrency: deliveredAmount.currency,
-          issuer: deliveredAmount.issuer
+          value: dropsToXrp(deliveredAmount),
+          currency: 'XRP'
         }
       };
+    } else if (typeof deliveredAmount === 'object' && deliveredAmount.value) {
+      // User sent SendMax (could be XRP or token) and received token
+      if (typeof SendMax === 'string') {
+        // User sent XRP and received token
+        conversionExchange = {
+          paid: {
+            value: dropsToXrp(SendMax),
+            currency: 'XRP'
+          },
+          got: {
+            value: deliveredAmount.value,
+            currency: normalizeCurrencyCode(deliveredAmount.currency),
+            rawCurrency: deliveredAmount.currency,
+            issuer: deliveredAmount.issuer
+          }
+        };
+      } else {
+        // User sent token and received different token
+        conversionExchange = {
+          paid: {
+            value: SendMax.value,
+            currency: normalizeCurrencyCode(SendMax.currency),
+            rawCurrency: SendMax.currency,
+            issuer: SendMax.issuer
+          },
+          got: {
+            value: deliveredAmount.value,
+            currency: normalizeCurrencyCode(deliveredAmount.currency),
+            rawCurrency: deliveredAmount.currency,
+            issuer: deliveredAmount.issuer
+          }
+        };
+      }
     }
   }
 
