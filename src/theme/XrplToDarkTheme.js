@@ -36,15 +36,11 @@ const colors = {
     black2: 'linear-gradient(60deg, #29323c 0%, #485563 100%)'
   },
   shadows: {
-    success:
-      '0px 1px 4px rgba(68, 214, 0, 0.25), 0px 3px 12px 2px rgba(68, 214, 0, 0.35)',
-    error:
-      '0px 1px 4px rgba(255, 25, 67, 0.25), 0px 3px 12px 2px rgba(255, 25, 67, 0.35)',
+    success: '0px 1px 4px rgba(68, 214, 0, 0.25), 0px 3px 12px 2px rgba(68, 214, 0, 0.35)',
+    error: '0px 1px 4px rgba(255, 25, 67, 0.25), 0px 3px 12px 2px rgba(255, 25, 67, 0.35)',
     info: '0px 1px 4px rgba(51, 194, 255, 0.25), 0px 3px 12px 2px rgba(51, 194, 255, 0.35)',
-    primary:
-      '0px 1px 4px rgba(112, 99, 192, 0.25), 0px 3px 12px 2px rgba(112, 99, 192, 0.35)',
-    warning:
-      '0px 1px 4px rgba(255, 163, 25, 0.25), 0px 3px 12px 2px rgba(255, 163, 25, 0.35)',
+    primary: '0px 1px 4px rgba(112, 99, 192, 0.25), 0px 3px 12px 2px rgba(112, 99, 192, 0.35)',
+    warning: '0px 1px 4px rgba(255, 163, 25, 0.25), 0px 3px 12px 2px rgba(255, 163, 25, 0.35)',
     card: '0px 0px 2px #6A7199',
     cardSm: '0px 0px 2px #6A7199',
     cardLg:
@@ -65,7 +61,7 @@ const colors = {
       menuItemIconColor: '#444A6B',
       menuItemIconColorActive: '#ffffff',
       menuItemHeadingColor: darken(themeColors.secondary, 0.3)
-    },
+    }
   },
   alpha: {
     white: {
@@ -102,10 +98,10 @@ const colors = {
     contrastText: '#fff'
   },
   primary: {
-    lighter: alpha("#fff", 0.1),
-    light: '#00AB55',  // #5BE584
-    main: '#007B55',   // #00AB55
-    dark: '#005249',   // #007B55
+    lighter: alpha('#fff', 0.1),
+    light: '#00AB55', // #5BE584
+    main: '#007B55', // #00AB55
+    dark: '#005249', // #007B55
     darker: '#003349', // #005249
     contrastText: '#fff'
   },
@@ -148,9 +144,9 @@ const colors = {
   success: {
     lighter: '#E9FCD4',
     light: '#AAF27F',
-    main: '#54D62C',
+    main: '#57CA22',
     dark: '#229A16',
-    darker: '#08660D',
+    darker: '#08660D'
   },
   // success: {
   //   lighter: alpha(themeColors.success, 0.85),
@@ -163,7 +159,7 @@ const colors = {
     light: '#FFE16A',
     main: '#FFC107',
     dark: '#B78103',
-    darker: '#7A4F01',
+    darker: '#7A4F01'
   },
   // warning: {
   //   lighter: alpha(themeColors.warning, 0.85),
@@ -174,11 +170,11 @@ const colors = {
   error: {
     lighter: '#FFE7D9',
     light: '#FFA48D',
-    main: '#FF4842',
+    main: '#FF1943',
     dark: '#B72136',
     darker: '#7A0C2E',
     contrastText: '#fff'
-  },
+  }
   // error: {
   //   lighter: alpha(themeColors.error, 0.85),
   //   light: alpha(themeColors.error, 0.3),
@@ -284,10 +280,10 @@ export const XrplToDarkTheme = createTheme({
     borderRadius: '10px',
     borderRadiusLg: '12px',
     borderRadiusXl: '16px',
-    backgroundAlt: "#08060b70",
-    backgroundAsset: "#000000",
-    backgroundTrait: "#00ff7f10",
-    borderTrait: "#00ff7f"
+    backgroundAlt: '#08060b70',
+    backgroundAsset: '#000000',
+    backgroundTrait: '#00ff7f10',
+    borderTrait: '#00ff7f'
   },
   sidebar: {
     background: colors.layout.sidebar.background,
@@ -311,11 +307,10 @@ export const XrplToDarkTheme = createTheme({
   },
   spacing: 9,
   currency: {
-    background1: '#2E2E2E',  
-    background2: '#1C1C1C', 
-    border: '1px solid #32373C' 
-}
-,
+    background1: '#2E2E2E',
+    background2: '#1C1C1C',
+    border: '1px solid #32373C'
+  },
   palette: {
     common: {
       black: colors.alpha.black[100],
@@ -341,7 +336,7 @@ export const XrplToDarkTheme = createTheme({
       main: '#9c27b0',
       light: '#ba68c8',
       dark: '#7b1fa2',
-      contrastText: '#fff',
+      contrastText: '#fff'
     },
     error: {
       light: colors.error.light,
@@ -390,9 +385,9 @@ export const XrplToDarkTheme = createTheme({
       activatedOpacity: 0.12
     },
     tx: {
-      light: "#fff",
-      main: "#000000",
-      dark: "#0f0f0f"
+      light: '#fff',
+      main: '#000000',
+      dark: '#0f0f0f'
     }
   },
   breakpoints: {
@@ -485,11 +480,7 @@ export const XrplToDarkTheme = createTheme({
           borderLeftColor: colors.primary.lighter
         },
         '#nprogress .peg': {
-          boxShadow:
-            '0 0 15px ' +
-            colors.primary.lighter +
-            ', 0 0 8px' +
-            colors.primary.light
+          boxShadow: '0 0 15px ' + colors.primary.lighter + ', 0 0 8px' + colors.primary.light
         },
         ':root': {
           '--swiper-theme-color': colors.primary.main,
@@ -597,9 +588,7 @@ export const XrplToDarkTheme = createTheme({
     },
     MuiChip: {
       styleOverrides: {
-        root: {
-
-        },
+        root: {},
         colorSecondary: {
           background: colors.alpha.black[5],
           color: colors.alpha.black[100],
@@ -838,7 +827,7 @@ export const XrplToDarkTheme = createTheme({
           background: '#000000',
           padding: 0,
           border: '1px solid #21252B'
-        },
+        }
         // elevation0: {
         //   boxShadow: 'none'
         // },
@@ -955,7 +944,7 @@ export const XrplToDarkTheme = createTheme({
             paddingLeft: 20,
             paddingRight: 20,
             marginRight: 4
-          },
+          }
           // '&.Mui-selected, &.Mui-selected:hover': {
           //   color: colors.alpha.trueWhite[100],
           //   zIndex: 5
@@ -1091,7 +1080,7 @@ export const XrplToDarkTheme = createTheme({
         head: {
           // textTransform: 'uppercase',
           fontSize: 13,
-          whiteSpace: 'nowrap',
+          whiteSpace: 'nowrap'
           // fontWeight: 'bold',
           // color: colors.alpha.black[70],
           // background: 'inherit'
@@ -1196,10 +1185,7 @@ export const XrplToDarkTheme = createTheme({
         thumb: {
           border: '1px solid ' + colors.alpha.black[30],
           boxShadow:
-            '0px 9px 14px ' +
-            colors.alpha.black[10] +
-            ', 0px 2px 2px ' +
-            colors.alpha.black[10]
+            '0px 9px 14px ' + colors.alpha.black[10] + ', 0px 2px 2px ' + colors.alpha.black[10]
         },
         track: {
           backgroundColor: colors.alpha.black[5],
@@ -1281,7 +1267,7 @@ export const XrplToDarkTheme = createTheme({
           s16: 'span',
           s17: 'span',
           s18: 'span',
-          modal: "h1"
+          modal: 'h1'
         }
       },
       styleOverrides: {
@@ -1300,11 +1286,11 @@ export const XrplToDarkTheme = createTheme({
             fontWeight: 600,
             fontSize: 28,
             [theme.breakpoints.up('md')]: {
-              fontSize: 32,
+              fontSize: 32
             },
             [theme.breakpoints.up('lg')]: {
-              fontSize: 40,
-            },
+              fontSize: 40
+            }
           })
         },
         {
@@ -1313,8 +1299,8 @@ export const XrplToDarkTheme = createTheme({
             fontWeight: 600,
             fontSize: 18,
             [theme.breakpoints.up('md')]: {
-              fontSize: 24,
-            },
+              fontSize: 24
+            }
           })
         },
         {
@@ -1325,8 +1311,8 @@ export const XrplToDarkTheme = createTheme({
             lineHeight: 1.4,
             color: colors.alpha.black[100],
             [theme.breakpoints.up('md')]: {
-              fontSize: 20,
-            },
+              fontSize: 20
+            }
           })
         },
         {
@@ -1336,8 +1322,8 @@ export const XrplToDarkTheme = createTheme({
             fontSize: 12,
             color: colors.alpha.black[50],
             [theme.breakpoints.up('sm')]: {
-              fontSize: 16,
-            },
+              fontSize: 16
+            }
           })
         },
         {
@@ -1347,8 +1333,8 @@ export const XrplToDarkTheme = createTheme({
             fontSize: 14,
             color: colors.alpha.black[100],
             [theme.breakpoints.up('sm')]: {
-              fontSize: 20,
-            },
+              fontSize: 20
+            }
           })
         },
         {
@@ -1358,11 +1344,11 @@ export const XrplToDarkTheme = createTheme({
             fontSize: 11,
             // color: colors.alpha.black[100],
             [theme.breakpoints.up('sm')]: {
-              fontSize: 13,
-            },
+              fontSize: 13
+            }
           })
         }
-      ],
+      ]
     }
   },
   shape: {
@@ -1437,11 +1423,11 @@ export const XrplToDarkTheme = createTheme({
     },
     h1: {
       fontWeight: 700,
-      fontSize: '1.2rem'// 35
+      fontSize: '1.2rem' // 35
     },
     h1_trustline: {
       fontWeight: 700,
-      fontSize: '1.2rem'// 35
+      fontSize: '1.2rem' // 35
     },
     h2: {
       fontWeight: 700,
@@ -1481,7 +1467,7 @@ export const XrplToDarkTheme = createTheme({
       fontWeight: 600
     },
     caption: {
-      fontSize: 13,
+      fontSize: 13
       // textTransform: 'uppercase',
       // color: colors.alpha.black[50]
     },
@@ -1492,42 +1478,42 @@ export const XrplToDarkTheme = createTheme({
     // },
     kyc: {
       fontSize: 10,
-      color: "#34B60C",
+      color: '#34B60C',
       borderRadius: '6px',
       border: '0.05em solid #34B60C',
       paddingLeft: '2px',
-      paddingRight: '2px',
+      paddingRight: '2px'
     },
     kyc2: {
       fontSize: 11,
-      color: "#34B60C",
+      color: '#34B60C',
       borderRadius: '8px',
       border: '0.05em solid #34B60C',
       paddingLeft: '2px',
-      paddingRight: '2px',
+      paddingRight: '2px'
     },
     nokyc: {
       fontSize: 10,
-      color: "#454F5B",
+      color: '#454F5B',
       borderRadius: '6px',
       border: '0.05em solid #454F5B',
       paddingLeft: '2px',
-      paddingRight: '2px',
+      paddingRight: '2px'
     },
     token: {
       fontWeight: 700,
       fontSize: 16,
-      color: "#3366FF"
+      color: '#3366FF'
     },
     desc: {
       fontWeight: 700,
       fontSize: '1.25rem',
-      lineHeight: 1.5,
+      lineHeight: 1.5
     },
     price: {
       fontWeight: 700,
       fontSize: '2rem',
-      lineHeight: 1.5,
+      lineHeight: 1.5
     },
     small: {
       fontSize: 12
@@ -1537,12 +1523,12 @@ export const XrplToDarkTheme = createTheme({
     },
     subtitle2: {
       fontWeight: 400,
-      fontSize: 15,
+      fontSize: 15
       // color: colors.alpha.black[50]
     },
     overline: {
       fontSize: 13,
-      fontWeight: 700,
+      fontWeight: 700
       // textTransform: 'uppercase'
     },
     s2: {
@@ -1567,7 +1553,7 @@ export const XrplToDarkTheme = createTheme({
     },
     s6: {
       fontWeight: 500,
-      fontSize: 14,
+      fontSize: 14
       // color: colors.alpha.black[100]
     },
     s7: {
@@ -1593,7 +1579,7 @@ export const XrplToDarkTheme = createTheme({
     },
     s11: {
       fontWeight: 400,
-      fontSize: 12,
+      fontSize: 12
     },
     s12: {
       fontWeight: 400,
@@ -1608,7 +1594,7 @@ export const XrplToDarkTheme = createTheme({
     s15: {
       fontWeight: 700,
       fontSize: 18,
-      color: "#ffffff"
+      color: '#ffffff'
     },
     s17: {
       fontWeight: 400,
@@ -1621,8 +1607,8 @@ export const XrplToDarkTheme = createTheme({
       color: colors.alpha.black[100]
     },
     modal: {
-      fontSize: "2em",
-      display: "block"
+      fontSize: '2em',
+      display: 'block'
     }
   },
   shadows: [
