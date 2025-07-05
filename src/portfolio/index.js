@@ -1456,21 +1456,22 @@ export default function Portfolio({ account, limit, collection, type }) {
                               mb: 0.5
                             }}
                           >
-                            {`${traderStats?.totalVolume?.toLocaleString() || 0}`}
+                            {`${traderStats?.totalVolume?.toLocaleString() || 0} `}
+                            <Typography
+                              component="span"
+                              variant="caption"
+                              sx={{
+                                color: alpha(theme.palette.success.main, 0.7),
+                                fontWeight: 600,
+                                fontSize: '0.8rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                              }}
+                            >
+                              XRP
+                            </Typography>
                           </Typography>
                         )}
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: alpha(theme.palette.success.main, 0.7),
-                            fontWeight: 600,
-                            fontSize: '0.8rem',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px'
-                          }}
-                        >
-                          XRP
-                        </Typography>
                       </Box>
                     </Box>
                   </Card>
@@ -1571,19 +1572,20 @@ export default function Portfolio({ account, limit, collection, type }) {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2
                                   })
-                                : '0.00'}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: alpha(theme.palette.text.secondary, 0.8),
-                                fontWeight: 500,
-                                fontSize: '0.75rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
-                              }}
-                            >
-                              XRP
+                                : '0.00'}{' '}
+                              <Typography
+                                component="span"
+                                variant="caption"
+                                sx={{
+                                  color: alpha(theme.palette.text.secondary, 0.8),
+                                  fontWeight: 500,
+                                  fontSize: '0.75rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px'
+                                }}
+                              >
+                                XRP
+                              </Typography>
                             </Typography>
                           </Box>
                         )}
@@ -1630,17 +1632,18 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 letterSpacing: '-0.01em'
                               }}
                             >
-                              {`${(traderStats?.buyVolume || 0).toLocaleString()}`}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: alpha(theme.palette.success.main, 0.7),
-                                fontWeight: 500,
-                                fontSize: '0.7rem'
-                              }}
-                            >
-                              XRP
+                              {`${(traderStats?.buyVolume || 0).toLocaleString()} `}
+                              <Typography
+                                component="span"
+                                variant="caption"
+                                sx={{
+                                  color: alpha(theme.palette.success.main, 0.7),
+                                  fontWeight: 500,
+                                  fontSize: '0.7rem'
+                                }}
+                              >
+                                XRP
+                              </Typography>
                             </Typography>
                           </Box>
                         </Grid>
@@ -1681,17 +1684,18 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 letterSpacing: '-0.01em'
                               }}
                             >
-                              {`${(traderStats?.sellVolume || 0).toLocaleString()}`}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: alpha(theme.palette.error.main, 0.7),
-                                fontWeight: 500,
-                                fontSize: '0.7rem'
-                              }}
-                            >
-                              XRP
+                              {`${(traderStats?.sellVolume || 0).toLocaleString()} `}
+                              <Typography
+                                component="span"
+                                variant="caption"
+                                sx={{
+                                  color: alpha(theme.palette.error.main, 0.7),
+                                  fontWeight: 500,
+                                  fontSize: '0.7rem'
+                                }}
+                              >
+                                XRP
+                              </Typography>
                             </Typography>
                           </Box>
                         </Grid>
@@ -2310,15 +2314,14 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 <Skeleton width={100} />
                               ) : (
                                 <>
-                                  {`${(traderStats?.[`volume${selectedInterval}`] || 0).toFixed(2)}`}
+                                  {`${(traderStats?.[`volume${selectedInterval}`] || 0).toFixed(2)} `}
                                   <Typography
                                     component="span"
                                     variant="caption"
                                     sx={{
                                       color: alpha(theme.palette.info.main, 0.7),
                                       fontWeight: 500,
-                                      fontSize: '0.8rem',
-                                      ml: 0.5
+                                      fontSize: '0.8rem'
                                     }}
                                   >
                                     XRP
@@ -2435,7 +2438,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 <Skeleton width={100} />
                               ) : (
                                 <>
-                                  {`${(traderStats?.[`profit${selectedInterval}`] || 0).toFixed(2)}`}
+                                  {`${(traderStats?.[`profit${selectedInterval}`] || 0).toFixed(2)} `}
                                   <Typography
                                     component="span"
                                     variant="caption"
@@ -2447,8 +2450,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                         0.7
                                       ),
                                       fontWeight: 500,
-                                      fontSize: '0.8rem',
-                                      ml: 0.5
+                                      fontSize: '0.8rem'
                                     }}
                                   >
                                     XRP
@@ -2812,7 +2814,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     <ToggleButtonGroup
                       value={activeTab}
                       exclusive
-                      onChange={(e, newValue) => newValue && handleChange(e, newValue)}
+                      onChange={(e, newValue) => newValue !== null && handleChange(e, newValue)}
                       size="medium"
                       sx={{
                         bgcolor: alpha(theme.palette.background.paper, 0.6),
