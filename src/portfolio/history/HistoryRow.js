@@ -123,7 +123,7 @@ const HistoryRow = (props) => {
   const formattedDate = month + ' ' + day + ', ' + hours + ':' + minutes + ':' + seconds;
 
   const handleViewClick = () => {
-    window.open(`https://xrpscan.com/tx/${hash}`, '_blank');
+    window.open(`/tx/${hash}`, '_blank');
   };
 
   const hexToText = (hex) => {
