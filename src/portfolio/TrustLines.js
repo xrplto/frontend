@@ -194,26 +194,62 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   return (
     <Box>
       {loading ? (
-        <Stack alignItems="center">
-          <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
+        <Stack
+          alignItems="center"
+          justifyContent="center"
+          sx={{
+            py: 8,
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+            borderRadius: 3,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            backdropFilter: 'blur(10px)'
+          }}
+        >
+          <PulseLoader color={theme.palette.primary.main} size={12} />
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2, fontWeight: 500 }}>
+            Loading your assets...
+          </Typography>
         </Stack>
       ) : (
         lines &&
         lines.length === 0 && (
           <Stack
-            direction="row"
+            direction="column"
             alignItems="center"
             justifyContent="center"
-            spacing={1}
+            spacing={2}
             sx={{
-              py: 4,
-              opacity: 0.8
+              py: 8,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.03)} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
+              borderRadius: 3,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+              backdropFilter: 'blur(10px)'
             }}
           >
-            <ErrorOutlineIcon fontSize="small" />
-            <Typography variant="body2" color="text.secondary">
-              No TrustLines
-            </Typography>
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+                border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`
+              }}
+            >
+              <ErrorOutlineIcon
+                sx={{
+                  fontSize: 32,
+                  color: theme.palette.primary.main,
+                  opacity: 0.7
+                }}
+              />
+            </Box>
+            <Stack spacing={0.5} textAlign="center">
+              <Typography variant="h6" color="text.primary" sx={{ fontWeight: 600 }}>
+                No TrustLines Found
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                This account doesn't have any token trustlines yet
+              </Typography>
+            </Stack>
           </Stack>
         )
       )}
@@ -221,20 +257,25 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
       {(total > 0 || (xrpBalance !== null && xrpBalance !== undefined)) && (
         <Box
           sx={{
-            background: darkMode
-              ? `linear-gradient(${alpha(theme.palette.primary.main, 0.05)}, ${alpha(
-                  theme.palette.primary.main,
-                  0.02
-                )})`
-              : `linear-gradient(${alpha(theme.palette.primary.main, 0.02)}, ${alpha(
-                  theme.palette.primary.main,
-                  0.01
-                )})`,
-            borderRadius: 2,
-            p: isMobile ? 0.5 : 1,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 50%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+            borderRadius: 3,
+            p: 0,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            overflow: 'hidden',
+            backdropFilter: 'blur(20px)',
+            boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.1)}`,
+            position: 'relative',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '2px',
+              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
+            }
           }}
           ref={tableRef}
         >
@@ -242,10 +283,25 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
             size="small"
             sx={{
               '& .MuiTableCell-root': {
-                py: 0.75,
-                px: isMobile ? 0.5 : 1,
+                py: 1.5,
+                px: isMobile ? 1 : 2,
                 fontSize: '0.875rem',
-                lineHeight: 1.2
+                lineHeight: 1.4,
+                borderBottom: 'none'
+              },
+              '& .MuiTableBody-root .MuiTableRow-root': {
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                position: 'relative',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.12)}`,
+                  '& .MuiTableCell-root': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                  }
+                },
+                '&:not(:last-child)': {
+                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                }
               }
             }}
           >
@@ -254,14 +310,22 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                 <TableCell
                   sx={{
                     color: theme.palette.primary.main,
-                    fontWeight: 'bold',
-                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    background: alpha(theme.palette.primary.main, 0.03),
-                    '&:first-of-type': {
-                      borderTopLeftRadius: 8
-                    },
-                    '&:last-child': {
-                      borderTopRightRadius: 8
+                    fontWeight: 700,
+                    fontSize: '0.9rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    borderBottom: 'none',
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+                    backdropFilter: 'blur(10px)',
+                    position: 'relative',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: '2px',
+                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
                     }
                   }}
                 >
@@ -272,9 +336,23 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                   sx={{
                     display: { xs: 'none', sm: 'table-cell' },
                     color: theme.palette.primary.main,
-                    fontWeight: 'bold',
-                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    background: alpha(theme.palette.primary.main, 0.03)
+                    fontWeight: 700,
+                    fontSize: '0.9rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    borderBottom: 'none',
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+                    backdropFilter: 'blur(10px)',
+                    position: 'relative',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: '2px',
+                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
+                    }
                   }}
                 >
                   Balance
@@ -283,9 +361,23 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                   align="right"
                   sx={{
                     color: theme.palette.primary.main,
-                    fontWeight: 'bold',
-                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    background: alpha(theme.palette.primary.main, 0.03)
+                    fontWeight: 700,
+                    fontSize: '0.9rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    borderBottom: 'none',
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+                    backdropFilter: 'blur(10px)',
+                    position: 'relative',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: '2px',
+                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
+                    }
                   }}
                 >
                   Value ({activeFiatCurrency})
@@ -295,9 +387,23 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                   sx={{
                     display: { xs: 'none', md: 'table-cell' },
                     color: theme.palette.primary.main,
-                    fontWeight: 'bold',
-                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    background: alpha(theme.palette.primary.main, 0.03)
+                    fontWeight: 700,
+                    fontSize: '0.9rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    borderBottom: 'none',
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+                    backdropFilter: 'blur(10px)',
+                    position: 'relative',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: '2px',
+                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
+                    }
                   }}
                 >
                   % Owned
@@ -307,10 +413,24 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                     align="center"
                     sx={{
                       color: theme.palette.primary.main,
-                      fontWeight: 'bold',
-                      borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                      background: alpha(theme.palette.primary.main, 0.03),
-                      width: '48px'
+                      fontWeight: 700,
+                      fontSize: '0.9rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      borderBottom: 'none',
+                      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+                      backdropFilter: 'blur(10px)',
+                      position: 'relative',
+                      width: '80px',
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: '2px',
+                        background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
+                      }
                     }}
                   >
                     Action
@@ -328,19 +448,77 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                   }}
                 >
                   <TableCell>
-                    <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
-                      <Avatar
-                        alt="XRP"
-                        src="/xrp.svg"
+                    <Stack direction="row" spacing={1.5} alignItems="center">
+                      <Box
                         sx={{
-                          width: isMobile ? 20 : 28,
-                          height: isMobile ? 20 : 28,
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                          position: 'relative',
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: -2,
+                            left: -2,
+                            right: -2,
+                            bottom: -2,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                            borderRadius: '12px',
+                            zIndex: 0,
+                            opacity: 0.4
+                          }
                         }}
-                      />
-                      <Typography variant="body2" noWrap>
-                        XRP
-                      </Typography>
+                      >
+                        <Avatar
+                          alt="XRP"
+                          src="/xrp.svg"
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 12px 0 rgba(0,0,0,0.15)',
+                            backgroundColor:
+                              theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : '#fff',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            position: 'relative',
+                            zIndex: 1,
+                            '&:hover': {
+                              transform: 'scale(1.1) rotate(5deg)',
+                              boxShadow: '0 8px 25px 0 rgba(0,0,0,0.2)'
+                            },
+                            '& img': {
+                              objectFit: 'contain',
+                              width: '100%',
+                              height: '100%',
+                              borderRadius: '8px',
+                              padding: '2px'
+                            }
+                          }}
+                        />
+                      </Box>
+                      <Stack spacing={0.5}>
+                        <Typography
+                          variant="body2"
+                          noWrap
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: '0.95rem',
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text'
+                          }}
+                        >
+                          XRP
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            fontSize: '0.75rem',
+                            fontWeight: 500
+                          }}
+                        >
+                          Native Asset
+                        </Typography>
+                      </Stack>
                     </Stack>
                   </TableCell>
                   <TableCell
@@ -372,19 +550,15 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                       noWrap
                       sx={{
                         color:
-                          totalValue > 0
-                            ? getPercentageColor(
-                                ((parseFloat(xrpBalance) * (exchRate || 1)) / totalValue) * 100
-                              )
+                          xrpBalance > 0
+                            ? getPercentageColor((parseFloat(xrpBalance) / 99_990_000_000) * 100)
                             : theme.palette.text.primary,
                         fontWeight: 600
                       }}
                     >
-                      {totalValue > 0
-                        ? (((parseFloat(xrpBalance) * (exchRate || 1)) / totalValue) * 100).toFixed(
-                            6
-                          )
-                        : '0.000000'}
+                      {xrpBalance > 0
+                        ? ((parseFloat(xrpBalance) / 99_990_000_000) * 100).toFixed(12)
+                        : '0.000000000000'}
                       %
                     </Typography>
                   </TableCell>
@@ -412,33 +586,47 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-            px: 2,
-            minHeight: '52px',
+            px: 3,
+            py: 2,
             gap: 4,
-            background: alpha(theme.palette.primary.main, 0.02)
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
+            borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            backdropFilter: 'blur(10px)'
           }}
         >
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 1.5,
-              background: alpha(theme.palette.background.paper, 0.8),
-              backdropFilter: 'blur(8px)',
-              borderRadius: 1.5,
-              px: 1.5,
-              py: 0.5,
-              minHeight: '40px',
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-              boxShadow: theme.shadows[1]
+              gap: 2,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
+              backdropFilter: 'blur(20px)',
+              borderRadius: 2,
+              px: 2,
+              py: 1,
+              minHeight: '48px',
+              border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+              boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.08)}`,
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '2px',
+                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                opacity: 0.6
+              }
             }}
           >
             <Typography
               variant="body2"
               sx={{
                 color: theme.palette.primary.main,
-                fontWeight: 500
+                fontWeight: 600,
+                fontSize: '0.9rem'
               }}
             >
               {`${page + 1} / ${Math.ceil(total / rowsPerPage)} pages`}
@@ -446,9 +634,9 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
             <Box
               sx={{
                 display: 'flex',
-                gap: 0.5,
-                borderLeft: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                pl: 1
+                gap: 1,
+                borderLeft: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                pl: 2
               }}
             >
               <IconButton
@@ -457,22 +645,27 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                 size="small"
                 sx={{
                   color: theme.palette.primary.main,
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '6px',
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                  background: alpha(theme.palette.primary.main, 0.05),
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    background: alpha(theme.palette.primary.main, 0.15),
-                    borderColor: theme.palette.primary.main
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.secondary.main, 0.15)} 100%)`,
+                    borderColor: theme.palette.primary.main,
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
                   },
                   '&.Mui-disabled': {
                     color: alpha(theme.palette.primary.main, 0.3),
                     borderColor: alpha(theme.palette.primary.main, 0.1),
-                    background: 'none'
+                    background: alpha(theme.palette.primary.main, 0.02),
+                    transform: 'none',
+                    boxShadow: 'none'
                   },
                   '& .MuiSvgIcon-root': {
-                    fontSize: '20px'
+                    fontSize: '22px'
                   }
                 }}
               >
@@ -484,22 +677,27 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                 size="small"
                 sx={{
                   color: theme.palette.primary.main,
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '6px',
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                  background: alpha(theme.palette.primary.main, 0.05),
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    background: alpha(theme.palette.primary.main, 0.15),
-                    borderColor: theme.palette.primary.main
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.secondary.main, 0.15)} 100%)`,
+                    borderColor: theme.palette.primary.main,
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
                   },
                   '&.Mui-disabled': {
                     color: alpha(theme.palette.primary.main, 0.3),
                     borderColor: alpha(theme.palette.primary.main, 0.1),
-                    background: 'none'
+                    background: alpha(theme.palette.primary.main, 0.02),
+                    transform: 'none',
+                    boxShadow: 'none'
                   },
                   '& .MuiSvgIcon-root': {
-                    fontSize: '20px'
+                    fontSize: '22px'
                   }
                 }}
               >
@@ -511,15 +709,27 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 1,
-              background: alpha(theme.palette.background.paper, 0.8),
-              backdropFilter: 'blur(8px)',
-              borderRadius: 1.5,
-              px: 1.5,
-              py: 0.5,
-              minHeight: '40px',
-              boxShadow: theme.shadows[1],
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+              gap: 1.5,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
+              backdropFilter: 'blur(20px)',
+              borderRadius: 2,
+              px: 2,
+              py: 1,
+              minHeight: '48px',
+              boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.08)}`,
+              border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '2px',
+                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                opacity: 0.6
+              }
             }}
           >
             <Select
@@ -527,59 +737,61 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
               onChange={handleChangeRowsPerPage}
               size="small"
               sx={{
-                height: '32px',
-                width: '44px',
-                minWidth: '44px',
+                height: '36px',
+                width: '50px',
+                minWidth: '50px',
                 color: theme.palette.primary.main,
                 '.MuiSelect-select': {
                   py: 0,
                   px: 0,
-                  fontWeight: 500,
+                  fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '0.875rem',
+                  fontSize: '0.9rem',
                   letterSpacing: '0.5px',
                   marginRight: '-8px',
                   paddingLeft: '4px'
                 },
                 '.MuiOutlinedInput-notchedOutline': {
-                  borderColor: alpha(theme.palette.primary.main, 0.2),
-                  borderWidth: '1px',
-                  borderRadius: '6px'
+                  borderColor: alpha(theme.palette.primary.main, 0.25),
+                  borderWidth: '2px',
+                  borderRadius: '8px'
                 },
                 '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: alpha(theme.palette.primary.main, 0.4)
+                  borderColor: alpha(theme.palette.primary.main, 0.5)
                 },
                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: alpha(theme.palette.primary.main, 0.4),
-                  borderWidth: '1px'
+                  borderColor: theme.palette.primary.main,
+                  borderWidth: '2px'
                 },
-                background: alpha(theme.palette.primary.main, 0.05),
+                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
                 '&:hover': {
-                  background: alpha(theme.palette.primary.main, 0.1)
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`
                 }
               }}
               MenuProps={{
                 PaperProps: {
                   sx: {
                     mt: 1,
-                    borderRadius: '6px',
-                    boxShadow: theme.shadows[2],
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                    borderRadius: '8px',
+                    boxShadow: theme.shadows[8],
+                    border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                    backdropFilter: 'blur(20px)',
                     '.MuiMenuItem-root': {
                       color: theme.palette.primary.main,
                       justifyContent: 'center',
-                      fontSize: '0.875rem',
+                      fontSize: '0.9rem',
                       letterSpacing: '0.5px',
-                      py: 1,
+                      py: 1.5,
+                      fontWeight: 600,
                       '&:hover': {
-                        background: alpha(theme.palette.primary.main, 0.1)
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`
                       },
                       '&.Mui-selected': {
-                        background: alpha(theme.palette.primary.main, 0.08),
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.secondary.main, 0.15)} 100%)`,
                         '&:hover': {
-                          background: alpha(theme.palette.primary.main, 0.12)
+                          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.25)} 0%, ${alpha(theme.palette.secondary.main, 0.18)} 100%)`
                         }
                       }
                     }
@@ -597,10 +809,9 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
               variant="body2"
               sx={{
                 color: theme.palette.primary.main,
-                fontWeight: 500,
-                fontSize: '0.875rem',
-                whiteSpace: 'nowrap',
-                pr: 0.5
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                whiteSpace: 'nowrap'
               }}
             >
               items / page

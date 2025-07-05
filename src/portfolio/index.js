@@ -2915,27 +2915,28 @@ export default function Portfolio({ account, limit, collection, type }) {
                             p: 2,
                             background: `linear-gradient(135deg, ${alpha(
                               theme.palette.primary.main,
-                              0.04
-                            )} 0%, ${alpha(theme.palette.primary.main, 0.01)} 100%)`,
-                            borderRadius: '0 0 0 16px',
-                            borderRight: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                              0.08
+                            )} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 50%, ${alpha(
+                              theme.palette.primary.main,
+                              0.03
+                            )} 100%)`,
+                            borderRadius: 3,
+                            border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                             display: 'flex',
                             flexDirection: 'column',
                             position: 'relative',
+                            backdropFilter: 'blur(20px)',
+                            boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.1)}`,
+                            overflow: 'hidden',
+                            mr: 1,
                             '&::before': {
                               content: '""',
                               position: 'absolute',
                               top: 0,
+                              left: 0,
                               right: 0,
-                              width: '2px',
-                              height: '100%',
-                              background: `linear-gradient(180deg, ${alpha(
-                                theme.palette.primary.main,
-                                0.2
-                              )} 0%, transparent 50%, ${alpha(
-                                theme.palette.primary.main,
-                                0.2
-                              )} 100%)`
+                              height: '2px',
+                              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
                             }
                           }}
                         >
