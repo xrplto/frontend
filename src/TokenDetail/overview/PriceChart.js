@@ -629,7 +629,7 @@ function PriceChart({ token }) {
               .add();
           }
         },
-        zoomType: 'x',
+        zoomType: 'xy',
         marginBottom: 40,
         animation: {
           duration: 1200,
@@ -1007,7 +1007,8 @@ function PriceChart({ token }) {
         turboThreshold: 10000,
         boostThreshold: 1000,
         plotBorderWidth: 0,
-        reflow: true
+        reflow: true,
+        zoomType: 'xy'
       },
       legend: { enabled: false },
       credits: {
