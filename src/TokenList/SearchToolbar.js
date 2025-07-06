@@ -103,37 +103,20 @@ function normalizeTag(tag) {
 }
 
 // ----------------------------------------------------------------------
-// Enhanced RootStyle with portfolio design
+// Clean professional RootStyle
 const RootStyle = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.5
-  )} 100%)`,
-  padding: theme.spacing(1, 0),
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  background: theme.palette.background.paper,
+  padding: theme.spacing(1.5, 0),
   position: 'relative',
-  // Mobile compact styling
   [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(0.5, 0)
+    padding: theme.spacing(1, 0)
   },
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.25, 0)
-  },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '1px',
-    background: `linear-gradient(to right, ${alpha(theme.palette.divider, 0)}, ${alpha(
-      theme.palette.divider,
-      0.15
-    )}, ${alpha(theme.palette.divider, 0)})`,
-    opacity: 0.8
+    padding: theme.spacing(0.75, 0)
   }
 }));
 
@@ -162,15 +145,14 @@ const HeaderWrapper = styled(Box)(
 `
 );
 
-// Enhanced StyledToggleButtonGroup with portfolio styling
+// Clean professional StyledToggleButtonGroup
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   [`& .${toggleButtonGroupClasses.grouped}`]: {
     margin: theme.spacing(0.3),
     border: 0,
     borderRadius: '8px',
     height: '28px',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    // Mobile compact styling
+    transition: 'all 0.2s ease',
     [theme.breakpoints.down('md')]: {
       margin: theme.spacing(0.2),
       height: '24px',
@@ -185,23 +167,15 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
       border: 0
     },
     '&:hover': {
-      transform: 'translateY(-1px)',
-      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
-      // Reduce hover effects on mobile
+      background: alpha(theme.palette.primary.main, 0.05),
       [theme.breakpoints.down('sm')]: {
-        transform: 'none',
-        boxShadow: `0 2px 6px ${alpha(theme.palette.common.black, 0.06)}`
+        background: 'transparent'
       }
     },
     '&.Mui-selected': {
-      background: 'transparent',
-      color: theme.palette.primary.main,
-      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.06)}`,
-      border: `1px solid ${alpha(theme.palette.divider, 0.15)} !important`,
-      // Mobile selected state
-      [theme.breakpoints.down('sm')]: {
-        boxShadow: `0 1px 4px ${alpha(theme.palette.common.black, 0.04)}`
-      }
+      background: theme.palette.primary.main,
+      color: '#ffffff',
+      border: 'none !important'
     }
   },
   [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]: {
@@ -216,9 +190,9 @@ const RowsSelector = styled(Box)(({ theme }) => ({
   gap: theme.spacing(0.5),
   padding: theme.spacing(0.5, 1.5),
   borderRadius: theme.shape.borderRadius,
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  boxShadow: theme.shadows[1]
+  backgroundColor: alpha(theme.palette.background.default, 0.5),
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  boxShadow: 'none'
 }));
 
 const CustomRowsSelect = styled(Select)(({ theme }) => ({
@@ -244,63 +218,51 @@ function getTagValue(tags, tagName) {
   return idx + 1;
 }
 
-// Enhanced Chip styling function - moved outside component to prevent recreation
+// Clean professional Chip styling function
 const getEnhancedChipStyles = (theme, isActive, color, isLoading) => ({
-  borderRadius: '12px',
+  borderRadius: '10px',
   height: '32px',
-  fontWeight: 600,
+  fontWeight: 500,
   fontSize: '0.875rem',
-  letterSpacing: '-0.01em',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  // Mobile compact styling
+  transition: 'all 0.2s ease',
   [theme.breakpoints.down('md')]: {
     height: '28px',
     fontSize: '0.8125rem',
-    borderRadius: '10px'
+    borderRadius: '8px'
   },
   [theme.breakpoints.down('sm')]: {
     height: '26px',
     fontSize: '0.75rem',
-    borderRadius: '8px'
+    borderRadius: '6px'
   },
   background: isActive
-    ? 'transparent'
-    : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-        theme.palette.background.paper,
-        0.4
-      )} 100%)`,
-  backdropFilter: 'blur(10px)',
-  border: `1px solid ${
-    isActive ? alpha(theme.palette.divider, 0.15) : alpha(theme.palette.divider, 0.08)
-  }`,
+    ? alpha(theme.palette.primary.main, 0.1)
+    : alpha(theme.palette.background.default, 0.7),
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   color: isActive ? color || theme.palette.primary.main : theme.palette.text.primary,
-  boxShadow: isActive
-    ? `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
-    : `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
+  boxShadow: 'none',
   '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.12)}`,
-    background: 'transparent',
-    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-    // Reduce hover effects on mobile
+    background: isActive
+      ? alpha(theme.palette.primary.main, 0.15)
+      : alpha(theme.palette.background.default, 0.9),
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
     [theme.breakpoints.down('sm')]: {
-      transform: 'translateY(-1px)',
-      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
+      background: isActive
+        ? alpha(theme.palette.primary.main, 0.1)
+        : alpha(theme.palette.background.default, 0.7)
     }
   },
   '& .MuiChip-label': {
     px: 2,
-    fontWeight: 600,
-    // Mobile compact label
+    fontWeight: 500,
     [theme.breakpoints.down('sm')]: {
       px: 1.5,
-      fontWeight: 500
+      fontWeight: 400
     }
   },
   '& .MuiChip-icon': {
     fontSize: '18px',
     marginLeft: '8px',
-    // Mobile compact icon
     [theme.breakpoints.down('sm')]: {
       fontSize: '16px',
       marginLeft: '6px'
@@ -313,22 +275,18 @@ const getEnhancedChipStyles = (theme, isActive, color, isLoading) => ({
   opacity: isLoading ? 0.7 : 1
 });
 
-// Enhanced mobile chip styles - moved outside component
+// Clean mobile chip styles
 const getMobileChipStyles = (theme) => ({
-  borderRadius: '12px',
+  borderRadius: '10px',
   height: '36px',
-  fontWeight: 600,
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.7
-  )} 100%)`,
-  backdropFilter: 'blur(20px)',
+  fontWeight: 500,
+  background: alpha(theme.palette.background.paper, 0.9),
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  boxShadow: 'none',
+  transition: 'all 0.2s ease',
   '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`
+    background: alpha(theme.palette.background.paper, 0.95),
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
   }
 });
 
@@ -722,30 +680,25 @@ export default function SearchToolbar({
   return (
     <>
       <RootStyle>
-        {/* Enhanced Toggle Button Group */}
+        {/* Clean Toggle Button Group */}
         <Paper
           elevation={0}
           sx={{
             display: 'flex',
-            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
             flexWrap: 'wrap',
-            borderRadius: '16px',
+            borderRadius: '12px',
             padding: '4px',
-            // Mobile compact styling
             [theme.breakpoints.down('md')]: {
-              borderRadius: '12px',
+              borderRadius: '10px',
               padding: '3px'
             },
             [theme.breakpoints.down('sm')]: {
               borderRadius: '8px',
               padding: '2px'
             },
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.9
-            )} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-            backdropFilter: 'blur(20px)',
-            boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.06)}`
+            background: alpha(theme.palette.background.default, 0.5),
+            boxShadow: 'none'
           }}
         >
           <StyledToggleButtonGroup
@@ -767,7 +720,7 @@ export default function SearchToolbar({
           </StyledToggleButtonGroup>
         </Paper>
 
-        {/* Enhanced Tabs */}
+        {/* Clean Tabs */}
         <Tabs
           value={tagValue}
           variant="scrollable"
@@ -1029,7 +982,7 @@ export default function SearchToolbar({
           />
         </Tabs>
 
-        {/* Enhanced Rows Selector */}
+        {/* Clean Rows Selector */}
         <Box sx={{ display: { xs: 'none', md: 'flex' }, ml: 'auto' }}>
           <RowsSelector>
             <ViewList fontSize="small" color="action" />
@@ -1050,7 +1003,7 @@ export default function SearchToolbar({
           tags={tags}
         />
 
-        {/* Enhanced Menu */}
+        {/* Clean Menu */}
         <Menu
           anchorEl={gainersAnchorEl}
           open={Boolean(gainersAnchorEl)}
@@ -1067,23 +1020,18 @@ export default function SearchToolbar({
             sx: {
               mt: 1,
               minWidth: '160px',
-              borderRadius: '16px',
-              // Mobile compact menu
+              borderRadius: '12px',
               [theme.breakpoints.down('md')]: {
-                borderRadius: '12px',
+                borderRadius: '10px',
                 minWidth: '140px'
               },
               [theme.breakpoints.down('sm')]: {
                 borderRadius: '8px',
                 minWidth: '120px'
               },
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.background.paper,
-                0.95
-              )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-              backdropFilter: 'blur(20px)',
-              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
+              background: theme.palette.background.paper,
+              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              boxShadow: 'none',
               '& .MuiMenuItem-root': {
                 fontSize: '0.875rem',
                 minHeight: '40px',
@@ -1107,12 +1055,10 @@ export default function SearchToolbar({
                   borderRadius: '4px'
                 },
                 '&:hover': {
-                  background: 'transparent',
-                  transform: 'translateX(4px)',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                  // Reduce hover effects on mobile
+                  background: alpha(theme.palette.primary.main, 0.05),
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                   [theme.breakpoints.down('sm')]: {
-                    transform: 'translateX(2px)'
+                    background: 'transparent'
                   }
                 }
               }
@@ -1139,7 +1085,7 @@ export default function SearchToolbar({
           ))}
         </Menu>
 
-        {/* Enhanced Tokens Menu */}
+        {/* Clean Tokens Menu */}
         <Menu
           anchorEl={tokensAnchorEl}
           open={Boolean(tokensAnchorEl)}
@@ -1156,23 +1102,18 @@ export default function SearchToolbar({
             sx: {
               mt: 1,
               minWidth: '180px',
-              borderRadius: '16px',
-              // Mobile compact menu
+              borderRadius: '12px',
               [theme.breakpoints.down('md')]: {
-                borderRadius: '12px',
+                borderRadius: '10px',
                 minWidth: '160px'
               },
               [theme.breakpoints.down('sm')]: {
                 borderRadius: '8px',
                 minWidth: '140px'
               },
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.background.paper,
-                0.95
-              )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-              backdropFilter: 'blur(20px)',
-              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
+              background: theme.palette.background.paper,
+              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              boxShadow: 'none',
               '& .MuiMenuItem-root': {
                 fontSize: '0.875rem',
                 minHeight: '40px',
@@ -1197,12 +1138,10 @@ export default function SearchToolbar({
                   borderRadius: '4px'
                 },
                 '&:hover': {
-                  background: 'transparent',
-                  transform: 'translateX(4px)',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                  // Reduce hover effects on mobile
+                  background: alpha(theme.palette.primary.main, 0.05),
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                   [theme.breakpoints.down('sm')]: {
-                    transform: 'translateX(2px)'
+                    background: 'transparent'
                   }
                 }
               }
