@@ -305,7 +305,79 @@ const DailyVolumeChart = ({ data }) => {
 
 // Add StatsModal component
 const StatsModal = ({ open, onClose, account, traderStats }) => {
-  if (!traderStats || !traderStats[account]) return null;
+  // Don't show modal if no account is selected
+  if (!account) {
+    return null;
+  }
+
+  // Show loading state while data is being fetched
+  if (!traderStats || !traderStats[account] || !traderStats[account].isLoaded) {
+    return (
+      <Modal
+        open={open}
+        onClose={onClose}
+        aria-labelledby="trader-stats-modal"
+        aria-describedby="trader-statistics-details"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '90%',
+            maxWidth: 400,
+            bgcolor: 'background.paper',
+            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.16)',
+            borderRadius: '16px',
+            p: 3,
+            textAlign: 'center'
+          }}
+        >
+          <CircularProgress sx={{ mb: 2 }} />
+          <Typography variant="body2" color="text.secondary">
+            Loading trader statistics...
+          </Typography>
+        </Box>
+      </Modal>
+    );
+  }
+
+  // Show error state if data is loaded but no data found
+  if (!traderStats[account].hasData) {
+    return (
+      <Modal
+        open={open}
+        onClose={onClose}
+        aria-labelledby="trader-stats-modal"
+        aria-describedby="trader-statistics-details"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '90%',
+            maxWidth: 400,
+            bgcolor: 'background.paper',
+            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.16)',
+            borderRadius: '16px',
+            p: 3,
+            textAlign: 'center'
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            No data found
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            {traderStats[account]?.error || 'No trading activity found for this address'}
+          </Typography>
+          <button onClick={onClose}>Close</button>
+        </Box>
+      </Modal>
+    );
+  }
   const stats = traderStats[account];
 
   return (
@@ -885,7 +957,7 @@ export default function RichListData({ token }) {
         [address]: {
           isLoaded: true,
           hasData: false,
-          error: error.message
+          error: error.response?.status === 404 ? 'No trader data found' : error.message
         }
       }));
     }
@@ -1377,7 +1449,7 @@ export default function RichListData({ token }) {
                             ) : !traderStats[account].hasData ? (
                               <Box sx={{ p: 1 }}>
                                 <Typography variant="body2" color="text.secondary">
-                                  No trading activity found for this address
+                                  {traderStats[account].error || 'No trading activity found for this address'}
                                 </Typography>
                               </Box>
                             ) : (
