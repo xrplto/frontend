@@ -4672,32 +4672,6 @@ const ApiDocs = () => {
                 Developer
               </Typography>
             </Box>
-            <TextField
-              size="small"
-              variant="outlined"
-              placeholder="Search documentation..."
-              value={searchTerm}
-              onChange={handleSearch}
-              sx={{
-                width: { xs: 200, sm: 300 },
-                '& .MuiOutlinedInput-root': {
-                  color: 'white',
-                  '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.3)'
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.5)'
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'white'
-                  }
-                },
-                '& .MuiInputBase-input::placeholder': {
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  opacity: 1
-                }
-              }}
-            />
           </Toolbar>
         </AppBar>
 

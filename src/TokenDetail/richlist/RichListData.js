@@ -1405,12 +1405,12 @@ export default function RichListData({ token }) {
                         fontWeight: '500'
                       },
                       '& .MuiTableCell-root': {
-                        padding: isMobile ? '8px 3px' : '18px 12px',
+                        padding: isMobile ? '4px 2px' : '18px 12px',
                         whiteSpace: 'nowrap',
                         borderBottom: 'none',
                         background: 'transparent',
                         '&:not(:first-of-type)': {
-                          paddingLeft: isMobile ? '2px' : '8px'
+                          paddingLeft: isMobile ? '1px' : '8px'
                         }
                       }
                     }}
