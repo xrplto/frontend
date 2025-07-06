@@ -12,7 +12,7 @@ import {
   styled
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useMemo } from 'react';
+import { useMemo, useCallback, memo, useState, useRef } from 'react';
 
 // Components
 import LowHighBar24H from './LowHighBar24H';
@@ -76,7 +76,7 @@ const LowhighBarSlider = styled(Slider)(({ theme }) => ({
   }
 }));
 
-export default function PriceDesc({ token }) {
+const PriceDesc = memo(({ token }) => {
   const BASE_URL = process.env.API_URL;
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
@@ -88,7 +88,7 @@ export default function PriceDesc({ token }) {
 
   const { name, exch, pro7d, pro24h, pro5m, pro1h, md5, maxMin24h, usd } = token;
 
-  const tooltipStyles = {
+  const tooltipStyles = useMemo(() => ({
     background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
       theme.palette.background.paper,
       0.85
@@ -101,7 +101,7 @@ export default function PriceDesc({ token }) {
     '& .MuiTooltip-arrow': {
       color: alpha(theme.palette.background.paper, 0.9)
     }
-  };
+  }), [theme.palette.background.paper, theme.palette.primary.main, theme.palette.common.black]);
 
   const priceChanges = useMemo(
     () => [
@@ -133,11 +133,11 @@ export default function PriceDesc({ token }) {
     [pro5m, pro1h, pro24h, pro7d, theme.palette.success.main, theme.palette.error.main]
   );
 
-  const formatPercentage = (value) => {
+  const formatPercentage = useCallback((value) => {
     if (value === null || value === undefined) return 'N/A';
     const absValue = Math.abs(value);
     return `${value >= 0 ? '+' : '-'}${fNumber(absValue)}%`;
-  };
+  }, []);
 
   // 24h Range calculations
   const range24h = useMemo(() => {
@@ -463,6 +463,9 @@ export default function PriceDesc({ token }) {
                           item.value
                         }`}
                         sx={{ width: '100%', height: { xs: 16, sm: 20 } }}
+                        showGradient={false}
+                        lineWidth={1}
+                        animation={false}
                       />
                     </Box>
                   </Box>
@@ -548,4 +551,8 @@ export default function PriceDesc({ token }) {
       </Stack>
     </Box>
   );
-}
+});
+
+PriceDesc.displayName = 'PriceDesc';
+
+export default PriceDesc;
