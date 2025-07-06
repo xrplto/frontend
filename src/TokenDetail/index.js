@@ -59,8 +59,8 @@ function a11yProps(index) {
   };
 }
 
-const tabValues = ['', 'markets', 'orderbook', 'holders', 'traders'];
-const tabLabels = ['Overview', 'Markets', 'Orderbook', 'Holders', 'Top Traders'];
+const tabValues = ['', 'markets', 'Limit', 'holders', 'traders'];
+const tabLabels = ['Overview', 'Markets', 'Limit', 'Holders', 'Traders'];
 
 function getTabID(tab) {
   if (!tab) return 0;
@@ -171,9 +171,9 @@ export default function TokenDetail({ token, tab }) {
           scrollButtons="auto"
           aria-label="token-tabs"
           sx={{
-            minHeight: '40px',
+            minHeight: isMobile ? '28px' : '40px',
             '& .MuiTabs-flexContainer': {
-              height: '40px'
+              height: isMobile ? '28px' : '40px'
             },
             '& .MuiTabs-indicator': {
               height: '2px'
@@ -187,9 +187,12 @@ export default function TokenDetail({ token, tab }) {
               label={label}
               {...a11yProps(index)}
               sx={{
-                minHeight: '40px',
-                padding: '6px 16px',
-                textTransform: 'none'
+                minHeight: isMobile ? '28px' : '40px',
+                padding: isMobile ? '2px 6px' : '6px 16px',
+                textTransform: 'none',
+                fontSize: isMobile ? '0.75rem' : undefined,
+                minWidth: isMobile ? 'auto' : undefined,
+                fontWeight: isMobile ? 500 : undefined
               }}
             />
           ))}

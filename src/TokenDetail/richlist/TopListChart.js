@@ -15,7 +15,8 @@ import {
   styled,
   Fade,
   Chip,
-  Tooltip
+  Tooltip,
+  useMediaQuery
 } from '@mui/material';
 import { alpha, keyframes } from '@mui/material/styles';
 
@@ -148,6 +149,7 @@ function extractGraphData(items) {
 
 export default function TopListChart({ token }) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const BASE_URL = process.env.API_URL;
 
   const [range, setRange] = useState('7D');
@@ -251,9 +253,9 @@ export default function TopListChart({ token }) {
 
   return (
     <>
-      <Grid container rowSpacing={1} alignItems="center" sx={{ mt: 0, mb: 1.5 }}>
+      <Grid container rowSpacing={1} alignItems="center" sx={{ mt: 0, mb: isMobile ? 0.5 : 1.5 }}>
         <Grid container item xs={12} alignItems="center" justifyContent="space-between">
-          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: isMobile ? 0.5 : 1.5 }}>
             <Box
               sx={{
                 display: 'flex',
@@ -262,9 +264,10 @@ export default function TopListChart({ token }) {
               }}
             >
               <Typography
-                variant="h6"
+                variant={isMobile ? 'subtitle1' : 'h6'}
                 sx={{
                   fontWeight: 700,
+                  fontSize: isMobile ? '0.8rem' : undefined,
                   background:
                     theme.palette.mode === 'dark'
                       ? 'linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
@@ -279,7 +282,7 @@ export default function TopListChart({ token }) {
                   whiteSpace: 'nowrap'
                 }}
               >
-                {`Top ${token.name} addresses by balance`}
+                {isMobile ? `Top ${token.name}` : `Top ${token.name} addresses by balance`}
               </Typography>
 
               <Chip
@@ -289,10 +292,10 @@ export default function TopListChart({ token }) {
                   bgcolor: alpha(getRangeColor(range), 0.1),
                   color: getRangeColor(range),
                   fontWeight: 600,
-                  fontSize: '0.7rem',
-                  height: '20px',
+                  fontSize: isMobile ? '0.55rem' : '0.7rem',
+                  height: isMobile ? '16px' : '20px',
                   '& .MuiChip-label': {
-                    px: 0.75
+                    px: isMobile ? 0.4 : 0.75
                   }
                 }}
                 icon={
@@ -320,7 +323,7 @@ export default function TopListChart({ token }) {
                 background: alpha(theme.palette.background.paper, 0.8),
                 backdropFilter: 'blur(10px)',
                 flexWrap: 'wrap',
-                p: 0.2,
+                p: isMobile ? 0.05 : 0.2,
                 boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, 0.08)}`
               }}
             >
@@ -334,40 +337,40 @@ export default function TopListChart({ token }) {
               >
                 <Tooltip title={getIntervalTooltip('7D')} arrow placement="top">
                   <EnhancedToggleButton
-                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
+                    sx={{ minWidth: isMobile ? '24px' : '32px', p: isMobile ? 0.15 : 0.5, height: isMobile ? '20px' : '28px', borderRadius: 1 }}
                     value="7D"
                   >
-                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                    <Typography variant="caption" fontWeight={600} fontSize={isMobile ? '0.55rem' : '0.7rem'}>
                       7D
                     </Typography>
                   </EnhancedToggleButton>
                 </Tooltip>
                 <Tooltip title={getIntervalTooltip('1M')} arrow placement="top">
                   <EnhancedToggleButton
-                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
+                    sx={{ minWidth: isMobile ? '24px' : '32px', p: isMobile ? 0.15 : 0.5, height: isMobile ? '20px' : '28px', borderRadius: 1 }}
                     value="1M"
                   >
-                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                    <Typography variant="caption" fontWeight={600} fontSize={isMobile ? '0.55rem' : '0.7rem'}>
                       1M
                     </Typography>
                   </EnhancedToggleButton>
                 </Tooltip>
                 <Tooltip title={getIntervalTooltip('3M')} arrow placement="top">
                   <EnhancedToggleButton
-                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
+                    sx={{ minWidth: isMobile ? '24px' : '32px', p: isMobile ? 0.15 : 0.5, height: isMobile ? '20px' : '28px', borderRadius: 1 }}
                     value="3M"
                   >
-                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                    <Typography variant="caption" fontWeight={600} fontSize={isMobile ? '0.55rem' : '0.7rem'}>
                       3M
                     </Typography>
                   </EnhancedToggleButton>
                 </Tooltip>
                 <Tooltip title={getIntervalTooltip('ALL')} arrow placement="top">
                   <EnhancedToggleButton
-                    sx={{ minWidth: '34px', p: 0.5, height: '28px', borderRadius: 1 }}
+                    sx={{ minWidth: isMobile ? '26px' : '34px', p: isMobile ? 0.15 : 0.5, height: isMobile ? '20px' : '28px', borderRadius: 1 }}
                     value="ALL"
                   >
-                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                    <Typography variant="caption" fontWeight={600} fontSize={isMobile ? '0.55rem' : '0.7rem'}>
                       ALL
                     </Typography>
                   </EnhancedToggleButton>
@@ -382,7 +385,7 @@ export default function TopListChart({ token }) {
         {isLoading ? (
           <Box
             sx={{
-              height: '364px',
+              height: isMobile ? '240px' : '364px',
               p: 2
             }}
           >
@@ -401,13 +404,13 @@ export default function TopListChart({ token }) {
         ) : hasData ? (
           <Fade in={!isLoading}>
             <Box sx={{ p: 0, pb: 0 }} dir="ltr">
-              <Chart series={CHART_DATA} options={options} height={364} />
+              <Chart series={CHART_DATA} options={options} height={isMobile ? 240 : 364} />
             </Box>
           </Fade>
         ) : (
           <Box
             sx={{
-              height: '364px',
+              height: isMobile ? '240px' : '364px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
