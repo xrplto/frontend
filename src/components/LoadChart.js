@@ -95,12 +95,12 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         });
       }
 
-      // Enhanced color scheme based on trend
-      const baseColor =
-        chartColor || (isPositiveTrend ? theme.palette.success.main : theme.palette.error.main);
+      // Futuristic color scheme based on trend
+      const baseColor = chartColor || (isPositiveTrend ? '#00ff88' : '#ff3366');
+      const glowColor = isPositiveTrend ? '#00ff88' : '#ff3366';
       const gradientColor = isPositiveTrend
-        ? [theme.palette.success.main, theme.palette.success.light]
-        : [theme.palette.error.main, theme.palette.error.light];
+        ? ['#00ff88', '#00cc66', '#004422']
+        : ['#ff3366', '#cc2255', '#440011'];
 
       return {
         grid: {
@@ -116,20 +116,24 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
           axisPointer: {
             type: 'line',
             lineStyle: {
-              color: alpha(baseColor, 0.6),
-              width: 1,
-              type: 'dashed'
+              color: glowColor,
+              width: 2,
+              type: 'solid',
+              shadowColor: glowColor,
+              shadowBlur: 8
             }
           },
-          backgroundColor:
-            theme.palette.mode === 'dark' ? 'rgba(18, 18, 18, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-          borderColor: alpha(baseColor, 0.3),
-          borderWidth: 1,
-          borderRadius: 8,
+          backgroundColor: theme.palette.mode === 'dark' 
+            ? 'rgba(0, 0, 0, 0.9)' 
+            : 'rgba(15, 15, 35, 0.95)',
+          borderColor: glowColor,
+          borderWidth: 2,
+          borderRadius: 12,
           textStyle: {
-            color: theme.palette.text.primary,
-            fontSize: 12,
-            fontWeight: 500
+            color: '#ffffff',
+            fontSize: 13,
+            fontWeight: 600,
+            fontFamily: 'monospace'
           },
           formatter: function (params) {
             if (!params || !params[0]) return '';
@@ -154,32 +158,33 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
               minute: '2-digit'
             });
 
-            // Enhanced tooltip with trend indicator
-            const trendIcon = isPositiveTrend ? '↗' : '↘';
-            const trendColor = isPositiveTrend ? '#22c55e' : '#ef4444';
+            // Futuristic tooltip with neon styling
+            const trendIcon = isPositiveTrend ? '▲' : '▼';
+            const trendColor = isPositiveTrend ? '#00ff88' : '#ff3366';
 
             return `
-              <div style="padding: 4px 0;">
-                <div style="color: ${theme.palette.text.secondary}; font-size: 11px; margin-bottom: 2px;">
+              <div style="padding: 8px 12px; background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(15,15,35,0.95) 100%); border: 1px solid ${glowColor}; border-radius: 8px; box-shadow: 0 0 20px ${alpha(glowColor, 0.3)};">
+                <div style="color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-family: monospace;">
                   ${formattedDate}
                 </div>
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="color: ${trendColor}; font-size: 14px;">${trendIcon}</span>
-                  <span style="font-weight: 600; color: ${theme.palette.text.primary};">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="color: ${trendColor}; font-size: 16px; text-shadow: 0 0 10px ${trendColor};">${trendIcon}</span>
+                  <span style="font-weight: 700; color: #ffffff; font-family: monospace; text-shadow: 0 0 10px ${glowColor};">
                     ${originalPrice}
                   </span>
                 </div>
               </div>
             `;
           },
-          padding: [12, 16],
+          padding: [0, 0],
           extraCssText: `
-            box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.12)};
-            backdrop-filter: blur(8px);
-            border-radius: 8px;
+            box-shadow: 0 0 30px ${alpha(glowColor, 0.4)}, 0 0 60px ${alpha(glowColor, 0.2)};
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
             position: fixed !important;
             z-index: 99999 !important;
             pointer-events: none;
+            border: 2px solid ${glowColor};
           `,
           z: 99999
         },
@@ -202,18 +207,18 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
             showSymbol: false,
             symbolSize: 0,
             lineStyle: {
-              width: lineWidth,
-              shadowColor: alpha(baseColor, 0.4),
-              shadowBlur: 8,
-              shadowOffsetY: 2,
+              width: lineWidth + 1,
+              shadowColor: glowColor,
+              shadowBlur: 15,
+              shadowOffsetY: 0,
               cap: 'round',
               join: 'round'
             },
-            smooth: 0.4,
+            smooth: 0.3,
             animation: animation,
-            animationDuration: 1000,
-            animationEasing: 'cubicOut',
-            // Add gradient fill if enabled
+            animationDuration: 1500,
+            animationEasing: 'elasticOut',
+            // Futuristic gradient fill
             ...(showGradient && {
               areaStyle: {
                 color: {
@@ -225,28 +230,33 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
                   colorStops: [
                     {
                       offset: 0,
-                      color: alpha(gradientColor[0], 0.3)
+                      color: alpha(gradientColor[0], 0.4)
                     },
                     {
-                      offset: 0.5,
-                      color: alpha(gradientColor[0], 0.15)
+                      offset: 0.3,
+                      color: alpha(gradientColor[1], 0.2)
+                    },
+                    {
+                      offset: 0.7,
+                      color: alpha(gradientColor[2], 0.1)
                     },
                     {
                       offset: 1,
-                      color: alpha(gradientColor[1], 0.05)
+                      color: alpha(gradientColor[2], 0.02)
                     }
                   ]
                 },
-                shadowColor: alpha(baseColor, 0.2),
-                shadowBlur: 4
+                shadowColor: glowColor,
+                shadowBlur: 20,
+                shadowOffsetY: 0
               }
             }),
-            // Enhanced hover effects
+            // Futuristic hover effects
             emphasis: {
               lineStyle: {
-                width: lineWidth + 1,
-                shadowBlur: 12,
-                shadowColor: alpha(baseColor, 0.6)
+                width: lineWidth + 2,
+                shadowBlur: 25,
+                shadowColor: glowColor
               },
               ...(showGradient && {
                 areaStyle: {
@@ -259,18 +269,24 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
                     colorStops: [
                       {
                         offset: 0,
-                        color: alpha(gradientColor[0], 0.4)
+                        color: alpha(gradientColor[0], 0.6)
                       },
                       {
-                        offset: 0.5,
-                        color: alpha(gradientColor[0], 0.2)
+                        offset: 0.3,
+                        color: alpha(gradientColor[1], 0.3)
+                      },
+                      {
+                        offset: 0.7,
+                        color: alpha(gradientColor[2], 0.15)
                       },
                       {
                         offset: 1,
-                        color: alpha(gradientColor[1], 0.08)
+                        color: alpha(gradientColor[2], 0.05)
                       }
                     ]
-                  }
+                  },
+                  shadowColor: glowColor,
+                  shadowBlur: 30
                 }
               })
             }
@@ -338,8 +354,11 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
           height="100%"
           animation="wave"
           sx={{
-            borderRadius: 1,
-            bgcolor: 'transparent'
+            borderRadius: 2,
+            bgcolor: alpha(theme.palette.primary.main, 0.1),
+            '&::after': {
+              background: `linear-gradient(90deg, transparent, ${alpha('#00ff88', 0.2)}, transparent)`
+            }
           }}
         />
       </Box>
@@ -411,12 +430,10 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         width: '100%',
         height: '100%',
         position: 'relative',
-        borderRadius: 1,
-        transition: 'all 0.2s ease-in-out',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&:hover': {
-          transform: 'scale(1.02)',
           '& .echarts-chart': {
-            filter: 'brightness(1.1)'
+            filter: 'brightness(1.1) saturate(1.2)'
           }
         }
       }}
@@ -426,11 +443,12 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         style={{
           height: '100%',
           width: '100%',
-          transition: 'filter 0.2s ease-in-out'
+          transition: 'filter 0.3s ease-in-out',
+          background: 'transparent'
         }}
         opts={{
           renderer: 'svg',
-          devicePixelRatio: window.devicePixelRatio || 1
+          devicePixelRatio: window.devicePixelRatio || 2
         }}
         className="echarts-chart"
         {...props}
