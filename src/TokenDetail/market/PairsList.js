@@ -103,8 +103,8 @@ const StyledTableHead = styled(TableHead, {
 }));
 
 const StyledTableRow = styled(TableRow, {
-  shouldForwardProp: (prop) => prop !== 'darkMode'
-})(({ theme, darkMode }) => ({
+  shouldForwardProp: (prop) => prop !== 'darkMode' && prop !== 'isMobile'
+})(({ theme, darkMode, isMobile }) => ({
   borderBottom: '1px solid rgba(145, 158, 171, 0.08)',
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
@@ -117,18 +117,18 @@ const StyledTableRow = styled(TableRow, {
     boxShadow: darkMode ? '0 4px 16px rgba(0, 0, 0, 0.24)' : '0 4px 16px rgba(145, 158, 171, 0.16)'
   },
   '& .MuiTableCell-root': {
-    padding: '16px 12px',
+    padding: isMobile ? '12px 8px' : '16px 12px',
     whiteSpace: 'nowrap',
     borderBottom: 'none',
-    fontSize: '14px',
+    fontSize: isMobile ? '12px' : '14px',
     fontWeight: '500',
     '&:not(:first-of-type)': {
-      paddingLeft: '8px'
+      paddingLeft: isMobile ? '4px' : '8px'
     }
   }
 }));
 
-const ChartCell = ({ darkMode, sparkline, id }) => {
+const ChartCell = ({ darkMode, sparkline, id, isMobile }) => {
   const BASE_URL = process.env.API_URL;
   const { ref, inView } = useInView({
     triggerOnce: true,
@@ -140,18 +140,18 @@ const ChartCell = ({ darkMode, sparkline, id }) => {
       align="left"
       ref={ref}
       sx={{
-        px: '12px',
-        width: '210px',
-        minWidth: '210px',
-        py: '12px'
+        px: isMobile ? '8px' : '12px',
+        width: isMobile ? '140px' : '210px',
+        minWidth: isMobile ? '140px' : '210px',
+        py: isMobile ? '8px' : '12px'
       }}
     >
       {inView ? (
         sparkline ? (
           <Box
             sx={{
-              width: '180px',
-              height: '60px',
+              width: isMobile ? '120px' : '180px',
+              height: isMobile ? '40px' : '60px',
               borderRadius: '8px',
               overflow: 'hidden',
               border: `1px solid ${
@@ -176,8 +176,8 @@ const ChartCell = ({ darkMode, sparkline, id }) => {
               }}
               opts={{
                 renderer: 'svg',
-                width: 180,
-                height: 60,
+                width: isMobile ? 120 : 180,
+                height: isMobile ? 40 : 60,
                 animation: false, // Disable animation for better performance in table
                 devicePixelRatio: window.devicePixelRatio || 1
               }}
@@ -186,8 +186,8 @@ const ChartCell = ({ darkMode, sparkline, id }) => {
         ) : (
           <Box
             sx={{
-              width: '180px',
-              height: '60px',
+              width: isMobile ? '120px' : '180px',
+              height: isMobile ? '40px' : '60px',
               borderRadius: '8px',
               border: `1px solid ${
                 darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
@@ -264,17 +264,17 @@ export default function PairsList({ token, pairs }) {
       left: 0,
       background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
       backdropFilter: 'blur(20px)',
-      width: '60px',
-      minWidth: '60px',
-      padding: '16px 12px'
+      width: isMobile ? '50px' : '60px',
+      minWidth: isMobile ? '50px' : '60px',
+      padding: isMobile ? '12px 8px' : '16px 12px'
     },
     second: {
       position: 'sticky',
       zIndex: 1002,
-      left: '60px',
+      left: isMobile ? '50px' : '60px',
       background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
       backdropFilter: 'blur(20px)',
-      padding: '16px 12px',
+      padding: isMobile ? '12px 8px' : '16px 12px',
       '&:before': scrollLeft
         ? {
             content: "''",
@@ -295,7 +295,7 @@ export default function PairsList({ token, pairs }) {
   const headerCellStyles = {
     fontSize: isMobile ? '12px' : '13px',
     fontWeight: '600',
-    padding: isMobile ? '16px 8px' : '20px 12px',
+    padding: isMobile ? '12px 6px' : '20px 12px',
     height: 'auto',
     whiteSpace: 'nowrap',
     color: darkMode ? '#919EAB' : '#637381',
@@ -311,8 +311,8 @@ export default function PairsList({ token, pairs }) {
     <Stack>
       <Box
         sx={{
-          px: 2,
-          py: 2,
+          px: isMobile ? 1.5 : 2,
+          py: isMobile ? 1.5 : 2,
           borderBottom: `1px solid ${
             darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
           }`
@@ -516,26 +516,6 @@ export default function PairsList({ token, pairs }) {
                 </Tooltip>
               </TableCell>
 
-              <TableCell align="left">
-                <Tooltip
-                  title="Available decentralized exchanges for trading"
-                  placement="top"
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                        fontSize: '12px',
-                        fontWeight: '500'
-                      }
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
-                    <span style={badgeDEXStyle}>DEX</span>
-                    <SmallInfoIcon />
-                  </Box>
-                </Tooltip>
-              </TableCell>
             </TableRow>
           </StyledTableHead>
 
@@ -603,7 +583,7 @@ export default function PairsList({ token, pairs }) {
               ); */
 
               return (
-                <StyledTableRow key={pair} darkMode={darkMode}>
+                <StyledTableRow key={pair} darkMode={darkMode} isMobile={isMobile}>
                   <TableCell align="left" sx={stickyCellStyles.first}>
                     <Typography
                       variant="h6"
@@ -648,7 +628,7 @@ export default function PairsList({ token, pairs }) {
                     </Stack>
                   </TableCell>
 
-                  <TableCell align="left" sx={{ padding: '16px 12px' }}>
+                  <TableCell align="left" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
                     <Stack spacing={0.5}>
                       {id === 1 && curr1.domain && (
                         <Link
@@ -709,9 +689,9 @@ export default function PairsList({ token, pairs }) {
                     </Stack>
                   </TableCell>
 
-                  <ChartCell darkMode={darkMode} sparkline={sparkline} id={id} />
+                  <ChartCell darkMode={darkMode} sparkline={sparkline} id={id} isMobile={isMobile} />
 
-                  <TableCell align="left" sx={{ padding: '16px 12px' }}>
+                  <TableCell align="left" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
                     <Stack spacing={1}>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Typography
@@ -760,7 +740,7 @@ export default function PairsList({ token, pairs }) {
                     </Stack>
                   </TableCell>
 
-                  <TableCell align="left" sx={{ padding: '16px 12px' }}>
+                  <TableCell align="left" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
                     <Typography
                       variant="h6"
                       sx={{
@@ -773,7 +753,7 @@ export default function PairsList({ token, pairs }) {
                     </Typography>
                   </TableCell>
 
-                  <TableCell align="left" sx={{ padding: '16px 12px' }}>
+                  <TableCell align="left" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
                     <Stack spacing={0.5}>
                       {id === 1 && (
                         <Stack direction="row" alignItems="center">
@@ -842,222 +822,6 @@ export default function PairsList({ token, pairs }) {
                     </Stack>
                   </TableCell>
 
-                  <TableCell align="left" sx={{ padding: '16px 12px' }}>
-                    <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center">
-                      <Tooltip title="Trade on xrpl.to">
-                        <Link
-                          underline="none"
-                          color="inherit"
-                          href={xrpltoDexURL}
-                          rel="noreferrer noopener nofollow"
-                        >
-                          <IconButton
-                            edge="end"
-                            aria-label="xrpl.to"
-                            sx={{
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                              '&:hover': {
-                                transform: 'scale(1.1)',
-                                backgroundColor: darkMode
-                                  ? 'rgba(255, 255, 255, 0.08)'
-                                  : 'rgba(145, 158, 171, 0.08)'
-                              }
-                            }}
-                          >
-                            <Avatar
-                              alt="xrpl.to DEX"
-                              src={
-                                darkMode
-                                  ? '/static/sponsor-dark-theme.svg'
-                                  : '/static/sponsor-light-theme.svg'
-                              }
-                              sx={{ width: 28, height: 28 }}
-                            />
-                          </IconButton>
-                        </Link>
-                      </Tooltip>
-
-                      <Tooltip title="Trade on Sologenic">
-                        <Link
-                          underline="none"
-                          color="inherit"
-                          target="_blank"
-                          href={soloDexURL}
-                          rel="noreferrer noopener nofollow"
-                        >
-                          <IconButton
-                            edge="end"
-                            aria-label="solo"
-                            sx={{
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                              '&:hover': {
-                                transform: 'scale(1.1)',
-                                backgroundColor: darkMode
-                                  ? 'rgba(255, 255, 255, 0.08)'
-                                  : 'rgba(145, 158, 171, 0.08)'
-                              }
-                            }}
-                          >
-                            <Avatar
-                              alt="Sologenic DEX"
-                              src="/static/solo.webp"
-                              sx={{ width: 28, height: 28 }}
-                            />
-                          </IconButton>
-                        </Link>
-                      </Tooltip>
-
-                      <Tooltip title="Trade on XUMM">
-                        <Link
-                          underline="none"
-                          color="inherit"
-                          target="_blank"
-                          href={xummDexURL}
-                          rel="noreferrer noopener nofollow"
-                        >
-                          <IconButton
-                            edge="end"
-                            aria-label="xumm"
-                            sx={{
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                              '&:hover': {
-                                transform: 'scale(1.1)',
-                                backgroundColor: darkMode
-                                  ? 'rgba(255, 255, 255, 0.08)'
-                                  : 'rgba(145, 158, 171, 0.08)'
-                              }
-                            }}
-                          >
-                            <Avatar
-                              alt="XUMM DEX"
-                              src="/static/xaman.webp"
-                              sx={{ width: 28, height: 28 }}
-                            />
-                          </IconButton>
-                        </Link>
-                      </Tooltip>
-
-                      <Tooltip title="Trade on GateHub">
-                        <Link
-                          underline="none"
-                          color="inherit"
-                          target="_blank"
-                          href={gatehubDexURL}
-                          rel="noreferrer noopener nofollow"
-                        >
-                          <IconButton
-                            edge="end"
-                            aria-label="gatehub"
-                            sx={{
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                              '&:hover': {
-                                transform: 'scale(1.1)',
-                                backgroundColor: darkMode
-                                  ? 'rgba(255, 255, 255, 0.08)'
-                                  : 'rgba(145, 158, 171, 0.08)'
-                              }
-                            }}
-                          >
-                            <Avatar
-                              alt="Gatehub DEX"
-                              src="/static/gatehub.webp"
-                              sx={{ width: 28, height: 28 }}
-                            />
-                          </IconButton>
-                        </Link>
-                      </Tooltip>
-
-                      <Tooltip title="Trade on XPMarket">
-                        <Link
-                          underline="none"
-                          color="inherit"
-                          target="_blank"
-                          href={xpmarketDexURL}
-                          rel="noreferrer noopener nofollow"
-                        >
-                          <IconButton
-                            edge="end"
-                            aria-label="xpmarket"
-                            sx={{
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                              '&:hover': {
-                                transform: 'scale(1.1)',
-                                backgroundColor: darkMode
-                                  ? 'rgba(255, 255, 255, 0.08)'
-                                  : 'rgba(145, 158, 171, 0.08)'
-                              }
-                            }}
-                          >
-                            <Avatar
-                              alt="xpmarket DEX"
-                              src="/static/xpmarket.webp"
-                              sx={{ width: 28, height: 28 }}
-                            />
-                          </IconButton>
-                        </Link>
-                      </Tooltip>
-
-                      <Tooltip title="Trade on Magnetic X">
-                        <Link
-                          underline="none"
-                          color="inherit"
-                          target="_blank"
-                          href={magneticDexURL}
-                          rel="noreferrer noopener nofollow"
-                        >
-                          <IconButton
-                            edge="end"
-                            aria-label="magnetic"
-                            sx={{
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                              '&:hover': {
-                                transform: 'scale(1.1)',
-                                backgroundColor: darkMode
-                                  ? 'rgba(255, 255, 255, 0.08)'
-                                  : 'rgba(145, 158, 171, 0.08)'
-                              }
-                            }}
-                          >
-                            <Avatar
-                              alt="Magnetic DEX"
-                              src="/static/magnetic.webp"
-                              sx={{ width: 28, height: 28 }}
-                            />
-                          </IconButton>
-                        </Link>
-                      </Tooltip>
-
-                      <Tooltip title="Trade on Unhosted">
-                        <Link
-                          underline="none"
-                          color="inherit"
-                          target="_blank"
-                          href={unhostedDexURL}
-                          rel="noreferrer noopener nofollow"
-                        >
-                          <IconButton
-                            edge="end"
-                            aria-label="unhosted"
-                            sx={{
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                              '&:hover': {
-                                transform: 'scale(1.1)',
-                                backgroundColor: darkMode
-                                  ? 'rgba(255, 255, 255, 0.08)'
-                                  : 'rgba(145, 158, 171, 0.08)'
-                              }
-                            }}
-                          >
-                            <Avatar
-                              alt="Unhosted DEX"
-                              src="/static/unhosted-dex.webp"
-                              sx={{ width: 28, height: 28 }}
-                            />
-                          </IconButton>
-                        </Link>
-                      </Tooltip>
-                    </Stack>
-                  </TableCell>
                 </StyledTableRow>
               );
             })}
