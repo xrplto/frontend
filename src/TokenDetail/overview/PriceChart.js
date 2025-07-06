@@ -129,6 +129,8 @@ const EnhancedToggleButton = styled(ToggleButton)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  background: `linear-gradient(135deg, ${alpha('#000', 0.8)} 0%, ${alpha('#001122', 0.9)} 100%)`,
+  color: '#ffffff',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -136,60 +138,53 @@ const EnhancedToggleButton = styled(ToggleButton)(({ theme }) => ({
     left: '-100%',
     width: '100%',
     height: '100%',
-    background: `linear-gradient(90deg, transparent, ${alpha(
-      theme.palette.primary.main,
-      0.1
-    )}, transparent)`,
+    background: `linear-gradient(90deg, transparent, ${alpha('#00ff88', 0.3)}, transparent)`,
     transition: 'left 0.6s'
   },
   '&:hover::before': {
     left: '100%'
   },
   '&:hover': {
-    transform: 'translateY(-1px)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+    transform: 'translateY(-1px) scale(1.02)',
+    boxShadow: `0 0 20px ${alpha('#00ff88', 0.4)}`,
+    filter: 'brightness(1.2)'
   },
   '&.Mui-selected': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-    color: theme.palette.primary.main,
-    fontWeight: 600,
+    background: `linear-gradient(135deg, ${alpha('#00ff88', 0.2)} 0%, ${alpha('#00ccff', 0.1)} 100%)`,
+    color: '#00ff88',
+    fontWeight: 700,
+    boxShadow: `0 0 15px ${alpha('#00ff88', 0.3)}`,
+    textShadow: `0 0 10px ${alpha('#00ff88', 0.6)}`,
     '&:hover': {
-      backgroundColor: alpha(theme.palette.primary.main, 0.15)
+      background: `linear-gradient(135deg, ${alpha('#00ff88', 0.3)} 0%, ${alpha('#00ccff', 0.15)} 100%)`
     }
   }
 }));
 
 const ChartContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius * 2,
+  borderRadius: '16px',
   overflow: 'hidden',
-  background:
-    theme.palette.mode === 'dark'
-      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-          theme.palette.background.default,
-          0.9
-        )} 100%)`
-      : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-          '#f8fafc',
-          0.8
-        )} 100%)`,
-  backdropFilter: 'blur(10px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  boxShadow:
-    theme.palette.mode === 'dark'
-      ? `0 8px 32px ${alpha('#000', 0.3)}`
-      : `0 8px 32px ${alpha('#000', 0.08)}`,
+  background: `linear-gradient(135deg, ${alpha('#000', 0.9)} 0%, ${alpha('#001122', 0.95)} 100%)`,
+  backdropFilter: 'blur(24px)',
+  boxShadow: `0 0 40px ${alpha('#00ff88', 0.15)}, 0 0 80px ${alpha('#00ccff', 0.1)}`,
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
+    height: '2px',
+    background: `linear-gradient(90deg, transparent, ${alpha('#00ff88', 0.8)}, ${alpha('#00ccff', 0.6)}, transparent)`
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     height: '1px',
-    background: `linear-gradient(90deg, transparent, ${alpha(
-      theme.palette.primary.main,
-      0.3
-    )}, transparent)`
+    background: `linear-gradient(90deg, transparent, ${alpha('#00ccff', 0.4)}, transparent)`
   }
 }));
 
@@ -1301,17 +1296,12 @@ function PriceChart({ token }) {
                 variant="h6"
                 sx={{
                   fontWeight: 700,
-                  background:
-                    theme.palette.mode === 'dark'
-                      ? 'linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                      : 'linear-gradient(135deg, #000 0%, rgba(0,0,0,0.9) 50%, rgba(0,0,0,0.7) 100%)',
+                  background: 'linear-gradient(135deg, #00ff88 0%, #00ccff 50%, #ffffff 100%)',
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  textShadow:
-                    theme.palette.mode === 'dark'
-                      ? '0px 2px 8px rgba(255,255,255,0.1)'
-                      : '0px 2px 8px rgba(0,0,0,0.1)',
+                  textShadow: '0px 0px 20px rgba(0,255,136,0.5)',
+                  filter: `drop-shadow(0 0 10px ${alpha('#00ff88', 0.6)})`,
                   whiteSpace: 'nowrap'
                 }}
               >
@@ -1396,7 +1386,6 @@ function PriceChart({ token }) {
                 sx={{
                   bgcolor: alpha(theme.palette.primary.main, 0.1),
                   color: theme.palette.primary.main,
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   width: '28px',
                   height: '28px',
@@ -1416,8 +1405,7 @@ function PriceChart({ token }) {
                 elevation={0}
                 sx={{
                   display: 'flex',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                  borderRadius: 1.5,
+                    borderRadius: 1.5,
                   background: alpha(theme.palette.background.paper, 0.8),
                   backdropFilter: 'blur(10px)',
                   flexWrap: 'wrap',
@@ -1467,13 +1455,12 @@ function PriceChart({ token }) {
               elevation={0}
               sx={{
                 display: 'flex',
-                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                borderRadius: 1.5,
-                background: alpha(theme.palette.background.paper, 0.8),
-                backdropFilter: 'blur(10px)',
+                borderRadius: 2,
+                background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.08)} 100%)`,
+                backdropFilter: 'blur(24px)',
                 flexWrap: 'wrap',
-                p: 0.2,
-                boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, 0.08)}`
+                p: 0.3,
+                boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`
               }}
             >
               <ToggleButtonGroup

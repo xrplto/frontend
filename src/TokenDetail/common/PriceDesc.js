@@ -156,14 +156,11 @@ const PriceDesc = memo(({ token }) => {
     <Box
       sx={{
         p: { xs: 0.5, sm: 0.75 },
-        borderRadius: '4px',
-        background: `linear-gradient(135deg, ${alpha(
-          theme.palette.background.paper,
-          0.8
-        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-        backdropFilter: 'blur(6px)',
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.05)}`,
-        boxShadow: `0 1px 4px ${alpha(theme.palette.common.black, 0.02)}`,
+        borderRadius: '16px',
+        background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.05)} 100%)`,
+        backdropFilter: 'blur(24px)',
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
         position: 'relative',
         overflow: 'hidden'
       }}
@@ -190,7 +187,7 @@ const PriceDesc = memo(({ token }) => {
                 sx={{
                   fontSize: { xs: '0.75rem', sm: '0.85rem' },
                   fontWeight: 600,
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.info.main} 100%)`,
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
@@ -227,10 +224,7 @@ const PriceDesc = memo(({ token }) => {
                   fontSize: { xs: '1.25rem', sm: '2.2rem', md: '2.5rem' },
                   fontWeight: 800,
                   letterSpacing: '-0.03em',
-                  background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${alpha(
-                    theme.palette.success.main,
-                    0.8
-                  )} 100%)`,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.info.main} 100%)`,
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
@@ -277,13 +271,10 @@ const PriceDesc = memo(({ token }) => {
                     py: { xs: 0.25, sm: 0.375 },
                     px: { xs: 0.375, sm: 0.5 },
                     borderRadius: '3px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.6
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-                    backdropFilter: 'blur(4px)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                    boxShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.02)}`
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.2)} 0%, ${alpha(theme.palette.background.paper, 0.1)} 100%)`,
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`
                   }}
                 >
                   <Box sx={{ textAlign: 'center', minWidth: { xs: '30px', sm: '38px' } }}>
@@ -484,22 +475,17 @@ const PriceDesc = memo(({ token }) => {
                   sx={{
                     p: { xs: 0.25, sm: 0.375 },
                     borderRadius: '3px',
-                    background: `linear-gradient(135deg, ${alpha(item.color, 0.08)} 0%, ${alpha(
-                      item.color,
-                      0.04
-                    )} 100%)`,
-                    backdropFilter: 'blur(4px)',
-                    border: `1.5px solid ${alpha(item.color, 0.12)}`,
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.08)} 100%)`,
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(item.color, 0.15)}`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.06)}`,
                     cursor: 'pointer',
                     transition: 'all 0.15s ease-in-out',
                     '&:hover': {
-                      transform: 'translateY(-0.5px)',
-                      boxShadow: `0 2px 6px ${alpha(item.color, 0.15)}`,
-                      border: `1.5px solid ${alpha(item.color, 0.25)}`,
-                      background: `linear-gradient(135deg, ${alpha(item.color, 0.1)} 0%, ${alpha(
-                        item.color,
-                        0.05
-                      )} 100%)`
+                      transform: 'translateY(-1px)',
+                      boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.12)}`,
+                      border: `1px solid ${alpha(item.color, 0.3)}`,
+                      background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.2)} 0%, ${alpha(theme.palette.background.paper, 0.1)} 100%)`
                     }
                   }}
                 >
