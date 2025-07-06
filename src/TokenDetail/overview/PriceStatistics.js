@@ -71,10 +71,13 @@ const ModernTableCell = styled(TableCell)(({ theme }) => ({
     paddingRight: theme.spacing(1.5)
   },
   [theme.breakpoints.down('sm')]: {
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
-    paddingTop: theme.spacing(1.5),
-    paddingBottom: theme.spacing(1.5)
+    padding: theme.spacing(1),
+    '&:first-of-type': {
+      paddingLeft: theme.spacing(1)
+    },
+    '&:last-of-type': {
+      paddingRight: theme.spacing(1)
+    }
   }
 }));
 
@@ -186,7 +189,7 @@ export default function PriceStatistics({ token }) {
       {/* Enhanced Header */}
       <Box
         sx={{
-          p: 2,
+          p: isMobile ? 1.5 : 2,
           background: `linear-gradient(135deg, ${alpha(
             theme.palette.primary.main,
             0.05
@@ -197,7 +200,7 @@ export default function PriceStatistics({ token }) {
         <Typography
           variant="h6"
           sx={{
-            fontSize: '1.1rem',
+            fontSize: isMobile ? '0.95rem' : '1.1rem',
             fontWeight: 700,
             background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
             backgroundClip: 'text',

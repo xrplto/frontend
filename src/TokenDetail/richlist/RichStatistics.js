@@ -12,7 +12,8 @@ import {
   TableRow,
   TableBody,
   TableCell,
-  Box
+  Box,
+  useMediaQuery
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 
@@ -28,6 +29,15 @@ const ModernTableCell = styled(TableCell)(({ theme }) => ({
   },
   '&:last-of-type': {
     paddingRight: theme.spacing(1.5)
+  },
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(1),
+    '&:first-of-type': {
+      paddingLeft: theme.spacing(1)
+    },
+    '&:last-of-type': {
+      paddingRight: theme.spacing(1)
+    }
   }
 }));
 
@@ -48,6 +58,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
 export default function RichStatistics({ token }) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const BASE_URL = process.env.API_URL;
 
   const [richInfo, setRichInfo] = useState({
@@ -100,7 +111,7 @@ export default function RichStatistics({ token }) {
       {/* Enhanced Header */}
       <Box
         sx={{
-          p: 2,
+          p: isMobile ? 1.5 : 2,
           background: `linear-gradient(135deg, ${alpha(
             theme.palette.primary.main,
             0.05
@@ -111,7 +122,7 @@ export default function RichStatistics({ token }) {
         <Typography
           variant="h6"
           sx={{
-            fontSize: '1.1rem',
+            fontSize: isMobile ? '0.95rem' : '1.1rem',
             fontWeight: 700,
             background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
             backgroundClip: 'text',
@@ -133,7 +144,7 @@ export default function RichStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.75rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -166,7 +177,7 @@ export default function RichStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.75rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -220,7 +231,7 @@ export default function RichStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.75rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -247,7 +258,7 @@ export default function RichStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.75rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -274,7 +285,7 @@ export default function RichStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.75rem' : '0.875rem'
                 }}
                 noWrap
               >
@@ -307,7 +318,7 @@ export default function RichStatistics({ token }) {
                 sx={{
                   fontWeight: 600,
                   color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: '0.875rem'
+                  fontSize: isMobile ? '0.75rem' : '0.875rem'
                 }}
                 noWrap
               >
