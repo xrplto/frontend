@@ -51,56 +51,19 @@ const TopWrapper = styled(Box)(
     width: 100%;
     display: flex;
     align-items: center;
-    height: ${theme.spacing(6)};
+    height: ${theme.spacing(4)};
     border-radius: 0px;
-    background: ${
-      theme.palette.mode === 'dark'
-        ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`
-        : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`
-    };
-    backdrop-filter: blur(20px);
+    background: ${theme.palette.background.paper};
     border-bottom: 1px solid ${alpha(theme.palette.divider, 0.08)};
-    box-shadow: 0 4px 20px 0 ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.3 : 0.08)};
     position: relative;
-    overflow: hidden;
     z-index: 1100;
-    
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(to right, 
-        ${alpha(theme.palette.primary.main, 0)}, 
-        ${alpha(theme.palette.primary.main, 0.6)}, 
-        ${alpha(theme.palette.secondary.main, 0.6)}, 
-        ${alpha(theme.palette.primary.main, 0)}
-      );
-      opacity: 0.7;
-    }
-    
-    &::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(to right, 
-        ${alpha(theme.palette.divider, 0)}, 
-        ${alpha(theme.palette.divider, 0.3)}, 
-        ${alpha(theme.palette.divider, 0)}
-      );
-    }
 `
 );
 
 const ContentWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
-  gap: theme.spacing(1),
-  py: theme.spacing(1.5),
+  gap: theme.spacing(0.5),
+  py: theme.spacing(1),
   overflow: 'auto',
   width: '100%',
   justifyContent: 'space-between',
@@ -112,160 +75,82 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
   scrollbarWidth: 'none'
 }));
 
-const Separator = styled('span')(({ theme }) => ({
-  fontSize: '1.1rem',
-  padding: `0 ${theme.spacing(1.5)}`,
-  color: alpha(theme.palette.text.primary, 0.3),
-  fontWeight: 300,
-  '&::before': {
-    content: '""',
-    display: 'inline-block',
-    width: '1px',
-    height: '16px',
-    background: `linear-gradient(to bottom, ${alpha(theme.palette.divider, 0)}, ${alpha(theme.palette.divider, 0.5)}, ${alpha(theme.palette.divider, 0)})`,
-    verticalAlign: 'middle'
-  }
-}));
 
 const APILabel = styled('a')(({ theme }) => ({
-  fontSize: '13px',
+  fontSize: '12px',
   fontWeight: 600,
   color: theme.palette.text.primary,
   textDecoration: 'none',
-  marginLeft: theme.spacing(1),
-  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(
-    theme.palette.primary.main,
-    0.06
-  )} 100%)`,
-  backdropFilter: 'blur(12px)',
-  padding: '8px 16px',
-  borderRadius: '16px',
+  marginLeft: theme.spacing(0.5),
+  background: alpha(theme.palette.primary.main, 0.08),
+  padding: '4px 8px',
+  borderRadius: '8px',
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
-  minHeight: '36px',
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: '-100%',
-    width: '100%',
-    height: '100%',
-    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.1)}, transparent)`,
-    transition: 'left 0.6s ease-in-out'
-  },
+  gap: '4px',
+  minHeight: '28px',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+  transition: 'all 0.15s ease',
+  cursor: 'pointer',
   '&:hover': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(
-      theme.palette.primary.main,
-      0.12
-    )} 100%)`,
-    transform: 'translateY(-2px) scale(1.02)',
-    boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.25)}`,
-    '&::before': {
-      left: '100%'
-    }
-  },
-  '&:active': {
-    transform: 'translateY(-1px) scale(1.01)'
+    background: alpha(theme.palette.primary.main, 0.12)
   }
 }));
 
 const MobileMetric = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'flex-start',
-  gap: theme.spacing(1),
+  justifyContent: 'space-between',
+  gap: theme.spacing(0.5),
   width: '100%',
-  paddingLeft: theme.spacing(1),
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.6
-  )} 100%)`,
-  backdropFilter: 'blur(8px)',
-  borderRadius: theme.spacing(2),
-  padding: theme.spacing(1, 1.5),
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}`,
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    transform: 'translateY(-1px)',
-    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.15)}`
-  }
+  padding: theme.spacing(0.5, 1),
+  borderRadius: theme.spacing(1),
+  background: alpha(theme.palette.background.default, 0.5),
+  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+  minHeight: theme.spacing(4)
 }));
 
 const H24Style = styled('div')(({ theme }) => ({
   cursor: 'pointer',
-  paddingLeft: theme.spacing(1),
-  paddingRight: theme.spacing(1),
-  paddingTop: theme.spacing(0.5),
-  paddingBottom: theme.spacing(0.5),
-  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-  borderRadius: theme.spacing(1.5),
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-  opacity: 0.9,
-  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
-  border: `1px solid ${alpha(theme.palette.primary.light, 0.2)}`,
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '1px',
-    background: `linear-gradient(to right, transparent, ${alpha(theme.palette.primary.light, 0.5)}, transparent)`
-  },
-  '&:hover': {
-    opacity: 1,
-    transform: 'translateY(-2px) scale(1.05)',
-    boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.4)}`
-  }
+  padding: theme.spacing(0.25, 0.75),
+  background: theme.palette.primary.main,
+  borderRadius: theme.spacing(0.5),
+  transition: 'all 0.15s ease',
+  minWidth: '32px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center'
 }));
 
-const SWITCH_INTERVAL = 4000; // 4 seconds between switches
+const SWITCH_INTERVAL = 3000; // 3 seconds between switches
 
 const StyledContainer = styled(Container)(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1)
+    paddingLeft: theme.spacing(0.5),
+    paddingRight: theme.spacing(0.5)
   }
 }));
 
 const TradeButton = styled(IconButton)(({ theme }) => ({
   marginLeft: theme.spacing(1),
   padding: theme.spacing(1.5),
-  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(
-    theme.palette.primary.main,
-    0.08
-  )} 100%)`,
-  backdropFilter: 'blur(12px)',
+  background: alpha(theme.palette.primary.main, 0.1),
   borderRadius: theme.spacing(1.5),
   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'all 0.2s ease',
   '&:hover': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.25)} 0%, ${alpha(
-      theme.palette.primary.main,
-      0.15
-    )} 100%)`,
-    transform: 'translateY(-2px) scale(1.05)',
-    boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.25)}`
+    background: alpha(theme.palette.primary.main, 0.15),
+    transform: 'translateY(-1px)'
   }
 }));
 
 const PulsatingCircle = styled('div')(({ theme }) => ({
-  width: '8px',
-  height: '8px',
+  width: '6px',
+  height: '6px',
   borderRadius: '50%',
-  backgroundColor: theme.palette.primary.main,
+  backgroundColor: theme.palette.success.main,
   position: 'relative',
-  boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.6)}`,
-  '&::before, &::after': {
+  '&::before': {
     content: '""',
     position: 'absolute',
     top: '50%',
@@ -275,18 +160,15 @@ const PulsatingCircle = styled('div')(({ theme }) => ({
     height: '100%',
     borderRadius: '50%',
     backgroundColor: 'inherit',
-    animation: 'pulse-modern 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+    animation: 'pulse-simple 1.5s ease-in-out infinite'
   },
-  '&::after': {
-    animationDelay: '-1.25s'
-  },
-  '@keyframes pulse-modern': {
+  '@keyframes pulse-simple': {
     '0%, 100%': {
       transform: 'translate(-50%, -50%) scale(1)',
       opacity: 0.8
     },
     '50%': {
-      transform: 'translate(-50%, -50%) scale(2.5)',
+      transform: 'translate(-50%, -50%) scale(2)',
       opacity: 0
     }
   }
@@ -298,21 +180,13 @@ const LiveIndicator = styled('div')(({ theme }) => ({
   gap: theme.spacing(1),
   padding: theme.spacing(0.5, 1.5),
   borderRadius: '20px',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.15)} 0%, ${alpha(
-    theme.palette.success.main,
-    0.08
-  )} 100%)`,
-  border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`,
-  backdropFilter: 'blur(10px)',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.15)} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`,
+  border: `1px solid ${alpha(theme.palette.success.main, 0.25)}`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.2)}`,
+  boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.15)}`,
   '&:hover': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.2)} 0%, ${alpha(
-      theme.palette.success.main,
-      0.12
-    )} 100%)`,
-    transform: 'translateY(-1px)',
-    boxShadow: `0 6px 16px ${alpha(theme.palette.success.main, 0.3)}`
+    background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.2)} 0%, ${alpha(theme.palette.success.main, 0.12)} 100%)`,
+    transform: 'translateY(-1px)'
   }
 }));
 
@@ -322,8 +196,7 @@ const LiveCircle = styled('div')(({ theme }) => ({
   borderRadius: '50%',
   backgroundColor: theme.palette.success.main,
   position: 'relative',
-  boxShadow: `0 0 8px ${alpha(theme.palette.success.main, 0.6)}`,
-  '&::before, &::after': {
+  '&::before': {
     content: '""',
     position: 'absolute',
     top: '50%',
@@ -332,138 +205,91 @@ const LiveCircle = styled('div')(({ theme }) => ({
     height: '100%',
     borderRadius: '50%',
     backgroundColor: 'inherit',
-    animation: 'ripple-modern 2s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+    animation: 'ripple-simple 2s ease-in-out infinite'
   },
-  '&::after': {
-    animationDelay: '-1s'
-  },
-  '@keyframes ripple-modern': {
+  '@keyframes ripple-simple': {
     '0%': {
       transform: 'translate(-50%, -50%) scale(1)',
       opacity: 0.9
     },
     '100%': {
-      transform: 'translate(-50%, -50%) scale(4)',
+      transform: 'translate(-50%, -50%) scale(3)',
       opacity: 0
     }
   }
 }));
 
-const ProgressBar = styled('div')(({ theme, width, color }) => ({
-  position: 'absolute',
-  left: 0,
-  top: 0,
-  height: '100%',
-  width: `${width}%`,
-  background: `linear-gradient(90deg, ${alpha(color, 0.3)}, ${alpha(color, 0.1)})`,
-  transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-  borderRadius: 'inherit'
-}));
-
-const ProgressBarContainer = styled('div')(({ theme }) => ({
-  position: 'absolute',
-  left: 0,
-  top: 0,
-  height: '100%',
-  width: '100%',
-  overflow: 'hidden',
-  borderRadius: 'inherit'
-}));
 
 const MetricContainer = styled(Stack)(({ theme }) => ({
-  padding: theme.spacing(1, 2),
-  borderRadius: theme.spacing(2),
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.6
-  )} 100%)`,
-  backdropFilter: 'blur(12px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '2px',
-    background: `linear-gradient(to right, ${alpha(theme.palette.primary.main, 0)}, ${alpha(
-      theme.palette.primary.main,
-      0.3
-    )}, ${alpha(theme.palette.primary.main, 0)})`,
-    opacity: 0,
-    transition: 'opacity 0.3s ease'
-  },
+  padding: theme.spacing(0.5, 1),
+  borderRadius: theme.spacing(0.5),
+  background: alpha(theme.palette.background.default, 0.3),
+  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+  minWidth: 'auto',
+  transition: 'all 0.15s ease',
   '&:hover': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.7
-    )} 100%)`,
-    transform: 'translateY(-3px) scale(1.02)',
-    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.15)}`,
-    '&::before': {
-      opacity: 1
-    }
+    background: alpha(theme.palette.primary.main, 0.05)
   }
 }));
 
 const MetricLabel = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary,
   fontWeight: 500,
-  fontSize: '0.8rem',
-  letterSpacing: '0.5px',
-  textTransform: 'uppercase'
+  fontSize: '0.7rem',
+  textTransform: 'uppercase',
+  lineHeight: 1
 }));
 
 const MetricValue = styled(Typography)(({ theme }) => ({
   fontWeight: 700,
-  fontSize: '0.95rem',
-  letterSpacing: '-0.5px'
+  fontSize: '0.85rem',
+  lineHeight: 1
 }));
 
 const TradeCard = styled(Card)(({ theme }) => ({
   margin: theme.spacing(0.5, 1),
   borderRadius: theme.spacing(2),
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.7
-  )} 100%)`,
-  backdropFilter: 'blur(10px)',
+  background: theme.palette.background.paper,
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'all 0.2s ease',
   position: 'relative',
   overflow: 'hidden',
   '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.15)}`
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
   }
 }));
 
 const TokenImage = styled('img')(({ theme }) => ({
-  width: 20,
-  height: 20,
+  width: 22,
+  height: 22,
   borderRadius: '50%',
   border: `2px solid ${alpha(theme.palette.background.paper, 0.8)}`,
-  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}`
+  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}`,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'scale(1.1)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
+  }
 }));
 
 const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
-  height: 24,
-  fontSize: '0.75rem',
-  fontWeight: 600,
-  borderRadius: '12px',
+  height: 20,
+  fontSize: '0.65rem',
+  fontWeight: 700,
+  borderRadius: '10px',
+  minWidth: '20px',
   ...(tradetype === 'BUY' && {
-    backgroundColor: alpha(theme.palette.success.main, 0.15),
-    color: theme.palette.success.main,
-    border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`
+    background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+    color: '#ffffff',
+    border: 'none',
+    boxShadow: `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`
   }),
   ...(tradetype === 'SELL' && {
-    backgroundColor: alpha(theme.palette.error.main, 0.15),
-    color: theme.palette.error.main,
-    border: `1px solid ${alpha(theme.palette.error.main, 0.3)}`
+    background: `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
+    color: '#ffffff',
+    border: 'none',
+    boxShadow: `0 2px 8px ${alpha(theme.palette.error.main, 0.3)}`
   })
 }));
 
@@ -472,25 +298,20 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   alignItems: 'center',
   padding: theme.spacing(2, 3),
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.85
-  )} 100%)`,
-  backdropFilter: 'blur(20px)',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+  background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   position: 'sticky',
   top: 0,
-  zIndex: 1
+  zIndex: 1,
+  backdropFilter: 'blur(20px)'
 }));
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.98)} 0%, ${alpha(
-      theme.palette.background.default,
-      0.95
-    )} 100%)`,
-    backdropFilter: 'blur(20px)',
-    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+    background: `linear-gradient(180deg, ${theme.palette.background.default} 0%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+    backdropFilter: 'blur(40px)',
+    boxShadow: `0 20px 40px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.4 : 0.1)}`
   }
 }));
 
@@ -758,6 +579,20 @@ const Topbar = () => {
     setTrades([]);
     setWsError(null);
 
+    // First, load initial data from REST API
+    const loadInitialData = async () => {
+      try {
+        const response = await axios.get('https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=5000');
+        if (response.data && response.data.hists) {
+          setTrades(response.data.hists.slice(0, 500));
+        }
+      } catch (error) {
+        console.error('Failed to load initial trades:', error);
+      }
+    };
+
+    loadInitialData();
+
     const ws = new WebSocket('wss://api.xrpl.to/ws/sync');
 
     ws.onopen = () => {
@@ -881,36 +716,35 @@ const Topbar = () => {
         <ContentWrapper>
           {isMobile ? (
             <MobileMetric>
-              <Stack direction="row" spacing={1.5} alignItems="center">
+              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ width: '100%' }}>
                 <Box
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 1,
-                    p: 1,
-                    borderRadius: 1,
-                    background: alpha(mobileMetrics[currentMetricIndex].color, 0.1),
-                    border: `1px solid ${alpha(mobileMetrics[currentMetricIndex].color, 0.2)}`
+                    gap: 0.5,
+                    p: 0.25,
+                    borderRadius: 0.5,
+                    background: alpha(mobileMetrics[currentMetricIndex].color, 0.08),
+                    flex: 1
                   }}
                 >
                   <Typography
-                    variant="body2"
+                    variant="caption"
                     color="text.secondary"
                     sx={{
-                      fontWeight: 600,
-                      fontSize: '0.8rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
+                      fontWeight: 500,
+                      fontSize: '0.7rem',
+                      textTransform: 'uppercase'
                     }}
                   >
                     {t(mobileMetrics[currentMetricIndex].label)}
                   </Typography>
                   <Typography
-                    variant="body2"
+                    variant="caption"
                     color={mobileMetrics[currentMetricIndex].color}
                     sx={{
                       fontWeight: 700,
-                      fontSize: '0.9rem'
+                      fontSize: '0.8rem'
                     }}
                   >
                     {mobileMetrics[currentMetricIndex].value}
@@ -919,21 +753,32 @@ const Topbar = () => {
                 {currentMetricIndex >= 3 && (
                   <H24Style>
                     <Typography
-                      variant="body2"
+                      variant="caption"
                       color="#ffffff"
                       sx={{
                         fontWeight: 600,
-                        fontSize: '0.8rem'
+                        fontSize: '0.7rem'
                       }}
                     >
                       24h
                     </Typography>
                   </H24Style>
                 )}
+                <APILabel
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleTradeDrawerOpen();
+                  }}
+                >
+                  <PulsatingCircle />
+                  <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>
+                    Live
+                  </Typography>
+                </APILabel>
               </Stack>
             </MobileMetric>
           ) : (
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ flex: 1 }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: 1 }}>
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Addresses')}</MetricLabel>
                 <MetricValue sx={{ color: '#54D62C' }}>
@@ -1036,10 +881,9 @@ const Topbar = () => {
             </Stack>
           )}
           {!isMobile && (
-            <Box sx={{ paddingLeft: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ paddingLeft: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <CurrencySwithcer />
               <ThemeSwitcher />
-              <Separator />
               <APILabel
                 onClick={(e) => {
                   e.preventDefault();
@@ -1047,11 +891,11 @@ const Topbar = () => {
                 }}
               >
                 <PulsatingCircle />
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  Global Trades
+                <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>
+                  Live Trades
                 </Typography>
               </APILabel>
-              {!fullSearch && isDesktop && <Wallet style={{ marginRight: '9px' }} />}
+              {!fullSearch && isDesktop && <Wallet style={{ marginRight: '4px' }} />}
             </Box>
           )}
         </ContentWrapper>
@@ -1063,13 +907,13 @@ const Topbar = () => {
         keepMounted={false}
         sx={{
           '& .MuiDrawer-paper': {
-            width: isMobile ? '100%' : '420px',
+            width: isMobile ? '100%' : '520px',
             padding: 0
           }
         }}
       >
         <DrawerHeader>
-          <Box display="flex" alignItems="center" gap={2}>
+          <Box display="flex" alignItems="center" gap={1}>
             <Box display="flex" alignItems="center" gap={1}>
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
                 Global Trades
@@ -1171,111 +1015,73 @@ const Topbar = () => {
                   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                   position: 'relative',
                   overflow: 'hidden',
-                  padding: '12px 16px',
+                  padding: '3px 6px',
                   width: '100%',
                   transition: 'all 0.2s ease',
+                  background: trade.paid?.currency === 'XRP' 
+                    ? `linear-gradient(90deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`
+                    : `linear-gradient(90deg, ${alpha(theme.palette.error.main, 0.08)} 0%, ${alpha(theme.palette.error.main, 0.02)} 100%)`,
+                  borderLeft: `2px solid ${trade.paid?.currency === 'XRP' 
+                    ? theme.palette.success.main 
+                    : theme.palette.error.main}`,
+                  borderRadius: '0 8px 8px 0',
                   '&:hover': {
-                    backgroundColor: alpha(theme.palette.text.primary, 0.03),
-                    transform: 'translateX(4px)'
+                    background: trade.paid?.currency === 'XRP' 
+                      ? `linear-gradient(90deg, ${alpha(theme.palette.success.main, 0.12)} 0%, ${alpha(theme.palette.success.main, 0.04)} 100%)`
+                      : `linear-gradient(90deg, ${alpha(theme.palette.error.main, 0.12)} 0%, ${alpha(theme.palette.error.main, 0.04)} 100%)`,
+                    transform: 'translateX(2px)',
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
                   }
                 }}
               >
-                <ProgressBarContainer>
-                  <ProgressBar
-                    width={(() => {
-                      try {
-                        const xrpValue = parseFloat(getXRPAmount(trade));
-                        if (isNaN(xrpValue)) return 5;
-                        if (xrpValue < 500) return Math.max(5, (xrpValue / 500) * 25);
-                        if (xrpValue < 5000) return Math.max(25, (xrpValue / 5000) * 50);
-                        if (xrpValue < 10000) return Math.max(50, (xrpValue / 10000) * 75);
-                        return Math.min(100, 75 + (xrpValue / 50000) * 25);
-                      } catch (error) {
-                        return 5;
-                      }
-                    })()}
-                    color={trade.paid && trade.paid.currency === 'XRP' ? '#4CAF50' : '#F44336'}
-                  />
-                </ProgressBarContainer>
 
-                <Box sx={{ width: '100%', position: 'relative', zIndex: 1 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      mb: 1
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{
-                          fontSize: '0.75rem',
-                          fontWeight: 500
-                        }}
-                      >
-                        {formatRelativeTime(trade.time)}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, flex: 1 }}>
+                    <TokenImage
+                      src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
+                      alt={decodeCurrency(trade.paid.currency)}
+                    />
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.75rem', lineHeight: 1, fontFamily: 'monospace' }}>
+                        {formatTradeValue(trade.paid.value)}
                       </Typography>
-                      <TradeTypeChip
-                        size="small"
-                        label={trade.paid.currency === 'XRP' ? 'BUY' : 'SELL'}
-                        tradetype={trade.paid.currency === 'XRP' ? 'BUY' : 'SELL'}
-                      />
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Typography component="span" sx={{ fontSize: '1rem' }}>
-                        {getTradeSizeEmoji(getXRPAmount(trade))}
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', lineHeight: 1, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        {decodeCurrency(trade.paid.currency)}
                       </Typography>
-                      {(BOT_ADDRESSES.includes(trade.maker) ||
-                        BOT_ADDRESSES.includes(trade.taker)) && (
-                        <Tooltip title="Bot Trade" arrow>
-                          <SmartToy
-                            sx={{
-                              color: theme.palette.warning.main,
-                              fontSize: '1rem'
-                            }}
-                          />
-                        </Tooltip>
-                      )}
                     </Box>
                   </Box>
 
-                  <Box
-                    sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <TokenImage
-                        src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
-                        alt={decodeCurrency(trade.paid.currency)}
-                      />
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>
-                          {formatTradeValue(trade.paid.value)}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {decodeCurrency(trade.paid.currency)}
-                        </Typography>
-                      </Box>
-                    </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1 }}>
+                    <SwapHorizIcon sx={{ color: 'text.secondary', fontSize: '0.8rem' }} />
+                    <Typography component="span" sx={{ fontSize: '0.8rem' }}>
+                      {getTradeSizeEmoji(getXRPAmount(trade))}
+                    </Typography>
+                  </Box>
 
-                    <SwapHorizIcon sx={{ color: 'text.secondary', fontSize: '1.2rem' }} />
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>
-                          {formatTradeValue(trade.got.value)}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {decodeCurrency(trade.got.currency)}
-                        </Typography>
-                      </Box>
-                      <TokenImage
-                        src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
-                        alt={decodeCurrency(trade.got.currency)}
-                      />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, flex: 1, justifyContent: 'flex-end' }}>
+                    <Box sx={{ textAlign: 'right', minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.75rem', lineHeight: 1, fontFamily: 'monospace' }}>
+                        {formatTradeValue(trade.got.value)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', lineHeight: 1, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        {decodeCurrency(trade.got.currency)}
+                      </Typography>
                     </Box>
+                    <TokenImage
+                      src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
+                      alt={decodeCurrency(trade.got.currency)}
+                    />
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 1 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
+                      {formatRelativeTime(trade.time)}
+                    </Typography>
+                    <TradeTypeChip
+                      size="small"
+                      label={trade.paid.currency === 'XRP' ? 'B' : 'S'}
+                      tradetype={trade.paid.currency === 'XRP' ? 'BUY' : 'SELL'}
+                    />
                   </Box>
                 </Box>
               </ListItem>
