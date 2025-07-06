@@ -68,92 +68,96 @@ const ContentTypography = styled(Typography)(({ theme }) => ({
   }
 }));
 
-// Enhanced MetricBox with modern styling
+// Enhanced MetricBox with high-end startup styling
 const MetricBox = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(1.5),
+  padding: theme.spacing(2),
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.1) // Even more aggressive smaller padding on mobile
+    padding: theme.spacing(1)
   },
   height: '100%',
+  minHeight: '120px',
   [theme.breakpoints.down('sm')]: {
-    minHeight: '45px' // Even more aggressive height reduction on mobile
+    minHeight: '80px'
   },
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
   textAlign: 'center',
-  borderRadius: '20px',
-  background: alpha(theme.palette.background.paper, 0.7),
-  backdropFilter: 'blur(20px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.05)}`,
-  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+  borderRadius: '16px',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.default, 0.8)} 100%)`,
+  backdropFilter: 'blur(30px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.3 : 0.08)}`,
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  overflow: 'hidden',
   '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.1)}, 0 0 15px ${alpha(
-      theme.palette.primary.main,
-      0.3
-    )}`
+    transform: 'translateY(-8px) scale(1.02)',
+    boxShadow: `0 20px 60px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.4 : 0.15)}`,
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
+    borderColor: alpha(theme.palette.primary.main, 0.2),
   }
 }));
 
-// Ultra-compact MetricTitle
+// Premium MetricTitle
 const MetricTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '0.75rem',
-  fontWeight: 500,
-  color: theme.palette.text.secondary,
-  marginBottom: theme.spacing(0.5),
+  fontSize: '0.8rem',
+  fontWeight: 600,
+  color: alpha(theme.palette.text.secondary, 0.8),
+  marginBottom: theme.spacing(1),
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  lineHeight: 1,
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.45rem', // Even smaller font size on mobile
-    marginBottom: 0 // Remove bottom margin for metric title on mobile
+    fontSize: '0.7rem',
+    marginBottom: theme.spacing(0.5)
   }
 }));
 
-// Ultra-compact MetricValue
+// Premium MetricValue
 const MetricValue = styled(Typography)(({ theme }) => ({
-  fontSize: '1.4rem',
-  fontWeight: 700,
-  color: theme.palette.text.primary,
-  lineHeight: 1.2,
-  marginBottom: 0,
+  fontSize: '1.8rem',
+  fontWeight: 800,
+  background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  lineHeight: 1.1,
+  marginBottom: theme.spacing(0.5),
+  fontFamily: 'monospace',
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.65rem' // Even smaller on mobile for very tight spaces
+    fontSize: '1.2rem'
   }
 }));
 
-// Ultra-compact PercentageChange
+// Premium PercentageChange
 const PercentageChange = styled(Typography, {
   shouldForwardProp: (prop) => prop !== 'isPositive'
 })(({ theme, isPositive }) => ({
-  fontSize: '0.75rem',
-  // Ultra-small font size on mobile
-  [theme.breakpoints.down('md')]: {
-    fontSize: '0.55rem'
-  },
+  fontSize: '0.8rem',
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.4rem' // Even smaller font size
+    fontSize: '0.7rem'
   },
-  color: isPositive ? theme.palette.success.main : theme.palette.error.main,
+  color: '#ffffff',
   display: 'flex',
   alignItems: 'center',
   gap: '4px',
-  // No gap on mobile
+  fontWeight: 700,
+  padding: '4px 12px',
   [theme.breakpoints.down('sm')]: {
-    gap: '0px'
+    padding: '3px 8px'
   },
-  fontWeight: 600,
-  padding: '2px 6px',
-  // No padding on mobile
-  [theme.breakpoints.down('md')]: {
-    padding: '0px'
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: '0px'
-  },
-  borderRadius: '6px',
-  background: 'transparent',
-  border: 'none'
+  borderRadius: '20px',
+  background: isPositive 
+    ? `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`
+    : `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
+  boxShadow: `0 4px 12px ${alpha(isPositive ? theme.palette.success.main : theme.palette.error.main, 0.3)}`,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: `0 6px 16px ${alpha(isPositive ? theme.palette.success.main : theme.palette.error.main, 0.4)}`
+  }
 }));
 
 // Ultra-compact VolumePercentage
@@ -245,16 +249,20 @@ export default function Summary() {
       return (
         <Paper
           sx={{
-            p: { xs: 0.1, sm: 1.5 },
+            p: { xs: 1, sm: 2 },
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
-              0.95
-            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-            backdropFilter: 'blur(10px)',
-            borderRadius: '12px',
-            boxShadow: theme.shadows[5],
-            border: `1px solid ${theme.palette.divider}`,
-            minWidth: { xs: 150, sm: 220 }
+              0.98
+            )} 0%, ${alpha(theme.palette.background.default, 0.85)} 100%)`,
+            backdropFilter: 'blur(40px)',
+            borderRadius: '16px',
+            boxShadow: `0 20px 60px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.4 : 0.1)}`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+            minWidth: { xs: 200, sm: 280 },
+            position: 'absolute',
+            zIndex: 999999999,
+            pointerEvents: 'auto',
+            overflow: 'hidden',
           }}
         >
           <Typography
@@ -520,35 +528,6 @@ export default function Summary() {
         }
       }}
     >
-      <Typography
-        variant="h1"
-        sx={{
-          // ZERO margins on mobile, hidden completely on small screens
-          mb: 0,
-          mt: 0,
-          pt: 0,
-          pb: 0,
-          [(theme) => theme.breakpoints.up('md')]: {
-            mb: 1.5
-          },
-          [(theme) => theme.breakpoints.down('sm')]: {
-            display: 'none' // Completely hide title on mobile to save space
-          },
-          fontSize: '1.4rem',
-          [(theme) => theme.breakpoints.down('md')]: {
-            fontSize: '0.85rem'
-          },
-          fontWeight: 700,
-          width: '100%',
-          letterSpacing: '-0.02em',
-          background: `linear-gradient(135deg, ${(theme) => theme.palette.text.primary} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
-        }}
-      >
-        {t("Today's Top XRPL Token Prices by Volume")}
-      </Typography>
 
       <Stack spacing={{ xs: 0, sm: 1 }} sx={{ width: '100%' }}>
         {/* Main Metrics Section */}
@@ -782,17 +761,28 @@ export default function Summary() {
                           sx={{
                             strokeLinecap: 'round',
                             position: 'absolute',
-                            filter: (theme) =>
-                              `drop-shadow(0 0 2px ${alpha(
+                            filter: `drop-shadow(0 0 8px ${alpha(
+                              (() => {
+                                if (sentimentScore > 80) return theme.palette.success.main;
+                                if (sentimentScore > 60) return theme.palette.primary.main;
+                                if (sentimentScore > 40) return theme.palette.warning.main;
+                                if (sentimentScore > 20) return theme.palette.warning.main;
+                                return theme.palette.error.main;
+                              })(),
+                              0.6
+                            )})`,
+                            '&:hover': {
+                              filter: `drop-shadow(0 0 12px ${alpha(
                                 (() => {
                                   if (sentimentScore > 80) return theme.palette.success.main;
                                   if (sentimentScore > 60) return theme.palette.primary.main;
                                   if (sentimentScore > 40) return theme.palette.warning.main;
-                                  if (sentimentScore > 20) return theme.palette.warning.main; // Orange - use warning theme color
+                                  if (sentimentScore > 20) return theme.palette.warning.main;
                                   return theme.palette.error.main;
                                 })(),
-                                0.5
+                                0.8
                               )})`
+                            }
                           }}
                         />
                         <Typography
@@ -809,45 +799,68 @@ export default function Summary() {
 
                   {/* Combined Platform Chart */}
                   <Grid item xs={12} md={3}>
-                    <MetricBox sx={{ p: 0 }}>
+                    <MetricBox sx={{ p: 0, position: 'relative', zIndex: 1, overflow: 'visible' }}>
                       <Box sx={{ width: '100%', pt: 0.5, px: 0.5 }}>
                         <MetricTitle>{t('New Tokens Created (30-Day)')}</MetricTitle>
                       </Box>
-                      <ResponsiveContainer width="100%" height={35}>
-                        <LineChart
+                      <ResponsiveContainer width="100%" height={35} style={{ position: 'relative', zIndex: 1 }}>
+                        <AreaChart
                           key={`combined-${chartData.length}`}
                           data={chartData}
                           margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
                         >
+                          <defs>
+                            <linearGradient id="tokensGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0}/>
+                            </linearGradient>
+                            <linearGradient id="marketcapGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor={theme.palette.secondary.main} stopOpacity={0.2}/>
+                              <stop offset="95%" stopColor={theme.palette.secondary.main} stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
                           <YAxis yAxisId="tokens" orientation="left" hide />
                           <YAxis yAxisId="marketcap" orientation="right" hide />
-                          <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 99999 }} />
+                          <Tooltip 
+                            content={<CustomTooltip />} 
+                            wrapperStyle={{ 
+                              zIndex: 99999999,
+                              position: 'relative'
+                            }} 
+                            contentStyle={{
+                              zIndex: 99999999,
+                              position: 'relative'
+                            }}
+                          />
 
-                          {/* New Tokens Line - left Y-axis */}
-                          <Line
+                          {/* New Tokens Area - left Y-axis */}
+                          <Area
                             yAxisId="tokens"
                             type="monotone"
                             dataKey="Tokens"
                             stroke={theme.palette.primary.main}
                             strokeWidth={3}
+                            fill="url(#tokensGradient)"
                             dot={false}
                             name="New Tokens"
                             connectNulls={false}
                           />
 
-                          {/* Average Market Cap Line - right Y-axis */}
-                          <Line
+                          {/* Average Market Cap Area - right Y-axis */}
+                          <Area
                             yAxisId="marketcap"
                             type="monotone"
                             dataKey="avgMarketcap"
                             stroke={theme.palette.secondary.main}
                             strokeWidth={2}
+                            fill="url(#marketcapGradient)"
                             dot={false}
                             name="Average Market Cap"
                             connectNulls={false}
                             strokeDasharray="5 5"
+                            filter={`drop-shadow(0 0 4px ${alpha(theme.palette.secondary.main, 0.5)})`}
                           />
-                        </LineChart>
+                        </AreaChart>
                       </ResponsiveContainer>
                     </MetricBox>
                   </Grid>
