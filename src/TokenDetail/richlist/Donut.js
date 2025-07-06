@@ -100,7 +100,7 @@ export default function Donut({ token }) {
   }, [BASE_URL, token.md5]);
 
   const modernColors = getModernColors(darkMode);
-  const chartSize = isMobile ? 200 : isTablet ? 240 : 280;
+  const chartSize = isMobile ? 180 : isTablet ? 220 : 280;
 
   const state = {
     series: getSeries(richList),
@@ -134,26 +134,26 @@ export default function Donut({ token }) {
           startAngle: -90,
           endAngle: 270,
           donut: {
-            size: '70%',
+            size: isMobile ? '65%' : '70%',
             background: 'transparent',
             labels: {
               show: true,
               name: {
                 show: true,
-                fontSize: '12px',
+                fontSize: isMobile ? '10px' : '12px',
                 fontWeight: '600',
                 color: darkMode ? '#fff' : '#212B36',
-                offsetY: -8,
+                offsetY: isMobile ? -6 : -8,
                 formatter: function (val) {
                   return val === 'Others' ? 'Others' : `#${val}`;
                 }
               },
               value: {
                 show: true,
-                fontSize: '18px',
+                fontSize: isMobile ? '14px' : '18px',
                 fontWeight: '700',
                 color: darkMode ? '#fff' : '#212B36',
-                offsetY: 12,
+                offsetY: isMobile ? 8 : 12,
                 formatter: function (val) {
                   return fPercent(val);
                 }
@@ -162,7 +162,7 @@ export default function Donut({ token }) {
                 show: true,
                 showAlways: false,
                 label: 'Total',
-                fontSize: '11px',
+                fontSize: isMobile ? '9px' : '11px',
                 fontWeight: '500',
                 color: darkMode ? '#919EAB' : '#637381',
                 formatter: function (w) {
@@ -291,11 +291,11 @@ export default function Donut({ token }) {
   if (loading) {
     return (
       <StackStyle>
-        <CardHeader title="Top 10 Holders" subheader="" sx={{ p: 2 }} />
+        <CardHeader title="Top 10 Holders" subheader="" sx={{ p: isMobile ? 1.5 : 2 }} />
         <Stack
           alignItems="center"
           justifyContent="center"
-          sx={{ height: chartSize * 0.8, width: '100%', p: 2 }}
+          sx={{ height: chartSize * 0.8, width: '100%', p: isMobile ? 1.5 : 2 }}
         >
           <CircularProgress
             size={32}
@@ -318,11 +318,11 @@ export default function Donut({ token }) {
   if (error) {
     return (
       <StackStyle>
-        <CardHeader title="Top 10 Holders" subheader="" sx={{ p: 2 }} />
+        <CardHeader title="Top 10 Holders" subheader="" sx={{ p: isMobile ? 1.5 : 2 }} />
         <Stack
           alignItems="center"
           justifyContent="center"
-          sx={{ height: chartSize * 0.8, width: '100%', p: 2 }}
+          sx={{ height: chartSize * 0.8, width: '100%', p: isMobile ? 1.5 : 2 }}
         >
           <Typography
             variant="body2"
@@ -348,7 +348,7 @@ export default function Donut({ token }) {
       <CardHeader title="Top 10 Holders" subheader="" sx={{ p: 2 }} />
 
       {/* Chart */}
-      <Stack alignItems="center" justifyContent="center" sx={{ p: 2 }}>
+      <Stack alignItems="center" justifyContent="center" sx={{ p: isMobile ? 1.5 : 2 }}>
         <Chart
           options={state.options}
           series={state.series}
