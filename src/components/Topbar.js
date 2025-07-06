@@ -32,6 +32,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import CloseIcon from '@mui/icons-material/Close';
+import LinkIcon from '@mui/icons-material/Link';
 import { useRouter } from 'next/router';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -309,9 +310,9 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
     background: `linear-gradient(180deg, ${theme.palette.background.default} 0%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
-    border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
     backdropFilter: 'blur(40px)',
-    boxShadow: `0 20px 40px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.4 : 0.1)}`
+    boxShadow: 'none'
   }
 }));
 
@@ -978,9 +979,27 @@ const Topbar = () => {
               }
             }}
           >
-            {filteredTrades.map((trade, index) => (
+            {filteredTrades.map((trade, index) => {
+              // Determine which currency is not XRP to link to
+              const tokenCurrency = trade.paid?.currency === 'XRP' ? trade.got : trade.paid;
+              const tokenPath = tokenCurrency?.issuer && tokenCurrency?.currency 
+                ? `/token/${tokenCurrency.issuer}-${tokenCurrency.currency}` 
+                : '#';
+              const txPath = trade.hash ? `/tx/${trade.hash}` : '#';
+              
+              // Calculate background opacity based on XRP volume
+              const xrpAmount = getXRPAmount(trade);
+              const maxXrp = Math.max(...filteredTrades.map(t => getXRPAmount(t)));
+              const minOpacity = 0.02;
+              const maxOpacity = 0.15;
+              const opacityRatio = maxXrp > 0 ? Math.min(xrpAmount / maxXrp, 1) : 0;
+              const backgroundOpacity = minOpacity + (opacityRatio * (maxOpacity - minOpacity));
+              
+              return (
               <ListItem
                 key={`${trade.time}-${trade.maker}-${trade.taker}-${trade.paid?.value}-${trade.got?.value}-${index}`}
+                component="a"
+                href={tokenPath}
                 sx={{
                   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                   position: 'relative',
@@ -988,30 +1007,29 @@ const Topbar = () => {
                   padding: '3px 6px',
                   width: '100%',
                   transition: 'all 0.2s ease',
-                  background: trade.paid?.currency === 'XRP' 
-                    ? `linear-gradient(90deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`
-                    : `linear-gradient(90deg, ${alpha(theme.palette.error.main, 0.08)} 0%, ${alpha(theme.palette.error.main, 0.02)} 100%)`,
-                  borderLeft: `2px solid ${trade.paid?.currency === 'XRP' 
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, backgroundOpacity)} 0%, ${alpha(theme.palette.primary.main, backgroundOpacity * 0.3)} 100%)`,
+                  borderLeft: `2px solid ${trade.paid?.currency === 'XRP'
                     ? theme.palette.success.main 
                     : theme.palette.error.main}`,
                   borderRadius: '0 8px 8px 0',
+                  cursor: 'pointer',
                   '&:hover': {
-                    background: trade.paid?.currency === 'XRP' 
-                      ? `linear-gradient(90deg, ${alpha(theme.palette.success.main, 0.12)} 0%, ${alpha(theme.palette.success.main, 0.04)} 100%)`
-                      : `linear-gradient(90deg, ${alpha(theme.palette.error.main, 0.12)} 0%, ${alpha(theme.palette.error.main, 0.04)} 100%)`,
+                    background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, Math.min(backgroundOpacity * 1.5, 0.2))} 0%, ${alpha(theme.palette.primary.main, Math.min(backgroundOpacity * 0.8, 0.08))} 100%)`,
                     transform: 'translateX(2px)',
                     boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
                   }
                 }}
               >
 
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, flex: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
                     <TokenImage
                       src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
                       alt={decodeCurrency(trade.paid.currency)}
                     />
-                    <Box sx={{ minWidth: 0 }}>
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
                       <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.75rem', lineHeight: 1, fontFamily: 'monospace' }}>
                         {formatTradeValue(trade.paid.value)}
                       </Typography>
@@ -1028,8 +1046,8 @@ const Topbar = () => {
                     </Typography>
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, flex: 1, justifyContent: 'flex-end' }}>
-                    <Box sx={{ textAlign: 'right', minWidth: 0 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1, justifyContent: 'flex-end' }}>
+                    <Box sx={{ textAlign: 'right', minWidth: 0, flex: 1 }}>
                       <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.75rem', lineHeight: 1, fontFamily: 'monospace' }}>
                         {formatTradeValue(trade.got.value)}
                       </Typography>
@@ -1043,19 +1061,38 @@ const Topbar = () => {
                     />
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 1, minWidth: 120, justifyContent: 'flex-end' }}>
+                    {trade.hash && (
+                      <IconButton
+                        component="a"
+                        href={txPath}
+                        size="small"
+                        sx={{
+                          width: 16,
+                          height: 16,
+                          color: 'text.secondary',
+                          '&:hover': {
+                            color: 'primary.main'
+                          }
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <LinkIcon sx={{ fontSize: '0.7rem' }} />
+                      </IconButton>
+                    )}
                     <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
                       {formatRelativeTime(trade.time)}
                     </Typography>
                     <TradeTypeChip
                       size="small"
-                      label={trade.paid.currency === 'XRP' ? 'B' : 'S'}
-                      tradetype={trade.paid.currency === 'XRP' ? 'BUY' : 'SELL'}
+                      label={trade.paid?.currency === 'XRP' ? 'B' : 'S'}
+                      tradetype={trade.paid?.currency === 'XRP' ? 'BUY' : 'SELL'}
                     />
                   </Box>
                 </Box>
               </ListItem>
-            ))}
+              );
+            })}
           </List>
         )}
       </StyledDrawer>
