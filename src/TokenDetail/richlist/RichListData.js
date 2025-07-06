@@ -27,7 +27,8 @@ import {
   Modal,
   useMediaQuery,
   useTheme,
-  styled
+  styled,
+  alpha
 } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 
@@ -137,10 +138,10 @@ const EXCHANGE_ADDRESSES = {
 };
 
 // ----------------------------------------------------------------------
-function truncate(str, n) {
+function truncate(str, n, isMobile = false) {
   if (!str) return '';
-  //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
-  return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
+  const effectiveN = isMobile ? Math.floor(n * 0.4) : n;
+  return str.length > effectiveN ? str.substr(0, effectiveN - 1) + '...' : str;
 }
 
 // Add modern color scheme matching Donut.js
@@ -1100,57 +1101,73 @@ export default function RichListData({ token }) {
     <>
       <Box
         sx={{
-          display: 'flex',
-          gap: 1,
-          py: 1,
-          overflow: 'auto',
-          width: '100%',
-          '& > *': {
-            scrollSnapAlign: 'center'
-          },
-          '::-webkit-scrollbar': { display: 'none' }
+          borderRadius: '24px',
+          overflow: 'hidden',
+          background: `linear-gradient(135deg, ${alpha(
+            theme.palette.background.paper,
+            0.7
+          )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
+          backdropFilter: 'blur(32px)',
+          border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+          boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)}`,
+          position: 'relative',
+          mb: 2
         }}
-        ref={tableRef}
       >
-        <Table
-          stickyHeader
+        <Box
           sx={{
-            '& .MuiTableCell-root': {
-              borderBottom: 'none',
-              boxShadow: darkMode
-                ? 'inset 0 -1px 0 rgba(145, 158, 171, 0.12)'
-                : 'inset 0 -1px 0 rgba(145, 158, 171, 0.24)'
-            }
+            display: 'flex',
+            gap: 1,
+            py: 1,
+            overflow: 'auto',
+            width: '100%',
+            '& > *': {
+              scrollSnapAlign: 'center'
+            },
+            '::-webkit-scrollbar': { display: 'none' }
           }}
+          ref={tableRef}
         >
-          <TableHead
+          <Table
+            stickyHeader
             sx={{
-              position: 'sticky',
-              zIndex: 999,
-              background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(20px)',
-              borderBottom: `1px solid ${
-                darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-              }`,
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: '1px',
-                background: `linear-gradient(90deg, transparent, ${
-                  darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-                }, transparent)`
+              background: 'transparent',
+              '& .MuiTableCell-root': {
+                borderBottom: 'none',
+                boxShadow: `inset 0 -1px 0 ${alpha(theme.palette.divider, 0.08)}`
               }
             }}
           >
+            <TableHead
+              sx={{
+                position: 'sticky',
+                zIndex: 999,
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.background.paper,
+                  0.9
+                )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                backdropFilter: 'blur(32px)',
+                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: '1px',
+                  background: `linear-gradient(90deg, transparent, ${alpha(
+                    theme.palette.primary.main,
+                    0.1
+                  )}, transparent)`
+                }
+              }}
+            >
             <TableRow
               sx={{
                 '& .MuiTableCell-root': {
-                  fontSize: '13px',
+                  fontSize: isMobile ? '11px' : '13px',
                   fontWeight: '600',
-                  padding: '20px 12px',
+                  padding: isMobile ? '8px 3px' : '20px 12px',
                   height: 'auto',
                   whiteSpace: 'nowrap',
                   color: darkMode ? '#919EAB' : '#637381',
@@ -1158,7 +1175,7 @@ export default function RichListData({ token }) {
                   letterSpacing: '0.02em',
                   borderBottom: 'none',
                   '&:not(:first-of-type)': {
-                    paddingLeft: '8px'
+                    paddingLeft: isMobile ? '2px' : '8px'
                   }
                 },
                 '& .MuiTableSortLabel-root': {
@@ -1186,12 +1203,15 @@ export default function RichListData({ token }) {
                   position: 'sticky',
                   zIndex: 998,
                   left: 0,
-                  background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                  backdropFilter: 'blur(20px)',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.background.paper,
+                    0.9
+                  )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                  backdropFilter: 'blur(32px)',
                   '&:before': scrollLeft
                     ? {
                         content: "''",
-                        boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
+                        boxShadow: `inset 10px 0 8px -8px ${alpha(theme.palette.primary.main, 0.15)}`,
                         position: 'absolute',
                         top: '0',
                         right: '0',
@@ -1209,31 +1229,18 @@ export default function RichListData({ token }) {
 
               <StickyTableCell align="left">
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+                  <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: isMobile ? '10px' : 'inherit' }}>
                     Address
                   </Typography>
                 </Box>
               </StickyTableCell>
 
               <StickyTableCell align="left">
-                <TableSortLabel
-                  hideSortIcon
-                  active={orderBy === 'frozen'}
-                  direction={orderBy === 'frozen' ? order : 'desc'}
-                  onClick={onChangeFrozen}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <SmallInfoIcon />
-                    <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5 }}>
-                      Frozen ({frozen ? 'YES' : 'ALL'})
-                    </Typography>
-                  </Box>
-                  {orderBy === 'frozen' ? (
-                    <Box sx={{ ...visuallyHidden }}>
-                      {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                    </Box>
-                  ) : null}
-                </TableSortLabel>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: isMobile ? '10px' : 'inherit' }}>
+                    Frozen
+                  </Typography>
+                </Box>
               </StickyTableCell>
 
               <StickyTableCell align="left">
@@ -1245,7 +1252,7 @@ export default function RichListData({ token }) {
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <SmallInfoIcon />
-                    <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5 }}>
+                    <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5, fontSize: isMobile ? '10px' : 'inherit' }}>
                       Balance({name})
                     </Typography>
                   </Box>
@@ -1266,7 +1273,7 @@ export default function RichListData({ token }) {
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <SmallInfoIcon />
-                    <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5 }}>
+                    <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5, fontSize: isMobile ? '10px' : 'inherit' }}>
                       Change
                     </Typography>
                     <Box
@@ -1304,7 +1311,7 @@ export default function RichListData({ token }) {
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <SmallInfoIcon />
-                    <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5 }}>
+                    <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5, fontSize: isMobile ? '10px' : 'inherit' }}>
                       Holding
                     </Typography>
                   </Box>
@@ -1318,7 +1325,7 @@ export default function RichListData({ token }) {
 
               <StickyTableCell align="left">
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+                  <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: isMobile ? '10px' : 'inherit' }}>
                     Value
                   </Typography>
                 </Box>
@@ -1334,7 +1341,23 @@ export default function RichListData({ token }) {
                 </StickyTableCell>
               )}
 
-              <StickyTableCell align="left"></StickyTableCell>
+              <StickyTableCell align="left">
+                <Tooltip title={`${frozen ? 'Show only frozen accounts' : 'Show all accounts'}`}>
+                  <IconButton
+                    size="small"
+                    onClick={onChangeFrozen}
+                    sx={{
+                      color: frozen ? 'primary.main' : 'text.secondary',
+                      background: frozen ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                      '&:hover': {
+                        background: alpha(theme.palette.primary.main, 0.2)
+                      }
+                    }}
+                  >
+                    <Icon icon={frozen ? 'mdi:filter' : 'mdi:filter-outline'} />
+                  </IconButton>
+                </Tooltip>
+              </StickyTableCell>
             </TableRow>
           </TableHead>
 
@@ -1363,31 +1386,31 @@ export default function RichListData({ token }) {
                   <TableRow
                     key={id}
                     sx={{
-                      borderBottom: '1px solid rgba(145, 158, 171, 0.08)',
-                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
                         '& .MuiTableCell-root': {
-                          backgroundColor: darkMode
-                            ? 'rgba(255, 255, 255, 0.04)'
-                            : 'rgba(145, 158, 171, 0.04)',
-                          backdropFilter: 'blur(6px)'
+                          background: `linear-gradient(135deg, ${alpha(
+                            theme.palette.primary.main,
+                            0.02
+                          )} 0%, ${alpha(theme.palette.primary.main, 0.01)} 100%)`,
+                          backdropFilter: 'blur(8px)'
                         },
                         cursor: 'pointer',
-                        transform: 'translateY(-1px)',
-                        boxShadow: darkMode
-                          ? '0 4px 16px rgba(0, 0, 0, 0.24)'
-                          : '0 4px 16px rgba(145, 158, 171, 0.16)'
+                        transform: 'translateY(-2px)',
+                        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`
                       },
                       '& .MuiTypography-root': {
                         fontSize: '14px',
                         fontWeight: '500'
                       },
                       '& .MuiTableCell-root': {
-                        padding: '16px 12px',
+                        padding: isMobile ? '8px 3px' : '18px 12px',
                         whiteSpace: 'nowrap',
                         borderBottom: 'none',
+                        background: 'transparent',
                         '&:not(:first-of-type)': {
-                          paddingLeft: '8px'
+                          paddingLeft: isMobile ? '2px' : '8px'
                         }
                       }
                     }}
@@ -1398,12 +1421,15 @@ export default function RichListData({ token }) {
                         position: 'sticky',
                         zIndex: 998,
                         left: 0,
-                        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(20px)',
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.background.paper,
+                          0.9
+                        )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                        backdropFilter: 'blur(32px)',
                         '&:before': scrollLeft
                           ? {
                               content: "''",
-                              boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
+                              boxShadow: `inset 10px 0 8px -8px ${alpha(theme.palette.primary.main, 0.15)}`,
                               position: 'absolute',
                               top: '0',
                               right: '0',
@@ -1431,7 +1457,7 @@ export default function RichListData({ token }) {
                         )}
                         <Typography
                           variant="subtitle1"
-                          sx={{ fontWeight: '600', fontSize: '14px' }}
+                          sx={{ fontWeight: '600', fontSize: isMobile ? '12px' : '14px' }}
                         >
                           {id}
                         </Typography>
@@ -1803,18 +1829,18 @@ export default function RichListData({ token }) {
                             <Typography
                               variant="subtitle1"
                               color="primary"
-                              sx={{ fontWeight: '500', fontSize: '14px' }}
+                              sx={{ fontWeight: '500', fontSize: isMobile ? '12px' : '14px' }}
                             >
-                              {truncate(account, 20)}
+                              {truncate(account, 20, isMobile)}
                               {EXCHANGE_ADDRESSES[account] && (
                                 <Box
                                   component="span"
                                   sx={{
-                                    ml: 1,
-                                    px: 1,
+                                    ml: isMobile ? 0.5 : 1,
+                                    px: isMobile ? 0.5 : 1,
                                     py: 0.25,
                                     borderRadius: 1,
-                                    fontSize: '0.75rem',
+                                    fontSize: isMobile ? '0.6rem' : '0.75rem',
                                     bgcolor: 'primary.main',
                                     color: 'primary.contrastText'
                                   }}
@@ -1830,7 +1856,7 @@ export default function RichListData({ token }) {
                     </TableCell>
                     <TableCell align="left">{freeze && <Icon icon={checkIcon} />}</TableCell>
                     <TableCell align="left">
-                      <Typography variant="subtitle1" sx={{ fontWeight: '500', fontSize: '14px' }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: '500', fontSize: isMobile ? '12px' : '14px' }}>
                         {fNumber(balance)}
                       </Typography>
                     </TableCell>
@@ -1839,7 +1865,7 @@ export default function RichListData({ token }) {
                         <Stack direction="row" spacing={0.1} alignItems="center">
                           <Icon icon={icon24h} color={color24h} />
                           <Typography
-                            sx={{ color: color24h, fontWeight: '500', fontSize: '14px' }}
+                            sx={{ color: color24h, fontWeight: '500', fontSize: isMobile ? '11px' : '14px' }}
                             variant="subtitle1"
                           >
                             <NumberTooltip number={Math.abs(change)} /> (
@@ -1849,7 +1875,7 @@ export default function RichListData({ token }) {
                       )}
                     </TableCell>
                     <TableCell align="left">
-                      <Typography variant="subtitle1" sx={{ fontWeight: '500', fontSize: '14px' }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: '500', fontSize: isMobile ? '12px' : '14px' }}>
                         {holding} %
                       </Typography>
                     </TableCell>
@@ -1858,7 +1884,7 @@ export default function RichListData({ token }) {
                         <Typography
                           variant="h4"
                           noWrap
-                          sx={{ fontWeight: '600', fontSize: '16px' }}
+                          sx={{ fontWeight: '600', fontSize: isMobile ? '13px' : '16px' }}
                         >
                           {currencySymbols[activeFiatCurrency]}{' '}
                           {fNumber((exch * balance) / metrics[activeFiatCurrency])}
@@ -1880,18 +1906,27 @@ export default function RichListData({ token }) {
                     )}
 
                     <TableCell align="left">
-                      <Stack direction="row" alignItems="center" spacing={2}>
+                      <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 2}>
                         <Tooltip title="View on Bithomp">
                           <Box
                             sx={{
                               p: 1,
-                              borderRadius: '8px',
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                              borderRadius: '12px',
+                              background: `linear-gradient(135deg, ${alpha(
+                                theme.palette.background.paper,
+                                0.6
+                              )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                              backdropFilter: 'blur(16px)',
+                              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                               '&:hover': {
-                                backgroundColor: darkMode
-                                  ? 'rgba(255, 255, 255, 0.08)'
-                                  : 'rgba(145, 158, 171, 0.08)',
-                                transform: 'scale(1.1)'
+                                background: `linear-gradient(135deg, ${alpha(
+                                  theme.palette.primary.main,
+                                  0.1
+                                )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+                                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                                transform: 'scale(1.1) translateY(-1px)',
+                                boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`
                               }
                             }}
                           >
@@ -1903,7 +1938,7 @@ export default function RichListData({ token }) {
                               rel="noreferrer noopener nofollow"
                             >
                               <LinkIcon
-                                sx={{ fontSize: '20px', color: darkMode ? '#919EAB' : '#637381' }}
+                                sx={{ fontSize: isMobile ? '16px' : '20px', color: darkMode ? '#919EAB' : '#637381' }}
                               />
                             </Link>
                           </Box>
@@ -1912,13 +1947,22 @@ export default function RichListData({ token }) {
                           <Box
                             sx={{
                               p: 1,
-                              borderRadius: '8px',
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                              borderRadius: '12px',
+                              background: `linear-gradient(135deg, ${alpha(
+                                theme.palette.background.paper,
+                                0.6
+                              )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                              backdropFilter: 'blur(16px)',
+                              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                               '&:hover': {
-                                backgroundColor: darkMode
-                                  ? 'rgba(255, 255, 255, 0.08)'
-                                  : 'rgba(145, 158, 171, 0.08)',
-                                transform: 'scale(1.1)'
+                                background: `linear-gradient(135deg, ${alpha(
+                                  theme.palette.success.main,
+                                  0.1
+                                )} 0%, ${alpha(theme.palette.success.main, 0.05)} 100%)`,
+                                border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                                transform: 'scale(1.1) translateY(-1px)',
+                                boxShadow: `0 8px 24px ${alpha(theme.palette.success.main, 0.15)}`
                               }
                             }}
                           >
@@ -1927,9 +1971,11 @@ export default function RichListData({ token }) {
                               sx={{
                                 cursor: 'pointer',
                                 fontSize: '20px',
-                                color: darkMode ? '#919EAB' : '#637381',
+                                color: theme.palette.success.main,
+                                transition: 'all 0.2s ease',
                                 '&:hover': {
-                                  color: 'primary.main'
+                                  color: theme.palette.success.dark,
+                                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
                                 }
                               }}
                             />
@@ -1942,7 +1988,8 @@ export default function RichListData({ token }) {
               })
             }
           </TableBody>
-        </Table>
+          </Table>
+        </Box>
       </Box>
 
       <RichListToolbar count={count} rows={rows} setRows={setRows} page={page} setPage={setPage} />
