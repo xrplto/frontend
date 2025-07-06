@@ -432,9 +432,17 @@ const parseValue = (value) => {
   }
 };
 
-// Remove this function since we're not using different URLs based on filters
-const getTradeApiUrl = () => {
-  return 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=5000';
+// Get API URL based on filter
+const getTradeApiUrl = (filter) => {
+  const baseUrl = 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=200';
+  
+  if (filter === 'All') {
+    return baseUrl;
+  }
+  
+  // Extract XRP amount from filter (e.g., "500+" -> "500")
+  const xrpAmount = filter.replace('+', '');
+  return `${baseUrl}&xrpAmount=${xrpAmount}`;
 };
 
 // Add this constant before the Topbar component
@@ -582,9 +590,10 @@ const Topbar = () => {
     // First, load initial data from REST API
     const loadInitialData = async () => {
       try {
-        const response = await axios.get('https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=5000');
+        const apiUrl = getTradeApiUrl(tradeFilter);
+        const response = await axios.get(apiUrl);
         if (response.data && response.data.hists) {
-          setTrades(response.data.hists.slice(0, 500));
+          setTrades(response.data.hists.slice(0, 200));
         }
       } catch (error) {
         console.error('Failed to load initial trades:', error);
@@ -605,14 +614,14 @@ const Topbar = () => {
     }, 200); // Throttle to update every 200ms
 
     const throttledAddTrade = throttle((newTrade) => {
-      setTrades((prevTrades) => [newTrade, ...prevTrades].slice(0, 500));
+      setTrades((prevTrades) => [newTrade, ...prevTrades].slice(0, 200));
     }, 200); // Throttle to update every 200ms
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (Array.isArray(data)) {
-          throttledSetTrades(data.slice(0, 500));
+          throttledSetTrades(data.slice(0, 200));
         } else if (typeof data === 'object' && data !== null) {
           if (data.time) {
             throttledAddTrade(data);
@@ -638,31 +647,14 @@ const Topbar = () => {
       throttledSetTrades.cancel(); // Cancel any pending throttled calls
       throttledAddTrade.cancel(); // Cancel any pending throttled calls
     };
-  }, [tradeDrawerOpen]);
+  }, [tradeDrawerOpen, tradeFilter]);
 
-  // Fix the filtering logic in the useMemo
+  // Since API filtering is now handled server-side, just sort trades
   const filteredTrades = useMemo(() => {
     if (!trades) return [];
-
-    // First sort by time
-    const sortedTrades = [...trades].sort((a, b) => b.time - a.time);
-
-    // Then filter by XRP amount if needed
-    if (tradeFilter === 'All') {
-      return sortedTrades;
-    }
-
-    // Extract the minimum XRP value from the filter
-    const minXrp = parseInt(tradeFilter.replace('+', ''));
-
-    return sortedTrades.filter((trade) => {
-      // Get the XRP amount and ensure it's a number
-      const xrpAmount = parseFloat(getXRPAmount(trade));
-
-      // Compare numeric values
-      return !isNaN(xrpAmount) && xrpAmount >= minXrp;
-    });
-  }, [trades, tradeFilter]);
+    // Just sort by time since filtering is handled by API
+    return [...trades].sort((a, b) => b.time - a.time);
+  }, [trades]);
 
   // Memoize the filter select component to prevent re-renders
   const FilterSelect = useMemo(
@@ -907,7 +899,7 @@ const Topbar = () => {
         keepMounted={false}
         sx={{
           '& .MuiDrawer-paper': {
-            width: isMobile ? '100%' : '520px',
+            width: isMobile ? '100%' : '400px',
             padding: 0
           }
         }}
