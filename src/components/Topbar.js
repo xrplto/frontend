@@ -575,6 +575,8 @@ const Topbar = () => {
   const [tradeFilter, setTradeFilter] = useState('All');
 
   const handleFilterChange = useCallback((event) => {
+    setTrades([]);
+    setIsWsLoading(true);
     setTradeFilter(event.target.value);
   }, []);
 
@@ -905,50 +907,26 @@ const Topbar = () => {
         }}
       >
         <DrawerHeader>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                Global Trades
-              </Typography>
-              <LiveIndicator>
-                <LiveCircle />
-                <Typography
-                  variant="caption"
-                  color="success.main"
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: '0.75rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}
-                >
-                  LIVE
-                </Typography>
-              </LiveIndicator>
-            </Box>
-            {tradeFilter !== 'All' && (
-              <Chip
-                size="small"
-                label={`${filteredTrades.length} matches`}
-                color="primary"
-                variant="outlined"
-                sx={{ borderRadius: 2 }}
-              />
-            )}
+          <Box display="flex" alignItems="center" gap={0.5}>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>
+              Global Trades
+            </Typography>
+            <LiveCircle />
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {FilterSelect}
             <IconButton
               onClick={handleTradeDrawerClose}
+              size="small"
               sx={{
                 color: 'text.secondary',
                 '&:hover': {
                   color: 'text.primary',
-                  backgroundColor: alpha(theme.palette.text.primary, 0.1)
+                  backgroundColor: alpha(theme.palette.text.primary, 0.08)
                 }
               }}
             >
-              <CloseIcon />
+              <CloseIcon fontSize="small" />
             </IconButton>
           </Box>
         </DrawerHeader>
