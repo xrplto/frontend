@@ -53,13 +53,18 @@ const CurrencyContent = styled('div')(
     margin: 5px 0;
     display: flex;
     flex-direction: row;
-    padding: 12px 16px;
-    border-radius: 8px;
+    padding: 16px 20px;
+    border-radius: 16px;
     align-items: center;
-    background-color: ${theme.palette.background.paper};
-    border: 1px solid ${theme.palette.divider};
+    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.05)} 100%);
+    backdrop-filter: blur(24px);
     width: 100%;
     justify-content: space-between;
+    transition: all 0.3s ease;
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.08)};
+    }
 `
 );
 
@@ -81,19 +86,16 @@ const OverviewWrapper = styled('div')(
     overflow: hidden;
     box-sizing: border-box;
     position: relative;
-    border-radius: 12px;
+    border-radius: 20px;
     display: flex;
-    border: ${theme.palette.divider};
-    padding-bottom: 8px;
+    padding: 16px;
     width: 100%;
-    background-color: ${theme.palette.background.default};
+    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.08)} 0%, ${alpha(theme.palette.background.paper, 0.04)} 100%);
+    backdrop-filter: blur(32px);
+    box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.06)};
     @media (max-width: 600px) {
-        border-right: none;
-        border-left: none;
-        border-image: initial;
-        border-radius: unset;
-        border-top: none;
-        border-bottom: none;
+        border-radius: 16px;
+        padding: 12px;
     }
 `
 );
@@ -115,25 +117,22 @@ const ToggleContent = styled('div')(
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    background-color: ${theme.palette.background.paper};
+    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%);
+    backdrop-filter: blur(20px);
     border-radius: 50%;
-    padding: 3px;
+    padding: 8px;
     z-index: 1;
-    transition: all 0.2s ease-in-out;
-    border: 1px solid ${theme.palette.divider};
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px ${alpha(theme.palette.common.black, 0.1)};
 
     &:hover {
       transform: translate(-50%, -50%) scale(1.1);
-      background-color: ${theme.palette.primary.main};
-      border-color: ${theme.palette.primary.main};
-
+      background: linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%);
+      
       svg {
-        color: ${theme.palette.primary.contrastText} !important;
+        color: ${theme.palette.primary.main} !important;
       }
     }
-
-    animation: ${pulse} 2s infinite;
   `
 );
 
@@ -143,93 +142,18 @@ const ExchangeButton = styled(Button)(
     max-width: 100%;
     position: relative;
     overflow: hidden;
-    border-radius: 12px;
+    border-radius: 16px;
     transition: all 0.3s ease;
-    background: ${
-      theme.palette.mode === 'dark'
-        ? `linear-gradient(45deg, 
-        #000000 0%, 
-        ${alpha('#000000', 0.9)} 25%,
-        ${alpha('#1a1a1a', 0.95)} 50%,
-        ${alpha('#000000', 0.9)} 75%,
-        #000000 100%)`
-        : `linear-gradient(45deg, 
-        #ffffff 0%, 
-        ${alpha('#ffffff', 0.9)} 25%,
-        ${alpha('#f5f5f5', 0.95)} 50%,
-        ${alpha('#ffffff', 0.9)} 75%,
-        #ffffff 100%)`
-    };
-    background-size: 200% 200%;
-    animation: gradient 5s ease infinite;
-    border: 1px solid ${alpha(theme.palette.primary.light, 0.5)};
-    color: ${theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.main};
-    box-shadow: 
-      0 0 5px ${alpha(theme.palette.primary.main, 0.2)},
-      0 0 10px ${alpha(theme.palette.primary.main, 0.1)};
-
-    @keyframes gradient {
-      0% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-      100% {
-        background-position: 0% 50%;
-      }
-    }
-
-    &::before {
-      content: "";
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, ${alpha(
-        theme.palette.primary.light,
-        0.1
-      )} 0%, transparent 70%);
-      animation: rotate 4s linear infinite;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    @keyframes rotate {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
+    background: linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%);
+    backdrop-filter: blur(24px);
+    color: ${theme.palette.primary.main};
+    font-weight: 600;
+    box-shadow: 0 4px 16px ${alpha(theme.palette.primary.main, 0.1)};
 
     &:hover {
-      transform: translateY(-2px) scale(1.02);
-      background: ${
-        theme.palette.mode === 'dark'
-          ? `linear-gradient(45deg, 
-          #000000 0%, 
-          ${alpha('#000000', 0.95)} 25%,
-          ${alpha('#1a1a1a', 1)} 50%,
-          ${alpha('#000000', 0.95)} 75%,
-          #000000 100%)`
-          : `linear-gradient(45deg, 
-          #ffffff 0%, 
-          ${alpha('#ffffff', 0.95)} 25%,
-          ${alpha('#f5f5f5', 1)} 50%,
-          ${alpha('#ffffff', 0.95)} 75%,
-          #ffffff 100%)`
-      };
-      border: 1px solid ${alpha(theme.palette.primary.light, 0.7)};
-      box-shadow: 
-        0 0 8px ${alpha(theme.palette.primary.main, 0.3)},
-        0 0 15px ${alpha(theme.palette.primary.main, 0.15)};
-
-      &::before {
-        opacity: 1;
-      }
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%);
+      box-shadow: 0 8px 24px ${alpha(theme.palette.primary.main, 0.15)};
     }
 
     &:active {
@@ -237,8 +161,8 @@ const ExchangeButton = styled(Button)(
     }
 
     &.Mui-disabled {
-      background: ${theme.palette.mode === 'dark' ? alpha('#000000', 0.5) : alpha('#ffffff', 0.5)};
-      border: 1px solid ${alpha(theme.palette.primary.light, 0.2)};
+      background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.05)} 100%);
+      color: ${alpha(theme.palette.text.primary, 0.4)};
       box-shadow: none;
     }
 
@@ -1822,28 +1746,12 @@ const App = ({ token }) => {
           overflow: 'hidden',
           borderRadius: '12px',
           transition: 'all 0.3s ease',
-          background: (theme) =>
-            theme.palette.mode === 'dark'
-              ? `linear-gradient(45deg, 
-              #000000 0%, 
-              ${alpha('#000000', 0.9)} 25%,
-              ${alpha('#1a1a1a', 0.95)} 50%,
-              ${alpha('#000000', 0.9)} 75%,
-              #000000 100%)`
-              : `linear-gradient(45deg, 
-              #ffffff 0%, 
-              ${alpha('#ffffff', 0.9)} 25%,
-              ${alpha('#f5f5f5', 0.95)} 50%,
-              ${alpha('#ffffff', 0.9)} 75%,
-              #ffffff 100%)`,
+          background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.05)} 100%)`,
+          backdropFilter: 'blur(24px)',
           backgroundSize: '200% 200%',
           animation: 'gradient 5s ease infinite',
           color: (theme) => (theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.main),
-          border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.5)}`,
-          boxShadow: (theme) => `
-            0 0 5px ${alpha(theme.palette.primary.main, 0.2)},
-            0 0 10px ${alpha(theme.palette.primary.main, 0.1)}
-          `,
+          boxShadow: (theme) => `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
           '@keyframes gradient': {
             '0%': {
               backgroundPosition: '0% 50%'
