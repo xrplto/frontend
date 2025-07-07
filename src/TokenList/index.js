@@ -39,7 +39,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState(initialOrderBy || 'vol24hxrp');
-  const [sync, setSync] = useState(showWatchList || initialOrderBy ? 1 : 0);
+  const [sync, setSync] = useState(showWatchList ? 1 : 0);
   const [editToken, setEditToken] = useState(null);
   const [trustToken, setTrustToken] = useState(null);
   const [rows, setRows] = useState(100);
