@@ -45,6 +45,7 @@ const TransitionTypo = styled(Typography)(
         -o-transition: background-color 300ms linear, color 1s linear;
         -ms-transition: background-color 300ms linear, color 1s linear;
         transition: background-color 300ms linear, color 1s linear;
+        contain: layout style paint;
     `
 );
 
@@ -205,13 +206,14 @@ const getOriginIcon = (origin) => {
       );
     case 'aigent.run':
       return (
-        <Box
-          component="img"
+        <Image
           src="/static/aigentrun.gif"
           alt="Aigent.Run"
-          sx={{
-            width: '14px',
-            height: '14px',
+          width={14}
+          height={14}
+          sizes="14px"
+          quality={85}
+          style={{
             objectFit: 'contain',
             marginRight: '2px'
           }}
@@ -232,13 +234,14 @@ const getOriginIcon = (origin) => {
             marginRight: '2px'
           }}
         >
-          <Box
-            component="img"
+          <Image
             src="/magneticx-logo.webp"
             alt="Magnetic X"
-            sx={{
-              width: '10px',
-              height: '10px',
+            width={10}
+            height={10}
+            sizes="10px"
+            quality={85}
+            style={{
               objectFit: 'contain'
             }}
           />
@@ -364,7 +367,6 @@ function FTokenRow({
       borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
       '&:hover': {
-        transform: 'translateY(-2px)',
         '& .MuiTableCell-root': {
           backgroundColor: darkMode
             ? alpha(theme.palette.grey[500], 0.12)
@@ -590,6 +592,11 @@ function FTokenRow({
                   alt={`${user} ${name} Logo`}
                   width={isMobile ? 20 : 38}
                   height={isMobile ? 20 : 38}
+                  sizes="(max-width: 768px) 20px, 38px"
+                  quality={85}
+                  loading="lazy"
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   style={{ objectFit: 'cover', borderRadius: isMobile ? '4px' : '8px' }}
                   onError={handleImgError}
                 />
@@ -601,6 +608,11 @@ function FTokenRow({
                   alt={`${user} ${name} Logo`}
                   width={isMobile ? 20 : 38}
                   height={isMobile ? 20 : 38}
+                  sizes="(max-width: 768px) 20px, 38px"
+                  quality={85}
+                  loading="lazy"
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   style={{ objectFit: 'cover', borderRadius: isMobile ? '4px' : '8px' }}
                   onError={handleImgError}
                 />
@@ -878,20 +890,19 @@ function FTokenRow({
       <TableCell
         align="right"
         sx={{
-          px: '0 !important',
-          width: isMobile ? '100px' : '160px',
-          minWidth: isMobile ? '100px' : '160px',
-          pr: isMobile ? '8px !important' : '24px !important',
-          pl: isMobile ? '8px !important' : '24px !important',
-          py: isMobile ? '4px !important' : '12px !important'
+          width: isMobile ? '150px' : '280px',
+          minWidth: isMobile ? '150px' : '280px',
+          maxWidth: isMobile ? '150px' : '280px',
+          pr: isMobile ? '4px !important' : '8px !important',
+          pl: isMobile ? '4px !important' : '8px !important',
+          py: isMobile ? '8px !important' : '10px !important',
+          overflow: 'visible'
         }}
       >
         <Box
           sx={{
-            width: isMobile ? 100 : 160,
-            height: isMobile ? 28 : 48,
-            minWidth: isMobile ? 100 : 160,
-            minHeight: isMobile ? 28 : 48,
+            width: '100%',
+            height: isMobile ? 45 : 60,
             position: 'relative',
             zIndex: 1
           }}
@@ -900,10 +911,12 @@ function FTokenRow({
             url={sparklineUrl}
             style={{ width: '100%', height: '100%' }}
             animation={false}
+            showGradient={false}
+            lineWidth={isMobile ? 1.5 : 2}
             opts={{
               renderer: 'svg',
-              width: isMobile ? 100 : 160,
-              height: isMobile ? 28 : 48
+              width: isMobile ? 142 : 272,
+              height: isMobile ? 45 : 60
             }}
           />
         </Box>
@@ -941,9 +954,8 @@ function FTokenRow({
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
                   backgroundColor: darkMode
-                    ? 'rgba(255, 255, 255, 0.08)'
-                    : 'rgba(145, 158, 171, 0.08)',
-                  transform: 'scale(1.1)'
+                    ? 'rgba(255, 255, 255, 0.12)'
+                    : 'rgba(145, 158, 171, 0.12)'
                 }
               }}
             >

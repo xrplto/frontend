@@ -104,10 +104,10 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
 
       return {
         grid: {
-          left: 2,
-          right: 2,
-          top: 2,
-          bottom: 2,
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
           containLabel: false
         },
         tooltip: {
@@ -448,7 +448,8 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         }}
         opts={{
           renderer: 'svg',
-          devicePixelRatio: window.devicePixelRatio || 2
+          devicePixelRatio: window.devicePixelRatio || 2,
+          ...props.opts
         }}
         className="echarts-chart"
         {...props}

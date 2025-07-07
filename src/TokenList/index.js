@@ -12,12 +12,14 @@ import SearchToolbar from './SearchToolbar';
 import { TokenRow } from './TokenRow';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 import TrustSetDialog from 'src/components/TrustSetDialog';
-import React, { memo } from 'react';
+import React, { memo, lazy, Suspense } from 'react';
 import { debounce } from 'lodash';
 import { throttle } from 'lodash';
 import { useRouter } from 'next/router';
 
 const MemoizedTokenRow = memo(TokenRow);
+const LazyEditTokenDialog = lazy(() => import('src/components/EditTokenDialog'));
+const LazyTrustSetDialog = lazy(() => import('src/components/TrustSetDialog'));
 
 export default function TokenList({ showWatchList, tag, tagName, tags, tokens, setTokens, tMap }) {
   const { accountProfile, openSnackbar, setLoading, darkMode, activeFiatCurrency } =
@@ -62,47 +64,65 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const tableRef = useRef(null);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [scrollTopLength, setScrollTopLength] = useState(0);
+  const rafRef = useRef(null);
 
-  const handleScrollX = useCallback(
-    throttle(() => {
-      if (tableContainerRef.current) {
-        setScrollLeft(tableContainerRef.current.scrollLeft > 0);
+  const handleScrollX = useMemo(
+    () => throttle(() => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
       }
-    }, 100),
+      rafRef.current = requestAnimationFrame(() => {
+        if (tableContainerRef.current) {
+          const scrollLeft = tableContainerRef.current.scrollLeft;
+          setScrollLeft(scrollLeft > 0);
+        }
+      });
+    }, 200),
     []
   );
 
-  const handleScrollY = useCallback(
-    throttle(() => {
-      if (tableRef.current) {
-        const tableOffsetTop = tableRef.current.offsetTop;
-        const tableHeight = tableRef.current.clientHeight;
-        const scrollTop = window.scrollY;
-        const anchorTop = tableOffsetTop;
-        const anchorBottom = tableOffsetTop + tableHeight;
-
-        if (scrollTop > anchorTop && scrollTop < anchorBottom) {
-          setScrollTopLength(scrollTop - anchorTop);
-        } else if (scrollTopLength !== 0) {
-          setScrollTopLength(0);
-        }
+  const handleScrollY = useMemo(
+    () => throttle(() => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
       }
-    }, 100),
-    [scrollTopLength]
+      rafRef.current = requestAnimationFrame(() => {
+        if (tableRef.current) {
+          // Batch DOM reads
+          const rect = tableRef.current.getBoundingClientRect();
+          const scrollTop = window.scrollY;
+          const tableOffsetTop = rect.top + scrollTop;
+          const tableHeight = rect.height;
+          const anchorTop = tableOffsetTop;
+          const anchorBottom = tableOffsetTop + tableHeight;
+
+          // Single state update
+          if (scrollTop > anchorTop && scrollTop < anchorBottom) {
+            setScrollTopLength(scrollTop - anchorTop);
+          } else {
+            setScrollTopLength(0);
+          }
+        }
+      });
+    }, 200),
+    []
   );
 
   useEffect(() => {
     const tableContainer = tableContainerRef.current;
     if (tableContainer) {
-      tableContainer.addEventListener('scroll', handleScrollX);
+      tableContainer.addEventListener('scroll', handleScrollX, { passive: true });
     }
-    window.addEventListener('scroll', handleScrollY);
+    window.addEventListener('scroll', handleScrollY, { passive: true });
 
     return () => {
       if (tableContainer) {
         tableContainer.removeEventListener('scroll', handleScrollX);
       }
       window.removeEventListener('scroll', handleScrollY);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
     };
   }, [handleScrollX, handleScrollY]);
 
@@ -112,14 +132,14 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
 
   const { sendJsonMessage } = useWebSocket(WSS_FEED_URL, {
     shouldReconnect: () => true,
-    onMessage: (event) => {
+    onMessage: useCallback((event) => {
       try {
         const json = JSON.parse(event.data);
         setLastJsonMessage(json);
       } catch (err) {
         console.error('Error parsing WebSocket message:', err);
       }
-    }
+    }, [])
   });
 
   // Add a state to track if metrics have been loaded
@@ -158,47 +178,41 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
 
   const applyTokenChanges = useCallback(
     (newTokens) => {
-      // Create a new Map based on the current 'tokens' state.
-      // This ensures we're working with the latest data immutably.
-      const updatedMap = new Map(tokens.map((token) => [token.md5, token]));
-      let hasChanges = false;
+      setTokens((prevTokens) => {
+        const updatedMap = new Map(prevTokens.map((token) => [token.md5, token]));
+        let hasChanges = false;
 
-      newTokens.forEach((newToken) => {
-        const existingToken = updatedMap.get(newToken.md5);
-        if (existingToken) {
-          let isChanged = false;
-          // Compare properties to check for actual value changes
-          for (const key in newToken) {
-            if (
-              Object.prototype.hasOwnProperty.call(newToken, key) &&
-              newToken[key] !== existingToken[key]
-            ) {
-              isChanged = true;
-              break;
+        newTokens.forEach((newToken) => {
+          const existingToken = updatedMap.get(newToken.md5);
+          if (existingToken) {
+            let isChanged = false;
+            for (const key in newToken) {
+              if (
+                Object.prototype.hasOwnProperty.call(newToken, key) &&
+                newToken[key] !== existingToken[key]
+              ) {
+                isChanged = true;
+                break;
+              }
+            }
+
+            if (isChanged) {
+              const newObj = {
+                ...existingToken,
+                ...newToken,
+                time: Date.now(),
+                bearbull: existingToken.exch > newToken.exch ? -1 : 1
+              };
+              updatedMap.set(newToken.md5, newObj);
+              hasChanges = true;
             }
           }
+        });
 
-          if (isChanged) {
-            // Create a new object for the updated token to maintain immutability
-            const newObj = {
-              ...existingToken,
-              ...newToken,
-              time: Date.now(),
-              bearbull: existingToken.exch > newToken.exch ? -1 : 1
-            };
-            updatedMap.set(newToken.md5, newObj);
-            hasChanges = true;
-          }
-        }
+        return hasChanges ? Array.from(updatedMap.values()) : prevTokens;
       });
-
-      if (hasChanges) {
-        // Only update state if there were actual changes,
-        // and convert the updated Map back to an array.
-        setTokens(Array.from(updatedMap.values()));
-      }
     },
-    [tokens, setTokens] // `tokens` is a dependency to ensure `updatedMap` is based on the latest state.
+    [setTokens]
   );
 
   useEffect(() => {
@@ -210,8 +224,8 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     }
   }, [lastJsonMessage, dispatch, applyTokenChanges]);
 
-  const debouncedLoadTokens = useCallback(
-    debounce(() => {
+  const debouncedLoadTokens = useMemo(
+    () => debounce(() => {
       const start = page * rows;
       const ntag = tag || '';
       const watchAccount = showWatchList ? accountProfile?.account || '' : '';
@@ -223,14 +237,13 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         .then((res) => {
           if (res.status === 200 && res.data) {
             const ret = res.data;
-            // dispatch(update_metrics(ret)); // This is causing the issue. The WS will update the metrics.
             dispatch(update_filteredCount(ret));
             setTokens(ret.tokens);
           }
         })
         .catch((err) => console.log('err->>', err))
         .finally(() => setSearch(filterName));
-    }, 300),
+    }, 500),
     [
       accountProfile,
       filterName,
@@ -381,11 +394,35 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     return tokens.slice(0, rows);
   }, [tokens, rows]);
 
+  // Preload TokenRow component properties to avoid layout calculations
+  useEffect(() => {
+    if (visibleTokens.length > 0) {
+      requestAnimationFrame(() => {
+        // Force browser to calculate styles ahead of time
+        const container = tableContainerRef.current;
+        if (container) {
+          container.style.willChange = 'scroll-position';
+          setTimeout(() => {
+            container.style.willChange = 'auto';
+          }, 1000);
+        }
+      });
+    }
+  }, [visibleTokens.length]);
+
   return (
     <>
-      {editToken && <EditTokenDialog token={editToken} setToken={setEditToken} />}
+      {editToken && (
+        <Suspense fallback={<div />}>
+          <LazyEditTokenDialog token={editToken} setToken={setEditToken} />
+        </Suspense>
+      )}
 
-      {trustToken && <TrustSetDialog token={trustToken} setToken={setTrustToken} />}
+      {trustToken && (
+        <Suspense fallback={<div />}>
+          <LazyTrustSetDialog token={trustToken} setToken={setTrustToken} />
+        </Suspense>
+      )}
 
       <Box sx={{ mb: 1 }}>
         <SearchToolbar
@@ -426,9 +463,11 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           scrollbarWidth: 'none',
           '& .MuiTableCell-root': {
             padding: '4px 8px',
-            height: '40px' // Set a fixed height for table cells
+            height: '40px',
+            contain: 'layout style paint'
           },
           '& .MuiTableRow-root': {
+            willChange: 'transform',
             '&:hover': {
               backgroundColor: 'rgba(0, 0, 0, 0.04)'
             }
@@ -436,7 +475,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         }}
         ref={tableContainerRef}
       >
-        <Table ref={tableRef} size="small">
+        <Table ref={tableRef} size="small" sx={{ tableLayout: 'fixed' }}>
           <TokenListHead
             order={order}
             orderBy={orderBy}

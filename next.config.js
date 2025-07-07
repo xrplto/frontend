@@ -62,8 +62,65 @@ module.exports = {
   // Add performance optimizations
   reactStrictMode: true,
   compress: true,
-  // Fix HMR invalid message warning
+  // Fix HMR invalid message warning and optimize JavaScript output
   experimental: {
-    isrFlushToDisk: false
+    isrFlushToDisk: false,
+    legacyBrowsers: false,
+    browsersListForSwc: true
+  },
+  // Configure SWC to use modern JavaScript
+  swcMinify: true,
+  // Optimize webpack bundle
+  webpack: (config, { isServer }) => {
+    // Split chunks more aggressively
+    config.optimization = {
+      ...config.optimization,
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          framework: {
+            name: 'framework',
+            chunks: 'all',
+            test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+            priority: 40,
+            enforce: true
+          },
+          commons: {
+            name: 'commons',
+            chunks: 'all',
+            minChunks: 2,
+            priority: 20,
+            test(module) {
+              return module.resource && !module.resource.includes('node_modules');
+            }
+          },
+          lib: {
+            test(module) {
+              return module.size() > 160000 &&
+                /node_modules[/\\]/.test(module.identifier());
+            },
+            name(module) {
+              const hash = require('crypto').createHash('sha256');
+              hash.update(module.identifier());
+              return hash.digest('hex').substring(0, 8);
+            },
+            priority: 30,
+            minChunks: 1,
+            reuseExistingChunk: true
+          }
+        }
+      }
+    };
+    
+    // Reduce initial bundle size
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias
+      };
+    }
+    
+    return config;
   }
 };

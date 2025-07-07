@@ -229,7 +229,7 @@ const TABLE_HEAD = [
       </Tooltip>
     ),
     align: 'right',
-    width: '10%',
+    width: '8%',
     order: true
   },
   {
@@ -415,7 +415,7 @@ const TABLE_HEAD = [
       </Typography>
     ),
     align: 'right',
-    width: '5%',
+    width: '15%',
     order: false
   },
   { id: '' }

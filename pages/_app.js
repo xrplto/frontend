@@ -1,14 +1,17 @@
 import Head from 'next/head';
 import React, { memo, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import ThemeProvider from 'src/theme/ThemeProvider';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ContextProvider } from 'src/AppContext';
-import XSnackbar from 'src/components/Snackbar';
-import TransactionAlert from 'src/components/TransactionAlert';
 import { useSnackbar } from 'src/components/useSnackbar';
 import './zMain.css';
 import { SnackbarProvider } from 'notistack';
-import NextNProgress from 'nextjs-progressbar';
+
+// Lazy load non-critical components
+const XSnackbar = dynamic(() => import('src/components/Snackbar'), { ssr: false });
+const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), { ssr: false });
+const NextNProgress = dynamic(() => import('nextjs-progressbar'), { ssr: false });
 
 // Move static schema outside component to prevent recreation
 const jsonLdSchema = {

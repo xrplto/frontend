@@ -1,17 +1,24 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { Box, Container, Grid, styled, Toolbar, useMediaQuery } from '@mui/material';
-import Topbar from 'src/components/Topbar';
-import Header from 'src/components/Header';
-import Footer from 'src/components/Footer';
-import TokenList from 'src/TokenList';
-import ScrollToTop from 'src/components/ScrollToTop';
-import Summary from 'src/TokenList/Summary';
-import HowWeWork from 'src/TokenList/HowWeWork';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { getTokens } from 'src/utils/extra';
 
-// import i18n (needs to be bundled ;))
-import 'src/utils/i18n';
+// Eager load critical components
+import Header from 'src/components/Header';
+import TokenList from 'src/TokenList';
+
+// Lazy load non-critical components
+const Topbar = dynamic(() => import('src/components/Topbar'), { ssr: false });
+const Footer = dynamic(() => import('src/components/Footer'), { ssr: false });
+const ScrollToTop = dynamic(() => import('src/components/ScrollToTop'), { ssr: false });
+const Summary = dynamic(() => import('src/TokenList/Summary'));
+const HowWeWork = dynamic(() => import('src/TokenList/HowWeWork'));
+
+// Defer i18n loading
+if (typeof window !== 'undefined') {
+  import('src/utils/i18n');
+}
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
