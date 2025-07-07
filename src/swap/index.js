@@ -639,6 +639,15 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
   const setValue = revert ? setAmount1 : setAmount2;
   const tokenPrice1 = (() => {
     try {
+      // If token1 is XRP, use the same conversion logic as Summary.js
+      if (token1?.currency === 'XRP') {
+        if (activeFiatCurrency === 'XRP') {
+          // When currency switcher is XRP, show USD equivalent
+          return new Decimal(amount1 || 0).div(metrics.USD || 1).toNumber();
+        }
+        // For other currencies, use metrics conversion
+        return new Decimal(amount1 || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
+      }
       return new Decimal(tokenExch1 || 0)
         .mul(amount1 || 0)
         .div(metrics[activeFiatCurrency] || 1)
@@ -649,6 +658,15 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
   })();
   const tokenPrice2 = (() => {
     try {
+      // If token2 is XRP, use the same conversion logic as Summary.js
+      if (token2?.currency === 'XRP') {
+        if (activeFiatCurrency === 'XRP') {
+          // When currency switcher is XRP, show USD equivalent
+          return new Decimal(amount2 || 0).div(metrics.USD || 1).toNumber();
+        }
+        // For other currencies, use metrics conversion
+        return new Decimal(amount2 || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
+      }
       return new Decimal(tokenExch2 || 0)
         .mul(amount2 || 0)
         .div(metrics[activeFiatCurrency] || 1)
@@ -2693,11 +2711,14 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                     const currentLatestPrice = revert ? latestPrice2 : latestPrice1;
                     const currentExchRate = revert ? tokenExch2 : tokenExch1;
 
-                    // For XRP, use the latest sparkline price if available
-                    if (currentToken?.currency === 'XRP' && currentLatestPrice) {
-                      return new Decimal(currentLatestPrice)
-                        .div(metrics[activeFiatCurrency] || 1)
-                        .toNumber();
+                    // For XRP, handle currency conversion like Summary.js
+                    if (currentToken?.currency === 'XRP') {
+                      if (activeFiatCurrency === 'XRP') {
+                        // When currency switcher is XRP, show USD price
+                        return new Decimal(1).div(metrics.USD || 1).toNumber();
+                      }
+                      // For other currencies, use Rate function logic
+                      return new Decimal(1).div(metrics[activeFiatCurrency] || 1).toNumber();
                     }
 
                     // For other tokens, use the exchange rate
@@ -2813,11 +2834,14 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                     const currentLatestPrice = revert ? latestPrice1 : latestPrice2;
                     const currentExchRate = revert ? tokenExch1 : tokenExch2;
 
-                    // For XRP, use the latest sparkline price if available
-                    if (currentToken?.currency === 'XRP' && currentLatestPrice) {
-                      return new Decimal(currentLatestPrice)
-                        .div(metrics[activeFiatCurrency] || 1)
-                        .toNumber();
+                    // For XRP, handle currency conversion like Summary.js
+                    if (currentToken?.currency === 'XRP') {
+                      if (activeFiatCurrency === 'XRP') {
+                        // When currency switcher is XRP, show USD price
+                        return new Decimal(1).div(metrics.USD || 1).toNumber();
+                      }
+                      // For other currencies, use Rate function logic
+                      return new Decimal(1).div(metrics[activeFiatCurrency] || 1).toNumber();
                     }
 
                     // For other tokens, use the exchange rate
