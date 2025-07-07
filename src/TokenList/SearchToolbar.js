@@ -116,7 +116,7 @@ const RootStyle = styled(Box)(({ theme }) => ({
     padding: theme.spacing(1, 0)
   },
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.75, 0)
+    padding: theme.spacing(0.5, 0)
   }
 }));
 
@@ -159,9 +159,9 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
       borderRadius: '6px'
     },
     [theme.breakpoints.down('sm')]: {
-      margin: theme.spacing(0.1),
-      height: '22px',
-      borderRadius: '4px'
+      margin: theme.spacing(0.05),
+      height: '20px',
+      borderRadius: '3px'
     },
     [`&.${toggleButtonGroupClasses.disabled}`]: {
       border: 0
@@ -231,9 +231,9 @@ const getEnhancedChipStyles = (theme, isActive, color, isLoading) => ({
     borderRadius: '8px'
   },
   [theme.breakpoints.down('sm')]: {
-    height: '26px',
-    fontSize: '0.75rem',
-    borderRadius: '6px'
+    height: '24px',
+    fontSize: '0.7rem',
+    borderRadius: '4px'
   },
   background: isActive
     ? alpha(theme.palette.primary.main, 0.1)
@@ -694,8 +694,8 @@ export default function SearchToolbar({
               padding: '3px'
             },
             [theme.breakpoints.down('sm')]: {
-              borderRadius: '8px',
-              padding: '2px'
+              borderRadius: '6px',
+              padding: '1px'
             },
             background: alpha(theme.palette.background.default, 0.5),
             boxShadow: 'none'
@@ -738,7 +738,7 @@ export default function SearchToolbar({
                 gap: '6px'
               },
               [theme.breakpoints.down('sm')]: {
-                gap: '4px'
+                gap: '2px'
               }
             },
             '& .MuiTab-root': {
@@ -751,8 +751,8 @@ export default function SearchToolbar({
                 padding: '0 4px'
               },
               [theme.breakpoints.down('sm')]: {
-                minHeight: '28px',
-                padding: '0 3px'
+                minHeight: '24px',
+                padding: '0 2px'
               }
             },
             '& .MuiTabs-scrollButtons': {

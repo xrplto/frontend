@@ -132,45 +132,32 @@ const MetricValue = styled(Typography)(({ theme }) => ({
   }
 }));
 
-// Mobile-first PercentageChange
+// Unified PercentageChange with professional styling
 const PercentageChange = styled('span', {
   shouldForwardProp: (prop) => prop !== 'isPositive'
 })(({ theme, isPositive }) => ({
-  // Desktop styles
-  fontSize: '0.8rem',
-  color: isPositive ? theme.palette.success.main : theme.palette.error.main,
+  fontSize: '12px',
+  color: isPositive ? '#16a34a' : '#dc2626',
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '4px',
-  fontWeight: 700,
-  padding: '4px 12px',
-  borderRadius: '20px',
-  background: isPositive 
-    ? `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`
-    : `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
-  boxShadow: `0 4px 12px ${alpha(isPositive ? theme.palette.success.main : theme.palette.error.main, 0.3)}`,
-  transition: 'all 0.2s ease',
+  gap: '0px',
+  fontWeight: 600,
+  padding: '2px 4px',
+  borderRadius: '3px',
+  background: isPositive ? alpha('#16a34a', 0.08) : alpha('#dc2626', 0.08),
+  border: `1px solid ${isPositive ? alpha('#16a34a', 0.2) : alpha('#dc2626', 0.2)}`,
+  boxShadow: 'none',
+  transition: 'none',
   '&:hover': {
-    transform: 'scale(1.05)',
-    boxShadow: `0 6px 16px ${alpha(isPositive ? theme.palette.success.main : theme.palette.error.main, 0.4)}`
+    transform: 'none',
+    boxShadow: 'none'
   },
   
-  // Mobile overrides
+  // Mobile even smaller
   '@media (max-width:600px)': {
     fontSize: '10px !important',
-    color: `${isPositive ? '#10b981' : '#ef4444'} !important`,
     padding: '1px 2px !important',
-    borderRadius: '2px !important',
-    background: 'transparent !important',
-    border: `1px solid ${isPositive ? '#10b981' : '#ef4444'} !important`,
-    boxShadow: 'none !important',
-    gap: '0px !important',
-    fontWeight: '600 !important',
-    transform: 'none !important',
-    '&:hover': {
-      transform: 'none !important',
-      boxShadow: 'none !important'
-    }
+    borderRadius: '2px !important'
   }
 }));
 
