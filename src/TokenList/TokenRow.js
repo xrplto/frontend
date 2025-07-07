@@ -348,9 +348,9 @@ function FTokenRow({
 
   const percentageCellStyle = useMemo(
     () => ({
-      width: isMobile ? '60px' : '70px',
-      minWidth: isMobile ? '60px' : '70px',
-      padding: isMobile ? '4px 3px' : '2px 3px',
+      width: isMobile ? '50px' : '70px',
+      minWidth: isMobile ? '50px' : '70px',
+      padding: isMobile ? '2px 1px' : '2px 3px',
       '& .MuiTypography-root': {
         textAlign: 'right',
         width: '100%'
@@ -377,11 +377,11 @@ function FTokenRow({
         fontWeight: '500'
       },
       '& .MuiTableCell-root': {
-        padding: isMobile ? '6px 4px' : '16px 12px',
+        padding: isMobile ? '4px 2px' : '16px 12px',
         whiteSpace: 'nowrap',
         borderBottom: 'none',
         '&:not(:first-of-type)': {
-          paddingLeft: isMobile ? '4px' : '8px'
+          paddingLeft: isMobile ? '2px' : '8px'
         }
       }
     }),
@@ -618,10 +618,10 @@ function FTokenRow({
                 variant="token"
                 sx={{
                   fontWeight: '700',
-                  fontSize: isMobile ? '12px' : '16px',
+                  fontSize: isMobile ? '11px' : '16px',
                   lineHeight: 1.2,
-                  width: isMobile ? '80px' : '140px',
-                  minWidth: isMobile ? '80px' : '140px',
+                  width: isMobile ? '70px' : '140px',
+                  minWidth: isMobile ? '70px' : '140px',
                   letterSpacing: '-0.02em'
                 }}
                 color={
@@ -644,7 +644,7 @@ function FTokenRow({
                   variant="p2"
                   sx={{
                     fontWeight: '500',
-                    fontSize: isMobile ? '10px' : '13px',
+                    fontSize: isMobile ? '9px' : '13px',
                     lineHeight: 1.2,
                     color: darkMode ? '#919EAB' : '#637381',
                     display: 'flex',
@@ -879,19 +879,19 @@ function FTokenRow({
         align="right"
         sx={{
           px: '0 !important',
-          width: isMobile ? '120px' : '160px',
-          minWidth: isMobile ? '120px' : '160px',
-          pr: isMobile ? '12px !important' : '24px !important',
-          pl: isMobile ? '12px !important' : '24px !important',
-          py: isMobile ? '6px !important' : '12px !important'
+          width: isMobile ? '100px' : '160px',
+          minWidth: isMobile ? '100px' : '160px',
+          pr: isMobile ? '8px !important' : '24px !important',
+          pl: isMobile ? '8px !important' : '24px !important',
+          py: isMobile ? '4px !important' : '12px !important'
         }}
       >
         <Box
           sx={{
-            width: isMobile ? 120 : 160,
-            height: isMobile ? 34 : 48,
-            minWidth: isMobile ? 120 : 160,
-            minHeight: isMobile ? 34 : 48,
+            width: isMobile ? 100 : 160,
+            height: isMobile ? 28 : 48,
+            minWidth: isMobile ? 100 : 160,
+            minHeight: isMobile ? 28 : 48,
             position: 'relative',
             zIndex: 1
           }}
@@ -902,8 +902,8 @@ function FTokenRow({
             animation={false}
             opts={{
               renderer: 'svg',
-              width: isMobile ? 120 : 160,
-              height: isMobile ? 34 : 48
+              width: isMobile ? 100 : 160,
+              height: isMobile ? 28 : 48
             }}
           />
         </Box>

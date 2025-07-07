@@ -416,12 +416,14 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           gap: 0,
           paddingTop: '4px',
           paddingBottom: '4px',
-          overflow: 'auto',
+          overflowX: 'auto',
+          overflowY: 'visible',
           width: '100%',
           '& > *': {
             scrollSnapAlign: 'center'
           },
           '::-webkit-scrollbar': { display: 'none' },
+          scrollbarWidth: 'none',
           '& .MuiTableCell-root': {
             padding: '4px 8px',
             height: '40px' // Set a fixed height for table cells
