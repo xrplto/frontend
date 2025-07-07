@@ -332,7 +332,8 @@ export default function SearchToolbar({
   setTokens,
   setPage,
   setSync,
-  sync
+  sync,
+  currentOrderBy
 }) {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -410,8 +411,8 @@ export default function SearchToolbar({
     }
   }, []);
 
-  // Get current sorting period from URL
-  const currentPeriod = router.query.sort;
+  // Get current sorting period from URL or use the currentOrderBy prop
+  const currentPeriod = router.query.sort || currentOrderBy;
   const periodLabels = {
     pro5m: '5m',
     pro1h: '1h',
@@ -598,7 +599,7 @@ export default function SearchToolbar({
     () =>
       getEnhancedChipStyles(
         theme,
-        tagValue === 0 && !currentPeriod,
+        tagValue === 0 && !currentPeriod || currentPeriod === 'vol24hxrp',
         theme.palette.primary.main,
         false
       ),
@@ -633,7 +634,7 @@ export default function SearchToolbar({
   );
 
   const mostViewedChipStyles = useMemo(
-    () => getEnhancedChipStyles(theme, currentPeriod === 'views', '#9155FD', isLoading.mostViewed),
+    () => getEnhancedChipStyles(theme, currentPeriod === 'nginxScore', '#9155FD', isLoading.mostViewed),
     [theme, currentPeriod, isLoading.mostViewed]
   );
 

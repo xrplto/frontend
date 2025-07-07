@@ -21,7 +21,7 @@ const MemoizedTokenRow = memo(TokenRow);
 const LazyEditTokenDialog = lazy(() => import('src/components/EditTokenDialog'));
 const LazyTrustSetDialog = lazy(() => import('src/components/TrustSetDialog'));
 
-export default function TokenList({ showWatchList, tag, tagName, tags, tokens, setTokens, tMap }) {
+export default function TokenList({ showWatchList, tag, tagName, tags, tokens, setTokens, tMap, initialOrderBy }) {
   const { accountProfile, openSnackbar, setLoading, darkMode, activeFiatCurrency } =
     useContext(AppContext);
   const theme = useTheme();
@@ -38,8 +38,8 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
-  const [orderBy, setOrderBy] = useState('vol24hxrp');
-  const [sync, setSync] = useState(showWatchList ? 1 : 0);
+  const [orderBy, setOrderBy] = useState(initialOrderBy || 'vol24hxrp');
+  const [sync, setSync] = useState(showWatchList || initialOrderBy ? 1 : 0);
   const [editToken, setEditToken] = useState(null);
   const [trustToken, setTrustToken] = useState(null);
   const [rows, setRows] = useState(100);
@@ -444,6 +444,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           setPage={setPage}
           setSync={setSync}
           sync={sync}
+          currentOrderBy={orderBy}
         />
       </Box>
 

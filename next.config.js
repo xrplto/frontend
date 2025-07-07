@@ -62,14 +62,6 @@ module.exports = {
   // Add performance optimizations
   reactStrictMode: true,
   compress: true,
-  // Fix HMR invalid message warning and optimize JavaScript output
-  experimental: {
-    isrFlushToDisk: false,
-    legacyBrowsers: false,
-    browsersListForSwc: true
-  },
-  // Configure SWC to use modern JavaScript
-  swcMinify: true,
   // Optimize webpack bundle
   webpack: (config, { isServer }) => {
     // Split chunks more aggressively

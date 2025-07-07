@@ -7,6 +7,7 @@ import { ContextProvider } from 'src/AppContext';
 import { useSnackbar } from 'src/components/useSnackbar';
 import './zMain.css';
 import { SnackbarProvider } from 'notistack';
+import 'src/utils/i18n';
 
 // Lazy load non-critical components
 const XSnackbar = dynamic(() => import('src/components/Snackbar'), { ssr: false });
