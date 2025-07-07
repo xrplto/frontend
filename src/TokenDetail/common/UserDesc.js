@@ -1303,10 +1303,10 @@ export default function UserDesc({ token }) {
 
   return (
     <Stack
-      spacing={isMobile ? 0.5 : 0.75}
+      spacing={isMobile ? 0.25 : 0.75}
       sx={{
-        p: isMobile ? 1 : 1.5,
-        borderRadius: isMobile ? '8px' : '16px',
+        p: isMobile ? 0.75 : 1.5,
+        borderRadius: isMobile ? '6px' : '16px',
         background: `linear-gradient(135deg, 
           ${alpha(theme.palette.background.paper, 0.95)} 0%, 
           ${alpha(theme.palette.background.paper, 0.85)} 50%,
@@ -1336,7 +1336,7 @@ export default function UserDesc({ token }) {
       {/* Main Content Row */}
       <Stack
         direction={isMobile ? 'column' : 'row'}
-        spacing={isMobile ? 0.75 : 1.5}
+        spacing={isMobile ? 0.5 : 1.5}
         alignItems={isMobile ? 'stretch' : 'flex-start'}
         justifyContent="space-between"
       >
@@ -1439,14 +1439,14 @@ export default function UserDesc({ token }) {
                   variant="body2"
                   color="text.secondary"
                   sx={{
-                    fontSize: isXsMobile ? '1rem' : '1.1rem',
+                    fontSize: isXsMobile ? '0.85rem' : '0.95rem',
                     fontWeight: 500,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     color: alpha(theme.palette.text.primary, 0.7),
                     lineHeight: 1.1,
-                    mb: 0.25
+                    mb: 0.1
                   }}
                 >
                   {user}
@@ -1456,7 +1456,7 @@ export default function UserDesc({ token }) {
               {/* Removed Social Links from here */}
 
               {/* Rank and Status Icons Row */}
-              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
+              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.25 }}>
                 <Tooltip title={`Rank by 24h Volume: #${id - 1}`}>
                   <Chip
                     label={`#${id - 1}`}
@@ -1465,8 +1465,8 @@ export default function UserDesc({ token }) {
                     size="small"
                     sx={{
                       borderRadius: '6px',
-                      height: isXsMobile ? '20px' : '24px',
-                      fontSize: isXsMobile ? '0.65rem' : '0.75rem',
+                      height: isXsMobile ? '18px' : '22px',
+                      fontSize: isXsMobile ? '0.6rem' : '0.7rem',
                       background: `linear-gradient(135deg,
                         ${alpha(theme.palette.primary.main, 0.12)} 0%,
                         ${alpha(theme.palette.primary.main, 0.06)} 100%
@@ -1801,26 +1801,16 @@ export default function UserDesc({ token }) {
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 1.25,
+                  gap: isMobile ? 0.75 : 1.25,
                   flexWrap: 'wrap',
-                  mt: 0.5
+                  mt: isMobile ? 0.25 : 0.5
                 }}
               >
                 {[
                   {
-                    label: 'Holders',
-                    value: fNumberWithSuffix(holders),
-                    color: theme.palette.error.main
-                  },
-                  {
                     label: 'Unique Traders',
                     value: fNumberWithSuffix(uniqueTraders24h || 0),
                     color: theme.palette.primary.main
-                  },
-                  {
-                    label: 'Trades',
-                    value: fNumberWithSuffix(vol24htx),
-                    color: theme.palette.secondary.main
                   },
                   {
                     label: 'Trustlines',
@@ -1855,11 +1845,11 @@ export default function UserDesc({ token }) {
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      p: 0.75,
-                      borderRadius: '10px',
+                      p: isMobile ? 0.5 : 0.75,
+                      borderRadius: isMobile ? '6px' : '10px',
                       border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
                       background: alpha(theme.palette.background.paper, 0.6),
-                      minHeight: '50px',
+                      minHeight: isMobile ? '40px' : '50px',
                       transition: 'all 0.2s ease',
                       cursor: 'pointer',
 
@@ -1877,12 +1867,12 @@ export default function UserDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.8rem',
+                        fontSize: isMobile ? '0.7rem' : '0.8rem',
                         fontWeight: 500,
                         color: alpha(theme.palette.text.secondary, 0.8),
                         textTransform: 'uppercase',
                         letterSpacing: '0.3px',
-                        mb: 0.25
+                        mb: isMobile ? 0.1 : 0.25
                       }}
                     >
                       {stat.label}:
@@ -1890,7 +1880,7 @@ export default function UserDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.95rem',
+                        fontSize: isMobile ? '0.85rem' : '0.95rem',
                         fontWeight: 700,
                         color: stat.color,
                         textShadow: `0 1px 2px ${alpha(stat.color, 0.3)}`
@@ -1908,21 +1898,16 @@ export default function UserDesc({ token }) {
           {/* Mobile Price & Extra Buttons and Mobile Stats Grid - Combined and Reordered */}
           {isMobile && (
             <Stack spacing={0.75} sx={{ width: '100%' }}>
-              {/* Price & Extra Buttons */}
-              <Stack direction="column" spacing={0.75} sx={{ width: '100%', mt: 0.5 }}>
-                <Box sx={{ width: '100%' }}>
-                  <PriceDesc token={token} />
-                </Box>
-                <Box sx={{ width: '100%' }}>
-                  <ExtraButtons token={token} />
-                </Box>
-              </Stack>
+              {/* Price */}
+              <Box sx={{ width: '100%', mt: 0.5 }}>
+                <PriceDesc token={token} />
+              </Box>
 
               {/* Primary Stats Row - Always Visible */}
               <Box
                 sx={{
                   display: 'grid',
-                  gridTemplateColumns: isXsMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
                   gap: 0.25, // Reduced gap for more compactness
                   p: 0.75,
                   borderRadius: '10px',
@@ -1964,13 +1949,6 @@ export default function UserDesc({ token }) {
                     gradientTo: '#FFB74D'
                   },
                   {
-                    label: 'Holders',
-                    value: fNumberWithSuffix(holders),
-                    color: theme.palette.error.main,
-                    gradientFrom: '#FF1744',
-                    gradientTo: '#FF6B6B'
-                  },
-                  {
                     label: 'TVL',
                     value: (() => {
                       // Calculate TVL estimate based on market cap and trustlines ratio
@@ -1997,22 +1975,7 @@ export default function UserDesc({ token }) {
                     gradientFrom: '#4CAF50',
                     gradientTo: '#81C784'
                   },
-                  {
-                    label: 'Traders',
-                    value: fNumberWithSuffix(uniqueTraders24h || 0),
-                    color: theme.palette.primary.main,
-                    gradientFrom: '#2196F3',
-                    gradientTo: '#42A5F5'
-                  },
-                  {
-                    label: 'Offers',
-                    value: fNumberWithSuffix(offers),
-                    color: theme.palette.warning.main,
-                    gradientFrom: '#FF9800',
-                    gradientTo: '#FFB74D'
-                  }
                 ]
-                  .slice(0, isXsMobile ? 4 : 6)
                   .map((stat, index) => (
                     <Box
                       key={stat.label}
@@ -2068,6 +2031,11 @@ export default function UserDesc({ token }) {
                       </Typography>
                     </Box>
                   ))}
+              </Box>
+
+              {/* Extra Buttons */}
+              <Box sx={{ width: '100%' }}>
+                <ExtraButtons token={token} />
               </Box>
 
               {/* Secondary Stats - Expandable */}
@@ -2190,8 +2158,8 @@ export default function UserDesc({ token }) {
                                 'Number of accounts that have established trust lines for this token'
                             },
                             {
-                              label: 'TVL Estimate',
-                              value: (() => {
+                              label: isMobile ? 'Holders' : 'TVL Estimate',
+                              value: isMobile ? fNumberWithSuffix(holders) : (() => {
                                 if (!convertedMarketCap || convertedMarketCap === 0) {
                                   return '0';
                                 }
@@ -2208,7 +2176,7 @@ export default function UserDesc({ token }) {
                                 return fNumberWithSuffix(tvlEstimate);
                               })(),
                               color: theme.palette.success.main,
-                              tooltip:
+                              tooltip: isMobile ? 'Total number of unique token holders' :
                                 'Estimated Total Value Locked - calculated based on market cap and trustline adoption ratio. Higher trustline-to-holder ratios indicate better liquidity and higher TVL estimates.',
                               gradientFrom: '#4CAF50',
                               gradientTo: '#81C784'
@@ -2363,12 +2331,6 @@ export default function UserDesc({ token }) {
                           }}
                         >
                           {[
-                            {
-                              label: 'Active Holders',
-                              value: fNumberWithSuffix(holders),
-                              color: theme.palette.error.main,
-                              percentage: holders > 0 ? '100%' : '0%'
-                            },
                             {
                               label: 'Unique Traders (24h)',
                               value: fNumberWithSuffix(uniqueTraders24h || 0),

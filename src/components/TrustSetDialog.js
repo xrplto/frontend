@@ -59,7 +59,7 @@ const TrustDialog = styled(Dialog)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.4)'
   },
   '& .MuiDialog-paper': {
-    borderRadius: '24px',
+    borderRadius: '16px',
     background:
       theme.palette.mode === 'dark'
         ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
@@ -78,53 +78,32 @@ const TrustDialog = styled(Dialog)(({ theme }) => ({
       0.04
     )}`,
     overflow: 'hidden',
-    position: 'relative',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: '2px',
-      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-      opacity: 0.8
-    }
+    position: 'relative'
   },
   '& .MuiDialogContent-root': {
-    padding: theme.spacing(3),
-    minWidth: { xs: '100%', sm: 400 },
+    padding: theme.spacing(2),
+    minWidth: { xs: '100%', sm: 360 },
     background: 'transparent',
-    position: 'relative',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      width: '60px',
-      height: '4px',
-      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
-      borderRadius: '2px',
-      opacity: 0.8
-    }
+    position: 'relative'
   },
   '& .MuiDialogActions-root': {
-    padding: theme.spacing(2)
+    padding: theme.spacing(1.5)
   },
   '@media (max-width: 600px)': {
     '& .MuiDialog-paper': {
-      margin: theme.spacing(2),
-      borderRadius: '16px'
+      margin: theme.spacing(1.5),
+      borderRadius: '12px'
     },
     '& .MuiDialogContent-root': {
-      padding: theme.spacing(2)
+      padding: theme.spacing(1.5),
+      minWidth: 320
     }
   }
 }));
 
 const TrustDialogTitle = styled(DialogTitle)(({ theme }) => ({
   margin: 0,
-  padding: theme.spacing(2.5, 3),
+  padding: theme.spacing(1.5, 2),
   background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
     theme.palette.background.paper,
     0.4
@@ -153,16 +132,12 @@ const CloseButton = styled(IconButton)(({ theme }) => ({
 }));
 
 const TokenAvatar = styled(Avatar)(({ theme }) => ({
-  width: 40,
-  height: 40,
-  borderRadius: theme.spacing(1),
-  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
-  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`,
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    transform: 'scale(1.05)',
-    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.15)}`
-  }
+  width: 32,
+  height: 32,
+  borderRadius: theme.spacing(0.75),
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
+  transition: 'all 0.3s ease'
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -208,18 +183,11 @@ const InfoCard = styled(Stack)(({ theme }) => ({
     0.7
   )} 100%)`,
   backdropFilter: 'blur(20px)',
-  borderRadius: theme.spacing(1),
-  padding: theme.spacing(1.5),
+  borderRadius: theme.spacing(0.75),
+  padding: theme.spacing(1),
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.8
-    )} 100%)`,
-    border: `1px solid ${alpha(theme.palette.divider, 0.12)}`
-  }
+  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.06)}`,
+  transition: 'all 0.2s ease'
 }));
 
 const StyledLink = styled(Link)(({ theme }) => ({
@@ -247,31 +215,32 @@ const CurrencyChip = styled(Typography)(({ theme }) => ({
 }));
 
 const ActionButton = styled(Button)(({ theme }) => ({
-  minWidth: '120px',
-  height: '44px',
-  borderRadius: theme.spacing(1.5),
+  minWidth: '100px',
+  height: '36px',
+  borderRadius: theme.spacing(1),
   textTransform: 'none',
   fontWeight: 600,
-  padding: '8px 22px',
+  fontSize: '0.875rem',
+  padding: '6px 16px',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&.MuiButton-contained': {
     background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${alpha(
       theme.palette.primary.main,
       0.9
     )} 100%)`,
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}`,
     '&:hover': {
-      transform: 'translateY(-2px) scale(1.02)',
-      boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.4)}`
+      transform: 'translateY(-1px)',
+      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.35)}`
     },
     '&.MuiButton-colorError': {
       background: `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${alpha(
         theme.palette.error.main,
         0.9
       )} 100%)`,
-      boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.3)}`,
+      boxShadow: `0 2px 8px ${alpha(theme.palette.error.main, 0.25)}`,
       '&:hover': {
-        boxShadow: `0 8px 24px ${alpha(theme.palette.error.main, 0.4)}`
+        boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.35)}`
       }
     }
   }
@@ -756,19 +725,20 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
 
       <TrustDialog fullScreen={fullScreen} onClose={handleClose} open={true} sx={{ zIndex: 1302 }}>
         <TrustDialogTitle>
-          <Stack direction="row" alignItems="center">
+          <Stack direction="row" alignItems="center" spacing={1}>
             <TokenAvatar
               alt={`${user} ${name} Logo`}
               src={imgUrl}
               variant="rounded"
-              sx={{ mr: 1 }}
             />
-            <Stack>
+            <Stack spacing={0}>
               <Typography
-                variant="token"
+                variant="subtitle2"
                 sx={{
                   color: theme.palette.primary.main,
-                  fontWeight: 600
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  lineHeight: 1.2
                 }}
               >
                 {name}
@@ -776,156 +746,83 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
               <Typography
                 variant="caption"
                 sx={{
-                  color: alpha(theme.palette.text.secondary, 0.8)
+                  color: alpha(theme.palette.text.secondary, 0.7),
+                  fontSize: '0.7rem',
+                  lineHeight: 1.2
                 }}
               >
                 {user}
               </Typography>
             </Stack>
           </Stack>
-          <CloseButton onClick={handleClose}>
-            <CloseIcon />
+          <CloseButton onClick={handleClose} sx={{ padding: '6px' }}>
+            <CloseIcon sx={{ fontSize: '18px' }} />
           </CloseButton>
         </TrustDialogTitle>
 
         <DialogContent>
-          <Stack spacing={2.5} sx={{ px: 1 }}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
-                Issuer:
-              </Typography>
-              <Stack direction="row" alignItems="center" spacing={0.5} sx={{ flex: 1 }}>
+          <Stack spacing={1.5}>
+            <Stack spacing={1}>
+              <Stack direction="row" alignItems="center" spacing={0.5}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', minWidth: '60px' }}>
+                  Issuer:
+                </Typography>
                 <StyledLink
                   underline="hover"
                   target="_blank"
                   href={`https://bithomp.com/explorer/${issuer}`}
                   rel="noreferrer noopener nofollow"
-                  sx={{ flex: 1 }}
+                  sx={{ flex: 1, fontSize: '0.75rem' }}
                 >
-                  <Typography variant="body2" noWrap>
-                    {issuer}
-                  </Typography>
+                  {issuer.slice(0, 8)}...{issuer.slice(-6)}
                 </StyledLink>
                 <CopyToClipboard
                   text={issuer}
-                  onCopy={() => openSnackbar('Address copied!', 'success')}
+                  onCopy={() => openSnackbar('Copied!', 'success')}
                 >
-                  <Tooltip title="Copy address">
-                    <CopyButton size="small">
-                      <ContentCopyIcon fontSize="small" />
-                    </CopyButton>
-                  </Tooltip>
+                  <CopyButton size="small" sx={{ padding: '4px' }}>
+                    <ContentCopyIcon sx={{ fontSize: '14px' }} />
+                  </CopyButton>
                 </CopyToClipboard>
               </Stack>
-            </Stack>
 
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
-                Currency:
-              </Typography>
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <CurrencyChip variant="body2" noWrap>
+                <Typography variant="caption" sx={{ color: 'text.secondary', minWidth: '60px' }}>
+                  Currency:
+                </Typography>
+                <CurrencyChip variant="caption" sx={{ fontSize: '0.75rem', padding: '2px 6px' }}>
                   {currency}
                 </CurrencyChip>
-                <CopyToClipboard
-                  text={currency}
-                  onCopy={() => openSnackbar('Currency code copied!', 'success')}
-                >
-                  <Tooltip title="Copy currency code">
-                    <CopyButton size="small">
-                      <ContentCopyIcon fontSize="small" />
-                    </CopyButton>
-                  </Tooltip>
-                </CopyToClipboard>
               </Stack>
             </Stack>
 
-            <StyledTextField
-              fullWidth
-              label="Trust Amount"
-              value={amount}
-              onChange={handleChangeAmount}
-              variant="outlined"
-              disabled={isRemove}
-            />
+            {!isRemove && (
+              <StyledTextField
+                fullWidth
+                size="small"
+                label="Trust Amount"
+                value={amount}
+                onChange={handleChangeAmount}
+                variant="outlined"
+                disabled={isRemove}
+                InputProps={{ style: { height: '36px' } }}
+                InputLabelProps={{ style: { fontSize: '0.875rem' } }}
+              />
+            )}
 
-            <InfoCard direction="row" alignItems="center">
-              <Typography
-                variant="body2"
-                sx={{
-                  flex: 1,
-                  color: 'text.secondary',
-                  fontSize: '0.85rem'
-                }}
-              >
-                {`https://xrpl.to/trustset/${slug}`}
-              </Typography>
-              <CopyToClipboard
-                text={`https://xrpl.to/trustset/${slug}`}
-                onCopy={() => openSnackbar('Copied!', 'success')}
-              >
-                <Tooltip title={'Click to copy'}>
-                  <CopyButton size="small">
-                    <Icon icon={copyIcon} width={18} />
-                  </CopyButton>
-                </Tooltip>
-              </CopyToClipboard>
-            </InfoCard>
-
-            <Stack direction="row" spacing={2} justifyContent="center" sx={{ pt: 1 }}>
+            <Stack direction="row" spacing={1} justifyContent="center">
               {isLoggedIn ? (
                 <ActionButton
                   variant="contained"
                   onClick={isRemove ? handleRemoveTrust : handleSetTrust}
                   color={isRemove ? 'error' : 'primary'}
-                  size="large"
+                  fullWidth
                 >
                   {`${isRemove ? 'Remove' : 'Set'} Trustline`}
                 </ActionButton>
               ) : (
                 <ConnectWallet />
               )}
-
-              <CopyToClipboard
-                text={`https://xrpl.to/trustset/${slug}`}
-                onCopy={() => openSnackbar('Copied!', 'success')}
-              >
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  size="large"
-                  sx={{
-                    minWidth: '120px',
-                    height: '44px',
-                    borderRadius: '12px',
-                    textTransform: 'none',
-                    padding: '8px 22px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.9
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                    backdropFilter: 'blur(20px)',
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                    color: theme.palette.primary.main,
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      transform: 'translateY(-2px) scale(1.02)',
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.background.paper,
-                        0.95
-                      )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
-                      boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.25)}`
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)'
-                    }
-                  }}
-                >
-                  Copy Link
-                </Button>
-              </CopyToClipboard>
             </Stack>
           </Stack>
         </DialogContent>

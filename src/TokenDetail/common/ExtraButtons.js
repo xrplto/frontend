@@ -74,12 +74,12 @@ export default function ExtraButtons({ token }) {
 
   return (
     <Stack
-      alignItems="flex-end"
-      spacing={0.5}
+      alignItems={isMobile ? 'stretch' : 'flex-end'}
+      spacing={isMobile ? 0.25 : 0.5}
       sx={{
         position: 'relative',
         width: '100%',
-        p: isMobile ? 0.5 : 0
+        p: 0
       }}
     >
       {trustToken && (
@@ -91,72 +91,81 @@ export default function ExtraButtons({ token }) {
         />
       )}
 
-      <Button
-        variant="contained"
-        onClick={handleSetTrust}
-        color={isRemove ? 'error' : 'primary'}
-        size="small"
-        fullWidth={isMobile}
-        disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
-        sx={{
-          px: 1.5,
-          py: 0.5,
-          minHeight: 32,
-          borderRadius: 1,
-          fontSize: '0.8rem',
-          fontWeight: 500,
-          textTransform: 'none',
-          background: (theme) =>
-            `linear-gradient(135deg, 
-              ${isRemove ? theme.palette.error.main : theme.palette.primary.main}, 
-              ${isRemove ? theme.palette.error.dark : theme.palette.primary.dark})`,
-          boxShadow: (theme) =>
-            `0 2px 8px ${alpha(
-              isRemove ? theme.palette.error.main : theme.palette.primary.main,
-              0.3
-            )}`,
-          transition: 'all 0.2s ease',
-          '&:hover': {
-            transform: 'translateY(-1px)',
-            boxShadow: (theme) =>
-              `0 4px 12px ${alpha(
-                isRemove ? theme.palette.error.main : theme.palette.primary.main,
-                0.4
-              )}`
-          },
-          '&:active': {
-            transform: 'translateY(0)'
-          }
-        }}
-      >
-        {`${isRemove ? 'Remove' : 'Set'} Trustline`}
-      </Button>
-
       <Stack
-        direction="row"
-        alignItems="center"
-        spacing={0.5}
-        sx={{
-          opacity: 0.7,
-          '&:hover': { opacity: 1 }
-        }}
+        direction={isMobile ? 'row' : 'column'}
+        alignItems={isMobile ? 'center' : 'flex-end'}
+        spacing={isMobile ? 1 : 0.5}
+        sx={{ width: '100%' }}
       >
-        <Image
-          src={darkMode ? '/static/sponsor-dark-theme.svg' : '/static/sponsor-light-theme.svg'}
-          width={16}
-          height={16}
-          alt="Sponsor"
-        />
-        <Typography
-          variant="caption"
+        <Button
+          variant="contained"
+          onClick={handleSetTrust}
+          color={isRemove ? 'error' : 'primary'}
+          size="small"
+          fullWidth={isMobile}
+          disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
           sx={{
-            fontSize: '0.7rem',
-            fontWeight: 400,
-            color: 'text.secondary'
+            px: isMobile ? 1 : 1.5,
+            py: isMobile ? 0.375 : 0.5,
+            minHeight: isMobile ? 28 : 32,
+            borderRadius: 1,
+            fontSize: isMobile ? '0.75rem' : '0.8rem',
+            fontWeight: 500,
+            textTransform: 'none',
+            flex: isMobile ? 1 : 'none',
+            background: (theme) =>
+              `linear-gradient(135deg, 
+                ${isRemove ? theme.palette.error.main : theme.palette.primary.main}, 
+                ${isRemove ? theme.palette.error.dark : theme.palette.primary.dark})`,
+            boxShadow: (theme) =>
+              `0 2px 8px ${alpha(
+                isRemove ? theme.palette.error.main : theme.palette.primary.main,
+                isMobile ? 0.2 : 0.3
+              )}`,
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              transform: isMobile ? 'none' : 'translateY(-1px)',
+              boxShadow: (theme) =>
+                `0 4px 12px ${alpha(
+                  isRemove ? theme.palette.error.main : theme.palette.primary.main,
+                  0.4
+                )}`
+            },
+            '&:active': {
+              transform: 'translateY(0)'
+            }
           }}
         >
-          Sponsored
-        </Typography>
+          {`${isRemove ? 'Remove' : 'Set'} Trustline`}
+        </Button>
+
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={0.25}
+          sx={{
+            opacity: 0.7,
+            '&:hover': { opacity: 1 },
+            ml: isMobile ? 'auto' : 0
+          }}
+        >
+          <Image
+            src={darkMode ? '/static/sponsor-dark-theme.svg' : '/static/sponsor-light-theme.svg'}
+            width={isMobile ? 12 : 16}
+            height={isMobile ? 12 : 16}
+            alt="Sponsor"
+          />
+          <Typography
+            variant="caption"
+            sx={{
+              fontSize: isMobile ? '0.65rem' : '0.7rem',
+              fontWeight: 400,
+              color: 'text.secondary'
+            }}
+          >
+            Sponsored
+          </Typography>
+        </Stack>
       </Stack>
     </Stack>
   );

@@ -379,13 +379,13 @@ const PriceDesc = memo(({ token }) => {
             sx={{
               display: 'grid',
               gridTemplateColumns: {
-                xs: isXsMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+                xs: 'repeat(3, 1fr)',
                 sm: 'repeat(4, 1fr)'
               },
               gap: { xs: 0.2, sm: 0.25 }
             }}
           >
-            {priceChanges.map((item) => (
+            {(isMobile ? priceChanges.filter(item => item.label !== '7d') : priceChanges).map((item) => (
               <Tooltip
                 key={item.label}
                 title={
@@ -518,21 +518,6 @@ const PriceDesc = memo(({ token }) => {
             ))}
           </Box>
 
-          {/* Mobile: Show additional row for 2-column layout on very small screens */}
-          {isXsMobile && (
-            <Typography
-              variant="caption"
-              sx={{
-                fontSize: '0.45rem',
-                color: alpha(theme.palette.text.secondary, 0.6),
-                textAlign: 'center',
-                mt: 0.15,
-                display: 'block'
-              }}
-            >
-              Tap for detailed charts
-            </Typography>
-          )}
         </Box>
       </Stack>
     </Box>
