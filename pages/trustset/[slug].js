@@ -6,7 +6,7 @@ export default function TrustsetRedirect() {
 
   useEffect(() => {
     if (router.query.slug) {
-      router.replace(`/token/${router.query.slug}/trustset`);
+      window.location.replace(`/token/${router.query.slug}/trustset`);
     }
   }, [router]);
 

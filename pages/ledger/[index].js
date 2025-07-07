@@ -18,7 +18,6 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import Link from 'next/link';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';
@@ -83,19 +82,15 @@ const LedgerDetails = ({ ledgerData, error }) => {
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: 2 }}>
-        <Link href={`/ledgers/${ledgerIndex - 1}`} passHref>
-          <IconButton component="a">
-            <ArrowBackIcon />
-          </IconButton>
-        </Link>
+        <IconButton onClick={() => window.location.href = `/ledgers/${ledgerIndex - 1}`}>
+          <ArrowBackIcon />
+        </IconButton>
         <Typography variant="h6" sx={{ mx: 2 }}>
           #{ledgerIndex}
         </Typography>
-        <Link href={`/ledgers/${ledgerIndex + 1}`} passHref>
-          <IconButton component="a">
-            <ArrowForwardIcon />
-          </IconButton>
-        </Link>
+        <IconButton onClick={() => window.location.href = `/ledgers/${ledgerIndex + 1}`}>
+          <ArrowForwardIcon />
+        </IconButton>
       </Box>
 
       <TableContainer>
@@ -117,19 +112,18 @@ const LedgerDetails = ({ ledgerData, error }) => {
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <AccountAvatar account={tx.Account} />
-                    <Link href={`/profile/${tx.Account}`} passHref>
-                      <Typography
-                        component="a"
-                        variant="body2"
-                        sx={{
-                          color: 'primary.main',
-                          textDecoration: 'none',
-                          '&:hover': { textDecoration: 'underline' }
-                        }}
-                      >
-                        {shortenAddress(tx.Account)}
-                      </Typography>
-                    </Link>
+                    <Typography
+                      variant="body2"
+                      onClick={() => window.location.href = `/profile/${tx.Account}`}
+                      sx={{
+                        color: 'primary.main',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        '&:hover': { textDecoration: 'underline' }
+                      }}
+                    >
+                      {shortenAddress(tx.Account)}
+                    </Typography>
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -143,19 +137,18 @@ const LedgerDetails = ({ ledgerData, error }) => {
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Link href={`/tx/${tx.hash}`} passHref>
-                    <Typography
-                      component="a"
-                      variant="body2"
-                      sx={{
-                        color: 'primary.main',
-                        textDecoration: 'none',
-                        '&:hover': { textDecoration: 'underline' }
-                      }}
-                    >
-                      {shortenHash(tx.hash)}
-                    </Typography>
-                  </Link>
+                  <Typography
+                    variant="body2"
+                    onClick={() => window.location.href = `/tx/${tx.hash}`}
+                    sx={{
+                      color: 'primary.main',
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {shortenHash(tx.hash)}
+                  </Typography>
                 </TableCell>
               </TableRow>
             ))}

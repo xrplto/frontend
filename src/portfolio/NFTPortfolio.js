@@ -268,7 +268,7 @@ function CollectionCard({ collectionData, type, account, handleRemove, smallSize
 
   const collectionType = type.charAt(0).toUpperCase() + type.slice(1);
   const redirectToDetail = () => {
-    router.push(`/profile/${account}/collection${collectionType}/${collectionData.collection.id}`);
+    window.location.href = `/profile/${account}/collection${collectionType}/${collectionData.collection.id}`;
   };
 
   return (
@@ -481,7 +481,7 @@ const NFTPortfolio = ({
   };
 
   const handleBack = () => {
-    router.push(`/profile/${account}`);
+    window.location.href = `/profile/${account}`;
   };
 
   return (

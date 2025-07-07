@@ -58,7 +58,7 @@ export default function LoginDialog(props) {
     e.preventDefault();
 
     if (!isMobile) {
-      router.push(nextUrl);
+      window.location.href = nextUrl;
     } else {
       setOpenDialog(true);
     }
@@ -74,7 +74,7 @@ export default function LoginDialog(props) {
     // Simulating an API request delay
     setTimeout(() => {
       setLoading(false);
-      router.push(nextUrl);
+      window.location.href = nextUrl;
     }, 1500);
   };
 

@@ -1,7 +1,6 @@
 import { useContext, useState } from 'react';
 import { Box } from '@mui/material';
 import Image from 'next/image';
-import Link from 'next/link';
 
 import { AppContext } from 'src/AppContext';
 
@@ -31,7 +30,7 @@ function Logo({ style }) {
   };
 
   return (
-    <Link href="/" style={logoStyle}>
+    <Box style={logoStyle} onClick={() => window.location.href = '/'}>
       {imageError ? (
         <Box
           sx={{
@@ -58,7 +57,7 @@ function Logo({ style }) {
           }}
         />
       )}
-    </Link>
+    </Box>
   );
 }
 

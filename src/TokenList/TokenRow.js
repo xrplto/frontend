@@ -6,7 +6,6 @@ import {
   styled,
   useMediaQuery,
   useTheme,
-  Link,
   Stack,
   TableCell,
   TableRow,
@@ -479,8 +478,8 @@ function FTokenRow({
   );
 
   const handleRowClick = useCallback(() => {
-    router.replace(`/token/${slug}`);
-  }, [router, slug]);
+    window.location.href = `/token/${slug}`;
+  }, [slug]);
 
   const handleEditToken = useCallback(() => {
     setEditToken(memoizedToken);
@@ -619,78 +618,72 @@ function FTokenRow({
               </TokenImageWrapper>
             )}
           </Box>
-          <Link
-            underline="none"
-            color="inherit"
-            href={`/token/${slug}`}
-            rel="noreferrer noopener nofollow"
-          >
-            <Stack direction="column" spacing={isMobile ? 0.2 : 0.5}>
+          <Stack direction="column" spacing={isMobile ? 0.2 : 0.5}>
+            <Typography
+              variant="token"
+              sx={{
+                fontWeight: '700',
+                fontSize: isMobile ? '11px' : '16px',
+                lineHeight: 1.2,
+                width: isMobile ? '70px' : '140px',
+                minWidth: isMobile ? '70px' : '140px',
+                letterSpacing: '-0.02em',
+                cursor: 'pointer'
+              }}
+              color={
+                isOMCF !== 'yes'
+                  ? darkMode
+                    ? '#fff'
+                    : '#212B36'
+                  : darkMode
+                    ? '#00AB55'
+                    : slug === md5
+                      ? '#B72136'
+                      : ''
+              }
+              noWrap={!isMobile}
+            >
+              {truncate(name, isMobile ? 10 : 16)}
+            </Typography>
+            <Stack direction="row" spacing={isMobile ? 0.3 : 0.5} alignItems="center">
               <Typography
-                variant="token"
+                variant="p2"
                 sx={{
-                  fontWeight: '700',
-                  fontSize: isMobile ? '11px' : '16px',
+                  fontWeight: '500',
+                  fontSize: isMobile ? '9px' : '13px',
                   lineHeight: 1.2,
-                  width: isMobile ? '70px' : '140px',
-                  minWidth: isMobile ? '70px' : '140px',
-                  letterSpacing: '-0.02em'
+                  color: darkMode ? '#919EAB' : '#637381',
+                  display: 'flex',
+                  alignItems: 'center'
                 }}
-                color={
-                  isOMCF !== 'yes'
-                    ? darkMode
-                      ? '#fff'
-                      : '#212B36'
-                    : darkMode
-                      ? '#00AB55'
-                      : slug === md5
-                        ? '#B72136'
-                        : ''
-                }
+                color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#212B36') : ''}
                 noWrap={!isMobile}
               >
-                {truncate(name, isMobile ? 10 : 16)}
+                {truncate(user, isMobile ? 8 : 18)}
               </Typography>
-              <Stack direction="row" spacing={isMobile ? 0.3 : 0.5} alignItems="center">
-                <Typography
-                  variant="p2"
-                  sx={{
-                    fontWeight: '500',
-                    fontSize: isMobile ? '9px' : '13px',
-                    lineHeight: 1.2,
-                    color: darkMode ? '#919EAB' : '#637381',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#212B36') : ''}
-                  noWrap={!isMobile}
-                >
-                  {truncate(user, isMobile ? 8 : 18)}
-                </Typography>
-                <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
-                {origin && (
-                  <>
-                    <Tooltip title="Blackholed Issuer">
-                      <LockIcon sx={{ fontSize: isMobile ? '10px' : '12px', color: '#00AB55' }} />
+              <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
+              {origin && (
+                <>
+                  <Tooltip title="Blackholed Issuer">
+                    <LockIcon sx={{ fontSize: isMobile ? '10px' : '12px', color: '#00AB55' }} />
+                  </Tooltip>
+                  {origin === 'xrp.fun' ? (
+                    <Tooltip title="Liquidity Pool Not Burned">
+                      <ElectricBoltIcon
+                        sx={{ fontSize: isMobile ? '10px' : '12px', color: '#FF5630' }}
+                      />
                     </Tooltip>
-                    {origin === 'xrp.fun' ? (
-                      <Tooltip title="Liquidity Pool Not Burned">
-                        <ElectricBoltIcon
-                          sx={{ fontSize: isMobile ? '10px' : '12px', color: '#FF5630' }}
-                        />
-                      </Tooltip>
-                    ) : (
-                      <Tooltip title="Burned Liquidity Pool">
-                        <LocalFireDepartmentIcon
-                          sx={{ fontSize: isMobile ? '10px' : '12px', color: '#1890FF' }}
-                        />
-                      </Tooltip>
-                    )}
-                  </>
-                )}
-              </Stack>
+                  ) : (
+                    <Tooltip title="Burned Liquidity Pool">
+                      <LocalFireDepartmentIcon
+                        sx={{ fontSize: isMobile ? '10px' : '12px', color: '#1890FF' }}
+                      />
+                    </Tooltip>
+                  )}
+                </>
+              )}
             </Stack>
-          </Link>
+          </Stack>
         </Stack>
       </TableCell>
       <TableCell

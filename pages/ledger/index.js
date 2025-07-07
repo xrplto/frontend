@@ -14,7 +14,6 @@ import {
   TableRow,
   Avatar
 } from '@mui/material';
-import Link from 'next/link';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';
@@ -96,19 +95,18 @@ const LedgerDetails = ({ ledgerData, error }) => {
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <AccountAvatar account={tx.Account} />
-                    <Link href={`/profile/${tx.Account}`} passHref>
-                      <Typography
-                        component="a"
-                        variant="body2"
-                        sx={{
-                          color: 'primary.main',
-                          textDecoration: 'none',
-                          '&:hover': { textDecoration: 'underline' }
-                        }}
-                      >
-                        {shortenAddress(tx.Account)}
-                      </Typography>
-                    </Link>
+                    <Typography
+                      variant="body2"
+                      onClick={() => window.location.href = `/profile/${tx.Account}`}
+                      sx={{
+                        color: 'primary.main',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        '&:hover': { textDecoration: 'underline' }
+                      }}
+                    >
+                      {shortenAddress(tx.Account)}
+                    </Typography>
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -122,19 +120,18 @@ const LedgerDetails = ({ ledgerData, error }) => {
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Link href={`/tx/${tx.hash}`} passHref>
-                    <Typography
-                      component="a"
-                      variant="body2"
-                      sx={{
-                        color: 'primary.main',
-                        textDecoration: 'none',
-                        '&:hover': { textDecoration: 'underline' }
-                      }}
-                    >
-                      {shortenHash(tx.hash)}
-                    </Typography>
-                  </Link>
+                  <Typography
+                    variant="body2"
+                    onClick={() => window.location.href = `/tx/${tx.hash}`}
+                    sx={{
+                      color: 'primary.main',
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {shortenHash(tx.hash)}
+                  </Typography>
                 </TableCell>
               </TableRow>
             ))}

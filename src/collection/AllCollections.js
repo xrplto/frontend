@@ -18,7 +18,6 @@ import CollectionList from './CollectionList';
 import { CollectionListType } from 'src/utils/constants';
 import { alpha } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
-import Link from 'next/link';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -606,34 +605,33 @@ export default function Collections() {
               are included.
             </Typography>
           </Box>
-          <Link href="/collections">
-            <Button
-              variant="contained"
-              size="medium"
-              sx={{
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.primary.main,
-                  0.9
-                )} 0%, ${alpha(theme.palette.primary.dark, 0.8)} 100%)`,
-                color: theme.palette.primary.contrastText,
-                '&:hover': {
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                  transform: 'translateY(-2px)',
-                  boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`
-                },
-                borderRadius: '12px',
-                textTransform: 'none',
-                fontWeight: 600,
-                fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                padding: { xs: '8px 16px', sm: '10px 20px' },
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                backdropFilter: 'blur(10px)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-            >
-              View All Collections
-            </Button>
-          </Link>
+          <Button
+            variant="contained"
+            size="medium"
+            onClick={() => window.location.href = '/collections'}
+            sx={{
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.primary.main,
+                0.9
+              )} 0%, ${alpha(theme.palette.primary.dark, 0.8)} 100%)`,
+              color: theme.palette.primary.contrastText,
+              '&:hover': {
+                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                transform: 'translateY(-2px)',
+                boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`
+              },
+              borderRadius: '12px',
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: { xs: '0.8rem', sm: '0.875rem' },
+              padding: { xs: '8px 16px', sm: '10px 20px' },
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+              backdropFilter: 'blur(10px)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+          >
+            View All Collections
+          </Button>
         </Box>
       </Container>
 

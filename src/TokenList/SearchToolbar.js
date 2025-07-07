@@ -714,7 +714,7 @@ export default function SearchToolbar({
             <ToggleButton
               size="small"
               value="heatmap"
-              onClick={() => router.push('/tokens-heatmap')}
+              onClick={() => window.location.href = '/tokens-heatmap'}
             >
               <WindowIcon fontSize="18px" />
             </ToggleButton>
