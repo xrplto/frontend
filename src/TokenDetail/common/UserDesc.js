@@ -1813,6 +1813,16 @@ export default function UserDesc({ token }) {
                     color: theme.palette.primary.main
                   },
                   {
+                    label: 'Holders',
+                    value: fNumberWithSuffix(holders),
+                    color: theme.palette.warning.main
+                  },
+                  {
+                    label: 'Trades',
+                    value: fNumberWithSuffix(vol24htx),
+                    color: theme.palette.secondary.main
+                  },
+                  {
                     label: 'Trustlines',
                     value: fNumberWithSuffix(trustlines),
                     color: theme.palette.info.main
@@ -2033,11 +2043,6 @@ export default function UserDesc({ token }) {
                   ))}
               </Box>
 
-              {/* Extra Buttons */}
-              <Box sx={{ width: '100%' }}>
-                <ExtraButtons token={token} />
-              </Box>
-
               {/* Secondary Stats - Expandable */}
               <Box
                 sx={{
@@ -2054,14 +2059,14 @@ export default function UserDesc({ token }) {
                   onClick={() => setShowStat(!showStat)}
                   fullWidth
                   sx={{
-                    p: 1,
+                    p: 0.75,
                     justifyContent: 'space-between',
                     color: theme.palette.text.primary,
                     fontWeight: 500,
-                    fontSize: '0.75rem',
+                    fontSize: '0.7rem',
                     textTransform: 'none',
                     borderRadius: 0,
-                    minHeight: '44px',
+                    minHeight: '36px',
 
                     '&:hover': {
                       background: `linear-gradient(135deg, 
@@ -2070,16 +2075,16 @@ export default function UserDesc({ token }) {
                     }
                   }}
                 >
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
-                      {showStat ? 'Hide' : 'Show'} Detailed Stats
-                    </Typography>
-                  </Stack>
+                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+                    {showStat ? 'Hide' : 'Show'} Detailed Stats
+                  </Typography>
                   <KeyboardArrowRightIcon
                     sx={{
-                      width: isMobile ? 14 : 12,
-                      height: isMobile ? 14 : 12,
-                      color: theme.palette.primary.main
+                      width: 12,
+                      height: 12,
+                      color: theme.palette.primary.main,
+                      transform: showStat ? 'rotate(90deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s ease'
                     }}
                   />
                 </Button>
@@ -2088,16 +2093,16 @@ export default function UserDesc({ token }) {
                 {showStat && (
                   <Box
                     sx={{
-                      p: 1,
+                      p: 0.75,
                       borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                       background: `linear-gradient(135deg, 
                         ${alpha(theme.palette.background.paper, 0.4)} 0%, 
                         ${alpha(theme.palette.background.paper, 0.2)} 100%)`,
-                      animation: 'fadeInUp 0.3s ease-out',
+                      animation: 'fadeInUp 0.2s ease-out',
                       '@keyframes fadeInUp': {
                         '0%': {
                           opacity: 0,
-                          transform: 'translateY(-10px)'
+                          transform: 'translateY(-5px)'
                         },
                         '100%': {
                           opacity: 1,
@@ -2106,18 +2111,23 @@ export default function UserDesc({ token }) {
                       }
                     }}
                   >
-                    <Stack spacing={1}>
+                    <Stack spacing={0.75}>
+                      {/* Extra Buttons */}
+                      <Box sx={{ width: '100%', mb: 0.5 }}>
+                        <ExtraButtons token={token} />
+                      </Box>
+
                       {/* Financial Metrics */}
                       <Box>
                         <Typography
                           variant="caption"
                           sx={{
-                            fontSize: '0.8rem',
+                            fontSize: '0.7rem',
                             fontWeight: 600,
                             color: theme.palette.primary.main,
                             textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                            mb: 0.5, // Reduced margin-bottom for compactness
+                            letterSpacing: '0.3px',
+                            mb: 0.25,
                             display: 'block'
                           }}
                         >
@@ -2127,7 +2137,7 @@ export default function UserDesc({ token }) {
                           sx={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(2, 1fr)',
-                            gap: 1
+                            gap: 0.5
                           }}
                         >
                           {[
@@ -2209,81 +2219,35 @@ export default function UserDesc({ token }) {
                             <Tooltip key={stat.label} title={stat.tooltip} arrow>
                               <Box
                                 sx={{
-                                  p: 1,
-                                  borderRadius: '12px',
+                                  p: 0.5,
+                                  borderRadius: '6px',
                                   background: `linear-gradient(135deg, ${alpha(
                                     stat.color,
                                     0.08
                                   )} 0%, ${alpha(stat.color, 0.04)} 100%)`,
-                                  border: '2px solid transparent',
+                                  border: `1px solid ${alpha(stat.color, 0.15)}`,
                                   cursor: 'help',
-                                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                  position: 'relative',
-                                  overflow: 'hidden',
-
-                                  // Consistent gradient border for all stats
-                                  '&::before': {
-                                    content: '""',
-                                    position: 'absolute',
-                                    inset: 0,
-                                    padding: '2px',
-                                    background: `linear-gradient(135deg, ${stat.gradientFrom}, ${stat.gradientTo})`,
-                                    borderRadius: '12px',
-                                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                                    maskComposite: 'subtract',
-                                    WebkitMask:
-                                      'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                                    WebkitMaskComposite: 'xor',
-                                    zIndex: -1
-                                  },
-
-                                  // Subtle glow effect
-                                  '&::after': {
-                                    content: '""',
-                                    position: 'absolute',
-                                    inset: 0,
-                                    background: `radial-gradient(circle at center, ${alpha(
-                                      stat.color,
-                                      0.15
-                                    )} 0%, transparent 70%)`,
-                                    borderRadius: '12px',
-                                    opacity: 0.6,
-                                    zIndex: -1
-                                  },
+                                  transition: 'all 0.2s ease',
 
                                   '&:hover': {
                                     background: `linear-gradient(135deg, ${alpha(
                                       stat.color,
-                                      0.15
-                                    )} 0%, ${alpha(stat.color, 0.08)} 100%)`,
-                                    transform: 'translateY(-2px) scale(1.02)',
-                                    boxShadow: `
-                                      0 6px 20px ${alpha(stat.color, 0.25)},
-                                      0 0 0 1px ${alpha(stat.color, 0.1)},
-                                      inset 0 1px 0 ${alpha('#fff', 0.1)}
-                                    `,
-
-                                    '&::before': {
-                                      padding: '3px',
-                                      background: `linear-gradient(135deg, ${stat.gradientFrom}, ${stat.gradientTo}, ${stat.gradientFrom})`
-                                    },
-
-                                    '&::after': {
-                                      opacity: 1
-                                    }
+                                      0.12
+                                    )} 0%, ${alpha(stat.color, 0.06)} 100%)`,
+                                    transform: 'translateY(-1px)'
                                   }
                                 }}
                               >
                                 <Typography
                                   variant="caption"
                                   sx={{
-                                    fontSize: '0.7rem',
+                                    fontSize: '0.6rem',
                                     fontWeight: 500,
                                     color: alpha(theme.palette.text.secondary, 0.8),
                                     textTransform: 'uppercase',
-                                    letterSpacing: '0.2px',
+                                    letterSpacing: '0.15px',
                                     display: 'block',
-                                    mb: 0.5,
+                                    mb: 0.25,
                                     lineHeight: 1
                                   }}
                                 >
@@ -2292,7 +2256,7 @@ export default function UserDesc({ token }) {
                                 <Typography
                                   variant="caption"
                                   sx={{
-                                    fontSize: '0.8rem',
+                                    fontSize: '0.7rem',
                                     fontWeight: 700,
                                     color: stat.color,
                                     lineHeight: 1,
@@ -2312,12 +2276,12 @@ export default function UserDesc({ token }) {
                         <Typography
                           variant="caption"
                           sx={{
-                            fontSize: '0.8rem',
+                            fontSize: '0.7rem',
                             fontWeight: 600,
                             color: theme.palette.success.main,
                             textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                            mb: 0.5,
+                            letterSpacing: '0.3px',
+                            mb: 0.25,
                             display: 'block'
                           }}
                         >
@@ -2327,7 +2291,7 @@ export default function UserDesc({ token }) {
                           sx={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(2, 1fr)',
-                            gap: 1
+                            gap: 0.5
                           }}
                         >
                           {[
@@ -2356,8 +2320,8 @@ export default function UserDesc({ token }) {
                             <Box
                               key={stat.label}
                               sx={{
-                                p: 1.25,
-                                borderRadius: '10px',
+                                p: 0.5,
+                                borderRadius: '6px',
                                 border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
                                 background: alpha(theme.palette.background.paper, 0.6),
                                 transition: 'all 0.2s ease',
@@ -2372,22 +2336,22 @@ export default function UserDesc({ token }) {
                               <Typography
                                 variant="caption"
                                 sx={{
-                                  fontSize: '0.8rem',
+                                  fontSize: '0.6rem',
                                   fontWeight: 500,
                                   color: alpha(theme.palette.text.secondary, 0.8),
                                   textTransform: 'uppercase',
-                                  letterSpacing: '0.2px',
+                                  letterSpacing: '0.15px',
                                   display: 'block',
-                                  mb: 0.5,
+                                  mb: 0.25,
                                   lineHeight: 1
                                 }}
                               >
-                                {stat.label}:
+                                {stat.label}
                               </Typography>
                               <Typography
                                 variant="caption"
                                 sx={{
-                                  fontSize: '0.9rem',
+                                  fontSize: '0.7rem',
                                   fontWeight: 600,
                                   color: stat.color
                                 }}
@@ -2400,7 +2364,7 @@ export default function UserDesc({ token }) {
                       </Box>
 
                       {/* Social Media Links */}
-                      <Box mt={2}>
+                      <Box mt={1}>
                         <Typography
                           variant="caption"
                           sx={{

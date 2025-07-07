@@ -24,7 +24,8 @@ import {
   Skeleton,
   Fade,
   Chip,
-  Tooltip
+  Tooltip,
+  useMediaQuery
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import { alpha, keyframes } from '@mui/material/styles';
@@ -201,6 +202,7 @@ const LoadingSkeleton = styled(Box)(({ theme }) => ({
 function PriceChart({ token }) {
   const BASE_URL = process.env.API_URL;
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [data, setData] = useState([]);
   const [dataOHLC, setDataOHLC] = useState([]);
@@ -586,7 +588,7 @@ function PriceChart({ token }) {
       chart: {
         backgroundColor: 'transparent',
         type: 'areaspline',
-        height: '350px',
+        height: isMobile ? '280px' : '350px',
         events: {
           render: function () {
             const chart = this;
@@ -950,7 +952,7 @@ function PriceChart({ token }) {
       },
       chart: {
         backgroundColor: 'transparent',
-        height: '350px',
+        height: isMobile ? '280px' : '350px',
         alignTicks: false,
         events: {
           render: function () {
@@ -1257,306 +1259,451 @@ function PriceChart({ token }) {
 
   return (
     <>
-      <Grid container rowSpacing={1} alignItems="center" sx={{ mt: 0, mb: 1.5 }}>
+      <Grid container rowSpacing={isMobile ? 0.5 : 1} alignItems="center" sx={{ mt: 0, mb: isMobile ? 0.75 : 1.5 }}>
         <Grid container item xs={12} alignItems="center" justifyContent="space-between">
-          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.75
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 700,
-                  background: 'linear-gradient(135deg, #00ff88 0%, #00ccff 50%, #ffffff 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  textShadow: '0px 0px 20px rgba(0,255,136,0.5)',
-                  filter: `drop-shadow(0 0 10px ${alpha('#00ff88', 0.6)})`,
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                {`${user} ${name}`}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: theme.palette.text.secondary,
-                  fontWeight: 500,
-                  display: 'flex',
-                  alignItems: 'center',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                to
-                <Box
-                  component="span"
+          {isMobile ? (
+            // Mobile Layout - Stack vertically
+            <Stack spacing={0.75} sx={{ width: '100%' }}>
+              {/* Title and Currency Row */}
+              <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.5 }}>
+                <Typography
+                  variant="subtitle2"
                   sx={{
-                    color: theme.palette.primary.main,
                     fontWeight: 700,
-                    mx: 0.5
+                    background: 'linear-gradient(135deg, #00ff88 0%, #00ccff 50%, #ffffff 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontSize: '0.9rem',
+                    lineHeight: 1
                   }}
                 >
-                  {currencySymbols[activeFiatCurrency]}
-                </Box>
-                {activeFiatCurrency}
-              </Typography>
+                  {`${user} ${name}`}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontWeight: 500,
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontSize: '0.7rem'
+                  }}
+                >
+                  to
+                  <Box component="span" sx={{ color: theme.palette.primary.main, fontWeight: 700, mx: 0.25 }}>
+                    {currencySymbols[activeFiatCurrency]}
+                  </Box>
+                  {activeFiatCurrency}
+                </Typography>
+              </Box>
 
-              <Chip
-                size="small"
-                label={range}
-                sx={{
-                  bgcolor: alpha(getRangeColor(range), 0.1),
-                  color: getRangeColor(range),
-                  fontWeight: 600,
-                  fontSize: '0.7rem',
-                  height: '20px',
-                  '& .MuiChip-label': {
-                    px: 0.75
-                  }
-                }}
-                icon={
-                  <Box
+              {/* Controls Row */}
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                {/* Left side - Chart type and range indicator */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Paper
+                    elevation={0}
                     sx={{
-                      width: '5px',
-                      height: '5px',
-                      borderRadius: '50%',
-                      bgcolor: getRangeColor(range),
-                      boxShadow: `0 0 8px ${alpha(getRangeColor(range), 0.5)}`
+                      display: 'flex',
+                      borderRadius: 1,
+                      background: alpha(theme.palette.background.paper, 0.8),
+                      backdropFilter: 'blur(10px)',
+                      p: 0.1
+                    }}
+                  >
+                    <StyledToggleButtonGroup
+                      size="small"
+                      value={chartType}
+                      exclusive
+                      onChange={(e, newType) => setChartType(newType)}
+                      aria-label="chart type"
+                      sx={{ m: 0 }}
+                    >
+                      <EnhancedToggleButton
+                        value={0}
+                        sx={{
+                          p: 0.25,
+                          minWidth: '24px',
+                          height: '24px',
+                          borderRadius: 0.75
+                        }}
+                        aria-label="line chart"
+                      >
+                        <ShowChartIcon sx={{ fontSize: '16px' }} />
+                      </EnhancedToggleButton>
+                      <EnhancedToggleButton
+                        value={1}
+                        sx={{
+                          p: 0.25,
+                          minWidth: '24px',
+                          height: '24px',
+                          borderRadius: 0.75
+                        }}
+                        aria-label="candlestick chart"
+                      >
+                        <CandlestickChartIcon sx={{ fontSize: '16px' }} />
+                      </EnhancedToggleButton>
+                    </StyledToggleButtonGroup>
+                  </Paper>
+
+                  <Chip
+                    size="small"
+                    label={range}
+                    sx={{
+                      bgcolor: alpha(getRangeColor(range), 0.1),
+                      color: getRangeColor(range),
+                      fontWeight: 600,
+                      fontSize: '0.6rem',
+                      height: '18px',
+                      '& .MuiChip-label': { px: 0.5 }
                     }}
                   />
-                }
-              />
 
-              {/* Price change indicator */}
-              {lastPrice !== null && priceChange !== 0 && (
+                  {lastPrice !== null && priceChange !== 0 && (
+                    <Chip
+                      size="small"
+                      label={`${priceChange > 0 ? '+' : ''}${fCurrency5(priceChange)}`}
+                      sx={{
+                        bgcolor: alpha(
+                          priceChange > 0 ? theme.palette.success.main : theme.palette.error.main,
+                          0.1
+                        ),
+                        color: priceChange > 0 ? theme.palette.success.main : theme.palette.error.main,
+                        fontWeight: 600,
+                        fontSize: '0.6rem',
+                        height: '18px',
+                        '& .MuiChip-label': { px: 0.5 }
+                      }}
+                    />
+                  )}
+                </Box>
+
+                {/* Right side - Time range buttons */}
+                <Paper
+                  elevation={0}
+                  sx={{
+                    display: 'flex',
+                    borderRadius: 1,
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.08)} 100%)`,
+                    backdropFilter: 'blur(24px)',
+                    flexWrap: 'wrap',
+                    p: 0.1
+                  }}
+                >
+                  <ToggleButtonGroup
+                    color="primary"
+                    value={range}
+                    exclusive
+                    onChange={handleChange}
+                    size="small"
+                    sx={{ m: 0 }}
+                  >
+                    {['12h', '1D', '7D', '1M'].map((timeRange) => (
+                      <EnhancedToggleButton
+                        key={timeRange}
+                        sx={{
+                          minWidth: '24px',
+                          p: 0.25,
+                          height: '24px',
+                          borderRadius: 0.75
+                        }}
+                        value={timeRange}
+                      >
+                        <Typography variant="caption" fontWeight={600} fontSize="0.6rem">
+                          {timeRange}
+                        </Typography>
+                      </EnhancedToggleButton>
+                    ))}
+                  </ToggleButtonGroup>
+                </Paper>
+              </Box>
+            </Stack>
+          ) : (
+            // Desktop Layout - Keep original
+            <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #00ff88 0%, #00ccff 50%, #ffffff 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    textShadow: '0px 0px 20px rgba(0,255,136,0.5)',
+                    filter: `drop-shadow(0 0 10px ${alpha('#00ff88', 0.6)})`,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {`${user} ${name}`}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontWeight: 500,
+                    display: 'flex',
+                    alignItems: 'center',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  to
+                  <Box component="span" sx={{ color: theme.palette.primary.main, fontWeight: 700, mx: 0.5 }}>
+                    {currencySymbols[activeFiatCurrency]}
+                  </Box>
+                  {activeFiatCurrency}
+                </Typography>
+
                 <Chip
                   size="small"
-                  label={`${priceChange > 0 ? '+' : ''}${fCurrency5(priceChange)}`}
+                  label={range}
                   sx={{
-                    bgcolor: alpha(
-                      priceChange > 0 ? theme.palette.success.main : theme.palette.error.main,
-                      0.1
-                    ),
-                    color: priceChange > 0 ? theme.palette.success.main : theme.palette.error.main,
+                    bgcolor: alpha(getRangeColor(range), 0.1),
+                    color: getRangeColor(range),
                     fontWeight: 600,
                     fontSize: '0.7rem',
                     height: '20px',
-                    '& .MuiChip-label': {
-                      px: 0.75
+                    '& .MuiChip-label': { px: 0.75 }
+                  }}
+                  icon={
+                    <Box
+                      sx={{
+                        width: '5px',
+                        height: '5px',
+                        borderRadius: '50%',
+                        bgcolor: getRangeColor(range),
+                        boxShadow: `0 0 8px ${alpha(getRangeColor(range), 0.5)}`
+                      }}
+                    />
+                  }
+                />
+
+                {lastPrice !== null && priceChange !== 0 && (
+                  <Chip
+                    size="small"
+                    label={`${priceChange > 0 ? '+' : ''}${fCurrency5(priceChange)}`}
+                    sx={{
+                      bgcolor: alpha(
+                        priceChange > 0 ? theme.palette.success.main : theme.palette.error.main,
+                        0.1
+                      ),
+                      color: priceChange > 0 ? theme.palette.success.main : theme.palette.error.main,
+                      fontWeight: 600,
+                      fontSize: '0.7rem',
+                      height: '20px',
+                      '& .MuiChip-label': { px: 0.75 }
+                    }}
+                  />
+                )}
+              </Box>
+
+              {isAdmin && range !== 'OHLC' && (
+                <IconButton
+                  size="small"
+                  onClick={handleDownloadCSV}
+                  sx={{
+                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    color: theme.palette.primary.main,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    width: '28px',
+                    height: '28px',
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.primary.main, 0.15),
+                      transform: 'translateY(-1px)',
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
                     }
                   }}
-                />
+                >
+                  <DownloadIcon fontSize="small" />
+                </IconButton>
               )}
+
+              <Box>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    display: 'flex',
+                    borderRadius: 1.5,
+                    background: alpha(theme.palette.background.paper, 0.8),
+                    backdropFilter: 'blur(10px)',
+                    flexWrap: 'wrap',
+                    p: 0.2,
+                    boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, 0.08)}`
+                  }}
+                >
+                  <StyledToggleButtonGroup
+                    size="small"
+                    value={chartType}
+                    exclusive
+                    onChange={(e, newType) => setChartType(newType)}
+                    aria-label="chart type"
+                    sx={{ m: 0 }}
+                  >
+                    <EnhancedToggleButton
+                      value={0}
+                      sx={{
+                        p: 0.5,
+                        minWidth: '28px',
+                        height: '28px',
+                        borderRadius: 1
+                      }}
+                      aria-label="line chart"
+                    >
+                      <ShowChartIcon fontSize="small" />
+                    </EnhancedToggleButton>
+                    <EnhancedToggleButton
+                      value={1}
+                      sx={{
+                        p: 0.5,
+                        minWidth: '28px',
+                        height: '28px',
+                        borderRadius: 1
+                      }}
+                      aria-label="candlestick chart"
+                    >
+                      <CandlestickChartIcon fontSize="small" />
+                    </EnhancedToggleButton>
+                  </StyledToggleButtonGroup>
+                </Paper>
+              </Box>
             </Box>
+          )}
 
-            {isAdmin && range !== 'OHLC' && (
-              <IconButton
-                size="small"
-                onClick={handleDownloadCSV}
-                sx={{
-                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                  color: theme.palette.primary.main,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  width: '28px',
-                  height: '28px',
-                  '&:hover': {
-                    bgcolor: alpha(theme.palette.primary.main, 0.15),
-                    transform: 'translateY(-1px)',
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
-                  }
-                }}
-              >
-                <DownloadIcon fontSize="small" />
-              </IconButton>
-            )}
-
+          {!isMobile && (
             <Box>
               <Paper
                 elevation={0}
                 sx={{
                   display: 'flex',
-                    borderRadius: 1.5,
-                  background: alpha(theme.palette.background.paper, 0.8),
-                  backdropFilter: 'blur(10px)',
+                  borderRadius: 2,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.08)} 100%)`,
+                  backdropFilter: 'blur(24px)',
                   flexWrap: 'wrap',
-                  p: 0.2,
-                  boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, 0.08)}`
+                  p: 0.3,
+                  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`
                 }}
               >
-                <StyledToggleButtonGroup
-                  size="small"
-                  value={chartType}
+                <ToggleButtonGroup
+                  color="primary"
+                  value={range}
                   exclusive
-                  onChange={(e, newType) => setChartType(newType)}
-                  aria-label="chart type"
+                  onChange={handleChange}
+                  size="small"
                   sx={{ m: 0 }}
                 >
-                  <EnhancedToggleButton
-                    value={0}
-                    sx={{
-                      p: 0.5,
-                      minWidth: '28px',
-                      height: '28px',
-                      borderRadius: 1
-                    }}
-                    aria-label="line chart"
-                  >
-                    <ShowChartIcon fontSize="small" />
-                  </EnhancedToggleButton>
-                  <EnhancedToggleButton
-                    value={1}
-                    sx={{
-                      p: 0.5,
-                      minWidth: '28px',
-                      height: '28px',
-                      borderRadius: 1
-                    }}
-                    aria-label="candlestick chart"
-                  >
-                    <CandlestickChartIcon fontSize="small" />
-                  </EnhancedToggleButton>
-                </StyledToggleButtonGroup>
+                  <Tooltip title={getIntervalTooltip('12h')} arrow placement="top">
+                    <EnhancedToggleButton
+                      sx={{
+                        minWidth: '42px',
+                        p: 0.5,
+                        height: '28px',
+                        borderRadius: 1,
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::after':
+                          range === '12h'
+                            ? {
+                                content: '""',
+                                position: 'absolute',
+                                top: 0,
+                                left: '-100%',
+                                width: '100%',
+                                height: '100%',
+                                background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.success.main, 0.3)}, transparent)`,
+                                animation: 'sparkle 2s infinite'
+                              }
+                            : {},
+                        '@keyframes sparkle': {
+                          '0%': { left: '-100%' },
+                          '100%': { left: '100%' }
+                        }
+                      }}
+                      value="12h"
+                    >
+                      <Typography variant="caption" fontWeight={700} fontSize="0.65rem">
+                        12h
+                      </Typography>
+                    </EnhancedToggleButton>
+                  </Tooltip>
+                  <Tooltip title={getIntervalTooltip('1D')} arrow placement="top">
+                    <EnhancedToggleButton
+                      sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
+                      value="1D"
+                    >
+                      <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                        1D
+                      </Typography>
+                    </EnhancedToggleButton>
+                  </Tooltip>
+                  <Tooltip title={getIntervalTooltip('7D')} arrow placement="top">
+                    <EnhancedToggleButton
+                      sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
+                      value="7D"
+                    >
+                      <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                        7D
+                      </Typography>
+                    </EnhancedToggleButton>
+                  </Tooltip>
+                  <Tooltip title={getIntervalTooltip('1M')} arrow placement="top">
+                    <EnhancedToggleButton
+                      sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
+                      value="1M"
+                    >
+                      <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                        1M
+                      </Typography>
+                    </EnhancedToggleButton>
+                  </Tooltip>
+                  <Tooltip title={getIntervalTooltip('3M')} arrow placement="top">
+                    <EnhancedToggleButton
+                      sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
+                      value="3M"
+                    >
+                      <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                        3M
+                      </Typography>
+                    </EnhancedToggleButton>
+                  </Tooltip>
+                  <Tooltip title={getIntervalTooltip('1Y')} arrow placement="top">
+                    <EnhancedToggleButton
+                      sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
+                      value="1Y"
+                    >
+                      <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                        1Y
+                      </Typography>
+                    </EnhancedToggleButton>
+                  </Tooltip>
+                  <Tooltip title={getIntervalTooltip('ALL')} arrow placement="top">
+                    <EnhancedToggleButton
+                      sx={{ minWidth: '34px', p: 0.5, height: '28px', borderRadius: 1 }}
+                      value="ALL"
+                    >
+                      <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                        ALL
+                      </Typography>
+                    </EnhancedToggleButton>
+                  </Tooltip>
+                </ToggleButtonGroup>
               </Paper>
             </Box>
-          </Box>
-
-          <Box>
-            <Paper
-              elevation={0}
-              sx={{
-                display: 'flex',
-                borderRadius: 2,
-                background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.08)} 100%)`,
-                backdropFilter: 'blur(24px)',
-                flexWrap: 'wrap',
-                p: 0.3,
-                boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`
-              }}
-            >
-              <ToggleButtonGroup
-                color="primary"
-                value={range}
-                exclusive
-                onChange={handleChange}
-                size="small"
-                sx={{ m: 0 }}
-              >
-                <Tooltip title={getIntervalTooltip('12h')} arrow placement="top">
-                  <EnhancedToggleButton
-                    sx={{
-                      minWidth: '42px',
-                      p: 0.5,
-                      height: '28px',
-                      borderRadius: 1,
-                      position: 'relative',
-                      overflow: 'hidden',
-                      '&::after':
-                        range === '12h'
-                          ? {
-                              content: '""',
-                              position: 'absolute',
-                              top: 0,
-                              left: '-100%',
-                              width: '100%',
-                              height: '100%',
-                              background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.success.main, 0.3)}, transparent)`,
-                              animation: 'sparkle 2s infinite'
-                            }
-                          : {},
-                      '@keyframes sparkle': {
-                        '0%': { left: '-100%' },
-                        '100%': { left: '100%' }
-                      }
-                    }}
-                    value="12h"
-                  >
-                    <Typography variant="caption" fontWeight={700} fontSize="0.65rem">
-                      12h
-                    </Typography>
-                  </EnhancedToggleButton>
-                </Tooltip>
-                <Tooltip title={getIntervalTooltip('1D')} arrow placement="top">
-                  <EnhancedToggleButton
-                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
-                    value="1D"
-                  >
-                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
-                      1D
-                    </Typography>
-                  </EnhancedToggleButton>
-                </Tooltip>
-                <Tooltip title={getIntervalTooltip('7D')} arrow placement="top">
-                  <EnhancedToggleButton
-                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
-                    value="7D"
-                  >
-                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
-                      7D
-                    </Typography>
-                  </EnhancedToggleButton>
-                </Tooltip>
-                <Tooltip title={getIntervalTooltip('1M')} arrow placement="top">
-                  <EnhancedToggleButton
-                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
-                    value="1M"
-                  >
-                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
-                      1M
-                    </Typography>
-                  </EnhancedToggleButton>
-                </Tooltip>
-                <Tooltip title={getIntervalTooltip('3M')} arrow placement="top">
-                  <EnhancedToggleButton
-                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
-                    value="3M"
-                  >
-                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
-                      3M
-                    </Typography>
-                  </EnhancedToggleButton>
-                </Tooltip>
-                <Tooltip title={getIntervalTooltip('1Y')} arrow placement="top">
-                  <EnhancedToggleButton
-                    sx={{ minWidth: '32px', p: 0.5, height: '28px', borderRadius: 1 }}
-                    value="1Y"
-                  >
-                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
-                      1Y
-                    </Typography>
-                  </EnhancedToggleButton>
-                </Tooltip>
-                <Tooltip title={getIntervalTooltip('ALL')} arrow placement="top">
-                  <EnhancedToggleButton
-                    sx={{ minWidth: '34px', p: 0.5, height: '28px', borderRadius: 1 }}
-                    value="ALL"
-                  >
-                    <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
-                      ALL
-                    </Typography>
-                  </EnhancedToggleButton>
-                </Tooltip>
-              </ToggleButtonGroup>
-            </Paper>
-          </Box>
+          )}
         </Grid>
       </Grid>
 
       <ChartContainer>
         {isLoading ? (
-          <Box sx={{ height: '350px', p: 2 }}>
+          <Box sx={{ height: isMobile ? '280px' : '350px', p: isMobile ? 1 : 2 }}>
             <Fade in={isLoading}>
               <Box>
-                <LoadingSkeleton sx={{ height: '40px', mb: 1.5 }} />
-                <LoadingSkeleton sx={{ height: '240px', mb: 1.5 }} />
+                <LoadingSkeleton sx={{ height: isMobile ? '30px' : '40px', mb: isMobile ? 1 : 1.5 }} />
+                <LoadingSkeleton sx={{ height: isMobile ? '200px' : '240px', mb: isMobile ? 1 : 1.5 }} />
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  <LoadingSkeleton sx={{ height: '30px', flex: 1 }} />
-                  <LoadingSkeleton sx={{ height: '30px', flex: 1 }} />
-                  <LoadingSkeleton sx={{ height: '30px', flex: 1 }} />
+                  <LoadingSkeleton sx={{ height: isMobile ? '24px' : '30px', flex: 1 }} />
+                  <LoadingSkeleton sx={{ height: isMobile ? '24px' : '30px', flex: 1 }} />
+                  <LoadingSkeleton sx={{ height: isMobile ? '24px' : '30px', flex: 1 }} />
                 </Box>
               </Box>
             </Fade>
@@ -1579,12 +1726,12 @@ function PriceChart({ token }) {
               ) : (
                 <Box
                   sx={{
-                    height: '350px',
+                    height: isMobile ? '280px' : '350px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: 1.5
+                    gap: isMobile ? 1 : 1.5
                   }}
                 >
                   <Box
@@ -1625,12 +1772,12 @@ function PriceChart({ token }) {
             ) : (
               <Box
                 sx={{
-                  height: '350px',
+                  height: isMobile ? '280px' : '350px',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 1.5
+                  gap: isMobile ? 1 : 1.5
                 }}
               >
                 <Box
