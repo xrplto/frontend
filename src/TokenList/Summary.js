@@ -568,7 +568,7 @@ export default function Summary() {
               {[...Array(5)].map((_, index) => (
                 <Grid
                   item
-                  key={index}
+                  key={`summary-skeleton-${index}`}
                   sx={{
                     flex: '1 0 auto',
                     [(theme) => theme.breakpoints.down('sm')]: {

@@ -90,17 +90,17 @@ function Footer() {
                     { href: 'https://xrpl.to/discord/', label: 'Discord' }
                   ]
                 }
-              ].map((section, index) => (
-                <Grid item xs={6} sm={6} md={3} lg={3} key={index} sx={{ mt: 1 }}>
+              ].map((section) => (
+                <Grid item xs={6} sm={6} md={3} lg={3} key={section.title} sx={{ mt: 1 }}>
                   <Stack spacing={1}>
                     <Typography variant="h2" sx={{ fontWeight: 600, fontSize: '1rem' }}>
                       {section.title}
                     </Typography>
-                    {section.links.map((link, idx) => (
+                    {section.links.map((link) => (
                       <Link
-                        key={idx}
+                        key={link.label}
                         href={link.href}
-                        sx={{ ...linkStyles, mt: idx === 0 ? 1 : 0.75 }}
+                        sx={{ ...linkStyles, mt: link === section.links[0] ? 1 : 0.75 }}
                       >
                         <Typography variant="link" sx={{ fontSize: '0.9rem' }}>
                           {link.label}

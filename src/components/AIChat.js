@@ -133,7 +133,7 @@ Please respond with a JSON object containing:
             ) : (
               messages.map((message, index) => (
                 <Paper
-                  key={index}
+                  key={`${message.role}-${index}-${message.content.substring(0, 20)}`}
                   sx={{
                     p: 2,
                     mb: 1,

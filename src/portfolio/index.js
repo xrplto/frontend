@@ -3080,7 +3080,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                 {assetDistribution.labels.slice(0, 3).map((label, index) => (
                                   <Box
-                                    key={index}
+                                    key={label}
                                     sx={{
                                       display: 'flex',
                                       alignItems: 'center',

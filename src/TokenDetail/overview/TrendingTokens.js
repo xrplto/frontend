@@ -238,7 +238,7 @@ const TrendingTokens = () => {
           </Stack>
         </HeaderSection>
         {[...Array(6)].map((_, index) => (
-          <SkeletonCard key={index} />
+          <SkeletonCard key={`skeleton-${index}`} />
         ))}
       </StackStyle>
     );

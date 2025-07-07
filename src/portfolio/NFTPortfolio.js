@@ -550,7 +550,7 @@ const NFTPortfolio = ({
       >
         {nfts.map((nft, index) => (
           <Box
-            key={index}
+            key={nft.NFTokenID || nft.id || `nft-${index}`}
             sx={{
               width: smallSize ? '120px' : '150px',
               flexShrink: 0

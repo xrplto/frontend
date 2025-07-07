@@ -150,19 +150,20 @@ const MessageContent = React.memo(({ message, isPrivate, theme }) => {
           const match = part.match(/\[NFT: (.*?) \((.*?)\)\]/);
           if (match) {
             const [_, name, tokenId] = match;
+            const key = `nft-${tokenId || name}-${i}`;
             try {
-              return <NFTDisplay key={i} nftLink={part} />;
+              return <NFTDisplay key={key} nftLink={part} />;
             } catch (error) {
               console.error('Error rendering NFTDisplay:', error);
               return (
-                <span key={i} style={{ color: 'red', fontStyle: 'italic' }}>
+                <span key={key} style={{ color: 'red', fontStyle: 'italic' }}>
                   [NFT: {name}]
                 </span>
               );
             }
           } else {
             return (
-              <span key={i} style={{ color: 'orange', fontStyle: 'italic' }}>
+              <span key={`part-${part}-${i}`} style={{ color: 'orange', fontStyle: 'italic' }}>
                 {part}
               </span>
             );
@@ -320,7 +321,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
 
           return (
             <Paper
-              key={index}
+              key={`${chat.username}-${chat.message.substring(0, 10)}-${index}`}
               elevation={isCurrentUser ? 2 : 1}
               sx={{
                 background: isCurrentUser

@@ -192,7 +192,7 @@ export default function TokenDetail({ token, tab }) {
         >
           {(isMobile ? tabLabelsMobile : tabLabels).map((label, index) => (
             <Tab
-              key={index}
+              key={label}
               value={index}
               label={label}
               {...a11yProps(index)}

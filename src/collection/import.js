@@ -494,7 +494,7 @@ export default function ImportCollection() {
 
         {taxons?.map((tx, idx) => {
           return (
-            <Stack key={idx}>
+            <Stack key={tx.taxon}>
               {idx > 0 && <Divider sx={{ mt: 1, mb: 1 }} />}
               <ListItemButton
                 // selected={taxon === tx.taxon}
@@ -738,8 +738,8 @@ export default function ImportCollection() {
           onChange={handleChangeCategory}
           MenuProps={{ disableScrollLock: true }}
         >
-          {CATEGORIES.map((cat, idx) => (
-            <MenuItem key={idx} value={cat.title} sx={{ pt: 2, pb: 2 }}>
+          {CATEGORIES.map((cat) => (
+            <MenuItem key={cat.title} value={cat.title} sx={{ pt: 2, pb: 2 }}>
               <Stack direction="row" spacing={1} alignItems="center">
                 {cat.icon}
                 <Typography variant="d4">{cat.title}</Typography>

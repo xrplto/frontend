@@ -142,8 +142,8 @@ const FieldTable = ({ fields, title }) => (
         </TableRow>
       </TableHead>
       <TableBody>
-        {fields.map((field, index) => (
-          <TableRow key={index}>
+        {fields.map((field) => (
+          <TableRow key={field.name}>
             <TableCell component="th" scope="row">
               <Typography variant="body2" sx={{ fontFamily: 'monospace', color: '#25A768' }}>
                 {field.name}

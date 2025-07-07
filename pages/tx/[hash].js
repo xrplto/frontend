@@ -250,9 +250,9 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                   Tags
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {token.tags.slice(0, 3).map((tag, index) => (
+                  {token.tags.slice(0, 3).map((tag) => (
                     <Chip
-                      key={index}
+                      key={tag}
                       label={tag}
                       size="small"
                       variant="outlined"
@@ -512,9 +512,9 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 Tags
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {token.tags.slice(0, 3).map((tag, index) => (
+                {token.tags.slice(0, 3).map((tag) => (
                   <Chip
-                    key={index}
+                    key={tag}
                     label={tag}
                     size="small"
                     variant="outlined"
@@ -2056,16 +2056,17 @@ const TransactionDetails = ({ txData, theme }) => {
                 {Memos && Memos.length > 0 && (
                   <DetailRow label="Memo">
                     <Stack spacing={1}>
-                      {Memos.map((memo, i) => {
+                      {Memos.map((memo) => {
                         const memoType =
                           memo.Memo.MemoType &&
                           CryptoJS.enc.Hex.parse(memo.Memo.MemoType).toString(CryptoJS.enc.Utf8);
                         const memoData =
                           memo.Memo.MemoData &&
                           CryptoJS.enc.Hex.parse(memo.Memo.MemoData).toString(CryptoJS.enc.Utf8);
+                        const memoKey = `${memo.Memo.MemoType || ''}-${memo.Memo.MemoData || ''}`;
                         return (
                           <Paper
-                            key={i}
+                            key={memoKey}
                             elevation={0}
                             sx={{
                               p: 1,
@@ -2190,7 +2191,7 @@ const TransactionDetails = ({ txData, theme }) => {
                           cancelledNftOffers.length > 1 ? 'Cancelled Offers' : 'Cancelled Offer'
                         }
                       >
-                        {cancelledNftOffers.map((offer, i) => {
+                        {cancelledNftOffers.map((offer) => {
                           const nftInfo = cancelledNftInfo[offer.NFTokenID];
                           const isLoading = cancelledNftInfoLoading[offer.NFTokenID];
                           const fallbackView = (
@@ -2245,7 +2246,7 @@ const TransactionDetails = ({ txData, theme }) => {
                             </Grid>
                           );
                           return (
-                            <Paper key={i} sx={{ p: 2, width: '100%', mb: 2 }}>
+                            <Paper key={offer.offerId} sx={{ p: 2, width: '100%', mb: 2 }}>
                               <Grid container spacing={2}>
                                 {isLoading ? (
                                   <Grid item xs={12}>
@@ -2804,7 +2805,7 @@ const TransactionDetails = ({ txData, theme }) => {
                     {PriceDataSeries && PriceDataSeries.length > 0 && (
                       <DetailRow label="Price Data Series">
                         <Box>
-                          {PriceDataSeries.map((series, index) => {
+                          {PriceDataSeries.map((series) => {
                             const { AssetPrice, BaseAsset, QuoteAsset, Scale } = series.PriceData;
                             if (!AssetPrice) return null;
                             const price = new BigNumber(parseInt(AssetPrice, 16)).dividedBy(
@@ -2814,8 +2815,9 @@ const TransactionDetails = ({ txData, theme }) => {
                               BaseAsset === 'XRP' ? 'XRP' : normalizeCurrencyCode(BaseAsset);
                             const quote =
                               QuoteAsset === 'XRP' ? 'XRP' : normalizeCurrencyCode(QuoteAsset);
+                            const keyStr = `${BaseAsset}-${QuoteAsset}-${AssetPrice}`;
                             return (
-                              <Typography key={index} variant="body2">
+                              <Typography key={keyStr} variant="body2">
                                 1 {base} = {price.toFormat()} {quote}
                               </Typography>
                             );
@@ -2922,15 +2924,15 @@ const TransactionDetails = ({ txData, theme }) => {
                 )}
 
                 {flagExplanations.length > 0 && TransactionType === 'Payment' ? (
-                  flagExplanations.map((flag, i) => (
-                    <DetailRow key={i} label={flag.title}>
+                  flagExplanations.map((flag) => (
+                    <DetailRow key={flag.title} label={flag.title}>
                       <Typography variant="body2">{flag.description}</Typography>
                     </DetailRow>
                   ))
                 ) : flagExplanations.length > 0 ? (
                   <DetailRow label={TransactionType + ' Flags'}>
-                    {flagExplanations.map((text, i) => (
-                      <Typography key={i} variant="body2">
+                    {flagExplanations.map((text) => (
+                      <Typography key={text} variant="body2">
                         {text}
                       </Typography>
                     ))}
@@ -2939,15 +2941,16 @@ const TransactionDetails = ({ txData, theme }) => {
 
                 {Memos && Memos.length > 0 && (
                   <DetailRow label="Memo">
-                    {Memos.map((memo, i) => {
+                    {Memos.map((memo) => {
                       const memoType =
                         memo.Memo.MemoType &&
                         CryptoJS.enc.Hex.parse(memo.Memo.MemoType).toString(CryptoJS.enc.Utf8);
                       const memoData =
                         memo.Memo.MemoData &&
                         CryptoJS.enc.Hex.parse(memo.Memo.MemoData).toString(CryptoJS.enc.Utf8);
+                      const memoKey = `${memo.Memo.MemoType || ''}-${memo.Memo.MemoData || ''}`;
                       return (
-                        <Typography key={i} variant="body1" sx={{ wordBreak: 'break-all' }}>
+                        <Typography key={memoKey} variant="body1" sx={{ wordBreak: 'break-all' }}>
                           {[memoType, memoData].filter(Boolean).join(' ')}
                         </Typography>
                       );
@@ -3008,13 +3011,14 @@ const TransactionDetails = ({ txData, theme }) => {
                         </Box>
                         <Box flex={1}>
                           <Stack spacing={1}>
-                            {changes.map((change, i) => {
+                            {changes.map((change) => {
                               const isPositive = new BigNumber(change.value).isPositive();
                               const sign = isPositive ? '+' : '';
                               const color = isPositive ? 'success.main' : 'error.main';
+                              const changeKey = `${change.currency}-${change.issuer || 'XRP'}-${change.value}`;
 
                               return (
-                                <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Box key={changeKey} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                   <Typography variant="body2" color={color} fontWeight="medium">
                                     {sign}
                                     {new BigNumber(change.value).toFormat()}

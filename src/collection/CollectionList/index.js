@@ -142,7 +142,7 @@ export default function CollectionList({ type, category }) {
           <ListHead order={order} orderBy={orderBy} onRequestSort={handleRequestSort} />
           <TableBody>
             {collections.map((row, idx) => (
-              <Row key={idx} id={page * rows + idx + 1} item={row} isMine={isMine} />
+              <Row key={row.slug || row.name || idx} id={page * rows + idx + 1} item={row} isMine={isMine} />
             ))}
           </TableBody>
         </Table>

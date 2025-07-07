@@ -573,8 +573,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
               )}
               {paginatedLines
                 .filter((line) => line.currency !== 'XRP')
-                .map((line, idx) => (
-                  <TrustLineRow key={idx} line={line} />
+                .map((line) => (
+                  <TrustLineRow key={`${line.currency}-${line.account}`} line={line} />
                 ))}
             </TableBody>
           </Table>

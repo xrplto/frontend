@@ -666,8 +666,8 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           onChange={handleChangeCategory}
           MenuProps={{ disableScrollLock: true }}
         >
-          {CATEGORIES.map((cat, idx) => (
-            <MenuItem key={idx} value={cat.title} sx={{ pt: 2, pb: 2 }}>
+          {CATEGORIES.map((cat) => (
+            <MenuItem key={cat.title} value={cat.title} sx={{ pt: 2, pb: 2 }}>
               <Stack direction="row" spacing={1} alignItems="center">
                 {cat.icon}
                 <Typography variant="d4">{cat.title}</Typography>

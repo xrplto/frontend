@@ -683,10 +683,10 @@ export default function ViewNFT({ collection }) {
               }
             }}
           >
-            {statsData.map((item, index) => {
+            {statsData.map((item) => {
               const IconComponent = item.bgIcon;
               return (
-                <CompactStatsCard key={index}>
+                <CompactStatsCard key={item.label}>
                   <Stack alignItems="center" spacing={0.8}>
                     <Box
                       sx={{
