@@ -12,7 +12,7 @@ import {
   styled
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useMemo, useCallback, memo, useState, useRef } from 'react';
+import { useMemo, useCallback, memo, useState, useRef, useEffect } from 'react';
 
 // Components
 import LowHighBar24H from './LowHighBar24H';
@@ -82,6 +82,8 @@ const PriceDesc = memo(({ token }) => {
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isXsMobile = useMediaQuery(theme.breakpoints.down(400));
+  
+  const abortControllerRef = useRef(null);
 
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency } = useContext(AppContext);
@@ -151,6 +153,14 @@ const PriceDesc = memo(({ token }) => {
 
     return { min, max, percent };
   }, [maxMin24h, usd]);
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   return (
     <Box

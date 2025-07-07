@@ -1440,6 +1440,7 @@ const Swap = ({ token }) => {
                   src={`https://s1.xrpl.to/token/${curr1.md5}`}
                   width={24}
                   height={24}
+                  alt={`${curr1.name} token icon`}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
                 />
                 <Typography variant="subtitle1" fontSize="1rem">
@@ -1513,6 +1514,7 @@ const Swap = ({ token }) => {
                   src={`https://s1.xrpl.to/token/${curr2.md5}`}
                   width={24}
                   height={24}
+                  alt={`${curr2.name} token icon`}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
                 />
                 <Typography variant="subtitle1" fontSize="1rem">
