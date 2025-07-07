@@ -25,7 +25,7 @@ const LogoTrustline = () => {
       underline="none"
       rel="noreferrer noopener nofollow"
     >
-      <Image src={img} width={125} height={46} alt="logo" />
+      <Image src={img} width={125} height={46} alt="logo" priority />
     </Link>
   );
 };

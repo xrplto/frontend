@@ -1450,7 +1450,7 @@ function PriceChart({ token }) {
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     textShadow: '0px 0px 20px rgba(0,255,136,0.5)',
-                    filter: `drop-shadow(0 0 10px ${alpha('#00ff88', 0.6)})`,
+                    filter: 'drop-shadow(0 0 10px rgba(0, 255, 136, 0.6))',
                     whiteSpace: 'nowrap'
                   }}
                 >

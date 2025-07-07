@@ -61,5 +61,9 @@ module.exports = {
   },
   // Add performance optimizations
   reactStrictMode: true,
-  compress: true
+  compress: true,
+  // Fix HMR invalid message warning
+  experimental: {
+    isrFlushToDisk: false
+  }
 };
