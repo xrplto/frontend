@@ -260,9 +260,12 @@ function PriceChart({ token }) {
       return ratio <= threshold && ratio >= 1 / threshold;
     });
 
-    console.log(`Outlier detection: ${data.length} -> ${filteredData.length} data points`);
-    if (filteredData.length < data.length) {
-      console.log(`Filtered out ${data.length - filteredData.length} outliers`);
+    // Remove console logs in production
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Outlier detection: ${data.length} -> ${filteredData.length} data points`);
+      if (filteredData.length < data.length) {
+        console.log(`Filtered out ${data.length - filteredData.length} outliers`);
+      }
     }
 
     return filteredData;
@@ -295,9 +298,12 @@ function PriceChart({ token }) {
       return !hasOutlier;
     });
 
-    console.log(`OHLC outlier detection: ${data.length} -> ${filteredData.length} data points`);
-    if (filteredData.length < data.length) {
-      console.log(`Filtered out ${data.length - filteredData.length} OHLC outliers`);
+    // Remove console logs in production
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`OHLC outlier detection: ${data.length} -> ${filteredData.length} data points`);
+      if (filteredData.length < data.length) {
+        console.log(`Filtered out ${data.length - filteredData.length} OHLC outliers`);
+      }
     }
 
     return filteredData;
@@ -415,56 +421,33 @@ function PriceChart({ token }) {
     detectAndFilterOHLCOutliers
   ]);
 
-  // Real-time price update effect
+  // Real-time price update effect with throttling
+  const lastExchRef = useRef(token.exch);
+  const throttleRef = useRef(null);
+  
   useEffect(() => {
-    if (!token || token.exch === undefined) return;
+    if (!token || token.exch === undefined || token.exch === lastExchRef.current) return;
+    
+    lastExchRef.current = token.exch;
+    
+    // Throttle updates to once per second to reduce CPU usage
+    if (throttleRef.current) clearTimeout(throttleRef.current);
+    
+    throttleRef.current = setTimeout(() => {
+      const newPrice = Number(token.exch);
+      if (isNaN(newPrice) || newPrice <= 0) return;
 
-    const newPrice = Number(token.exch);
-    if (isNaN(newPrice) || newPrice <= 0) return;
-
-    const now = Date.now();
-
-    setLastPrice((prevLastPrice) => {
-      const change = newPrice - (prevLastPrice || newPrice);
-      setPriceChange(change);
-      return newPrice;
-    });
-
-    if (range === '12h' || range === '1D') {
-      // Update line chart data
-      setData((prevData) => {
-        const newDataPoint = [now, newPrice, token.vol24h || 0]; // Assuming volume from token or 0
-        const updatedData = [...prevData, newDataPoint];
-        // Keep only the last 500 points for 12h and 1440 for 1D to prevent endless growth
-        const maxPoints = range === '12h' ? 500 : 1440;
-        return updatedData.slice(-maxPoints);
+      setLastPrice((prevLastPrice) => {
+        const change = newPrice - (prevLastPrice || newPrice);
+        setPriceChange(change);
+        return newPrice;
       });
-
-      // Update OHLC chart data (update last candlestick's close price, or add new one)
-      setDataOHLC((prevOHLCData) => {
-        const lastOHLC = prevOHLCData[prevOHLCData.length - 1];
-        if (lastOHLC && now - lastOHLC[0] < (range === '12h' ? 5000 : 60000)) {
-          // 5 sec for 12h, 1 min for 1D
-          // Update the last candlestick's close price, and adjust high/low if needed
-          const updatedLastOHLC = [
-            lastOHLC[0],
-            lastOHLC[1],
-            Math.max(lastOHLC[2], newPrice),
-            Math.min(lastOHLC[3], newPrice),
-            newPrice,
-            lastOHLC[5] || 0 // Carry over existing volume or default to 0
-          ];
-          return [...prevOHLCData.slice(0, -1), updatedLastOHLC];
-        } else {
-          // Add a new candlestick (open, high, low, close all as newPrice initially)
-          const newOHLCPoint = [now, newPrice, newPrice, newPrice, newPrice, token.vol24h || 0];
-          const updatedOHLCData = [...prevOHLCData, newOHLCPoint];
-          const maxPoints = range === '12h' ? 500 : 1440;
-          return updatedOHLCData.slice(-maxPoints);
-        }
-      });
-    }
-  }, [token.exch, range]);
+    }, 1000);
+    
+    return () => {
+      if (throttleRef.current) clearTimeout(throttleRef.current);
+    };
+  }, [token.exch]);
 
   let user = token.user;
   if (!user) user = token.name;
@@ -481,21 +464,24 @@ function PriceChart({ token }) {
     }));
   }, [minTime, maxTime]);
 
-  // Optimize mediumValue calculation with useMemo
+  // Optimize mediumValue calculation with useMemo and data length check
   const mediumValue = useMemo(() => {
     if (chartType === 0 && data?.length > 0) {
-      const prices = data.map((point) => point[1]);
+      // Sample only every 10th point for large datasets to improve performance
+      const sampleStep = data.length > 1000 ? Math.ceil(data.length / 100) : 1;
+      const prices = data.filter((_, i) => i % sampleStep === 0).map((point) => point[1]);
       const min = Math.min(...prices);
       const max = Math.max(...prices);
       return (min + max) / 2;
     } else if (chartType === 1 && dataOHLC?.length > 0) {
-      const closes = dataOHLC.map((point) => point[4]);
+      const sampleStep = dataOHLC.length > 1000 ? Math.ceil(dataOHLC.length / 100) : 1;
+      const closes = dataOHLC.filter((_, i) => i % sampleStep === 0).map((point) => point[4]);
       const min = Math.min(...closes);
       const max = Math.max(...closes);
       return (min + max) / 2;
     }
     return null;
-  }, [chartType, data, dataOHLC]);
+  }, [chartType, data?.length, dataOHLC?.length]);
 
   const handleChange = useCallback((event, newRange) => {
     if (newRange) setRange(newRange);
@@ -636,9 +622,9 @@ function PriceChart({ token }) {
         style: {
           fontFamily: theme.typography.fontFamily
         },
-        // High-frequency trading optimizations
-        turboThreshold: 10000,
-        boostThreshold: 1000,
+        // Performance optimizations
+        turboThreshold: 1000,
+        boostThreshold: 500,
         plotBorderWidth: 0,
         reflow: true
       },
@@ -814,9 +800,7 @@ function PriceChart({ token }) {
         },
         column: {
           borderRadius: 2,
-          animation: {
-            duration: 1000
-          }
+          animation: false
         }
       },
       series: [
@@ -825,10 +809,7 @@ function PriceChart({ token }) {
           data: data?.length > 0 ? data.map(([timestamp, price]) => [timestamp, price]) : [],
           threshold: mediumValue,
           lineWidth: 2.5,
-          animation: {
-            duration: 1500,
-            easing: 'easeOutCubic'
-          }
+          animation: false
         },
         {
           type: 'column',
@@ -1004,9 +985,9 @@ function PriceChart({ token }) {
         style: {
           fontFamily: theme.typography.fontFamily
         },
-        // High-frequency trading optimizations
-        turboThreshold: 10000,
-        boostThreshold: 1000,
+        // Performance optimizations
+        turboThreshold: 1000,
+        boostThreshold: 500,
         plotBorderWidth: 0,
         reflow: true,
         zoomType: 'xy'
@@ -1108,10 +1089,7 @@ function PriceChart({ token }) {
           type: 'candlestick',
           name: `${user} ${name}`,
           data: dataOHLC,
-          animation: {
-            duration: 1200,
-            easing: 'easeOutCubic'
-          }
+          animation: false
         },
         {
           type: 'column',
@@ -1134,9 +1112,6 @@ function PriceChart({ token }) {
                     color = alpha(theme.palette.grey[500], 0.4); // First bar
                   }
                   const volumeValue = Math.max(item[5] || 0, 0.001);
-                  console.log(
-                    `OHLC Volume Data Point: Timestamp=${item[0]}, Raw Volume=${item[5]}, Formatted Volume=${volumeValue}`
-                  );
                   return {
                     x: item[0], // Timestamp
                     y: volumeValue, // Volume (index 5), ensure positive for log scale

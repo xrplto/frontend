@@ -127,11 +127,19 @@ export default function TokenDetail({ token, tab }) {
   );
 
   useEffect(() => {
+    let ticking = false;
+    
     const handleScroll = () => {
-      if (tabRef.current) {
-        const { offsetTop } = tabRef.current;
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        setIsFixed(scrollTop > offsetTop);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          if (tabRef.current) {
+            const { offsetTop } = tabRef.current;
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            setIsFixed(scrollTop > offsetTop);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 

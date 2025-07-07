@@ -401,29 +401,6 @@ export default function PairsList({ token, pairs }) {
 
               <TableCell align="left">
                 <Tooltip
-                  title="Token issuer domain"
-                  placement="top"
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                        fontSize: '12px',
-                        fontWeight: '500'
-                      }
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
-                    <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-                      Domain
-                    </Typography>
-                    <SmallInfoIcon />
-                  </Box>
-                </Tooltip>
-              </TableCell>
-
-              <TableCell align="left">
-                <Tooltip
                   title="Price chart for the last 24 hours"
                   placement="top"
                   componentsProps={{
@@ -516,6 +493,29 @@ export default function PairsList({ token, pairs }) {
                 </Tooltip>
               </TableCell>
 
+              <TableCell align="left">
+                <Tooltip
+                  title="Token issuer domain"
+                  placement="top"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                        fontSize: '12px',
+                        fontWeight: '500'
+                      }
+                    }
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+                    <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+                      Domain
+                    </Typography>
+                    <SmallInfoIcon />
+                  </Box>
+                </Tooltip>
+              </TableCell>
+
             </TableRow>
           </StyledTableHead>
 
@@ -598,94 +598,49 @@ export default function PairsList({ token, pairs }) {
                   </TableCell>
 
                   <TableCell align="left" sx={stickyCellStyles.second}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
+                    <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
+                      <Avatar
+                        src={curr1.md5 ? `https://s1.xrpl.to/token/${curr1.md5}` : curr1.currency === 'XRP' ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8` : undefined}
+                        sx={{ 
+                          width: isMobile ? 16 : 20, 
+                          height: isMobile ? 16 : 20,
+                          mr: 0.5
+                        }}
+                      />
                       <Typography
                         variant="subtitle1"
                         sx={{
                           color: '#B72136',
                           fontWeight: '600',
-                          fontSize: '15px'
+                          fontSize: isMobile ? '13px' : '15px'
                         }}
                       >
                         {name1}
                       </Typography>
                       <Icon
                         icon={arrowsExchange}
-                        width="18"
-                        height="18"
+                        width={isMobile ? "14" : "18"}
+                        height={isMobile ? "14" : "18"}
                         style={{ color: darkMode ? '#919EAB' : '#637381' }}
+                      />
+                      <Avatar
+                        src={curr2.md5 ? `https://s1.xrpl.to/token/${curr2.md5}` : curr2.currency === 'XRP' ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8` : undefined}
+                        sx={{ 
+                          width: isMobile ? 16 : 20, 
+                          height: isMobile ? 16 : 20,
+                          mr: 0.5
+                        }}
                       />
                       <Typography
                         variant="subtitle1"
                         sx={{
                           color: darkMode ? '#00AB55' : '#5569ff',
                           fontWeight: '600',
-                          fontSize: '15px'
+                          fontSize: isMobile ? '13px' : '15px'
                         }}
                       >
                         {name2}
                       </Typography>
-                    </Stack>
-                  </TableCell>
-
-                  <TableCell align="left" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
-                    <Stack spacing={0.5}>
-                      {id === 1 && curr1.domain && (
-                        <Link
-                          underline="none"
-                          color="inherit"
-                          target="_blank"
-                          href={`https://${curr1.domain}`}
-                          rel="noreferrer noopener nofollow"
-                          sx={{
-                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                            '&:hover': {
-                              transform: 'translateX(2px)'
-                            }
-                          }}
-                        >
-                          <Typography
-                            variant="subtitle2"
-                            sx={{
-                              color: '#B72136',
-                              fontWeight: '500',
-                              '&:hover': {
-                                color: '#8B1730'
-                              }
-                            }}
-                          >
-                            {curr1.domain}
-                          </Typography>
-                        </Link>
-                      )}
-                      {curr2.domain && (
-                        <Link
-                          underline="none"
-                          color="inherit"
-                          target="_blank"
-                          href={`https://${curr2.domain}`}
-                          rel="noreferrer noopener nofollow"
-                          sx={{
-                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                            '&:hover': {
-                              transform: 'translateX(2px)'
-                            }
-                          }}
-                        >
-                          <Typography
-                            variant="subtitle2"
-                            sx={{
-                              color: darkMode ? '#00AB55' : '#5569ff',
-                              fontWeight: '500',
-                              '&:hover': {
-                                color: darkMode ? '#007B3C' : '#3A4FCC'
-                              }
-                            }}
-                          >
-                            {curr2.domain}
-                          </Typography>
-                        </Link>
-                      )}
                     </Stack>
                   </TableCell>
 
@@ -818,6 +773,67 @@ export default function PairsList({ token, pairs }) {
                             </Typography>
                           </Link>
                         </Stack>
+                      )}
+                    </Stack>
+                  </TableCell>
+
+                  <TableCell align="left" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
+                    <Stack spacing={0.5}>
+                      {id === 1 && curr1.domain && (
+                        <Link
+                          underline="none"
+                          color="inherit"
+                          target="_blank"
+                          href={`https://${curr1.domain}`}
+                          rel="noreferrer noopener nofollow"
+                          sx={{
+                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                            '&:hover': {
+                              transform: 'translateX(2px)'
+                            }
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            sx={{
+                              color: '#B72136',
+                              fontWeight: '500',
+                              '&:hover': {
+                                color: '#8B1730'
+                              }
+                            }}
+                          >
+                            {curr1.domain}
+                          </Typography>
+                        </Link>
+                      )}
+                      {curr2.domain && (
+                        <Link
+                          underline="none"
+                          color="inherit"
+                          target="_blank"
+                          href={`https://${curr2.domain}`}
+                          rel="noreferrer noopener nofollow"
+                          sx={{
+                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                            '&:hover': {
+                              transform: 'translateX(2px)'
+                            }
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            sx={{
+                              color: darkMode ? '#00AB55' : '#5569ff',
+                              fontWeight: '500',
+                              '&:hover': {
+                                color: darkMode ? '#007B3C' : '#3A4FCC'
+                              }
+                            }}
+                          >
+                            {curr2.domain}
+                          </Typography>
+                        </Link>
                       )}
                     </Stack>
                   </TableCell>
