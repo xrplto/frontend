@@ -124,8 +124,8 @@ const HeaderSection = styled(Box, {
         0.05
       )} 100%)`,
   borderRadius: '10px',
-  padding: theme.spacing(1, 1.5),
-  marginBottom: theme.spacing(1.5),
+  padding: theme.spacing(theme.breakpoints.down('sm') ? 0.75 : 1, theme.breakpoints.down('sm') ? 1 : 1.5),
+  marginBottom: theme.spacing(theme.breakpoints.down('sm') ? 1 : 1.5),
   border: `1px solid ${alpha('#FF6B35', 0.2)}`,
   overflow: 'hidden'
 }));
@@ -266,7 +266,7 @@ const TrendingTokens = () => {
         </Stack>
       </HeaderSection>
 
-      <Stack spacing={0.75}>
+      <Stack spacing={isMobile ? 0.5 : 0.75}>
         {trendingList.map((row, index) => {
           const { md5, id, name, user, slug, verified, isOMCF } = row;
           const imgUrl = `https://s1.xrpl.to/token/${md5}`;
@@ -275,7 +275,7 @@ const TrendingTokens = () => {
 
           return (
             <TrendingCard darkMode={darkMode} rank={rank} key={id}>
-              <CardContent sx={{ p: 1 }}>
+              <CardContent sx={{ p: isMobile ? 0.75 : 1 }}>
                 <Link
                   underline="none"
                   color="inherit"
@@ -286,7 +286,7 @@ const TrendingTokens = () => {
                   <Box display="flex" alignItems="center" justifyContent="space-between">
                     <Stack
                       direction="row"
-                      spacing={1}
+                      spacing={isMobile ? 0.75 : 1}
                       alignItems="center"
                       flex={1}
                       className="token-info"
@@ -325,7 +325,7 @@ const TrendingTokens = () => {
                             color={theme.palette.primary.main}
                             noWrap
                             sx={{
-                              fontSize: '0.85rem',
+                              fontSize: isMobile ? '0.8rem' : '0.85rem',
                               lineHeight: 1.2,
                               textShadow: darkMode ? '0 1px 2px rgba(0,0,0,0.3)' : 'none'
                             }}
@@ -348,7 +348,7 @@ const TrendingTokens = () => {
                           color={darkMode ? alpha('#fff', 0.65) : alpha('#1a1a1a', 0.65)}
                           noWrap
                           sx={{
-                            fontSize: '0.7rem',
+                            fontSize: isMobile ? '0.65rem' : '0.7rem',
                             fontWeight: 500
                           }}
                         >

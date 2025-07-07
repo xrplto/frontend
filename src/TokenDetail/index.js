@@ -61,6 +61,7 @@ function a11yProps(index) {
 
 const tabValues = ['', 'markets', 'Limit', 'holders', 'traders'];
 const tabLabels = ['Overview', 'Markets', 'Limit', 'Holders', 'Traders'];
+const tabLabelsMobile = ['View', 'Markets', 'Trade', 'Holders', 'Top'];
 
 function getTabID(tab) {
   if (!tab) return 0;
@@ -179,28 +180,30 @@ export default function TokenDetail({ token, tab }) {
           scrollButtons="auto"
           aria-label="token-tabs"
           sx={{
-            minHeight: isMobile ? '28px' : '40px',
+            minHeight: isMobile ? '20px' : '40px',
             '& .MuiTabs-flexContainer': {
-              height: isMobile ? '28px' : '40px'
+              height: isMobile ? '20px' : '40px',
+              gap: isMobile ? 0 : undefined
             },
             '& .MuiTabs-indicator': {
-              height: '2px'
+              height: isMobile ? '1px' : '2px'
             }
           }}
         >
-          {tabLabels.map((label, index) => (
+          {(isMobile ? tabLabelsMobile : tabLabels).map((label, index) => (
             <Tab
               key={index}
               value={index}
               label={label}
               {...a11yProps(index)}
               sx={{
-                minHeight: isMobile ? '28px' : '40px',
+                minHeight: isMobile ? '20px' : '40px',
                 padding: isMobile ? '2px 6px' : '6px 16px',
                 textTransform: 'none',
-                fontSize: isMobile ? '0.75rem' : undefined,
+                fontSize: isMobile ? '0.65rem' : undefined,
                 minWidth: isMobile ? 'auto' : undefined,
-                fontWeight: isMobile ? 500 : undefined
+                fontWeight: isMobile ? 600 : undefined,
+                letterSpacing: isMobile ? '-0.01em' : undefined
               }}
             />
           ))}

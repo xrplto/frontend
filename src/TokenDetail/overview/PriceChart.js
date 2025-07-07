@@ -616,7 +616,7 @@ function PriceChart({ token }) {
           }
         },
         zoomType: 'xy',
-        marginBottom: 40,
+        marginBottom: isMobile ? 30 : 40,
         animation: {
           duration: 1200,
           easing: 'easeOutCubic'
@@ -675,7 +675,7 @@ function PriceChart({ token }) {
           title: {
             text: null
           },
-          tickAmount: 6,
+          tickAmount: isMobile ? 4 : 6,
           tickWidth: 1,
           gridLineColor: alpha(theme.palette.divider, 0.1),
           labels: {
@@ -691,7 +691,7 @@ function PriceChart({ token }) {
           events: {
             afterSetExtremes: handleAfterSetExtremes
           },
-          height: '60%',
+          height: isMobile ? '70%' : '60%',
           plotLines: [
             {
               width: 1,
@@ -717,8 +717,8 @@ function PriceChart({ token }) {
           },
           type: 'logarithmic',
           min: 0.001,
-          top: '60%',
-          height: '40%',
+          top: isMobile ? '70%' : '60%',
+          height: isMobile ? '30%' : '40%',
           offset: 0,
           lineWidth: 0,
           gridLineWidth: 0,
@@ -917,6 +917,14 @@ function PriceChart({ token }) {
                     x: -5,
                     y: 0
                   }
+                },
+                {
+                  labels: {
+                    enabled: true,
+                    align: 'left',
+                    x: 5,
+                    y: 0
+                  }
                 }
               ]
             }
@@ -1078,8 +1086,8 @@ function PriceChart({ token }) {
           type: 'logarithmic',
           min: 0.001,
           tickPixelInterval: 50,
-          top: '60%',
-          height: '40%',
+          top: isMobile ? '70%' : '60%',
+          height: isMobile ? '30%' : '40%',
           offset: 0,
           lineWidth: 0,
           gridLineWidth: 0,
@@ -1210,13 +1218,23 @@ function PriceChart({ token }) {
               maxWidth: 500
             },
             chartOptions: {
-              yAxis: {
-                labels: {
-                  align: 'right',
-                  x: -5,
-                  y: 0
+              yAxis: [
+                {
+                  labels: {
+                    align: 'right',
+                    x: -5,
+                    y: 0
+                  }
+                },
+                {
+                  labels: {
+                    enabled: true,
+                    align: 'left',
+                    x: 5,
+                    y: 0
+                  }
                 }
-              }
+              ]
             }
           }
         ]
