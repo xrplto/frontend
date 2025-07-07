@@ -72,12 +72,12 @@ const ContentTypography = styled(Typography)(({ theme }) => ({
 const MetricBox = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1)
+    padding: theme.spacing(0.1)
   },
   height: '100%',
   minHeight: '120px',
   [theme.breakpoints.down('sm')]: {
-    minHeight: '80px'
+    minHeight: '40px'
   },
   display: 'flex',
   flexDirection: 'column',
@@ -110,8 +110,8 @@ const MetricTitle = styled(Typography)(({ theme }) => ({
   letterSpacing: '0.5px',
   lineHeight: 1,
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.7rem',
-    marginBottom: theme.spacing(0.5)
+    fontSize: '0.6rem',
+    marginBottom: theme.spacing(0.1)
   }
 }));
 
@@ -127,27 +127,23 @@ const MetricValue = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(0.5),
   fontFamily: 'monospace',
   [theme.breakpoints.down('sm')]: {
-    fontSize: '1.2rem'
+    fontSize: '0.75rem',
+    marginBottom: theme.spacing(0.05)
   }
 }));
 
-// Premium PercentageChange
-const PercentageChange = styled(Typography, {
+// Mobile-first PercentageChange
+const PercentageChange = styled('span', {
   shouldForwardProp: (prop) => prop !== 'isPositive'
 })(({ theme, isPositive }) => ({
+  // Desktop styles
   fontSize: '0.8rem',
-  [theme.breakpoints.down('sm')]: {
-    fontSize: '0.7rem'
-  },
-  color: '#ffffff',
-  display: 'flex',
+  color: isPositive ? theme.palette.success.main : theme.palette.error.main,
+  display: 'inline-flex',
   alignItems: 'center',
   gap: '4px',
   fontWeight: 700,
   padding: '4px 12px',
-  [theme.breakpoints.down('sm')]: {
-    padding: '3px 8px'
-  },
   borderRadius: '20px',
   background: isPositive 
     ? `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`
@@ -157,6 +153,24 @@ const PercentageChange = styled(Typography, {
   '&:hover': {
     transform: 'scale(1.05)',
     boxShadow: `0 6px 16px ${alpha(isPositive ? theme.palette.success.main : theme.palette.error.main, 0.4)}`
+  },
+  
+  // Mobile overrides
+  '@media (max-width:600px)': {
+    fontSize: '10px !important',
+    color: `${isPositive ? '#10b981' : '#ef4444'} !important`,
+    padding: '1px 2px !important',
+    borderRadius: '2px !important',
+    background: 'transparent !important',
+    border: `1px solid ${isPositive ? '#10b981' : '#ef4444'} !important`,
+    boxShadow: 'none !important',
+    gap: '0px !important',
+    fontWeight: '600 !important',
+    transform: 'none !important',
+    '&:hover': {
+      transform: 'none !important',
+      boxShadow: 'none !important'
+    }
   }
 }));
 
@@ -505,8 +519,8 @@ export default function Summary() {
       sx={{
         position: 'relative',
         zIndex: 2,
-        // EXTREMELY AGGRESSIVE negative margins on mobile to eliminate ALL top spacing
-        mt: { xs: '-32px', sm: '-24px', md: 0 }, // Even more aggressive negative margin
+        // Add some top space on mobile
+        mt: { xs: 1, sm: 0, md: 0 },
         mb: 0,
         pt: 0,
         pb: 0,
@@ -517,14 +531,9 @@ export default function Summary() {
         width: '100%',
         maxWidth: '100%',
         px: 0,
-        // Extremely aggressive mobile-specific positioning
+        // Remove aggressive positioning
         [(theme) => theme.breakpoints.down('sm')]: {
-          position: 'relative',
-          top: '-16px' // Pull entire component up extremely aggressively on mobile
-        },
-        [(theme) => theme.breakpoints.down('md')]: {
-          position: 'relative',
-          top: '-12px' // Pull up more on medium screens
+          position: 'relative'
         }
       }}
     >
@@ -638,7 +647,7 @@ export default function Summary() {
               <Grid item xs={12}>
                 <Grid
                   container
-                  spacing={{ xs: 0.5, md: 1.5 }} // Reduced spacing for metric boxes on mobile
+                  spacing={{ xs: 0.05, md: 1.5 }} // Ultra minimal spacing for metric boxes on mobile
                 >
                   {/* Market Cap Box */}
                   <Grid item xs={6} md={1.5}>
@@ -649,7 +658,7 @@ export default function Summary() {
                         {formatNumberWithDecimals(Number(gMarketcap))}
                       </MetricValue>
                       <PercentageChange isPositive={gMarketcapPro >= 0}>
-                        {gMarketcapPro >= 0 ? '▲' : '▼'} {Math.abs(gMarketcapPro).toFixed(2)}%
+                        {gMarketcapPro >= 0 ? '▲' : '▼'}{Math.abs(gMarketcapPro).toFixed(1)}%
                       </PercentageChange>
                     </MetricBox>
                   </Grid>
@@ -663,7 +672,7 @@ export default function Summary() {
                         {formatNumberWithDecimals(gDexVolume)}
                       </MetricValue>
                       <PercentageChange isPositive={gDexVolumePro >= 0}>
-                        {gDexVolumePro >= 0 ? '▲' : '▼'} {Math.abs(gDexVolumePro).toFixed(2)}%
+                        {gDexVolumePro >= 0 ? '▲' : '▼'}{Math.abs(gDexVolumePro).toFixed(1)}%
                       </PercentageChange>
                     </MetricBox>
                   </Grid>
