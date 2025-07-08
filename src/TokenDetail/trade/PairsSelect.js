@@ -171,9 +171,9 @@ const PairsSelect = memo(({ token, pair, setPair }) => {
   const xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
 
   return (
-    <Grid container spacing={0} sx={{ p: 0 }}>
-      <Grid item>
-        <FormControl sx={{ m: { xs: 0.5, sm: 1 }, minWidth: isMobile ? 90 : 120 }} size="small">
+    <Grid container spacing={0} sx={{ p: 0, width: '100%' }}>
+      <Grid item xs={12}>
+        <FormControl sx={{ m: { xs: 0.5, sm: 1 }, minWidth: isMobile ? 200 : 300, width: '100%' }} size="small">
           <InputLabel id="demo-select-small" sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>Pairs</InputLabel>
           <CustomSelect
             labelId="demo-select-small"
@@ -183,8 +183,25 @@ const PairsSelect = memo(({ token, pair, setPair }) => {
             onChange={handleChangePair}
             sx={{ 
               fontSize: isMobile ? '0.75rem' : '0.875rem',
+              width: '100%',
               '& .MuiSelect-select': {
                 py: isMobile ? 0.75 : 1
+              }
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  zIndex: 9999,
+                  maxHeight: '300px'
+                }
+              },
+              anchorOrigin: {
+                vertical: 'bottom',
+                horizontal: 'left'
+              },
+              transformOrigin: {
+                vertical: 'top',
+                horizontal: 'left'
               }
             }}
           >

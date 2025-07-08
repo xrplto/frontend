@@ -47,6 +47,7 @@ import TopTraders from 'src/TokenDetail/toptraders';
 import OrderBook from 'src/TokenDetail/trade/OrderBook';
 import TradePanel from 'src/TokenDetail/trade/TradePanel';
 import BidAskChart from 'src/TokenDetail/trade/BidAskChart';
+import PairsSelect from 'src/TokenDetail/trade/PairsSelect';
 import { lazy, Suspense } from 'react';
 
 const RichListData = lazy(() => import('src/TokenDetail/richlist/RichListData'));
@@ -447,6 +448,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
   const [wsReady, setWsReady] = useState(false);
   const [bidId, setBidId] = useState(-1);
   const [askId, setAskId] = useState(-1);
+  const [selectedPair, setSelectedPair] = useState(() => token ? getInitPair(token) : null);
   
   const WSS_URL = 'wss://xrplcluster.com';
   
@@ -546,9 +548,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
 
   // OrderBook WebSocket request
   const requestOrderBook = useCallback(() => {
-    if (!wsReady || !token) return;
+    if (!wsReady || !selectedPair) return;
 
-    const pair = getInitPair(token);
+    const pair = selectedPair;
     const curr1 = pair.curr1;
     const curr2 = pair.curr2;
     let reqID = 1;
@@ -583,7 +585,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
     };
     sendJsonMessage(cmdAsk);
     sendJsonMessage(cmdBid);
-  }, [wsReady, token, sendJsonMessage]);
+  }, [wsReady, selectedPair, sendJsonMessage]);
 
   // Clear new flags effect
   useEffect(() => {
@@ -606,12 +608,12 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
 
   // OrderBook WebSocket effect
   useEffect(() => {
-    if (!wsReady || !token) return;
+    if (!wsReady || !selectedPair) return;
 
     requestOrderBook();
     const timer = setInterval(() => requestOrderBook(), 4000);
     return () => clearInterval(timer);
-  }, [wsReady, token, requestOrderBook]);
+  }, [wsReady, selectedPair, requestOrderBook]);
 
   useEffect(() => {
     if (trades.length === 0) return;
@@ -1081,20 +1083,45 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
       )}
       
       {tabValue === 1 && token && (
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
-            <OrderBook 
-              pair={token ? getInitPair(token) : null}
-              asks={orderBookData.asks}
-              bids={orderBookData.bids}
-              onAskClick={(e, idx) => setAskId(idx)}
-              onBidClick={(e, idx) => setBidId(idx)}
-            />
-          </Grid>
+        <Stack spacing={2} sx={{ position: 'relative', zIndex: 1 }}>
+          <Box sx={{ 
+            p: 2, 
+            backgroundColor: 'background.paper', 
+            borderRadius: 1, 
+            border: '1px solid', 
+            borderColor: 'divider',
+            position: 'relative',
+            zIndex: 1000,
+            '& .MuiSelect-root': {
+              zIndex: 1001
+            },
+            '& .MuiPopper-root': {
+              zIndex: 1002
+            }
+          }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Select Trading Pair</Typography>
+            <Box sx={{ minWidth: 250 }}>
+              <PairsSelect 
+                token={token}
+                pair={selectedPair}
+                setPair={setSelectedPair}
+              />
+            </Box>
+          </Box>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={8}>
+              <OrderBook 
+                pair={selectedPair}
+                asks={orderBookData.asks}
+                bids={orderBookData.bids}
+                onAskClick={(e, idx) => setAskId(idx)}
+                onBidClick={(e, idx) => setBidId(idx)}
+              />
+            </Grid>
           <Grid item xs={12} md={4}>
             <Stack spacing={2}>
               <TradePanel 
-                pair={token ? getInitPair(token) : null}
+                pair={selectedPair}
                 asks={orderBookData.asks}
                 bids={orderBookData.bids}
                 bidId={bidId}
@@ -1128,6 +1155,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
             </Stack>
           </Grid>
         </Grid>
+        </Stack>
       )}
       
       {tabValue === 2 && token && pairs && (
