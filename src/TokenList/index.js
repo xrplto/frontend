@@ -457,6 +457,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           overflowX: 'auto',
           overflowY: 'visible',
           width: '100%',
+          minWidth: 0,
           '& > *': {
             scrollSnapAlign: 'center'
           },
@@ -476,7 +477,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         }}
         ref={tableContainerRef}
       >
-        <Table ref={tableRef} size="small" sx={{ tableLayout: 'fixed' }}>
+        <Table ref={tableRef} size="small" sx={{ tableLayout: isMobile ? 'auto' : 'fixed', minWidth: isMobile ? '600px' : 'auto' }}>
           <TokenListHead
             order={order}
             orderBy={orderBy}

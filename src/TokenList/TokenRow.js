@@ -378,11 +378,11 @@ function FTokenRow({
         fontWeight: '500'
       },
       '& .MuiTableCell-root': {
-        padding: isMobile ? '4px 2px' : '16px 12px',
+        padding: isMobile ? '8px 4px' : '16px 12px',
         whiteSpace: 'nowrap',
         borderBottom: 'none',
         '&:not(:first-of-type)': {
-          paddingLeft: isMobile ? '2px' : '8px'
+          paddingLeft: isMobile ? '4px' : '8px'
         }
       }
     }),
@@ -397,15 +397,15 @@ function FTokenRow({
         left: 0,
         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
-        width: isMobile ? '20px' : '24px',
-        minWidth: isMobile ? '20px' : '24px',
-        padding: isMobile ? '6px 4px' : '16px 8px'
+        width: isMobile ? '28px' : '24px',
+        minWidth: isMobile ? '28px' : '24px',
+        padding: isMobile ? '8px 4px' : '16px 8px'
       },
       second: {
-        p: isMobile ? '6px 4px' : '16px 12px',
+        p: isMobile ? '8px 4px' : '16px 12px',
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '20px' : '24px',
+        left: isMobile ? '28px' : '24px',
         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
         '&:before': scrollLeft
@@ -623,10 +623,10 @@ function FTokenRow({
               variant="token"
               sx={{
                 fontWeight: '700',
-                fontSize: isMobile ? '11px' : '16px',
+                fontSize: isMobile ? '12px' : '16px',
                 lineHeight: 1.2,
-                width: isMobile ? '70px' : '140px',
-                minWidth: isMobile ? '70px' : '140px',
+                width: isMobile ? '80px' : '140px',
+                minWidth: isMobile ? '80px' : '140px',
                 letterSpacing: '-0.02em',
                 cursor: 'pointer'
               }}
@@ -641,25 +641,25 @@ function FTokenRow({
                       ? '#B72136'
                       : ''
               }
-              noWrap={!isMobile}
+              noWrap
             >
-              {truncate(name, isMobile ? 10 : 16)}
+              {truncate(name, isMobile ? 12 : 16)}
             </Typography>
             <Stack direction="row" spacing={isMobile ? 0.3 : 0.5} alignItems="center">
               <Typography
                 variant="p2"
                 sx={{
                   fontWeight: '500',
-                  fontSize: isMobile ? '9px' : '13px',
+                  fontSize: isMobile ? '10px' : '13px',
                   lineHeight: 1.2,
                   color: darkMode ? '#919EAB' : '#637381',
                   display: 'flex',
                   alignItems: 'center'
                 }}
                 color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#212B36') : ''}
-                noWrap={!isMobile}
+                noWrap
               >
-                {truncate(user, isMobile ? 8 : 18)}
+                {truncate(user, isMobile ? 10 : 18)}
               </Typography>
               <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
               {origin && (
@@ -690,13 +690,12 @@ function FTokenRow({
         align="right"
         sx={{
           color: priceColor,
-          padding: isMobile ? '6px 4px' : '16px 12px',
-          marginLeft: isMobile ? '12px' : '0px'
+          padding: isMobile ? '8px 4px' : '16px 12px'
         }}
       >
         <TransitionTypo
           variant="h4"
-          noWrap={!isMobile}
+          noWrap
           sx={{
             fontWeight: '600',
             fontSize: isMobile ? '12px' : '16px'
@@ -708,67 +707,77 @@ function FTokenRow({
           />
         </TransitionTypo>
       </TableCell>
-      <TableCell align="right" sx={percentageCellStyle}>
-        <BearBullLabel value={pro5m || 0} variant="h4" />
-      </TableCell>
+      {!isMobile && (
+        <TableCell align="right" sx={percentageCellStyle}>
+          <BearBullLabel value={pro5m || 0} variant="h4" />
+        </TableCell>
+      )}
       <TableCell align="right" sx={percentageCellStyle}>
         <BearBullLabel value={pro1h || 0} variant="h4" />
       </TableCell>
       <TableCell align="right" sx={percentageCellStyle}>
         <BearBullLabel value={pro24h || 0} variant="h4" />
       </TableCell>
-      <TableCell align="right" sx={percentageCellStyle}>
-        <BearBullLabel value={pro7d || 0} variant="h4" />
-      </TableCell>
-      <TableCell align="right">
-        <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
-          <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
-          <Typography variant="h4" noWrap={!isMobile}>
-            {convertedValues.volume >= 1000000
-              ? `${(convertedValues.volume / 1000000).toFixed(1)}M`
-              : convertedValues.volume >= 1000
-                ? `${(convertedValues.volume / 1000).toFixed(1)}K`
-                : fNumber(convertedValues.volume)}
-          </Typography>
-        </Stack>
-      </TableCell>
+      {!isMobile && (
+        <TableCell align="right" sx={percentageCellStyle}>
+          <BearBullLabel value={pro7d || 0} variant="h4" />
+        </TableCell>
+      )}
+      {!isMobile && (
+        <TableCell align="right">
+          <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
+            <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
+            <Typography variant="h4" noWrap>
+              {convertedValues.volume >= 1000000
+                ? `${(convertedValues.volume / 1000000).toFixed(1)}M`
+                : convertedValues.volume >= 1000
+                  ? `${(convertedValues.volume / 1000).toFixed(1)}K`
+                  : fNumber(convertedValues.volume)}
+            </Typography>
+          </Stack>
+        </TableCell>
+      )}
       <TableCell
         align="right"
         sx={{
-          padding: isMobile ? '9px 4px' : '16px 12px'
+          padding: isMobile ? '8px 4px' : '16px 12px'
         }}
       >
         <Typography
           variant="caption"
           sx={{
-            fontSize: isMobile ? '9px' : '12px',
+            fontSize: isMobile ? '10px' : '12px',
             fontWeight: '500'
           }}
         >
           {formatTimeAgo(dateon, date)}
         </Typography>
       </TableCell>
-      <TableCell align="right">
-        <Typography variant="h4">
-          {vol24htx >= 1000000
-            ? `${(vol24htx / 1000000).toFixed(1)}M`
-            : vol24htx >= 1000
-              ? `${(vol24htx / 1000).toFixed(1)}K`
-              : fNumber(vol24htx)}
-        </Typography>
-      </TableCell>
-      <TableCell align="right">
-        <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
-          <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
-          <Typography variant="h4" noWrap={!isMobile}>
-            {convertedValues.tvl >= 1000000
-              ? `${(convertedValues.tvl / 1000000).toFixed(1)}M`
-              : convertedValues.tvl >= 1000
-                ? `${(convertedValues.tvl / 1000).toFixed(1)}K`
-                : fNumber(convertedValues.tvl)}
-          </Typography>
-        </Stack>
-      </TableCell>
+      {!isMobile && (
+        <>
+          <TableCell align="right">
+            <Typography variant="h4">
+              {vol24htx >= 1000000
+                ? `${(vol24htx / 1000000).toFixed(1)}M`
+                : vol24htx >= 1000
+                  ? `${(vol24htx / 1000).toFixed(1)}K`
+                  : fNumber(vol24htx)}
+            </Typography>
+          </TableCell>
+          <TableCell align="right">
+            <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
+              <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
+              <Typography variant="h4" noWrap>
+                {convertedValues.tvl >= 1000000
+                  ? `${(convertedValues.tvl / 1000000).toFixed(1)}M`
+                  : convertedValues.tvl >= 1000
+                    ? `${(convertedValues.tvl / 1000).toFixed(1)}K`
+                    : fNumber(convertedValues.tvl)}
+              </Typography>
+            </Stack>
+          </TableCell>
+        </>
+      )}
       <TableCell align="right">
         <Typography variant="h4">
           {currencySymbols[activeFiatCurrency]}
@@ -779,141 +788,147 @@ function FTokenRow({
               : fNumber(convertedValues.marketCap)}
         </Typography>
       </TableCell>
-      <TableCell align="right">
-        <Typography variant="h4">
-          {holders >= 1000000
-            ? `${(holders / 1000000).toFixed(1)}M`
-            : holders >= 1000
-              ? `${(holders / 1000).toFixed(1)}K`
-              : fIntNumber(holders)}
-        </Typography>
-      </TableCell>
-      <TableCell align="right">
-        <Tooltip
-          title={
-            <Table
-              sx={{
-                '& .MuiTableCell-root': {
-                  borderBottom: 'none',
-                  padding: '1px 6px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                  '&:first-of-type': {
-                    pr: 2
-                  }
-                },
-                '& .MuiTableRow-root:not(:first-of-type)': {
+      {!isMobile && (
+        <TableCell align="right">
+          <Typography variant="h4">
+            {holders >= 1000000
+              ? `${(holders / 1000000).toFixed(1)}M`
+              : holders >= 1000
+                ? `${(holders / 1000).toFixed(1)}K`
+                : fIntNumber(holders)}
+          </Typography>
+        </TableCell>
+      )}
+      {!isMobile && (
+        <TableCell align="right">
+          <Tooltip
+            title={
+              <Table
+                sx={{
                   '& .MuiTableCell-root': {
-                    paddingTop: '1px'
+                    borderBottom: 'none',
+                    padding: '1px 6px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                    '&:first-of-type': {
+                      pr: 2
+                    }
+                  },
+                  '& .MuiTableRow-root:not(:first-of-type)': {
+                    '& .MuiTableCell-root': {
+                      paddingTop: '1px'
+                    }
                   }
-                }
-              }}
-            >
-              <TableBody>
-                <TableRow>
-                  <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
-                    <Typography variant="caption" noWrap sx={{ fontWeight: 'bold', color: '#fff' }}>
-                      Percentage:
-                    </Typography>
-                  </TableCell>
-                  <TableCell sx={{ pt: 0, pb: 0 }}>
-                    <Typography variant="caption" sx={{ color: '#fff' }}>
-                      {fNumber(supplyRate)}%
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
-                    <Typography variant="caption" noWrap sx={{ fontWeight: 'bold', color: '#fff' }}>
-                      Circulating:
-                    </Typography>
-                  </TableCell>
-                  <TableCell sx={{ pt: 0, pb: 0 }}>
-                    <Typography variant="caption" noWrap sx={{ color: '#fff' }}>
-                      {fNumber(amount)} {name}
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
-                    <Typography variant="caption" noWrap sx={{ fontWeight: 'bold', color: '#fff' }}>
-                      Total:
-                    </Typography>
-                  </TableCell>
-                  <TableCell sx={{ pt: 0, pb: 0 }}>
-                    <Typography variant="caption" noWrap sx={{ color: '#fff' }}>
-                      {fNumber(amount)} {name}
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          }
-          placement="bottom-end"
-          arrow
-          componentsProps={{
-            tooltip: {
-              sx: {
-                zIndex: 9999,
-                maxWidth: '300px',
-                backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                p: 0.5,
-                '& .MuiTooltip-arrow': {
-                  color: 'rgba(0, 0, 0, 0.9)'
+                }}
+              >
+                <TableBody>
+                  <TableRow>
+                    <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
+                      <Typography variant="caption" noWrap sx={{ fontWeight: 'bold', color: '#fff' }}>
+                        Percentage:
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ pt: 0, pb: 0 }}>
+                      <Typography variant="caption" sx={{ color: '#fff' }}>
+                        {fNumber(supplyRate)}%
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
+                      <Typography variant="caption" noWrap sx={{ fontWeight: 'bold', color: '#fff' }}>
+                        Circulating:
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ pt: 0, pb: 0 }}>
+                      <Typography variant="caption" noWrap sx={{ color: '#fff' }}>
+                        {fNumber(amount)} {name}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
+                      <Typography variant="caption" noWrap sx={{ fontWeight: 'bold', color: '#fff' }}>
+                        Total:
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ pt: 0, pb: 0 }}>
+                      <Typography variant="caption" noWrap sx={{ color: '#fff' }}>
+                        {fNumber(amount)} {name}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            }
+            placement="bottom-end"
+            arrow
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  zIndex: 9999,
+                  maxWidth: '300px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                  p: 0.5,
+                  '& .MuiTooltip-arrow': {
+                    color: 'rgba(0, 0, 0, 0.9)'
+                  }
                 }
               }
-            }
-          }}
-        >
-          <Typography variant="h4" noWrap={!isMobile}>
-            {amount >= 1000000000000
-              ? `${(amount / 1000000000000).toFixed(2)}T`
-              : amount >= 1000000000
-                ? `${(amount / 1000000000).toFixed(2)}B`
-                : amount >= 1000000
-                  ? amount >= 999500000
-                    ? `${(amount / 1000000000).toFixed(2)}B`
-                    : `${(amount / 1000000).toFixed(2)}M`
-                  : amount >= 1000
-                    ? `${(amount / 1000).toFixed(1)}K`
-                    : fNumber(amount)}{' '}
-            {name}
-          </Typography>
-        </Tooltip>
-      </TableCell>
-      <TableCell
-        align="right"
-        sx={{
-          width: isMobile ? '150px' : '280px',
-          minWidth: isMobile ? '150px' : '280px',
-          maxWidth: isMobile ? '150px' : '280px',
-          pr: isMobile ? '4px !important' : '8px !important',
-          pl: isMobile ? '4px !important' : '8px !important',
-          py: isMobile ? '8px !important' : '10px !important',
-          overflow: 'visible'
-        }}
-      >
-        <Box
-          sx={{
-            width: '100%',
-            height: isMobile ? 45 : 60,
-            position: 'relative',
-            zIndex: 1
-          }}
-        >
-          <LoadChart
-            url={sparklineUrl}
-            style={{ width: '100%', height: '100%' }}
-            animation={false}
-            showGradient={false}
-            lineWidth={isMobile ? 1.5 : 2}
-            opts={{
-              renderer: 'svg',
-              width: isMobile ? 142 : 272,
-              height: isMobile ? 45 : 60
             }}
-          />
-        </Box>
-      </TableCell>
+          >
+            <Typography variant="h4" noWrap>
+              {amount >= 1000000000000
+                ? `${(amount / 1000000000000).toFixed(2)}T`
+                : amount >= 1000000000
+                  ? `${(amount / 1000000000).toFixed(2)}B`
+                  : amount >= 1000000
+                    ? amount >= 999500000
+                      ? `${(amount / 1000000000).toFixed(2)}B`
+                      : `${(amount / 1000000).toFixed(2)}M`
+                    : amount >= 1000
+                      ? `${(amount / 1000).toFixed(1)}K`
+                      : fNumber(amount)}{' '}
+              {name}
+            </Typography>
+          </Tooltip>
+        </TableCell>
+      )}
+      {!isMobile && (
+        <TableCell
+          align="right"
+          sx={{
+            width: '280px',
+            minWidth: '280px',
+            maxWidth: '280px',
+            pr: '8px !important',
+            pl: '8px !important',
+            py: '10px !important',
+            overflow: 'visible'
+          }}
+        >
+          <Box
+            sx={{
+              width: '100%',
+              height: 60,
+              position: 'relative',
+              zIndex: 1
+            }}
+          >
+            <LoadChart
+              url={sparklineUrl}
+              style={{ width: '100%', height: '100%' }}
+              animation={false}
+              showGradient={false}
+              lineWidth={2}
+              opts={{
+                renderer: 'svg',
+                width: 272,
+                height: 60
+              }}
+            />
+          </Box>
+        </TableCell>
+      )}
       <TableCell
         align="right"
         sx={{

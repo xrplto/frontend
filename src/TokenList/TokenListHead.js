@@ -477,21 +477,21 @@ export default function TokenListHead({
               0.7
             )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
             backdropFilter: 'blur(25px)',
-            width: isMobile ? '20px' : '24px',
-            minWidth: isMobile ? '20px' : '24px',
-            padding: isMobile ? '6px 4px' : '16px 8px'
+            width: isMobile ? '28px' : '24px',
+            minWidth: isMobile ? '28px' : '24px',
+            padding: isMobile ? '8px 4px' : '16px 8px'
           },
           // Second column (name - matches TokenRow combined ID+Name) - sticky
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
             zIndex: 2,
-            left: isMobile ? '20px' : '24px',
+            left: isMobile ? '28px' : '24px',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.7
             )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
             backdropFilter: 'blur(25px)',
-            padding: isMobile ? '6px 4px' : '16px 12px',
+            padding: isMobile ? '8px 4px' : '16px 12px',
             '&:before': scrollLeft
               ? {
                   content: "''",
@@ -527,6 +527,18 @@ export default function TokenListHead({
         }}
       >
         {TABLE_HEAD.map((headCell) => {
+          // Skip certain columns on mobile
+          if (isMobile) {
+            if (headCell.id === 'pro5m') return null;
+            if (headCell.id === 'pro7d') return null;
+            if (headCell.id === 'vol24hxrp') return null;
+            if (headCell.id === 'vol24htx') return null;
+            if (headCell.id === 'tvl') return null;
+            if (headCell.id === 'holders') return null;
+            if (headCell.id === 'amount') return null;
+            if (headCell.id === 'chart') return null;
+          }
+          
           return (
             <StickyTableCell
               key={headCell.id}
