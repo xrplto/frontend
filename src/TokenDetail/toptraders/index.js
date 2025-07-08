@@ -19,7 +19,12 @@ import {
   CircularProgress,
   Chip,
   TableSortLabel,
-  TablePagination
+  TablePagination,
+  useMediaQuery,
+  useTheme,
+  Card,
+  CardContent,
+  Divider
 } from '@mui/material';
 
 // Icons
@@ -112,59 +117,66 @@ function getComparator(order, orderBy) {
 }
 
 const headCells = [
-  { id: 'rank', label: '#', numeric: true, sortable: false },
-  { id: 'address', label: 'Trader', numeric: false, sortable: false },
+  { id: 'rank', label: '#', numeric: true, sortable: false, mobileHide: false },
+  { id: 'address', label: 'Trader', numeric: false, sortable: false, mobileHide: false },
   {
     id: 'profit24h',
     label: 'P&L (24h)',
     numeric: true,
     sortable: true,
-    tooltip: "Trader's profit/loss in the last 24 hours"
+    tooltip: "Trader's profit/loss in the last 24 hours",
+    mobileHide: false
   },
   {
     id: 'profit7d',
     label: 'P&L (7d)',
     numeric: true,
     sortable: true,
-    tooltip: "Trader's profit/loss in the last 7 days"
+    tooltip: "Trader's profit/loss in the last 7 days",
+    mobileHide: true
   },
   {
     id: 'volume24h',
     label: 'Vol (24h)',
     numeric: true,
     sortable: true,
-    tooltip: "Trader's trade volume in the last 24 hours"
+    tooltip: "Trader's trade volume in the last 24 hours",
+    mobileHide: false
   },
   {
     id: 'totalVolume',
     label: 'Total Vol',
     numeric: true,
     sortable: true,
-    tooltip: "Trader's total trade volume for this token"
+    tooltip: "Trader's total trade volume for this token",
+    mobileHide: true
   },
   {
     id: 'trades24h',
     label: 'Trades (24h)',
     numeric: true,
     sortable: true,
-    tooltip: 'Number of trades in the last 24 hours'
+    tooltip: 'Number of trades in the last 24 hours',
+    mobileHide: true
   },
   {
     id: 'totalTrades',
     label: 'Total Trades',
     numeric: true,
     sortable: true,
-    tooltip: 'Total number of trades for this token'
+    tooltip: 'Total number of trades for this token',
+    mobileHide: true
   },
-  { id: 'roi', label: 'ROI', numeric: true, sortable: true, tooltip: 'Return on Investment' },
+  { id: 'roi', label: 'ROI', numeric: true, sortable: true, tooltip: 'Return on Investment', mobileHide: false },
   {
     id: 'lastTradeDate',
     label: 'Last Trade',
     numeric: false,
     sortable: true,
-    tooltip: 'Date of the last recorded trade for this token'
+    tooltip: 'Date of the last recorded trade for this token',
+    mobileHide: true
   },
-  { id: 'actions', label: 'Actions', numeric: false, sortable: false }
+  { id: 'actions', label: 'Actions', numeric: false, sortable: false, mobileHide: false }
 ];
 
 function ProfitCell({ value }) {
@@ -204,6 +216,9 @@ function MarketShareCell({ value }) {
 export default function TopTraders({ token }) {
   const BASE_URL = process.env.API_URL;
   const { darkMode } = useContext(AppContext);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [traders, setTraders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -380,6 +395,109 @@ export default function TopTraders({ token }) {
     page * rowsPerPage + rowsPerPage
   );
 
+  const MobileTraderCard = ({ trader, rank }) => (
+    <Card 
+      sx={{ 
+        mb: 1.5, 
+        bgcolor: darkMode ? 'background.paper' : 'background.default',
+        boxShadow: 'none',
+        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
+        '&:active': {
+          transform: 'scale(0.98)',
+          transition: 'transform 0.1s'
+        }
+      }}
+    >
+      <CardContent sx={{ p: 2 }}>
+        <Stack spacing={1.5}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography variant="subtitle2" color="text.secondary">#{rank}</Typography>
+              <Link
+                underline="none"
+                href={`/profile/${trader.address}`}
+                rel="noreferrer"
+              >
+                <Typography variant="body2" color="primary" sx={{ fontWeight: 600 }}>
+                  {truncate(trader.address, isSmallMobile ? 10 : 16)}
+                </Typography>
+              </Link>
+              {trader.AMM && (
+                <Chip
+                  label="AMM"
+                  size="small"
+                  color="secondary"
+                  sx={{ height: 18, fontSize: '0.65rem' }}
+                />
+              )}
+            </Stack>
+            <Stack direction="row" spacing={0.5}>
+              <IconButton
+                size="small"
+                onClick={() => handleOpenStats(trader)}
+                sx={{ p: 0.5 }}
+              >
+                <BarChartIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={() => handleOpenSankey(trader.address)}
+                sx={{ p: 0.5 }}
+              >
+                <AccountTreeIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Stack>
+          </Stack>
+          
+          <Divider sx={{ my: 0.5 }} />
+          
+          <Stack direction="row" justifyContent="space-between">
+            <Stack spacing={0.5}>
+              <Typography variant="caption" color="text.secondary">P&L (24h)</Typography>
+              <ProfitCell value={trader.profit24h} />
+            </Stack>
+            <Stack spacing={0.5} alignItems="flex-end">
+              <Typography variant="caption" color="text.secondary">Vol (24h)</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                {fNumber(trader.volume24h)}
+              </Typography>
+            </Stack>
+            <Stack spacing={0.5} alignItems="flex-end">
+              <Typography variant="caption" color="text.secondary">ROI</Typography>
+              <Stack direction="row" spacing={0.25} alignItems="center">
+                {trader.roi >= 0 ? (
+                  <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 14 }} />
+                ) : (
+                  <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 14 }} />
+                )}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: trader.roi >= 0 ? '#54D62C' : '#FF6C40',
+                    fontWeight: 500
+                  }}
+                >
+                  {fPercent(trader.roi)}
+                </Typography>
+              </Stack>
+            </Stack>
+          </Stack>
+          
+          <Stack direction="row" justifyContent="space-between" sx={{ pt: 0.5 }}>
+            <Stack spacing={0.5}>
+              <Typography variant="caption" color="text.secondary">Trades (24h)</Typography>
+              <Typography variant="body2">{fNumber(trader.trades24h)}</Typography>
+            </Stack>
+            <Stack spacing={0.5} alignItems="flex-end">
+              <Typography variant="caption" color="text.secondary">Last Trade</Typography>
+              <Typography variant="body2">{formatDate(trader.lastTradeDate)}</Typography>
+            </Stack>
+          </Stack>
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <>
       <Box sx={{ overflow: 'auto', width: '100%' }}>
@@ -389,6 +507,41 @@ export default function TopTraders({ token }) {
               No trader data available for this token.
             </Typography>
           </Box>
+        ) : isMobile ? (
+          <>
+            <Box sx={{ px: 1 }}>
+              {paginatedTraders.map((trader, index) => (
+                <MobileTraderCard 
+                  key={trader.address + '-' + index}
+                  trader={trader}
+                  rank={page * rowsPerPage + index + 1}
+                />
+              ))}
+            </Box>
+            <TablePagination
+              component="div"
+              count={sortedTraders.length}
+              page={page}
+              onPageChange={handleChangePage}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              rowsPerPageOptions={[5, 10, 20]}
+              sx={{
+                borderTop: '1px solid rgba(145, 158, 171, 0.08)',
+                '& .MuiTablePagination-toolbar': {
+                  minHeight: '48px',
+                  px: 1
+                },
+                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  fontSize: '0.75rem',
+                  color: 'text.secondary'
+                },
+                '& .MuiTablePagination-select': {
+                  fontSize: '0.75rem'
+                }
+              }}
+            />
+          </>
         ) : (
           <>
             <Table
@@ -396,9 +549,9 @@ export default function TopTraders({ token }) {
               size="small"
               sx={{
                 '& .MuiTableCell-root': {
-                  py: 1,
-                  px: 1.5,
-                  fontSize: '0.875rem',
+                  py: isMobile ? 0.75 : 1,
+                  px: isMobile ? 0.5 : 1.5,
+                  fontSize: isMobile ? '0.75rem' : '0.875rem',
                   whiteSpace: 'nowrap',
                   borderBottom: 'none'
                 },
@@ -455,7 +608,7 @@ export default function TopTraders({ token }) {
             >
               <TableHead>
                 <TableRow>
-                  {headCells.map((headCell) => (
+                  {headCells.filter(cell => !isMobile || !cell.mobileHide).map((headCell) => (
                     <TableCell
                       key={headCell.id}
                       align={headCell.numeric ? 'right' : 'left'}
@@ -536,7 +689,7 @@ export default function TopTraders({ token }) {
                             rel="noreferrer"
                           >
                             <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
-                              {truncate(safeTrader.address, 20)}
+                              {truncate(safeTrader.address, isMobile ? 10 : 20)}
                             </Typography>
                           </Link>
                           {safeTrader.AMM && (
@@ -632,7 +785,7 @@ export default function TopTraders({ token }) {
                                 }
                               }}
                             >
-                              <BarChartIcon sx={{ fontSize: 16 }} />
+                              <BarChartIcon sx={{ fontSize: isMobile ? 14 : 16 }} />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="View Sankey Flow Analysis">
@@ -651,7 +804,7 @@ export default function TopTraders({ token }) {
                                 }
                               }}
                             >
-                              <AccountTreeIcon sx={{ fontSize: 16 }} />
+                              <AccountTreeIcon sx={{ fontSize: isMobile ? 14 : 16 }} />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Copy JSON Data">
@@ -671,9 +824,9 @@ export default function TopTraders({ token }) {
                               }}
                             >
                               {copiedTrader === safeTrader.address ? (
-                                <CheckIcon sx={{ fontSize: 16, color: '#54D62C' }} />
+                                <CheckIcon sx={{ fontSize: isMobile ? 14 : 16, color: '#54D62C' }} />
                               ) : (
-                                <ContentCopyIcon sx={{ fontSize: 16 }} />
+                                <ContentCopyIcon sx={{ fontSize: isMobile ? 14 : 16 }} />
                               )}
                             </IconButton>
                           </Tooltip>
