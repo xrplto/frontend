@@ -11,8 +11,7 @@ const memoizedFNumber = memoize(fNumber);
 const memoizedFNumberWithSuffix = memoize(fNumberWithSuffix);
 const memoizedFCurrency5 = memoize(fCurrency5);
 
-export default function ChartOptions(series) {
-    const theme = useTheme();
+export default function ChartOptions(series, theme, isMobile) {
 
     const LABEL_TOTAL = {
         show: true,
@@ -50,7 +49,13 @@ export default function ChartOptions(series) {
         // Grid
         grid: {
             strokeDashArray: 2,
-            borderColor: theme.palette.divider
+            borderColor: theme.palette.divider,
+            padding: {
+                top: isMobile ? 5 : 10,
+                right: isMobile ? 10 : 20,
+                bottom: isMobile ? 5 : 10,
+                left: isMobile ? 10 : 20
+            }
         },
 
         // Colors for BID and ASK
@@ -153,15 +158,15 @@ export default function ChartOptions(series) {
 
         // Legend
         legend: {
-            show: true,
-            fontSize: 13,
+            show: !isMobile,
+            fontSize: isMobile ? 11 : 13,
             position: 'top',
             horizontalAlign: 'right',
             markers: {
-                radius: 12
+                radius: isMobile ? 8 : 12
             },
             fontWeight: 500,
-            itemMargin: { horizontal: 12 },
+            itemMargin: { horizontal: isMobile ? 8 : 12 },
             labels: {
                 colors: theme.palette.text.primary
             }

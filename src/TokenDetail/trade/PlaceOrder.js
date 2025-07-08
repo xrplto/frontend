@@ -3,7 +3,9 @@ import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
 
 // Material
-import { Button, Stack, Typography, styled } from '@mui/material';
+import { Button, Stack, Typography, styled, useTheme, useMediaQuery, Box } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { ShoppingCart, LocalOffer } from '@mui/icons-material';
 
 // Context
 import { useContext } from 'react';
@@ -27,6 +29,60 @@ const DisabledButton = styled(Button)({
   }
 });
 
+const OrderButton = styled(Button)(({ theme, ordertype }) => ({
+  minHeight: '44px',
+  fontWeight: 600,
+  fontSize: '0.875rem',
+  borderRadius: '10px',
+  transition: 'all 0.3s ease',
+  textTransform: 'none',
+  gap: theme.spacing(1),
+  ...(ordertype === 'buy' && {
+    backgroundColor: alpha(theme.palette.success.main, 0.1),
+    color: theme.palette.success.main,
+    borderColor: alpha(theme.palette.success.main, 0.3),
+    '&:hover': {
+      backgroundColor: theme.palette.success.main,
+      color: theme.palette.common.white,
+      borderColor: theme.palette.success.main,
+      transform: 'translateY(-2px)',
+      boxShadow: `0 8px 16px ${alpha(theme.palette.success.main, 0.3)}`
+    }
+  }),
+  ...(ordertype === 'sell' && {
+    backgroundColor: alpha(theme.palette.error.main, 0.1),
+    color: theme.palette.error.main,
+    borderColor: alpha(theme.palette.error.main, 0.3),
+    '&:hover': {
+      backgroundColor: theme.palette.error.main,
+      color: theme.palette.common.white,
+      borderColor: theme.palette.error.main,
+      transform: 'translateY(-2px)',
+      boxShadow: `0 8px 16px ${alpha(theme.palette.error.main, 0.3)}`
+    }
+  }),
+  '&.Mui-disabled': {
+    backgroundColor: alpha(theme.palette.action.disabled, 0.1),
+    color: theme.palette.action.disabled,
+    borderColor: alpha(theme.palette.action.disabled, 0.2)
+  },
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '0.75rem',
+    minHeight: '40px'
+  }
+}));
+
+const ErrorMessage = styled(Typography)(({ theme }) => ({
+  fontSize: '0.75rem',
+  color: theme.palette.error.main,
+  textAlign: 'center',
+  marginBottom: theme.spacing(1),
+  fontWeight: 500,
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '0.7rem'
+  }
+}));
+
 export default function PlaceOrder({
   marketLimit,
   buySell,
@@ -36,6 +92,8 @@ export default function PlaceOrder({
   accountPairBalance
 }) {
   const BASE_URL = process.env.API_URL;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const dispatch = useDispatch();
   const { accountProfile, setLoading, openSnackbar, sync, setSync } = useContext(AppContext);
   const [openScanQR, setOpenScanQR] = useState(false);
@@ -389,30 +447,31 @@ export default function PlaceOrder({
   };
 
   return (
-    <Stack alignItems="center">
+    <Box sx={{ width: '100%' }}>
       {accountProfile && accountProfile.account ? (
-        <>
-          {errMsg && <Typography variant="s2">{errMsg}</Typography>}
+        <Stack alignItems="stretch" spacing={1}>
+          {errMsg && <ErrorMessage>{errMsg}</ErrorMessage>}
           {canPlaceOrder ? (
-            <Button
+            <OrderButton
               variant="outlined"
-              sx={{ mt: 1.5 }}
               onClick={handlePlaceOrder}
-              color={buySell === 'BUY' ? 'primary' : 'error'}
+              ordertype={buySell.toLowerCase()}
+              fullWidth
+              startIcon={!isMobile && (buySell === 'BUY' ? <ShoppingCart /> : <LocalOffer />)}
             >
-              PLACE ORDER
-            </Button>
+              {buySell === 'BUY' ? 'Place Buy Order' : 'Place Sell Order'}
+            </OrderButton>
           ) : (
-            <DisabledButton
+            <OrderButton
               variant="outlined"
-              sx={{ mt: 1.5 }}
-              // onClick={()=>openSnackbar('Please connect wallet!', 'error')}
               disabled
+              fullWidth
+              ordertype="disabled"
             >
-              PLACE ORDER
-            </DisabledButton>
+              Place Order
+            </OrderButton>
           )}
-        </>
+        </Stack>
       ) : (
         <ConnectWallet pair={pair} />
       )}
@@ -424,6 +483,6 @@ export default function PlaceOrder({
         qrUrl={qrUrl}
         nextUrl={nextUrl}
       />
-    </Stack>
+    </Box>
   );
 }

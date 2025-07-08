@@ -16,7 +16,8 @@ import {
   TableRow,
   Typography,
   Box,
-  Chip
+  Chip,
+  useMediaQuery
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 
@@ -40,7 +41,10 @@ const HistoryContainer = styled(Box)(({ theme }) => ({
   borderRadius: '8px',
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   overflow: 'hidden',
-  position: 'relative'
+  position: 'relative',
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column'
 }));
 
 const CompactHeader = styled(Box)(({ theme }) => ({
@@ -49,7 +53,27 @@ const CompactHeader = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   padding: theme.spacing(1, 1.5),
   background: alpha(theme.palette.background.paper, 0.4),
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  flexShrink: 0,
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(0.75, 1)
+  }
+}));
+
+const TableContainer = styled(Box)(({ theme }) => ({
+  flex: 1,
+  overflow: 'auto',
+  '&::-webkit-scrollbar': {
+    width: '4px',
+    height: '4px'
+  },
+  '&::-webkit-scrollbar-track': {
+    backgroundColor: alpha(theme.palette.background.paper, 0.1)
+  },
+  '&::-webkit-scrollbar-thumb': {
+    backgroundColor: alpha(theme.palette.divider, 0.3),
+    borderRadius: '2px'
+  }
 }));
 
 const ModernTable = styled(Table)(({ theme }) => ({
@@ -57,7 +81,11 @@ const ModernTable = styled(Table)(({ theme }) => ({
     borderBottom: 'none',
     padding: theme.spacing(0.5, 0.75),
     fontSize: '0.7rem',
-    lineHeight: 1.2
+    lineHeight: 1.2,
+    [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(0.4, 0.5),
+      fontSize: '0.65rem'
+    }
   },
   [`& .${tableCellClasses.head}`]: {
     backgroundColor: alpha(theme.palette.background.paper, 0.6),
@@ -65,7 +93,14 @@ const ModernTable = styled(Table)(({ theme }) => ({
     fontSize: '0.65rem',
     color: alpha(theme.palette.text.secondary, 0.8),
     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-    padding: theme.spacing(0.75, 0.75)
+    padding: theme.spacing(0.75, 0.75),
+    position: 'sticky',
+    top: 0,
+    zIndex: 1,
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.6rem',
+      padding: theme.spacing(0.5, 0.5)
+    }
   }
 }));
 
@@ -186,6 +221,7 @@ function convertTrade(md5, trades) {
 export default function ExchHistory({ pair, md5 }) {
   const BASE_URL = process.env.API_URL;
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [tradeExchs, setTradeExchs] = useState([]);
 
   useEffect(() => {
@@ -219,10 +255,10 @@ export default function ExchHistory({ pair, md5 }) {
     <HistoryContainer>
       {/* Compact Header */}
       <CompactHeader>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
           <AccessTimeIcon
             sx={{
-              fontSize: '0.9rem',
+              fontSize: { xs: '0.8rem', sm: '0.9rem' },
               color: theme.palette.info.main
             }}
           />
@@ -231,7 +267,7 @@ export default function ExchHistory({ pair, md5 }) {
             sx={{
               color: theme.palette.text.primary,
               fontWeight: 600,
-              fontSize: '0.8rem'
+              fontSize: { xs: '0.7rem', sm: '0.8rem' }
             }}
           >
             Recent Trades
@@ -249,16 +285,17 @@ export default function ExchHistory({ pair, md5 }) {
       </CompactHeader>
 
       {/* Trade History Table */}
-      <ModernTable size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell align="left">Price ({pair?.curr2?.name})</TableCell>
-            <TableCell align="left">Amount ({pair?.curr1?.name})</TableCell>
-            <TableCell align="left">Time</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {tradeExchs.slice(0, 25).map((row) => {
+      <TableContainer>
+        <ModernTable size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell align="left">Price</TableCell>
+              <TableCell align="left">Amt</TableCell>
+              <TableCell align="left">Time</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {tradeExchs.slice(0, 30).map((row) => {
             const { _id, exch, amount, direction, time } = row;
             const nDate = new Date(time);
             const hour = nDate.getHours().toLocaleString('en-US', {
@@ -279,24 +316,25 @@ export default function ExchHistory({ pair, md5 }) {
               <TradeRow key={_id} tradetype={direction}>
                 <PriceCell align="left" tradetype={direction}>
                   {direction === 'up' ? (
-                    <TrendingUpIcon sx={{ fontSize: '0.7rem' }} />
+                    <TrendingUpIcon sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }} />
                   ) : (
-                    <TrendingDownIcon sx={{ fontSize: '0.7rem' }} />
+                    <TrendingDownIcon sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }} />
                   )}
-                  <NumberTooltip number={fNumber(exch)} pos="bottom" />
+                  <span>{fNumber(exch)}</span>
                 </PriceCell>
-                <TableCell align="left" sx={{ fontWeight: 500, fontSize: '0.7rem' }}>
+                <TableCell align="left" sx={{ fontWeight: 500, fontSize: { xs: '0.65rem', sm: '0.7rem' } }}>
                   {amount}
                 </TableCell>
                 <TimeCell align="left">
-                  <AccessTimeIcon sx={{ fontSize: '0.6rem' }} />
+                  {!isMobile && <AccessTimeIcon sx={{ fontSize: '0.6rem' }} />}
                   {strTime}
                 </TimeCell>
               </TradeRow>
             );
           })}
-        </TableBody>
-      </ModernTable>
+          </TableBody>
+        </ModernTable>
+      </TableContainer>
 
       {/* Empty State */}
       {tradeExchs.length === 0 && (

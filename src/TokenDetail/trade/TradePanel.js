@@ -14,7 +14,8 @@ import {
   ToggleButtonGroup,
   Typography,
   Chip,
-  Divider
+  Divider,
+  useMediaQuery
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 
@@ -49,7 +50,11 @@ const CompactContainer = styled(Box)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   padding: theme.spacing(2),
   position: 'relative',
-  overflow: 'hidden'
+  overflow: 'hidden',
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(1.5),
+    borderRadius: '8px'
+  }
 }));
 
 const ModernToggleGroup = styled(ToggleButtonGroup)(({ theme }) => ({
@@ -67,6 +72,11 @@ const ModernToggleGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     margin: '2px',
     minHeight: '32px',
     transition: 'all 0.2s ease',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.75rem',
+      padding: theme.spacing(0.5, 1.5),
+      minHeight: '28px'
+    },
     '&.Mui-selected': {
       backgroundColor: theme.palette.background.paper,
       boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}`,
@@ -115,7 +125,11 @@ const InfoRow = styled(Box)(({ theme }) => ({
   borderRadius: '8px',
   background: alpha(theme.palette.background.paper, 0.3),
   border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
-  marginTop: theme.spacing(1)
+  marginTop: theme.spacing(1),
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(0.75, 1),
+    borderRadius: '6px'
+  }
 }));
 
 const CurrencyChip = styled(Chip)(({ theme }) => ({
@@ -141,6 +155,7 @@ const fmNumber = (value, len) => {
 
 export default function TradePanel({ pair, bids, asks, bidId, askId }) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [buySell, setBuySell] = useState('BUY');
   const [amount, setAmount] = useState('');
   const [price, setPrice] = useState('');
@@ -262,13 +277,13 @@ export default function TradePanel({ pair, bids, asks, bidId, askId }) {
   return (
     <CompactContainer>
       {/* Header */}
-      <Box sx={{ textAlign: 'center', mb: 2 }}>
+      <Box sx={{ textAlign: 'center', mb: { xs: 1.5, sm: 2 } }}>
         <Typography
           variant="subtitle2"
           sx={{
             color: theme.palette.warning.main,
             fontWeight: 600,
-            fontSize: '0.9rem',
+            fontSize: { xs: '0.8rem', sm: '0.9rem' },
             mb: 0.5
           }}
         >
@@ -276,7 +291,7 @@ export default function TradePanel({ pair, bids, asks, bidId, askId }) {
         </Typography>
       </Box>
 
-      <Stack spacing={2}>
+      <Stack spacing={{ xs: 1.5, sm: 2 }}>
         {/* Account Balance */}
         <AccountBalance
           pair={pair}
@@ -287,31 +302,33 @@ export default function TradePanel({ pair, bids, asks, bidId, askId }) {
         {/* Buy/Sell Toggle */}
         <ModernToggleGroup value={buySell} fullWidth exclusive onChange={handleChangeBuySell}>
           <ToggleButton value="BUY">
-            <TrendingUpIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+            <TrendingUpIcon sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, mr: 0.5 }} />
             BUY
           </ToggleButton>
           <ToggleButton value="SELL">
-            <TrendingDownIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+            <TrendingDownIcon sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, mr: 0.5 }} />
             SELL
           </ToggleButton>
         </ModernToggleGroup>
 
-        {/* Trade Description */}
-        <Box sx={{ textAlign: 'center', py: 1 }}>
-          {buySell === 'BUY' ? (
-            <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
-              Get <CurrencyChip label={curr1.name} size="small" color="error" variant="outlined" />{' '}
-              by selling{' '}
-              <CurrencyChip label={curr2.name} size="small" color="primary" variant="outlined" />
-            </Typography>
-          ) : (
-            <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
-              Sell <CurrencyChip label={curr1.name} size="small" color="error" variant="outlined" />{' '}
-              to get{' '}
-              <CurrencyChip label={curr2.name} size="small" color="primary" variant="outlined" />
-            </Typography>
-          )}
-        </Box>
+        {/* Trade Description - Hidden on mobile */}
+        {!isMobile && (
+          <Box sx={{ textAlign: 'center', py: 1 }}>
+            {buySell === 'BUY' ? (
+              <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
+                Get <CurrencyChip label={curr1.name} size="small" color="error" variant="outlined" />{' '}
+                by selling{' '}
+                <CurrencyChip label={curr2.name} size="small" color="primary" variant="outlined" />
+              </Typography>
+            ) : (
+              <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
+                Sell <CurrencyChip label={curr1.name} size="small" color="error" variant="outlined" />{' '}
+                to get{' '}
+                <CurrencyChip label={curr2.name} size="small" color="primary" variant="outlined" />
+              </Typography>
+            )}
+          </Box>
+        )}
 
         {/* Market/Limit Toggle */}
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -340,15 +357,16 @@ export default function TradePanel({ pair, bids, asks, bidId, askId }) {
           </RadioGroup>
         </Box>
 
-        <Divider sx={{ opacity: 0.3 }} />
+        {!isMobile && <Divider sx={{ opacity: 0.3 }} />}
 
         {/* Amount Input */}
-        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: { xs: 0.5, sm: 1 } }}>
           <TokenIcon
             sx={{
               color: theme.palette.text.secondary,
-              fontSize: '1.2rem',
-              mb: 0.5
+              fontSize: { xs: '1rem', sm: '1.2rem' },
+              mb: 0.5,
+              display: { xs: 'none', sm: 'block' }
             }}
           />
           <CompactTextField
@@ -377,12 +395,13 @@ export default function TradePanel({ pair, bids, asks, bidId, askId }) {
 
         {/* Price Input (only for limit orders) */}
         {marketLimit === 'limit' && (
-          <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: { xs: 0.5, sm: 1 } }}>
             <PriceChangeIcon
               sx={{
                 color: theme.palette.text.secondary,
-                fontSize: '1.2rem',
-                mb: 0.5
+                fontSize: { xs: '1rem', sm: '1.2rem' },
+                mb: 0.5,
+                display: { xs: 'none', sm: 'block' }
               }}
             />
             <CompactTextField
@@ -405,26 +424,27 @@ export default function TradePanel({ pair, bids, asks, bidId, askId }) {
 
         {/* Total Value */}
         <InfoRow>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
             <SwapVerticalCircleIcon
               sx={{
                 color: theme.palette.text.secondary,
-                fontSize: '1rem'
+                fontSize: { xs: '0.875rem', sm: '1rem' }
               }}
             />
-            <Typography variant="caption" sx={{ fontWeight: 500 }}>
+            <Typography variant="caption" sx={{ fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
               Total
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, display: { xs: 'none', sm: 'block' } }}>
               ≈
             </Typography>
             <Typography
               variant="body2"
               sx={{
                 fontWeight: 600,
-                color: theme.palette.text.primary
+                color: theme.palette.text.primary,
+                fontSize: { xs: '0.75rem', sm: '0.875rem' }
               }}
             >
               {value < 1 ? value : fNumberWithSuffix(value)}

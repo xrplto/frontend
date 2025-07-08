@@ -13,7 +13,7 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 const SpreadContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
+  gap: theme.spacing(1),
   padding: theme.spacing(1.5, 2),
   borderRadius: '10px',
   background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(
@@ -67,7 +67,7 @@ const formatNumber = (number) =>
     maximumFractionDigits: 8
   }).format(number);
 
-const Spread = ({ bids, asks }) => {
+const Spread = ({ bids, asks, sx }) => {
   const theme = useTheme();
 
   const { spreadAmount, spreadPercentage, direction } = useMemo(() => {
@@ -94,61 +94,58 @@ const Spread = ({ bids, asks }) => {
   };
 
   return (
-    <SpreadContainer>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        {direction === 'up' ? (
-          <TrendingUpIcon
-            sx={{
-              fontSize: '1rem',
-              color: theme.palette.success.main
-            }}
-          />
-        ) : (
-          <TrendingDownIcon
-            sx={{
-              fontSize: '1rem',
-              color: theme.palette.error.main
-            }}
-          />
-        )}
-        <Typography
-          variant="caption"
+    <SpreadContainer sx={sx}>
+      {direction === 'up' ? (
+        <TrendingUpIcon
           sx={{
-            fontWeight: 500,
-            fontSize: '0.75rem',
-            color: theme.palette.text.secondary
-          }}
-        >
-          Spread:
-        </Typography>
-      </Box>
-
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography
-          variant="body2"
-          sx={{
-            fontWeight: 600,
-            color: theme.palette.text.primary,
-            fontSize: '0.875rem'
-          }}
-        >
-          {spreadAmount}
-        </Typography>
-
-        <SpreadChip
-          label={`${spreadPercentage}%`}
-          size="small"
-          sx={{
-            backgroundColor: alpha(getSpreadColor(), 0.1),
-            color: getSpreadColor(),
-            border: `1px solid ${alpha(getSpreadColor(), 0.3)}`,
-            fontWeight: 600
+            fontSize: '1rem',
+            color: theme.palette.success.main
           }}
         />
+      ) : (
+        <TrendingDownIcon
+          sx={{
+            fontSize: '1rem',
+            color: theme.palette.error.main
+          }}
+        />
+      )}
+      <Typography
+        variant="caption"
+        sx={{
+          fontWeight: 500,
+          fontSize: '0.75rem',
+          color: theme.palette.text.secondary,
+          flex: 1
+        }}
+      >
+        Spread:
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          fontWeight: 600,
+          color: theme.palette.text.primary,
+          fontSize: '0.875rem'
+        }}
+      >
+        {spreadAmount}
+      </Typography>
 
-        <CompactTooltip
+      <SpreadChip
+        label={`${spreadPercentage}%`}
+        size="small"
+        sx={{
+          backgroundColor: alpha(getSpreadColor(), 0.1),
+          color: getSpreadColor(),
+          border: `1px solid ${alpha(getSpreadColor(), 0.3)}`,
+          fontWeight: 600
+        }}
+      />
+
+      <CompactTooltip
           title={
-            <Box>
+            <>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
                 Bid-Ask Spread
               </Typography>
@@ -157,7 +154,7 @@ const Spread = ({ bids, asks }) => {
                 immediate sale (ask) and an immediate purchase (bid) of financial instruments. A
                 smaller spread typically indicates better liquidity and lower trading costs.
               </Typography>
-            </Box>
+            </>
           }
           arrow
           placement="top"
@@ -176,7 +173,6 @@ const Spread = ({ bids, asks }) => {
             <InfoIcon sx={{ fontSize: '0.875rem' }} />
           </IconButton>
         </CompactTooltip>
-      </Box>
     </SpreadContainer>
   );
 };

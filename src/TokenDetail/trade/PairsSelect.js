@@ -17,7 +17,9 @@ import {
   Select,
   Stack,
   Tooltip,
-  Typography
+  Typography,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 
 // Iconify
@@ -36,38 +38,13 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 }));
 // ----------------------------------------------------------------------
 
-const badge24hStyle = {
-  display: 'inline-block',
-  marginLeft: '4px',
-  marginRight: '4px',
-  // color: '#C4CDD5',
-  fontSize: '11px',
-  fontWeight: '500',
-  lineHeight: '18px',
-  //backgroundColor: '#323546',
-  borderRadius: '4px',
-  border: '1px solid #323546',
-  padding: '1px 4px'
-};
 
-const StackDexStyle = styled(Stack)(({ theme }) => ({
-  width: '100%',
-  display: 'inline-block',
-  marginLeft: '4px',
-  marginRight: '4px',
-  // color: '#C4CDD5',
-  fontSize: '11px',
-  fontWeight: '500',
-  lineHeight: '18px',
-  // backgroundColor: '#7A0C2E',
-  borderRadius: '8px',
-  border: `1px solid ${theme.palette.divider}`,
-  padding: '0px 12px'
-}));
 
 const PairsSelect = memo(({ token, pair, setPair }) => {
   const BASE_URL = process.env.API_URL;
   const { darkMode } = useContext(AppContext);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [pairs, setPairs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const mountedRef = useRef(true);
@@ -135,24 +112,25 @@ const PairsSelect = memo(({ token, pair, setPair }) => {
         const name2 = curr2.name;
 
         return (
-          <MenuItem key={id} value={pair}>
-            <Stack direction="row" alignItems="center">
-              <Typography variant="subtitle2" sx={{ color: '#B72136' }}>
+          <MenuItem key={id} value={pair} sx={{ py: 0.5 }}>
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              <Typography variant="caption" sx={{ color: '#B72136', fontWeight: 600 }}>
                 {name1}
               </Typography>
-              <Icon icon={arrowsExchange} width="16" height="16" />
-              <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>
+              <Icon icon={arrowsExchange} width="14" height="14" />
+              <Typography variant="caption" sx={{ color: darkMode ? '#007B55' : '#5569ff', fontWeight: 600 }}>
                 {name2}
               </Typography>
-              <span style={badge24hStyle}>24h</span>
-              <Typography variant="subtitle2" sx={{ color: '#B72136' }}>
-                {fNumber(curr1.value)}
-              </Typography>
+              {!isMobile && (
+                <Typography variant="caption" sx={{ color: '#B72136', ml: 1 }}>
+                  {fNumber(curr1.value)}
+                </Typography>
+              )}
             </Stack>
           </MenuItem>
         );
       }),
-    [pairs, darkMode]
+    [pairs, darkMode, isMobile]
   );
 
   // Safety check for pair object
@@ -160,14 +138,15 @@ const PairsSelect = memo(({ token, pair, setPair }) => {
     return (
       <Grid container spacing={0} sx={{ p: 0 }}>
         <Grid item>
-          <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-            <InputLabel id="demo-select-small">Pairs</InputLabel>
+          <FormControl sx={{ m: { xs: 0.5, sm: 1 }, minWidth: isMobile ? 90 : 120 }} size="small">
+            <InputLabel id="demo-select-small" sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>Pairs</InputLabel>
             <CustomSelect
               labelId="demo-select-small"
               id="demo-select-small"
               value=""
               label="Pair"
               disabled
+              sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
             >
               <MenuItem value="">Loading...</MenuItem>
             </CustomSelect>
@@ -194,14 +173,20 @@ const PairsSelect = memo(({ token, pair, setPair }) => {
   return (
     <Grid container spacing={0} sx={{ p: 0 }}>
       <Grid item>
-        <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-          <InputLabel id="demo-select-small">Pairs</InputLabel>
+        <FormControl sx={{ m: { xs: 0.5, sm: 1 }, minWidth: isMobile ? 90 : 120 }} size="small">
+          <InputLabel id="demo-select-small" sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>Pairs</InputLabel>
           <CustomSelect
             labelId="demo-select-small"
             id="demo-select-small"
             value={pairs.find((p) => p.pair === pair.pair) ? pair.pair : ''}
             label="Pair"
             onChange={handleChangePair}
+            sx={{ 
+              fontSize: isMobile ? '0.75rem' : '0.875rem',
+              '& .MuiSelect-select': {
+                py: isMobile ? 0.75 : 1
+              }
+            }}
           >
             {menuItems}
           </CustomSelect>

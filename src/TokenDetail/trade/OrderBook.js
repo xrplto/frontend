@@ -16,7 +16,8 @@ import {
   Tooltip,
   Typography,
   Chip,
-  Card
+  Card,
+  useMediaQuery
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { tableCellClasses } from '@mui/material/TableCell';
@@ -42,7 +43,11 @@ const OrderBookContainer = styled(Box)(({ theme }) => ({
   borderRadius: '12px',
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   overflow: 'hidden',
-  position: 'relative'
+  position: 'relative',
+  [theme.breakpoints.down('sm')]: {
+    borderRadius: '8px',
+    margin: theme.spacing(0, -1)
+  }
 }));
 
 const SectionHeader = styled(Box)(({ theme }) => ({
@@ -51,7 +56,13 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   padding: theme.spacing(1.5, 2),
   background: alpha(theme.palette.background.paper, 0.4),
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(1, 1.5),
+    '& .MuiTypography-root': {
+      fontSize: '0.75rem'
+    }
+  }
 }));
 
 const ModernTable = styled(Table)(({ theme }) => ({
@@ -59,7 +70,11 @@ const ModernTable = styled(Table)(({ theme }) => ({
     borderBottom: 'none',
     padding: theme.spacing(0.5, 1),
     fontSize: '0.75rem',
-    lineHeight: 1.2
+    lineHeight: 1.2,
+    [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(0.4, 0.5),
+      fontSize: '0.7rem'
+    }
   },
   [`& .${tableCellClasses.head}`]: {
     backgroundColor: alpha(theme.palette.background.paper, 0.6),
@@ -67,7 +82,11 @@ const ModernTable = styled(Table)(({ theme }) => ({
     fontSize: '0.7rem',
     color: alpha(theme.palette.text.secondary, 0.8),
     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-    padding: theme.spacing(1)
+    padding: theme.spacing(1),
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.65rem',
+      padding: theme.spacing(0.75, 0.5)
+    }
   }
 }));
 
@@ -96,10 +115,17 @@ const OrderRow = styled(TableRow)(({ theme, ordertype, isselected, isnew, depth,
     borderRadius: theme.spacing(0.5),
     margin: theme.spacing(0, 0.5),
     position: 'relative',
+    [theme.breakpoints.down('sm')]: {
+      margin: theme.spacing(0, 0.25),
+      borderRadius: theme.spacing(0.25)
+    },
     '&:hover': {
       background: `${alpha(baseColor, 0.25)} !important`,
       transform: 'translateX(2px)',
-      zIndex: 1
+      zIndex: 1,
+      [theme.breakpoints.down('sm')]: {
+        transform: 'none'
+      }
     },
     '& .MuiTableCell-root': {
       borderRadius: theme.spacing(0.5),
@@ -143,19 +169,13 @@ const CompactTooltip = styled(Tooltip)(({ theme }) => ({
   }
 }));
 
-const LoaderContainer = styled('div')({
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  height: '200px',
-  color: '#999'
-});
 
 const ORDER_TYPE_BIDS = 1;
 const ORDER_TYPE_ASKS = 2;
 
 export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [selected, setSelected] = useState([0, 0]);
 
@@ -234,7 +254,8 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
   };
 
   const buildPriceLevels = (levels, orderType = ORDER_TYPE_BIDS) => {
-    return levels.slice(0, 25).map((level, idx) => {
+    const maxRows = isMobile ? 15 : 25;
+    return levels.slice(0, maxRows).map((level, idx) => {
       const price = fNumber(level.price);
       const avgPrice = fNumber(level.avgPrice);
       const amount = fNumber(level.amount);
@@ -257,37 +278,36 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
       return (
         <CompactTooltip
           key={`${orderType}-${price}-${amount}-${idx}`}
+          disableHoverListener={isMobile}
           title={
-            <Box>
+            <>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
                 Order Details
               </Typography>
-              <Box sx={{ display: 'grid', gap: 0.5, fontSize: '0.75rem' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Avg Price:</span>
-                  <span style={{ fontWeight: 600 }}>≈ {avgPrice}</span>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Sum {currName1}:</span>
-                  <span style={{ fontWeight: 600 }}>{sumAmount}</span>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Sum {currName2}:</span>
-                  <span style={{ fontWeight: 600 }}>{sumValue}</span>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Depth:</span>
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      color: isBid ? theme.palette.success.main : theme.palette.error.main
-                    }}
-                  >
-                    {depth}%
-                  </span>
-                </Box>
+              <Box sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'auto 1fr',
+                gap: '4px 12px',
+                fontSize: '0.75rem' 
+              }}>
+                <span>Avg Price:</span>
+                <span style={{ fontWeight: 600, textAlign: 'right' }}>≈ {avgPrice}</span>
+                <span>Sum {currName1}:</span>
+                <span style={{ fontWeight: 600, textAlign: 'right' }}>{sumAmount}</span>
+                <span>Sum {currName2}:</span>
+                <span style={{ fontWeight: 600, textAlign: 'right' }}>{sumValue}</span>
+                <span>Depth:</span>
+                <span
+                  style={{
+                    fontWeight: 600,
+                    textAlign: 'right',
+                    color: isBid ? theme.palette.success.main : theme.palette.error.main
+                  }}
+                >
+                  {depth}%
+                </span>
               </Box>
-            </Box>
+            </>
           }
           placement="right"
           arrow
@@ -303,7 +323,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
           >
             {isBid ? (
               <>
-                <TableCell align="right" sx={{ fontWeight: 500 }}>
+                <TableCell align="right" sx={{ fontWeight: 500, display: { xs: 'none', sm: 'table-cell' } }}>
                   {sumAmount}
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 600 }}>
@@ -333,7 +353,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
                 <TableCell align="left" sx={{ fontWeight: 600 }}>
                   {amount}
                 </TableCell>
-                <TableCell align="left" sx={{ fontWeight: 500 }}>
+                <TableCell align="left" sx={{ fontWeight: 500, display: { xs: 'none', sm: 'table-cell' } }}>
                   {sumAmount}
                 </TableCell>
               </>
@@ -355,18 +375,19 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
   return (
     <OrderBookContainer>
       {/* Spread Component */}
-      <Box sx={{ p: 2, pb: 0 }}>
-        <Spread bids={bids} asks={asks} />
-      </Box>
+      <Spread bids={bids} asks={asks} sx={{ p: { xs: 1.5, sm: 2 }, pb: 0 }} />
 
       <Grid container spacing={0}>
         {/* Buy Orders */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} sx={{ 
+          borderRight: { md: `1px solid ${alpha(theme.palette.divider, 0.1)}` },
+          borderBottom: { xs: `1px solid ${alpha(theme.palette.divider, 0.1)}`, md: 'none' }
+        }}>
           <SectionHeader>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TrendingUpIcon
                 sx={{
-                  fontSize: '1rem',
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
                   color: theme.palette.success.main
                 }}
               />
@@ -395,9 +416,9 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
           <ModernTable size="small">
             <TableHead>
               <TableRow>
-                <TableCell align="right">Sum</TableCell>
-                <TableCell align="right">Amount ({pair.curr1.name})</TableCell>
-                <TableCell align="right">Bid ({pair.curr2.name})</TableCell>
+                <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Sum</TableCell>
+                <TableCell align="right">Amount</TableCell>
+                <TableCell align="right">Bid</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>{buildPriceLevels(bids, ORDER_TYPE_BIDS)}</TableBody>
@@ -410,7 +431,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TrendingDownIcon
                 sx={{
-                  fontSize: '1rem',
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
                   color: theme.palette.error.main
                 }}
               />
@@ -439,9 +460,9 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
           <ModernTable size="small">
             <TableHead>
               <TableRow>
-                <TableCell align="left">Ask ({pair.curr2.name})</TableCell>
-                <TableCell align="left">Amount ({pair.curr1.name})</TableCell>
-                <TableCell align="left">Sum</TableCell>
+                <TableCell align="left">Ask</TableCell>
+                <TableCell align="left">Amount</TableCell>
+                <TableCell align="left" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Sum</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>{buildPriceLevels(asks, ORDER_TYPE_ASKS)}</TableBody>
@@ -451,11 +472,19 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
 
       {/* Empty State */}
       {bids.length === 0 && asks.length === 0 && (
-        <LoaderContainer>
-          <Typography variant="body2" color="text.secondary">
-            No orders available
-          </Typography>
-        </LoaderContainer>
+        <Typography 
+          variant="body2" 
+          color="text.secondary"
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: 200,
+            color: '#999'
+          }}
+        >
+          No orders available
+        </Typography>
       )}
     </OrderBookContainer>
   );

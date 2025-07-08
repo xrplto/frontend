@@ -3,7 +3,7 @@ import useWebSocket from 'react-use-websocket';
 import { MD5 } from 'crypto-js';
 
 // Material
-import { styled, Grid, Stack, Box, Card, CardContent, Typography, Container } from '@mui/material';
+import { styled, Grid, Stack, Box, Card, CardContent, Typography, Container, useMediaQuery } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -36,6 +36,9 @@ const CompactCard = styled(Card)(({ theme }) => ({
   '&:hover': {
     boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
     border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+  },
+  [theme.breakpoints.down('sm')]: {
+    borderRadius: '8px'
   }
 }));
 
@@ -70,7 +73,11 @@ const MinimalContainer = styled(Box)(({ theme }) => ({
   backdropFilter: 'blur(10px)',
   borderRadius: '16px',
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`
+  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
+  [theme.breakpoints.down('sm')]: {
+    borderRadius: '8px',
+    boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`
+  }
 }));
 
 const CompactHeader = styled(Box)(({ theme }) => ({
@@ -131,6 +138,8 @@ const ORDER_TYPE_ASKS = 2;
 
 export default function Trade({ token }) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const WSS_URL = 'wss://xrplcluster.com';
   const BASE_URL = process.env.API_URL;
 
@@ -256,36 +265,34 @@ export default function Trade({ token }) {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 2, mb: 2 }}>
-      <MinimalContainer sx={{ p: 2 }}>
+    <Container maxWidth="xl" sx={{ mt: { xs: 1, sm: 2 }, mb: { xs: 1, sm: 2 }, px: { xs: 1, sm: 2 } }}>
+      <MinimalContainer sx={{ p: { xs: 1, sm: 2 } }}>
         {/* Compact Header */}
-        <HeaderCard sx={{ mb: 2 }}>
-          <CardContent sx={{ p: 2 }}>
-  
-
+        <HeaderCard sx={{ mb: { xs: 1, sm: 2 } }}>
+          <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
             <PairsSelect token={token} pair={pair} setPair={setPair} />
           </CardContent>
         </HeaderCard>
 
-        <Grid container spacing={2}>
+        <Grid container spacing={{ xs: 1, sm: 2 }}>
           {/* Main Trading Section */}
           <Grid item xs={12} lg={9}>
-            <Grid container spacing={2}>
+            <Grid container spacing={{ xs: 1, sm: 2 }}>
               {/* Exchange History */}
-              <Grid item xs={12} md={4} sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
-                <CompactCard sx={{ height: '100%' }}>
-                  <CardContent sx={{ p: 2 }}>
-           
-                    <ExchHistory pair={pair} md5={token.md5} />
-                  </CardContent>
-                </CompactCard>
-              </Grid>
+              {!isTablet && (
+                <Grid item xs={12} md={4}>
+                  <CompactCard sx={{ height: '100%' }}>
+                    <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
+                      <ExchHistory pair={pair} md5={token.md5} />
+                    </CardContent>
+                  </CompactCard>
+                </Grid>
+              )}
 
               {/* Order Book */}
-              <Grid item xs={12} md={8}>
+              <Grid item xs={12} md={isTablet ? 12 : 8}>
                 <CompactCard sx={{ height: '100%' }}>
-                  <CardContent sx={{ p: 2 }}>
-          
+                  <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
                     <OrderBook
                       pair={pair}
                       asks={asks}
@@ -301,55 +308,56 @@ export default function Trade({ token }) {
 
           {/* Trading Panel Sidebar */}
           <Grid item xs={12} lg={3}>
-            <Stack spacing={2}>
+            <Stack spacing={{ xs: 1, sm: 2 }}>
               {/* Trade Panel */}
               <CompactCard>
-                <CardContent sx={{ p: 2 }}>
-
+                <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
                   <TradePanel pair={pair} asks={asks} bids={bids} bidId={bidId} askId={askId} />
                 </CardContent>
               </CompactCard>
 
-              {/* Bid/Ask Chart */}
-              <CompactCard>
-                <CardContent sx={{ p: 2 }}>
-                  <CompactHeader>
-                    <MinimalIcon>
-                      <TrendingUpIcon
+              {/* Bid/Ask Chart - Hidden on mobile */}
+              {!isMobile && (
+                <CompactCard>
+                  <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
+                    <CompactHeader>
+                      <MinimalIcon>
+                        <TrendingUpIcon
+                          sx={{
+                            fontSize: '1rem',
+                            color: theme.palette.error.main
+                          }}
+                        />
+                      </MinimalIcon>
+                      <Typography
+                        variant="subtitle2"
                         sx={{
-                          fontSize: '1rem',
-                          color: theme.palette.error.main
+                          color: theme.palette.text.primary,
+                          fontWeight: 600,
+                          fontSize: { xs: '0.8rem', sm: '0.9rem' }
                         }}
-                      />
-                    </MinimalIcon>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{
-                        color: theme.palette.text.primary,
-                        fontWeight: 600,
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      Depth Chart
-                    </Typography>
-                  </CompactHeader>
-                  <ChartWrapper>
-                    <BidAskChart bids={bids} asks={asks} />
-                  </ChartWrapper>
-                </CardContent>
-              </CompactCard>
+                      >
+                        Depth Chart
+                      </Typography>
+                    </CompactHeader>
+                    <ChartWrapper>
+                      <BidAskChart bids={bids} asks={asks} />
+                    </ChartWrapper>
+                  </CardContent>
+                </CompactCard>
+              )}
             </Stack>
           </Grid>
 
           {/* Account Section */}
           <Grid item xs={12}>
             <CompactCard>
-              <CardContent sx={{ p: 2 }}>
+              <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
                 <CompactHeader>
                   <MinimalIcon>
                     <AccountBalanceWalletIcon
                       sx={{
-                        fontSize: '1rem',
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
                         color: theme.palette.secondary.main
                       }}
                     />
@@ -359,7 +367,7 @@ export default function Trade({ token }) {
                     sx={{
                       color: theme.palette.text.primary,
                       fontWeight: 600,
-                      fontSize: '0.9rem'
+                      fontSize: { xs: '0.8rem', sm: '0.9rem' }
                     }}
                   >
                     Account Overview
