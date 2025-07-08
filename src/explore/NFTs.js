@@ -141,8 +141,8 @@ export default function NFTs({ collection }) {
   }, [debouncedSearch]);
 
   return (
-    <Box sx={{ p: 1, backgroundColor: alpha(theme.palette.background.paper, 0.8) }}>
-      <Box display="flex" alignItems="center" mb={1} gap={2}>
+    <Box sx={{ p: { xs: 2, sm: 3 }, backgroundColor: alpha(theme.palette.background.paper, 0.9), borderRadius: 3 }}>
+      <Box display="flex" alignItems="center" mb={3} gap={2}>
         <IconButton
           aria-label="filter"
           onClick={handleShowFilter}
@@ -154,15 +154,15 @@ export default function NFTs({ collection }) {
             border: `2px solid ${
               showFilter ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.3)
             }`,
-            borderRadius: 2,
+            borderRadius: '12px',
             width: 48,
             height: 48,
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
               backgroundColor: theme.palette.primary.main,
               color: theme.palette.primary.contrastText,
-              transform: 'translateY(-2px)',
-              boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.3)}`
+              transform: 'translateY(-2px) scale(1.05)',
+              boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.4)}`
             }
           }}
         >
@@ -175,18 +175,20 @@ export default function NFTs({ collection }) {
             flex: 1,
             position: 'relative',
             overflow: 'hidden',
-            borderRadius: 2,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            borderRadius: '12px',
+            border: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            backgroundColor: alpha(theme.palette.background.paper, 0.9),
+            backdropFilter: 'blur(10px)',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
               borderColor: alpha(theme.palette.primary.main, 0.3),
-              transform: 'translateY(-1px)',
-              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.1)}`
+              transform: 'translateY(-2px)',
+              boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.15)}`
             },
             '&:focus-within': {
               borderColor: theme.palette.primary.main,
-              transform: 'translateY(-1px)',
-              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+              transform: 'translateY(-2px)',
+              boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.2)}`
             }
           }}
         >
@@ -249,7 +251,7 @@ export default function NFTs({ collection }) {
             sx={{
               '& .MuiOutlinedInput-root': {
                 border: 'none',
-                borderRadius: 2,
+                borderRadius: '12px',
                 '& fieldset': {
                   border: 'none'
                 },
@@ -258,9 +260,10 @@ export default function NFTs({ collection }) {
                 }
               },
               '& .MuiOutlinedInput-input': {
-                padding: '12px 14px',
-                fontSize: 14,
-                fontWeight: 500
+                padding: '14px 16px',
+                fontSize: 15,
+                fontWeight: 500,
+                letterSpacing: '0.3px'
               }
             }}
           />
@@ -268,19 +271,23 @@ export default function NFTs({ collection }) {
       </Box>
 
       {showFilter && (
-        <FilterDetail
-          collection={collection}
-          filter={filter}
-          setFilter={setFilter}
-          subFilter={subFilter}
-          setSubFilter={setSubFilter}
-          filterAttrs={filterAttrs}
-          setFilterAttrs={setFilterAttrs}
-          sync={sync}
-          setSync={setSync}
-          attrSync={attrSync}
-          setAttrSync={setAttrSync}
-        />
+        <Fade in={showFilter} timeout={300}>
+          <Box sx={{ mb: 3 }}>
+            <FilterDetail
+              collection={collection}
+              filter={filter}
+              setFilter={setFilter}
+              subFilter={subFilter}
+              setSubFilter={setSubFilter}
+              filterAttrs={filterAttrs}
+              setFilterAttrs={setFilterAttrs}
+              sync={sync}
+              setSync={setSync}
+              attrSync={attrSync}
+              setAttrSync={setAttrSync}
+            />
+          </Box>
+        </Fade>
       )}
 
       <InfiniteScroll
@@ -293,47 +300,97 @@ export default function NFTs({ collection }) {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              height: '100px' // Adjust height as needed
+              height: '100px',
+              animation: 'pulse 1.5s ease-in-out infinite',
+              '@keyframes pulse': {
+                '0%': { opacity: 0.6 },
+                '50%': { opacity: 1 },
+                '100%': { opacity: 0.6 }
+              }
             }}
           >
             <ClipLoader color={theme.palette.primary.main} size={30} />
           </Box>
         }
         endMessage={
-          <Box sx={{ p: 4, textAlign: 'center' }}>
-            <Image
-              src="/static/empty-folder.png"
-              alt="No more NFTs"
-              width={120}
-              height={120}
-              style={{ marginBottom: '16px' }}
-            />
-            <Typography variant="h6" color="textSecondary">
-              No more NFTs to load
-            </Typography>
-          </Box>
+          <Fade in timeout={500}>
+            <Box sx={{ 
+              p: 6, 
+              textAlign: 'center',
+              animation: 'fadeInUp 0.5s ease-out',
+              '@keyframes fadeInUp': {
+                from: { opacity: 0, transform: 'translateY(20px)' },
+                to: { opacity: 1, transform: 'translateY(0)' }
+              }
+            }}>
+              <Image
+                src="/static/empty-folder.png"
+                alt="No more NFTs"
+                width={140}
+                height={140}
+                style={{ 
+                  marginBottom: '24px',
+                  opacity: 0.8,
+                  filter: 'grayscale(20%)'
+                }}
+              />
+              <Typography 
+                variant="h5" 
+                color="textSecondary"
+                sx={{ 
+                  fontWeight: 600,
+                  letterSpacing: '0.5px',
+                  mb: 1
+                }}
+              >
+                That's all for now!
+              </Typography>
+              <Typography 
+                variant="body2" 
+                color="textSecondary"
+                sx={{ opacity: 0.7 }}
+              >
+                You've reached the end of the collection
+              </Typography>
+            </Box>
+          </Fade>
         }
       >
         <Box
           sx={{
             display: 'grid',
-            gap: 0.5,
+            gap: 1,
             gridTemplateColumns: {
               xs: 'repeat(4, 1fr)',
               sm: 'repeat(6, 1fr)',
-              md: 'repeat(9, 1fr)',
-              lg: 'repeat(11, 1fr)',
-              xl: 'repeat(13, 1fr)'
+              md: 'repeat(8, 1fr)',
+              lg: 'repeat(10, 1fr)',
+              xl: 'repeat(11, 1fr)'
+            },
+            animation: 'fadeIn 0.3s ease-in-out',
+            '@keyframes fadeIn': {
+              from: { opacity: 0, transform: 'translateY(10px)' },
+              to: { opacity: 1, transform: 'translateY(0)' }
             }
           }}
         >
-          {nfts.map((nft) => (
-            <MemoizedNFTCard
+          {nfts.map((nft, index) => (
+            <Box
               key={nft.NFTokenID}
-              nft={nft}
-              collection={collection}
-              onRemove={handleRemove}
-            />
+              sx={{
+                animation: `slideIn 0.4s ease-out ${index * 0.02}s`,
+                '@keyframes slideIn': {
+                  from: { opacity: 0, transform: 'scale(0.9)' },
+                  to: { opacity: 1, transform: 'scale(1)' }
+                }
+              }}
+            >
+              <MemoizedNFTCard
+                nft={nft}
+                collection={collection}
+                onRemove={handleRemove}
+              />
+            </Box>
           ))}
         </Box>
       </InfiniteScroll>

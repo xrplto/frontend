@@ -29,9 +29,9 @@ import { AppContext } from 'src/AppContext';
 import { alpha } from '@mui/material/styles';
 
 const CardWrapper = styled(Card)(({ theme }) => ({
-  width: 180,
-  height: 250,
-  borderRadius: 20,
+  width: '100%',
+  aspectRatio: '1 / 1.4',
+  borderRadius: 16,
   background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
     theme.palette.background.paper,
     0.8
