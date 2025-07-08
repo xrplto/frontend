@@ -46,39 +46,39 @@ import { AppContext } from 'src/AppContext';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: alpha(theme.palette.background.paper, 0.8),
+    backgroundColor: theme.palette.mode === 'dark' 
+      ? alpha(theme.palette.background.paper, 0.95)
+      : alpha('#ffffff', 0.98),
     color: theme.palette.text.primary,
-    fontWeight: 600,
-    fontSize: '0.85rem',
-    padding: '16px 20px',
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-    backdropFilter: 'blur(10px)',
+    fontWeight: 700,
+    fontSize: '0.9rem',
+    padding: '20px 24px',
+    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+    backdropFilter: 'blur(20px) saturate(180%)',
     position: 'sticky',
     top: 0,
-    zIndex: 10
+    zIndex: 10,
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase'
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: '0.8rem',
-    padding: '12px 20px',
-    lineHeight: 1.4,
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.04)}`,
-    transition: 'all 0.2s ease'
+    fontSize: '0.875rem',
+    padding: '16px 24px',
+    lineHeight: 1.6,
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.03)}`,
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
   }
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   position: 'relative',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:nth-of-type(odd)': {
-    backgroundColor: alpha(theme.palette.action.hover, 0.3)
+  '&:nth-of-type(even)': {
+    backgroundColor: theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.paper, 0.3)
+      : alpha(theme.palette.grey[50], 0.5)
   },
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.04),
-    transform: 'translateY(-1px)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
-    '& .MuiTableCell-root': {
-      borderColor: alpha(theme.palette.primary.main, 0.1)
-    }
+    backgroundColor: alpha(theme.palette.primary.main, 0.05)
   },
   '&:last-child td, &:last-child th': {
     border: 0
@@ -86,17 +86,18 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 const CompactChip = styled(Chip)(({ theme }) => ({
-  height: '28px',
-  fontSize: '0.75rem',
-  fontWeight: 500,
-  borderRadius: '14px',
-  transition: 'all 0.2s ease',
+  height: '32px',
+  fontSize: '0.8rem',
+  fontWeight: 600,
+  borderRadius: '16px',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  letterSpacing: '0.3px',
   '& .MuiChip-icon': {
-    fontSize: '1rem'
+    fontSize: '1.1rem'
   },
   '&:hover': {
-    transform: 'scale(1.05)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
+    transform: 'scale(1.08) translateY(-1px)',
+    boxShadow: `0 6px 16px ${alpha(theme.palette.common.black, 0.2)}`
   }
 }));
 
@@ -710,7 +711,16 @@ export default function AccountTransactions({ creatorAccount }) {
 
   if (!creatorAccount) {
     return (
-      <Container maxWidth={false} sx={{ pl: 0, pr: 0, maxWidth: '2000px' }}>
+      <Container maxWidth={false} sx={{ 
+      pl: { xs: 2, sm: 0 }, 
+      pr: { xs: 2, sm: 0 }, 
+      maxWidth: '2000px',
+      animation: 'fadeInUp 0.6s ease-out',
+      '@keyframes fadeInUp': {
+        from: { opacity: 0, transform: 'translateY(20px)' },
+        to: { opacity: 1, transform: 'translateY(0)' }
+      }
+    }}>
         <Card
           sx={{
             p: 4,
@@ -735,32 +745,57 @@ export default function AccountTransactions({ creatorAccount }) {
   }
 
   return (
-    <Container maxWidth={false} sx={{ pl: 0, pr: 0, maxWidth: '2000px' }}>
+    <Container maxWidth={false} sx={{ 
+      pl: { xs: 2, sm: 0 }, 
+      pr: { xs: 2, sm: 0 }, 
+      maxWidth: '2000px',
+      animation: 'fadeInUp 0.6s ease-out',
+      '@keyframes fadeInUp': {
+        from: { opacity: 0, transform: 'translateY(20px)' },
+        to: { opacity: 1, transform: 'translateY(0)' }
+      }
+    }}>
       <Card
         sx={{
           mb: 3,
-          borderRadius: '24px',
-          background: `linear-gradient(135deg, ${alpha(
-            theme.palette.background.paper,
-            0.95
-          )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-          backdropFilter: 'blur(20px)',
+          borderRadius: { xs: '16px', sm: '24px' },
+          background: theme.palette.mode === 'dark'
+            ? `linear-gradient(145deg, ${alpha(
+                theme.palette.background.paper,
+                0.9
+              )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`
+            : `linear-gradient(145deg, ${alpha(
+                '#ffffff',
+                0.98
+              )} 0%, ${alpha(theme.palette.background.paper, 0.9)} 100%)`,
+          backdropFilter: 'blur(24px) saturate(180%)',
           border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-          boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
-            theme.palette.primary.main,
-            0.04
-          )}`,
+          boxShadow: theme.palette.mode === 'dark'
+            ? `0 20px 40px ${alpha(theme.palette.common.black, 0.3)}, 0 0 0 1px ${alpha(
+                theme.palette.common.white,
+                0.05
+              )}`
+            : `0 20px 40px ${alpha(theme.palette.primary.main, 0.08)}, 0 0 0 1px ${alpha(
+                theme.palette.divider,
+                0.05
+              )}`,
           overflow: 'hidden',
           position: 'relative',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           '&::before': {
             content: '""',
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            height: '3px',
-            background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-            opacity: 0.8
+            height: '4px',
+            background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 3s ease-in-out infinite',
+            '@keyframes shimmer': {
+              '0%': { backgroundPosition: '-200% center' },
+              '100%': { backgroundPosition: '200% center' }
+            }
           }
         }}
       >
@@ -768,37 +803,53 @@ export default function AccountTransactions({ creatorAccount }) {
           {/* Header Section */}
           <Box
             sx={{
-              px: 4,
-              py: 3,
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.background.paper,
-                0.8
-              )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-              backdropFilter: 'blur(10px)'
+              px: { xs: 3, sm: 4 },
+              py: { xs: 3, sm: 4 },
+              borderBottom: `2px solid ${alpha(theme.palette.divider, 0.08)}`,
+              background: theme.palette.mode === 'dark'
+                ? `linear-gradient(145deg, ${alpha(
+                    theme.palette.background.paper,
+                    0.9
+                  )} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`
+                : `linear-gradient(145deg, ${alpha(
+                    '#ffffff',
+                    0.95
+                  )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+              backdropFilter: 'blur(20px) saturate(180%)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '300px',
+                height: '300px',
+                background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.1)} 0%, transparent 70%)`,
+                borderRadius: '50%',
+                transform: 'translate(100px, -150px)'
+              }
             }}
           >
             <Stack direction="row" alignItems="center" spacing={2}>
               <Box
                 sx={{
-                  p: 1.5,
-                  borderRadius: '16px',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.primary.main,
-                    0.15
-                  )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  p: 2,
+                  borderRadius: '20px',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+                  boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  position: 'relative',
+                  zIndex: 1
                 }}
               >
                 <TrendingUpIcon
                   sx={{
-                    color: theme.palette.primary.main,
-                    fontSize: '1.5rem',
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                    color: '#ffffff',
+                    fontSize: '1.8rem',
+                    filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.2))'
                   }}
                 />
               </Box>
@@ -810,13 +861,14 @@ export default function AccountTransactions({ creatorAccount }) {
                     fontWeight: 700,
                     lineHeight: 1.2,
                     letterSpacing: '-0.02em',
-                    background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
-                      theme.palette.primary.main,
-                      0.8
-                    )} 100%)`,
+                    background: theme.palette.mode === 'dark'
+                      ? `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`
+                      : `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
+                    WebkitTextFillColor: 'transparent',
+                    position: 'relative',
+                    zIndex: 1
                   }}
                   variant="h5"
                 >
@@ -891,8 +943,28 @@ export default function AccountTransactions({ creatorAccount }) {
               </Box>
             ) : (
               <>
-                <Box sx={{ overflow: 'hidden' }}>
-                  <Table stickyHeader size="medium">
+                <Box sx={{ 
+                  overflow: 'auto',
+                  maxHeight: { xs: '400px', sm: '600px', md: 'none' },
+                  '&::-webkit-scrollbar': {
+                    width: '8px',
+                    height: '8px'
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    backgroundColor: alpha(theme.palette.background.paper, 0.1),
+                    borderRadius: '4px'
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.3),
+                    borderRadius: '4px',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.5)
+                    }
+                  }
+                }}>
+                  <Table stickyHeader size="medium" sx={{
+                    minWidth: { xs: '600px', sm: '700px', md: '100%' }
+                  }}>
                     <TableHead>
                       <TableRow>
                         <StyledTableCell>Type</StyledTableCell>
@@ -963,8 +1035,8 @@ export default function AccountTransactions({ creatorAccount }) {
                                                 e.target.style.display = 'none';
                                               }}
                                               sx={{
-                                                width: 32,
-                                                height: 32,
+                                                width: { xs: 28, sm: 32 },
+                                                height: { xs: 28, sm: 32 },
                                                 objectFit: 'cover'
                                               }}
                                             />
@@ -1066,7 +1138,7 @@ export default function AccountTransactions({ creatorAccount }) {
                               </Typography>
                             </StyledTableCell>
                             <StyledTableCell align="center">
-                              <Tooltip title="View on Bithomp" placement="top">
+                              <Tooltip title="View Transaction Details" placement="top">
                                 <IconButton
                                   size="small"
                                   sx={{
@@ -1074,20 +1146,9 @@ export default function AccountTransactions({ creatorAccount }) {
                                     borderRadius: '10px',
                                     color: theme.palette.primary.main,
                                     bgcolor: alpha(theme.palette.primary.main, 0.08),
-                                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                                    transition: 'all 0.2s ease',
-                                    '&:hover': {
-                                      bgcolor: alpha(theme.palette.primary.main, 0.15),
-                                      transform: 'scale(1.05)',
-                                      boxShadow: `0 4px 12px ${alpha(
-                                        theme.palette.primary.main,
-                                        0.25
-                                      )}`
-                                    }
+                                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
                                   }}
-                                  onClick={() =>
-                                    window.open(`https://bithomp.com/explorer/${tx.hash}`, '_blank')
-                                  }
+                                  onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
                                 >
                                   <OpenInNewIcon sx={{ fontSize: '1rem' }} />
                                 </IconButton>
