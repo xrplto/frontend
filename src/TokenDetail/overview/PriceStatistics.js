@@ -30,7 +30,6 @@ import { Icon } from '@iconify/react';
 import blackholeIcon from '@iconify/icons-arcticons/blackhole';
 
 // Components
-import BearBullLabel from './BearBullLabel';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import IssuerInfoDialog from '../common/IssuerInfoDialog';
 
@@ -112,11 +111,7 @@ export default function PriceStatistics({ token }) {
     amount,
     exch,
     maxMin24h = [0, 0],
-    pro24h,
-    p24h,
-    vol24h,
     vol24hxrp,
-    vol24hx,
     marketcap,
     dom,
     issuer,
@@ -128,6 +123,7 @@ export default function PriceStatistics({ token }) {
     holders,
     trustlines,
     uniqueTraders24h,
+    vol24htx,
     date,
     dateon
   } = token;
@@ -165,13 +161,6 @@ export default function PriceStatistics({ token }) {
 
   const voldivmarket =
     marketcap > 0 && vol24hxrp != null ? Decimal.div(vol24hxrp || 0, marketcap || 1).toNumber() : 0;
-  const convertedMarketCap =
-    marketcap != null && metrics[activeFiatCurrency] != null
-      ? Decimal.div(marketcap || 0, metrics[activeFiatCurrency] || 1).toNumber()
-      : 0;
-
-  let strPc24h = fNumber(p24h < 0 ? -p24h : p24h);
-  let strPc24hPrep = (p24h < 0 ? '-' : '') + currencySymbols[activeFiatCurrency];
 
   const handleOpenIssuerInfo = () => {
     setOpenIssuerInfo(true);
@@ -251,7 +240,7 @@ export default function PriceStatistics({ token }) {
             letterSpacing: '-0.01em'
           }}
         >
-          {name} Token Details
+          {name} Additional Details
         </Typography>
       </Box>
 
@@ -478,222 +467,9 @@ export default function PriceStatistics({ token }) {
             </TableRow>
           )}
 
-          {/* Price Row */}
-          <TableRow>
-            <ModernTableCell align="left">
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: 600,
-                  color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: isMobile ? '0.8rem' : '0.875rem'
-                }}
-                noWrap
-              >
-                {user} Price
-              </Typography>
-            </ModernTableCell>
-            <ModernTableCell align="left">
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: 600,
-                  background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${alpha(
-                    theme.palette.success.main,
-                    0.8
-                  )} 100%)`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  fontSize: isMobile ? '0.9rem' : '1rem'
-                }}
-              >
-                <NumberTooltip
-                  prepend={currencySymbols[activeFiatCurrency]}
-                  number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
-                />
-              </Typography>
-            </ModernTableCell>
-          </TableRow>
 
-          {/* Price Change Row */}
-          <TableRow>
-            <ModernTableCell align="left">
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: 600,
-                  color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: isMobile ? '0.8rem' : '0.875rem'
-                }}
-                noWrap
-              >
-                Price Change
-                <Box
-                  component="span"
-                  sx={{
-                    display: 'inline-block',
-                    ml: 0.5,
-                    px: isMobile ? 0.4 : 0.5,
-                    py: isMobile ? 0.15 : 0.25,
-                    borderRadius: '4px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.8
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                    backdropFilter: 'blur(8px)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    fontSize: isMobile ? '0.6rem' : '0.7rem',
-                    fontWeight: 500,
-                    color: alpha(theme.palette.text.secondary, 0.8)
-                  }}
-                >
-                  24h
-                </Box>
-              </Typography>
-            </ModernTableCell>
-            <ModernTableCell align="left">
-              <Stack spacing={0.5}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 600,
-                    color: pro24h >= 0 ? theme.palette.success.main : theme.palette.error.main,
-                    fontSize: isMobile ? '0.9rem' : '1rem'
-                  }}
-                >
-                  <NumberTooltip
-                    prepend={strPc24hPrep}
-                    number={fNumberWithCurreny(Number(strPc24h), metrics[activeFiatCurrency])}
-                  />
-                </Typography>
-                <BearBullLabel value={pro24h} variant="small" />
-              </Stack>
-            </ModernTableCell>
-          </TableRow>
 
-          {/* 24h Low/High Row */}
-          <TableRow>
-            <ModernTableCell align="left">
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: 600,
-                  color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: isMobile ? '0.8rem' : '0.875rem'
-                }}
-                noWrap
-              >
-                24h Low / 24h High
-              </Typography>
-            </ModernTableCell>
-            <ModernTableCell align="left">
-              <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 500,
-                    color: theme.palette.success.main,
-                    fontSize: isMobile ? '0.8rem' : '0.875rem'
-                  }}
-                >
-                  <NumberTooltip
-                    prepend={currencySymbols[activeFiatCurrency]}
-                    number={fNumber(
-                      Decimal.mul(
-                        Decimal.mul(maxMin24h?.[1] || 0, metrics?.USD || 1),
-                        1 / (metrics?.[activeFiatCurrency] || 1)
-                      )
-                    )}
-                  />
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: alpha(theme.palette.text.secondary, 0.6),
-                    fontSize: isMobile ? '0.8rem' : '0.875rem'
-                  }}
-                >
-                  /
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 500,
-                    color: theme.palette.info.main,
-                    fontSize: isMobile ? '0.8rem' : '0.875rem'
-                  }}
-                >
-                  <NumberTooltip
-                    prepend={currencySymbols[activeFiatCurrency]}
-                    number={fNumber(
-                      Decimal.mul(
-                        Decimal.mul(maxMin24h?.[0] || 0, metrics?.USD || 1),
-                        1 / (metrics?.[activeFiatCurrency] || 1)
-                      )
-                    )}
-                  />
-                </Typography>
-              </Stack>
-            </ModernTableCell>
-          </TableRow>
 
-          {/* Trading Volume Row */}
-          <TableRow>
-            <ModernTableCell align="left">
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: 600,
-                  color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: isMobile ? '0.8rem' : '0.875rem'
-                }}
-                noWrap
-              >
-                Trading Volume
-                <Box
-                  component="span"
-                  sx={{
-                    display: 'inline-block',
-                    ml: 0.5,
-                    px: isMobile ? 0.4 : 0.5,
-                    py: isMobile ? 0.15 : 0.25,
-                    borderRadius: '4px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.8
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                    backdropFilter: 'blur(8px)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    fontSize: isMobile ? '0.6rem' : '0.7rem',
-                    fontWeight: 500,
-                    color: alpha(theme.palette.text.secondary, 0.8)
-                  }}
-                >
-                  24h
-                </Box>
-              </Typography>
-            </ModernTableCell>
-            <ModernTableCell align="left">
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: 600,
-                  background: `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${alpha(
-                    theme.palette.error.main,
-                    0.8
-                  )} 100%)`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  fontSize: isMobile ? '0.9rem' : '1rem'
-                }}
-              >
-                {currencySymbols[activeFiatCurrency]}
-                {fNumber(vol24hxrp / metrics[activeFiatCurrency])}
-              </Typography>
-            </ModernTableCell>
-          </TableRow>
 
           {/* Volume/Market Cap Row */}
           <TableRow>
@@ -753,78 +529,7 @@ export default function PriceStatistics({ token }) {
             </ModernTableCell>
           </TableRow>
 
-          {/* Market Rank Row */}
-          <TableRow>
-            <ModernTableCell align="left">
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: 600,
-                  color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: isMobile ? '0.8rem' : '0.875rem'
-                }}
-                noWrap
-              >
-                Market Rank
-              </Typography>
-            </ModernTableCell>
-            <ModernTableCell align="left">
-              <Chip
-                label={`#${id - 1}`}
-                size="small"
-                sx={{
-                  borderRadius: '6px',
-                  height: isMobile ? '22px' : '24px',
-                  fontSize: isMobile ? '0.65rem' : '0.75rem',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.primary.main,
-                    0.08
-                  )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                  backdropFilter: 'blur(10px)',
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                  color: theme.palette.primary.main,
-                  fontWeight: 600,
-                  pl: isMobile ? 0.75 : 1,
-                  pr: isMobile ? 0.75 : 1
-                }}
-              />
-            </ModernTableCell>
-          </TableRow>
 
-          {/* Market Cap Row */}
-          <TableRow>
-            <ModernTableCell align="left">
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: 600,
-                  color: alpha(theme.palette.text.primary, 0.9),
-                  fontSize: isMobile ? '0.8rem' : '0.875rem'
-                }}
-                noWrap
-              >
-                Market Cap
-              </Typography>
-            </ModernTableCell>
-            <ModernTableCell align="left">
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: 600,
-                  background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${alpha(
-                    theme.palette.success.main,
-                    0.8
-                  )} 100%)`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  fontSize: isMobile ? '0.9rem' : '1rem'
-                }}
-              >
-                {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
-              </Typography>
-            </ModernTableCell>
-          </TableRow>
 
           {/* Diluted Market Cap Row */}
           <TableRow>
@@ -981,6 +686,37 @@ export default function PriceStatistics({ token }) {
                   }}
                 >
                   <NumberTooltip number={fNumber(uniqueTraders24h)} />
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          )}
+
+          {/* Trades (24h) Row */}
+          {vol24htx && (
+            <TableRow>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                  }}
+                  noWrap
+                >
+                  Trades (24h)
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.secondary.main,
+                    fontSize: isMobile ? '0.9rem' : '1rem'
+                  }}
+                >
+                  <NumberTooltip number={fNumber(vol24htx)} />
                 </Typography>
               </ModernTableCell>
             </TableRow>
