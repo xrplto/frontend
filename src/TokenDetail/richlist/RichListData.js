@@ -926,7 +926,7 @@ export default function RichListData({ token }) {
 
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(20);
-  const [frozen, setFrozen] = useState(false);
+  // const [frozen, setFrozen] = useState(false);
   const [count, setCount] = useState(0);
   const [richList, setRichList] = useState([]);
   const [wallets, setWallets] = useState([]); // Team Wallets
@@ -974,7 +974,7 @@ export default function RichListData({ token }) {
         .get(
           `${BASE_URL}/richlist/${token.md5}?start=${
             page * rows
-          }&limit=${rows}&freeze=${frozen}&sortBy=${orderBy}&sortType=${order}`
+          }&limit=${rows}&sortBy=${orderBy}&sortType=${order}`
         )
         .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
@@ -991,7 +991,7 @@ export default function RichListData({ token }) {
         });
     }
     getRichList();
-  }, [page, rows, frozen, orderBy, order]);
+  }, [page, rows, orderBy, order]);
 
   useEffect(() => {
     function getTeamWallets() {
@@ -1060,9 +1060,9 @@ export default function RichListData({ token }) {
     setLoading(false);
   };
 
-  const onChangeFrozen = (e) => {
-    setFrozen(!frozen);
-  };
+  // const onChangeFrozen = (e) => {
+  //   setFrozen(!frozen);
+  // };
   const createSortHandler = (id) => (event) => {
     const isDesc = orderBy === id && order === 'desc';
     setOrder(isDesc ? 'asc' : 'desc');
@@ -1239,13 +1239,15 @@ export default function RichListData({ token }) {
                 </Box>
               </StickyTableCell>
 
-              <StickyTableCell align="left">
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: isMobile ? '9px' : 'inherit', display: isMobile ? 'none' : 'block' }}>
-                    Frozen
-                  </Typography>
-                </Box>
-              </StickyTableCell>
+              {!isMobile && (
+                <StickyTableCell align="left">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+                      Frozen
+                    </Typography>
+                  </Box>
+                </StickyTableCell>
+              )}
 
               <StickyTableCell align="left">
                 <TableSortLabel
@@ -1345,23 +1347,11 @@ export default function RichListData({ token }) {
                 </StickyTableCell>
               )}
 
-              <StickyTableCell align="left">
-                <Tooltip title={`${frozen ? 'Show only frozen accounts' : 'Show all accounts'}`}>
-                  <IconButton
-                    size="small"
-                    onClick={onChangeFrozen}
-                    sx={{
-                      color: frozen ? 'primary.main' : 'text.secondary',
-                      background: frozen ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
-                      '&:hover': {
-                        background: alpha(theme.palette.primary.main, 0.2)
-                      }
-                    }}
-                  >
-                    <Icon icon={frozen ? 'mdi:filter' : 'mdi:filter-outline'} />
-                  </IconButton>
-                </Tooltip>
-              </StickyTableCell>
+              {!isMobile && (
+                <StickyTableCell align="left">
+                  {/* Actions column */}
+                </StickyTableCell>
+              )}
             </TableRow>
           </TableHead>
 
@@ -1382,19 +1372,9 @@ export default function RichListData({ token }) {
                   }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
                       <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>
-                        Rich List ({count} addresses)
+                        Rich List
                       </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={onChangeFrozen}
-                        sx={{
-                          p: 0.25,
-                          color: frozen ? 'primary.main' : 'text.secondary',
-                          background: frozen ? alpha(theme.palette.primary.main, 0.1) : 'transparent'
-                        }}
-                      >
-                        <Icon icon={frozen ? 'mdi:filter' : 'mdi:filter-outline'} width={16} />
-                      </IconButton>
+                      {/* Removed filter button */}
                     </Stack>
                   </Box>
                   <Stack spacing={0.25} sx={{ p: 0.5 }}>
