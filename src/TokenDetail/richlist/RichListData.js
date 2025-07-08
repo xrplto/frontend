@@ -140,7 +140,7 @@ const EXCHANGE_ADDRESSES = {
 // ----------------------------------------------------------------------
 function truncate(str, n, isMobile = false) {
   if (!str) return '';
-  const effectiveN = isMobile ? Math.floor(n * 0.4) : n;
+  const effectiveN = isMobile ? Math.min(8, Math.floor(n * 0.4)) : n;
   return str.length > effectiveN ? str.substr(0, effectiveN - 1) + '...' : str;
 }
 
@@ -857,6 +857,8 @@ const StatsModal = ({ open, onClose, account, traderStats }) => {
 // Add this function before the RichListData component
 const CopyButton = ({ text }) => {
   const [copied, setCopied] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleCopy = async () => {
     try {
@@ -874,12 +876,13 @@ const CopyButton = ({ text }) => {
         size="small"
         onClick={handleCopy}
         sx={{
-          ml: 1,
+          ml: isMobile ? 0 : 1,
+          p: isMobile ? 0.25 : 0.5,
           color: copied ? 'primary.main' : 'text.secondary',
           '&:hover': { color: 'primary.main' }
         }}
       >
-        <ContentCopyIcon fontSize="small" />
+        <ContentCopyIcon sx={{ fontSize: isMobile ? 14 : 18 }} />
       </IconButton>
     </Tooltip>
   );
@@ -1142,12 +1145,13 @@ export default function RichListData({ token }) {
               sx={{
                 position: 'sticky',
                 zIndex: 999,
-                background: `linear-gradient(135deg, ${alpha(
+                background: isMobile ? theme.palette.background.paper : `linear-gradient(135deg, ${alpha(
                   theme.palette.background.paper,
                   0.9
                 )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
                 backdropFilter: 'blur(32px)',
                 borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                display: isMobile ? 'none' : 'table-header-group',
                 '&::after': {
                   content: '""',
                   position: 'absolute',
@@ -1165,9 +1169,9 @@ export default function RichListData({ token }) {
             <TableRow
               sx={{
                 '& .MuiTableCell-root': {
-                  fontSize: isMobile ? '11px' : '13px',
+                  fontSize: isMobile ? '8px' : '13px',
                   fontWeight: '600',
-                  padding: isMobile ? '8px 3px' : '20px 12px',
+                  padding: isMobile ? '4px 1px' : '20px 12px',
                   height: 'auto',
                   whiteSpace: 'nowrap',
                   color: darkMode ? '#919EAB' : '#637381',
@@ -1175,7 +1179,7 @@ export default function RichListData({ token }) {
                   letterSpacing: '0.02em',
                   borderBottom: 'none',
                   '&:not(:first-of-type)': {
-                    paddingLeft: isMobile ? '2px' : '8px'
+                    paddingLeft: isMobile ? '1px' : '8px'
                   }
                 },
                 '& .MuiTableSortLabel-root': {
@@ -1229,15 +1233,15 @@ export default function RichListData({ token }) {
 
               <StickyTableCell align="left">
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: isMobile ? '10px' : 'inherit' }}>
-                    Address
+                  <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: isMobile ? '9px' : 'inherit' }}>
+                    {isMobile ? 'Addr' : 'Address'}
                   </Typography>
                 </Box>
               </StickyTableCell>
 
               <StickyTableCell align="left">
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: isMobile ? '10px' : 'inherit' }}>
+                  <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: isMobile ? '9px' : 'inherit', display: isMobile ? 'none' : 'block' }}>
                     Frozen
                   </Typography>
                 </Box>
@@ -1251,7 +1255,7 @@ export default function RichListData({ token }) {
                   onClick={createSortHandler('balance')}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <SmallInfoIcon />
+                    {!isMobile && <SmallInfoIcon />}
                     <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5, fontSize: isMobile ? '10px' : 'inherit' }}>
                       Balance({name})
                     </Typography>
@@ -1272,7 +1276,7 @@ export default function RichListData({ token }) {
                   onClick={createSortHandler('balance24h')}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <SmallInfoIcon />
+                    {!isMobile && <SmallInfoIcon />}
                     <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5, fontSize: isMobile ? '10px' : 'inherit' }}>
                       Change
                     </Typography>
@@ -1310,7 +1314,7 @@ export default function RichListData({ token }) {
                   onClick={createSortHandler('holding')}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <SmallInfoIcon />
+                    {!isMobile && <SmallInfoIcon />}
                     <Typography variant="inherit" sx={{ fontWeight: '600', ml: 0.5, fontSize: isMobile ? '10px' : 'inherit' }}>
                       Holding
                     </Typography>
@@ -1325,8 +1329,8 @@ export default function RichListData({ token }) {
 
               <StickyTableCell align="left">
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: isMobile ? '10px' : 'inherit' }}>
-                    Value
+                  <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: isMobile ? '9px' : 'inherit' }}>
+                    {isMobile ? 'Val' : 'Value'}
                   </Typography>
                 </Box>
               </StickyTableCell>
@@ -1362,8 +1366,165 @@ export default function RichListData({ token }) {
           </TableHead>
 
           <TableBody>
-            {
-              // exchs.slice(page * rows, page * rows + rows)
+            {isMobile ? (
+              // Mobile card layout
+              <TableRow>
+                <TableCell colSpan={10} sx={{ p: 0 }}>
+                  {/* Mobile sticky header */}
+                  <Box sx={{
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 10,
+                    bgcolor: theme.palette.background.paper,
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                    p: 0.5,
+                    mb: 0.5
+                  }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>
+                        Rich List ({count} addresses)
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        onClick={onChangeFrozen}
+                        sx={{
+                          p: 0.25,
+                          color: frozen ? 'primary.main' : 'text.secondary',
+                          background: frozen ? alpha(theme.palette.primary.main, 0.1) : 'transparent'
+                        }}
+                      >
+                        <Icon icon={frozen ? 'mdi:filter' : 'mdi:filter-outline'} width={16} />
+                      </IconButton>
+                    </Stack>
+                  </Box>
+                  <Stack spacing={0.25} sx={{ p: 0.5 }}>
+                    {richList.map((row) => {
+                      const { id, account, freeze, balance, holding } = row;
+                      var balance24h = false;
+                      if (row.balance24h) {
+                        var change = balance - row.balance24h;
+                        var percentChange = Math.abs((change / row.balance24h) * 100).toFixed(2);
+                        var color24h, icon24h;
+                        if (change >= 0) {
+                          color24h = '#54D62C';
+                          icon24h = caretUp;
+                        } else {
+                          color24h = '#FF6C40';
+                          icon24h = caretDown;
+                        }
+                        balance24h = true;
+                      }
+                      
+                      return (
+                        <Box
+                          key={id}
+                          sx={{
+                            p: 0.5,
+                            borderRadius: 0.5,
+                            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                            bgcolor: alpha(theme.palette.background.paper, 0.3),
+                            '&:active': {
+                              transform: 'scale(0.98)',
+                              transition: 'transform 0.1s'
+                            }
+                          }}
+                        >
+                          <Stack spacing={0.25}>
+                            {/* Header row */}
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                              <Stack direction="row" alignItems="center" spacing={0.25}>
+                                {id <= 10 && (
+                                  <Box
+                                    sx={{
+                                      width: 6,
+                                      height: 6,
+                                      borderRadius: '50%',
+                                      backgroundColor: modernColors[id - 1],
+                                      boxShadow: `0 2px 8px ${modernColors[id - 1]}40`,
+                                      flexShrink: 0
+                                    }}
+                                  />
+                                )}
+                                <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.65rem' }}>#{id}</Typography>
+                                <Link
+                                  underline="none"
+                                  color="inherit"
+                                  target="_blank"
+                                  href={`https://bithomp.com/explorer/${account}`}
+                                  rel="noreferrer noopener nofollow"
+                                >
+                                  <Typography variant="caption" color="primary" sx={{ fontWeight: 500, fontSize: '0.65rem' }}>
+                                    {truncate(account, 10, true)}
+                                  </Typography>
+                                </Link>
+                                {EXCHANGE_ADDRESSES[account] && (
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      px: 0.25,
+                                      borderRadius: 0.5,
+                                      fontSize: '0.5rem',
+                                      bgcolor: 'primary.main',
+                                      color: 'primary.contrastText'
+                                    }}
+                                  >
+                                    {EXCHANGE_ADDRESSES[account]}
+                                  </Box>
+                                )}
+                              </Stack>
+                              <Stack direction="row" spacing={0.25}>
+                                <IconButton
+                                  size="small"
+                                  sx={{ p: 0 }}
+                                  onClick={() => handleOpenStats(account)}
+                                >
+                                  <BarChartIcon sx={{ fontSize: 14, color: theme.palette.success.main }} />
+                                </IconButton>
+                                <CopyButton text={account} />
+                              </Stack>
+                            </Stack>
+                            
+                            {/* Stats row */}
+                            <Stack direction="row" justifyContent="space-between">
+                              <Stack spacing={0}>
+                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem', lineHeight: 1 }}>Balance</Typography>
+                                <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.65rem' }}>
+                                  {fNumber(balance).replace(/,/g, '')}
+                                </Typography>
+                              </Stack>
+                              {balance24h && (
+                                <Stack spacing={0} alignItems="center">
+                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem', lineHeight: 1 }}>24h</Typography>
+                                  <Stack direction="row" spacing={0.25} alignItems="center">
+                                    <Icon icon={icon24h} color={color24h} width={12} />
+                                    <Typography variant="caption" sx={{ color: color24h, fontWeight: 500, fontSize: '0.65rem' }}>
+                                      {percentChange}%
+                                    </Typography>
+                                  </Stack>
+                                </Stack>
+                              )}
+                              <Stack spacing={0} alignItems="center">
+                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem', lineHeight: 1 }}>Hold</Typography>
+                                <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.65rem' }}>
+                                  {holding}%
+                                </Typography>
+                              </Stack>
+                              <Stack spacing={0} alignItems="flex-end">
+                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem', lineHeight: 1 }}>Value</Typography>
+                                <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.65rem' }}>
+                                  {currencySymbols[activeFiatCurrency]}{fNumber((exch * balance) / metrics[activeFiatCurrency]).replace(/,/g, '')}
+                                </Typography>
+                              </Stack>
+                            </Stack>
+                          </Stack>
+                        </Box>
+                      );
+                    })}
+                  </Stack>
+                </TableCell>
+              </TableRow>
+            ) : (
+              // Desktop table layout
               richList.map((row) => {
                 const { id, account, freeze, balance, holding } = row;
 
@@ -1405,7 +1566,7 @@ export default function RichListData({ token }) {
                         fontWeight: '500'
                       },
                       '& .MuiTableCell-root': {
-                        padding: isMobile ? '4px 2px' : '18px 12px',
+                        padding: isMobile ? '3px 1px' : '18px 12px',
                         whiteSpace: 'nowrap',
                         borderBottom: 'none',
                         background: 'transparent',
@@ -1457,7 +1618,7 @@ export default function RichListData({ token }) {
                         )}
                         <Typography
                           variant="subtitle1"
-                          sx={{ fontWeight: '600', fontSize: isMobile ? '12px' : '14px' }}
+                          sx={{ fontWeight: '600', fontSize: isMobile ? '11px' : '14px' }}
                         >
                           {id}
                         </Typography>
@@ -1829,7 +1990,7 @@ export default function RichListData({ token }) {
                             <Typography
                               variant="subtitle1"
                               color="primary"
-                              sx={{ fontWeight: '500', fontSize: isMobile ? '12px' : '14px' }}
+                              sx={{ fontWeight: '500', fontSize: isMobile ? '10px' : '14px' }}
                             >
                               {truncate(account, 20, isMobile)}
                               {EXCHANGE_ADDRESSES[account] && (
@@ -1854,10 +2015,10 @@ export default function RichListData({ token }) {
                         <CopyButton text={account} />
                       </Stack>
                     </TableCell>
-                    <TableCell align="left">{freeze && <Icon icon={checkIcon} />}</TableCell>
+                    {!isMobile && <TableCell align="left">{freeze && <Icon icon={checkIcon} />}</TableCell>}
                     <TableCell align="left">
-                      <Typography variant="subtitle1" sx={{ fontWeight: '500', fontSize: isMobile ? '12px' : '14px' }}>
-                        {fNumber(balance)}
+                      <Typography variant="subtitle1" sx={{ fontWeight: '500', fontSize: isMobile ? '10px' : '14px' }}>
+                        {isMobile ? fNumber(balance).replace(/,/g, '') : fNumber(balance)}
                       </Typography>
                     </TableCell>
                     <TableCell align="left">
@@ -1865,7 +2026,7 @@ export default function RichListData({ token }) {
                         <Stack direction="row" spacing={0.1} alignItems="center">
                           <Icon icon={icon24h} color={color24h} />
                           <Typography
-                            sx={{ color: color24h, fontWeight: '500', fontSize: isMobile ? '11px' : '14px' }}
+                            sx={{ color: color24h, fontWeight: '500', fontSize: isMobile ? '9px' : '14px' }}
                             variant="subtitle1"
                           >
                             <NumberTooltip number={Math.abs(change)} /> (
@@ -1875,8 +2036,8 @@ export default function RichListData({ token }) {
                       )}
                     </TableCell>
                     <TableCell align="left">
-                      <Typography variant="subtitle1" sx={{ fontWeight: '500', fontSize: isMobile ? '12px' : '14px' }}>
-                        {holding} %
+                      <Typography variant="subtitle1" sx={{ fontWeight: '500', fontSize: isMobile ? '10px' : '14px' }}>
+                        {holding}{!isMobile && ' %'}
                       </Typography>
                     </TableCell>
                     <TableCell align="left">
@@ -1884,7 +2045,7 @@ export default function RichListData({ token }) {
                         <Typography
                           variant="h4"
                           noWrap
-                          sx={{ fontWeight: '600', fontSize: isMobile ? '13px' : '16px' }}
+                          sx={{ fontWeight: '600', fontSize: isMobile ? '10px' : '16px' }}
                         >
                           {currencySymbols[activeFiatCurrency]}{' '}
                           {fNumber((exch * balance) / metrics[activeFiatCurrency])}
@@ -1906,7 +2067,7 @@ export default function RichListData({ token }) {
                     )}
 
                     <TableCell align="left">
-                      <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 2}>
+                      <Stack direction="row" alignItems="center" spacing={isMobile ? 0.25 : 2}>
                         <Tooltip title="View on Bithomp">
                           <Box
                             sx={{
@@ -1938,7 +2099,7 @@ export default function RichListData({ token }) {
                               rel="noreferrer noopener nofollow"
                             >
                               <LinkIcon
-                                sx={{ fontSize: isMobile ? '16px' : '20px', color: darkMode ? '#919EAB' : '#637381' }}
+                                sx={{ fontSize: isMobile ? '14px' : '20px', color: darkMode ? '#919EAB' : '#637381' }}
                               />
                             </Link>
                           </Box>
@@ -1986,7 +2147,7 @@ export default function RichListData({ token }) {
                   </TableRow>
                 );
               })
-            }
+            )}
           </TableBody>
           </Table>
         </Box>

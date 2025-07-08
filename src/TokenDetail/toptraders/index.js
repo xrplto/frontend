@@ -509,7 +509,7 @@ export default function TopTraders({ token }) {
           </Box>
         ) : isMobile ? (
           <>
-            <Box sx={{ px: 1 }}>
+            <Box sx={{ px: 0.5, py: 0.5 }}>
               {paginatedTraders.map((trader, index) => (
                 <MobileTraderCard 
                   key={trader.address + '-' + index}
@@ -525,19 +525,25 @@ export default function TopTraders({ token }) {
               onPageChange={handleChangePage}
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={handleChangeRowsPerPage}
-              rowsPerPageOptions={[5, 10, 20]}
+              rowsPerPageOptions={[10, 20, 50]}
               sx={{
                 borderTop: '1px solid rgba(145, 158, 171, 0.08)',
                 '& .MuiTablePagination-toolbar': {
-                  minHeight: '48px',
-                  px: 1
+                  minHeight: '40px',
+                  px: 0.5
                 },
                 '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                  fontSize: '0.75rem',
+                  fontSize: '0.7rem',
                   color: 'text.secondary'
                 },
                 '& .MuiTablePagination-select': {
-                  fontSize: '0.75rem'
+                  fontSize: '0.7rem',
+                  py: 0
+                },
+                '& .MuiTablePagination-actions': {
+                  '& .MuiIconButton-root': {
+                    p: 0.5
+                  }
                 }
               }}
             />
@@ -549,17 +555,17 @@ export default function TopTraders({ token }) {
               size="small"
               sx={{
                 '& .MuiTableCell-root': {
-                  py: isMobile ? 0.75 : 1,
-                  px: isMobile ? 0.5 : 1.5,
-                  fontSize: isMobile ? '0.75rem' : '0.875rem',
+                  py: 0.5,
+                  px: isMobile ? 0.25 : 0.75,
+                  fontSize: isMobile ? '0.7rem' : '0.75rem',
                   whiteSpace: 'nowrap',
                   borderBottom: 'none'
                 },
                 '& .MuiTableCell-head': {
                   fontWeight: 600,
-                  fontSize: '0.75rem',
+                  fontSize: isMobile ? '0.65rem' : '0.7rem',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.02em',
+                  letterSpacing: '0.01em',
                   color: darkMode ? '#919EAB' : '#637381',
                   bgcolor: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(20px)',
@@ -615,9 +621,9 @@ export default function TopTraders({ token }) {
                       sortDirection={orderBy === headCell.id ? order : false}
                       sx={{
                         fontWeight: 600,
-                        fontSize: '0.75rem',
+                        fontSize: isMobile ? '0.65rem' : '0.7rem',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.02em',
+                        letterSpacing: '0.01em',
                         color: darkMode ? '#919EAB' : '#637381'
                       }}
                     >
@@ -676,7 +682,7 @@ export default function TopTraders({ token }) {
                       }}
                     >
                       <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Typography variant={isMobile ? "caption" : "body2"} sx={{ fontWeight: 600 }}>
                           {page * rowsPerPage + index + 1}
                         </Typography>
                       </TableCell>
@@ -688,8 +694,8 @@ export default function TopTraders({ token }) {
                             href={`/profile/${safeTrader.address}`}
                             rel="noreferrer"
                           >
-                            <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
-                              {truncate(safeTrader.address, isMobile ? 10 : 20)}
+                            <Typography variant={isMobile ? "caption" : "body2"} color="primary" sx={{ fontWeight: 600 }}>
+                              {truncate(safeTrader.address, isMobile ? 8 : 16)}
                             </Typography>
                           </Link>
                           {safeTrader.AMM && (
@@ -698,10 +704,10 @@ export default function TopTraders({ token }) {
                               size="small"
                               color="secondary"
                               sx={{
-                                height: 20,
-                                fontSize: '0.65rem',
+                                height: isMobile ? 16 : 18,
+                                fontSize: isMobile ? '0.6rem' : '0.65rem',
                                 '& .MuiChip-label': {
-                                  px: 0.75
+                                  px: 0.5
                                 }
                               }}
                             />
@@ -715,22 +721,22 @@ export default function TopTraders({ token }) {
                         <ProfitCell value={safeTrader.profit7d} />
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Typography variant={isMobile ? "caption" : "body2"} sx={{ fontWeight: 500 }}>
                           {fNumber(safeTrader.volume24h)}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Typography variant={isMobile ? "caption" : "body2"} sx={{ fontWeight: 500 }}>
                           {fNumber(safeTrader.totalVolume)}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Typography variant={isMobile ? "caption" : "body2"} sx={{ fontWeight: 500 }}>
                           {fNumber(safeTrader.trades24h)}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Typography variant={isMobile ? "caption" : "body2"} sx={{ fontWeight: 500 }}>
                           {fNumber(safeTrader.totalTrades)}
                         </Typography>
                       </TableCell>
@@ -747,10 +753,10 @@ export default function TopTraders({ token }) {
                             <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 14 }} />
                           )}
                           <Typography
-                            variant="body2"
+                            variant={isMobile ? "caption" : "body2"}
                             sx={{
                               color: safeTrader.roi >= 0 ? '#54D62C' : '#FF6C40',
-                              fontWeight: 500
+                              fontWeight: 600
                             }}
                           >
                             {fPercent(safeTrader.roi)}
@@ -758,7 +764,7 @@ export default function TopTraders({ token }) {
                         </Stack>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Typography variant={isMobile ? "caption" : "body2"} sx={{ fontWeight: 500 }}>
                           {formatDate(safeTrader.lastTradeDate)}
                         </Typography>
                       </TableCell>
