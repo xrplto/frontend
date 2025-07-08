@@ -39,6 +39,7 @@ export default function Overview({ token }) {
 
   const [showEditor, setShowEditor] = useState(false);
   const [description, setDescription] = useState(token.description || '');
+  const [pairs, setPairs] = useState([]);
 
   // Initialize a markdown parser
   const mdParser = new MarkdownIt(/* Markdown-it options */);
@@ -47,6 +48,25 @@ export default function Overview({ token }) {
     // console.log('handleEditorChange', html, text);
     setDescription(text);
   };
+
+  // Fetch pairs data
+  useEffect(() => {
+    const fetchPairs = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/pairs?md5=${token.md5}`);
+        const data = await response.json();
+        if (data.pairs) {
+          setPairs(data.pairs);
+        }
+      } catch (error) {
+        console.error('Error fetching pairs:', error);
+      }
+    };
+
+    if (token.md5) {
+      fetchPairs();
+    }
+  }, [token.md5, BASE_URL]);
 
   const onApplyDescription = async () => {
     if (token.description === description) return;
@@ -93,7 +113,7 @@ export default function Overview({ token }) {
         <PriceChart token={token} />
         {!isMobile && !isTablet && (
           <>
-            <TradingHistory tokenId={token.md5} amm={token.AMM} />
+            <TradingHistory tokenId={token.md5} amm={token.AMM} token={token} pairs={pairs} />
             {showEditor && (
               <MDEditor
                 value={description}

@@ -29,13 +29,16 @@ import {
   CardContent,
   FormControlLabel,
   Switch,
-  Popover
+  Popover,
+  Tabs,
+  Tab
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import SmartToy from '@mui/icons-material/SmartToy';
 import { getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
+import PairsList from 'src/TokenDetail/market/PairsList';
 
 // Define the highlight animation with softer colors
 const highlightAnimation = (theme) => keyframes`
@@ -304,13 +307,14 @@ const filterTrades = (trades, selectedFilter) => {
   return filteredTrades.sort((a, b) => b.time - a.time);
 };
 
-const TradingHistory = ({ tokenId, amm }) => {
+const TradingHistory = ({ tokenId, amm, token, pairs }) => {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [newTradeIds, setNewTradeIds] = useState(new Set());
   const [xrpOnly, setXrpOnly] = useState(true);
+  const [tabValue, setTabValue] = useState(0);
   const previousTradesRef = useRef(new Set());
   const theme = useTheme();
   const limit = 20;
@@ -336,6 +340,10 @@ const TradingHistory = ({ tokenId, amm }) => {
   const handleXrpOnlyChange = (event) => {
     setXrpOnly(event.target.checked);
     setPage(1);
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
   };
 
   const fetchTradingHistory = useCallback(async () => {
@@ -519,12 +527,21 @@ const TradingHistory = ({ tokenId, amm }) => {
 
   return (
     <Stack spacing={1}>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <FormControlLabel
-          control={<Switch checked={xrpOnly} onChange={handleXrpOnlyChange} />}
-          label="XRP Trades Only"
-        />
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={tabValue} onChange={handleTabChange} aria-label="trading tabs">
+          <Tab label="Trading History" />
+          <Tab label="Trading Pairs" />
+        </Tabs>
       </Box>
+      
+      {tabValue === 0 && (
+        <>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <FormControlLabel
+              control={<Switch checked={xrpOnly} onChange={handleXrpOnlyChange} />}
+              label="XRP Trades Only"
+            />
+          </Box>
       {/* Table Headers with integrated title */}
       <Box
         sx={{
@@ -833,6 +850,12 @@ const TradingHistory = ({ tokenId, amm }) => {
           )}
         </Box>
       </Popover>
+        </>
+      )}
+      
+      {tabValue === 1 && token && pairs && (
+        <PairsList token={token} pairs={pairs} />
+      )}
     </Stack>
   );
 };
