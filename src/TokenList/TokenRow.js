@@ -538,6 +538,12 @@ function FTokenRow({
   }, []);
 
   const formattedTimeAgo = useMemo(() => formatTimeAgo(dateon, date), [dateon, date]);
+  
+  const chartOpts = useMemo(() => ({
+    renderer: 'svg',
+    width: 272,
+    height: 60
+  }), []);
 
   useEffect(() => {
     setImgError(false);
@@ -930,11 +936,7 @@ function FTokenRow({
               animation={false}
               showGradient={false}
               lineWidth={2}
-              opts={{
-                renderer: 'svg',
-                width: 272,
-                height: 60
-              }}
+              opts={chartOpts}
             />
           </Box>
         </TableCell>
