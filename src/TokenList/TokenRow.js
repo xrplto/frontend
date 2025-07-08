@@ -39,11 +39,7 @@ import { useRouter } from 'next/router';
 
 const TransitionTypo = styled(Typography)(
   () => `
-        -webkit-transition: background-color 300ms linear, color 1s linear;
-        -moz-transition: background-color 300ms linear, color 1s linear;
-        -o-transition: background-color 300ms linear, color 1s linear;
-        -ms-transition: background-color 300ms linear, color 1s linear;
-        transition: background-color 300ms linear, color 1s linear;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         contain: layout style paint;
     `
 );
@@ -276,53 +272,52 @@ const getOriginIcon = (origin, isMobile) => {
 
 // Replace LazyLoadImage with styled component using Next.js Image
 const AdminImageWrapper = styled(Box)(({ theme }) => ({
-  borderRadius: '12px',
+  borderRadius: '50%',
   overflow: 'hidden',
-  width: '48px',
-  height: '48px',
+  width: '44px',
+  height: '44px',
   position: 'relative',
-  border: '2px solid rgba(145, 158, 171, 0.08)',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  padding: '3px',
-  margin: '4px',
-  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+  border: '2px solid transparent',
+  background: `linear-gradient(${theme.palette.background.paper}, ${theme.palette.background.paper}) padding-box,
+              linear-gradient(135deg, ${theme.palette.primary.main}20, ${theme.palette.primary.dark}20) border-box`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   '&:hover': {
     cursor: 'pointer',
-    transform: 'scale(1.05)',
-    borderColor: 'rgba(99, 115, 129, 0.24)',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    '& > img': {
-      opacity: 0.8
-    }
+    transform: 'scale(1.08)',
+    background: `linear-gradient(${theme.palette.background.paper}, ${theme.palette.background.paper}) padding-box,
+                linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark}) border-box`,
+    boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.3)}`
   },
   [theme.breakpoints.down('md')]: {
-    width: '24px',
-    height: '24px',
-    padding: '2px',
-    margin: '2px',
-    borderRadius: '6px',
-    border: '1px solid rgba(145, 158, 171, 0.08)'
+    width: '32px',
+    height: '32px',
+    borderWidth: '1.5px'
   }
 }));
 
 const TokenImageWrapper = styled(Box)(({ theme }) => ({
-  borderRadius: '12px',
+  borderRadius: '50%',
   overflow: 'hidden',
-  width: '48px',
-  height: '48px',
+  width: '44px',
+  height: '44px',
   position: 'relative',
-  border: '2px solid rgba(145, 158, 171, 0.08)',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  padding: '3px',
-  margin: '4px',
-  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+  backgroundColor: theme.palette.mode === 'dark' 
+    ? alpha(theme.palette.grey[800], 0.5)
+    : alpha(theme.palette.grey[100], 0.8),
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: `0 8px 16px ${alpha(theme.palette.common.black, 0.1)}`
+  },
   [theme.breakpoints.down('md')]: {
-    width: '24px',
-    height: '24px',
-    padding: '2px',
-    margin: '2px',
-    borderRadius: '6px',
-    border: '1px solid rgba(145, 158, 171, 0.08)'
+    width: '32px',
+    height: '32px'
   }
 }));
 
@@ -363,26 +358,40 @@ function FTokenRow({
 
   const tableRowStyle = useMemo(
     () => ({
-      borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      borderBottom: 'none',
+      position: 'relative',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      '&:after': {
+        content: '""',
+        position: 'absolute',
+        bottom: 0,
+        left: '16px',
+        right: '16px',
+        height: '1px',
+        background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.divider, 0.1)}, transparent)`
+      },
       '&:hover': {
-        '& .MuiTableCell-root': {
-          backgroundColor: darkMode
-            ? alpha(theme.palette.grey[500], 0.12)
-            : alpha(theme.palette.grey[500], 0.08)
-        },
-        cursor: 'pointer'
+        backgroundColor: darkMode
+          ? alpha(theme.palette.primary.dark, 0.04)
+          : alpha(theme.palette.primary.light, 0.04),
+        transform: 'translateY(-1px)',
+        boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.05)}`,
+        cursor: 'pointer',
+        '&:after': {
+          opacity: 0
+        }
       },
       '& .MuiTypography-root': {
-        fontSize: isMobile ? '11px' : '14px',
-        fontWeight: '500'
+        fontSize: isMobile ? '12px' : '14px',
+        fontWeight: '500',
+        letterSpacing: '-0.01em'
       },
       '& .MuiTableCell-root': {
-        padding: isMobile ? '8px 4px' : '16px 12px',
+        padding: isMobile ? '12px 8px' : '20px 16px',
         whiteSpace: 'nowrap',
         borderBottom: 'none',
         '&:not(:first-of-type)': {
-          paddingLeft: isMobile ? '4px' : '8px'
+          paddingLeft: isMobile ? '8px' : '12px'
         }
       }
     }),
@@ -556,14 +565,28 @@ function FTokenRow({
           <Tooltip title="Remove from Watchlist">
             <StarRateIcon
               onClick={handleWatchlistClick}
-              sx={{ cursor: 'pointer', color: '#F6B87E', fontSize: '16px' }}
+              sx={{ 
+                cursor: 'pointer', 
+                color: '#FFB800', 
+                fontSize: '20px',
+                filter: 'drop-shadow(0 2px 4px rgba(255, 184, 0, 0.3))'
+              }}
             />
           </Tooltip>
         ) : (
           <Tooltip title="Add to Watchlist">
             <StarOutlineIcon
               onClick={handleWatchlistClick}
-              sx={{ cursor: 'pointer', '&:hover': { color: '#F6B87E' }, fontSize: '16px' }}
+              sx={{ 
+                cursor: 'pointer', 
+                color: alpha(theme.palette.text.primary, 0.3),
+                fontSize: '20px',
+                transition: 'all 0.3s ease',
+                '&:hover': { 
+                  color: '#FFB800',
+                  transform: 'scale(1.1)'
+                }
+              }}
             />
           </Tooltip>
         )}
@@ -573,11 +596,12 @@ function FTokenRow({
           <Typography
             variant="h4"
             sx={{
-              fontWeight: '600',
-              fontSize: isMobile ? '12px' : '16px',
-              color: darkMode ? '#919EAB' : '#637381',
-              minWidth: isMobile ? '20px' : '30px',
-              textAlign: 'center'
+              fontWeight: '700',
+              fontSize: isMobile ? '13px' : '15px',
+              color: alpha(theme.palette.text.secondary, 0.7),
+              minWidth: isMobile ? '24px' : '32px',
+              textAlign: 'center',
+              fontFamily: 'Inter, sans-serif'
             }}
           >
             {idx + 1}
@@ -596,14 +620,14 @@ function FTokenRow({
                 <Image
                   src={imgError ? fallbackImgUrl : imgUrl}
                   alt={`${user} ${name} Logo`}
-                  width={isMobile ? 20 : 38}
-                  height={isMobile ? 20 : 38}
-                  sizes="(max-width: 768px) 20px, 38px"
-                  quality={85}
+                  width={isMobile ? 28 : 40}
+                  height={isMobile ? 28 : 40}
+                  sizes="(max-width: 768px) 28px, 40px"
+                  quality={90}
                   loading="lazy"
                   placeholder="blur"
                   blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-                  style={{ objectFit: 'cover', borderRadius: isMobile ? '4px' : '8px' }}
+                  style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                   onError={handleImgError}
                 />
               </AdminImageWrapper>
@@ -612,14 +636,14 @@ function FTokenRow({
                 <Image
                   src={imgError ? fallbackImgUrl : imgUrl}
                   alt={`${user} ${name} Logo`}
-                  width={isMobile ? 20 : 38}
-                  height={isMobile ? 20 : 38}
-                  sizes="(max-width: 768px) 20px, 38px"
-                  quality={85}
+                  width={isMobile ? 28 : 40}
+                  height={isMobile ? 28 : 40}
+                  sizes="(max-width: 768px) 28px, 40px"
+                  quality={90}
                   loading="lazy"
                   placeholder="blur"
                   blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-                  style={{ objectFit: 'cover', borderRadius: isMobile ? '4px' : '8px' }}
+                  style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                   onError={handleImgError}
                 />
               </TokenImageWrapper>
@@ -629,25 +653,26 @@ function FTokenRow({
             <Typography
               variant="token"
               sx={{
-                fontWeight: '700',
-                fontSize: isMobile ? '12px' : '16px',
-                lineHeight: 1.2,
+                fontWeight: '600',
+                fontSize: isMobile ? '14px' : '16px',
+                lineHeight: 1.3,
                 width: isMobile ? '100px' : '140px',
                 minWidth: isMobile ? '100px' : '140px',
-                letterSpacing: '-0.02em',
-                cursor: 'pointer'
+                letterSpacing: '-0.01em',
+                cursor: 'pointer',
+                color: theme.palette.text.primary,
+                position: 'relative',
+                '&:after': isOMCF === 'yes' ? {
+                  content: '""',
+                  position: 'absolute',
+                  left: 0,
+                  bottom: -2,
+                  width: '100%',
+                  height: '2px',
+                  background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.success.light})`,
+                  borderRadius: '2px'
+                } : {}
               }}
-              color={
-                isOMCF !== 'yes'
-                  ? darkMode
-                    ? '#fff'
-                    : '#212B36'
-                  : darkMode
-                    ? '#00AB55'
-                    : slug === md5
-                      ? '#B72136'
-                      : ''
-              }
               noWrap
             >
               {truncate(name, isMobile ? 14 : 16)}
@@ -656,14 +681,14 @@ function FTokenRow({
               <Typography
                 variant="p2"
                 sx={{
-                  fontWeight: '500',
-                  fontSize: isMobile ? '10px' : '13px',
-                  lineHeight: 1.2,
-                  color: darkMode ? '#919EAB' : '#637381',
+                  fontWeight: '400',
+                  fontSize: isMobile ? '11px' : '13px',
+                  lineHeight: 1.3,
+                  color: alpha(theme.palette.text.secondary, 0.8),
                   display: 'flex',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  fontFamily: 'Inter, sans-serif'
                 }}
-                color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#212B36') : ''}
                 noWrap
               >
                 {truncate(user, isMobile ? 12 : 18)}
@@ -705,7 +730,9 @@ function FTokenRow({
           noWrap
           sx={{
             fontWeight: '600',
-            fontSize: isMobile ? '12px' : '16px'
+            fontSize: isMobile ? '14px' : '16px',
+            fontFamily: 'Inter, sans-serif',
+            letterSpacing: '-0.01em'
           }}
         >
           <NumberTooltip
@@ -753,8 +780,10 @@ function FTokenRow({
         <Typography
           variant="caption"
           sx={{
-            fontSize: isMobile ? '10px' : '12px',
-            fontWeight: '500'
+            fontSize: isMobile ? '11px' : '12px',
+            fontWeight: '400',
+            color: alpha(theme.palette.text.secondary, 0.6),
+            fontFamily: 'Inter, sans-serif'
           }}
         >
           {formattedTimeAgo}
@@ -984,10 +1013,12 @@ function FTokenRow({
                   onClick={handleSetTrustline}
                   sx={{
                     cursor: 'pointer',
-                    fontSize: '20px',
-                    color: darkMode ? '#919EAB' : '#637381',
+                    fontSize: '22px',
+                    color: alpha(theme.palette.text.secondary, 0.5),
+                    transition: 'all 0.3s ease',
                     '&:hover': {
-                      color: theme.palette.primary.main
+                      color: theme.palette.primary.main,
+                      transform: 'scale(1.15)'
                     }
                   }}
                 />
@@ -1021,10 +1052,12 @@ function FTokenRow({
                     onClick={handleEditToken}
                     sx={{
                       cursor: 'pointer',
-                      fontSize: '20px',
-                      color: darkMode ? '#919EAB' : '#637381',
+                      fontSize: '22px',
+                      color: alpha(theme.palette.text.secondary, 0.5),
+                      transition: 'all 0.3s ease',
                       '&:hover': {
-                        color: theme.palette.warning.main
+                        color: theme.palette.warning.main,
+                        transform: 'scale(1.15)'
                       }
                     }}
                   />
