@@ -39,6 +39,10 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import SmartToy from '@mui/icons-material/SmartToy';
 import { getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 import PairsList from 'src/TokenDetail/market/PairsList';
+import TopTraders from 'src/TokenDetail/toptraders';
+import { lazy, Suspense } from 'react';
+
+const RichListData = lazy(() => import('src/TokenDetail/richlist/RichListData'));
 
 // Define the highlight animation with softer colors
 const highlightAnimation = (theme) => keyframes`
@@ -531,6 +535,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
         <Tabs value={tabValue} onChange={handleTabChange} aria-label="trading tabs">
           <Tab label="Trading History" />
           <Tab label="Trading Pairs" />
+          <Tab label="Top Traders" />
+          <Tab label="Rich List" />
         </Tabs>
       </Box>
       
@@ -855,6 +861,16 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
       
       {tabValue === 1 && token && pairs && (
         <PairsList token={token} pairs={pairs} />
+      )}
+      
+      {tabValue === 2 && token && (
+        <TopTraders token={token} />
+      )}
+      
+      {tabValue === 3 && token && (
+        <Suspense fallback={<CircularProgress />}>
+          <RichListData token={token} />
+        </Suspense>
       )}
     </Stack>
   );
