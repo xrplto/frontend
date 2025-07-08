@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import useWebSocket from 'react-use-websocket';
+import { MD5 } from 'crypto-js';
+import Decimal from 'decimal.js';
 import {
   Table,
   TableBody,
@@ -31,7 +34,8 @@ import {
   Switch,
   Popover,
   Tabs,
-  Tab
+  Tab,
+  Grid
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -40,6 +44,9 @@ import SmartToy from '@mui/icons-material/SmartToy';
 import { getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 import PairsList from 'src/TokenDetail/market/PairsList';
 import TopTraders from 'src/TokenDetail/toptraders';
+import OrderBook from 'src/TokenDetail/trade/OrderBook';
+import TradePanel from 'src/TokenDetail/trade/TradePanel';
+import BidAskChart from 'src/TokenDetail/trade/BidAskChart';
 import { lazy, Suspense } from 'react';
 
 const RichListData = lazy(() => import('src/TokenDetail/richlist/RichListData'));
@@ -311,6 +318,117 @@ const filterTrades = (trades, selectedFilter) => {
   return filteredTrades.sort((a, b) => b.time - a.time);
 };
 
+// OrderBook helper functions
+const ORDER_TYPE_BIDS = 1;
+const ORDER_TYPE_ASKS = 2;
+
+function getXRPPair(issuer, currency) {
+  const t1 = 'XRPL_XRP';
+  const t2 = issuer + '_' + currency;
+  let pair = t1 + t2;
+  if (t1.localeCompare(t2) > 0) pair = t2 + t1;
+  return MD5(pair).toString();
+}
+
+function getInitPair(token) {
+  const issuer = token.issuer;
+  const currency = token.currency;
+  const name = token.name;
+  const pairMD5 = getXRPPair(issuer, currency);
+  const curr1 = { currency, name, issuer, value: 0, ...token };
+  const curr2 = {
+    currency: 'XRP',
+    issuer: 'XRPL',
+    name: 'XRP',
+    value: 0,
+    md5: '84e5efeb89c4eae8f68188982dc290d8'
+  };
+  const pair = { id: 1, pair: pairMD5, curr1, curr2, count: 0 };
+  return pair;
+}
+
+const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
+  if (offers.length < 1) return [];
+
+  const getCurrency = offers[0].TakerGets?.currency || 'XRP';
+  const payCurrency = offers[0].TakerPays?.currency || 'XRP';
+
+  let multiplier = 1;
+  const isBID = orderType === ORDER_TYPE_BIDS;
+
+  if (isBID) {
+    if (getCurrency === 'XRP') multiplier = 1_000_000;
+    else if (payCurrency === 'XRP') multiplier = 0.000_001;
+  } else {
+    if (getCurrency === 'XRP') multiplier = 1_000_000;
+    else if (payCurrency === 'XRP') multiplier = 0.000_001;
+  }
+
+  const array = [];
+  let sumAmount = 0;
+  let sumValue = 0;
+
+  let mapOldOffers = new Map();
+  for (var offer of arrOffers) {
+    mapOldOffers.set(offer.id, true);
+  }
+
+  for (let i = 0; i < offers.length; i++) {
+    const offer = offers[i];
+    const obj = {
+      id: '',
+      price: 0,
+      amount: 0,
+      value: 0,
+      sumAmount: 0,
+      sumValue: 0,
+      avgPrice: 0,
+      sumGets: 0,
+      sumPays: 0,
+      isNew: false
+    };
+
+    const id = `${offer.Account}:${offer.Sequence}`;
+    const gets = offer.taker_gets_funded || offer.TakerGets;
+    const pays = offer.taker_pays_funded || offer.TakerPays;
+
+    const takerPays = pays.value || pays;
+    const takerGets = gets.value || gets;
+
+    const amount = Number(isBID ? takerPays : takerGets);
+    const price = isBID ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier;
+    const value = amount * price;
+
+    sumAmount += amount;
+    sumValue += value;
+    obj.id = id;
+    obj.price = price;
+    obj.amount = amount;
+    obj.value = value;
+    obj.sumAmount = sumAmount;
+    obj.sumValue = sumValue;
+
+    if (sumAmount > 0) obj.avgPrice = sumValue / sumAmount;
+    else obj.avgPrice = 0;
+
+    obj.isNew = !mapOldOffers.has(id);
+
+    if (amount > 0) array.push(obj);
+  }
+
+  const sortedArrayByPrice = [...array].sort((a, b) => {
+    let result = 0;
+    if (orderType === ORDER_TYPE_BIDS) {
+      result = b.price - a.price;
+    } else {
+      result = a.price - b.price;
+    }
+    return result;
+  });
+
+  return sortedArrayByPrice;
+};
+
 const TradingHistory = ({ tokenId, amm, token, pairs }) => {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -322,6 +440,27 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
   const previousTradesRef = useRef(new Set());
   const theme = useTheme();
   const limit = 20;
+
+  // OrderBook state
+  const [orderBookData, setOrderBookData] = useState({ bids: [], asks: [] });
+  const [clearNewFlag, setClearNewFlag] = useState(false);
+  const [wsReady, setWsReady] = useState(false);
+  const [bidId, setBidId] = useState(-1);
+  const [askId, setAskId] = useState(-1);
+  
+  const WSS_URL = 'wss://xrplcluster.com';
+  
+  // WebSocket for OrderBook
+  const { sendJsonMessage } = useWebSocket(WSS_URL, {
+    onOpen: () => {
+      setWsReady(true);
+    },
+    onClose: () => {
+      setWsReady(false);
+    },
+    shouldReconnect: (closeEvent) => true,
+    onMessage: (event) => processOrderBookMessages(event)
+  });
 
   const [washTradingData, setWashTradingData] = useState({});
   const checkedAddressesRef = useRef(new Set());
@@ -385,6 +524,78 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
     }
   }, [tokenId, page, xrpOnly]);
 
+  // WebSocket message processor for OrderBook
+  const processOrderBookMessages = (event) => {
+    const orderBook = JSON.parse(event.data);
+
+    if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
+      const req = orderBook.id % 2;
+      if (req === 1) {
+        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS, orderBookData.asks);
+        setOrderBookData(prev => ({ ...prev, asks: parsed }));
+      }
+      if (req === 0) {
+        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, orderBookData.bids);
+        setOrderBookData(prev => ({ ...prev, bids: parsed }));
+        setTimeout(() => {
+          setClearNewFlag(true);
+        }, 2000);
+      }
+    }
+  };
+
+  // OrderBook WebSocket request
+  const requestOrderBook = useCallback(() => {
+    if (!wsReady || !token) return;
+
+    const pair = getInitPair(token);
+    const curr1 = pair.curr1;
+    const curr2 = pair.curr2;
+    let reqID = 1;
+
+    const cmdAsk = {
+      id: reqID,
+      command: 'book_offers',
+      taker_gets: {
+        currency: curr1.currency,
+        issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+      },
+      taker_pays: {
+        currency: curr2.currency,
+        issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+      },
+      ledger_index: 'validated',
+      limit: 60
+    };
+    const cmdBid = {
+      id: reqID + 1,
+      command: 'book_offers',
+      taker_gets: {
+        currency: curr2.currency,
+        issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+      },
+      taker_pays: {
+        currency: curr1.currency,
+        issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+      },
+      ledger_index: 'validated',
+      limit: 60
+    };
+    sendJsonMessage(cmdAsk);
+    sendJsonMessage(cmdBid);
+  }, [wsReady, token, sendJsonMessage]);
+
+  // Clear new flags effect
+  useEffect(() => {
+    if (clearNewFlag) {
+      setClearNewFlag(false);
+      setOrderBookData(prev => ({
+        asks: prev.asks.map(ask => ({ ...ask, isNew: false })),
+        bids: prev.bids.map(bid => ({ ...bid, isNew: false }))
+      }));
+    }
+  }, [clearNewFlag]);
+
   useEffect(() => {
     previousTradesRef.current = new Set();
     setLoading(true);
@@ -392,6 +603,15 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
     const intervalId = setInterval(fetchTradingHistory, 3000);
     return () => clearInterval(intervalId);
   }, [fetchTradingHistory]);
+
+  // OrderBook WebSocket effect
+  useEffect(() => {
+    if (!wsReady || !token) return;
+
+    requestOrderBook();
+    const timer = setInterval(() => requestOrderBook(), 4000);
+    return () => clearInterval(timer);
+  }, [wsReady, token, requestOrderBook]);
 
   useEffect(() => {
     if (trades.length === 0) return;
@@ -534,6 +754,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={tabValue} onChange={handleTabChange} aria-label="trading tabs">
           <Tab label="Trading History" />
+          <Tab label="Order Book" />
           <Tab label="Trading Pairs" />
           <Tab label="Top Traders" />
           <Tab label="Rich List" />
@@ -859,15 +1080,65 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
         </>
       )}
       
-      {tabValue === 1 && token && pairs && (
+      {tabValue === 1 && token && (
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={8}>
+            <OrderBook 
+              pair={token ? getInitPair(token) : null}
+              asks={orderBookData.asks}
+              bids={orderBookData.bids}
+              onAskClick={(e, idx) => setAskId(idx)}
+              onBidClick={(e, idx) => setBidId(idx)}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Stack spacing={2}>
+              <TradePanel 
+                pair={token ? getInitPair(token) : null}
+                asks={orderBookData.asks}
+                bids={orderBookData.bids}
+                bidId={bidId}
+                askId={askId}
+              />
+              <Box>
+                <Typography variant="h6" sx={{ mb: 1 }}>
+                  Depth Chart (Bids: {orderBookData.bids.length}, Asks: {orderBookData.asks.length})
+                </Typography>
+                {(orderBookData.bids.length > 0 || orderBookData.asks.length > 0) ? (
+                  <BidAskChart 
+                    asks={orderBookData.asks}
+                    bids={orderBookData.bids}
+                  />
+                ) : (
+                  <Box sx={{ 
+                    height: 256, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    border: '1px dashed',
+                    borderColor: 'divider',
+                    borderRadius: 1
+                  }}>
+                    <Typography color="text.secondary">
+                      Waiting for order book data...
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </Stack>
+          </Grid>
+        </Grid>
+      )}
+      
+      {tabValue === 2 && token && pairs && (
         <PairsList token={token} pairs={pairs} />
       )}
       
-      {tabValue === 2 && token && (
+      {tabValue === 3 && token && (
         <TopTraders token={token} />
       )}
       
-      {tabValue === 3 && token && (
+      {tabValue === 4 && token && (
         <Suspense fallback={<CircularProgress />}>
           <RichListData token={token} />
         </Suspense>
