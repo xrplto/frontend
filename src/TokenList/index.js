@@ -486,9 +486,24 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     setSync(prev => prev + 1);
   }, []);
 
+  // Performance optimization: limit initial render to 50 rows
+  const [renderCount, setRenderCount] = useState(50);
+  
+  useEffect(() => {
+    if (rows > 50) {
+      // Progressively render more rows after initial mount
+      const timer = setTimeout(() => {
+        setRenderCount(rows);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      setRenderCount(rows);
+    }
+  }, [rows]);
+  
   const visibleTokens = useMemo(() => {
-    return tokens.slice(0, rows);
-  }, [tokens, rows]);
+    return tokens.slice(0, Math.min(renderCount, rows));
+  }, [tokens, rows, renderCount]);
   
   // Use deferred value for smoother updates during rapid WebSocket messages
   const deferredTokens = useDeferredValue(visibleTokens);

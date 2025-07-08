@@ -16,7 +16,7 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import { formatMonthYearDate } from 'src/utils/formatTime';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatNumber';
 import { Icon } from '@iconify/react';
-import { useContext, useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { AppContext } from 'src/AppContext';
 
 const CollectionImageWrapper = styled(Box)(({ theme }) => ({
@@ -67,7 +67,7 @@ const ImageBackdrop = styled('span')(({ theme }) => ({
   transition: theme.transitions.create('opacity')
 }));
 
-export default function Row({ id, item, isMine }) {
+function Row({ id, item, isMine }) {
   const {
     uuid,
     account,
@@ -329,3 +329,5 @@ export default function Row({ id, item, isMine }) {
     </TableRow>
   );
 }
+
+export default React.memo(Row);

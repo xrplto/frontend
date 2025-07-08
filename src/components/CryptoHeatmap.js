@@ -4,7 +4,7 @@ import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsTreemap from 'highcharts/modules/treemap';
 import accessibility from 'highcharts/modules/accessibility';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
 import { fCurrency, fNumberWithCurreny } from 'src/utils/formatNumber';
@@ -112,26 +112,21 @@ function CryptoHeatmap({ exchRate }) {
         let data = res.data;
         if (data) {
           const tokens = data.tokens;
-          let marketData = [];
-
-          tokens.map((token) => {
-            const market = {
-              name: token.name,
-              original: token.user,
-              value: sortBy === 'marketcap' ? token.marketcap : token.vol24hxrp,
-              displayValue: token.exch,
-              priceChange: token.pro24h,
-              price: token.exch,
-              slug: token.slug,
-              md5: token.md5,
-              color: token.pro24h >= 0 ? '#00D4AA' : '#FF4757',
-              trustlines: token.trustlines,
-              holders: token.holders,
-              verified: token.verified,
-              kyc: token.kyc
-            };
-            marketData.push(market);
-          });
+          const marketData = tokens.map((token) => ({
+            name: token.name,
+            original: token.user,
+            value: sortBy === 'marketcap' ? token.marketcap : token.vol24hxrp,
+            displayValue: token.exch,
+            priceChange: token.pro24h,
+            price: token.exch,
+            slug: token.slug,
+            md5: token.md5,
+            color: token.pro24h >= 0 ? '#00D4AA' : '#FF4757',
+            trustlines: token.trustlines,
+            holders: token.holders,
+            verified: token.verified,
+            kyc: token.kyc
+          }));
 
           setMarkets(marketData);
         }
@@ -143,11 +138,11 @@ function CryptoHeatmap({ exchRate }) {
     getTokenData();
   }, [sortBy]);
 
-  const handleSortChange = (event) => {
+  const handleSortChange = useCallback((event) => {
     setSortBy(event.target.value);
-  };
+  }, []);
 
-  const options = {
+  const options = useMemo(() => ({
     chart: {
       backgroundColor: 'transparent',
       animation: {
@@ -273,7 +268,7 @@ function CryptoHeatmap({ exchRate }) {
           </div>`;
       }
     }
-  };
+  }), [markets, sortBy, darkMode, activeFiatCurrency]);
 
   return (
     <Stack spacing={3}>
