@@ -238,7 +238,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         
         wsProcessTimer.current = setTimeout(() => {
           processWebSocketQueue();
-        }, 16); // Process every frame (60fps)
+        }, 1000); // Process every 1000ms for better performance note: this was set to 16 ms!
         
       } catch (err) {
         console.error('Error parsing WebSocket message:', err);
