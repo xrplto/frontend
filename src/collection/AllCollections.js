@@ -221,26 +221,52 @@ const LatestNFTActivity = ({
     options.plotOptions = {
       bar: {
         horizontal: false,
-        columnWidth: '55%',
-        endingShape: 'rounded'
+        columnWidth: '60%',
+        borderRadius: 8,
+        borderRadiusApplication: 'end',
+        borderRadiusWhenStacked: 'last',
+        distributed: false,
+        dataLabels: {
+          position: 'top'
+        }
       }
     };
     options.fill = {
-      colors: chartData.datasets.map((d) => d.backgroundColor)
+      type: 'gradient',
+      gradient: {
+        shade: 'light',
+        type: 'vertical',
+        shadeIntensity: 0.25,
+        inverseColors: false,
+        opacityFrom: 0.85,
+        opacityTo: 0.55,
+        stops: [0, 90, 100]
+      },
+      colors: chartData.datasets.map((d) => d.borderColor)
     };
-    options.stroke.show = false;
+    options.stroke = {
+      show: true,
+      width: 2,
+      colors: chartData.datasets.map((d) => d.borderColor)
+    };
   } else {
     options.fill = {
       type: 'gradient',
       gradient: {
         shade: 'dark',
         type: 'vertical',
-        shadeIntensity: 0.5,
+        shadeIntensity: 0.3,
         inverseColors: false,
-        opacityFrom: 0.7,
-        opacityTo: 0
+        opacityFrom: 0.8,
+        opacityTo: 0.1,
+        stops: [0, 70, 100]
       },
       colors: chartData.datasets.map((d) => d.borderColor)
+    };
+    options.stroke = {
+      ...options.stroke,
+      curve: 'smooth',
+      width: 3
     };
   }
 
@@ -543,8 +569,8 @@ function Collections() {
             flexWrap: 'wrap',
             gap: 1,
             mb: 1.5,
-            p: 3,
-            borderRadius: '20px',
+            p: { xs: 2.5, sm: 3, md: 4 },
+            borderRadius: '24px',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.9
@@ -605,33 +631,6 @@ function Collections() {
               are included.
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            size="medium"
-            onClick={() => window.location.href = '/collections'}
-            sx={{
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.primary.main,
-                0.9
-              )} 0%, ${alpha(theme.palette.primary.dark, 0.8)} 100%)`,
-              color: theme.palette.primary.contrastText,
-              '&:hover': {
-                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                transform: 'translateY(-2px)',
-                boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`
-              },
-              borderRadius: '12px',
-              textTransform: 'none',
-              fontWeight: 600,
-              fontSize: { xs: '0.8rem', sm: '0.875rem' },
-              padding: { xs: '8px 16px', sm: '10px 20px' },
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-              backdropFilter: 'blur(10px)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-          >
-            View All Collections
-          </Button>
         </Box>
       </Container>
 
