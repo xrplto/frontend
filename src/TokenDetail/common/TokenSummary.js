@@ -13,19 +13,12 @@ import {
   useMediaQuery,
   styled,
   Slider,
-  Avatar,
   Rating,
-  IconButton,
-  Button
+  IconButton
 } from '@mui/material';
 import { Icon } from '@iconify/react';
-import infoFilled from '@iconify/icons-ep/info-filled';
 import chartLineUp from '@iconify/icons-ph/chart-line-up';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import VerifiedIcon from '@mui/icons-material/Verified';
-import StarIcon from '@mui/icons-material/Star';
-import ShareIcon from '@mui/icons-material/Share';
-import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import SearchIcon from '@mui/icons-material/Search';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -37,30 +30,31 @@ import { currencySymbols, CURRENCY_ISSUERS } from 'src/utils/constants';
 import { checkExpiration, getHashIcon } from 'src/utils/extra';
 import Decimal from 'decimal.js';
 import Image from 'next/image';
+import axios from 'axios';
 import Share from './Share';
 import Watch from './Watch';
-import SocialLinksMenu from './SocialLinksMenu';
 import TrustSetDialog from 'src/components/TrustSetDialog';
 
 const LowhighBarSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-track': {
     border: 'none',
-    height: 2,
-    background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.primary.main}, ${theme.palette.info.main})`,
-    borderRadius: '1px',
-    boxShadow: `0 1px 2px ${alpha(theme.palette.primary.main, 0.1)}`
+    height: 3,
+    background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.warning.main}, ${theme.palette.error.main})`,
+    borderRadius: '2px',
+    boxShadow: `0 2px 4px ${alpha(theme.palette.primary.main, 0.15)}`
   },
   '& .MuiSlider-rail': {
-    height: 2,
-    borderRadius: '1px',
-    background: alpha(theme.palette.background.paper, 0.3),
+    height: 3,
+    borderRadius: '2px',
+    background: alpha(theme.palette.divider, 0.2),
     opacity: 1
   },
   '& .MuiSlider-thumb': {
-    height: 6,
-    width: 6,
+    height: 8,
+    width: 8,
     background: theme.palette.background.paper,
-    border: `1px solid ${theme.palette.primary.main}`,
+    border: `2px solid ${theme.palette.primary.main}`,
+    boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.15)}`,
     '&:before': { display: 'none' }
   },
   '& .MuiSlider-valueLabel': { display: 'none' }
@@ -150,12 +144,14 @@ const TokenSummary = memo(({ token }) => {
 
   // 24h Range
   const range24h = useMemo(() => {
-    if (!maxMin24h) return null;
-    const min = maxMin24h[1];
-    const max = maxMin24h[0];
+    if (!maxMin24h || !Array.isArray(maxMin24h) || maxMin24h.length < 2) return null;
+    const min = Math.min(maxMin24h[0], maxMin24h[1]);
+    const max = Math.max(maxMin24h[0], maxMin24h[1]);
     const delta = max - min;
-    let percent = 0;
-    if (delta > 0) percent = ((usd - min) / delta) * 100;
+    let percent = 50;
+    if (delta > 0 && usd) {
+      percent = Math.max(0, Math.min(100, ((usd - min) / delta) * 100));
+    }
     return { min, max, percent };
   }, [maxMin24h, usd]);
 
@@ -431,18 +427,23 @@ const TokenSummary = memo(({ token }) => {
   return (
     <Box
       sx={{
-        p: 1,
-        borderRadius: '12px',
-        background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.08)} 0%, ${alpha(theme.palette.background.paper, 0.04)} 100%)`,
-        backdropFilter: 'blur(16px)',
-        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-        boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.06)}`,
-        mb: 2
+        p: { xs: 1.5, sm: 2 },
+        borderRadius: '16px',
+        background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
+        backdropFilter: 'blur(20px)',
+        border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(theme.palette.common.black, 0.02)}`,
+        mb: 2,
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.12)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.04)}`
+        }
       }}
     >
-      <Stack spacing={1}>
+      <Stack spacing={2}>
         {/* Header with Token Info */}
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={2} alignItems="center">
           {/* Token Image */}
           <Box sx={{ position: 'relative' }}>
             <Box
@@ -458,12 +459,14 @@ const TokenSummary = memo(({ token }) => {
               <Image
                 src={tokenImageUrl}
                 alt={`${name} token`}
-                width={60}
-                height={60}
+                width={isMobile ? 56 : 64}
+                height={isMobile ? 56 : 64}
                 style={{
-                  borderRadius: '12px',
+                  borderRadius: '16px',
                   objectFit: 'cover',
-                  border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                  border: `3px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.1)}`,
+                  transition: 'all 0.3s ease'
                 }}
                 onError={(e) => {
                   e.currentTarget.src = fallbackImageUrl;
@@ -495,25 +498,6 @@ const TokenSummary = memo(({ token }) => {
               </Box>
             </Box>
             
-            {verified && (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: -4,
-                  right: -4,
-                  backgroundColor: theme.palette.success.main,
-                  borderRadius: '50%',
-                  width: 20,
-                  height: 20,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 2
-                }}
-              >
-                <VerifiedIcon sx={{ fontSize: 12, color: 'white' }} />
-              </Box>
-            )}
             
             {/* Google Lens Search - positioned top-left of the token image */}
             <Tooltip title="Search with Google Lens" placement="top">
@@ -580,19 +564,40 @@ const TokenSummary = memo(({ token }) => {
               <Typography
                 variant="h6"
                 sx={{
-                  fontSize: '1.1rem',
-                  fontWeight: 700,
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.info.main} 100%)`,
+                  fontSize: { xs: '1rem', sm: '1.2rem' },
+                  fontWeight: 800,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  letterSpacing: '-0.02em'
                 }}
               >
                 {name}
               </Typography>
+              {verified && (
+                <Tooltip title="Verified Token" placement="top">
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 24,
+                      height: 24,
+                      borderRadius: '50%',
+                      background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+                      boxShadow: `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`,
+                      border: `2px solid ${theme.palette.background.paper}`,
+                      ml: 0.5
+                    }}
+                  >
+                    <VerifiedIcon sx={{ fontSize: 14, color: 'white' }} />
+                  </Box>
+                </Tooltip>
+              )}
               {rating && (
                 <Rating
                   value={rating}
@@ -608,11 +613,18 @@ const TokenSummary = memo(({ token }) => {
               )}
             </Stack>
             
-            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.5 }}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                {user || name}
-              </Typography>
-            </Stack>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                fontSize: '0.8rem',
+                opacity: 0.8,
+                mb: 0.5,
+                fontWeight: 500
+              }}
+            >
+              {user || name}
+            </Typography>
 
             {/* Tags and Status */}
             <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
@@ -730,39 +742,57 @@ const TokenSummary = memo(({ token }) => {
         {/* Price Changes */}
         <Box
           sx={{
-            mt: 1,
             display: 'grid',
-            gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)',
-            gap: 0.5
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
+            gap: 1
           }}
         >
-          {(isMobile ? priceChanges.slice(0, 3) : priceChanges).map((item) => (
+          {priceChanges.map((item) => (
             <Box
               key={item.label}
               sx={{
-                px: 0.75,
-                py: 0.5,
-                borderRadius: '8px',
-                background: `linear-gradient(135deg, ${alpha(item.color, 0.12)} 0%, ${alpha(item.color, 0.06)} 100%)`,
-                border: `1px solid ${alpha(item.color, 0.2)}`,
+                px: 1,
+                py: 0.75,
+                borderRadius: '12px',
+                background: `linear-gradient(135deg, ${alpha(item.color, 0.15)} 0%, ${alpha(item.color, 0.08)} 100%)`,
+                border: `1px solid ${alpha(item.color, 0.25)}`,
                 textAlign: 'center',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 cursor: 'default',
+                position: 'relative',
+                overflow: 'hidden',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: `linear-gradient(135deg, ${alpha(item.color, 0.1)} 0%, transparent 100%)`,
+                  opacity: 0,
+                  transition: 'opacity 0.3s ease'
+                },
                 '&:hover': {
-                  transform: 'translateY(-1px)',
-                  boxShadow: `0 4px 12px ${alpha(item.color, 0.15)}`,
-                  background: `linear-gradient(135deg, ${alpha(item.color, 0.18)} 0%, ${alpha(item.color, 0.1)} 100%)`
+                  transform: 'translateY(-2px) scale(1.02)',
+                  boxShadow: `0 8px 24px ${alpha(item.color, 0.2)}`,
+                  '&::before': {
+                    opacity: 1
+                  }
                 }
               }}
             >
               <Typography 
                 variant="caption" 
                 sx={{ 
-                  fontSize: '0.65rem', 
-                  color: alpha(theme.palette.text.secondary, 0.7),
+                  fontSize: '0.7rem', 
+                  color: alpha(theme.palette.text.secondary, 0.8),
                   display: 'block',
-                  mb: 0.25,
-                  fontWeight: 500
+                  mb: 0.5,
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  position: 'relative',
+                  zIndex: 1
                 }}
               >
                 {item.label}
@@ -770,11 +800,13 @@ const TokenSummary = memo(({ token }) => {
               <Typography
                 variant="body2"
                 sx={{
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                  fontWeight: 800,
                   color: item.color,
                   lineHeight: 1.2,
-                  textShadow: `0 1px 2px ${alpha(item.color, 0.1)}`
+                  textShadow: `0 2px 4px ${alpha(item.color, 0.15)}`,
+                  position: 'relative',
+                  zIndex: 1
                 }}
               >
                 {formatPercentage(item.value)}
