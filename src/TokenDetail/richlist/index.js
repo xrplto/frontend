@@ -34,6 +34,9 @@ const RichList = memo(({ token }) => {
       </Grid>
     </Grid>
   );
+}, (prevProps, nextProps) => {
+  // Custom comparison to prevent unnecessary re-renders
+  return prevProps.token.md5 === nextProps.token.md5;
 });
 
 RichList.displayName = 'RichList';

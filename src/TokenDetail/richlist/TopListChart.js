@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 
 // Material
 import {
@@ -133,30 +133,38 @@ const LoadingSkeleton = styled(Box)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius
 }));
 
-function extractGraphData(items) {
+// Optimize array processing with single loop and more efficient iteration
+const extractGraphData = (items) => {
   const res1 = [];
   const res2 = [];
   const res3 = [];
   const res4 = [];
-  for (var item of items) {
+  const len = items.length;
+  
+  for (let i = 0; i < len; i++) {
+    const item = items[i];
     res1.push([item.time, item.top100]);
     res2.push([item.time, item.top50]);
     res3.push([item.time, item.top20]);
     res4.push([item.time, item.top10]);
   }
-  return [res1, res2, res3, res4];
-}
+  
+  return { top100: res1, top50: res2, top20: res3, top10: res4 };
+};
 
-export default function TopListChart({ token }) {
+const TopListChart = memo(({ token }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const BASE_URL = process.env.API_URL;
 
   const [range, setRange] = useState('7D');
-  const [graphData1, setGraphData1] = useState([]); // Top 100
-  const [graphData2, setGraphData2] = useState([]); // Top 50
-  const [graphData3, setGraphData3] = useState([]); // Top 20
-  const [graphData4, setGraphData4] = useState([]); // Top 10
+  // Combine multiple states into one to reduce re-renders
+  const [graphData, setGraphData] = useState({
+    top100: [],
+    top50: [],
+    top20: [],
+    top10: []
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -172,16 +180,16 @@ export default function TopListChart({ token }) {
             const items = ret.history;
             if (items && items.length > 0) {
               const len = items.length;
+              // Single state update instead of 4 separate updates
               const data = extractGraphData(items);
-              setGraphData1(data[0]);
-              setGraphData2(data[1]);
-              setGraphData3(data[2]);
-              setGraphData4(data[3]);
+              setGraphData(data);
             } else {
-              setGraphData1([]);
-              setGraphData2([]);
-              setGraphData3([]);
-              setGraphData4([]);
+              setGraphData({
+                top100: [],
+                top50: [],
+                top20: [],
+                top10: []
+              });
             }
           }
         })
@@ -196,36 +204,39 @@ export default function TopListChart({ token }) {
     getGraph();
   }, [range, BASE_URL, token.md5]);
 
-  const handleChange = (event, newRange) => {
+  // Memoize callback to prevent recreation
+  const handleChange = useCallback((event, newRange) => {
     if (newRange) setRange(newRange);
-  };
+  }, []);
 
-  const CHART_DATA = [
+  // Memoize chart data and options
+  const CHART_DATA = useMemo(() => [
     {
       name: 'Top 100 Holders',
       type: 'area',
-      data: graphData1
+      data: graphData.top100
     },
     {
       name: 'Top 50 Holders',
       type: 'area',
-      data: graphData2
+      data: graphData.top50
     },
     {
       name: 'Top 20 Holders',
       type: 'area',
-      data: graphData3
+      data: graphData.top20
     },
     {
       name: 'Top 10 Holders',
       type: 'area',
-      data: graphData4
+      data: graphData.top10
     }
-  ];
+  ], [graphData]);
 
-  let options = ChartOptions2(CHART_DATA);
+  const options = useMemo(() => ChartOptions2(CHART_DATA), [CHART_DATA]);
 
-  const getRangeColor = (currentRange) => {
+  // Memoize helper functions
+  const getRangeColor = useCallback((currentRange) => {
     const colors = {
       '7D': theme.palette.success.main,
       '1M': theme.palette.warning.main,
@@ -233,9 +244,9 @@ export default function TopListChart({ token }) {
       ALL: theme.palette.error.main
     };
     return colors[currentRange] || theme.palette.primary.main;
-  };
+  }, [theme]);
 
-  const getIntervalTooltip = (currentRange) => {
+  const getIntervalTooltip = useCallback((currentRange) => {
     const intervals = {
       ALL: 'All available data - Complete holder history',
       '3M': 'Last 3 months - Recent holder trends',
@@ -243,13 +254,14 @@ export default function TopListChart({ token }) {
       '7D': 'Last week - Weekly holder activity'
     };
     return intervals[currentRange] || 'Holder data intervals';
-  };
+  }, []);
 
-  const hasData =
-    graphData1.length > 0 ||
-    graphData2.length > 0 ||
-    graphData3.length > 0 ||
-    graphData4.length > 0;
+  const hasData = useMemo(() => 
+    graphData.top100.length > 0 ||
+    graphData.top50.length > 0 ||
+    graphData.top20.length > 0 ||
+    graphData.top10.length > 0
+  , [graphData]);
 
   return (
     <>
@@ -446,4 +458,11 @@ export default function TopListChart({ token }) {
       </ChartContainer>
     </>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison function for React.memo
+  return prevProps.token.md5 === nextProps.token.md5;
+});
+
+TopListChart.displayName = 'TopListChart';
+
+export default TopListChart;

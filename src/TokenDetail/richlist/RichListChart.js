@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 
 // Material
 import {
@@ -28,6 +28,7 @@ import ChartOptions from './ChartOptions';
 
 // ----------------------------------------------------------------------
 
+// Move styled components outside to prevent recreation on each render
 const shimmer = keyframes`
   0% {
     background-position: -200px 0;
@@ -130,16 +131,17 @@ const LoadingSkeleton = styled(Box)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius
 }));
 
-function extractGraphData(items) {
-  // const info = {time, length, top10, top20, top50, top100, active24H};
+// Optimize array processing with more efficient loop
+const extractGraphData = (items) => {
   const res = [];
-  for (var item of items) {
-    res.push([item.time, item.length /*, item.active24H*/]);
+  const len = items.length;
+  for (let i = 0; i < len; i++) {
+    res.push([items[i].time, items[i].length]);
   }
   return res;
-}
+};
 
-export default function RichListChart({ token }) {
+const RichListChart = memo(({ token }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const BASE_URL = process.env.API_URL;
@@ -177,22 +179,28 @@ export default function RichListChart({ token }) {
     getGraph();
   }, [range, BASE_URL, token.md5]);
 
-  const handleChange = (event, newRange) => {
+  // Memoize callback to prevent recreation
+  const handleChange = useCallback((event, newRange) => {
     if (newRange) setRange(newRange);
-  };
+  }, []);
 
-  const CHART_DATA1 = [
+  // Memoize chart data and options to prevent recreation on every render
+  const CHART_DATA1 = useMemo(() => [
     {
       name: '',
       type: 'area',
       data: graphData
     }
-  ];
+  ], [graphData]);
 
-  let options1 = ChartOptions(CHART_DATA1);
-  options1.colors = [theme.palette.primary.main]; // Set the chart color to the theme's primary color
+  const options1 = useMemo(() => {
+    const opts = ChartOptions(CHART_DATA1);
+    opts.colors = [theme.palette.primary.main];
+    return opts;
+  }, [CHART_DATA1, theme.palette.primary.main]);
 
-  const getRangeColor = (currentRange) => {
+  // Memoize color and tooltip functions
+  const getRangeColor = useCallback((currentRange) => {
     const colors = {
       '7D': theme.palette.success.main,
       '1M': theme.palette.warning.main,
@@ -200,9 +208,9 @@ export default function RichListChart({ token }) {
       ALL: theme.palette.error.main
     };
     return colors[currentRange] || theme.palette.primary.main;
-  };
+  }, [theme]);
 
-  const getIntervalTooltip = (currentRange) => {
+  const getIntervalTooltip = useCallback((currentRange) => {
     const intervals = {
       ALL: 'All available data - Complete address history',
       '3M': 'Last 3 months - Recent address trends',
@@ -210,7 +218,7 @@ export default function RichListChart({ token }) {
       '7D': 'Last week - Weekly address activity'
     };
     return intervals[currentRange] || 'Address data intervals';
-  };
+  }, []);
 
   return (
     <>
@@ -407,4 +415,11 @@ export default function RichListChart({ token }) {
       </ChartContainer>
     </>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison function for React.memo
+  return prevProps.token.md5 === nextProps.token.md5;
+});
+
+RichListChart.displayName = 'RichListChart';
+
+export default RichListChart;
