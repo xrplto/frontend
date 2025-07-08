@@ -728,37 +728,60 @@ const TokenSummary = memo(({ token }) => {
         </Stack>
 
         {/* Price Changes */}
-        <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ mt: 1 }}>
+        <Box
+          sx={{
+            mt: 1,
+            display: 'grid',
+            gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)',
+            gap: 0.5
+          }}
+        >
           {(isMobile ? priceChanges.slice(0, 3) : priceChanges).map((item) => (
             <Box
               key={item.label}
               sx={{
-                px: 0.5,
-                py: 0.25,
-                borderRadius: '4px',
-                background: `linear-gradient(135deg, ${alpha(item.color, 0.1)} 0%, ${alpha(item.color, 0.05)} 100%)`,
-                border: `1px solid ${alpha(item.color, 0.15)}`,
-                minWidth: '45px',
-                textAlign: 'center'
+                px: 0.75,
+                py: 0.5,
+                borderRadius: '8px',
+                background: `linear-gradient(135deg, ${alpha(item.color, 0.12)} 0%, ${alpha(item.color, 0.06)} 100%)`,
+                border: `1px solid ${alpha(item.color, 0.2)}`,
+                textAlign: 'center',
+                transition: 'all 0.2s ease',
+                cursor: 'default',
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  boxShadow: `0 4px 12px ${alpha(item.color, 0.15)}`,
+                  background: `linear-gradient(135deg, ${alpha(item.color, 0.18)} 0%, ${alpha(item.color, 0.1)} 100%)`
+                }
               }}
             >
-              <Typography variant="caption" sx={{ fontSize: '0.65rem', color: alpha(theme.palette.text.secondary, 0.8) }}>
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  fontSize: '0.65rem', 
+                  color: alpha(theme.palette.text.secondary, 0.7),
+                  display: 'block',
+                  mb: 0.25,
+                  fontWeight: 500
+                }}
+              >
                 {item.label}
               </Typography>
               <Typography
-                variant="caption"
+                variant="body2"
                 sx={{
-                  fontSize: '0.75rem',
+                  fontSize: '0.8rem',
                   fontWeight: 700,
                   color: item.color,
-                  display: 'block'
+                  lineHeight: 1.2,
+                  textShadow: `0 1px 2px ${alpha(item.color, 0.1)}`
                 }}
               >
                 {formatPercentage(item.value)}
               </Typography>
             </Box>
           ))}
-        </Stack>
+        </Box>
 
         {/* 24h Range */}
         {range24h && (
