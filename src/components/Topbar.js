@@ -510,73 +510,97 @@ const Topbar = () => {
   const [wsError, setWsError] = useState(null);
   const [isWsLoading, setIsWsLoading] = useState(false);
 
+  // Check if metrics are properly loaded
+  const metricsLoaded = useMemo(() => {
+    return metrics?.global?.total !== undefined && 
+           metrics?.global?.totalAddresses !== undefined &&
+           metrics?.H24?.transactions24H !== undefined;
+  }, [metrics]);
+
   // Memoize the mobile metrics to prevent recreation on every render
   const mobileMetrics = useMemo(
-    () => [
-      {
-        label: 'Addresses',
-        value: abbreviateNumber(metrics.global.totalAddresses),
-        color: '#54D62C'
-      },
-      {
-        label: 'Tokens',
-        value: abbreviateNumber(metrics.global.total || 0),
-        color: '#FF6B6B'
-      },
-      {
-        label: 'Offers',
-        value: abbreviateNumber(metrics.global.totalOffers),
-        color: '#FFC107'
-      },
-      {
-        label: 'Trustlines',
-        value: abbreviateNumber(metrics.global.totalTrustLines),
-        color: '#FFA48D'
-      },
-      {
-        label: 'Trades',
-        value: abbreviateNumber(metrics.H24.transactions24H),
-        color: '#74CAFF'
-      },
-      {
-        label: 'Vol',
-        value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
-          metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
-            ? new Decimal(metrics.H24.tradedXRP24H || 0)
-                .div(new Decimal(metrics[activeFiatCurrency] || 1))
-                .toNumber()
-            : 0
-        )}`,
-        color: theme.palette.error.main
-      },
-      {
-        label: 'Tokens Traded',
-        value: abbreviateNumber(metrics.H24.tradedTokens24H),
-        color: '#3366FF'
-      },
-      {
-        label: 'Active Addresses',
-        value: abbreviateNumber(metrics.H24.activeAddresses24H),
-        color: '#54D62C'
-      },
-      {
-        label: 'Unique Traders',
-        value: abbreviateNumber(metrics?.H24?.uniqueTraders24H || 0),
-        color: '#2196F3'
-      },
-      {
-        label: 'Total TVL',
-        value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
-          metrics?.H24?.totalTVL && metrics[activeFiatCurrency]
-            ? new Decimal(metrics.H24.totalTVL || 0)
-                .div(new Decimal(metrics[activeFiatCurrency] || 1))
-                .toNumber()
-            : 0
-        )}`,
-        color: '#8E44AD' // Purple color for TVL
+    () => {
+      if (!metricsLoaded) {
+        return [
+          { label: 'Addresses', value: '...', color: '#54D62C', loading: true },
+          { label: 'Tokens', value: '...', color: '#FF6B6B', loading: true },
+          { label: 'Offers', value: '...', color: '#FFC107', loading: true },
+          { label: 'Trustlines', value: '...', color: '#FFA48D', loading: true },
+          { label: 'Trades', value: '...', color: '#74CAFF', loading: true },
+          { label: 'Vol', value: '...', color: theme.palette.error.main, loading: true },
+          { label: 'Tokens Traded', value: '...', color: '#3366FF', loading: true },
+          { label: 'Active Addresses', value: '...', color: '#54D62C', loading: true },
+          { label: 'Unique Traders', value: '...', color: '#2196F3', loading: true },
+          { label: 'Total TVL', value: '...', color: '#8E44AD', loading: true }
+        ];
       }
-    ],
-    [metrics, activeFiatCurrency, theme.palette.error.main]
+
+      return [
+        {
+          label: 'Addresses',
+          value: abbreviateNumber(metrics.global?.totalAddresses || 0),
+          color: '#54D62C'
+        },
+        {
+          label: 'Tokens',
+          value: abbreviateNumber(metrics.global?.total || 0),
+          color: '#FF6B6B'
+        },
+        {
+          label: 'Offers',
+          value: abbreviateNumber(metrics.global?.totalOffers || 0),
+          color: '#FFC107'
+        },
+        {
+          label: 'Trustlines',
+          value: abbreviateNumber(metrics.global?.totalTrustLines || 0),
+          color: '#FFA48D'
+        },
+        {
+          label: 'Trades',
+          value: abbreviateNumber(metrics.H24?.transactions24H || 0),
+          color: '#74CAFF'
+        },
+        {
+          label: 'Vol',
+          value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
+            metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
+              ? new Decimal(metrics.H24.tradedXRP24H || 0)
+                  .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                  .toNumber()
+              : 0
+          )}`,
+          color: theme.palette.error.main
+        },
+        {
+          label: 'Tokens Traded',
+          value: abbreviateNumber(metrics.H24?.tradedTokens24H || 0),
+          color: '#3366FF'
+        },
+        {
+          label: 'Active Addresses',
+          value: abbreviateNumber(metrics.H24?.activeAddresses24H || 0),
+          color: '#54D62C'
+        },
+        {
+          label: 'Unique Traders',
+          value: abbreviateNumber(metrics?.H24?.uniqueTraders24H || 0),
+          color: '#2196F3'
+        },
+        {
+          label: 'Total TVL',
+          value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
+            metrics?.H24?.totalTVL && metrics[activeFiatCurrency]
+              ? new Decimal(metrics.H24.totalTVL || 0)
+                  .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                  .toNumber()
+              : 0
+          )}`,
+          color: '#8E44AD'
+        }
+      ];
+    },
+    [metrics, activeFiatCurrency, theme.palette.error.main, metricsLoaded]
   );
 
   // Add useEffect for auto-switching
@@ -764,16 +788,25 @@ const Topbar = () => {
                   >
                     {t(mobileMetrics[currentMetricIndex].label)}
                   </Typography>
-                  <Typography
-                    variant="caption"
-                    color={mobileMetrics[currentMetricIndex].color}
-                    sx={{
-                      fontWeight: 700,
-                      fontSize: '0.8rem'
-                    }}
-                  >
-                    {mobileMetrics[currentMetricIndex].value}
-                  </Typography>
+                  {mobileMetrics[currentMetricIndex].loading ? (
+                    <Skeleton 
+                      variant="text" 
+                      width={50} 
+                      height={16} 
+                      sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} 
+                    />
+                  ) : (
+                    <Typography
+                      variant="caption"
+                      color={mobileMetrics[currentMetricIndex].color}
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      {mobileMetrics[currentMetricIndex].value}
+                    </Typography>
+                  )}
                 </Box>
                 {currentMetricIndex >= 3 && (
                   <H24Style>
@@ -806,30 +839,46 @@ const Topbar = () => {
             <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: 1 }}>
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Addresses')}</MetricLabel>
-                <MetricValue sx={{ color: '#54D62C' }}>
-                  {abbreviateNumber(metrics.global.totalAddresses)}
-                </MetricValue>
+                {metricsLoaded ? (
+                  <MetricValue sx={{ color: '#54D62C' }}>
+                    {abbreviateNumber(metrics.global?.totalAddresses || 0)}
+                  </MetricValue>
+                ) : (
+                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
+                )}
               </MetricContainer>
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Tokens')}</MetricLabel>
-                <MetricValue sx={{ color: '#FF6B6B' }}>
-                  {abbreviateNumber(metrics.global.total || 0)}
-                </MetricValue>
+                {metricsLoaded ? (
+                  <MetricValue sx={{ color: '#FF6B6B' }}>
+                    {abbreviateNumber(metrics.global?.total || 0)}
+                  </MetricValue>
+                ) : (
+                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
+                )}
               </MetricContainer>
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Offers')}</MetricLabel>
-                <MetricValue sx={{ color: '#FFC107' }}>
-                  {abbreviateNumber(metrics.global.totalOffers)}
-                </MetricValue>
+                {metricsLoaded ? (
+                  <MetricValue sx={{ color: '#FFC107' }}>
+                    {abbreviateNumber(metrics.global?.totalOffers || 0)}
+                  </MetricValue>
+                ) : (
+                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
+                )}
               </MetricContainer>
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Trustlines')}</MetricLabel>
-                <MetricValue sx={{ color: '#FFA48D' }}>
-                  {abbreviateNumber(metrics.global.totalTrustLines)}
-                </MetricValue>
+                {metricsLoaded ? (
+                  <MetricValue sx={{ color: '#FFA48D' }}>
+                    {abbreviateNumber(metrics.global?.totalTrustLines || 0)}
+                  </MetricValue>
+                ) : (
+                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
+                )}
               </MetricContainer>
 
               <H24Style>
@@ -850,58 +899,82 @@ const Topbar = () => {
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Trades')}</MetricLabel>
-                <MetricValue sx={{ color: '#74CAFF' }}>
-                  {abbreviateNumber(metrics.H24.transactions24H)}
-                </MetricValue>
+                {metricsLoaded ? (
+                  <MetricValue sx={{ color: '#74CAFF' }}>
+                    {abbreviateNumber(metrics.H24?.transactions24H || 0)}
+                  </MetricValue>
+                ) : (
+                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
+                )}
               </MetricContainer>
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Vol')}</MetricLabel>
-                <MetricValue sx={{ color: theme.palette.error.main }}>
-                  {currencySymbols[activeFiatCurrency]}
-                  {abbreviateNumber(
-                    metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
-                      ? new Decimal(metrics.H24.tradedXRP24H || 0)
-                          .div(new Decimal(metrics[activeFiatCurrency] || 1))
-                          .toNumber()
-                      : 0
-                  )}
-                </MetricValue>
+                {metricsLoaded ? (
+                  <MetricValue sx={{ color: theme.palette.error.main }}>
+                    {currencySymbols[activeFiatCurrency]}
+                    {abbreviateNumber(
+                      metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
+                        ? new Decimal(metrics.H24.tradedXRP24H || 0)
+                            .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                            .toNumber()
+                        : 0
+                    )}
+                  </MetricValue>
+                ) : (
+                  <Skeleton variant="text" width={80} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
+                )}
               </MetricContainer>
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Tokens Traded')}</MetricLabel>
-                <MetricValue sx={{ color: '#3366FF' }}>
-                  {abbreviateNumber(metrics.H24.tradedTokens24H)}
-                </MetricValue>
+                {metricsLoaded ? (
+                  <MetricValue sx={{ color: '#3366FF' }}>
+                    {abbreviateNumber(metrics.H24?.tradedTokens24H || 0)}
+                  </MetricValue>
+                ) : (
+                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
+                )}
               </MetricContainer>
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Active Addresses')}</MetricLabel>
-                <MetricValue sx={{ color: '#54D62C' }}>
-                  {abbreviateNumber(metrics.H24.activeAddresses24H)}
-                </MetricValue>
+                {metricsLoaded ? (
+                  <MetricValue sx={{ color: '#54D62C' }}>
+                    {abbreviateNumber(metrics.H24?.activeAddresses24H || 0)}
+                  </MetricValue>
+                ) : (
+                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
+                )}
               </MetricContainer>
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Unique Traders')}</MetricLabel>
-                <MetricValue sx={{ color: '#2196F3' }}>
-                  {abbreviateNumber(metrics?.H24?.uniqueTraders24H || 0)}
-                </MetricValue>
+                {metricsLoaded ? (
+                  <MetricValue sx={{ color: '#2196F3' }}>
+                    {abbreviateNumber(metrics?.H24?.uniqueTraders24H || 0)}
+                  </MetricValue>
+                ) : (
+                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
+                )}
               </MetricContainer>
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Total TVL')}</MetricLabel>
-                <MetricValue sx={{ color: '#8E44AD' }}>
-                  {currencySymbols[activeFiatCurrency]}
-                  {abbreviateNumber(
-                    metrics?.H24?.totalTVL && metrics[activeFiatCurrency]
-                      ? new Decimal(metrics.H24.totalTVL || 0)
-                          .div(new Decimal(metrics[activeFiatCurrency] || 1))
-                          .toNumber()
-                      : 0
-                  )}
-                </MetricValue>
+                {metricsLoaded ? (
+                  <MetricValue sx={{ color: '#8E44AD' }}>
+                    {currencySymbols[activeFiatCurrency]}
+                    {abbreviateNumber(
+                      metrics?.H24?.totalTVL && metrics[activeFiatCurrency]
+                        ? new Decimal(metrics.H24.totalTVL || 0)
+                            .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                            .toNumber()
+                        : 0
+                    )}
+                  </MetricValue>
+                ) : (
+                  <Skeleton variant="text" width={80} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
+                )}
               </MetricContainer>
             </Stack>
           )}
