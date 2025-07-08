@@ -40,6 +40,7 @@ import { selectMetrics } from 'src/redux/statusSlice';
 
 // Utils
 import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
+import { fDate } from 'src/utils/formatTime';
 
 import NumberTooltip from 'src/components/NumberTooltip';
 
@@ -120,7 +121,15 @@ export default function PriceStatistics({ token }) {
     dom,
     issuer,
     issuer_info,
-    creator
+    creator,
+    tags,
+    social,
+    origin,
+    holders,
+    trustlines,
+    uniqueTraders24h,
+    date,
+    dateon
   } = token;
 
   useEffect(() => {
@@ -167,6 +176,39 @@ export default function PriceStatistics({ token }) {
   const handleOpenIssuerInfo = () => {
     setOpenIssuerInfo(true);
   };
+
+  // Create enhanced tags array that includes origin-based tags (same as UserDesc.js)
+  const getOriginTag = (origin) => {
+    switch (origin) {
+      case 'FirstLedger':
+        return 'FirstLedger';
+      case 'XPMarket':
+        return 'XPMarket';
+      case 'LedgerMeme':
+        return 'LedgerMeme';
+      case 'Horizon':
+        return 'Horizon';
+      case 'aigent.run':
+        return 'aigent.run';
+      case 'Magnetic X':
+        return 'Magnetic X';
+      case 'xrp.fun':
+        return 'xrp.fun';
+      default:
+        return null;
+    }
+  };
+
+  const enhancedTags = (() => {
+    const baseTags = tags || [];
+    const originTag = getOriginTag(origin);
+
+    if (originTag && !baseTags.includes(originTag)) {
+      return [originTag, ...baseTags];
+    }
+
+    return baseTags;
+  })();
 
   return (
     <Box
@@ -819,6 +861,192 @@ export default function PriceStatistics({ token }) {
               </Typography>
             </ModernTableCell>
           </TableRow>
+
+          {/* Supply Row */}
+          {amount && (
+            <TableRow>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                  }}
+                  noWrap
+                >
+                  Supply
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.warning.main,
+                    fontSize: isMobile ? '0.9rem' : '1rem'
+                  }}
+                >
+                  <NumberTooltip number={fNumber(amount)} />
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          )}
+
+          {/* Holders Row */}
+          {holders && (
+            <TableRow>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                  }}
+                  noWrap
+                >
+                  Holders
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.info.main,
+                    fontSize: isMobile ? '0.9rem' : '1rem'
+                  }}
+                >
+                  <NumberTooltip number={fNumber(holders)} />
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          )}
+
+          {/* Trustlines Row */}
+          {trustlines && (
+            <TableRow>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                  }}
+                  noWrap
+                >
+                  Trustlines
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.secondary.main,
+                    fontSize: isMobile ? '0.9rem' : '1rem'
+                  }}
+                >
+                  <NumberTooltip number={fNumber(trustlines)} />
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          )}
+
+          {/* Unique Traders (24h) Row */}
+          {uniqueTraders24h && (
+            <TableRow>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                  }}
+                  noWrap
+                >
+                  Unique Traders (24h)
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.warning.main,
+                    fontSize: isMobile ? '0.9rem' : '1rem'
+                  }}
+                >
+                  <NumberTooltip number={fNumber(uniqueTraders24h)} />
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          )}
+
+          {/* Created Date Row */}
+          {(date || dateon) && (
+            <TableRow>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                  }}
+                  noWrap
+                >
+                  Created
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.text.secondary,
+                    fontSize: isMobile ? '0.9rem' : '1rem'
+                  }}
+                >
+                  {fDate(date || dateon)}
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          )}
+
+          {/* Social Links & Tags Row */}
+          {(social || enhancedTags.length > 0) && (
+            <TableRow>
+              <ModernTableCell align="left">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                  }}
+                  noWrap
+                >
+                  Social & Tags
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell align="left">
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                  <CompactTags 
+                    enhancedTags={enhancedTags}
+                    maxTags={isMobile ? 2 : 3}
+                  />
+                  <CompactSocialLinks 
+                    social={social}
+                    size="small"
+                  />
+                </Stack>
+              </ModernTableCell>
+            </TableRow>
+          )}
         </TableBody>
       </StyledTable>
     </Box>
@@ -827,4 +1055,282 @@ export default function PriceStatistics({ token }) {
 
 PriceStatistics.propTypes = {
   token: PropTypes.object.isRequired
+};
+
+// Helper function to normalize tags for URL slugs
+function normalizeTag(tag) {
+  if (tag && tag.length > 0) {
+    const tag1 = tag.split(' ').join('-'); // Replace space
+    const tag2 = tag1.replace(/&/g, 'and'); // Replace &
+    const tag3 = tag2.toLowerCase(); // Make lowercase
+    const final = tag3.replace(/[^a-zA-Z0-9-]/g, '');
+    return final;
+  }
+  return '';
+}
+
+// Helper function to get full URLs for social platforms
+const getFullUrl = (platform, handle) => {
+  if (!handle) return '#';
+  if (handle.startsWith('http')) return handle;
+  switch (platform) {
+    case 'twitter':
+    case 'x':
+      return `https://x.com/${handle}`;
+    case 'telegram':
+      return `https://t.me/${handle}`;
+    case 'discord':
+      return `https://discord.gg/${handle}`;
+    case 'github':
+      return `https://github.com/${handle}`;
+    case 'reddit':
+      return `https://www.reddit.com/user/${handle}`;
+    case 'facebook':
+      return `https://www.facebook.com/${handle}`;
+    case 'linkedin':
+      return `https://www.linkedin.com/company/${handle}`;
+    case 'instagram':
+      return `https://www.instagram.com/${handle}`;
+    case 'youtube':
+      return `https://www.youtube.com/@${handle}`;
+    case 'medium':
+      return `https://medium.com/@${handle}`;
+    case 'tiktok':
+      return `https://www.tiktok.com/@${handle}`;
+    case 'twitch':
+      return `https://www.twitch.tv/${handle}`;
+    case 'website':
+      return `https://${handle}`;
+    default:
+      return handle;
+  }
+};
+
+// Compact social links component for header integration
+export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
+  if (!social) return null;
+
+  const socialEntries = Object.entries(social).filter(([key, value]) => value);
+  if (socialEntries.length === 0) return null;
+
+  const iconSize = size === 'small' ? 14 : 16;
+
+  return (
+    <Stack direction="row" spacing={0.5} alignItems="center">
+      {socialEntries.slice(0, isMobile ? 3 : 4).map(([platform, url]) => (
+        <Tooltip key={platform} title={`${platform}: ${url}`} arrow>
+          <IconButton
+            component="a"
+            href={getFullUrl(platform, url)}
+            target="_blank"
+            rel="noopener noreferrer"
+            size="small"
+            sx={{
+              width: isMobile ? 24 : 28,
+              height: isMobile ? 24 : 28,
+              p: 0.5,
+              borderRadius: '6px',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.primary.main,
+                0.08
+              )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+              color: theme.palette.primary.main,
+
+              '&:hover': {
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.15
+                )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                transform: 'scale(1.05)'
+              }
+            }}
+          >
+            {(platform === 'twitter' || platform === 'x') && (
+              <Icon icon="mdi:twitter" width={iconSize} height={iconSize} />
+            )}
+            {platform === 'telegram' && (
+              <Icon icon="mdi:telegram" width={iconSize} height={iconSize} />
+            )}
+            {platform === 'discord' && (
+              <Icon icon="mdi:discord" width={iconSize} height={iconSize} />
+            )}
+            {platform === 'website' && <Icon icon="mdi:web" width={iconSize} height={iconSize} />}
+            {platform === 'github' && (
+              <Icon icon="mdi:github" width={iconSize} height={iconSize} />
+            )}
+            {platform === 'reddit' && (
+              <Icon icon="mdi:reddit" width={iconSize} height={iconSize} />
+            )}
+            {!['twitter', 'x', 'telegram', 'discord', 'website', 'github', 'reddit'].includes(
+              platform
+            ) && <Icon icon="mdi:link" width={iconSize} height={iconSize} />}
+          </IconButton>
+        </Tooltip>
+      ))}
+      {socialEntries.length > (isMobile ? 3 : 4) && toggleLinksDrawer && (
+        <Tooltip title="View all links" arrow>
+          <IconButton
+            onClick={() => toggleLinksDrawer(true)}
+            size="small"
+            sx={{
+              width: isMobile ? 24 : 28,
+              height: isMobile ? 24 : 28,
+              p: 0.5,
+              borderRadius: '6px',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.secondary.main,
+                0.08
+              )} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.secondary.main, 0.12)}`,
+              color: theme.palette.secondary.main,
+
+              '&:hover': {
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.secondary.main,
+                  0.15
+                )} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`
+              }
+            }}
+          >
+            <Typography sx={{ fontSize: '0.65rem', fontWeight: 600 }}>
+              +{socialEntries.length - (isMobile ? 3 : 4)}
+            </Typography>
+          </IconButton>
+        </Tooltip>
+      )}
+    </Stack>
+  );
+};
+
+// Compact tags component for inline integration
+export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
+  if (!enhancedTags || enhancedTags.length === 0) return null;
+
+  return (
+    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+      {enhancedTags.slice(0, maxTags).map((tag) => (
+        <Link
+          key={tag}
+          href={`/view/${normalizeTag(tag)}`}
+          sx={{ display: 'inline-flex' }}
+          underline="none"
+          rel="noreferrer noopener nofollow"
+        >
+          <Chip
+            size="small"
+            label={
+              tag === 'aigent.run' ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box
+                    component="img"
+                    src="/static/aigentrun.gif"
+                    alt="Aigent.Run"
+                    sx={{
+                      width: '12px',
+                      height: '12px',
+                      objectFit: 'contain'
+                    }}
+                  />
+                  {tag}
+                </Box>
+              ) : (
+                tag
+              )
+            }
+            sx={{
+              height: isMobile ? '20px' : '22px',
+              fontSize: isMobile ? '0.6rem' : '0.65rem',
+              borderRadius: '4px',
+              px: isMobile ? 0.5 : 0.75,
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.8
+              )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+              color: theme.palette.text.primary,
+              fontWeight: 500,
+              cursor: 'pointer',
+              minHeight: 'auto',
+
+              '&:hover': {
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.08
+                )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                color: theme.palette.primary.main,
+                transform: isMobile ? 'scale(1.02)' : 'none'
+              }
+            }}
+          />
+        </Link>
+      ))}
+      {enhancedTags.length > maxTags && toggleTagsDrawer && (
+        <Chip
+          label={`+${enhancedTags.length - maxTags}`}
+          size="small"
+          onClick={() => toggleTagsDrawer(true)}
+          sx={{
+            height: isMobile ? '20px' : '22px',
+            fontSize: isMobile ? '0.6rem' : '0.65rem',
+            borderRadius: '4px',
+            px: isMobile ? 0.5 : 0.75,
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.primary.main,
+              0.08
+            )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+            color: theme.palette.primary.main,
+            fontWeight: 500,
+            cursor: 'pointer',
+            minHeight: 'auto',
+
+            '&:hover': {
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.primary.main,
+                0.12
+              )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
+            }
+          }}
+        />
+      )}
+    </Stack>
+  );
+};
+
+// Combined component for easy usage
+export const CompactSocialAndTags = ({ 
+  social, 
+  enhancedTags, 
+  toggleLinksDrawer, 
+  toggleTagsDrawer, 
+  maxTags = 3, 
+  socialSize = 'small' 
+}) => {
+  const theme = useTheme();
+  
+  return (
+    <Stack direction="row" alignItems="center" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+      <CompactTags 
+        enhancedTags={enhancedTags}
+        toggleTagsDrawer={toggleTagsDrawer}
+        maxTags={maxTags}
+      />
+      <CompactSocialLinks 
+        social={social}
+        toggleLinksDrawer={toggleLinksDrawer}
+        size={socialSize}
+      />
+    </Stack>
+  );
 };
