@@ -36,7 +36,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import { useRouter } from 'next/router';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { selectMetrics } from 'src/redux/statusSlice';
+import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
 import { useTranslation } from 'react-i18next';
 import { AppContext } from 'src/AppContext';
 import { fIntNumber, fNumber } from 'src/utils/formatNumber';
@@ -120,18 +120,18 @@ const MobileMetric = styled(Box)(({ theme }) => ({
 
 const H24Style = styled('div')(({ theme }) => ({
   cursor: 'pointer',
-  padding: theme.spacing(0.5, 1),
+  padding: theme.spacing(0.25, 0.5),
   background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-  borderRadius: theme.spacing(1),
+  borderRadius: theme.spacing(0.75),
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  minWidth: '36px',
+  minWidth: '28px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.3)}`,
+  boxShadow: `0 1px 4px ${alpha(theme.palette.primary.main, 0.25)}`,
   '&:hover': {
     transform: 'scale(1.05)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`
+    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.35)}`
   }
 }));
 
@@ -514,8 +514,31 @@ const Topbar = () => {
   const metricsLoaded = useMemo(() => {
     return metrics?.global?.total !== undefined && 
            metrics?.global?.totalAddresses !== undefined &&
-           metrics?.H24?.transactions24H !== undefined;
+           metrics?.H24?.transactions24H !== undefined &&
+           metrics?.global?.total > 0; // Ensure we have actual data, not just default zeros
   }, [metrics]);
+
+  // Fetch metrics if not loaded
+  useEffect(() => {
+    console.log('Topbar metrics state:', metrics);
+    console.log('Topbar metrics loaded:', metricsLoaded);
+    
+    if (!metricsLoaded) {
+      const fetchMetrics = async () => {
+        try {
+          console.log('Fetching metrics in Topbar...');
+          const response = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
+          if (response.status === 200 && response.data) {
+            console.log('Metrics fetched successfully:', response.data);
+            dispatch(update_metrics(response.data));
+          }
+        } catch (error) {
+          console.error('Error fetching metrics in Topbar:', error);
+        }
+      };
+      fetchMetrics();
+    }
+  }, [metricsLoaded, dispatch]);
 
   // Memoize the mobile metrics to prevent recreation on every render
   const mobileMetrics = useMemo(
@@ -815,7 +838,8 @@ const Topbar = () => {
                       color="#ffffff"
                       sx={{
                         fontWeight: 600,
-                        fontSize: '0.7rem'
+                        fontSize: '0.6rem',
+                        lineHeight: 1
                       }}
                     >
                       24h
@@ -887,9 +911,9 @@ const Topbar = () => {
                     variant="body2"
                     color="#ffffff"
                     sx={{
-                      px: 1,
                       fontWeight: 600,
-                      fontSize: '0.85rem'
+                      fontSize: '0.7rem',
+                      lineHeight: 1
                     }}
                   >
                     24h
