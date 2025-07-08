@@ -937,7 +937,6 @@ const Swap = ({ token }) => {
                     dispatch(updateProcess(0));
                   }, 1500);
                   setSwapped(!isSwapped);
-                  enqueueSnackbar('Swap completed successfully!', { variant: 'success' });
                   // Clear amounts after successful swap
                   setAmount1('');
                   setAmount2('');
@@ -974,7 +973,6 @@ const Swap = ({ token }) => {
                 dispatch(updateProcess(0));
               }, 1500);
               setSwapped(!isSwapped);
-              enqueueSnackbar('Swap completed successfully!', { variant: 'success' });
               // Clear amounts after successful swap
               setAmount1('');
               setAmount2('');
