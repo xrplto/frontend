@@ -113,7 +113,7 @@ const TABLE_HEAD = [
       </Tooltip>
     ),
     align: 'right',
-    width: '6%',
+    width: '7%',
     order: true
   },
   {
@@ -142,7 +142,7 @@ const TABLE_HEAD = [
       </Tooltip>
     ),
     align: 'right',
-    width: '6%',
+    width: '7%',
     order: true
   },
   {
@@ -171,7 +171,7 @@ const TABLE_HEAD = [
       </Tooltip>
     ),
     align: 'right',
-    width: '6%',
+    width: '7%',
     order: true
   },
   {
@@ -200,7 +200,7 @@ const TABLE_HEAD = [
       </Tooltip>
     ),
     align: 'right',
-    width: '6%',
+    width: '7%',
     order: true
   },
   {
@@ -287,7 +287,7 @@ const TABLE_HEAD = [
       </Tooltip>
     ),
     align: 'right',
-    width: '6%',
+    width: '7%',
     order: true
   },
   {

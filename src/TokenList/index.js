@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, useDeferredValue } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { Box, Table, TableBody, useTheme, useMediaQuery } from '@mui/material';
 import { useContext } from 'react';
@@ -17,7 +17,35 @@ import { debounce } from 'lodash';
 import { throttle } from 'lodash';
 import { useRouter } from 'next/router';
 
-const MemoizedTokenRow = memo(TokenRow);
+// Optimized memoization with custom comparison
+const MemoizedTokenRow = memo(TokenRow, (prevProps, nextProps) => {
+  // Only re-render if specific props change
+  const prev = prevProps.token;
+  const next = nextProps.token;
+  
+  // Check critical fields that affect display
+  if (prev.md5 !== next.md5) return false;
+  if (prev.exch !== next.exch) return false;
+  if (prev.pro5m !== next.pro5m) return false;
+  if (prev.pro1h !== next.pro1h) return false;
+  if (prev.pro24h !== next.pro24h) return false;
+  if (prev.pro7d !== next.pro7d) return false;
+  if (prev.vol24hxrp !== next.vol24hxrp) return false;
+  if (prev.marketcap !== next.marketcap) return false;
+  if (prev.time !== next.time) return false;
+  
+  // Check other props
+  if (prevProps.scrollLeft !== nextProps.scrollLeft) return false;
+  if (prevProps.exchRate !== nextProps.exchRate) return false;
+  if (prevProps.activeFiatCurrency !== nextProps.activeFiatCurrency) return false;
+  
+  // Check watchlist
+  const prevInWatchlist = prevProps.watchList.includes(prev.md5);
+  const nextInWatchlist = nextProps.watchList.includes(next.md5);
+  if (prevInWatchlist !== nextInWatchlist) return false;
+  
+  return true; // Props are equal, skip re-render
+});
 const LazyEditTokenDialog = lazy(() => import('src/components/EditTokenDialog'));
 const LazyTrustSetDialog = lazy(() => import('src/components/TrustSetDialog'));
 
@@ -129,17 +157,99 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const [watchList, setWatchList] = useState([]);
 
   const [lastJsonMessage, setLastJsonMessage] = useState(null);
+  
+  // Optimized WebSocket handler with React 18 features
+  const wsMessageQueue = useRef([]);
+  const wsProcessTimer = useRef(null);
+  
+  // Process WebSocket messages in batches for better performance
+  const processWebSocketQueue = useCallback(() => {
+    if (wsMessageQueue.current.length === 0) return;
+    
+    // Use React 18's automatic batching
+    const messages = [...wsMessageQueue.current];
+    wsMessageQueue.current = [];
+    
+    // Process all messages at once
+    const aggregatedTokens = new Map();
+    let latestMetrics = null;
+    
+    messages.forEach(msg => {
+      if (msg.metrics) {
+        latestMetrics = msg.metrics;
+      }
+      if (msg.tokens) {
+        msg.tokens.forEach(token => {
+          aggregatedTokens.set(token.md5, token);
+        });
+      }
+    });
+    
+    // Apply updates in a single batch
+    if (latestMetrics) {
+      dispatch(update_metrics(latestMetrics));
+    }
+    
+    if (aggregatedTokens.size > 0) {
+      setTokens(prevTokens => {
+        const tokenMap = new Map(prevTokens.map(t => [t.md5, t]));
+        let hasChanges = false;
+        
+        aggregatedTokens.forEach((newToken, md5) => {
+          const existing = tokenMap.get(md5);
+          if (existing) {
+            // Quick check for changes
+            const needsUpdate = Object.keys(newToken).some(
+              key => newToken[key] !== existing[key]
+            );
+            
+            if (needsUpdate) {
+              tokenMap.set(md5, {
+                ...existing,
+                ...newToken,
+                time: Date.now(),
+                bearbull: existing.exch > newToken.exch ? -1 : 1
+              });
+              hasChanges = true;
+            }
+          }
+        });
+        
+        return hasChanges ? Array.from(tokenMap.values()) : prevTokens;
+      });
+    }
+  }, [dispatch, setTokens]);
 
-  const { sendJsonMessage } = useWebSocket(WSS_FEED_URL, {
+  const { sendJsonMessage, readyState } = useWebSocket(WSS_FEED_URL, {
     shouldReconnect: () => true,
+    reconnectAttempts: 10,
+    reconnectInterval: 3000,
     onMessage: useCallback((event) => {
       try {
         const json = JSON.parse(event.data);
-        setLastJsonMessage(json);
+        
+        // Queue the message
+        wsMessageQueue.current.push(json);
+        
+        // Process queue with a small delay to batch multiple messages
+        if (wsProcessTimer.current) {
+          clearTimeout(wsProcessTimer.current);
+        }
+        
+        wsProcessTimer.current = setTimeout(() => {
+          processWebSocketQueue();
+        }, 16); // Process every frame (60fps)
+        
       } catch (err) {
         console.error('Error parsing WebSocket message:', err);
       }
-    }, [])
+    }, [processWebSocketQueue]),
+    onOpen: () => {
+      console.log('WebSocket connected to', WSS_FEED_URL);
+    },
+    onClose: () => {
+      console.log('WebSocket disconnected');
+    }
   });
 
   // Add a state to track if metrics have been loaded
@@ -176,53 +286,55 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     }
   }, [metricsLoaded, BASE_URL, dispatch, metrics, activeFiatCurrency]);
 
+  // Optimized token change detector using shallow comparison
   const applyTokenChanges = useCallback(
     (newTokens) => {
       setTokens((prevTokens) => {
-        const updatedMap = new Map(prevTokens.map((token) => [token.md5, token]));
-        let hasChanges = false;
-
+        // Use a single pass with early exit optimization
+        const tokenMap = new Map();
+        const changedTokens = new Set();
+        
+        // Build map and track existing tokens
+        prevTokens.forEach(token => {
+          tokenMap.set(token.md5, token);
+        });
+        
+        // Apply updates and track changes
         newTokens.forEach((newToken) => {
-          const existingToken = updatedMap.get(newToken.md5);
-          if (existingToken) {
-            let isChanged = false;
-            for (const key in newToken) {
-              if (
-                Object.prototype.hasOwnProperty.call(newToken, key) &&
-                newToken[key] !== existingToken[key]
-              ) {
-                isChanged = true;
-                break;
-              }
-            }
-
-            if (isChanged) {
-              const newObj = {
-                ...existingToken,
+          const existing = tokenMap.get(newToken.md5);
+          if (existing) {
+            // Fast shallow comparison of critical fields only
+            const criticalFields = ['exch', 'pro5m', 'pro1h', 'pro24h', 'pro7d', 'vol24hxrp', 'marketcap'];
+            const hasChanged = criticalFields.some(field => existing[field] !== newToken[field]);
+            
+            if (hasChanged) {
+              const updated = {
+                ...existing,
                 ...newToken,
                 time: Date.now(),
-                bearbull: existingToken.exch > newToken.exch ? -1 : 1
+                bearbull: existing.exch > newToken.exch ? -1 : 1
               };
-              updatedMap.set(newToken.md5, newObj);
-              hasChanges = true;
+              tokenMap.set(newToken.md5, updated);
+              changedTokens.add(newToken.md5);
             }
           }
         });
-
-        return hasChanges ? Array.from(updatedMap.values()) : prevTokens;
+        
+        // Only recreate array if changes detected
+        return changedTokens.size > 0 ? Array.from(tokenMap.values()) : prevTokens;
       });
     },
     [setTokens]
   );
 
+  // Cleanup timer on unmount
   useEffect(() => {
-    if (lastJsonMessage) {
-      dispatch(update_metrics(lastJsonMessage));
-      if (lastJsonMessage.tokens && lastJsonMessage.tokens.length > 0) {
-        applyTokenChanges(lastJsonMessage.tokens);
+    return () => {
+      if (wsProcessTimer.current) {
+        clearTimeout(wsProcessTimer.current);
       }
-    }
-  }, [lastJsonMessage, dispatch, applyTokenChanges]);
+    };
+  }, []);
 
   const debouncedLoadTokens = useMemo(
     () => debounce(() => {
@@ -393,6 +505,10 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const visibleTokens = useMemo(() => {
     return tokens.slice(0, rows);
   }, [tokens, rows]);
+  
+  // Use deferred value for smoother updates during rapid WebSocket messages
+  const deferredTokens = useDeferredValue(visibleTokens);
+  const isDeferring = deferredTokens !== visibleTokens;
 
   // Preload TokenRow component properties to avoid layout calculations
   useEffect(() => {
@@ -477,7 +593,11 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         }}
         ref={tableContainerRef}
       >
-        <Table ref={tableRef} size="small" sx={{ tableLayout: isMobile ? 'auto' : 'fixed' }}>
+        <Table ref={tableRef} size="small" sx={{ 
+          tableLayout: isMobile ? 'auto' : 'fixed',
+          opacity: isDeferring ? 0.95 : 1,
+          transition: 'opacity 0.1s ease'
+        }}>
           <TokenListHead
             order={order}
             orderBy={orderBy}
@@ -487,7 +607,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
             scrollTopLength={scrollTopLength}
           />
           <TableBody>
-            {visibleTokens.map((row, idx) => (
+            {deferredTokens.map((row, idx) => (
               <MemoizedTokenRow
                 key={row.md5}
                 time={row.time}

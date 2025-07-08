@@ -350,9 +350,9 @@ function FTokenRow({
 
   const percentageCellStyle = useMemo(
     () => ({
-      width: isMobile ? '50px' : '70px',
-      minWidth: isMobile ? '50px' : '70px',
-      padding: isMobile ? '2px 1px' : '2px 3px',
+      width: isMobile ? '50px' : '90px',
+      minWidth: isMobile ? '50px' : '90px',
+      padding: isMobile ? '2px 1px' : '16px 12px',
       '& .MuiTypography-root': {
         textAlign: 'right',
         width: '100%'
