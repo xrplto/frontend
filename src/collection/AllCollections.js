@@ -377,7 +377,7 @@ const LatestNFTActivity = ({
   );
 };
 
-export default function Collections() {
+function Collections() {
   const [marketCap, setMarketCap] = useState(null);
   const [salesVolume, setSalesVolume] = useState(null);
   const [totalSales, setTotalSales] = useState(null);
@@ -677,3 +677,5 @@ export default function Collections() {
     </Box>
   );
 }
+
+export default React.memo(Collections);

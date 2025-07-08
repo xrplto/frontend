@@ -186,6 +186,7 @@ export default function NFTCard({ nft, handleRemove }) {
               image={imgUrl}
               alt={'NFT' + uuid}
               className="card-media"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: '100%',

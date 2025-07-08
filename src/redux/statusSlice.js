@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createSelector } from '@reduxjs/toolkit';
 import { currencyConfig } from 'src/utils/constants';
 
 const initialState = {
@@ -68,10 +68,42 @@ const statusSlice = createSlice({
 
 export const { update_metrics, update_filteredCount, update_activeCurrency } = statusSlice.actions;
 
-export const selectMetrics = (state) => state.status.metrics;
-export const selectFilteredCount = (state) => state.status.filteredCount;
-export const selectActiveFiatCurrency = (state) => state.status.activeFiatCurrency;
-export const selectTokenCreation = (state) => state.status.metrics.tokenCreation;
+// Base selectors
+const selectStatus = (state) => state.status;
+const selectMetricsBase = (state) => state.status.metrics;
+
+// Memoized selectors
+export const selectMetrics = createSelector(
+  [selectMetricsBase],
+  (metrics) => metrics
+);
+
+export const selectFilteredCount = createSelector(
+  [selectStatus],
+  (status) => status.filteredCount
+);
+
+export const selectActiveFiatCurrency = createSelector(
+  [selectStatus],
+  (status) => status.activeFiatCurrency
+);
+
+export const selectTokenCreation = createSelector(
+  [selectMetricsBase],
+  (metrics) => metrics.tokenCreation
+);
+
+// Memoized selector for exchange rate
+export const selectExchangeRate = createSelector(
+  [selectMetricsBase, (state, currency) => currency],
+  (metrics, currency) => metrics[currency] || 1
+);
+
+// Memoized selector for global metrics
+export const selectGlobalMetrics = createSelector(
+  [selectMetricsBase],
+  (metrics) => metrics.global
+);
 
 export default statusSlice.reducer;
 

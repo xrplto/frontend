@@ -1,7 +1,8 @@
+import React from 'react';
 // Components
 import ExploreNFT from 'src/explore';
 
-export default function AllNFT() {
+function AllNFT() {
 
     return (
         <>
@@ -9,3 +10,5 @@ export default function AllNFT() {
         </>
     );
 }
+
+export default React.memo(AllNFT);

@@ -169,7 +169,7 @@ function Row({ id, item, isMine }) {
             }}
           >
             <CollectionImageWrapper>
-              <IconImage src={logoImageUrl} alt={`${name} Logo`} />
+              <IconImage src={logoImageUrl} alt={`${name} Logo`} loading="lazy" />
               {isMine && (
                 <Tooltip title="Edit Collection">
                   <IconButton
