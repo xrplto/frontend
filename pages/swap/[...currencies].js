@@ -31,39 +31,7 @@ const OverviewWrapper = styled(Box)(
   `
 );
 
-const SwapWrapper = styled(Stack)(
-  ({ theme }) => `
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        -webkit-box-align: center;
-        align-items: center;
 
-        @media (min-width: 0px) {
-            -webkit-box-pack: start;
-            justify-content: flex-start;
-        }
-
-        @media (min-width: 600px) {
-            -webkit-box-pack: center;
-            justify-content: center;
-        }
-   `
-);
-
-const ContainerWrapper = styled(Stack)(
-  ({ theme }) => `
-    width: 100%;
-    height: 100%;
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-flex-direction: column;
-    -ms-flex-direction: column;
-    flex-direction: column;
-  `
-);
 
 const DEFAULT_PAIR = {
   curr1: XRP_TOKEN,
@@ -173,24 +141,32 @@ function Overview({ data }) {
       <Topbar />
       <Header />
 
-      <Container maxWidth="sm">
+      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
         <Stack
-          direction="column"
-          justifyContent="space-between"
-          alignItems="center"
           spacing={3}
-          sx={{ mb: 5 }}
+          alignItems="center"
+          sx={{
+            minHeight: 'calc(100vh - 180px)',
+            justifyContent: 'center',
+            pt: { xs: 1, sm: 0 }
+          }}
         >
-          <Stack direction="column" justifyContent="center" alignItems="center" spacing={3}>
-            <Typography variant="h3" component="h1" paragraph>
-              Swap
-            </Typography>
-          </Stack>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{
+              fontSize: { xs: '1.75rem', sm: '2rem' },
+              fontWeight: 500,
+              color: 'text.primary',
+              mb: 1
+            }}
+          >
+            Swap
+          </Typography>
+          <Box sx={{ width: '100%', maxWidth: 800 }}>
+            <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
+          </Box>
         </Stack>
-
-        <SwapWrapper>
-          <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
-        </SwapWrapper>
       </Container>
       <Footer />
       <ScrollToTop />

@@ -57,30 +57,34 @@ import { useRouter } from 'next/router';
 const CurrencyContent = styled('div')(
   ({ theme }) => `
     box-sizing: border-box;
-    margin-left: 10px;
-    margin-right: 10px;
+    margin: 0;
     display: flex;
     flex: 1 1 0%;
     flex-direction: row;
-    padding: 20px 32px;
-    border-radius: 10px;
+    padding: 20px 24px;
+    border-radius: 8px;
     -webkit-box-align: center;
     align-items: center;
-    background-color: #000000;
+    background: ${theme.palette.background.paper};
+    border: 1px solid ${alpha(theme.palette.divider, 0.2)};
+    transition: border-color 0.2s ease;
+    
+    &:hover {
+      border-color: ${alpha(theme.palette.primary.main, 0.3)};
+    }
+    
     &:not(:first-of-type) {
-      margin-top: 2px;
+      margin-top: 1px;
     }
     
     @media (max-width: 600px) {
-      padding: 16px 24px;
-      margin-left: 8px;
-      margin-right: 8px;
+      padding: 18px 20px;
+      border-radius: 6px;
     }
     
     @media (min-width: 900px) {
-      padding: 24px 40px;
-      margin-left: 16px;
-      margin-right: 16px;
+      padding: 24px 32px;
+      border-radius: 10px;
     }
 `
 );
@@ -107,65 +111,24 @@ if (typeof theme !== 'undefined' && theme.currency) {
 const OverviewWrapper = styled('div')(
   ({ theme }) => `
     flex-direction: column;
-    overflow: hidden;
     box-sizing: border-box;
-    position: relative;
-    border-radius: 24px;
+    border-radius: 12px;
     display: flex;
-    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.8
-    )} 100%);
-    backdropFilter: blur(20px);
-    border: 1px solid ${alpha(theme.palette.divider, 0.08)};
-    box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
-      theme.palette.primary.main,
-      0.04
-    )};
-    padding-bottom: 10px;
-    position: relative;
-    overflow: visible;
-
-    &::before {
-      content: "";
-      position: absolute;
-      top: -1px;
-      left: -1px;
-      right: -1px;
-      height: 3px;
-      background: linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
-        theme.palette.success.main,
-        0.4
-      )}, ${alpha(theme.palette.info.main, 0.4)});
-      opacity: 0.6;
-      border-radius: 24px 24px 0 0;
-      z-index: 10;
-    }
+    background: ${theme.palette.background.paper};
+    border: 1px solid ${alpha(theme.palette.divider, 0.15)};
+    padding-bottom: 8px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
 
     @media (max-width: 600px) {
-        border-right: none;
-        border-left: none;
-        border-image: initial;
-        border-radius: unset;
-        border-top: 1px solid ${
-          theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-        };
-        border-bottom: 1px solid ${
-          theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-        };
-        
-        &::before {
-          display: none;
-        }
+        border-radius: 8px;
+        border: 1px solid ${alpha(theme.palette.divider, 0.2)};
     }
     
     @media (min-width: 900px) {
-        border-radius: 28px;
-        padding-bottom: 16px;
-        
-        &::before {
-          border-radius: 28px 28px 0 0;
-        }
+        border-radius: 14px;
+        max-width: 700px;
     }
 `
 );
@@ -186,18 +149,25 @@ const ExchangeButton = styled(Button)(
         margin-right: 10px;
     }
     @media (min-width: 900px) {
-        margin-left: 16px;
-        margin-right: 16px;
-        padding: 12px 32px;
-        border-radius: 16px;
-        min-height: 60px;
-        font-size: 20px;
+        padding: 16px 32px;
+        border-radius: 10px;
+        min-height: 56px;
+        font-size: 16px;
     }
     position: relative;
     overflow: hidden;
-    padding: 8px 24px;
-    border-radius: 12px;
-    transition: all 0.3s ease;
+    padding: 14px 24px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background: ${theme.palette.primary.main};
+    
+    &:hover {
+      background: ${theme.palette.primary.dark};
+    }
+    
+    &:active {
+      background: ${theme.palette.primary.dark};
+    }
     min-height: 48px;
     background: linear-gradient(45deg, 
       ${theme.palette.primary.main} 0%, 
