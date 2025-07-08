@@ -477,7 +477,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         }}
         ref={tableContainerRef}
       >
-        <Table ref={tableRef} size="small" sx={{ tableLayout: isMobile ? 'auto' : 'fixed', minWidth: isMobile ? '600px' : 'auto' }}>
+        <Table ref={tableRef} size="small" sx={{ tableLayout: isMobile ? 'auto' : 'fixed' }}>
           <TokenListHead
             order={order}
             orderBy={orderBy}

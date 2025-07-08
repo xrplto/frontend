@@ -535,8 +535,8 @@ export default function TokenListHead({
             if (headCell.id === 'vol24htx') return null;
             if (headCell.id === 'tvl') return null;
             if (headCell.id === 'holders') return null;
-            if (headCell.id === 'amount') return null;
-            if (headCell.id === 'chart') return null;
+            if (headCell.id === 'supply') return null;
+            if (headCell.id === 'historyGraph') return null;
           }
           
           return (
