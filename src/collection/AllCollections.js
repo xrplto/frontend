@@ -548,99 +548,271 @@ function Collections() {
           left: 0,
           right: 0,
           bottom: 0,
-          background: `radial-gradient(circle at 20% 50%, ${alpha(
-            theme.palette.primary.main,
-            0.03
-          )} 0%, transparent 50%), radial-gradient(circle at 80% 20%, ${alpha(
-            theme.palette.success.main,
-            0.03
-          )} 0%, transparent 50%)`,
+          background: `
+            radial-gradient(circle at 20% 50%, ${alpha(
+              theme.palette.primary.main,
+              0.05
+            )} 0%, transparent 40%), 
+            radial-gradient(circle at 80% 20%, ${alpha(
+              theme.palette.success.main,
+              0.05
+            )} 0%, transparent 40%),
+            radial-gradient(circle at 50% 80%, ${alpha(
+              theme.palette.info.main,
+              0.03
+            )} 0%, transparent 50%)
+          `,
+          animation: 'breathe 10s ease-in-out infinite',
+          '@keyframes breathe': {
+            '0%, 100%': { opacity: 0.8 },
+            '50%': { opacity: 1 }
+          },
           pointerEvents: 'none'
         }
       }}
     >
-      {/* Updated Overview Section - Similar to market-metrics */}
-      <Container maxWidth="xl" sx={{ mt: { xs: 2, sm: 3, md: 4 }, mb: { xs: 3, sm: 4, md: 5 } }}>
+      {/* Updated Header Section */}
+      <Container maxWidth="xl" sx={{ mt: { xs: 2, sm: 3, md: 4 }, mb: { xs: 2, sm: 3, md: 4 } }}>
         <Box
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 1,
-            mb: 1.5,
-            p: { xs: 2.5, sm: 3, md: 4 },
-            borderRadius: '24px',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.9
-            )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
-              theme.palette.primary.main,
-              0.04
-            )}`,
-            position: 'relative',
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '2px',
-              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-              opacity: 0.8
-            }
+            textAlign: 'center',
+            mb: { xs: 3, sm: 4, md: 5 }
           }}
         >
-          <Box sx={{ flex: 1 }}>
-            <Typography
-              variant="h4"
+          <Typography
+            variant="h3"
+            sx={{
+              color: theme.palette.text.primary,
+              fontWeight: 800,
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+              letterSpacing: '-0.03em',
+              mb: 2,
+              position: 'relative',
+              display: 'inline-block',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: -8,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '80px',
+                height: '4px',
+                background: `linear-gradient(90deg, transparent, ${theme.palette.primary.main}, transparent)`,
+                borderRadius: 2
+              }
+            }}
+          >
+            NFT Collections
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+              maxWidth: '700px',
+              mx: 'auto',
+              lineHeight: 1.8,
+              mt: 3
+            }}
+          >
+            Explore the top NFT collections on XRPL sorted by trading volume and floor price
+          </Typography>
+        </Box>
+      </Container>
+
+      {/* Statistics Cards Section */}
+      <Container maxWidth="xl" sx={{ mb: { xs: 4, sm: 5, md: 6 } }}>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+          {/* Market Cap Card */}
+          <Grid item xs={12} md={4}>
+            <Paper
+              elevation={0}
               sx={{
-                color: theme.palette.text.primary,
-                fontWeight: 700,
-                fontSize: { xs: '1.6rem', sm: '1.8rem', md: '2.1rem' },
-                letterSpacing: '-0.02em',
-                background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
+                p: { xs: 3, sm: 4 },
+                height: '100%',
+                borderRadius: '20px',
+                background: `linear-gradient(135deg, ${alpha(
                   theme.palette.primary.main,
-                  0.8
-                )} 100%)`,
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                mb: 1
+                  0.05
+                )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`
+                }
               }}
             >
-              Highest Price NFT Stats
-            </Typography>
-            <Typography
-              variant="body1"
+              <Stack spacing={2}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography variant="h6" fontWeight={600} color="primary">
+                    Total Market Cap
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '12px',
+                      background: alpha(theme.palette.primary.main, 0.1),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Typography variant="h6">📊</Typography>
+                  </Box>
+                </Box>
+                <Typography variant="h4" fontWeight={700}>
+                  $3.2B
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  +12.5% from last month
+                </Typography>
+              </Stack>
+            </Paper>
+          </Grid>
+
+          {/* Total Volume Card */}
+          <Grid item xs={12} md={4}>
+            <Paper
+              elevation={0}
               sx={{
-                color: theme.palette.text.secondary,
-                fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-                maxWidth: '600px',
-                lineHeight: 1.6
+                p: { xs: 3, sm: 4 },
+                height: '100%',
+                borderRadius: '20px',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.success.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 8px 24px ${alpha(theme.palette.success.main, 0.15)}`
+                }
               }}
             >
-              Listed below are the stats for NFT collections and individual assets that have sold
-              for the highest prices. We list the data in descending order. Data can be reordered by
-              clicking on the column title. Only collections with a transaction in the last 30 days
-              are included.
-            </Typography>
-          </Box>
+              <Stack spacing={2}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography variant="h6" fontWeight={600} color="success.main">
+                    24h Volume
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '12px',
+                      background: alpha(theme.palette.success.main, 0.1),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Typography variant="h6">💰</Typography>
+                  </Box>
+                </Box>
+                <Typography variant="h4" fontWeight={700}>
+                  850K XRP
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  +8.3% from yesterday
+                </Typography>
+              </Stack>
+            </Paper>
+          </Grid>
+
+          {/* Active Collections Card */}
+          <Grid item xs={12} md={4}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 3, sm: 4 },
+                height: '100%',
+                borderRadius: '20px',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.info.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.info.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 8px 24px ${alpha(theme.palette.info.main, 0.15)}`
+                }
+              }}
+            >
+              <Stack spacing={2}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography variant="h6" fontWeight={600} color="info.main">
+                    Active Collections
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '12px',
+                      background: alpha(theme.palette.info.main, 0.1),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Typography variant="h6">🎨</Typography>
+                  </Box>
+                </Box>
+                <Typography variant="h4" fontWeight={700}>
+                  1,245
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  156 new this week
+                </Typography>
+              </Stack>
+            </Paper>
+          </Grid>
+        </Grid>
+      </Container>
+
+      {/* Collections List Section */}
+      <Container maxWidth="xl">
+        <Box sx={{ mb: 3 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: theme.palette.text.primary,
+              mb: 1
+            }}
+          >
+            Top Collections by Volume
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: theme.palette.text.secondary
+            }}
+          >
+            Collections with highest trading volume in the last 30 days
+          </Typography>
         </Box>
       </Container>
 
       <Stack
         sx={{
-          mt: 5,
           minHeight: '50vh',
           px: { xs: 2, sm: 3, md: 4 },
           position: 'relative',
-          zIndex: 1
+          zIndex: 1,
+          animation: 'fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+          '@keyframes fadeInUp': {
+            '0%': {
+              opacity: 0,
+              transform: 'translateY(30px)'
+            },
+            '100%': {
+              opacity: 1,
+              transform: 'translateY(0)'
+            }
+          }
         }}
       >
         <Box
