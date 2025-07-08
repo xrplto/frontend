@@ -238,7 +238,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         
         wsProcessTimer.current = setTimeout(() => {
           processWebSocketQueue();
-        }, 1000); // Process every 1000ms for better performance note: this was set to 16 ms!
+        }, 250); // Process every 250ms - 16 updates per 4s ledger cycle
         
       } catch (err) {
         console.error('Error parsing WebSocket message:', err);
