@@ -52,7 +52,7 @@ function t(key) {
 import Tabs from './Tabs';
 
 // Material
-import { Card, CardMedia, Link, Typography, Box, IconButton, Modal, Backdrop } from '@mui/material';
+import { Card, CardMedia, Link, Typography, Box, IconButton, Modal, Backdrop, Tooltip } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import CloseIcon from '@mui/icons-material/Close';
@@ -108,6 +108,21 @@ export default function NFTPreview({ nft }) {
   const handleOpenImage = (imageUrl) => {
     setSelectedImageUrl(imageUrl);
     setOpenImage(true);
+  };
+
+  const handleTweetNFT = () => {
+    const nftName = nft?.name || 'this NFT';
+    const collectionName = nft?.collection || nft?.meta?.collection?.name || '';
+    const currentUrl = window.location.href;
+    
+    let tweetText = `Check out ${nftName}`;
+    if (collectionName) {
+      tweetText += ` from ${collectionName} collection`;
+    }
+    tweetText += ` on @xrplto! 🚀\n\n`;
+    
+    const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(currentUrl)}`;
+    window.open(tweetUrl, '_blank', 'width=550,height=420');
   };
 
   // const imgUrl = '/static/test.mp4';
@@ -432,21 +447,44 @@ export default function NFTPreview({ nft }) {
                       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
                     }}
                   />
-                  <IconButton
-                    onClick={() => setOpenImage(false)}
+                  <Box
                     sx={{
                       position: 'absolute',
                       top: 10,
                       right: 10,
-                      color: 'white',
-                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                      '&:hover': {
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)'
-                      }
+                      display: 'flex',
+                      gap: 1
                     }}
                   >
-                    <CloseIcon />
-                  </IconButton>
+                    <Tooltip title="Share on X">
+                      <IconButton
+                        onClick={handleTweetNFT}
+                        sx={{
+                          color: 'white',
+                          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 1)'
+                          }
+                        }}
+                      >
+                        <Icon icon="ri:twitter-x-fill" fontSize={20} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Close">
+                      <IconButton
+                        onClick={() => setOpenImage(false)}
+                        sx={{
+                          color: 'white',
+                          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)'
+                          }
+                        }}
+                      >
+                        <CloseIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </Box>
               </Modal>
             </>
