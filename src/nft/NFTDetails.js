@@ -89,46 +89,70 @@ function getProperties(meta) {
 
 // Styled components for a more polished look
 const StyledAccordion = styled(Accordion)(({ theme }) => ({
-  borderRadius: '16px !important',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.8
-  )} 100%)`,
-  backdropFilter: 'blur(20px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
-  marginBottom: theme.spacing(2),
+  borderRadius: '20px !important',
+  background: theme.palette.mode === 'dark'
+    ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+        theme.palette.background.paper,
+        0.7
+      )} 100%)`
+    : `linear-gradient(145deg, ${alpha('#ffffff', 0.98)} 0%, ${alpha(
+        theme.palette.background.paper,
+        0.9
+      )} 100%)`,
+  backdropFilter: 'blur(24px) saturate(180%)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+  boxShadow: theme.palette.mode === 'dark'
+    ? `0 12px 24px ${alpha(theme.palette.common.black, 0.2)}`
+    : `0 12px 24px ${alpha(theme.palette.common.black, 0.06)}`,
+  marginBottom: theme.spacing(2.5),
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:before': {
     display: 'none'
+  },
+  '&:hover': {
+    boxShadow: theme.palette.mode === 'dark'
+      ? `0 16px 32px ${alpha(theme.palette.common.black, 0.3)}`
+      : `0 16px 32px ${alpha(theme.palette.common.black, 0.1)}`
   }
 }));
 
 const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
-  borderRadius: '16px 16px 0 0',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-    theme.palette.primary.main,
-    0.03
-  )} 100%)`,
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-  minHeight: '64px',
+  borderRadius: '20px',
+  padding: '0 24px',
+  minHeight: '72px',
   '&.Mui-expanded': {
-    minHeight: '64px',
+    minHeight: '72px',
+    borderRadius: '20px 20px 0 0',
     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
   },
   '& .MuiAccordionSummary-expandIconWrapper': {
-    color: theme.palette.primary.main
+    color: theme.palette.primary.main,
+    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    '&.Mui-expanded': {
+      transform: 'rotate(180deg)'
+    }
+  },
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.02)
   }
 }));
 
 const StyledChip = styled(Chip)(({ theme }) => ({
-  borderRadius: '12px',
+  borderRadius: '16px',
   fontWeight: 600,
-  background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.08)} 0%, ${alpha(
+  fontSize: '0.875rem',
+  padding: '4px 8px',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.12)} 0%, ${alpha(
     theme.palette.info.main,
-    0.03
+    0.06
   )} 100%)`,
-  border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`,
-  color: theme.palette.info.main
+  border: `1.5px solid ${alpha(theme.palette.info.main, 0.2)}`,
+  color: theme.palette.info.main,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.info.main, 0.2)}`
+  }
 }));
 
 export default function NFTDetails({ nft }) {
@@ -234,22 +258,23 @@ export default function NFTDetails({ nft }) {
               <Stack direction="row" spacing={2} alignItems="center">
                 <Box
                   sx={{
-                    p: 1,
-                    borderRadius: '10px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.primary.main,
-                      0.15
-                    )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    p: 1.5,
+                    borderRadius: '14px',
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+                    transition: 'transform 0.2s ease',
+                    '&:hover': {
+                      transform: 'scale(1.05)'
+                    }
                   }}
                 >
                   <Icon
                     icon="majesticons:checkbox-list-detail-line"
-                    fontSize={20}
-                    style={{ color: theme.palette.primary.main }}
+                    fontSize={24}
+                    style={{ color: '#ffffff' }}
                   />
                 </Box>
                 <Typography
@@ -266,11 +291,9 @@ export default function NFTDetails({ nft }) {
             </StyledAccordionSummary>
             <AccordionDetails
               sx={{
-                borderRadius: '0 0 16px 16px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.background.paper,
-                  0.6
-                )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                borderRadius: '0 0 20px 20px',
+                p: 3,
+                background: alpha(theme.palette.background.paper, 0.5),
                 backdropFilter: 'blur(10px)'
               }}
             >
@@ -319,27 +342,25 @@ export default function NFTDetails({ nft }) {
             </StyledAccordionSummary>
             <AccordionDetails
               sx={{
-                borderRadius: '0 0 16px 16px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.background.paper,
-                  0.6
-                )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                borderRadius: '0 0 20px 20px',
+                p: 3,
+                background: alpha(theme.palette.background.paper, 0.5),
                 backdropFilter: 'blur(10px)'
               }}
             >
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Flags:
+              <Stack spacing={3}>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                    Flags
                   </Typography>
                   <FlagsContainer Flags={flag} />
-                </Grid>
+                </Box>
                 {strDateTime && (
-                  <Grid item xs={12}>
-                    <StyledChip label={strDateTime} variant="outlined" />
-                  </Grid>
+                  <Box>
+                    <StyledChip label={strDateTime} icon={<Icon icon="mdi:calendar-clock" />} />
+                  </Box>
                 )}
-              </Grid>
+              </Stack>
               {rarity_rank > 0 && (
                 <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
                   <Typography variant="caption">Rarity Rank</Typography>
@@ -352,16 +373,18 @@ export default function NFTDetails({ nft }) {
                 <Typography variant="caption">Transfer Fee</Typography>
                 <Typography variant="s6">{transferFee} %</Typography>
               </Stack>
-              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                <Typography variant="caption">Collection</Typography>
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="caption" color="text.secondary">Collection</Typography>
                 {cslug ? (
-                  <Link href={`/collection/${cslug}`} underline="none">
-                    <Typography sx={{ pl: 1 }}>{collectionName}</Typography>
+                  <Link href={`/collection/${cslug}`} underline="hover">
+                    <Typography variant="body1" fontWeight={600} color="primary">
+                      {collectionName}
+                    </Typography>
                   </Link>
                 ) : (
-                  <Typography sx={{ pl: 1 }}>{collectionName}</Typography>
+                  <Typography variant="body1" fontWeight={600}>{collectionName}</Typography>
                 )}
-              </Stack>
+              </Box>
               <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
                 <Typography variant="caption">Volume</Typography>
                 <Stack direction="row" spacing={0.5} alignItems="center">
@@ -539,11 +562,9 @@ export default function NFTDetails({ nft }) {
             </StyledAccordionSummary>
             <AccordionDetails
               sx={{
-                borderRadius: '0 0 16px 16px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.background.paper,
-                  0.6
-                )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                borderRadius: '0 0 20px 20px',
+                p: 3,
+                background: alpha(theme.palette.background.paper, 0.5),
                 backdropFilter: 'blur(10px)'
               }}
             >

@@ -52,9 +52,11 @@ function t(key) {
 import Tabs from './Tabs';
 
 // Material
-import { Card, CardMedia, Link, Typography, Box, IconButton } from '@mui/material';
+import { Card, CardMedia, Link, Typography, Box, IconButton, Modal, Backdrop } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import CloseIcon from '@mui/icons-material/Close';
+import { Icon } from '@iconify/react';
 
 // Utils
 import { getNftFilesUrls /*, nftName*/ } from 'src/utils/parse/utils';
@@ -390,16 +392,63 @@ export default function NFTPreview({ nft }) {
               ) : (
                 renderImageLink(typeof imgOrAnimUrl === 'string' ? imgOrAnimUrl : imgOrAnimUrl[0])
               )}
-              {openImage && (
-                <Lightbox
-                  small={selectedImageUrl}
-                  large={selectedImageUrl}
-                  hideDownload
-                  hideZoom
-                  onClose={() => setOpenImage(false)}
-                  imageBackgroundColor={darkMode ? 'rgb(33, 37, 43)' : 'rgb(244, 245, 251)'}
-                />
-              )}
+              <Modal
+                open={openImage}
+                onClose={() => setOpenImage(false)}
+                closeAfterTransition
+                BackdropComponent={Backdrop}
+                BackdropProps={{
+                  timeout: 500,
+                  sx: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.95)'
+                  }
+                }}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    maxWidth: '90vw',
+                    maxHeight: '90vh',
+                    outline: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={selectedImageUrl}
+                    alt={nft?.name || 'NFT Image'}
+                    style={{
+                      maxWidth: '90vw',
+                      maxHeight: '90vh',
+                      objectFit: 'contain',
+                      borderRadius: '8px',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
+                    }}
+                  />
+                  <IconButton
+                    onClick={() => setOpenImage(false)}
+                    sx={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                      color: 'white',
+                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)'
+                      }
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+              </Modal>
             </>
           )}
 
