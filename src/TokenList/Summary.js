@@ -51,141 +51,104 @@ import {
 import { format } from 'date-fns';
 import { useTheme } from '@mui/material';
 
-// Updated styled components with zero top spacing on mobile
+// Clean content typography
 const ContentTypography = styled(Typography)(({ theme }) => ({
-  color: theme.palette.mode === 'dark' ? '#FFFFFF' : alpha('#919EAB', 0.99),
-  display: 'block',
-  lineHeight: 1.3,
-  whiteSpace: 'normal',
-  wordWrap: 'break-word',
-  fontSize: '0.9rem',
-  // Smaller font size on mobile
-  [theme.breakpoints.down('md')]: {
-    fontSize: '0.75rem'
-  },
+  color: alpha(theme.palette.text.secondary, 0.6),
+  fontSize: '0.7rem',
+  fontWeight: 500,
+  letterSpacing: '0.01em',
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.55rem' // Even smaller font size
+    fontSize: '0.65rem'
   }
 }));
 
-// Enhanced MetricBox with high-end startup styling
+// Ultra-minimalist MetricBox
 const MetricBox = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(2.5),
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.1)
+    padding: theme.spacing(2)
   },
   height: '100%',
-  minHeight: '120px',
+  minHeight: '90px',
   [theme.breakpoints.down('sm')]: {
-    minHeight: '40px'
+    minHeight: '75px'
   },
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
-  alignItems: 'center',
-  textAlign: 'center',
-  borderRadius: '16px',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.default, 0.8)} 100%)`,
-  backdropFilter: 'blur(30px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  alignItems: 'flex-start',
+  borderRadius: '8px',
+  background: 'transparent',
+  backdropFilter: 'none',
+  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
   boxShadow: 'none',
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'border-color 0.2s ease',
   position: 'relative',
   overflow: 'hidden',
   '&:hover': {
-    transform: 'translateY(-8px) scale(1.02)',
-    boxShadow: 'none',
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
-    borderColor: alpha(theme.palette.primary.main, 0.2),
+    borderColor: alpha(theme.palette.divider, 0.2),
   }
 }));
 
-// Premium MetricTitle
+// Refined MetricTitle
 const MetricTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '0.8rem',
-  fontWeight: 600,
-  color: alpha(theme.palette.text.secondary, 0.8),
-  marginBottom: theme.spacing(1),
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px',
+  fontSize: '0.7rem',
+  fontWeight: 400,
+  color: alpha(theme.palette.text.secondary, 0.5),
+  marginBottom: theme.spacing(0.75),
+  textTransform: 'none',
+  letterSpacing: '0.03em',
   lineHeight: 1,
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.6rem',
-    marginBottom: theme.spacing(0.1)
+    fontSize: '0.65rem',
+    marginBottom: theme.spacing(0.5)
   }
 }));
 
 // Premium MetricValue
 const MetricValue = styled(Typography)(({ theme }) => ({
-  fontSize: '1.8rem',
-  fontWeight: 800,
-  background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
-  backgroundClip: 'text',
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  lineHeight: 1.1,
+  fontSize: '1.25rem',
+  fontWeight: 600,
+  color: theme.palette.text.primary,
+  lineHeight: 1,
   marginBottom: theme.spacing(0.5),
-  fontFamily: 'monospace',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  letterSpacing: '-0.01em',
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.75rem',
-    marginBottom: theme.spacing(0.05)
+    fontSize: '1rem',
+    marginBottom: theme.spacing(0.25)
   }
 }));
 
-// Unified PercentageChange with professional styling
+// Subtle PercentageChange
 const PercentageChange = styled('span', {
   shouldForwardProp: (prop) => prop !== 'isPositive'
 })(({ theme, isPositive }) => ({
-  fontSize: '12px',
-  color: isPositive ? '#16a34a' : '#dc2626',
+  fontSize: '0.75rem',
+  color: isPositive 
+    ? theme.palette.mode === 'dark' ? '#4ade80' : '#16a34a'
+    : theme.palette.mode === 'dark' ? '#f87171' : '#dc2626',
   display: 'inline-flex',
-  alignItems: 'center',
-  gap: '0px',
-  fontWeight: 600,
-  padding: '2px 4px',
-  borderRadius: '3px',
-  background: isPositive ? alpha('#16a34a', 0.08) : alpha('#dc2626', 0.08),
-  border: `1px solid ${isPositive ? alpha('#16a34a', 0.2) : alpha('#dc2626', 0.2)}`,
-  boxShadow: 'none',
-  transition: 'none',
-  '&:hover': {
-    transform: 'none',
-    boxShadow: 'none'
-  },
+  alignItems: 'flex-start',
+  gap: '3px',
+  fontWeight: 500,
+  fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+  letterSpacing: '0',
   
-  // Mobile even smaller
-  '@media (max-width:600px)': {
-    fontSize: '10px !important',
-    padding: '1px 2px !important',
-    borderRadius: '2px !important'
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '0.65rem'
   }
 }));
 
-// Ultra-compact VolumePercentage
+// Subtle VolumePercentage
 const VolumePercentage = styled(Typography)(({ theme }) => ({
-  fontSize: '0.75rem',
-  // Ultra-small font size on mobile
-  [theme.breakpoints.down('md')]: {
-    fontSize: '0.55rem'
-  },
+  fontSize: '0.65rem',
+  color: alpha(theme.palette.text.secondary, 0.4),
+  fontWeight: 400,
+  letterSpacing: '0.02em',
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.4rem' // Even smaller font size
-  },
-  color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.7) : alpha('#637381', 0.9),
-  display: 'flex',
-  alignItems: 'center',
-  fontWeight: 500,
-  padding: '2px 6px',
-  // No padding on mobile
-  [theme.breakpoints.down('md')]: {
-    padding: '0px'
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: '0px'
-  },
-  borderRadius: '6px',
-  background: 'transparent',
-  border: 'none'
+    fontSize: '0.6rem'
+  }
 }));
 
 function Rate(num, exch) {
@@ -193,12 +156,12 @@ function Rate(num, exch) {
   return fNumber(num / exch);
 }
 
-// Helper function for consistent number formatting with 2 decimal places
+// Premium number formatting
 const formatNumberWithDecimals = (num) => {
-  if (num >= 1e9) return `${(num / 1e9).toFixed(2)}B`;
-  if (num >= 1e6) return `${(num / 1e6).toFixed(2)}M`;
-  if (num >= 1e3) return `${(num / 1e3).toFixed(2)}K`;
-  return num.toFixed(2);
+  if (num >= 1e9) return `${(num / 1e9).toFixed(1)}B`;
+  if (num >= 1e6) return `${(num / 1e6).toFixed(1)}M`;
+  if (num >= 1e3) return `${(num / 1e3).toFixed(0)}K`;
+  return Math.round(num).toLocaleString();
 };
 
 export default function Summary() {
@@ -208,6 +171,9 @@ export default function Summary() {
   const { activeFiatCurrency } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true);
   const theme = useTheme();
+
+  // Add default value of 1 for the divisor to prevent DecimalError
+  const fiatRate = metrics[activeFiatCurrency] || 1;
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -229,18 +195,18 @@ export default function Summary() {
           sx={{ width: '100%' }}
         >
           <Stack direction="row" alignItems="center" spacing={0.25}>
-            <Icon sx={{ fontSize: '0.7rem', color: 'text.secondary' }} />
+            <Icon sx={{ fontSize: '0.85rem', color: 'text.secondary' }} />
             <Typography
               variant="caption"
               color="text.secondary"
-              sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}
+              sx={{ fontSize: '0.75rem' }}
             >
               {label}
             </Typography>
           </Stack>
           <Typography
             variant="caption"
-            sx={{ fontWeight: 'bold', fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+            sx={{ fontWeight: 600, fontSize: '0.75rem' }}
           >
             {value}
           </Typography>
@@ -250,16 +216,17 @@ export default function Summary() {
       return (
         <Paper
           sx={{
-            p: { xs: 1, sm: 2 },
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.98
-            )} 0%, ${alpha(theme.palette.background.default, 0.85)} 100%)`,
-            backdropFilter: 'blur(40px)',
-            borderRadius: '16px',
-            boxShadow: 'none',
+            p: 2,
+            background: theme.palette.mode === 'dark' 
+              ? alpha(theme.palette.background.paper, 0.95)
+              : theme.palette.background.paper,
+            backdropFilter: 'blur(20px)',
+            borderRadius: '12px',
+            boxShadow: theme.palette.mode === 'dark'
+              ? `0 2px 8px ${alpha('#000', 0.3)}`
+              : `0 2px 8px ${alpha('#000', 0.08)}`,
             border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-            minWidth: { xs: 200, sm: 280 },
+            minWidth: 240,
             position: 'absolute',
             zIndex: 999999999,
             pointerEvents: 'auto',
@@ -268,7 +235,7 @@ export default function Summary() {
         >
           <Typography
             variant="subtitle2"
-            sx={{ mb: 0.5, textAlign: 'center', fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+            sx={{ mb: 0.5, textAlign: 'center', fontSize: '0.75rem', fontWeight: 500, color: 'text.secondary' }}
           >
             {data.date}
           </Typography>
@@ -304,7 +271,7 @@ export default function Summary() {
                 <Typography
                   variant="caption"
                   color="text.secondary"
-                  sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}
+                  sx={{ fontSize: '0.75rem' }}
                 >
                   New Tokens by Platform
                 </Typography>
@@ -315,12 +282,12 @@ export default function Summary() {
                     <Typography
                       variant="caption"
                       display="block"
-                      sx={{ fontSize: { xs: '0.55rem', sm: '0.65rem' } }}
+                      sx={{ fontSize: '0.7rem' }}
                     >{`• ${platform}`}</Typography>
                     <Typography
                       variant="caption"
                       display="block"
-                      sx={{ fontWeight: 'bold', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}
+                      sx={{ fontWeight: 600, fontSize: '0.7rem' }}
                     >
                       {count}
                     </Typography>
@@ -337,7 +304,7 @@ export default function Summary() {
                 <Typography
                   variant="caption"
                   color="text.secondary"
-                  sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}
+                  sx={{ fontSize: '0.75rem' }}
                 >
                   Top Tokens by Market Cap
                 </Typography>
@@ -418,9 +385,6 @@ export default function Summary() {
       metrics[activeFiatCurrency]
     );
   }
-
-  // Add default value of 1 for the divisor to prevent DecimalError
-  const fiatRate = metrics[activeFiatCurrency] || 1;
 
   const gMarketcap = new Decimal(metrics.global?.gMarketcap || 0)
     .div(fiatRate)
@@ -506,22 +470,10 @@ export default function Summary() {
       sx={{
         position: 'relative',
         zIndex: 2,
-        // Add some top space on mobile
-        mt: { xs: 1, sm: 0, md: 0 },
-        mb: 0,
-        pt: 0,
-        pb: 0,
-        [(theme) => theme.breakpoints.up('md')]: {
-          mt: 0,
-          mb: 2
-        },
+        mt: { xs: 0, sm: 0, md: 2 },
+        mb: { xs: 2, sm: 2, md: 3 },
         width: '100%',
-        maxWidth: '100%',
-        px: 0,
-        // Remove aggressive positioning
-        [(theme) => theme.breakpoints.down('sm')]: {
-          position: 'relative'
-        }
+        maxWidth: '100%'
       }}
     >
 
@@ -534,7 +486,7 @@ export default function Summary() {
               width: '100%',
               maxWidth: '100vw',
               pb: 0, // Zero padding on mobile
-              mt: { xs: '-16px', sm: '-12px', md: 0 }, // Even more aggressive negative margin on loading state
+              mt: { xs: 0, sm: 0, md: 0 }, // on loading state
               [(theme) => theme.breakpoints.up('md')]: {
                 pb: 1
               },
@@ -548,21 +500,12 @@ export default function Summary() {
               spacing={0} // Zero spacing on mobile
               sx={{
                 flexWrap: 'nowrap',
-                minWidth: '900px',
+                minWidth: { xs: 'unset', sm: '700px', md: '900px' },
+                width: '100%',
                 [(theme) => theme.breakpoints.down('sm')]: {
                   flexWrap: 'wrap',
-                  minWidth: 'unset',
-                  width: '100%',
-                  margin: 0,
-                  gap: '0px' // Ultra-minimal gap - removed gap entirely
-                },
-                [(theme) => theme.breakpoints.down('md')]: {
-                  minWidth: '700px'
-                },
-                [(theme) => theme.breakpoints.up('md')]: {
-                  spacing: 2
-                },
-                width: '100%'
+                  gap: '8px'
+                }
               }}
             >
               {[...Array(5)].map((_, index) => (
@@ -581,26 +524,15 @@ export default function Summary() {
                 >
                   <Skeleton
                     variant="rectangular"
-                    height={25}
                     sx={{
-                      borderRadius: '3px',
-                      [(theme) => theme.breakpoints.down('sm')]: {
-                        height: 28, // Even smaller height
-                        borderRadius: '3px'
-                      },
-                      minWidth: '140px',
-                      [(theme) => theme.breakpoints.down('sm')]: {
-                        minWidth: 'unset',
-                        width: '100%'
-                      },
-                      [(theme) => theme.breakpoints.down('md')]: {
-                        minWidth: '110px'
-                      },
+                      borderRadius: '8px',
+                      height: { xs: 75, sm: 90, md: 90 },
+                      minWidth: { xs: 'unset', sm: '110px', md: '140px' },
+                      width: { xs: '100%' },
                       background: (theme) =>
-                        `linear-gradient(135deg, ${alpha(
-                          theme.palette.background.paper,
-                          0.8
-                        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`
+                        theme.palette.mode === 'dark'
+                          ? alpha(theme.palette.background.paper, 0.3)
+                          : alpha(theme.palette.background.paper, 0.5)
                     }}
                   />
                 </Grid>
@@ -612,7 +544,7 @@ export default function Summary() {
             sx={{
               width: '100%',
               pb: 0,
-              mt: { xs: '-16px', sm: '-12px', md: 0 }, // Even more aggressive negative margin
+              mt: { xs: 0, sm: 0, md: 0 },
               [(theme) => theme.breakpoints.up('md')]: {
                 pb: 2
               }
@@ -634,18 +566,18 @@ export default function Summary() {
               <Grid item xs={12}>
                 <Grid
                   container
-                  spacing={{ xs: 0.05, md: 1.5 }} // Ultra minimal spacing for metric boxes on mobile
+                  spacing={{ xs: 1, sm: 1.5, md: 2 }}
                 >
                   {/* Market Cap Box */}
                   <Grid item xs={6} md={1.5}>
                     <MetricBox>
-                      <MetricTitle>{t('Global Market Cap')}</MetricTitle>
+                      <MetricTitle>Market Cap</MetricTitle>
                       <MetricValue>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(Number(gMarketcap))}
                       </MetricValue>
                       <PercentageChange isPositive={gMarketcapPro >= 0}>
-                        {gMarketcapPro >= 0 ? '▲' : '▼'}{Math.abs(gMarketcapPro).toFixed(1)}%
+                        {gMarketcapPro >= 0 ? '+' : ''}{gMarketcapPro.toFixed(1)}%
                       </PercentageChange>
                     </MetricBox>
                   </Grid>
@@ -653,13 +585,13 @@ export default function Summary() {
                   {/* DEX Volume Box */}
                   <Grid item xs={6} md={1.5}>
                     <MetricBox>
-                      <MetricTitle>{t('24h DEX Volume')}</MetricTitle>
+                      <MetricTitle>24h Volume</MetricTitle>
                       <MetricValue>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(gDexVolume)}
                       </MetricValue>
                       <PercentageChange isPositive={gDexVolumePro >= 0}>
-                        {gDexVolumePro >= 0 ? '▲' : '▼'}{Math.abs(gDexVolumePro).toFixed(1)}%
+                        {gDexVolumePro >= 0 ? '+' : ''}{gDexVolumePro.toFixed(1)}%
                       </PercentageChange>
                     </MetricBox>
                   </Grid>
@@ -667,21 +599,13 @@ export default function Summary() {
                   {/* XRP Price Box */}
                   <Grid item xs={6} md={1.5}>
                     <MetricBox>
-                      <MetricTitle>{t('XRP Price')}</MetricTitle>
+                      <MetricTitle>XRP</MetricTitle>
                       <MetricValue>
                         {xrpPriceSymbol}
                         {xrpPrice}
                       </MetricValue>
-                      <ContentTypography
-                        sx={{
-                          fontSize: '0.7rem',
-                          [theme.breakpoints.down('xs')]: {
-                            fontSize: '0.55rem' // Even smaller font size for XRP price desc on tiny screens
-                          },
-                          color: 'text.secondary'
-                        }}
-                      >
-                        {activeFiatCurrency === 'XRP' ? 'USD Value' : 'Native XRPL'}
+                      <ContentTypography>
+                        {activeFiatCurrency === 'XRP' ? 'in USD' : 'Native'}
                       </ContentTypography>
                     </MetricBox>
                   </Grid>
@@ -689,24 +613,24 @@ export default function Summary() {
                   {/* Stablecoins Box */}
                   <Grid item xs={6} md={1.5}>
                     <MetricBox>
-                      <MetricTitle>{t('Stablecoins')}</MetricTitle>
+                      <MetricTitle>Stables</MetricTitle>
                       <MetricValue>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(gStableVolume)}
                       </MetricValue>
-                      <VolumePercentage>{gStableVolumePro}% of volume</VolumePercentage>
+                      <VolumePercentage>{gStableVolumePro}% of vol</VolumePercentage>
                     </MetricBox>
                   </Grid>
 
                   {/* Meme Tokens Box */}
                   <Grid item xs={6} md={1.5}>
                     <MetricBox>
-                      <MetricTitle>{t('Meme Tokens')}</MetricTitle>
+                      <MetricTitle>Memes</MetricTitle>
                       <MetricValue>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(gMemeVolume)}
                       </MetricValue>
-                      <VolumePercentage>{gMemeVolumePro}% of volume</VolumePercentage>
+                      <VolumePercentage>{gMemeVolumePro}% of vol</VolumePercentage>
                     </MetricBox>
                   </Grid>
 
@@ -720,98 +644,90 @@ export default function Summary() {
                           }
                         }}
                       >
-                        {t('Sentiment Score')}
+                        Sentiment
                       </MetricTitle>
-                      <Box
-                        sx={{
-                          position: 'relative',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          height: 40, // Increased height
-                          width: 40 // Increased width
-                        }}
-                      >
-                        <CircularProgress
-                          variant="determinate"
-                          value={100}
-                          size={40} // Increased size
-                          thickness={1.5}
+                      <Stack spacing={0.75} sx={{ width: '100%' }}>
+                        <Stack direction="row" alignItems="baseline" spacing={0.5}>
+                          <Typography
+                            sx={{ 
+                              fontSize: '1.25rem',
+                              fontWeight: 600,
+                              color: 'text.primary',
+                              lineHeight: 1,
+                              fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+                              letterSpacing: '-0.01em',
+                              [theme.breakpoints.down('sm')]: {
+                                fontSize: '1rem'
+                              }
+                            }}
+                          >
+                            {sentimentScore}
+                          </Typography>
+                          <Typography
+                            sx={{ 
+                              fontSize: '0.7rem',
+                              fontWeight: 400,
+                              color: alpha(theme.palette.text.secondary, 0.4),
+                              lineHeight: 1
+                            }}
+                          >
+                            /100
+                          </Typography>
+                        </Stack>
+                        <Box
                           sx={{
-                            color: (theme) => alpha(theme.palette.divider, 0.1),
-                            position: 'absolute'
+                            width: '100%',
+                            height: 3,
+                            borderRadius: 1.5,
+                            bgcolor: alpha(theme.palette.divider, 0.08),
+                            position: 'relative',
+                            overflow: 'hidden'
                           }}
-                        />
-                        <CircularProgress
-                          variant="determinate"
-                          value={sentimentScore}
-                          size={40} // Increased size
-                          thickness={1.5}
-                          color={(() => {
-                            if (sentimentScore > 80) return 'success'; // Dark green
-                            if (sentimentScore > 60) return 'primary'; // Light green
-                            if (sentimentScore > 40) return 'warning'; // Yellow
-                            if (sentimentScore > 20) return 'warning'; // Orange - use warning instead of hex
-                            return 'error'; // Red
-                          })()}
-                          sx={{
-                            strokeLinecap: 'round',
-                            position: 'absolute',
-                            filter: `drop-shadow(0 0 8px ${alpha(
-                              (() => {
+                        >
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              left: 0,
+                              top: 0,
+                              height: '100%',
+                              width: `${sentimentScore}%`,
+                              bgcolor: (() => {
                                 if (sentimentScore > 80) return theme.palette.success.main;
                                 if (sentimentScore > 60) return theme.palette.primary.main;
                                 if (sentimentScore > 40) return theme.palette.warning.main;
-                                if (sentimentScore > 20) return theme.palette.warning.main;
                                 return theme.palette.error.main;
                               })(),
-                              0.6
-                            )})`,
-                            '&:hover': {
-                              filter: `drop-shadow(0 0 12px ${alpha(
-                                (() => {
-                                  if (sentimentScore > 80) return theme.palette.success.main;
-                                  if (sentimentScore > 60) return theme.palette.primary.main;
-                                  if (sentimentScore > 40) return theme.palette.warning.main;
-                                  if (sentimentScore > 20) return theme.palette.warning.main;
-                                  return theme.palette.error.main;
-                                })(),
-                                0.8
-                              )})`
-                            }
-                          }}
-                        />
-                        <Typography
-                          variant="h6"
-                          component="div"
-                          color="text.primary"
-                          sx={{ fontWeight: 'bold', fontSize: '0.85rem' }} // Increased font size
-                        >
-                          {`${sentimentScore}`}
-                        </Typography>
-                      </Box>
+                              borderRadius: 1.5,
+                              transition: 'width 0.8s ease'
+                            }}
+                          />
+                        </Box>
+                      </Stack>
                     </MetricBox>
                   </Grid>
 
                   {/* Combined Platform Chart */}
                   <Grid item xs={12} md={3}>
-                    <MetricBox sx={{ p: 0, position: 'relative', zIndex: 1, overflow: 'visible' }}>
-                      <Box sx={{ width: '100%', pt: 0.5, px: 0.5 }}>
-                        <MetricTitle>{t('New Tokens Created (30-Day)')}</MetricTitle>
-                      </Box>
-                      <ResponsiveContainer width="100%" height={35} style={{ position: 'relative', zIndex: 1 }}>
+                    <MetricBox sx={{ 
+                      p: { xs: 2, sm: 2.5 }, 
+                      background: theme => alpha(theme.palette.background.paper, 0.3),
+                      border: theme => `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                      alignItems: 'center'
+                    }}>
+                      <MetricTitle sx={{ mb: 1.5, textAlign: 'center' }}>New Tokens • 30d</MetricTitle>
+                      <ResponsiveContainer width="100%" height={45}>
                         <AreaChart
                           key={`combined-${chartData.length}`}
                           data={chartData}
-                          margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
+                          margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                         >
                           <defs>
                             <linearGradient id="tokensGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.3}/>
+                              <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.15}/>
                               <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0}/>
                             </linearGradient>
                             <linearGradient id="marketcapGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor={theme.palette.secondary.main} stopOpacity={0.2}/>
+                              <stop offset="5%" stopColor={theme.palette.secondary.main} stopOpacity={0.1}/>
                               <stop offset="95%" stopColor={theme.palette.secondary.main} stopOpacity={0}/>
                             </linearGradient>
                           </defs>
@@ -835,7 +751,7 @@ export default function Summary() {
                             type="monotone"
                             dataKey="Tokens"
                             stroke={theme.palette.primary.main}
-                            strokeWidth={3}
+                            strokeWidth={1.5}
                             fill="url(#tokensGradient)"
                             dot={false}
                             name="New Tokens"
@@ -848,13 +764,13 @@ export default function Summary() {
                             type="monotone"
                             dataKey="avgMarketcap"
                             stroke={theme.palette.secondary.main}
-                            strokeWidth={2}
+                            strokeWidth={1.5}
                             fill="url(#marketcapGradient)"
                             dot={false}
                             name="Average Market Cap"
                             connectNulls={false}
-                            strokeDasharray="5 5"
-                            filter={`drop-shadow(0 0 4px ${alpha(theme.palette.secondary.main, 0.5)})`}
+                            strokeDasharray="3 3"
+                            opacity={0.6}
                           />
                         </AreaChart>
                       </ResponsiveContainer>
