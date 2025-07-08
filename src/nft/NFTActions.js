@@ -281,9 +281,15 @@ const MasterSequenceBadge = styled(Paper)(({ theme }) => ({
 
 // Add this styled component near the top with other styled components
 const SquareAvatar = styled(Avatar)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius * 1.5, // Adjust the multiplier to control roundness
-  width: 48,
-  height: 48
+  borderRadius: theme.shape.borderRadius * 2,
+  width: 56,
+  height: 56,
+  boxShadow: `0 4px 15px ${alpha(theme.palette.common.black, 0.1)}`,
+  border: `2px solid ${alpha(theme.palette.background.paper, 0.9)}`,
+  transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'scale(1.05)'
+  }
 }));
 
 // Add this new styled component near the top with other styled components
@@ -872,7 +878,22 @@ export default function NFTActions({ nft }) {
 
   return (
     <>
-      <GlassPanel elevation={0}>
+      <GlassPanel 
+        elevation={0}
+        sx={{
+          animation: 'fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+          '@keyframes fadeInScale': {
+            '0%': {
+              opacity: 0,
+              transform: 'scale(0.95) translateY(20px)'
+            },
+            '100%': {
+              opacity: 1,
+              transform: 'scale(1) translateY(0)'
+            }
+          }
+        }}
+      >
         <Stack spacing={3}>
           {self && (
             <CollectionHeader>
@@ -958,9 +979,13 @@ export default function NFTActions({ nft }) {
               <IconButton
                 size="large"
                 sx={{
-                  backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+                  background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                  boxShadow: (theme) => `0 4px 15px ${alpha(theme.palette.primary.main, 0.2)}`,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.2)
+                    background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.25)} 0%, ${alpha(theme.palette.primary.main, 0.15)} 100%)`,
+                    transform: 'translateY(-2px) rotate(15deg)',
+                    boxShadow: (theme) => `0 6px 20px ${alpha(theme.palette.primary.main, 0.3)}`
                   },
                   color: 'primary.main'
                 }}
@@ -1095,15 +1120,25 @@ export default function NFTActions({ nft }) {
             ) : (
               <Stack spacing={2}>
                 <Stack direction="row" justifyContent="space-between" alignItems="baseline">
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
                     Current Price
                   </Typography>
                   {loading ? (
-                    <PulseLoader color="#00AB55" size={10} />
+                    <PulseLoader color={theme.palette.primary.main} size={10} />
                   ) : lowestSellOffer ? (
                     <Stack direction="row" spacing={1} alignItems="center">
-                      <Icon icon={rippleSolid} width="24" height="24" />
-                      <Typography variant="h5" fontWeight="bold">
+                      <Icon icon={rippleSolid} width="24" height="24" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
+                      <Typography 
+                        variant="h5" 
+                        fontWeight="bold"
+                        sx={{
+                          background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                          backgroundClip: 'text',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                        }}
+                      >
                         {formatXRPAmount(
                           lowestSellOffer.totalAmount,
                           true,
@@ -1112,7 +1147,7 @@ export default function NFTActions({ nft }) {
                       </Typography>
                     </Stack>
                   ) : (
-                    <Typography variant="body1">- - -</Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.5 }}>- - -</Typography>
                   )}
                 </Stack>
                 {accountLogin ? (
@@ -1221,7 +1256,7 @@ export default function NFTActions({ nft }) {
                         py: 3
                       }}
                     >
-                      <PulseLoader color="#00AB55" size={10} />
+                      <PulseLoader color={theme.palette.primary.main} size={10} />
                     </Box>
                   ) : sellOffers.length > 0 ? (
                     <Stack spacing={2}>
@@ -1279,8 +1314,9 @@ export default function NFTActions({ nft }) {
                       sx={{
                         py: 4,
                         textAlign: 'center',
-                        backgroundColor: (theme) => alpha(theme.palette.background.default, 0.6),
-                        borderRadius: 1
+                        background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.3)} 100%)`,
+                        borderRadius: 2,
+                        border: (theme) => `1px dashed ${alpha(theme.palette.divider, 0.3)}`
                       }}
                     >
                       <Typography color="text.secondary">No sell offers available</Typography>
@@ -1324,7 +1360,7 @@ export default function NFTActions({ nft }) {
                       py: 3
                     }}
                   >
-                    <PulseLoader color="#00AB55" size={10} />
+                    <PulseLoader color={theme.palette.primary.main} size={10} />
                   </Box>
                 ) : buyOffers.length > 0 ? (
                   <Stack spacing={2}>
@@ -1419,8 +1455,9 @@ export default function NFTActions({ nft }) {
                     sx={{
                       py: 4,
                       textAlign: 'center',
-                      backgroundColor: (theme) => alpha(theme.palette.background.default, 0.6),
-                      borderRadius: 1
+                      background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.3)} 100%)`,
+                      borderRadius: 2,
+                      border: (theme) => `1px dashed ${alpha(theme.palette.divider, 0.3)}`
                     }}
                   >
                     <Typography color="text.secondary">No buy offers available</Typography>
@@ -1440,12 +1477,8 @@ export default function NFTActions({ nft }) {
               </AccordionDetails>
             </StyledAccordion>
 
-            <Accordion
+            <StyledAccordion
               defaultExpanded
-              sx={{
-                backgroundColor: 'transparent',
-                boxShadow: 'none'
-              }}
             >
               <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" />}>
                 <Stack direction="row" spacing={2} alignItems="center">
@@ -1458,7 +1491,7 @@ export default function NFTActions({ nft }) {
               <AccordionDetails>
                 <HistoryList nft={nft} />
               </AccordionDetails>
-            </Accordion>
+            </StyledAccordion>
           </Stack>
         </Stack>
         <CreateOfferDialog
