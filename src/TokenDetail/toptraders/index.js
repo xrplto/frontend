@@ -45,7 +45,11 @@ import { fNumber, fPercent } from 'src/utils/formatNumber';
 
 // Components
 import { StatsModal } from 'src/components/trader/TraderStats';
-import SankeyModal from 'src/components/SankeyModal';
+import dynamic from 'next/dynamic';
+
+const SankeyModal = dynamic(() => import('src/components/SankeyModal'), {
+  loading: () => <CircularProgress />
+});
 
 function truncate(str, n) {
   if (!str) return '';

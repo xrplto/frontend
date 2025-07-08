@@ -238,7 +238,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         
         wsProcessTimer.current = setTimeout(() => {
           processWebSocketQueue();
-        }, 250); // Process every 250ms - 16 updates per 4s ledger cycle
+        }, 500); // Process every 580ms - 8 updates per 4s ledger cycle
         
       } catch (err) {
         console.error('Error parsing WebSocket message:', err);
@@ -496,11 +496,11 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     setSync(sync + 1);
   };
 
-  const handleFilterByName = (event) => {
+  const handleFilterByName = useCallback((event) => {
     setFilterName(event.target.value);
     setPage(0);
-    setSync(sync + 1);
-  };
+    setSync(prev => prev + 1);
+  }, []);
 
   const visibleTokens = useMemo(() => {
     return tokens.slice(0, rows);
