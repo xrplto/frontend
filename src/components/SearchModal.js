@@ -25,7 +25,7 @@ import AnimationIcon from '@mui/icons-material/Animation';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import Tooltip from '@mui/material/Tooltip';
 
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
@@ -160,6 +160,24 @@ export default function SearchModal({ onClose, open }) {
 
   const inputRef = useRef(null);
   const modalRef = useRef(null);
+
+  // Memoize filtered tokens
+  const displayedTokens = useMemo(() => {
+    return activeTab === 'token' ? tokens : tokens.slice(0, 8);
+  }, [tokens, activeTab]);
+
+  // Memoize filtered collections
+  const displayedCollections = useMemo(() => {
+    return activeTab === 'nft' ? collections : collections.slice(0, 3);
+  }, [collections, activeTab]);
+
+  // Memoize handlers
+  const handleSearchChange = useCallback((e) => setSearch(e.target.value), []);
+  const handleTabChange = useCallback((_, newValue) => {
+    if (newValue !== null) {
+      setActiveTab(newValue);
+    }
+  }, []);
 
   const getData = (search) => {
     setLoading(true);
@@ -482,7 +500,7 @@ export default function SearchModal({ onClose, open }) {
               }
             }}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             inputRef={inputRef}
             autoFocus
           />
@@ -526,11 +544,7 @@ export default function SearchModal({ onClose, open }) {
             color="primary"
             value={activeTab}
             exclusive
-            onChange={(_, newValue) => {
-              if (newValue !== null) {
-                setActiveTab(newValue);
-              }
-            }}
+            onChange={handleTabChange}
             aria-label="search filters"
             sx={{
               mt: 1.5,
@@ -661,9 +675,7 @@ export default function SearchModal({ onClose, open }) {
                 scrollbarWidth: 'none'
               }}
             >
-              {tokens
-                .slice(0, activeTab == 'token' ? tokens.length : 8)
-                .map(({ md5, name, slug, isOMCF, user, verified, pro24h, exch }, idx) => {
+              {displayedTokens.map(({ md5, name, slug, isOMCF, user, verified, pro24h, exch }, idx) => {
                   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
                   const link = `/token/${slug}?fromSearch=1`;
 
@@ -891,7 +903,7 @@ export default function SearchModal({ onClose, open }) {
                 scrollbarWidth: 'none'
               }}
             >
-              {collections.slice(0, activeTab == 'nft' ? collections.length : 3).map((nft, idx) => (
+              {displayedCollections.map((nft, idx) => (
                 <Link
                   key={idx}
                   href={`/collection/${nft.slug}`}

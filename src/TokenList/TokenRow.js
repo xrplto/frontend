@@ -529,14 +529,15 @@ function FTokenRow({
     return () => clearTimeout(timer);
   }, [time, memoizedToken.bearbull]);
 
-  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+  const imgUrl = useMemo(() => `https://s1.xrpl.to/token/${md5}`, [md5]);
   const fallbackImgUrl = '/static/alt.webp';
-  const supplyRate = amount ? 100 : 0;
   const [imgError, setImgError] = useState(false);
 
   const handleImgError = useCallback(() => {
     setImgError(true);
   }, []);
+
+  const formattedTimeAgo = useMemo(() => formatTimeAgo(dateon, date), [dateon, date]);
 
   useEffect(() => {
     setImgError(false);
@@ -750,7 +751,7 @@ function FTokenRow({
             fontWeight: '500'
           }}
         >
-          {formatTimeAgo(dateon, date)}
+          {formattedTimeAgo}
         </Typography>
       </TableCell>
       {!isMobile && (
@@ -838,7 +839,7 @@ function FTokenRow({
                     </TableCell>
                     <TableCell sx={{ pt: 0, pb: 0 }}>
                       <Typography variant="caption" sx={{ color: '#fff' }}>
-                        {fNumber(supplyRate)}%
+                        {fNumber(convertedValues.supplyRate)}%
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -1015,10 +1016,7 @@ function FTokenRow({
                   }}
                 >
                   <EditIcon
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditToken();
-                    }}
+                    onClick={handleEditToken}
                     sx={{
                       cursor: 'pointer',
                       fontSize: '20px',
