@@ -49,23 +49,44 @@ import Watch from 'src/components/Watch';
 
 const MainContainer = styled(Box)(({ theme }) => ({
   width: '100%',
-  position: 'relative'
+  position: 'relative',
+  animation: 'fadeInUp 0.6s ease-out',
+  '@keyframes fadeInUp': {
+    from: { 
+      opacity: 0, 
+      transform: 'translateY(20px)' 
+    },
+    to: { 
+      opacity: 1, 
+      transform: 'translateY(0)' 
+    }
+  }
 }));
 
 const CompactCard = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.85
-  )} 100%)`,
-  backdropFilter: 'blur(24px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  borderRadius: '20px',
-  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 12px ${alpha(
-    theme.palette.primary.main,
-    0.04
-  )}`,
-  padding: theme.spacing(2.5),
-  marginBottom: theme.spacing(2),
+  background: theme.palette.mode === 'dark' 
+    ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+        theme.palette.background.paper,
+        0.7
+      )} 100%)`
+    : `linear-gradient(145deg, ${alpha('#ffffff', 0.95)} 0%, ${alpha(
+        theme.palette.background.paper,
+        0.85
+      )} 100%)`,
+  backdropFilter: 'blur(20px) saturate(180%)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  borderRadius: '24px',
+  boxShadow: theme.palette.mode === 'dark'
+    ? `0 20px 40px ${alpha(theme.palette.common.black, 0.3)}, 0 0 0 1px ${alpha(
+        theme.palette.common.white,
+        0.05
+      )}`
+    : `0 20px 40px ${alpha(theme.palette.primary.main, 0.08)}, 0 0 0 1px ${alpha(
+        theme.palette.divider,
+        0.05
+      )}`,
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(3),
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -75,16 +96,22 @@ const CompactCard = styled(Box)(({ theme }) => ({
     top: 0,
     left: 0,
     right: 0,
-    height: '3px',
-    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-    opacity: 0.8
+    height: '4px',
+    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+    opacity: 0.9,
+    borderRadius: '24px 24px 0 0',
+    animation: 'shimmer 3s ease-in-out infinite',
+    '@keyframes shimmer': {
+      '0%': { backgroundPosition: '-200% center' },
+      '100%': { backgroundPosition: '200% center' }
+    },
+    backgroundSize: '200% 100%'
   },
   '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.08)}, 0 4px 16px ${alpha(
-      theme.palette.primary.main,
-      0.06
-    )}`
+    boxShadow: theme.palette.mode === 'dark'
+      ? `0 25px 50px ${alpha(theme.palette.common.black, 0.4)}`
+      : `0 25px 50px ${alpha(theme.palette.primary.main, 0.12)}`,
+    transition: 'box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
   },
   [theme.breakpoints.down('md')]: {
     padding: theme.spacing(2),
@@ -108,9 +135,15 @@ const IconCover = styled(Box)(({ theme }) => ({
   backdropFilter: 'blur(12px)',
   position: 'relative',
   overflow: 'hidden',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  animation: 'logoFloat 3s ease-in-out infinite',
+  '@keyframes logoFloat': {
+    '0%, 100%': { transform: 'translateY(0)' },
+    '50%': { transform: 'translateY(-5px)' }
+  },
   '&:hover': {
-    transform: 'translateY(-3px) scale(1.02)',
+    transform: 'translateY(-3px) scale(1.05)',
+    animation: 'none',
     boxShadow: `0 12px 32px ${alpha(theme.palette.common.black, 0.15)}, 0 4px 12px ${alpha(
       theme.palette.primary.main,
       0.12
@@ -161,16 +194,21 @@ const CardOverlay = styled(Box)({
 });
 
 const CompactStatsCard = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.6
-  )} 100%)`,
-  backdropFilter: 'blur(12px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  borderRadius: '12px',
-  padding: theme.spacing(1.2),
+  background: theme.palette.mode === 'dark'
+    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(
+        theme.palette.background.paper,
+        0.4
+      )} 100%)`
+    : `linear-gradient(135deg, ${alpha('#ffffff', 0.9)} 0%, ${alpha(
+        theme.palette.background.paper,
+        0.7
+      )} 100%)`,
+  backdropFilter: 'blur(16px) saturate(150%)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+  borderRadius: '16px',
+  padding: theme.spacing(1.5),
   textAlign: 'center',
-  minWidth: '85px',
+  minWidth: '90px',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
@@ -198,16 +236,21 @@ const CompactStatsCard = styled(Box)(({ theme }) => ({
 }));
 
 const ActionButton = styled(IconButton)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.8
-  )} 100%)`,
-  backdropFilter: 'blur(12px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  borderRadius: '12px',
-  padding: '10px',
-  minWidth: '44px',
-  minHeight: '44px',
+  background: theme.palette.mode === 'dark'
+    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+        theme.palette.background.paper,
+        0.6
+      )} 100%)`
+    : `linear-gradient(135deg, ${alpha('#ffffff', 0.95)} 0%, ${alpha(
+        theme.palette.background.paper,
+        0.85
+      )} 100%)`,
+  backdropFilter: 'blur(16px) saturate(180%)',
+  border: `2px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+  borderRadius: '14px',
+  padding: '12px',
+  minWidth: '48px',
+  minHeight: '48px',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
@@ -225,16 +268,22 @@ const ActionButton = styled(IconButton)(({ theme }) => ({
     opacity: 0.6
   },
   '&:hover': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.95
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(
+      theme.palette.primary.main,
+      0.05
     )} 100%)`,
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-    transform: 'translateY(-2px)',
-    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.2)}, 0 2px 8px ${alpha(
+    border: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+    transform: 'translateY(-3px) scale(1.05)',
+    boxShadow: `0 10px 30px ${alpha(theme.palette.primary.main, 0.25)}, 0 3px 10px ${alpha(
       theme.palette.common.black,
-      0.08
+      0.1
     )}`
+  },
+  '& svg': {
+    transition: 'transform 0.3s ease'
+  },
+  '&:hover svg': {
+    transform: 'scale(1.1)'
   }
 }));
 
@@ -488,7 +537,7 @@ export default function ViewNFT({ collection }) {
         </Box>
       </SharePopover>
 
-      <CompactCard>
+      <CompactCard sx={{ position: 'relative' }}>
         <Stack direction="row" spacing={3} alignItems="center">
           {/* Logo Section */}
           <Box sx={{ flexShrink: 0 }}>
@@ -510,9 +559,9 @@ export default function ViewNFT({ collection }) {
                         sx={{
                           opacity: 0,
                           color: 'white',
-                          fontSize: '1.4rem',
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                          filter: 'drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.4))'
+                          fontSize: '1.6rem',
+                          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                          filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.5))'
                         }}
                       />
                     </CardOverlay>
@@ -524,9 +573,9 @@ export default function ViewNFT({ collection }) {
           </Box>
 
           {/* Main Content Section */}
-          <Stack spacing={1} flex={1} sx={{ minWidth: 0 }}>
+          <Stack spacing={1.5} flex={1} sx={{ minWidth: 0, width: { xs: '100%', sm: 'auto' } }}>
             {/* Title and Actions Row */}
-            <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center">
+            <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="flex-start">
               <Stack
                 direction="row"
                 spacing={1.5}
@@ -575,26 +624,31 @@ export default function ViewNFT({ collection }) {
                 )}
               </Stack>
 
-              <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flexShrink: 0 }}>
-                {accountLogin === collection.account && (
-                  <Link href={`/collection/${slug}/edit`} underline="none">
-                    <Tooltip title="Edit Collection" arrow placement="top">
-                      <ActionButton size="small">
-                        <EditIcon sx={{ fontSize: '1.1rem', color: 'text.primary' }} />
-                      </ActionButton>
-                    </Tooltip>
-                  </Link>
-                )}
+              <Stack 
+                direction="row" 
+                alignItems="center" 
+                spacing={1.5} 
+                sx={{ flexShrink: 0, ml: 2 }}
+              >
+                  {accountLogin === collection.account && (
+                    <Link href={`/collection/${slug}/edit`} underline="none">
+                      <Tooltip title="Edit Collection" arrow placement="top">
+                        <ActionButton size="small">
+                          <EditIcon sx={{ fontSize: '1.1rem', color: 'text.primary' }} />
+                        </ActionButton>
+                      </Tooltip>
+                    </Link>
+                  )}
 
-                <WatchlistButton>
-                  <Watch collection={collection} />
-                </WatchlistButton>
+                  <WatchlistButton>
+                    <Watch collection={collection} />
+                  </WatchlistButton>
 
-                <Tooltip title="Share Collection" arrow placement="top">
-                  <ActionButton size="small" ref={anchorRef} onClick={handleOpenShare}>
-                    <ShareIcon sx={{ fontSize: '1.1rem', color: 'text.primary' }} />
-                  </ActionButton>
-                </Tooltip>
+                  <Tooltip title="Share Collection" arrow placement="top">
+                    <ActionButton size="small" ref={anchorRef} onClick={handleOpenShare}>
+                      <ShareIcon sx={{ fontSize: '1.1rem', color: 'text.primary' }} />
+                    </ActionButton>
+                  </Tooltip>
               </Stack>
             </Stack>
 
@@ -661,11 +715,12 @@ export default function ViewNFT({ collection }) {
           {/* Stats Section */}
           <Stack
             direction="row"
-            spacing={1.5}
+            spacing={{ xs: 1, sm: 1.5 }}
             sx={{
               flexShrink: 0,
               overflowX: 'auto',
-              maxWidth: { xs: '320px', sm: '420px', md: '520px' },
+              maxWidth: { xs: '100%', sm: '420px', md: '520px' },
+              width: { xs: '100%', sm: 'auto' },
               pb: 0.5,
               '&::-webkit-scrollbar': {
                 height: 4
@@ -690,14 +745,19 @@ export default function ViewNFT({ collection }) {
                   <Stack alignItems="center" spacing={0.8}>
                     <Box
                       sx={{
-                        p: 0.6,
-                        borderRadius: '8px',
+                        p: 0.8,
+                        borderRadius: '10px',
                         background: `linear-gradient(135deg, ${alpha(
                           theme.palette[item.color].main,
-                          0.12
-                        )} 0%, ${alpha(theme.palette[item.color].main, 0.06)} 100%)`,
-                        border: `1px solid ${alpha(theme.palette[item.color].main, 0.15)}`,
-                        boxShadow: `0 2px 8px ${alpha(theme.palette[item.color].main, 0.1)}`
+                          0.15
+                        )} 0%, ${alpha(theme.palette[item.color].main, 0.08)} 100%)`,
+                        border: `1.5px solid ${alpha(theme.palette[item.color].main, 0.2)}`,
+                        boxShadow: `0 4px 12px ${alpha(theme.palette[item.color].main, 0.15)}`,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'scale(1.1)',
+                          boxShadow: `0 6px 16px ${alpha(theme.palette[item.color].main, 0.25)}`
+                        }
                       }}
                     >
                       <IconComponent
