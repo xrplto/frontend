@@ -92,47 +92,34 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const tableRef = useRef(null);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [scrollTopLength, setScrollTopLength] = useState(0);
-  const rafRef = useRef(null);
 
   const handleScrollX = useMemo(
-    () => throttle(() => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
+    () => debounce(() => {
+      if (tableContainerRef.current) {
+        const scrollLeft = tableContainerRef.current.scrollLeft;
+        setScrollLeft(scrollLeft > 0);
       }
-      rafRef.current = requestAnimationFrame(() => {
-        if (tableContainerRef.current) {
-          const scrollLeft = tableContainerRef.current.scrollLeft;
-          setScrollLeft(scrollLeft > 0);
-        }
-      });
-    }, 200),
+    }, 150),
     []
   );
 
   const handleScrollY = useMemo(
-    () => throttle(() => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-      rafRef.current = requestAnimationFrame(() => {
-        if (tableRef.current) {
-          // Batch DOM reads
-          const rect = tableRef.current.getBoundingClientRect();
-          const scrollTop = window.scrollY;
-          const tableOffsetTop = rect.top + scrollTop;
-          const tableHeight = rect.height;
-          const anchorTop = tableOffsetTop;
-          const anchorBottom = tableOffsetTop + tableHeight;
+    () => debounce(() => {
+      if (tableRef.current) {
+        const rect = tableRef.current.getBoundingClientRect();
+        const scrollTop = window.scrollY;
+        const tableOffsetTop = rect.top + scrollTop;
+        const tableHeight = rect.height;
+        const anchorTop = tableOffsetTop;
+        const anchorBottom = tableOffsetTop + tableHeight;
 
-          // Single state update
-          if (scrollTop > anchorTop && scrollTop < anchorBottom) {
-            setScrollTopLength(scrollTop - anchorTop);
-          } else {
-            setScrollTopLength(0);
-          }
+        if (scrollTop > anchorTop && scrollTop < anchorBottom) {
+          setScrollTopLength(scrollTop - anchorTop);
+        } else {
+          setScrollTopLength(0);
         }
-      });
-    }, 200),
+      }
+    }, 150),
     []
   );
 
@@ -148,9 +135,6 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         tableContainer.removeEventListener('scroll', handleScrollX);
       }
       window.removeEventListener('scroll', handleScrollY);
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
     };
   }, [handleScrollX, handleScrollY]);
 

@@ -485,6 +485,33 @@ function PriceChart({ token }) {
     return null;
   }, [chartType, data?.length, dataOHLC?.length]);
 
+  // Memoize price data transformation
+  const priceSeriesData = useMemo(() => {
+    return data?.length > 0 ? data.map(([timestamp, price]) => [timestamp, price]) : [];
+  }, [data]);
+
+  // Memoize volume data transformation with color calculations
+  const volumeSeriesData = useMemo(() => {
+    if (!data?.length) return [];
+    
+    return data.map(([timestamp, price, volume], i) => {
+      let color;
+      if (i > 0) {
+        const prevPrice = data[i - 1][1];
+        if (price > prevPrice) {
+          color = alpha(theme.palette.success.main, 0.6);
+        } else if (price < prevPrice) {
+          color = alpha(theme.palette.error.main, 0.6);
+        } else {
+          color = alpha(theme.palette.grey[500], 0.4);
+        }
+      } else {
+        color = alpha(theme.palette.grey[500], 0.4);
+      }
+      return { x: timestamp, y: volume, color };
+    });
+  }, [data, theme.palette]);
+
   const handleChange = useCallback((event, newRange) => {
     if (newRange) setRange(newRange);
   }, []);
@@ -808,7 +835,7 @@ function PriceChart({ token }) {
       series: [
         {
           name: 'Price',
-          data: data?.length > 0 ? data.map(([timestamp, price]) => [timestamp, price]) : [],
+          data: priceSeriesData,
           threshold: mediumValue,
           lineWidth: 2.5,
           animation: false
@@ -816,29 +843,7 @@ function PriceChart({ token }) {
         {
           type: 'column',
           name: 'Volume',
-          data:
-            data?.length > 0
-              ? data.map(([timestamp, price, volume], i) => {
-                  let color;
-                  if (i > 0) {
-                    const prevPrice = data[i - 1][1];
-                    if (price > prevPrice) {
-                      color = alpha(theme.palette.success.main, 0.6); // Price up
-                    } else if (price < prevPrice) {
-                      color = alpha(theme.palette.error.main, 0.6); // Price down
-                    } else {
-                      color = alpha(theme.palette.grey[500], 0.4); // No change
-                    }
-                  } else {
-                    color = alpha(theme.palette.grey[500], 0.4); // First bar
-                  }
-                  return {
-                    x: timestamp,
-                    y: volume,
-                    color
-                  };
-                })
-              : [],
+          data: volumeSeriesData,
           yAxis: 1,
           showInLegend: false,
           borderWidth: 0

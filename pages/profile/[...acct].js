@@ -1,11 +1,19 @@
 
-import { Box, styled, Stack, Toolbar, Container, useTheme } from "@mui/material";
+import { Box, styled, Stack, Toolbar, Container, useTheme, CircularProgress } from "@mui/material";
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import Portfolio from "src/portfolio";
+import dynamic from 'next/dynamic';
 import { isValidClassicAddress } from 'ripple-address-codec';
+
+const Portfolio = dynamic(() => import("src/portfolio"), {
+  loading: () => (
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+      <CircularProgress />
+    </Box>
+  ),
+});
 
 const OverviewWrapper = styled(Box)(
     ({ theme }) => `
