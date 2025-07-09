@@ -22,8 +22,9 @@ const SmallInfoIcon = (props) => {
     <InfoIcon
       {...otherProps}
       sx={{
-        fontSize: '14px',
-        ml: 0.5,
+        fontSize: '12px',
+        ml: 0.3,
+        mr: 0.2,
         opacity: 0.7,
         transition: 'opacity 0.2s ease',
         '&:hover': {
@@ -145,7 +146,7 @@ const TABLE_HEAD = [
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
           <Typography variant="inherit" sx={{ fontWeight: '600' }}>
             5m %
           </Typography>
@@ -174,7 +175,7 @@ const TABLE_HEAD = [
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
           <Typography variant="inherit" sx={{ fontWeight: '600' }}>
             1h %
           </Typography>
@@ -203,7 +204,7 @@ const TABLE_HEAD = [
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
           <Typography variant="inherit" sx={{ fontWeight: '600' }}>
             24h %
           </Typography>
@@ -232,7 +233,7 @@ const TABLE_HEAD = [
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
           <Typography variant="inherit" sx={{ fontWeight: '600' }}>
             7d %
           </Typography>
@@ -261,7 +262,7 @@ const TABLE_HEAD = [
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
           <Typography variant="inherit" sx={{ fontWeight: '600' }}>
             Volume
           </Typography>
@@ -290,7 +291,7 @@ const TABLE_HEAD = [
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
           <Typography variant="inherit" sx={{ fontWeight: '600' }}>
             Created
           </Typography>
@@ -299,7 +300,7 @@ const TABLE_HEAD = [
       </Tooltip>
     ),
     align: 'right',
-    width: '7%',
+    width: '8%',
     order: true
   },
   {
@@ -319,7 +320,7 @@ const TABLE_HEAD = [
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
           <Typography variant="inherit" sx={{ fontWeight: '600' }}>
             Trades
           </Typography>
@@ -348,7 +349,7 @@ const TABLE_HEAD = [
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
           <Typography variant="inherit" sx={{ fontWeight: '600' }}>
             TVL
           </Typography>
@@ -377,7 +378,7 @@ const TABLE_HEAD = [
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
           <Typography variant="inherit" sx={{ fontWeight: '600' }}>
             Market Cap
           </Typography>
@@ -406,7 +407,7 @@ const TABLE_HEAD = [
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
           <Typography variant="inherit" sx={{ fontWeight: '600' }}>
             Holders
           </Typography>
@@ -435,7 +436,7 @@ const TABLE_HEAD = [
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
           <Typography variant="inherit" sx={{ fontWeight: '600' }}>
             Supply
           </Typography>
@@ -506,7 +507,8 @@ export default function TokenListHead({
             borderBottom: 'none',
             '&:not(:first-of-type)': {
               paddingLeft: isMobile ? '4px' : '8px'
-            }
+            },
+            overflow: 'visible'
           },
           // First column (star) - sticky
           '& .MuiTableCell-root:nth-of-type(1)': {
