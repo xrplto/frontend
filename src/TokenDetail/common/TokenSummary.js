@@ -395,23 +395,23 @@ const TokenSummary = memo(({ token }) => {
   return (
     <Box
       sx={{
-        p: { xs: 1.5, sm: 2 },
-        borderRadius: '16px',
+        p: { xs: 1, sm: 2 },
+        borderRadius: { xs: '12px', sm: '16px' },
         background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
         backdropFilter: 'blur(20px)',
         border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
         boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(theme.palette.common.black, 0.02)}`,
-        mb: 2,
+        mb: { xs: 1, sm: 2 },
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&:hover': {
-          transform: 'translateY(-2px)',
+          transform: { xs: 'none', sm: 'translateY(-2px)' },
           boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.12)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.04)}`
         }
       }}
     >
-      <Stack spacing={2}>
+      <Stack spacing={{ xs: 1, sm: 2 }}>
         {/* Header with Token Info */}
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="flex-start">
           {/* Token Image */}
           <Box sx={{ position: 'relative' }}>
             <Box
@@ -427,12 +427,12 @@ const TokenSummary = memo(({ token }) => {
               <Image
                 src={tokenImageUrl}
                 alt={`${name} token`}
-                width={isMobile ? 72 : 88}
-                height={isMobile ? 72 : 88}
+                width={isMobile ? 60 : 88}
+                height={isMobile ? 60 : 88}
                 style={{
-                  borderRadius: '20px',
+                  borderRadius: isMobile ? '16px' : '20px',
                   objectFit: 'cover',
-                  border: `3px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                  border: `${isMobile ? '2px' : '3px'} solid ${alpha(theme.palette.primary.main, 0.25)}`,
                   boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.1)}`,
                   transition: 'all 0.3s ease'
                 }}
@@ -484,10 +484,10 @@ const TokenSummary = memo(({ token }) => {
                     #9c27b0 100%
                   )`,
                   borderRadius: '50%',
-                  width: 28,
-                  height: 28,
-                  minWidth: 28,
-                  minHeight: 28,
+                  width: { xs: 24, sm: 28 },
+                  height: { xs: 24, sm: 28 },
+                  minWidth: { xs: 24, sm: 28 },
+                  minHeight: { xs: 24, sm: 28 },
                   border: `2px solid ${theme.palette.background.paper}`,
                   boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.25)}, 
                              0 0 0 2px ${alpha('#4285f4', 0.2)}`,
@@ -528,11 +528,11 @@ const TokenSummary = memo(({ token }) => {
 
           {/* Token Details */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.5 }}>
+            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.5 }} flexWrap="wrap">
               <Typography
                 variant="h6"
                 sx={{
-                  fontSize: { xs: '1rem', sm: '1.2rem' },
+                  fontSize: { xs: '0.9rem', sm: '1.2rem' },
                   fontWeight: 800,
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
                   backgroundClip: 'text',
@@ -541,7 +541,8 @@ const TokenSummary = memo(({ token }) => {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                  letterSpacing: '-0.02em'
+                  letterSpacing: '-0.02em',
+                  maxWidth: { xs: '150px', sm: 'none' }
                 }}
               >
                 {name}
@@ -553,8 +554,8 @@ const TokenSummary = memo(({ token }) => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      width: 24,
-                      height: 24,
+                      width: { xs: 20, sm: 24 },
+                      height: { xs: 20, sm: 24 },
                       borderRadius: '50%',
                       background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
                       boxShadow: `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`,
@@ -562,7 +563,7 @@ const TokenSummary = memo(({ token }) => {
                       ml: 0.5
                     }}
                   >
-                    <VerifiedIcon sx={{ fontSize: 14, color: 'white' }} />
+                    <VerifiedIcon sx={{ fontSize: { xs: 12, sm: 14 }, color: 'white' }} />
                   </Box>
                 </Tooltip>
               )}
@@ -581,7 +582,7 @@ const TokenSummary = memo(({ token }) => {
               )}
             </Stack>
             
-            <Stack spacing={0.25} sx={{ mb: 0.5 }}>
+            <Stack spacing={0.25} sx={{ mb: 0.5, display: { xs: 'none', sm: 'block' } }}>
               <Typography 
                 variant="body2" 
                 color="text.secondary" 
@@ -636,11 +637,11 @@ const TokenSummary = memo(({ token }) => {
                 }
               }}
             >
-              <Stack direction="row" alignItems="baseline" spacing={2} sx={{ mb: 0.5 }}>
+              <Stack direction="row" alignItems="baseline" spacing={{ xs: 0.5, sm: 2 }} sx={{ mb: 0.5 }} flexWrap="wrap">
                 <Typography
                   variant="h4"
                   sx={{
-                    fontSize: { xs: '1.75rem', sm: '2.25rem' },
+                    fontSize: { xs: '1.25rem', sm: '2.25rem' },
                     fontWeight: 900,
                     color: theme.palette.text.primary,
                     lineHeight: 1,
@@ -654,7 +655,7 @@ const TokenSummary = memo(({ token }) => {
                 </Typography>
                 
                 {/* Rank and Origin badges next to price */}
-                <Stack direction="row" spacing={1} alignItems="center">
+                <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center" flexWrap="wrap">
                   {id && (
                     <Box
                       sx={{
@@ -673,10 +674,10 @@ const TokenSummary = memo(({ token }) => {
                         }
                       }}
                     >
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: '0.875rem' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                         #{id - 1}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontWeight: 600, fontSize: '0.7rem' }}>
+                      <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontWeight: 600, fontSize: { xs: '0.6rem', sm: '0.7rem' }, display: { xs: 'none', sm: 'block' } }}>
                         Rank
                       </Typography>
                     </Box>
@@ -687,8 +688,8 @@ const TokenSummary = memo(({ token }) => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 0.5,
-                      px: 1.25,
-                      py: 0.4,
+                      px: { xs: 0.75, sm: 1.25 },
+                      py: { xs: 0.3, sm: 0.4 },
                       borderRadius: '16px',
                       background: origin ? alpha(theme.palette.background.paper, 0.9) : `linear-gradient(135deg, ${alpha('#23288E', 0.15)} 0%, ${alpha('#1976d2', 0.08)} 100%)`,
                       border: `1px solid ${origin ? alpha(theme.palette.divider, 0.2) : alpha('#1976d2', 0.3)}`,
@@ -704,7 +705,7 @@ const TokenSummary = memo(({ token }) => {
                     <Box sx={{ transform: 'scale(1.5)' }}>
                       {getOriginIcon(origin || 'XRPL')}
                     </Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: origin ? theme.palette.text.primary : '#1976d2', fontSize: '0.875rem' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: origin ? theme.palette.text.primary : '#1976d2', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                       {origin || 'XRPL'}
                     </Typography>
                   </Box>
@@ -712,30 +713,41 @@ const TokenSummary = memo(({ token }) => {
               </Stack>
               
               {/* All price changes in a row */}
-              <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+              <Stack 
+                direction="row" 
+                spacing={{ xs: 0.3, sm: 1 }} 
+                alignItems="center" 
+                sx={{ 
+                  width: { xs: '100%', sm: 'auto' },
+                  mb: { xs: 0.5, sm: 0 },
+                  justifyContent: { xs: 'space-between', sm: 'flex-start' }
+                }}
+              >
                 {priceChanges.map((item) => (
                   <Box
                     key={item.label}
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 0.5,
-                      px: 1,
-                      py: 0.25,
+                      gap: { xs: 0.2, sm: 0.5 },
+                      px: { xs: 0.4, sm: 1 },
+                      py: { xs: 0.2, sm: 0.25 },
                       borderRadius: '6px',
                       background: alpha(item.color, 0.1),
                       border: `1px solid ${alpha(item.color, 0.2)}`,
                       transition: 'all 0.2s ease',
+                      flexShrink: 0,
+                      minWidth: { xs: 'max-content', sm: 'auto' },
                       '&:hover': {
                         background: alpha(item.color, 0.15),
-                        transform: 'translateY(-1px)'
+                        transform: { xs: 'none', sm: 'translateY(-1px)' }
                       }
                     }}
                   >
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.75rem',
+                        fontSize: { xs: '0.55rem', sm: '0.75rem' },
                         fontWeight: 600,
                         color: alpha(theme.palette.text.secondary, 0.8)
                       }}
@@ -745,48 +757,52 @@ const TokenSummary = memo(({ token }) => {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.75rem',
+                        fontSize: { xs: '0.6rem', sm: '0.75rem' },
                         fontWeight: 700,
                         color: item.color,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 0.25
+                        gap: 0.2
                       }}
                     >
                       {formatPercentage(item.value)}
                       <Icon 
                         icon={item.value >= 0 ? 'mdi:arrow-up' : 'mdi:arrow-down'} 
-                        style={{ fontSize: '0.75rem' }}
+                        style={{ fontSize: isMobile ? '0.55rem' : '0.75rem' }}
                       />
                     </Typography>
                   </Box>
                 ))}
-                
-                {/* 24h Range integrated */}
-                {range24h && (
+              </Stack>
+              
+              {/* 24h Range - separate row below percentages */}
+              {range24h && (
                   <Box
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 0.5,
-                      px: 1,
-                      py: 0.25,
+                      gap: { xs: 0.5, sm: 0.5 },
+                      px: { xs: 0.75, sm: 1 },
+                      py: { xs: 0.3, sm: 0.25 },
                       borderRadius: '6px',
                       background: alpha(theme.palette.text.secondary, 0.08),
                       border: `1px solid ${alpha(theme.palette.text.secondary, 0.15)}`,
                       transition: 'all 0.2s ease',
+                      width: { xs: '100%', sm: 'auto' },
+                      mt: { xs: 0.5, sm: 0 },
                       '&:hover': {
                         background: alpha(theme.palette.text.secondary, 0.12),
-                        transform: 'translateY(-1px)'
+                        transform: { xs: 'none', sm: 'translateY(-1px)' }
                       }
                     }}
                   >
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.75rem',
+                        fontSize: { xs: '0.6rem', sm: '0.75rem' },
                         fontWeight: 600,
-                        color: alpha(theme.palette.text.secondary, 0.8)
+                        color: alpha(theme.palette.text.secondary, 0.8),
+                        minWidth: { xs: '20px', sm: 'auto' }
                       }}
                     >
                       24h
@@ -795,16 +811,18 @@ const TokenSummary = memo(({ token }) => {
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 0.25
+                        gap: { xs: 0.25, sm: 0.25 },
+                        flex: 1,
+                        justifyContent: { xs: 'space-between', sm: 'flex-start' }
                       }}
                     >
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.75rem',
+                          fontSize: { xs: '0.6rem', sm: '0.75rem' },
                           fontWeight: 700,
                           color: theme.palette.text.primary,
-                          display: 'flex',
+                          display: { xs: 'none', sm: 'flex' },
                           alignItems: 'center',
                           gap: 0.25
                         }}
@@ -820,13 +838,29 @@ const TokenSummary = memo(({ token }) => {
                         />
                         {currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.min, metrics.USD), 1 / metrics[activeFiatCurrency]))}
                       </Typography>
+                      {/* Mobile compact display */}
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.6rem',
+                          fontWeight: 700,
+                          color: theme.palette.text.primary,
+                          display: { xs: 'flex', sm: 'none' },
+                          alignItems: 'center',
+                          gap: 0.5
+                        }}
+                      >
+                        <span>{currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.min, metrics.USD), 1 / metrics[activeFiatCurrency]))}</span>
+                        <span style={{ color: theme.palette.text.secondary }}>-</span>
+                        <span>{currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.max, metrics.USD), 1 / metrics[activeFiatCurrency]))}</span>
+                      </Typography>
                       <Box
                         sx={{
-                          width: 24,
-                          height: 2,
+                          width: { xs: 60, sm: 24 },
+                          height: { xs: 4, sm: 2 },
                           backgroundColor: alpha(theme.palette.text.secondary, 0.2),
-                          mx: 0.5,
-                          borderRadius: '1px',
+                          mx: { xs: 0.5, sm: 0.5 },
+                          borderRadius: '2px',
                           position: 'relative',
                           overflow: 'hidden'
                         }}
@@ -849,8 +883,8 @@ const TokenSummary = memo(({ token }) => {
                             left: `${range24h.percent}%`,
                             top: '50%',
                             transform: 'translate(-50%, -50%)',
-                            width: 4,
-                            height: 4,
+                            width: { xs: 6, sm: 4 },
+                            height: { xs: 6, sm: 4 },
                             borderRadius: '50%',
                             backgroundColor: theme.palette.background.paper,
                             border: `1px solid ${theme.palette.primary.main}`,
@@ -861,7 +895,7 @@ const TokenSummary = memo(({ token }) => {
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.75rem',
+                          fontSize: { xs: '0.6rem', sm: '0.75rem' },
                           fontWeight: 700,
                           color: theme.palette.text.primary,
                           display: 'flex',
@@ -869,21 +903,26 @@ const TokenSummary = memo(({ token }) => {
                           gap: 0.25
                         }}
                       >
-                        {currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.max, metrics.USD), 1 / metrics[activeFiatCurrency]))}
+                        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                          {currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.max, metrics.USD), 1 / metrics[activeFiatCurrency]))}
+                        </Box>
+                        <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+                          {currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.max, metrics.USD), 1 / metrics[activeFiatCurrency]))}
+                        </Box>
                         <Box
                           component="span"
                           sx={{
                             width: 4,
                             height: 4,
                             borderRadius: '50%',
-                            backgroundColor: theme.palette.error.main
+                            backgroundColor: theme.palette.error.main,
+                            display: { xs: 'none', sm: 'block' }
                           }}
                         />
                       </Typography>
                     </Box>
                   </Box>
                 )}
-              </Stack>
             </Box>
 
             {/* Tags and Status */}
@@ -893,14 +932,25 @@ const TokenSummary = memo(({ token }) => {
                   label="Expired"
                   size="small"
                   color="error"
-                  sx={{ fontSize: '0.6rem', height: '16px' }}
+                  sx={{ 
+                    fontSize: { xs: '0.55rem', sm: '0.6rem' }, 
+                    height: { xs: '14px', sm: '16px' } 
+                  }}
                 />
               )}
             </Stack>
           </Box>
 
           {/* Action Buttons */}
-          <Stack direction="row" spacing={0.5}>
+          <Stack 
+            direction="row" 
+            spacing={0.5}
+            sx={{
+              flexWrap: { xs: 'wrap', sm: 'nowrap' },
+              justifyContent: { xs: 'flex-end', sm: 'center' },
+              rowGap: { xs: 0.5, sm: 0 }
+            }}
+          >
             <Tooltip title={`${isRemove ? 'Remove' : 'Set'} Trustline`}>
               <IconButton 
                 size="small" 
@@ -919,10 +969,10 @@ const TokenSummary = memo(({ token }) => {
                   boxShadow: isRemove 
                     ? `0 4px 16px ${alpha(theme.palette.error.main, 0.15)}, 0 1px 2px ${alpha(theme.palette.error.main, 0.1)}`
                     : `0 4px 16px ${alpha(theme.palette.success.main, 0.15)}, 0 1px 2px ${alpha(theme.palette.success.main, 0.1)}`,
-                  padding: isMobile ? '6px' : '8px',
-                  minWidth: isMobile ? '36px' : '40px',
-                  minHeight: isMobile ? '36px' : '40px',
-                  transform: 'scale(1.1)',
+                  padding: { xs: '6px', sm: '8px' },
+                  minWidth: { xs: '32px', sm: '40px' },
+                  minHeight: { xs: '32px', sm: '40px' },
+                  transform: { xs: 'scale(1)', sm: 'scale(1.1)' },
                   '&::before': {
                     content: '""',
                     position: 'absolute',
@@ -958,7 +1008,7 @@ const TokenSummary = memo(({ token }) => {
                     transform: 'translateY(-2px) scale(1.08)'
                   },
                   '& .MuiSvgIcon-root': {
-                    fontSize: isMobile ? '18px' : '20px',
+                    fontSize: { xs: '16px', sm: '20px' },
                     color: isRemove ? theme.palette.error.main : theme.palette.success.main,
                     transition: 'all 0.3s ease'
                   },
@@ -987,9 +1037,9 @@ const TokenSummary = memo(({ token }) => {
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     overflow: 'hidden',
                     boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
-                    padding: isMobile ? '4px' : '6px',
-                    minWidth: isMobile ? '32px' : '36px',
-                    minHeight: isMobile ? '32px' : '36px',
+                    padding: { xs: '4px', sm: '6px' },
+                    minWidth: { xs: '28px', sm: '36px' },
+                    minHeight: { xs: '28px', sm: '36px' },
                     '&::before': {
                       content: '""',
                       position: 'absolute',
@@ -1017,7 +1067,7 @@ const TokenSummary = memo(({ token }) => {
                       transform: 'translateY(-2px) scale(0.98)'
                     },
                     '& .MuiSvgIcon-root': {
-                      fontSize: isMobile ? '16px' : '18px',
+                      fontSize: { xs: '14px', sm: '18px' },
                       color: alpha(theme.palette.text.primary, 0.8),
                       transition: 'color 0.3s ease'
                     }
@@ -1040,14 +1090,14 @@ const TokenSummary = memo(({ token }) => {
           sx={{
             display: 'grid',
             gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-            gap: 0.5
+            gap: { xs: 0.75, sm: 1 }
           }}
         >
           {metricsData.map((metric, index) => (
             <Box
               key={index}
               sx={{
-                p: 0.5,
+                p: { xs: 0.75, sm: 1 },
                 borderRadius: '6px',
                 background: `linear-gradient(135deg, ${alpha(metric.color, 0.06)} 0%, ${alpha(metric.color, 0.03)} 100%)`,
                 border: `1px solid ${alpha(metric.color, 0.08)}`,
@@ -1062,7 +1112,7 @@ const TokenSummary = memo(({ token }) => {
               <Typography
                 variant="caption"
                 sx={{
-                  fontSize: '0.6rem',
+                  fontSize: { xs: '0.55rem', sm: '0.65rem' },
                   color: alpha(theme.palette.text.secondary, 0.8),
                   display: 'block',
                   mb: 0.25
@@ -1073,7 +1123,7 @@ const TokenSummary = memo(({ token }) => {
               <Typography
                 variant="subtitle2"
                 sx={{
-                  fontSize: '0.8rem',
+                  fontSize: { xs: '0.7rem', sm: '0.85rem' },
                   fontWeight: 600,
                   color: metric.color,
                   lineHeight: 1
