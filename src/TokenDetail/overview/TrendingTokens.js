@@ -167,7 +167,7 @@ const SkeletonCard = () => (
     <CardContent sx={{ p: 1 }}>
       <Box display="flex" alignItems="center" justifyContent="space-between">
         <Stack direction="row" spacing={1} alignItems="center" flex={1}>
-          <Skeleton variant="circular" width={28} height={28} />
+          <Skeleton variant="circular" width={32} height={32} />
           <Stack spacing={0.2} flex={1}>
             <Skeleton variant="text" width="70%" height={18} />
             <Skeleton variant="text" width="50%" height={14} />
@@ -386,5 +386,24 @@ const TrendingTokens = () => {
     </StackStyle>
   );
 };
+
+const TrendingScore = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 8,
+  right: 8,
+  background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
+  color: '#fff',
+  borderRadius: '6px',
+  padding: '2px 8px',
+  fontSize: '0.65rem',
+  fontWeight: 700,
+  boxShadow: `0 2px 8px ${alpha('#FF6B35', 0.3)}`,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  '& svg': {
+    fontSize: 10
+  }
+}));
 
 export default TrendingTokens;
