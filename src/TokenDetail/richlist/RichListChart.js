@@ -20,11 +20,15 @@ import {
 } from '@mui/material';
 import { alpha, keyframes } from '@mui/material/styles';
 
-// Chart
-import { Chart } from 'src/components/Chart';
+// Highcharts
+import Highcharts from 'highcharts/highstock';
+import HighchartsReact from 'highcharts-react-official';
+import accessibility from 'highcharts/modules/accessibility';
 
-// Components
-import ChartOptions from './ChartOptions';
+// Initialize the accessibility module
+if (typeof Highcharts === 'object') {
+  accessibility(Highcharts);
+}
 
 // ----------------------------------------------------------------------
 
@@ -57,6 +61,10 @@ const EnhancedToggleButton = styled(ToggleButton)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  background: theme.palette.mode === 'dark' 
+    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.default, 0.9)} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.grey[100], 0.8)} 0%, ${alpha(theme.palette.grey[200], 0.9)} 100%)`,
+  color: theme.palette.text.primary,
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -64,60 +72,60 @@ const EnhancedToggleButton = styled(ToggleButton)(({ theme }) => ({
     left: '-100%',
     width: '100%',
     height: '100%',
-    background: `linear-gradient(90deg, transparent, ${alpha(
-      theme.palette.primary.main,
-      0.1
-    )}, transparent)`,
+    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.3)}, transparent)`,
     transition: 'left 0.6s'
   },
   '&:hover::before': {
     left: '100%'
   },
   '&:hover': {
-    transform: 'translateY(-1px)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+    transform: 'translateY(-1px) scale(1.02)',
+    boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+    filter: 'brightness(1.1)'
   },
   '&.Mui-selected': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.info.main, 0.1)} 100%)`,
     color: theme.palette.primary.main,
-    fontWeight: 600,
+    fontWeight: 700,
+    boxShadow: `0 0 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+    textShadow: theme.palette.mode === 'dark' ? `0 0 10px ${alpha(theme.palette.primary.main, 0.6)}` : 'none',
     '&:hover': {
-      backgroundColor: alpha(theme.palette.primary.main, 0.15)
+      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.3)} 0%, ${alpha(theme.palette.info.main, 0.15)} 100%)`
     }
   }
 }));
 
 const ChartContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: '16px',
   overflow: 'hidden',
-  background:
-    theme.palette.mode === 'dark'
-      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-          theme.palette.background.default,
-          0.9
-        )} 100%)`
-      : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-          '#f8fafc',
-          0.8
-        )} 100%)`,
-  backdropFilter: 'blur(10px)',
+  background: theme.palette.mode === 'dark'
+    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.95)} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.grey[50], 0.9)} 100%)`,
+  backdropFilter: 'blur(24px)',
+  boxShadow: theme.palette.mode === 'dark'
+    ? `0 0 40px ${alpha(theme.palette.primary.main, 0.15)}, 0 0 80px ${alpha(theme.palette.info.main, 0.1)}`
+    : `0 4px 24px ${alpha(theme.palette.grey[400], 0.2)}, 0 0 40px ${alpha(theme.palette.primary.light, 0.1)}`,
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  boxShadow:
-    theme.palette.mode === 'dark'
-      ? `0 8px 32px ${alpha('#000', 0.3)}`
-      : `0 8px 32px ${alpha('#000', 0.08)}`,
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
+    height: '2px',
+    background: theme.palette.mode === 'dark'
+      ? `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.8)}, ${alpha(theme.palette.info.main, 0.6)}, transparent)`
+      : `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.6)}, transparent)`
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     height: '1px',
-    background: `linear-gradient(90deg, transparent, ${alpha(
-      theme.palette.primary.main,
-      0.3
-    )}, transparent)`
+    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.divider, 0.4)}, transparent)`
   }
 }));
 
@@ -214,20 +222,190 @@ const RichListChart = memo(({ token }) => {
     if (newRange) setRange(newRange);
   }, []);
 
-  // Memoize chart data and options to prevent recreation on every render
-  const CHART_DATA1 = useMemo(() => [
-    {
-      name: '',
-      type: 'area',
-      data: graphData
-    }
-  ], [graphData]);
+  // Memoize Highcharts options
+  const chartOptions = useMemo(() => ({
+    chart: {
+      type: 'areaspline',
+      backgroundColor: 'transparent',
+      height: isMobile ? '240px' : '364px',
+      animation: {
+        duration: 1200,
+        easing: 'easeOutCubic'
+      },
+      style: {
+        fontFamily: theme.typography.fontFamily
+      },
+      zoomType: 'x',
+      marginBottom: isMobile ? 30 : 40,
+      plotBorderWidth: 0,
+      events: {
+        render: function () {
+          const chart = this;
+          const imgUrl = theme.palette.mode === 'dark'
+            ? '/logo/xrpl-to-logo-white.svg'
+            : '/logo/xrpl-to-logo-black.svg';
+          const imgWidth = '50';
+          const imgHeight = '15';
 
-  const options1 = useMemo(() => {
-    const opts = ChartOptions(CHART_DATA1);
-    opts.colors = [theme.palette.primary.main];
-    return opts;
-  }, [CHART_DATA1, theme.palette.primary.main]);
+          if (chart.watermark) {
+            chart.watermark.destroy();
+          }
+
+          const xPos = chart.plotWidth - imgWidth - 10;
+          const yPos = chart.plotHeight - imgHeight - 10;
+
+          chart.watermark = chart.renderer
+            .image(imgUrl, xPos, yPos, imgWidth, imgHeight)
+            .attr({
+              zIndex: 5,
+              opacity: theme.palette.mode === 'dark' ? 0.4 : 0.2,
+              width: '100px'
+            })
+            .add();
+        }
+      }
+    },
+    title: {
+      text: null
+    },
+    credits: {
+      enabled: false
+    },
+    legend: {
+      enabled: false
+    },
+    xAxis: {
+      type: 'datetime',
+      lineColor: alpha(theme.palette.divider, 0.6),
+      tickColor: alpha(theme.palette.divider, 0.6),
+      gridLineWidth: 1,
+      gridLineColor: alpha(theme.palette.divider, 0.1),
+      labels: {
+        style: {
+          color: theme.palette.text.primary,
+          fontWeight: 500,
+          fontSize: '10px'
+        }
+      },
+      crosshair: {
+        width: 1,
+        dashStyle: 'Solid',
+        color: alpha(theme.palette.primary.main, 0.6)
+      }
+    },
+    yAxis: {
+      title: {
+        text: null
+      },
+      gridLineColor: alpha(theme.palette.divider, 0.1),
+      labels: {
+        style: {
+          color: theme.palette.text.primary,
+          fontWeight: 500,
+          fontSize: '10px'
+        },
+        formatter: function() {
+          return Highcharts.numberFormat(this.value, 0);
+        }
+      },
+      crosshair: {
+        width: 1,
+        dashStyle: 'Solid',
+        color: alpha(theme.palette.primary.main, 0.6)
+      }
+    },
+    plotOptions: {
+      areaspline: {
+        marker: {
+          enabled: false,
+          symbol: 'circle',
+          radius: 3,
+          states: {
+            hover: {
+              enabled: true,
+              radius: 6,
+              lineWidth: 2,
+              lineColor: theme.palette.background.paper,
+              fillColor: theme.palette.primary.main
+            }
+          }
+        },
+        lineWidth: 2.5,
+        states: {
+          hover: {
+            lineWidth: 3.5,
+            brightness: 0.1
+          }
+        },
+        fillOpacity: 0.3,
+        color: theme.palette.primary.main,
+        fillColor: {
+          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+          stops: [
+            [0, alpha(theme.palette.primary.main, 0.4)],
+            [0.5, alpha(theme.palette.primary.light, 0.25)],
+            [1, alpha(theme.palette.primary.main, 0.15)]
+          ]
+        }
+      }
+    },
+    series: [{
+      name: 'Total Addresses',
+      data: graphData,
+      threshold: null
+    }],
+    tooltip: {
+      enabled: true,
+      backgroundColor: theme.palette.mode === 'dark'
+        ? alpha(theme.palette.grey[900], 0.95)
+        : alpha(theme.palette.background.paper, 0.95),
+      borderColor: alpha(theme.palette.primary.main, 0.3),
+      borderRadius: theme.shape.borderRadius * 1.5,
+      borderWidth: 1,
+      shadow: {
+        color: alpha(theme.palette.primary.main, 0.2),
+        offsetX: 0,
+        offsetY: 4,
+        opacity: 0.3,
+        width: 8
+      },
+      style: {
+        color: theme.palette.text.primary,
+        fontSize: '11px',
+        fontWeight: 500
+      },
+      formatter: function () {
+        return `<div style="padding: 8px;">
+          <div style="font-weight: 600; color: ${theme.palette.primary.main}; margin-bottom: 4px;">
+            ${Highcharts.dateFormat('%b %d, %Y', this.x)}
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${theme.palette.primary.main};"></div>
+            <span>Addresses: <strong>${Highcharts.numberFormat(this.y, 0)}</strong></span>
+          </div>
+        </div>`;
+      },
+      shared: false,
+      useHTML: true,
+      hideDelay: 100
+    },
+    responsive: {
+      rules: [{
+        condition: {
+          maxWidth: 500
+        },
+        chartOptions: {
+          yAxis: {
+            labels: {
+              align: 'right',
+              x: -5,
+              y: 0
+            }
+          }
+        }
+      }]
+    }
+  }), [graphData, theme, isMobile]);
 
   // Memoize color and tooltip functions
   const getRangeColor = useCallback((currentRange) => {
@@ -299,17 +477,18 @@ const RichListChart = memo(({ token }) => {
                 sx={{
                   fontWeight: 700,
                   fontSize: isMobile ? '0.8rem' : undefined,
-                  background:
-                    theme.palette.mode === 'dark'
-                      ? 'linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                      : 'linear-gradient(135deg, #000 0%, rgba(0,0,0,0.9) 50%, rgba(0,0,0,0.7) 100%)',
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #00ff88 0%, #00ccff 50%, #ffffff 100%)'
+                    : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.info.main} 50%, ${theme.palette.primary.dark} 100%)`,
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  textShadow:
-                    theme.palette.mode === 'dark'
-                      ? '0px 2px 8px rgba(255,255,255,0.1)'
-                      : '0px 2px 8px rgba(0,0,0,0.1)',
+                  textShadow: theme.palette.mode === 'dark' 
+                    ? '0px 0px 20px rgba(0,255,136,0.5)'
+                    : `0px 0px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  filter: theme.palette.mode === 'dark'
+                    ? 'drop-shadow(0 0 10px rgba(0, 255, 136, 0.6))'
+                    : `drop-shadow(0 0 10px ${alpha(theme.palette.primary.main, 0.4)})`,
                   whiteSpace: 'nowrap'
                 }}
               >
@@ -349,13 +528,12 @@ const RichListChart = memo(({ token }) => {
               elevation={0}
               sx={{
                 display: 'flex',
-                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                borderRadius: 1.5,
-                background: alpha(theme.palette.background.paper, 0.8),
-                backdropFilter: 'blur(10px)',
+                borderRadius: 2,
+                background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.08)} 100%)`,
+                backdropFilter: 'blur(24px)',
                 flexWrap: 'wrap',
-                p: isMobile ? 0.05 : 0.2,
-                boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, 0.08)}`
+                p: isMobile ? 0.1 : 0.3,
+                boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`
               }}
             >
               <StyledToggleButtonGroup
@@ -434,9 +612,15 @@ const RichListChart = memo(({ token }) => {
           </Box>
         ) : graphData && graphData.length > 0 ? (
           <Fade in={!isLoading}>
-            <Box sx={{ p: 0, pb: 0 }} dir="ltr">
-              <Chart series={CHART_DATA1} options={options1} height={isMobile ? 240 : 364} />
-            </Box>
+            <Stack>
+              <HighchartsReact
+                highcharts={Highcharts}
+                options={chartOptions}
+                allowChartUpdate={true}
+                constructorType={'chart'}
+                key={`richlist-chart-${range}`}
+              />
+            </Stack>
           </Fade>
         ) : (
           <Box
