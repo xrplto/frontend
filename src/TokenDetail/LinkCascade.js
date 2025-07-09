@@ -12,7 +12,7 @@ import twotoneGreaterThan from '@iconify/icons-ic/twotone-greater-than';
 
 export default function LinkCascade({token, tabID, tabLabels}) {
     return (
-        <Stack direction='row' spacing={1} sx={{ mt: 1 }} alignItems='center' color={'text.secondary'}>
+        <Stack direction='row' spacing={1} sx={{ mb: 2, mt: 0 }} alignItems='center' color={'text.secondary'}>
             <Link
                 underline="none"
                 color="inherit"

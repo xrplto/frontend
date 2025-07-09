@@ -179,57 +179,6 @@ const TokenSummary = memo(({ token }) => {
 
   const metricsData = [
     {
-      title: 'Price',
-      value: (
-        <Box
-          sx={{
-            display: 'inline-block',
-            animation: priceAnimation === 'increase' 
-              ? 'priceIncrease 0.6s ease-out'
-              : priceAnimation === 'decrease' 
-              ? 'priceDecrease 0.6s ease-out'
-              : 'none',
-            '@keyframes priceIncrease': {
-              '0%': {
-                transform: 'scale(1)',
-                color: theme.palette.primary.main
-              },
-              '50%': {
-                transform: 'scale(1.1)',
-                color: theme.palette.success.main,
-                textShadow: `0 0 10px ${alpha(theme.palette.success.main, 0.5)}`
-              },
-              '100%': {
-                transform: 'scale(1)',
-                color: theme.palette.primary.main
-              }
-            },
-            '@keyframes priceDecrease': {
-              '0%': {
-                transform: 'scale(1)',
-                color: theme.palette.primary.main
-              },
-              '50%': {
-                transform: 'scale(1.1)',
-                color: theme.palette.error.main,
-                textShadow: `0 0 10px ${alpha(theme.palette.error.main, 0.5)}`
-              },
-              '100%': {
-                transform: 'scale(1)',
-                color: theme.palette.primary.main
-              }
-            }
-          }}
-        >
-          <NumberTooltip
-            prepend={currencySymbols[activeFiatCurrency]}
-            number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
-          />
-        </Box>
-      ),
-      color: theme.palette.primary.main
-    },
-    {
       title: 'Market Cap',
       value: `${currencySymbols[activeFiatCurrency]}${formatValue(convertedMarketCap)}`,
       color: theme.palette.success.main
@@ -243,6 +192,11 @@ const TokenSummary = memo(({ token }) => {
       title: 'TVL',
       value: `${currencySymbols[activeFiatCurrency]}${formatValue(tvl || 0)}`,
       color: theme.palette.info.main
+    },
+    {
+      title: 'Holders',
+      value: formatValue(holders || 0),
+      color: theme.palette.warning.main
     }
   ];
 
@@ -625,33 +579,180 @@ const TokenSummary = memo(({ token }) => {
             >
               {user || name}
             </Typography>
+            
+            {/* Price - Prominently displayed */}
+            <Box
+              sx={{
+                mb: 0.5,
+                animation: priceAnimation === 'increase' 
+                  ? 'priceIncrease 0.6s ease-out'
+                  : priceAnimation === 'decrease' 
+                  ? 'priceDecrease 0.6s ease-out'
+                  : 'none',
+                '@keyframes priceIncrease': {
+                  '0%': {
+                    transform: 'scale(1)',
+                    color: theme.palette.text.primary
+                  },
+                  '50%': {
+                    transform: 'scale(1.05)',
+                    color: theme.palette.success.main,
+                    textShadow: `0 0 20px ${alpha(theme.palette.success.main, 0.5)}`
+                  },
+                  '100%': {
+                    transform: 'scale(1)',
+                    color: theme.palette.text.primary
+                  }
+                },
+                '@keyframes priceDecrease': {
+                  '0%': {
+                    transform: 'scale(1)',
+                    color: theme.palette.text.primary
+                  },
+                  '50%': {
+                    transform: 'scale(1.05)',
+                    color: theme.palette.error.main,
+                    textShadow: `0 0 20px ${alpha(theme.palette.error.main, 0.5)}`
+                  },
+                  '100%': {
+                    transform: 'scale(1)',
+                    color: theme.palette.text.primary
+                  }
+                }
+              }}
+            >
+              <Stack direction="row" alignItems="baseline" spacing={2} sx={{ mb: 0.5 }}>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontSize: { xs: '1.75rem', sm: '2.25rem' },
+                    fontWeight: 900,
+                    color: theme.palette.text.primary,
+                    lineHeight: 1,
+                    letterSpacing: '-0.03em'
+                  }}
+                >
+                  <NumberTooltip
+                    prepend={currencySymbols[activeFiatCurrency]}
+                    number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+                  />
+                </Typography>
+                
+                {/* Rank and Origin badges next to price */}
+                <Stack direction="row" spacing={1} alignItems="center">
+                  {id && (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        px: 1.25,
+                        py: 0.4,
+                        borderRadius: '16px',
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-1px)',
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                        }
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: '0.875rem' }}>
+                        #{id - 1}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontWeight: 600, fontSize: '0.7rem' }}>
+                        Rank
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  {origin && (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        px: 1.25,
+                        py: 0.4,
+                        borderRadius: '16px',
+                        background: alpha(theme.palette.background.paper, 0.9),
+                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                        boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.05)}`,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-1px)',
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`,
+                          borderColor: alpha(theme.palette.primary.main, 0.3)
+                        }
+                      }}
+                    >
+                      <Box sx={{ transform: 'scale(1.5)' }}>
+                        {getOriginIcon(origin)}
+                      </Box>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.text.primary, fontSize: '0.875rem' }}>
+                        {origin}
+                      </Typography>
+                    </Box>
+                  )}
+                </Stack>
+              </Stack>
+              
+              {/* All price changes in a row */}
+              <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                {priceChanges.map((item) => (
+                  <Box
+                    key={item.label}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      px: 1,
+                      py: 0.25,
+                      borderRadius: '6px',
+                      background: alpha(item.color, 0.1),
+                      border: `1px solid ${alpha(item.color, 0.2)}`,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        background: alpha(item.color, 0.15),
+                        transform: 'translateY(-1px)'
+                      }
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: alpha(theme.palette.text.secondary, 0.8)
+                      }}
+                    >
+                      {item.label}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        color: item.color,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.25
+                      }}
+                    >
+                      {formatPercentage(item.value)}
+                      <Icon 
+                        icon={item.value >= 0 ? 'mdi:arrow-up' : 'mdi:arrow-down'} 
+                        style={{ fontSize: '0.75rem' }}
+                      />
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
 
             {/* Tags and Status */}
             <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
-              {id && (
-                <Tooltip title={`Rank by 24h Volume: #${id - 1}`}>
-                  <Chip
-                    label={`#${id - 1}`}
-                    color="primary"
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      borderRadius: '6px',
-                      height: '18px',
-                      fontSize: '0.6rem',
-                      background: `linear-gradient(135deg,
-                        ${alpha(theme.palette.primary.main, 0.12)} 0%,
-                        ${alpha(theme.palette.primary.main, 0.06)} 100%
-                      )`,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                      fontWeight: 600,
-                      px: 0.75,
-                      minWidth: 'auto',
-                      flexShrink: 0
-                    }}
-                  />
-                </Tooltip>
-              )}
               {isExpired && (
                 <Chip
                   label="Expired"
@@ -660,18 +761,6 @@ const TokenSummary = memo(({ token }) => {
                   sx={{ fontSize: '0.6rem', height: '16px' }}
                 />
               )}
-              {/* Always show origin badge - either specific origin or default */}
-              <Chip
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
-                    {getOriginIcon(origin)}
-                    {origin || 'Default'}
-                  </Box>
-                }
-                size="small"
-                color="secondary"
-                sx={{ fontSize: '0.6rem', height: '16px' }}
-              />
             </Stack>
           </Box>
 
@@ -739,81 +828,6 @@ const TokenSummary = memo(({ token }) => {
           </Stack>
         </Stack>
 
-        {/* Price Changes */}
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
-            gap: 1
-          }}
-        >
-          {priceChanges.map((item) => (
-            <Box
-              key={item.label}
-              sx={{
-                px: 1,
-                py: 0.75,
-                borderRadius: '12px',
-                background: `linear-gradient(135deg, ${alpha(item.color, 0.15)} 0%, ${alpha(item.color, 0.08)} 100%)`,
-                border: `1px solid ${alpha(item.color, 0.25)}`,
-                textAlign: 'center',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                cursor: 'default',
-                position: 'relative',
-                overflow: 'hidden',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: `linear-gradient(135deg, ${alpha(item.color, 0.1)} 0%, transparent 100%)`,
-                  opacity: 0,
-                  transition: 'opacity 0.3s ease'
-                },
-                '&:hover': {
-                  transform: 'translateY(-2px) scale(1.02)',
-                  boxShadow: `0 8px 24px ${alpha(item.color, 0.2)}`,
-                  '&::before': {
-                    opacity: 1
-                  }
-                }
-              }}
-            >
-              <Typography 
-                variant="caption" 
-                sx={{ 
-                  fontSize: '0.7rem', 
-                  color: alpha(theme.palette.text.secondary, 0.8),
-                  display: 'block',
-                  mb: 0.5,
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  position: 'relative',
-                  zIndex: 1
-                }}
-              >
-                {item.label}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  fontSize: '0.9rem',
-                  fontWeight: 800,
-                  color: item.color,
-                  lineHeight: 1.2,
-                  textShadow: `0 2px 4px ${alpha(item.color, 0.15)}`,
-                  position: 'relative',
-                  zIndex: 1
-                }}
-              >
-                {formatPercentage(item.value)}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
 
         {/* 24h Range */}
         {range24h && (

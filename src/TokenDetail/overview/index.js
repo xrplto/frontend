@@ -23,7 +23,6 @@ import PriceChart from './PriceChart';
 import PriceStatistics from './PriceStatistics';
 import Description from './Description';
 import TrendingTokens from './TrendingTokens';
-import TokenSummary from '../common/TokenSummary';
 
 import Swap from './Swap'; // Import Swap component
 import TradingHistory from './TradingHistory';
@@ -127,7 +126,6 @@ export default function Overview({ token }) {
         )}
       </Grid>
       <Grid item xs={12} md={12} lg={4}>
-        <TokenSummary token={token} />
         <Swap token={token} />
         <PriceStatistics token={token} sx={{ mt: 3 }} />
         <Description

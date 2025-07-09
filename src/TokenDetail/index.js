@@ -6,7 +6,7 @@ import { Box, Divider, useTheme, useMediaQuery } from '@mui/material';
 
 // Components
 import LinkCascade from './LinkCascade';
-import Common from './common';
+import TokenSummary from './common/TokenSummary';
 import { AppContext } from 'src/AppContext';
 
 // Lazy load components
@@ -20,8 +20,8 @@ export default function TokenDetail({ token }) {
   return (
     <Box sx={{ position: 'relative' }}>
       {!isMobile && <LinkCascade token={token} />}
-
-      <Common token={token} />
+      
+      <TokenSummary token={token} />
 
       {!isMobile && (
         <Divider orientation="horizontal" sx={{ mt: 2, mb: 2 }} variant="middle" flexItem />
