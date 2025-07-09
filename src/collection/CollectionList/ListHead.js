@@ -30,48 +30,48 @@ const TABLE_HEAD = (isMobile) => {
         no: 0,
         id: 'name',
         label: (
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: '10px' }}>
             Collection
           </Typography>
         ),
         align: 'left',
-        width: '40%',
+        width: '45%',
         order: false
       },
       {
         no: 1,
-        id: 'volume',
-        label: (
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            Volume (24h)
-          </Typography>
-        ),
-        align: 'right',
-        width: '30%',
-        order: true
-      },
-      {
-        no: 2,
-        id: 'totalVolume',
-        label: (
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            Total Volume
-          </Typography>
-        ),
-        align: 'right',
-        width: '30%',
-        order: true
-      },
-      {
-        no: 3,
         id: 'floor.amount',
         label: (
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: '10px' }}>
             Floor
           </Typography>
         ),
         align: 'right',
-        width: '30%',
+        width: '18%',
+        order: true
+      },
+      {
+        no: 2,
+        id: 'volume',
+        label: (
+          <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: '10px' }}>
+            24h Vol
+          </Typography>
+        ),
+        align: 'right',
+        width: '18%',
+        order: true
+      },
+      {
+        no: 3,
+        id: 'totalVolume',
+        label: (
+          <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: '10px' }}>
+            Total
+          </Typography>
+        ),
+        align: 'right',
+        width: '19%',
         order: true
       }
     ];
@@ -188,9 +188,9 @@ export default function ListHead({ order, orderBy, onRequestSort, scrollTopLengt
       <TableRow
         sx={{
           '& .MuiTableCell-root': {
-            fontSize: isMobile ? '12px' : '13px',
+            fontSize: isMobile ? '10px' : '13px',
             fontWeight: '600',
-            padding: isMobile ? '16px 8px' : '20px 12px',
+            padding: isMobile ? '12px 4px' : '20px 12px',
             height: 'auto',
             whiteSpace: 'nowrap',
             color: darkMode ? '#919EAB' : '#637381',
@@ -198,11 +198,11 @@ export default function ListHead({ order, orderBy, onRequestSort, scrollTopLengt
             letterSpacing: '0.02em',
             borderBottom: 'none',
             '&:not(:first-of-type)': {
-              paddingLeft: '8px'
+              paddingLeft: isMobile ? '4px' : '8px'
             }
           },
           '& .MuiTableSortLabel-root': {
-            fontSize: isMobile ? '12px' : '13px',
+            fontSize: isMobile ? '10px' : '13px',
             fontWeight: '600',
             color: 'inherit',
             '&:hover': {

@@ -35,7 +35,8 @@ const chartOptions = {
   },
   legend: {
     position: 'top',
-    horizontalAlign: 'right'
+    horizontalAlign: 'center',
+    fontSize: '11px'
   },
   grid: {
     show: true,
@@ -52,8 +53,8 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
     <Paper
       elevation={0}
       sx={{
-        p: { xs: 2, sm: 3, md: 4 },
-        mb: { xs: 2, sm: 3, md: 4 },
+        p: { xs: 1.5, sm: 3, md: 4 },
+        mb: { xs: 1.5, sm: 3, md: 4 },
         borderRadius: '24px',
         background: `linear-gradient(135deg, ${alpha(
           theme.palette.background.paper,
@@ -94,7 +95,9 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          mb: { xs: 1.5, sm: 2, md: 3 }
+          mb: { xs: 1, sm: 2, md: 3 },
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 1, sm: 0 }
         }}
       >
         <Typography
@@ -102,7 +105,7 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
           sx={{
             color: theme.palette.text.primary,
             fontWeight: 600,
-            fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' },
+            fontSize: { xs: '0.875rem', sm: '1.15rem', md: '1.25rem' },
             letterSpacing: '-0.02em',
             background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
               theme.palette.primary.main,
@@ -187,20 +190,33 @@ const LatestNFTActivity = ({
     chart: {
       ...chartOptions.chart,
       type: chartType,
-      height: 300
+      height: 300,
+      toolbar: { show: false }
     },
     xaxis: {
       categories: chartData.labels,
       labels: {
         style: {
-          colors: theme.palette.text.secondary
-        }
+          colors: theme.palette.text.secondary,
+          fontSize: '10px'
+        },
+        rotate: -45,
+        rotateAlways: true
       }
     },
     yaxis: {
       labels: {
         style: {
-          colors: theme.palette.text.secondary
+          colors: theme.palette.text.secondary,
+          fontSize: '10px'
+        },
+        formatter: function(value) {
+          if (value >= 1000000) {
+            return (value / 1000000).toFixed(1) + 'M';
+          } else if (value >= 1000) {
+            return (value / 1000).toFixed(1) + 'K';
+          }
+          return value;
         }
       }
     },
@@ -288,8 +304,8 @@ const LatestNFTActivity = ({
   return (
     <Paper
       sx={{
-        padding: 3,
-        marginBottom: 3,
+        padding: { xs: 2, sm: 3 },
+        marginBottom: { xs: 2, sm: 3 },
         borderRadius: '20px',
         background: `linear-gradient(135deg, ${alpha(
           theme.palette.background.paper,
@@ -315,7 +331,7 @@ const LatestNFTActivity = ({
         }
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Typography
             variant="h6"
@@ -323,7 +339,7 @@ const LatestNFTActivity = ({
               mb: 1,
               color: theme.palette.text.primary,
               fontWeight: 600,
-              fontSize: '1.1rem',
+              fontSize: { xs: '0.9rem', sm: '1.1rem' },
               letterSpacing: '-0.02em'
             }}
           >
@@ -355,7 +371,7 @@ const LatestNFTActivity = ({
             mb: 1,
             color: theme.palette.primary.main,
             fontWeight: 600,
-            fontSize: '1.1rem'
+            fontSize: { xs: '0.9rem', sm: '1.1rem' }
           }}
         >
           {displayedAmount}
@@ -370,10 +386,12 @@ const LatestNFTActivity = ({
           '& .MuiTab-root': {
             borderRadius: '12px',
             color: alpha(theme.palette.text.secondary, 0.8),
-            fontSize: '0.95rem',
+            fontSize: { xs: '0.8rem', sm: '0.95rem' },
             fontWeight: 500,
             textTransform: 'none',
-            minWidth: '60px',
+            minWidth: { xs: '45px', sm: '60px' },
+            px: { xs: 1, sm: 2 },
+            py: { xs: 0.5, sm: 1 },
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&.Mui-selected': {
               color: theme.palette.primary.main,
@@ -396,8 +414,8 @@ const LatestNFTActivity = ({
         <Tab label="30d" value="30d" />
         <Tab label="All" value="all" />
       </Tabs>
-      <Box sx={{ height: 300 }}>
-        <Chart options={options} series={series} type={chartType} height={300} />
+      <Box sx={{ height: { xs: 250, sm: 300 }, width: '100%', position: 'relative' }}>
+        <Chart options={options} series={series} type={chartType} height="100%" width="100%" />
       </Box>
     </Paper>
   );
@@ -572,7 +590,7 @@ function Collections() {
       }}
     >
       {/* Updated Header Section */}
-      <Container maxWidth="xl" sx={{ mt: { xs: 2, sm: 3, md: 4 }, mb: { xs: 2, sm: 3, md: 4 } }}>
+      <Container maxWidth="xl" sx={{ mt: { xs: 1, sm: 3, md: 4 }, mb: { xs: 2, sm: 3, md: 4 }, px: { xs: 2, sm: 3 } }}>
         <Box
           sx={{
             textAlign: 'center',
@@ -584,7 +602,7 @@ function Collections() {
             sx={{
               color: theme.palette.text.primary,
               fontWeight: 800,
-              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+              fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' },
               letterSpacing: '-0.03em',
               mb: 2,
               position: 'relative',
@@ -608,7 +626,7 @@ function Collections() {
             variant="body1"
             sx={{
               color: theme.palette.text.secondary,
-              fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+              fontSize: { xs: '0.875rem', sm: '1.1rem', md: '1.2rem' },
               maxWidth: '700px',
               mx: 'auto',
               lineHeight: 1.8,
@@ -621,14 +639,14 @@ function Collections() {
       </Container>
 
       {/* Statistics Cards Section */}
-      <Container maxWidth="xl" sx={{ mb: { xs: 4, sm: 5, md: 6 } }}>
-        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+      <Container maxWidth="xl" sx={{ mb: { xs: 3, sm: 5, md: 6 }, px: { xs: 2, sm: 3 } }}>
+        <Grid container spacing={{ xs: 1.5, sm: 3, md: 4 }}>
           {/* Market Cap Card */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={6} md={4}>
             <Paper
               elevation={0}
               sx={{
-                p: { xs: 3, sm: 4 },
+                p: { xs: 2.5, sm: 4 },
                 height: '100%',
                 borderRadius: '20px',
                 background: `linear-gradient(135deg, ${alpha(
@@ -645,13 +663,13 @@ function Collections() {
             >
               <Stack spacing={2}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography variant="h6" fontWeight={600} color="primary">
+                  <Typography variant="h6" fontWeight={600} color="primary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' } }}>
                     Total Market Cap
                   </Typography>
                   <Box
                     sx={{
-                      width: 40,
-                      height: 40,
+                      width: { xs: 32, sm: 40 },
+                      height: { xs: 32, sm: 40 },
                       borderRadius: '12px',
                       background: alpha(theme.palette.primary.main, 0.1),
                       display: 'flex',
@@ -659,13 +677,13 @@ function Collections() {
                       justifyContent: 'center'
                     }}
                   >
-                    <Typography variant="h6">📊</Typography>
+                    <Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>📊</Typography>
                   </Box>
                 </Box>
-                <Typography variant="h4" fontWeight={700}>
+                <Typography variant="h4" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' } }}>
                   $3.2B
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   +12.5% from last month
                 </Typography>
               </Stack>
@@ -673,11 +691,11 @@ function Collections() {
           </Grid>
 
           {/* Total Volume Card */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={6} md={4}>
             <Paper
               elevation={0}
               sx={{
-                p: { xs: 3, sm: 4 },
+                p: { xs: 2.5, sm: 4 },
                 height: '100%',
                 borderRadius: '20px',
                 background: `linear-gradient(135deg, ${alpha(
@@ -694,13 +712,13 @@ function Collections() {
             >
               <Stack spacing={2}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography variant="h6" fontWeight={600} color="success.main">
+                  <Typography variant="h6" fontWeight={600} color="success.main" sx={{ fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' } }}>
                     24h Volume
                   </Typography>
                   <Box
                     sx={{
-                      width: 40,
-                      height: 40,
+                      width: { xs: 32, sm: 40 },
+                      height: { xs: 32, sm: 40 },
                       borderRadius: '12px',
                       background: alpha(theme.palette.success.main, 0.1),
                       display: 'flex',
@@ -708,13 +726,13 @@ function Collections() {
                       justifyContent: 'center'
                     }}
                   >
-                    <Typography variant="h6">💰</Typography>
+                    <Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>💰</Typography>
                   </Box>
                 </Box>
-                <Typography variant="h4" fontWeight={700}>
+                <Typography variant="h4" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' } }}>
                   850K XRP
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   +8.3% from yesterday
                 </Typography>
               </Stack>
@@ -722,11 +740,11 @@ function Collections() {
           </Grid>
 
           {/* Active Collections Card */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={12} md={4}>
             <Paper
               elevation={0}
               sx={{
-                p: { xs: 3, sm: 4 },
+                p: { xs: 2.5, sm: 4 },
                 height: '100%',
                 borderRadius: '20px',
                 background: `linear-gradient(135deg, ${alpha(
@@ -743,13 +761,13 @@ function Collections() {
             >
               <Stack spacing={2}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography variant="h6" fontWeight={600} color="info.main">
+                  <Typography variant="h6" fontWeight={600} color="info.main" sx={{ fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' } }}>
                     Active Collections
                   </Typography>
                   <Box
                     sx={{
-                      width: 40,
-                      height: 40,
+                      width: { xs: 32, sm: 40 },
+                      height: { xs: 32, sm: 40 },
                       borderRadius: '12px',
                       background: alpha(theme.palette.info.main, 0.1),
                       display: 'flex',
@@ -757,13 +775,13 @@ function Collections() {
                       justifyContent: 'center'
                     }}
                   >
-                    <Typography variant="h6">🎨</Typography>
+                    <Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>🎨</Typography>
                   </Box>
                 </Box>
-                <Typography variant="h4" fontWeight={700}>
+                <Typography variant="h4" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' } }}>
                   1,245
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   156 new this week
                 </Typography>
               </Stack>
@@ -773,14 +791,15 @@ function Collections() {
       </Container>
 
       {/* Collections List Section */}
-      <Container maxWidth="xl">
-        <Box sx={{ mb: 3 }}>
+      <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
+        <Box sx={{ mb: { xs: 2, sm: 3 } }}>
           <Typography
             variant="h5"
             sx={{
               fontWeight: 700,
               color: theme.palette.text.primary,
-              mb: 1
+              mb: 1,
+              fontSize: { xs: '1.25rem', sm: '1.5rem' }
             }}
           >
             Top Collections by Volume
@@ -788,7 +807,8 @@ function Collections() {
           <Typography
             variant="body2"
             sx={{
-              color: theme.palette.text.secondary
+              color: theme.palette.text.secondary,
+              fontSize: { xs: '0.75rem', sm: '0.875rem' }
             }}
           >
             Collections with highest trading volume in the last 30 days
@@ -799,7 +819,7 @@ function Collections() {
       <Stack
         sx={{
           minHeight: '50vh',
-          px: { xs: 2, sm: 3, md: 4 },
+          px: { xs: 1, sm: 3, md: 4 },
           position: 'relative',
           zIndex: 1,
           animation: 'fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1)',

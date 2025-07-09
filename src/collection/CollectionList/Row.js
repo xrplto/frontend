@@ -22,8 +22,12 @@ import { AppContext } from 'src/AppContext';
 const CollectionImageWrapper = styled(Box)(({ theme }) => ({
   borderRadius: '12px',
   overflow: 'hidden',
-  width: '40px',
-  height: '40px',
+  width: '32px',
+  height: '32px',
+  [theme.breakpoints.up('sm')]: {
+    width: '40px',
+    height: '40px'
+  },
   position: 'relative',
   border: '2px solid rgba(145, 158, 171, 0.08)',
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -95,7 +99,7 @@ function Row({ id, item, isMine }) {
 
   const { darkMode } = useContext(AppContext);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const floorPrice = floor?.amount || 0;
   const volume24h = fVolume(totalVol24h || 0);
@@ -120,15 +124,15 @@ function Row({ id, item, isMine }) {
           : '0 4px 16px rgba(145, 158, 171, 0.16)'
       },
       '& .MuiTypography-root': {
-        fontSize: isMobile ? '12px' : '14px',
+        fontSize: isMobile ? '11px' : '14px',
         fontWeight: '500'
       },
       '& .MuiTableCell-root': {
-        padding: isMobile ? '12px 8px' : '16px 12px',
+        padding: isMobile ? '8px 4px' : '16px 12px',
         whiteSpace: 'nowrap',
         borderBottom: 'none',
         '&:not(:first-of-type)': {
-          paddingLeft: '8px'
+          paddingLeft: isMobile ? '4px' : '8px'
         }
       }
     }),
@@ -146,8 +150,8 @@ function Row({ id, item, isMine }) {
 
   return (
     <TableRow key={uuid} sx={tableRowStyle} onClick={handleRowClick}>
-      <TableCell align="left" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
-        <Stack direction="row" alignItems="center" spacing={1}>
+      <TableCell align="left" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
+        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
           <Typography
             variant={isMobile ? 'caption' : 'body2'}
             sx={{
@@ -161,8 +165,8 @@ function Row({ id, item, isMine }) {
 
           <Box
             sx={{
-              width: 40,
-              height: 40,
+              width: isMobile ? 32 : 40,
+              height: isMobile ? 32 : 40,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -190,7 +194,7 @@ function Row({ id, item, isMine }) {
                       }
                     }}
                   >
-                    <EditIcon sx={{ fontSize: '16px' }} />
+                    <EditIcon sx={{ fontSize: isMobile ? '12px' : '16px' }} />
                   </IconButton>
                 </Tooltip>
               )}
@@ -204,15 +208,15 @@ function Row({ id, item, isMine }) {
             rel="noreferrer noopener nofollow"
           >
             <Stack direction="column" spacing={0.5}>
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack direction="row" spacing={isMobile ? 0.5 : 1} alignItems="center">
                 <Typography
                   variant={isMobile ? 'subtitle2' : 'h6'}
                   sx={{
                     fontWeight: '700',
-                    fontSize: isMobile ? '14px' : '16px',
+                    fontSize: isMobile ? '12px' : '16px',
                     lineHeight: 1.2,
-                    width: isMobile ? '120px' : '180px',
-                    minWidth: isMobile ? '120px' : '180px',
+                    width: isMobile ? '90px' : '180px',
+                    minWidth: isMobile ? '90px' : '180px',
                     letterSpacing: '-0.02em',
                     color: darkMode ? '#fff' : '#212B36'
                   }}
@@ -233,7 +237,7 @@ function Row({ id, item, isMine }) {
                 variant={isMobile ? 'caption' : 'body2'}
                 sx={{
                   fontWeight: '500',
-                  fontSize: isMobile ? '12px' : '13px',
+                  fontSize: isMobile ? '10px' : '13px',
                   lineHeight: 1.2,
                   color: darkMode ? '#919EAB' : '#637381'
                 }}
@@ -245,13 +249,13 @@ function Row({ id, item, isMine }) {
         </Stack>
       </TableCell>
 
-      <TableCell align="right" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
+      <TableCell align="right" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
         <Typography
           variant={isMobile ? 'subtitle2' : 'h6'}
           noWrap
           sx={{
             fontWeight: '600',
-            fontSize: isMobile ? '14px' : '16px',
+            fontSize: isMobile ? '12px' : '16px',
             color: darkMode ? '#fff' : '#212B36'
           }}
         >
@@ -259,28 +263,28 @@ function Row({ id, item, isMine }) {
         </Typography>
       </TableCell>
 
-      <TableCell align="right" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
+      <TableCell align="right" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
         <Typography
           variant={isMobile ? 'subtitle2' : 'h6'}
           noWrap
           sx={{
             color: '#00AB55',
             fontWeight: '600',
-            fontSize: isMobile ? '14px' : '16px'
+            fontSize: isMobile ? '12px' : '16px'
           }}
         >
           ✕ {volume24h}
         </Typography>
       </TableCell>
 
-      <TableCell align="right" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
+      <TableCell align="right" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
         <Typography
           variant={isMobile ? 'subtitle2' : 'h6'}
           noWrap
           sx={{
             color: '#00AB55',
             fontWeight: '600',
-            fontSize: isMobile ? '14px' : '16px'
+            fontSize: isMobile ? '12px' : '16px'
           }}
         >
           ✕ {totalVolumeDisplay}
@@ -290,7 +294,7 @@ function Row({ id, item, isMine }) {
       <TableCell
         align="right"
         sx={{
-          padding: isMobile ? '12px 8px' : '16px 12px',
+          padding: isMobile ? '8px 4px' : '16px 12px',
           display: { xs: 'none', sm: 'table-cell' }
         }}
       >
@@ -299,7 +303,7 @@ function Row({ id, item, isMine }) {
           noWrap
           sx={{
             fontWeight: '600',
-            fontSize: isMobile ? '14px' : '16px',
+            fontSize: isMobile ? '12px' : '16px',
             color: darkMode ? '#fff' : '#212B36'
           }}
         >
@@ -310,7 +314,7 @@ function Row({ id, item, isMine }) {
       <TableCell
         align="right"
         sx={{
-          padding: isMobile ? '12px 8px' : '16px 12px',
+          padding: isMobile ? '8px 4px' : '16px 12px',
           display: { xs: 'none', sm: 'table-cell' }
         }}
       >
@@ -319,7 +323,7 @@ function Row({ id, item, isMine }) {
           noWrap
           sx={{
             fontWeight: '600',
-            fontSize: isMobile ? '14px' : '16px',
+            fontSize: isMobile ? '12px' : '16px',
             color: darkMode ? '#fff' : '#212B36'
           }}
         >

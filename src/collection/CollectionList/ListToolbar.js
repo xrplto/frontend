@@ -7,7 +7,10 @@ import {
     Stack,
     Pagination,
     Select,
-    MenuItem
+    MenuItem,
+    Typography,
+    useTheme,
+    useMediaQuery
 } from '@mui/material';
 
 // ----------------------------------------------------------------------
@@ -15,10 +18,14 @@ import {
 const CustomSelect = styled(Select)(({ theme }) => ({
     '& .MuiOutlinedInput-notchedOutline' : {
         border: 'none'
-    }
+    },
+    minWidth: 'auto'
 }));
 
 export default function ListToolbar({ rows, setRows, page, setPage, total}) {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    
     const num = total / rows;
     let page_count = Math.floor(num)
     if (num % 1 != 0) page_count++;
@@ -52,7 +59,7 @@ export default function ListToolbar({ rows, setRows, page, setPage, total}) {
     // sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}
 
     return (
-        <Grid container rowSpacing={2} alignItems="center" sx={{mt: 0}}>
+        <Grid container rowSpacing={isMobile ? 1 : 2} alignItems="center" sx={{mt: 0, px: isMobile ? 1 : 0}}>
             <Grid container item xs={12} sx={{ display: { xs: 'block', md: 'none' } }}>
                 <Stack alignItems='center'>
                     <Pagination page={page+1} onChange={handleChangePage} count={page_count} size="small"/>
@@ -60,7 +67,16 @@ export default function ListToolbar({ rows, setRows, page, setPage, total}) {
             </Grid>
 
             <Grid container item xs={6} md={4} lg={4}>
-                Showing {start} - {end} out of {total}
+                <Typography 
+                    variant="body2" 
+                    sx={{ 
+                        fontSize: isMobile ? '0.75rem' : '0.875rem',
+                        color: theme.palette.text.secondary,
+                        fontWeight: 500
+                    }}
+                >
+                    {isMobile ? `${start}-${end} of ${total}` : `Showing ${start} - ${end} out of ${total}`}
+                </Typography>
             </Grid>
 
             <Grid container item xs={0} md={4} lg={4} sx={{ display: { xs: 'none', md: 'block' } }}>
@@ -70,15 +86,33 @@ export default function ListToolbar({ rows, setRows, page, setPage, total}) {
             </Grid>
 
             <Grid container item xs={6} md={4} lg={4} justifyContent="flex-end">
-                <Stack direction='row' alignItems='center'>
-                    Show Rows
+                <Stack direction='row' alignItems='center' spacing={isMobile ? 0.5 : 1}>
+                    <Typography 
+                        variant="body2" 
+                        sx={{ 
+                            fontSize: isMobile ? '0.75rem' : '0.875rem',
+                            color: theme.palette.text.secondary,
+                            display: isMobile ? 'none' : 'block'
+                        }}
+                    >
+                        Show Rows
+                    </Typography>
                     <CustomSelect
                         value={rows}
                         onChange={handleChangeRows}
+                        size={isMobile ? "small" : "medium"}
+                        sx={{
+                            fontSize: isMobile ? '0.75rem' : '0.875rem',
+                            '& .MuiSelect-select': {
+                                py: isMobile ? 0.5 : 1,
+                                px: isMobile ? 1 : 2
+                            }
+                        }}
                     >
-                        <MenuItem value={50}>50</MenuItem>
-                        <MenuItem value={20}>20</MenuItem>
-                        <MenuItem value={10}>10</MenuItem>
+                        <MenuItem value={100} sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>100</MenuItem>
+                        <MenuItem value={50} sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>50</MenuItem>
+                        <MenuItem value={20} sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>20</MenuItem>
+                        <MenuItem value={10} sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>10</MenuItem>
                     </CustomSelect>
                 </Stack>
             </Grid>
