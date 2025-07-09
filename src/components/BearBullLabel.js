@@ -43,22 +43,13 @@ export default function BearBullLabel({ value, variant }) {
   const strPro = `${isBearish ? -formattedValue : formattedValue} %`;
 
   return (
-    <>
-      {isBearish ? (
-        <Stack direction="row" spacing={0.1} justifyContent="flex-end" alignItems="center">
-          <Icon icon={caretDown} color={theme.palette.error.main} />
-          <Typography variant={variant} noWrap sx={{ color: theme.palette.error.main }}>
-            {strPro}
-          </Typography>
-        </Stack>
-      ) : (
-        <Stack direction="row" spacing={0.1} justifyContent="flex-end" alignItems="center">
-          <Icon icon={caretUp} color={theme.palette.primary.light} />
-          <Typography variant={variant} noWrap sx={{ color: theme.palette.primary.light }}>
-            {strPro}
-          </Typography>
-        </Stack>
-      )}
-    </>
+    <Typography
+      variant={variant}
+      noWrap
+      align="right"
+      sx={{ color: isBearish ? theme.palette.error.main : theme.palette.primary.light }}
+    >
+      {strPro}
+    </Typography>
   );
 }

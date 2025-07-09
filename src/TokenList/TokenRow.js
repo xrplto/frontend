@@ -30,7 +30,6 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 
 import { AppContext } from 'src/AppContext';
-import BearBullLabel from 'src/components/BearBullLabel';
 import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
@@ -86,6 +85,32 @@ const getPriceColor = (bearbull) => {
   if (bearbull === -1) return '#FF6C40';
   if (bearbull === 1) return '#54D62C';
   return '';
+};
+
+const renderPercentageWithIcon = (value, variant, theme, isMobile) => {
+  if (value === undefined || value === null || isNaN(value)) {
+    return (
+      <Typography
+        variant={variant}
+        noWrap
+        align="right"
+        sx={{ color: theme.palette.text.secondary }}
+      >
+        -
+      </Typography>
+    );
+  }
+
+  const formattedValue = parseFloat(value).toFixed(2);
+  const isNegative = formattedValue < 0;
+  const displayValue = `${isNegative ? -formattedValue : formattedValue}%`;
+  const color = isNegative ? theme.palette.error.main : theme.palette.primary.light;
+
+  return (
+    <Typography variant={variant} noWrap align="right" sx={{ color }}>
+      {displayValue}
+    </Typography>
+  );
 };
 
 // Update XPMarketIcon to use forwardRef and ensure proper width handling
@@ -743,18 +768,18 @@ function FTokenRow({
       </TableCell>
       {!isMobile && (
         <TableCell align="right" sx={percentageCellStyle}>
-          <BearBullLabel value={pro5m || 0} variant="h4" />
+          {renderPercentageWithIcon(pro5m || 0, "h4", theme, isMobile)}
         </TableCell>
       )}
       <TableCell align="right" sx={percentageCellStyle}>
-        <BearBullLabel value={pro1h || 0} variant="h4" />
+        {renderPercentageWithIcon(pro1h || 0, "h4", theme, isMobile)}
       </TableCell>
       <TableCell align="right" sx={percentageCellStyle}>
-        <BearBullLabel value={pro24h || 0} variant="h4" />
+        {renderPercentageWithIcon(pro24h || 0, "h4", theme, isMobile)}
       </TableCell>
       {!isMobile && (
         <TableCell align="right" sx={percentageCellStyle}>
-          <BearBullLabel value={pro7d || 0} variant="h4" />
+          {renderPercentageWithIcon(pro7d || 0, "h4", theme, isMobile)}
         </TableCell>
       )}
       {!isMobile && (
