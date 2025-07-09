@@ -23,6 +23,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import LinkIcon from '@mui/icons-material/Link';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
 import { SvgIcon } from '@mui/material';
 import NumberTooltip from 'src/components/NumberTooltip';
 import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
@@ -34,6 +36,8 @@ import axios from 'axios';
 import Share from './Share';
 import Watch from './Watch';
 import TrustSetDialog from 'src/components/TrustSetDialog';
+import CreatorTransactionsDialog from './CreatorTransactionsDialog';
+import TimelineIcon from '@mui/icons-material/Timeline';
 
 const LowhighBarSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-track': {
@@ -72,6 +76,7 @@ const TokenSummary = memo(({ token }) => {
   const [isRemove, setIsRemove] = useState(false);
   const [balance, setBalance] = useState(0);
   const [limit, setLimit] = useState(0);
+  const [creatorTxOpen, setCreatorTxOpen] = useState(false);
 
   const {
     id,
@@ -99,7 +104,8 @@ const TokenSummary = memo(({ token }) => {
     trustlines,
     tvl,
     origin,
-    info
+    info,
+    creator
   } = token;
 
   // Watch for price changes and trigger animation
@@ -575,18 +581,19 @@ const TokenSummary = memo(({ token }) => {
               )}
             </Stack>
             
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
-              sx={{ 
-                fontSize: '0.8rem',
-                opacity: 0.8,
-                mb: 0.5,
-                fontWeight: 500
-              }}
-            >
-              {user || name}
-            </Typography>
+            <Stack spacing={0.25} sx={{ mb: 0.5 }}>
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                sx={{ 
+                  fontSize: '0.8rem',
+                  opacity: 0.8,
+                  fontWeight: 500
+                }}
+              >
+                {user || name}
+              </Typography>
+            </Stack>
             
             {/* Price - Prominently displayed */}
             <Box
@@ -900,17 +907,22 @@ const TokenSummary = memo(({ token }) => {
                 disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5}
                 sx={{ 
                   position: 'relative',
-                  borderRadius: '8px',
-                  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                  borderRadius: '12px',
+                  border: `2px solid ${isRemove ? alpha(theme.palette.error.main, 0.3) : alpha(theme.palette.success.main, 0.3)}`,
+                  background: isRemove 
+                    ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.12)} 0%, ${alpha(theme.palette.error.main, 0.08)} 100%)`
+                    : `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.12)} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`,
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   overflow: 'hidden',
-                  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
-                  padding: isMobile ? '4px' : '6px',
-                  minWidth: isMobile ? '32px' : '36px',
-                  minHeight: isMobile ? '32px' : '36px',
+                  boxShadow: isRemove 
+                    ? `0 4px 16px ${alpha(theme.palette.error.main, 0.15)}, 0 1px 2px ${alpha(theme.palette.error.main, 0.1)}`
+                    : `0 4px 16px ${alpha(theme.palette.success.main, 0.15)}, 0 1px 2px ${alpha(theme.palette.success.main, 0.1)}`,
+                  padding: isMobile ? '6px' : '8px',
+                  minWidth: isMobile ? '36px' : '40px',
+                  minHeight: isMobile ? '36px' : '40px',
+                  transform: 'scale(1.1)',
                   '&::before': {
                     content: '""',
                     position: 'absolute',
@@ -918,39 +930,103 @@ const TokenSummary = memo(({ token }) => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    background: `linear-gradient(135deg, ${alpha(isRemove ? theme.palette.error.main : theme.palette.success.main, 0.08)} 0%, ${alpha(isRemove ? theme.palette.error.main : theme.palette.success.main, 0.05)} 100%)`,
+                    background: isRemove
+                      ? `radial-gradient(circle at center, ${alpha(theme.palette.error.main, 0.2)} 0%, transparent 70%)`
+                      : `radial-gradient(circle at center, ${alpha(theme.palette.success.main, 0.2)} 0%, transparent 70%)`,
                     opacity: 0,
                     transition: 'opacity 0.3s ease',
                     zIndex: -1
                   },
                   '&:hover': {
-                    transform: 'translateY(-4px) scale(1.02)',
-                    border: `2px solid ${alpha(isRemove ? theme.palette.error.main : theme.palette.success.main, 0.3)}`,
-                    boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(isRemove ? theme.palette.error.main : theme.palette.success.main, 0.1)}`,
+                    transform: 'translateY(-4px) scale(1.15)',
+                    border: `2px solid ${isRemove ? theme.palette.error.main : theme.palette.success.main}`,
+                    boxShadow: isRemove
+                      ? `0 16px 48px ${alpha(theme.palette.error.main, 0.25)}, 0 4px 16px ${alpha(theme.palette.error.main, 0.2)}, 0 0 0 4px ${alpha(theme.palette.error.main, 0.1)}`
+                      : `0 16px 48px ${alpha(theme.palette.success.main, 0.25)}, 0 4px 16px ${alpha(theme.palette.success.main, 0.2)}, 0 0 0 4px ${alpha(theme.palette.success.main, 0.1)}`,
+                    background: isRemove
+                      ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.2)} 0%, ${alpha(theme.palette.error.main, 0.15)} 100%)`
+                      : `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.2)} 0%, ${alpha(theme.palette.success.main, 0.15)} 100%)`,
                     '&::before': {
                       opacity: 1
                     },
                     '& .MuiSvgIcon-root': {
-                      color: isRemove ? theme.palette.error.main : theme.palette.success.main
+                      color: theme.palette.background.paper,
+                      filter: `drop-shadow(0 1px 2px ${alpha(theme.palette.common.black, 0.3)})`
                     }
                   },
                   '&:active': {
-                    transform: 'translateY(-2px) scale(0.98)'
+                    transform: 'translateY(-2px) scale(1.08)'
                   },
                   '& .MuiSvgIcon-root': {
-                    fontSize: isMobile ? '16px' : '18px',
-                    color: alpha(theme.palette.text.primary, 0.8),
-                    transition: 'color 0.3s ease'
+                    fontSize: isMobile ? '18px' : '20px',
+                    color: isRemove ? theme.palette.error.main : theme.palette.success.main,
+                    transition: 'all 0.3s ease'
                   },
                   '&.Mui-disabled': {
-                    opacity: 0.4
+                    opacity: 0.4,
+                    transform: 'scale(1)'
                   }
                 }}
                 onClick={handleSetTrust}
               >
-                <AccountBalanceWalletIcon />
+                {isRemove ? <LinkOffIcon /> : <LinkIcon />}
               </IconButton>
             </Tooltip>
+            {creator && (
+              <Tooltip title="View Creator Activity">
+                <IconButton
+                  size="small"
+                  onClick={() => setCreatorTxOpen(true)}
+                  sx={{
+                    position: 'relative',
+                    borderRadius: '8px',
+                    border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    overflow: 'hidden',
+                    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+                    padding: isMobile ? '4px' : '6px',
+                    minWidth: isMobile ? '32px' : '36px',
+                    minHeight: isMobile ? '32px' : '36px',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.08)} 0%, ${alpha(theme.palette.info.main, 0.05)} 100%)`,
+                      opacity: 0,
+                      transition: 'opacity 0.3s ease',
+                      zIndex: -1
+                    },
+                    '&:hover': {
+                      transform: 'translateY(-4px) scale(1.02)',
+                      border: `2px solid ${alpha(theme.palette.info.main, 0.3)}`,
+                      boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(theme.palette.info.main, 0.1)}`,
+                      '&::before': {
+                        opacity: 1
+                      },
+                      '& .MuiSvgIcon-root': {
+                        color: theme.palette.info.main
+                      }
+                    },
+                    '&:active': {
+                      transform: 'translateY(-2px) scale(0.98)'
+                    },
+                    '& .MuiSvgIcon-root': {
+                      fontSize: isMobile ? '16px' : '18px',
+                      color: alpha(theme.palette.text.primary, 0.8),
+                      transition: 'color 0.3s ease'
+                    }
+                  }}
+                >
+                  <TimelineIcon />
+                </IconButton>
+              </Tooltip>
+            )}
             <Share token={token} />
             <Watch token={token} />
           </Stack>
@@ -1019,6 +1095,14 @@ const TokenSummary = memo(({ token }) => {
           setToken={setTrustToken}
         />
       )}
+      
+      {/* Creator Transactions Dialog */}
+      <CreatorTransactionsDialog
+        open={creatorTxOpen}
+        onClose={() => setCreatorTxOpen(false)}
+        creatorAddress={creator}
+        tokenName={name}
+      />
     </Box>
   );
 });
