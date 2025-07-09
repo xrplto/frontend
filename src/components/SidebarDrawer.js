@@ -74,14 +74,27 @@ LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 export default function SidebarDrawer({ toggleDrawer, isOpen }) {
   return (
     <Drawer toggleDrawer={toggleDrawer} isOpen={isOpen} title={' '}>
-      <Accordion>
+      <Accordion
+        sx={{
+          boxShadow: 'none',
+          '&:before': { display: 'none' },
+          backgroundColor: 'transparent'
+        }}
+      >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           id="panel-header"
           aria-controls="panel-content"
-          sx={{ minHeight: '48px', '&.Mui-expanded': { minHeight: '48px' } }}
+          sx={{ 
+            minHeight: '52px', 
+            '&.Mui-expanded': { minHeight: '52px' },
+            px: 1.5,
+            '& .MuiAccordionSummary-content': {
+              my: 1.5
+            }
+          }}
         >
-          <Typography variant="s6">Tokens</Typography>
+          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>Tokens</Typography>
         </AccordionSummary>
         <AccordionDetails style={{ padding: '0', margin: '0' }}>
           {/* Removed "All Tokens" as per user request */}
@@ -97,37 +110,84 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             variant="caption"
             sx={{
               px: 2,
-              pt: 1,
-              pb: 0,
-              fontWeight: 'bold',
+              pt: 1.5,
+              pb: 1,
+              fontWeight: 700,
               color: 'text.secondary',
-              display: 'block'
+              display: 'block',
+              fontSize: '0.75rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
             }}
           >
             Launchpads
           </Typography>
-          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/view/firstledger">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <OpenInNewIcon sx={{ fontSize: '16px', color: '#0C53B7' }} />
-              <span>FirstLedger</span>
+          <MenuItem 
+            sx={{ 
+              py: 1, 
+              px: 2, 
+              minHeight: '44px',
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/view/firstledger"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <OpenInNewIcon sx={{ fontSize: '20px', color: '#0C53B7' }} />
+              <Typography sx={{ fontSize: '0.9rem' }}>FirstLedger</Typography>
             </Box>
           </MenuItem>
-          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/view/magnetic-x">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <img src="/magneticx-logo.webp" alt="MagneticX" style={{ width: 16, height: 16 }} />
-              <span>MagneticX</span>
+          <MenuItem 
+            sx={{ 
+              py: 1, 
+              px: 2, 
+              minHeight: '44px',
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/view/magnetic-x"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <img src="/magneticx-logo.webp" alt="MagneticX" style={{ width: 20, height: 20 }} />
+              <Typography sx={{ fontSize: '0.9rem' }}>MagneticX</Typography>
             </Box>
           </MenuItem>
-          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/view/xpmarket">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <img src="/static/xpmarket.webp" alt="XPMarket" style={{ width: 16, height: 16 }} />
-              <span>XPMarket</span>
+          <MenuItem 
+            sx={{ 
+              py: 1, 
+              px: 2, 
+              minHeight: '44px',
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/view/xpmarket"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <img src="/static/xpmarket.webp" alt="XPMarket" style={{ width: 20, height: 20 }} />
+              <Typography sx={{ fontSize: '0.9rem' }}>XPMarket</Typography>
             </Box>
           </MenuItem>
-          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/view/ledgermeme">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <LedgerMemeIcon sx={{ fontSize: '16px', color: '#cfff04' }} />
-              <span>LedgerMeme</span>
+          <MenuItem 
+            sx={{ 
+              py: 1, 
+              px: 2, 
+              minHeight: '44px',
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/view/ledgermeme"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <LedgerMemeIcon sx={{ fontSize: '20px', color: '#cfff04' }} />
+              <Typography sx={{ fontSize: '0.9rem' }}>LedgerMeme</Typography>
             </Box>
           </MenuItem>
           <Divider sx={{ my: 1 }} />
@@ -146,38 +206,93 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             Token Discovery
           </Typography>
 
-          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/trending">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <LocalFireDepartmentIcon sx={{ fontSize: '16px', color: '#B71D18' }} />
-              <span>Trending</span>
+          <MenuItem 
+            sx={{ 
+              py: 1, 
+              px: 2, 
+              minHeight: '44px',
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/trending"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <LocalFireDepartmentIcon sx={{ fontSize: '20px', color: '#B71D18' }} />
+              <Typography sx={{ fontSize: '0.9rem' }}>Trending</Typography>
             </Box>
           </MenuItem>
 
-          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/spotlight">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <SearchIcon sx={{ fontSize: '16px', color: '#0C53B7' }} />
-              <span>Spotlight</span>
+          <MenuItem 
+            sx={{ 
+              py: 1, 
+              px: 2, 
+              minHeight: '44px',
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/spotlight"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <SearchIcon sx={{ fontSize: '20px', color: '#0C53B7' }} />
+              <Typography sx={{ fontSize: '0.9rem' }}>Spotlight</Typography>
             </Box>
           </MenuItem>
 
-          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/most-viewed">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <VisibilityIcon sx={{ fontSize: '16px', color: '#7635DC' }} />
-              <span>Most Viewed</span>
+          <MenuItem 
+            sx={{ 
+              py: 1, 
+              px: 2, 
+              minHeight: '44px',
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/most-viewed"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <VisibilityIcon sx={{ fontSize: '20px', color: '#7635DC' }} />
+              <Typography sx={{ fontSize: '0.9rem' }}>Most Viewed</Typography>
             </Box>
           </MenuItem>
 
-          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/gainers/24h">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TrendingUpIcon sx={{ fontSize: '16px', color: '#007B55' }} />
-              <span>Gainers</span>
+          <MenuItem 
+            sx={{ 
+              py: 1, 
+              px: 2, 
+              minHeight: '44px',
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/gainers/24h"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <TrendingUpIcon sx={{ fontSize: '20px', color: '#007B55' }} />
+              <Typography sx={{ fontSize: '0.9rem' }}>Gainers</Typography>
             </Box>
           </MenuItem>
 
-          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/new">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <FiberNewIcon sx={{ fontSize: '16px', color: '#B76E00' }} />
-              <span>New</span>
+          <MenuItem 
+            sx={{ 
+              py: 1, 
+              px: 2, 
+              minHeight: '44px',
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/new"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <FiberNewIcon sx={{ fontSize: '20px', color: '#B76E00' }} />
+              <Typography sx={{ fontSize: '0.9rem' }}>New</Typography>
             </Box>
           </MenuItem>
 
@@ -197,44 +312,68 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             Market Analysis
           </Typography>
 
-          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/market-metrics">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TroubleshootIcon sx={{ fontSize: '16px', color: '#0C53B7' }} />
-              <span>Market Metrics</span>
+          <MenuItem 
+            sx={{ 
+              py: 1, 
+              px: 2, 
+              minHeight: '44px',
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/market-metrics"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <TroubleshootIcon sx={{ fontSize: '20px', color: '#0C53B7' }} />
+              <Typography sx={{ fontSize: '0.9rem' }}>Market Metrics</Typography>
             </Box>
           </MenuItem>
 
-          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/top-traders">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <EmojiEventsIcon sx={{ fontSize: '16px', color: '#B78100' }} />
-              <span>Top Traders</span>
+          <MenuItem 
+            sx={{ 
+              py: 1, 
+              px: 2, 
+              minHeight: '44px',
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/top-traders"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <EmojiEventsIcon sx={{ fontSize: '20px', color: '#B78100' }} />
+              <Typography sx={{ fontSize: '0.9rem' }}>Top Traders</Typography>
             </Box>
           </MenuItem>
         </AccordionDetails>
       </Accordion>
       <Link underline="none" color="inherit" href="/collections" rel="noreferrer noopener nofollow">
-        <MenuItem sx={{ py: 0.5, px: 1.5 }}>
-          <Typography variant="s6">NFTs</Typography>
+        <MenuItem sx={{ py: 1.5, px: 2, minHeight: '52px' }}>
+          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>NFTs</Typography>
         </MenuItem>
       </Link>
       <Link underline="none" color="inherit" href="/swap" rel="noreferrer noopener nofollow">
-        <MenuItem sx={{ py: 0.5, px: 1.5 }}>
-          <Typography variant="s6">Swap</Typography>
+        <MenuItem sx={{ py: 1.5, px: 2, minHeight: '52px' }}>
+          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>Swap</Typography>
         </MenuItem>
       </Link>
+      <Divider sx={{ my: 2 }} />
       <Stack
-        direction="row"
-        spacing={0}
-        sx={{ mr: 0, pl: 2 }}
-        alignItems="center"
-        justifyContent="space-around"
-        flexWrap="wrap"
+        direction="column"
+        spacing={2}
+        sx={{ px: 2, pb: 3 }}
+        alignItems="stretch"
       >
-        <Wallet />
-        <ThemeSwitcher />
-        <CurrencySwithcer />
+        <Box sx={{ width: '100%' }}>
+          <Wallet />
+        </Box>
+        <Stack direction="row" spacing={2} justifyContent="space-between">
+          <ThemeSwitcher />
+          <CurrencySwithcer />
+        </Stack>
       </Stack>
-      <Box sx={{ pb: 3 }} />
     </Drawer>
   );
 }

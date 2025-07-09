@@ -90,6 +90,14 @@ const CompactCard = styled(Box)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+    borderRadius: '16px',
+    boxShadow: theme.palette.mode === 'dark'
+      ? `0 10px 20px ${alpha(theme.palette.common.black, 0.2)}`
+      : `0 10px 20px ${alpha(theme.palette.primary.main, 0.05)}`
+  },
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -120,8 +128,8 @@ const CompactCard = styled(Box)(({ theme }) => ({
 }));
 
 const IconCover = styled(Box)(({ theme }) => ({
-  width: '90px',
-  height: '90px',
+  width: '80px',
+  height: '80px',
   border: `3px solid ${alpha(theme.palette.background.paper, 0.95)}`,
   borderRadius: '16px',
   boxShadow: `0 6px 24px ${alpha(theme.palette.common.black, 0.1)}, 0 2px 8px ${alpha(
@@ -152,6 +160,10 @@ const IconCover = styled(Box)(({ theme }) => ({
   [theme.breakpoints.up('sm')]: {
     width: '100px',
     height: '100px'
+  },
+  [theme.breakpoints.down('sm')]: {
+    alignSelf: 'center',
+    marginBottom: theme.spacing(1)
   }
 }));
 
@@ -205,10 +217,16 @@ const CompactStatsCard = styled(Box)(({ theme }) => ({
       )} 100%)`,
   backdropFilter: 'blur(16px) saturate(150%)',
   border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-  borderRadius: '16px',
-  padding: theme.spacing(1.5),
+  borderRadius: { xs: '12px', sm: '16px' },
+  padding: { xs: theme.spacing(1.5), sm: theme.spacing(2) },
   textAlign: 'center',
-  minWidth: '90px',
+  minWidth: { xs: 'unset', sm: '100px' },
+  width: { xs: '100%', sm: 'auto' },
+  aspectRatio: { xs: '1 / 1', sm: 'unset' },
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
@@ -248,9 +266,9 @@ const ActionButton = styled(IconButton)(({ theme }) => ({
   backdropFilter: 'blur(16px) saturate(180%)',
   border: `2px solid ${alpha(theme.palette.primary.main, 0.08)}`,
   borderRadius: '14px',
-  padding: '12px',
-  minWidth: '48px',
-  minHeight: '48px',
+  padding: { xs: '8px', sm: '12px' },
+  minWidth: { xs: '40px', sm: '48px' },
+  minHeight: { xs: '40px', sm: '48px' },
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
@@ -419,14 +437,16 @@ export default function ViewNFT({ collection }) {
       value: fNumber(floorPrice),
       icon: '✕',
       color: 'primary',
-      bgIcon: AccountBalanceWalletIcon
+      bgIcon: AccountBalanceWalletIcon,
+      order: { xs: 1, sm: 1 }
     },
     {
       label: '24h Vol',
       value: fNumber(totalVol24h),
       icon: '✕',
       color: 'success',
-      bgIcon: TrendingUpIcon
+      bgIcon: TrendingUpIcon,
+      order: { xs: 2, sm: 2 }
     },
     {
       label: 'Total Vol',
@@ -434,19 +454,22 @@ export default function ViewNFT({ collection }) {
       icon: '✕',
       tooltip: true,
       color: 'info',
-      bgIcon: TrendingUpIcon
+      bgIcon: TrendingUpIcon,
+      order: { xs: 3, sm: 3 }
     },
     {
       label: 'Supply',
       value: items,
       color: 'warning',
-      bgIcon: InventoryIcon
+      bgIcon: InventoryIcon,
+      order: { xs: 4, sm: 4 }
     },
     {
       label: 'Owners',
       value: extra.owners,
       color: 'secondary',
-      bgIcon: PeopleIcon
+      bgIcon: PeopleIcon,
+      order: { xs: 5, sm: 5 }
     }
   ];
 
@@ -538,9 +561,13 @@ export default function ViewNFT({ collection }) {
       </SharePopover>
 
       <CompactCard sx={{ position: 'relative' }}>
-        <Stack direction="row" spacing={3} alignItems="center">
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={{ xs: 2, sm: 3 }} 
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+        >
           {/* Logo Section */}
-          <Box sx={{ flexShrink: 0 }}>
+          <Box sx={{ flexShrink: 0, display: { xs: 'flex', sm: 'block' }, justifyContent: 'center' }}>
             <IconCover>
               <IconWrapper>
                 <Image
@@ -575,12 +602,17 @@ export default function ViewNFT({ collection }) {
           {/* Main Content Section */}
           <Stack spacing={1.5} flex={1} sx={{ minWidth: 0, width: { xs: '100%', sm: 'auto' } }}>
             {/* Title and Actions Row */}
-            <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="flex-start">
+            <Stack 
+              direction={{ xs: 'column', sm: 'row' }} 
+              spacing={{ xs: 1, sm: 2 }} 
+              justifyContent="space-between" 
+              alignItems={{ xs: 'center', sm: 'flex-start' }}
+            >
               <Stack
                 direction="row"
                 spacing={1.5}
                 alignItems="center"
-                sx={{ minWidth: 0, flex: 1 }}
+                sx={{ minWidth: 0, flex: 1, justifyContent: { xs: 'center', sm: 'flex-start' } }}
               >
                 <Typography
                   variant="h5"
@@ -590,11 +622,13 @@ export default function ViewNFT({ collection }) {
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                    fontSize: { xs: '1.1rem', sm: '1.4rem' },
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    letterSpacing: '-0.02em'
+                    letterSpacing: '-0.02em',
+                    maxWidth: { xs: '200px', sm: 'none' },
+                    textAlign: { xs: 'center', sm: 'left' }
                   }}
                 >
                   {name}
@@ -627,14 +661,14 @@ export default function ViewNFT({ collection }) {
               <Stack 
                 direction="row" 
                 alignItems="center" 
-                spacing={1.5} 
-                sx={{ flexShrink: 0, ml: 2 }}
+                spacing={{ xs: 1, sm: 1.5 }} 
+                sx={{ flexShrink: 0, ml: { xs: 0, sm: 2 }, mt: { xs: 1, sm: 0 } }}
               >
                   {accountLogin === collection.account && (
                     <Link href={`/collection/${slug}/edit`} underline="none">
                       <Tooltip title="Edit Collection" arrow placement="top">
                         <ActionButton size="small">
-                          <EditIcon sx={{ fontSize: '1.1rem', color: 'text.primary' }} />
+                          <EditIcon sx={{ fontSize: { xs: '0.9rem', sm: '1.1rem' }, color: 'text.primary' }} />
                         </ActionButton>
                       </Tooltip>
                     </Link>
@@ -646,158 +680,174 @@ export default function ViewNFT({ collection }) {
 
                   <Tooltip title="Share Collection" arrow placement="top">
                     <ActionButton size="small" ref={anchorRef} onClick={handleOpenShare}>
-                      <ShareIcon sx={{ fontSize: '1.1rem', color: 'text.primary' }} />
+                      <ShareIcon sx={{ fontSize: { xs: '0.9rem', sm: '1.1rem' }, color: 'text.primary' }} />
                     </ActionButton>
                   </Tooltip>
               </Stack>
             </Stack>
 
             {/* Creator and Description Row */}
-            <Stack direction="row" spacing={3} alignItems="center" sx={{ minWidth: 0 }}>
-              <Box
-                sx={{
-                  p: 1,
-                  borderRadius: '8px',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.background.paper,
-                    0.6
-                  )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                  flexShrink: 0
-                }}
-              >
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-                    Created by
-                  </Typography>
-                  <Link color="inherit" href={`/profile/${account}`} underline="none">
-                    <Typography
-                      variant="body2"
-                      color="primary"
-                      fontWeight={600}
-                      sx={{
-                        fontSize: '0.8rem',
-                        '&:hover': {
-                          textDecoration: 'underline'
-                        }
-                      }}
-                    >
-                      {accountName || account + account.slice(-6)}
+            <Stack 
+              direction={{ xs: 'column', sm: 'row' }} 
+              spacing={{ xs: 1.5, sm: 3 }} 
+              alignItems={{ xs: 'center', sm: 'center' }} 
+              sx={{ minWidth: 0, textAlign: { xs: 'center', sm: 'left' } }}
+            >
+              {fullScreen ? (
+                <Chip
+                  size="small"
+                  label={
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          fontSize: '0.65rem',
+                          fontWeight: 600,
+                          color: theme.palette.primary.main
+                        }}
+                      >
+                        {account.slice(0, 4) + '...' + account.slice(-4)}
+                      </Typography>
+                      <Typography 
+                        variant="caption" 
+                        color="text.secondary"
+                        sx={{ fontSize: '0.65rem' }}
+                      >
+                        • {formatMonthYear(created).slice(0, 3)}
+                      </Typography>
+                    </Stack>
+                  }
+                  component={Link}
+                  href={`/profile/${account}`}
+                  clickable
+                  sx={{
+                    height: '22px',
+                    backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                    backdropFilter: 'blur(8px)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                    '& .MuiChip-label': {
+                      px: 1,
+                      py: 0
+                    },
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                      borderColor: alpha(theme.palette.primary.main, 0.2)
+                    }
+                  }}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    p: { xs: '6px 10px', sm: '8px 16px' },
+                    borderRadius: '8px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.6
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                    flexShrink: 0
+                  }}
+                >
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                      Created by
                     </Typography>
-                  </Link>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-                    • {formatMonthYear(created)}
-                  </Typography>
-                </Stack>
-              </Box>
+                    <Link color="inherit" href={`/profile/${account}`} underline="none">
+                      <Typography
+                        variant="body2"
+                        color="primary"
+                        fontWeight={600}
+                        sx={{
+                          fontSize: '0.8rem',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }}
+                      >
+                        {accountName || account + account.slice(-6)}
+                      </Typography>
+                    </Link>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                      • {formatMonthYear(created)}
+                    </Typography>
+                  </Stack>
+                </Box>
+              )}
 
               {description && (
                 <Typography
                   variant="body2"
                   sx={{
                     color: 'text.secondary',
-                    fontSize: '0.85rem',
+                    fontSize: { xs: '0.75rem', sm: '0.85rem' },
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
+                    whiteSpace: { xs: 'nowrap', sm: 'nowrap' },
                     flex: 1,
                     minWidth: 0,
-                    lineHeight: 1.4,
-                    fontStyle: 'italic'
+                    lineHeight: 1.3,
+                    fontStyle: 'italic',
+                    maxWidth: { xs: '100%', sm: 'none' },
+                    px: { xs: 1, sm: 0 }
                   }}
                 >
-                  "{truncate(description, 100)}"
+                  "{truncate(description, fullScreen ? 60 : 100)}"
                 </Typography>
               )}
             </Stack>
           </Stack>
 
           {/* Stats Section */}
-          <Stack
-            direction="row"
-            spacing={{ xs: 1, sm: 1.5 }}
+          <Box
             sx={{
+              display: { xs: 'grid', sm: 'flex' },
+              gridTemplateColumns: { xs: 'repeat(2, 1fr)' },
+              gap: { xs: 0.5, sm: 1.5 },
+              flexDirection: 'row',
               flexShrink: 0,
-              overflowX: 'auto',
-              maxWidth: { xs: '100%', sm: '420px', md: '520px' },
               width: { xs: '100%', sm: 'auto' },
-              pb: 0.5,
-              '&::-webkit-scrollbar': {
-                height: 4
-              },
-              '&::-webkit-scrollbar-track': {
-                backgroundColor: alpha(theme.palette.divider, 0.05),
-                borderRadius: 2
-              },
-              '&::-webkit-scrollbar-thumb': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.2),
-                borderRadius: 2,
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.3)
-                }
-              }
+              mt: { xs: 2, sm: 0 },
+              justifyContent: { xs: 'stretch', sm: 'flex-end' },
             }}
           >
-            {statsData.map((item) => {
+            {statsData.filter((item, index) => index < 4).map((item, index) => {
               const IconComponent = item.bgIcon;
               return (
                 <CompactStatsCard key={item.label}>
-                  <Stack alignItems="center" spacing={0.8}>
-                    <Box
+                  <Box sx={{ width: '100%' }}>
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight="bold"
                       sx={{
-                        p: 0.8,
-                        borderRadius: '10px',
-                        background: `linear-gradient(135deg, ${alpha(
-                          theme.palette[item.color].main,
-                          0.15
-                        )} 0%, ${alpha(theme.palette[item.color].main, 0.08)} 100%)`,
-                        border: `1.5px solid ${alpha(theme.palette[item.color].main, 0.2)}`,
-                        boxShadow: `0 4px 12px ${alpha(theme.palette[item.color].main, 0.15)}`,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'scale(1.1)',
-                          boxShadow: `0 6px 16px ${alpha(theme.palette[item.color].main, 0.25)}`
-                        }
+                        fontSize: { xs: '1rem', sm: '1.1rem' },
+                        color: 'text.primary',
+                        lineHeight: 1.2,
+                        mb: 0.5
                       }}
                     >
-                      <IconComponent
-                        sx={{
-                          color: `${item.color}.main`,
-                          fontSize: '1rem'
-                        }}
-                      />
-                    </Box>
-                    <Box textAlign="center">
-                      <Typography
-                        variant="subtitle2"
-                        fontWeight="bold"
-                        sx={{
-                          fontSize: '0.8rem',
-                          color: 'text.primary',
-                          lineHeight: 1.2,
-                          mb: 0.2
-                        }}
-                      >
-                        {item.icon && (
-                          <span style={{ marginRight: '2px', fontSize: '0.7rem' }}>
-                            {item.icon}
-                          </span>
-                        )}
-                        {item.value}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{
-                          fontSize: '0.65rem',
-                          fontWeight: 500,
-                          lineHeight: 1,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
-                        }}
-                      >
-                        {item.label}
-                      </Typography>
+                      {item.icon && (
+                        <span style={{ marginRight: '3px', fontSize: { xs: '0.85rem', sm: '0.9rem' } }}>
+                          {item.icon}
+                        </span>
+                      )}
+                      {item.value}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                        fontWeight: 500,
+                        lineHeight: 1,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 0.5
+                      }}
+                    >
+                      {item.label}
                       {item.tooltip && (
                         <Tooltip title={`Volume on XRPNFT: ${volume1}`} arrow>
                           <Icon
@@ -805,18 +855,17 @@ export default function ViewNFT({ collection }) {
                             style={{
                               fontSize: '10px',
                               color: theme.palette.text.secondary,
-                              cursor: 'help',
-                              marginTop: '2px'
+                              cursor: 'help'
                             }}
                           />
                         </Tooltip>
                       )}
-                    </Box>
-                  </Stack>
+                    </Typography>
+                  </Box>
                 </CompactStatsCard>
               );
             })}
-          </Stack>
+          </Box>
         </Stack>
       </CompactCard>
 

@@ -529,7 +529,7 @@ export default function NFTDetailsMobile({ nft }) {
   };
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={1.5} sx={{ pb: 2 }}>
       <Backdrop
         sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={pageLoading}
@@ -565,8 +565,8 @@ export default function NFTDetailsMobile({ nft }) {
       {self && (
         <Box
           sx={{
-            p: 3,
-            borderRadius: '16px',
+            p: 2,
+            borderRadius: '12px',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.8
@@ -574,14 +574,14 @@ export default function NFTDetailsMobile({ nft }) {
             backdropFilter: 'blur(10px)',
             border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
             boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
-            mb: 2
+            mb: 1.5
           }}
         >
-          <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center">
-            <Stack spacing={2}>
+          <Stack direction="row" spacing={1.5} justifyContent="space-between" alignItems="center">
+            <Stack spacing={1}>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Link href={`/collection/${cslug}`} underline="none">
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: 'primary.main', fontSize: '0.95rem' }}>
                     {collectionName}
                   </Typography>
                 </Link>
@@ -594,8 +594,8 @@ export default function NFTDetailsMobile({ nft }) {
 
               <Box
                 sx={{
-                  p: 2,
-                  borderRadius: '12px',
+                  p: 1.5,
+                  borderRadius: '10px',
                   background: `linear-gradient(135deg, ${alpha(
                     theme.palette.info.main,
                     0.08
@@ -603,18 +603,18 @@ export default function NFTDetailsMobile({ nft }) {
                   border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 1.5
+                  gap: 1
                 }}
               >
-                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                  Global Floor
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500, fontSize: '0.7rem' }}>
+                  Floor
                 </Typography>
                 <Typography
-                  variant="body1"
+                  variant="body2"
                   sx={{
                     fontWeight: 700,
                     color: theme.palette.info.main,
-                    fontSize: '1.1rem'
+                    fontSize: '0.9rem'
                   }}
                 >
                   ✕ {fNumber(floorPrice)}
@@ -625,7 +625,7 @@ export default function NFTDetailsMobile({ nft }) {
             <Stack direction="row" alignItems="center" spacing={2}>
               <Tooltip title="Share">
                 <IconButton
-                  size="large"
+                  size="medium"
                   sx={{
                     background: `linear-gradient(135deg, ${alpha(
                       theme.palette.background.paper,
@@ -633,9 +633,10 @@ export default function NFTDetailsMobile({ nft }) {
                     )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
                     backdropFilter: 'blur(12px)',
                     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    borderRadius: '12px',
+                    borderRadius: '10px',
                     boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    padding: '8px',
                     '&:hover': {
                       background: `linear-gradient(135deg, ${alpha(
                         theme.palette.primary.main,
@@ -649,7 +650,7 @@ export default function NFTDetailsMobile({ nft }) {
                   ref={anchorRef}
                   onClick={handleOpenShare}
                 >
-                  <ShareIcon sx={{ color: 'primary.main' }} />
+                  <ShareIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />
                 </IconButton>
               </Tooltip>
 
@@ -698,69 +699,63 @@ export default function NFTDetailsMobile({ nft }) {
           </Stack>
         </Box>
       )}
-      <Stack spacing={2} sx={{ mt: 2 }}>
-        <Typography
-          variant="h2a"
-          sx={{
-            fontWeight: 700,
-            fontSize: '1.8rem',
-            background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
-              theme.palette.primary.main,
-              0.8
-            )} 100%)`,
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
-          }}
-        >
-          {nftName}
-        </Typography>
-      </Stack>
+      <Typography
+        variant="h2a"
+        sx={{
+          fontWeight: 700,
+          fontSize: '1.5rem',
+          background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
+            theme.palette.primary.main,
+            0.8
+          )} 100%)`,
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          mt: 1,
+          mb: 1
+        }}
+      >
+        {nftName}
+      </Typography>
       {self && rarity_rank > 0 && (
         <Box
           sx={{
-            p: 2,
-            borderRadius: '12px',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.warning.main,
-              0.08
-            )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.warning.main, 0.12)}`,
             display: 'inline-flex',
             alignItems: 'center',
-            gap: 1.5,
-            width: 'fit-content',
-            mb: 2
+            gap: 0.5,
+            mb: 1,
+            px: 1,
+            py: 0.5,
+            borderRadius: '6px',
+            backgroundColor: alpha(theme.palette.warning.main, 0.08),
+            border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`
           }}
         >
-          <Tooltip title={`Rarity Rank #${fIntNumber(rarity_rank)} / ${fIntNumber(citems)}`}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <LeaderboardOutlinedIcon
-                sx={{
-                  width: '18px',
-                  height: '18px',
-                  color: theme.palette.warning.main
-                }}
-              />
-              <Typography
-                variant="body1"
-                sx={{
-                  fontWeight: 600,
-                  color: theme.palette.warning.main
-                }}
-              >
-                Rank #{fIntNumber(rarity_rank)} / {fIntNumber(citems)}
-              </Typography>
-            </Stack>
-          </Tooltip>
+          <LeaderboardOutlinedIcon
+            sx={{
+              width: '14px',
+              height: '14px',
+              color: theme.palette.warning.main
+            }}
+          />
+          <Typography
+            sx={{
+              fontWeight: 600,
+              color: theme.palette.warning.main,
+              fontSize: '0.75rem',
+              lineHeight: 1
+            }}
+          >
+            #{fIntNumber(rarity_rank)}
+          </Typography>
         </Box>
       )}
       <NFTPreview nft={nft} /> {/* NFTokenID={NFTokenID} meta={meta} dfile={dfile} */}
       {/* Make offer start */}
       <Paper
         sx={{
-          p: 3,
-          borderRadius: '20px',
+          p: 2.5,
+          borderRadius: '16px',
           background: `linear-gradient(135deg, ${alpha(
             theme.palette.background.paper,
             0.95
@@ -814,29 +809,41 @@ export default function NFTDetailsMobile({ nft }) {
               <Box
                 sx={{
                   display: 'flex',
-                  justifyContent: 'space-around',
-                  gap: 1
+                  justifyContent: 'space-between',
+                  gap: 0.8
                 }}
               >
                 <Button
                   fullWidth
-                  // sx={{ minWidth: 150 }}
                   variant="outlined"
-                  startIcon={<LocalOfferIcon />}
+                  startIcon={<LocalOfferIcon sx={{ fontSize: '1rem' }} />}
                   onClick={handleCreateSellOffer}
                   color="success"
                   disabled={!accountLogin || burnt}
+                  sx={{
+                    fontSize: '0.85rem',
+                    py: 1,
+                    borderRadius: '10px',
+                    textTransform: 'none',
+                    fontWeight: 600
+                  }}
                 >
                   Sell
                 </Button>
                 <Button
                   fullWidth
-                  // sx={{ minWidth: 150 }}
                   variant="outlined"
-                  startIcon={<SendIcon />}
+                  startIcon={<SendIcon sx={{ fontSize: '1rem' }} />}
                   onClick={handleTransfer}
                   color="info"
                   disabled={!accountLogin || burnt}
+                  sx={{
+                    fontSize: '0.85rem',
+                    py: 1,
+                    borderRadius: '10px',
+                    textTransform: 'none',
+                    fontWeight: 600
+                  }}
                 >
                   Transfer
                 </Button>
@@ -844,36 +851,39 @@ export default function NFTDetailsMobile({ nft }) {
               </Box>
             ) : (
               <Grid container>
-                <Grid item xs={12} sm={7}>
-                  <Typography variant="s7">Current Price</Typography>
-                  <Stack sx={{ mt: 0, mb: 2 }}>
+                <Grid item xs={12}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500, textTransform: 'uppercase', fontSize: '0.7rem' }}>Current Price</Typography>
                     {loading ? (
-                      <PulseLoader color="#00AB55" size={10} />
+                      <PulseLoader color="#00AB55" size={8} />
                     ) : cost ? (
                       cost.currency === 'XRP' ? (
-                        <Stack direction="row" spacing={0.5} alignItems="center">
-                          <Typography variant="s9" pt={0.8}>
-                            <Typography>✕</Typography>
-                          </Typography>
-                          <Typography variant="s9">{fNumber(cost.amount)}</Typography>
+                        <Stack direction="row" spacing={0.3} alignItems="center">
+                          <Typography variant="body1" sx={{ fontWeight: 700, fontSize: '1.1rem' }}>✕</Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 700, fontSize: '1.1rem' }}>{fNumber(cost.amount)}</Typography>
                         </Stack>
                       ) : (
-                        <Typography variant="s3">
+                        <Typography variant="body1" sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
                           {fNumber(cost.amount)} {cost.name}
                         </Typography>
                       )
                     ) : (
-                      <Typography variant="s8">- - -</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.secondary' }}>- - -</Typography>
                     )}
                   </Stack>
-                </Grid>
-                <Grid item xs={12} sm={5}>
-                  <Stack direction={{ xs: 'row', sm: 'column' }} spacing={{ xs: 1, sm: 2 }}>
+                  <Stack direction="row" spacing={1}>
                     <Button
                       fullWidth
                       disabled={!cost || burnt}
                       variant="contained"
                       onClick={handleBuyNow}
+                      sx={{
+                        fontSize: '0.85rem',
+                        py: 1,
+                        borderRadius: '10px',
+                        textTransform: 'none',
+                        fontWeight: 600
+                      }}
                     >
                       Buy Now
                     </Button>
@@ -883,115 +893,16 @@ export default function NFTDetailsMobile({ nft }) {
                       variant="outlined"
                       onClick={handleCreateBuyOffer}
                       sx={{
-                        position: 'relative',
-                        overflow: 'hidden',
-                        borderRadius: '12px',
-                        transition: 'all 0.3s ease',
-                        background: (theme) =>
-                          theme.palette.mode === 'dark'
-                            ? `linear-gradient(45deg, 
-                                                                #000000 0%, 
-                                                                ${alpha('#000000', 0.9)} 25%,
-                                                                ${alpha('#1a1a1a', 0.95)} 50%,
-                                                                ${alpha('#000000', 0.9)} 75%,
-                                                                #000000 100%)`
-                            : `linear-gradient(45deg, 
-                                                                #ffffff 0%, 
-                                                                ${alpha('#ffffff', 0.9)} 25%,
-                                                                ${alpha('#f5f5f5', 0.95)} 50%,
-                                                                ${alpha('#ffffff', 0.9)} 75%,
-                                                                #ffffff 100%)`,
-                        backgroundSize: '200% 200%',
-                        animation: 'gradient 5s ease infinite',
-                        color: (theme) =>
-                          theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.main,
-                        border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.5)}`,
-                        boxShadow: (theme) => `
-                                                        0 0 5px ${alpha(
-                                                          theme.palette.primary.main,
-                                                          0.2
-                                                        )},
-                                                        0 0 10px ${alpha(
-                                                          theme.palette.primary.main,
-                                                          0.1
-                                                        )}
-                                                    `,
-                        '@keyframes gradient': {
-                          '0%': {
-                            backgroundPosition: '0% 50%'
-                          },
-                          '50%': {
-                            backgroundPosition: '100% 50%'
-                          },
-                          '100%': {
-                            backgroundPosition: '0% 50%'
-                          }
-                        },
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          top: '-50%',
-                          left: '-50%',
-                          width: '200%',
-                          height: '200%',
-                          background: (theme) =>
-                            `radial-gradient(circle, ${alpha(
-                              theme.palette.primary.light,
-                              0.1
-                            )} 0%, transparent 70%)`,
-                          animation: 'rotate 4s linear infinite',
-                          opacity: 0,
-                          transition: 'opacity 0.3s ease'
-                        },
-                        '@keyframes rotate': {
-                          '0%': {
-                            transform: 'rotate(0deg)'
-                          },
-                          '100%': {
-                            transform: 'rotate(360deg)'
-                          }
-                        },
+                        fontSize: '0.85rem',
+                        py: 1,
+                        borderRadius: '10px',
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        borderColor: theme.palette.primary.main,
+                        color: theme.palette.primary.main,
                         '&:hover': {
-                          transform: 'translateY(-2px) scale(1.02)',
-                          background: (theme) =>
-                            theme.palette.mode === 'dark'
-                              ? `linear-gradient(45deg, 
-                                                                    #000000 0%, 
-                                                                    ${alpha('#000000', 0.95)} 25%,
-                                                                    ${alpha('#1a1a1a', 1)} 50%,
-                                                                    ${alpha('#000000', 0.95)} 75%,
-                                                                    #000000 100%)`
-                              : `linear-gradient(45deg, 
-                                                                    #ffffff 0%, 
-                                                                    ${alpha('#ffffff', 0.95)} 25%,
-                                                                    ${alpha('#f5f5f5', 1)} 50%,
-                                                                    ${alpha('#ffffff', 0.95)} 75%,
-                                                                    #ffffff 100%)`,
-                          border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.7)}`,
-                          boxShadow: (theme) => `
-                                                            0 0 8px ${alpha(
-                                                              theme.palette.primary.main,
-                                                              0.3
-                                                            )},
-                                                            0 0 15px ${alpha(
-                                                              theme.palette.primary.main,
-                                                              0.15
-                                                            )}
-                                                        `,
-                          '&::before': {
-                            opacity: 1
-                          }
-                        },
-                        '&:active': {
-                          transform: 'translateY(0)'
-                        },
-                        '&.Mui-disabled': {
-                          background: (theme) =>
-                            theme.palette.mode === 'dark'
-                              ? alpha('#000000', 0.5)
-                              : alpha('#ffffff', 0.5),
-                          border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.2)}`,
-                          boxShadow: 'none'
+                          borderColor: theme.palette.primary.dark,
+                          backgroundColor: alpha(theme.palette.primary.main, 0.08)
                         }
                       }}
                     >
@@ -1008,8 +919,8 @@ export default function NFTDetailsMobile({ nft }) {
       <Stack direction="row" spacing={1} alignItems="center">
         <Box
           sx={{
-            p: 2,
-            borderRadius: '12px',
+            p: 1.5,
+            borderRadius: '10px',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.secondary.main,
               0.08
@@ -1017,7 +928,7 @@ export default function NFTDetailsMobile({ nft }) {
             border: `1px solid ${alpha(theme.palette.secondary.main, 0.12)}`,
             display: 'flex',
             alignItems: 'center',
-            gap: 2
+            gap: 1.5
           }}
         >
           <Avatar
@@ -1025,20 +936,22 @@ export default function NFTDetailsMobile({ nft }) {
             src={accountLogo}
             variant="square"
             sx={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
               border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`
             }}
           />
-          <Stack spacing={0.5}>
+          <Stack spacing={0}>
             <Typography
               variant="caption"
               sx={{
                 color: 'text.secondary',
                 fontWeight: 500,
                 textTransform: 'uppercase',
-                letterSpacing: '0.5px'
+                letterSpacing: '0.3px',
+                fontSize: '0.65rem',
+                lineHeight: 1.2
               }}
             >
               Owner
@@ -1053,15 +966,16 @@ export default function NFTDetailsMobile({ nft }) {
               }}
             >
               <Typography
-                variant="body1"
+                variant="body2"
                 sx={{
                   fontWeight: 600,
                   color: theme.palette.secondary.main,
-                  fontSize: '0.95rem'
+                  fontSize: '0.8rem',
+                  lineHeight: 1.2
                 }}
                 noWrap
               >
-                {truncate(account, 16)}
+                {truncate(account, 14)}
               </Typography>
             </Link>
           </Stack>
@@ -1072,38 +986,39 @@ export default function NFTDetailsMobile({ nft }) {
           <Accordion
             defaultExpanded
             sx={{
-              borderRadius: '16px !important',
+              borderRadius: '12px !important',
               background: `linear-gradient(135deg, ${alpha(
                 theme.palette.background.paper,
                 0.95
               )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
               backdropFilter: 'blur(20px)',
               border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
-              mb: 2,
+              boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
+              mb: 1.5,
               '&::before': {
                 display: 'none'
               },
               '& .MuiAccordionSummary-root': {
-                borderRadius: '16px 16px 0 0',
+                borderRadius: '12px 12px 0 0',
                 background: `linear-gradient(135deg, ${alpha(
                   theme.palette.primary.main,
                   0.08
                 )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
                 border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-                minHeight: '64px',
+                minHeight: '48px',
                 '&.Mui-expanded': {
-                  minHeight: '64px',
+                  minHeight: '48px',
                   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                 }
               },
               '& .MuiAccordionDetails-root': {
-                borderRadius: '0 0 16px 16px',
+                borderRadius: '0 0 12px 12px',
                 background: `linear-gradient(135deg, ${alpha(
                   theme.palette.background.paper,
                   0.6
                 )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-                backdropFilter: 'blur(10px)'
+                backdropFilter: 'blur(10px)',
+                padding: '12px'
               }
             }}
           >
@@ -1115,8 +1030,8 @@ export default function NFTDetailsMobile({ nft }) {
               <Stack direction="row" spacing={2} alignItems="center">
                 <Box
                   sx={{
-                    p: 1,
-                    borderRadius: '10px',
+                    p: 0.8,
+                    borderRadius: '8px',
                     background: `linear-gradient(135deg, ${alpha(
                       theme.palette.primary.main,
                       0.15
@@ -1127,14 +1042,14 @@ export default function NFTDetailsMobile({ nft }) {
                     justifyContent: 'center'
                   }}
                 >
-                  <LocalOfferIcon sx={{ color: theme.palette.primary.main, fontSize: '1.2rem' }} />
+                  <LocalOfferIcon sx={{ color: theme.palette.primary.main, fontSize: '1rem' }} />
                 </Box>
                 <Typography
-                  variant="s16"
+                  variant="body1"
                   sx={{
                     fontWeight: 600,
                     color: theme.palette.primary.main,
-                    fontSize: '1.1rem'
+                    fontSize: '0.95rem'
                   }}
                 >
                   Sell Offers
@@ -1155,15 +1070,30 @@ export default function NFTDetailsMobile({ nft }) {
       )}
       <Stack>
         {/* Buy Offers start */}
-        <Accordion>
+        <Accordion
+          sx={{
+            borderRadius: '12px !important',
+            mb: 1.5,
+            '&::before': { display: 'none' },
+            '& .MuiAccordionSummary-root': {
+              minHeight: '48px',
+              '&.Mui-expanded': {
+                minHeight: '48px'
+              }
+            },
+            '& .MuiAccordionDetails-root': {
+              padding: '12px'
+            }
+          }}
+        >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
             aria-controls="panel3a-content"
             id="panel3a-header"
           >
-            <Stack direction="row" spacing={2}>
-              <PanToolIcon />
-              <Typography variant="s16">Offers</Typography>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <PanToolIcon sx={{ fontSize: '1.2rem' }} />
+              <Typography variant="body1" sx={{ fontWeight: 600 }}>Offers</Typography>
             </Stack>
           </AccordionSummary>
           {/* <Divider /> */}
@@ -1181,15 +1111,30 @@ export default function NFTDetailsMobile({ nft }) {
       </Stack>
       <Stack>
         {/* History Start */}
-        <Accordion>
+        <Accordion
+          sx={{
+            borderRadius: '12px !important',
+            mb: 1.5,
+            '&::before': { display: 'none' },
+            '& .MuiAccordionSummary-root': {
+              minHeight: '48px',
+              '&.Mui-expanded': {
+                minHeight: '48px'
+              }
+            },
+            '& .MuiAccordionDetails-root': {
+              padding: '12px'
+            }
+          }}
+        >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
             aria-controls="panel2a-content"
             id="panel2a-header"
           >
-            <Stack direction="row" spacing={2}>
-              <HistoryIcon />
-              <Typography variant="s16">History</Typography>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <HistoryIcon sx={{ fontSize: '1.2rem' }} />
+              <Typography variant="body1" sx={{ fontWeight: 600 }}>History</Typography>
             </Stack>
           </AccordionSummary>
           <Divider />
@@ -1200,15 +1145,30 @@ export default function NFTDetailsMobile({ nft }) {
         {/* History end */}
       </Stack>
       <Stack>
-        <Accordion defaultExpanded>
+        <Accordion defaultExpanded
+          sx={{
+            borderRadius: '12px !important',
+            mb: 1.5,
+            '&::before': { display: 'none' },
+            '& .MuiAccordionSummary-root': {
+              minHeight: '48px',
+              '&.Mui-expanded': {
+                minHeight: '48px'
+              }
+            },
+            '& .MuiAccordionDetails-root': {
+              padding: '12px'
+            }
+          }}
+        >
           <AccordionSummary
             id="panel3bh-header"
             expandIcon={<ExpandMoreIcon />}
             aria-controls="panel3bh-content"
           >
-            <Stack spacing={2} direction="row">
-              <Icon icon="majesticons:checkbox-list-detail-line" fontSize={25} />
-              <Typography variant="s16">Properties</Typography>
+            <Stack spacing={1.5} direction="row" alignItems="center">
+              <Icon icon="majesticons:checkbox-list-detail-line" fontSize={20} />
+              <Typography variant="body1" sx={{ fontWeight: 600 }}>Properties</Typography>
             </Stack>
           </AccordionSummary>
           <AccordionDetails>
@@ -1223,15 +1183,30 @@ export default function NFTDetailsMobile({ nft }) {
         </Accordion>
       </Stack>
       <Stack>
-        <Accordion>
+        <Accordion
+          sx={{
+            borderRadius: '12px !important',
+            mb: 1.5,
+            '&::before': { display: 'none' },
+            '& .MuiAccordionSummary-root': {
+              minHeight: '48px',
+              '&.Mui-expanded': {
+                minHeight: '48px'
+              }
+            },
+            '& .MuiAccordionDetails-root': {
+              padding: '12px'
+            }
+          }}
+        >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
             aria-controls="panel1bh-content"
             id="panel1bh-header"
           >
-            <Stack spacing={2} direction="row">
-              <ArticleIcon />
-              <Typography variant="s16">Details</Typography>
+            <Stack spacing={1.5} direction="row" alignItems="center">
+              <ArticleIcon sx={{ fontSize: '1.2rem' }} />
+              <Typography variant="body1" sx={{ fontWeight: 600 }}>Details</Typography>
             </Stack>
           </AccordionSummary>
           <AccordionDetails>
@@ -1362,15 +1337,30 @@ export default function NFTDetailsMobile({ nft }) {
         </Accordion>
       </Stack>
       <Stack>
-        <Accordion>
+        <Accordion
+          sx={{
+            borderRadius: '12px !important',
+            mb: 1.5,
+            '&::before': { display: 'none' },
+            '& .MuiAccordionSummary-root': {
+              minHeight: '48px',
+              '&.Mui-expanded': {
+                minHeight: '48px'
+              }
+            },
+            '& .MuiAccordionDetails-root': {
+              padding: '12px'
+            }
+          }}
+        >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
             aria-controls="panel2bh-content"
             id="panel2bh-header"
           >
-            <Stack spacing={2} direction="row" borderRadius={20}>
-              <DescriptionIcon />
-              <Typography variant="s16">Description</Typography>
+            <Stack spacing={1.5} direction="row" alignItems="center">
+              <DescriptionIcon sx={{ fontSize: '1.2rem' }} />
+              <Typography variant="body1" sx={{ fontWeight: 600 }}>Description</Typography>
             </Stack>
           </AccordionSummary>
           <AccordionDetails>

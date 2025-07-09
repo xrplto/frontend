@@ -188,19 +188,25 @@ const StyledAccordion = styled(Accordion)(({ theme }) => ({
   },
   '& .MuiAccordionSummary-root': {
     padding: theme.spacing(0, 1),
-    minHeight: 56,
+    minHeight: { xs: 48, sm: 56 },
     '&.Mui-expanded': {
-      minHeight: 56
+      minHeight: { xs: 48, sm: 56 }
+    },
+    [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(0, 0.5)
     }
   },
   '& .MuiAccordionSummary-content': {
-    margin: '12px 0',
+    margin: { xs: '8px 0', sm: '12px 0' },
     '&.Mui-expanded': {
-      margin: '12px 0'
+      margin: { xs: '8px 0', sm: '12px 0' }
     }
   },
   '& .MuiAccordionDetails-root': {
-    padding: theme.spacing(1)
+    padding: { xs: theme.spacing(0.5), sm: theme.spacing(1) },
+    [theme.breakpoints.down('sm')]: {
+      padding: 0
+    }
   }
 }));
 
@@ -1480,10 +1486,24 @@ export default function NFTActions({ nft }) {
             <StyledAccordion
               defaultExpanded
             >
-              <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" />}>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <HistoryIcon color="primary" />
-                  <Typography variant="h6" color="primary.main">
+              <AccordionSummary 
+                expandIcon={<ExpandMoreIcon color="primary" sx={{ fontSize: { xs: 20, sm: 24 } }} />}
+                sx={{
+                  '& .MuiAccordionSummary-expandIconWrapper': {
+                    marginRight: { xs: 0, sm: 1 }
+                  }
+                }}
+              >
+                <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="center">
+                  <HistoryIcon 
+                    color="primary" 
+                    sx={{ fontSize: { xs: 20, sm: 24 } }} 
+                  />
+                  <Typography 
+                    variant={{ xs: "body1", sm: "h6" }} 
+                    color="primary.main"
+                    sx={{ fontWeight: { xs: 600, sm: 500 } }}
+                  >
                     History
                   </Typography>
                 </Stack>

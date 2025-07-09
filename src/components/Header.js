@@ -150,6 +150,12 @@ const HeaderWrapper = styled(Box)(
     backdrop-filter: blur(25px);
     box-shadow: 0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)};
     
+    ${theme.breakpoints.down('sm')} {
+      height: ${theme.spacing(6)};
+      box-shadow: 0 4px 16px 0 ${alpha(theme.palette.common.black, 0.05)};
+      backdrop-filter: blur(15px);
+    }
+    
     &::before {
       content: "";
       position: absolute;
@@ -394,7 +400,7 @@ export default function Header(props) {
 
   return (
     <HeaderWrapper>
-      <Container maxWidth={false}>
+      <Container maxWidth={false} sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
         <Box
           display="flex"
           alignItems="center"
@@ -405,12 +411,12 @@ export default function Header(props) {
           <Box
             id="logo-container-laptop"
             sx={{
-              mr: 2,
+              mr: { sm: 2, md: 3 },
               display: { xs: 'none', sm: 'flex' },
               alignItems: 'center'
             }}
           >
-            <Logo alt="xrpl.to Logo" style={{ marginRight: 35 }} />
+            <Logo alt="xrpl.to Logo" style={{ marginRight: '24px' }} />
           </Box>
 
           {isDesktop && (
@@ -800,8 +806,12 @@ export default function Header(props) {
             <Box
               id="logo-container-mobile"
               sx={{
-                mr: 2,
-                display: { xs: 'flex', sm: 'none' }
+                mr: 1,
+                display: { xs: 'flex', sm: 'none' },
+                '& img': {
+                  maxHeight: '32px',
+                  width: 'auto'
+                }
               }}
             >
               <Logo alt="xrpl.to Logo" />
@@ -829,8 +839,16 @@ export default function Header(props) {
             )}
 
             {!fullSearch && isTabletOrMobile && (
-              <IconButton aria-label="search" onClick={handleFullSearch}>
-                <SearchIcon />
+              <IconButton 
+                aria-label="search" 
+                onClick={handleFullSearch}
+                sx={{ 
+                  padding: { xs: '8px', sm: '10px' },
+                  minWidth: { xs: '40px', sm: '44px' },
+                  minHeight: { xs: '40px', sm: '44px' }
+                }}
+              >
+                <SearchIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
               </IconButton>
             )}
 
@@ -908,8 +926,16 @@ export default function Header(props) {
             )}
 
             {isTabletOrMobile && !fullSearch && (
-              <IconButton onClick={() => toggleDrawer(true)}>
-                <MenuIcon />
+              <IconButton 
+                onClick={() => toggleDrawer(true)}
+                sx={{ 
+                  padding: { xs: '8px', sm: '10px' },
+                  minWidth: { xs: '40px', sm: '44px' },
+                  minHeight: { xs: '40px', sm: '44px' },
+                  ml: { xs: 0.5, sm: 1 }
+                }}
+              >
+                <MenuIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
               </IconButton>
             )}
 

@@ -62,30 +62,31 @@ const CurrencyContent = styled('div')(
     display: flex;
     flex: 1 1 0%;
     flex-direction: row;
-    padding: 20px 24px;
-    border-radius: 8px;
+    padding: 16px;
+    border-radius: 12px;
     -webkit-box-align: center;
     align-items: center;
     background: ${theme.palette.background.paper};
-    border: 1px solid ${alpha(theme.palette.divider, 0.2)};
-    transition: border-color 0.2s ease;
+    border: 1px solid ${alpha(theme.palette.divider, 0.15)};
+    transition: all 0.2s ease;
     
     &:hover {
       border-color: ${alpha(theme.palette.primary.main, 0.3)};
+      box-shadow: 0 2px 8px ${alpha(theme.palette.primary.main, 0.08)};
     }
     
     &:not(:first-of-type) {
-      margin-top: 1px;
+      margin-top: 8px;
     }
     
     @media (max-width: 600px) {
-      padding: 18px 20px;
-      border-radius: 6px;
+      padding: 12px;
+      border-radius: 10px;
     }
     
     @media (min-width: 900px) {
-      padding: 24px 32px;
-      border-radius: 10px;
+      padding: 20px 24px;
+      border-radius: 14px;
     }
 `
 );
@@ -113,23 +114,26 @@ const OverviewWrapper = styled('div')(
   ({ theme }) => `
     flex-direction: column;
     box-sizing: border-box;
-    border-radius: 12px;
+    border-radius: 16px;
     display: flex;
     background: ${theme.palette.background.paper};
-    border: 1px solid ${alpha(theme.palette.divider, 0.15)};
+    border: 1px solid ${alpha(theme.palette.divider, 0.12)};
     padding-bottom: 8px;
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
+    box-shadow: 0 4px 16px ${alpha(theme.palette.common.black, 0.04)};
 
     @media (max-width: 600px) {
-        border-radius: 8px;
-        border: 1px solid ${alpha(theme.palette.divider, 0.2)};
+        border-radius: 12px;
+        margin: 0 8px;
+        box-shadow: 0 2px 8px ${alpha(theme.palette.common.black, 0.03)};
     }
     
     @media (min-width: 900px) {
-        border-radius: 14px;
+        border-radius: 20px;
         max-width: 700px;
+        box-shadow: 0 8px 24px ${alpha(theme.palette.common.black, 0.06)};
     }
 `
 );
@@ -146,8 +150,8 @@ const ConverterFrame = styled('div')(
 const ExchangeButton = styled(Button)(
   ({ theme }) => `
     @media (max-width: 600px) {
-        margin-left: 10px;
-        margin-right: 10px;
+        margin-left: 8px;
+        margin-right: 8px;
     }
     @media (min-width: 900px) {
         padding: 16px 32px;
