@@ -1608,7 +1608,8 @@ export const XrplToDarkTheme = createTheme({
     },
     modal: {
       fontSize: '2em',
-      display: 'block'
+      display: 'block',
+      background: '#1a1a1a'
     }
   },
   shadows: [

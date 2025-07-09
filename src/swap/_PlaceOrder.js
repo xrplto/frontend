@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
 
-// Material
+// Material UI components (to be replaced with Tailwind)
 import { styled } from '@mui/material/styles';
 import { Button, Stack, Typography } from '@mui/material';
 
@@ -20,11 +20,11 @@ import { useDispatch } from 'react-redux';
 import QRDialog from 'src/components/QRDialog';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
-// ----------------------------------------------------------------------
+// Material UI styled components (to be replaced)
 const DisabledButton = styled(Button)({
   '&.Mui-disabled': {
-    pointerEvents: 'unset', // allow :hover styles to be triggered
-    cursor: 'not-allowed' // and custom cursor can be defined without :hover state
+    pointerEvents: 'unset',
+    cursor: 'not-allowed'
   }
 });
 

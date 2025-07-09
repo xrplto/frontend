@@ -7,8 +7,7 @@ import { ClipLoader } from 'react-spinners';
 Decimal.set({ precision: 50 });
 import LoadChart from 'src/components/LoadChart';
 
-// Material
-
+// Material UI components (to be gradually replaced with Tailwind)
 import {
   alpha,
   styled,
@@ -22,6 +21,8 @@ import {
   Tooltip
 } from '@mui/material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+
+// Additional icons for future replacement (lucide-react not installed)
 
 // Iconify
 import { Icon } from '@iconify/react';

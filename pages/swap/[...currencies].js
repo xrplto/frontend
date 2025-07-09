@@ -3,8 +3,8 @@ import { performance } from 'perf_hooks';
 import { useState, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
 
-// Material
-import { styled, Box, Container, Stack, Toolbar, Typography } from '@mui/material';
+// Material UI imports
+import { Toolbar } from '@mui/material';
 
 // Context
 import { useContext } from 'react';
@@ -22,14 +22,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-        // overflow: auto;
-        overflow-x: hidden;
-        flex: 1;
-        min-height: 100vh;
-  `
-);
+// Removed Material UI styled component - using Tailwind classes directly
 
 
 
@@ -136,41 +129,24 @@ function Overview({ data }) {
   };
 
   return (
-    <OverviewWrapper>
+    <div className="overflow-x-hidden flex-1 min-h-screen">
       <Toolbar id="back-to-top-anchor" />
       <Topbar />
       <Header />
 
-      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
-        <Stack
-          spacing={3}
-          alignItems="center"
-          sx={{
-            minHeight: 'calc(100vh - 180px)',
-            justifyContent: 'center',
-            pt: { xs: 1, sm: 0 }
-          }}
-        >
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{
-              fontSize: { xs: '1.75rem', sm: '2rem' },
-              fontWeight: 500,
-              color: 'text.primary',
-              mb: 1
-            }}
-          >
+      <div className="max-w-7xl mx-auto py-2 sm:py-3 md:py-4 px-4">
+        <div className="flex flex-col items-center justify-center gap-3 min-h-[calc(100vh-180px)] pt-1 sm:pt-0">
+          <h1 className="text-3xl sm:text-4xl font-medium text-foreground mb-1">
             Swap
-          </Typography>
-          <Box sx={{ width: '100%', maxWidth: 800 }}>
+          </h1>
+          <div className="w-full max-w-[800px]">
             <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
-          </Box>
-        </Stack>
-      </Container>
+          </div>
+        </div>
+      </div>
       <Footer />
       <ScrollToTop />
-    </OverviewWrapper>
+    </div>
   );
 }
 

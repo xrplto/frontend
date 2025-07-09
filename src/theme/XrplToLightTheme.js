@@ -1586,7 +1586,8 @@ export const XrplToLightTheme = createTheme({
     },
     modal: {
       fontSize: "2em",
-      display: "block"
+      display: "block",
+      background: "#ffffff"
     }
   },
   shadows: [

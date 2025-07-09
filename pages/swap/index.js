@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { useRouter } from 'next/router';
 
-// Material
-import { styled, Box, Container, Stack, Toolbar, Typography } from '@mui/material';
+// Material UI imports
+import { styled, Container, Box, Typography, Toolbar } from '@mui/material';
 
 // Context
 import { useContext } from 'react';
@@ -23,14 +23,11 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-        // overflow: auto;
-        overflow-x: hidden;
-        flex: 1;
-        min-height: 100vh;
-  `
-);
+const Root = styled('div')(({ theme }) => ({
+  overflowX: 'hidden',
+  flex: 1,
+  minHeight: '100vh'
+}));
 
 
 
@@ -182,41 +179,43 @@ function Overview({ data }) {
   };
 
   return (
-    <OverviewWrapper>
+    <Root>
       <Toolbar id="back-to-top-anchor" />
       <Topbar />
       <Header />
 
       <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
-        <Stack
-          spacing={3}
-          alignItems="center"
+        <Box
           sx={{
-            minHeight: 'calc(100vh - 180px)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
             justifyContent: 'center',
+            gap: 3,
+            minHeight: 'calc(100vh - 180px)',
             pt: { xs: 1, sm: 0 }
           }}
         >
           <Typography
-            variant="h4"
+            variant="h3"
             component="h1"
             sx={{
-              fontSize: { xs: '1.75rem', sm: '2rem' },
+              fontSize: { xs: '2rem', sm: '2.5rem' },
               fontWeight: 500,
-              color: 'text.primary',
               mb: 1
             }}
           >
             Swap
           </Typography>
-          <Box sx={{ width: '100%', maxWidth: 800 }}>
+          <Box sx={{ width: '100%', maxWidth: '800px' }}>
             <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
           </Box>
-        </Stack>
+        </Box>
       </Container>
 
       <Footer />
-    </OverviewWrapper>
+      <ScrollToTop />
+    </Root>
   );
 }
 

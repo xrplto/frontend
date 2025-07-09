@@ -1,195 +1,247 @@
 import { m as motion } from "framer-motion";
-import shouldForwardProp from "@styled-system/should-forward-prop";
-import { styled } from "styled-components";
-import { background, border, layout, position, space, color, typography } from "styled-system";
+import { Box, Button, TextField } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { flexbox } from "styled-system";
+import React from 'react';
 
 const mobileFooterHeight = 73;
 
-const Box = styled.div.withConfig({
-    shouldForwardProp,
-})`
-    ${background}
-    ${border}
-    ${layout}
-    ${position}
-    ${space}
-    ${color}
-`;
-
-const Flex = styled(Box)`
-  display: flex;
-  ${flexbox}
-`;
-
 export const MODAL_SWIPE_TO_CLOSE_VELOCITY = 300;
 
-export const MotionBox = styled(motion.div)`
-  ${background}
-  ${border}
-  ${layout}
-  ${position}
-  ${space}
-`;
-
-export const ModalHeader = styled(Flex)`
-  align-items: center;
-  background: transparent;
-  border-bottom: 1px solid ${({ theme, headerBorderColor }) => headerBorderColor || theme.colors.cardBorder};
-  display: flex;
-  padding: 12px 24px;
-
-  ${({ theme }) => theme.mediaQueries.md} {
-    background: ${({ background }) => background || "transparent"};
-  }
-`;
-
-export const ModalTitle = styled(Flex)`
-  align-items: center;
-  flex: 1;
-`;
-
-export const ModalBody = styled(Flex)`
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: calc(90vh - ${mobileFooterHeight}px);
-  ${({ theme }) => theme.mediaQueries.md} {
-    display: flex;
-    max-height: 90vh;
-  }
-`;
-
-const IconButton = styled.button`
-  padding: 2px;
-  width: ${({ scale }) => (scale === "xs" ? "auto" : scale === "sm" ? "32px" : "48px")};
-  position: relative;
-  align-items: center;
-  border: 0px;
-  border-radius: 16px;
-  cursor: pointer;
-  display: inline-flex;
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 600;
-  justify-content: center;
-  letter-spacing: 0.03em;
-  line-height: 1;
-  opacity: 1;
-  outline: 0px;
-  transition: background-color 0.2s ease 0s, opacity 0.2s ease 0s;
-  height: 48px;
-  padding: 0px 24px;
-  background-color: transparent;
-  box-shadow: none;
-`;
-
-export const ModalCloseButton = ({
-    onDismiss,
-}) => {
-    return (
-        <IconButton
-            variant="text"
-            onClick={(e) => {
-                e.stopPropagation();
-                onDismiss?.();
-            }}
-            aria-label="Close the dialog"
-        >
-            <CloseIcon color="primary" />
-        </IconButton>
-    );
+// Simple motion box component
+export const MotionBox = ({ children, ...props }) => {
+  const MotionDiv = motion.div;
+  return <MotionDiv {...props}>{children}</MotionDiv>;
 };
 
-export const ModalBackButton = ({ onBack }) => {
-    return (
-        <IconButton variant="text" onClick={onBack} area-label="go back" mr="8px">
-            {/* <ArrowBackIcon color="primary" /> */}
-        </IconButton>
-    );
+// Modal Container - simple component with sx prop
+export const ModalContainer = ({ children, $minHeight, ...props }) => {
+  return (
+    <MotionBox
+      {...props}
+      sx={{
+        overflow: 'hidden',
+        background: (theme) => theme.palette.background.paper,
+        boxShadow: '0px 20px 36px -8px rgba(14, 14, 44, 0.1), 0px 1px 1px rgba(0, 0, 0, 0.05)',
+        border: (theme) => `1px solid ${theme.palette.divider}`,
+        borderRadius: { xs: '12px 12px 0px 0px', md: '12px' },
+        width: { xs: '100%', md: 'auto' },
+        maxHeight: { xs: 'calc(var(--vh, 1vh) * 100)', md: '100vh' },
+        zIndex: (theme) => theme.zIndex.modal,
+        position: { xs: 'absolute', md: 'static' },
+        bottom: { xs: 0, md: 'auto' },
+        maxWidth: 'none !important',
+        minHeight: $minHeight,
+        ...props.sx,
+      }}
+    >
+      {children}
+    </MotionBox>
+  );
 };
 
-export const ModalContainer = styled(MotionBox)`
-  overflow: hidden;
-  background: ${({ theme }) => theme.modal.background};
-  box-shadow: 0px 20px 36px -8px rgba(14, 14, 44, 0.1), 0px 1px 1px rgba(0, 0, 0, 0.05);
-  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
-  border-radius: 12px 12px 0px 0px;
-  width: 100%;
-  max-height: calc(var(--vh, 1vh) * 100);
-  z-index: ${({ theme }) => theme.zIndices.modal};
-  position: absolute;
-  bottom: 0;
-  max-width: none !important;
-  min-height: ${({ $minHeight }) => $minHeight};
+// Modal Header - simple Box component
+export const ModalHeader = ({ children, headerBorderColor, background, ...props }) => {
+  return (
+    <Box
+      {...props}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        background: 'transparent',
+        borderBottom: (theme) => `1px solid ${headerBorderColor || theme.palette.divider}`,
+        padding: '12px 24px',
+        [theme => theme.breakpoints.up('md')]: {
+          background: background || 'transparent',
+        },
+        ...props.sx,
+      }}
+    >
+      {children}
+    </Box>
+  );
+};
 
-  ${({ theme }) => theme.mediaQueries.md} {
-    width: auto;
-    position: auto;
-    bottom: auto;
-    border-radius: 12px;
-    max-height: 100vh;
-  }
-`;
+// Modal Title - simple Box component
+export const ModalTitle = ({ children, ...props }) => {
+  return (
+    <Box
+      {...props}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        flex: 1,
+        ...props.sx,
+      }}
+    >
+      {children}
+    </Box>
+  );
+};
 
-export const Heading = styled.span.withConfig({
-    shouldForwardProp,
-})`
-  color: ${({ theme }) => theme.colors.text};
-  font-weight: 600;
-  line-height: 1.5;
-  font-size: 20px;
-  ${({ textTransform }) => textTransform && `text-transform: ${textTransform};`}
-  ${({ ellipsis }) =>
-        ellipsis &&
-        `white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;`}
+// Modal Body - simple Box component
+export const ModalBody = ({ children, ...props }) => {
+  return (
+    <Box
+      {...props}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        maxHeight: `calc(90vh - ${mobileFooterHeight}px)`,
+        [theme => theme.breakpoints.up('md')]: {
+          display: 'flex',
+          maxHeight: '90vh',
+        },
+        ...props.sx,
+      }}
+    >
+      {children}
+    </Box>
+  );
+};
 
-  ${space}
-  ${typography}
-  ${layout}
+// Close Button - simple Button component
+export const ModalCloseButton = ({ onDismiss, ...props }) => {
+  return (
+    <Button
+      {...props}
+      variant="text"
+      onClick={(e) => {
+        e.stopPropagation();
+        onDismiss?.();
+      }}
+      aria-label="Close the dialog"
+      sx={{
+        padding: '2px',
+        minWidth: 'auto',
+        width: '48px',
+        height: '48px',
+        borderRadius: '16px',
+        backgroundColor: 'transparent',
+        '&:hover': {
+          backgroundColor: (theme) => theme.palette.action.hover,
+        },
+        ...props.sx,
+      }}
+    >
+      <CloseIcon color="primary" />
+    </Button>
+  );
+};
 
-  ${({ small }) => small && `font-size: 14px;`}
-`;
+// Back Button - simple Button component
+export const ModalBackButton = ({ onBack, ...props }) => {
+  return (
+    <Button
+      {...props}
+      variant="text"
+      onClick={onBack}
+      aria-label="go back"
+      sx={{
+        padding: '2px',
+        minWidth: 'auto',
+        width: '48px',
+        height: '48px',
+        borderRadius: '16px',
+        backgroundColor: 'transparent',
+        mr: 1,
+        '&:hover': {
+          backgroundColor: (theme) => theme.palette.action.hover,
+        },
+        ...props.sx,
+      }}
+    >
+      {/* Add back icon here if needed */}
+    </Button>
+  );
+};
 
-export const Input = styled("input").withConfig({
-    shouldForwardProp: (props) => !["scale", "isSuccess", "isWarning"].includes(props),
-})`
-    background-color: ${({ theme }) => theme.colors.input};
-    border-radius: 16px;
-    box-shadow: inset 0px 2px 2px -1px rgba(74,74,104,.1);
-    color: ${({ theme }) => theme.colors.text};
-    display: block;
-    font-size: 16px;
-    height: 48px;
-    outline: 0;
-    padding: 0 16px;
-    width: 100%;
-    border: 1px solid ${({ theme }) => theme.colors.inputSecondary};
-  
-    &::placeholder {
-      color: ${({ theme }) => theme.colors.textSubtle};
+// Heading - simple Box component
+export const Heading = ({ children, textTransform, ellipsis, small, ...props }) => {
+  return (
+    <Box
+      {...props}
+      component="span"
+      sx={{
+        color: (theme) => theme.palette.text.primary,
+        fontWeight: 600,
+        lineHeight: 1.5,
+        fontSize: small ? '14px' : '20px',
+        textTransform: textTransform || 'none',
+        ...(ellipsis && {
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }),
+        ...props.sx,
+      }}
+    >
+      {children}
+    </Box>
+  );
+};
+
+// Input - simple input element with sx-like styling
+export const Input = ({ isWarning, isSuccess, ...props }) => {
+  const getFocusBoxShadow = () => {
+    if (isWarning) {
+      return "0px 1px 4px rgba(255, 163, 25, 0.25), 0px 3px 12px 2px rgba(255, 163, 25, 0.35)";
     }
-  
-    &:disabled {
-      background-color: ${({ theme }) => theme.colors.backgroundDisabled};
-      box-shadow: none;
-      color: ${({ theme }) => theme.colors.textDisabled};
-      cursor: not-allowed;
+    if (isSuccess) {
+      return "0px 1px 4px rgba(68, 214, 0, 0.25), 0px 3px 12px 2px rgba(68, 214, 0, 0.35)";
     }
-  
-    &:focus:not(:disabled) {
-      box-shadow: ${({ theme, isWarning, isSuccess }) => {
-        if (isWarning) {
-            return theme.shadows.warning;
-        }
+    return "0px 1px 4px rgba(20, 125, 254, 0.25), 0px 3px 12px 2px rgba(20, 125, 254, 0.35)";
+  };
 
-        if (isSuccess) {
-            return theme.shadows.success;
-        }
-        return theme.shadows.focus;
-    }};
-    }
-`;
+  return (
+    <TextField
+      {...props}
+      variant="outlined"
+      fullWidth
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          borderRadius: '16px',
+          height: '48px',
+          backgroundColor: (theme) => theme.palette.background.paper,
+          '& fieldset': {
+            borderColor: (theme) => theme.palette.divider,
+          },
+          '&:hover fieldset': {
+            borderColor: (theme) => theme.palette.divider,
+          },
+          '&.Mui-focused fieldset': {
+            boxShadow: getFocusBoxShadow(),
+          },
+          '&.Mui-disabled': {
+            backgroundColor: (theme) => theme.palette.action.disabledBackground,
+            color: (theme) => theme.palette.text.disabled,
+          },
+        },
+        '& .MuiOutlinedInput-input': {
+          padding: '0 16px',
+          fontSize: '16px',
+          '&::placeholder': {
+            color: (theme) => theme.palette.text.secondary,
+          },
+        },
+        ...props.sx,
+      }}
+    />
+  );
+};
+
+// Export a simple Box component as well for flexibility
+export const Flex = ({ children, ...props }) => {
+  return (
+    <Box
+      {...props}
+      sx={{
+        display: 'flex',
+        ...props.sx,
+      }}
+    >
+      {children}
+    </Box>
+  );
+};
