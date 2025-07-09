@@ -112,10 +112,11 @@ const RootStyle = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1.5, 0),
   position: 'relative',
   [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(1, 0)
+    padding: theme.spacing(0.75, 0)
   },
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.5, 0)
+    padding: theme.spacing(0.25, 0),
+    gap: theme.spacing(0.5)
   }
 }));
 
@@ -153,14 +154,15 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     height: '28px',
     transition: 'all 0.2s ease',
     [theme.breakpoints.down('md')]: {
-      margin: theme.spacing(0.2),
-      height: '24px',
-      borderRadius: '6px'
+      margin: theme.spacing(0.15),
+      height: '22px',
+      borderRadius: '5px'
     },
     [theme.breakpoints.down('sm')]: {
       margin: theme.spacing(0.05),
-      height: '20px',
-      borderRadius: '3px'
+      height: '18px',
+      borderRadius: '3px',
+      padding: '0 6px'
     },
     [`&.${toggleButtonGroupClasses.disabled}`]: {
       border: 0
@@ -225,14 +227,15 @@ const getEnhancedChipStyles = (theme, isActive, color, isLoading) => ({
   fontSize: '0.875rem',
   transition: 'all 0.2s ease',
   [theme.breakpoints.down('md')]: {
-    height: '28px',
-    fontSize: '0.8125rem',
-    borderRadius: '8px'
+    height: '26px',
+    fontSize: '0.75rem',
+    borderRadius: '6px'
   },
   [theme.breakpoints.down('sm')]: {
-    height: '24px',
-    fontSize: '0.7rem',
-    borderRadius: '4px'
+    height: '22px',
+    fontSize: '0.65rem',
+    borderRadius: '4px',
+    minWidth: 'unset'
   },
   background: isActive
     ? alpha(theme.palette.primary.main, 0.1)
@@ -254,17 +257,24 @@ const getEnhancedChipStyles = (theme, isActive, color, isLoading) => ({
   '& .MuiChip-label': {
     px: 2,
     fontWeight: 500,
+    [theme.breakpoints.down('md')]: {
+      px: 1.25
+    },
     [theme.breakpoints.down('sm')]: {
-      px: 1.5,
+      px: 0.75,
       fontWeight: 400
     }
   },
   '& .MuiChip-icon': {
     fontSize: '18px',
     marginLeft: '8px',
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       fontSize: '16px',
       marginLeft: '6px'
+    },
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '14px',
+      marginLeft: '4px'
     }
   },
   '@keyframes spin': {
@@ -690,11 +700,11 @@ export default function SearchToolbar({
             borderRadius: '12px',
             padding: '4px',
             [theme.breakpoints.down('md')]: {
-              borderRadius: '10px',
-              padding: '3px'
+              borderRadius: '8px',
+              padding: '2px'
             },
             [theme.breakpoints.down('sm')]: {
-              borderRadius: '6px',
+              borderRadius: '4px',
               padding: '1px'
             },
             background: alpha(theme.palette.background.default, 0.5),
@@ -708,14 +718,14 @@ export default function SearchToolbar({
             onChange={(_, newType) => setViewType(newType)}
           >
             <ToggleButton size="small" value="row">
-              <DehazeIcon fontSize="18px" />
+              <DehazeIcon sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' } }} />
             </ToggleButton>
             <ToggleButton
               size="small"
               value="heatmap"
               onClick={() => window.location.href = '/tokens-heatmap'}
             >
-              <WindowIcon fontSize="18px" />
+              <WindowIcon sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' } }} />
             </ToggleButton>
           </StyledToggleButtonGroup>
         </Paper>
@@ -735,7 +745,7 @@ export default function SearchToolbar({
               gap: '8px',
               // Mobile compact gap
               [theme.breakpoints.down('md')]: {
-                gap: '6px'
+                gap: '4px'
               },
               [theme.breakpoints.down('sm')]: {
                 gap: '2px'
@@ -747,12 +757,12 @@ export default function SearchToolbar({
               minWidth: 'unset',
               // Mobile compact tab
               [theme.breakpoints.down('md')]: {
-                minHeight: '32px',
-                padding: '0 4px'
+                minHeight: '28px',
+                padding: '0 2px'
               },
               [theme.breakpoints.down('sm')]: {
-                minHeight: '24px',
-                padding: '0 2px'
+                minHeight: '22px',
+                padding: '0 1px'
               }
             },
             '& .MuiTabs-scrollButtons': {
@@ -769,7 +779,7 @@ export default function SearchToolbar({
             label={
               <Chip
                 size="small"
-                icon={<AppsIcon sx={{ fontSize: '18px' }} />}
+                icon={<AppsIcon sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' } }} />}
                 label={'Tokens'}
                 onClick={handleTokensClick}
                 sx={tokensChipStyles}
@@ -793,7 +803,7 @@ export default function SearchToolbar({
               >
                 <Chip
                   size="small"
-                  icon={<CollectionsIcon sx={{ fontSize: '18px' }} />}
+                  icon={<CollectionsIcon sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' } }} />}
                   label={'NFTs'}
                   onClick={handleDelete}
                   sx={nftsChipStyles}
@@ -815,7 +825,7 @@ export default function SearchToolbar({
                 icon={
                   <LocalFireDepartmentIcon
                     sx={{
-                      fontSize: '18px',
+                      fontSize: { xs: '14px', sm: '16px', md: '18px' },
                       animation: isLoading.trending ? 'spin 1s linear infinite' : 'none'
                     }}
                   />
@@ -841,7 +851,7 @@ export default function SearchToolbar({
                 icon={
                   <SearchIcon
                     sx={{
-                      fontSize: '18px',
+                      fontSize: { xs: '14px', sm: '16px', md: '18px' },
                       animation: isLoading.spotlight ? 'spin 1s linear infinite' : 'none'
                     }}
                   />
@@ -867,7 +877,7 @@ export default function SearchToolbar({
                 icon={
                   <VisibilityIcon
                     sx={{
-                      fontSize: '18px',
+                      fontSize: { xs: '14px', sm: '16px', md: '18px' },
                       animation: isLoading.mostViewed ? 'spin 1s linear infinite' : 'none'
                     }}
                   />
@@ -893,7 +903,7 @@ export default function SearchToolbar({
                 icon={
                   <TrendingUpIcon
                     sx={{
-                      fontSize: '18px',
+                      fontSize: { xs: '14px', sm: '16px', md: '18px' },
                       animation: isLoading.gainers ? 'spin 1s linear infinite' : 'none'
                     }}
                   />
@@ -923,7 +933,7 @@ export default function SearchToolbar({
                 icon={
                   <FiberNewIcon
                     sx={{
-                      fontSize: '18px',
+                      fontSize: { xs: '14px', sm: '16px', md: '18px' },
                       animation: isLoading.new ? 'spin 1s linear infinite' : 'none'
                     }}
                   />
@@ -948,7 +958,7 @@ export default function SearchToolbar({
               label={
                 <Chip
                   size="small"
-                  icon={<WhatshotIcon sx={{ fontSize: '18px' }} />}
+                  icon={<WhatshotIcon sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' } }} />}
                   label={category.name}
                   onClick={() => handleCategoryClick(category.tag)}
                   sx={getTrendingCategoryChipStyles(category)}
@@ -969,7 +979,7 @@ export default function SearchToolbar({
             label={
               <Chip
                 size="small"
-                icon={<CategoryIcon sx={{ fontSize: '18px' }} />}
+                icon={<CategoryIcon sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' } }} />}
                 label={'Categories'}
                 onClick={handleCategoriesDrawerOpen}
                 sx={categoriesChipStyles}

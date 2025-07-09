@@ -15,10 +15,16 @@ const DrawerHeader = styled('div', {
     0.8
   )} 100%)`,
   backdropFilter: 'blur(20px)',
-  paddingLeft: 16,
-  paddingRight: 16,
-  paddingTop: 5,
-  paddingBottom: 5,
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  paddingTop: theme.spacing(0.75),
+  paddingBottom: theme.spacing(0.75),
+  [theme.breakpoints.down('sm')]: {
+    paddingLeft: theme.spacing(1.5),
+    paddingRight: theme.spacing(1.5),
+    paddingTop: theme.spacing(0.5),
+    paddingBottom: theme.spacing(0.5)
+  },
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 2px 8px ${alpha(
     theme.palette.primary.main,
@@ -48,6 +54,11 @@ const EnhancedCloseButton = styled(IconButton)(({ theme }) => ({
   borderRadius: '12px',
   width: '40px',
   height: '40px',
+  [theme.breakpoints.down('sm')]: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px'
+  },
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
     transform: 'translateY(-2px)',
@@ -66,7 +77,10 @@ const EnhancedCloseButton = styled(IconButton)(({ theme }) => ({
   },
   '& .MuiSvgIcon-root': {
     fontSize: '20px',
-    transition: 'color 0.3s ease'
+    transition: 'color 0.3s ease',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '16px'
+    }
   }
 }));
 
@@ -85,6 +99,7 @@ export default function Drawer({ toggleDrawer, isOpen, title, children, headerSt
       PaperProps={{
         sx: {
           width: '100%',
+          maxHeight: { xs: '85vh', sm: '80vh', md: '75vh' },
           background: (theme) =>
             `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.98)} 0%, ${alpha(
               theme.palette.background.default,
@@ -92,8 +107,10 @@ export default function Drawer({ toggleDrawer, isOpen, title, children, headerSt
             )} 100%)`,
           backdropFilter: 'blur(20px)',
           borderLeft: (theme) => `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-          pt: 3,
-          pb: 2
+          borderTopLeftRadius: { xs: '16px', sm: '20px', md: '24px' },
+          borderTopRightRadius: { xs: '16px', sm: '20px', md: '24px' },
+          pt: { xs: 1.5, sm: 2, md: 3 },
+          pb: { xs: 1, sm: 1.5, md: 2 }
         }
       }}
     >

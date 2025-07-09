@@ -14,7 +14,7 @@ export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
 
   // Categories to highlight - memoized to prevent recreating array
   const highlightedCategories = useMemo(
-    () => ['Magnetic X', 'XPMarket', 'FirstLedger', 'LedgerMeme', 'xrp.fun', 'aigent.run'],
+    () => ['Magnetic X', 'XPMarket', 'FirstLedger', 'LedgerMeme', 'Horizon', 'aigent.run'],
     []
   );
 
@@ -55,20 +55,30 @@ export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '12px 20px',
+            padding: { xs: '8px 12px', sm: '10px 16px', md: '12px 20px' },
             backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-            borderRadius: '12px'
+            borderRadius: { xs: '8px', sm: '10px', md: '12px' }
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <CategoryIcon sx={{ color: 'primary.main', fontSize: '1.5rem' }} />
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: '8px', sm: '10px', md: '12px' } }}>
+            <CategoryIcon sx={{ color: 'primary.main', fontSize: { xs: '1.2rem', sm: '1.35rem', md: '1.5rem' } }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' } }}>
               Categories
             </Typography>
           </Box>
           {tags && tags.length > 0 && (
-            <Badge badgeContent={tags.length} color="primary">
-              <Box sx={{ width: '24px', height: '24px' }} />
+            <Badge 
+              badgeContent={tags.length} 
+              color="primary"
+              sx={{
+                '& .MuiBadge-badge': {
+                  fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
+                  height: { xs: '16px', sm: '18px', md: '20px' },
+                  minWidth: { xs: '16px', sm: '18px', md: '20px' }
+                }
+              }}
+            >
+              <Box sx={{ width: { xs: '20px', sm: '22px', md: '24px' }, height: { xs: '20px', sm: '22px', md: '24px' } }} />
             </Badge>
           )}
         </Box>
@@ -76,9 +86,9 @@ export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
     >
       {/* Native HTML Input Search */}
       {tags && tags.length > 0 && (
-        <Box sx={{ padding: '20px' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <SearchIcon color="primary" />
+        <Box sx={{ padding: { xs: '12px', sm: '16px', md: '20px' } }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 0.75, md: 1 } }}>
+            <SearchIcon color="primary" sx={{ fontSize: { xs: '1.2rem', sm: '1.35rem', md: '1.5rem' } }} />
             <Box sx={{ flexGrow: 1, position: 'relative' }}>
               <input
                 type="text"
@@ -87,10 +97,10 @@ export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '8px 12px',
+                  padding: window.innerWidth < 600 ? '6px 10px' : '8px 12px',
                   border: '1px solid #ccc',
-                  borderRadius: '8px',
-                  fontSize: '14px',
+                  borderRadius: window.innerWidth < 600 ? '6px' : '8px',
+                  fontSize: window.innerWidth < 600 ? '12px' : '14px',
                   outline: 'none',
                   backgroundColor: darkMode ? '#2d2d2d' : '#fff',
                   color: darkMode ? '#fff' : '#000'
@@ -100,7 +110,11 @@ export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
             {searchTerm && (
               <Typography
                 variant="caption"
-                sx={{ cursor: 'pointer', color: 'text.secondary' }}
+                sx={{ 
+                  cursor: 'pointer', 
+                  color: 'text.secondary',
+                  fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' }
+                }}
                 onClick={() => setSearchTerm('')}
               >
                 Clear
@@ -112,7 +126,25 @@ export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
 
       {/* Categories List */}
       <Box
-        sx={{ padding: '20px', display: 'flex', flexWrap: 'wrap', gap: '12px', minHeight: '200px' }}
+        sx={{ 
+          padding: { xs: '12px', sm: '16px', md: '20px' }, 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: { xs: '8px', sm: '10px', md: '12px' }, 
+          minHeight: { xs: '150px', sm: '175px', md: '200px' },
+          maxHeight: { xs: '60vh', sm: '65vh', md: '70vh' },
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': {
+            width: '6px'
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'rgba(0,0,0,0.05)'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(0,0,0,0.2)',
+            borderRadius: '3px'
+          }
+        }}
       >
         {tags && tags.length > 0 ? (
           filteredTags.length > 0 ? (
@@ -127,18 +159,24 @@ export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
                   label={tag}
                   size="medium"
                   sx={{
-                    borderRadius: '16px',
-                    height: '36px',
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
+                    borderRadius: { xs: '12px', sm: '14px', md: '16px' },
+                    height: { xs: '28px', sm: '32px', md: '36px' },
+                    fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' },
+                    fontWeight: { xs: 500, sm: 550, md: 600 },
                     transition: 'all 0.3s ease',
                     backgroundColor: isHighlighted(tag) ? 'primary.main' : 'default',
                     color: isHighlighted(tag) ? 'primary.contrastText' : 'text.primary',
+                    '& .MuiChip-label': {
+                      px: { xs: 1.5, sm: 1.75, md: 2 }
+                    },
                     '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: 4,
+                      transform: { xs: 'none', sm: 'translateY(-1px)', md: 'translateY(-2px)' },
+                      boxShadow: { xs: 2, sm: 3, md: 4 },
                       backgroundColor: 'primary.main',
                       color: 'primary.contrastText'
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)'
                     }
                   }}
                 />
@@ -149,16 +187,16 @@ export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
               sx={{
                 width: '100%',
                 textAlign: 'center',
-                padding: '48px 24px',
+                padding: { xs: '24px 16px', sm: '36px 20px', md: '48px 24px' },
                 border: '1px dashed',
                 borderColor: 'divider',
-                borderRadius: '20px'
+                borderRadius: { xs: '12px', sm: '16px', md: '20px' }
               }}
             >
-              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' } }}>
                 No matching categories found
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.8125rem', md: '0.875rem' } }}>
                 Try adjusting your search terms
               </Typography>
             </Box>
@@ -168,16 +206,16 @@ export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
             sx={{
               width: '100%',
               textAlign: 'center',
-              padding: '48px 24px',
+              padding: { xs: '24px 16px', sm: '36px 20px', md: '48px 24px' },
               border: '1px dashed',
               borderColor: 'divider',
-              borderRadius: '20px'
+              borderRadius: { xs: '12px', sm: '16px', md: '20px' }
             }}
           >
-            <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+            <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' } }}>
               No categories available
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.8125rem', md: '0.875rem' } }}>
               Categories will appear here when available
             </Typography>
           </Box>
