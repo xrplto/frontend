@@ -413,10 +413,10 @@ const TokenSummary = memo(({ token }) => {
               <Image
                 src={tokenImageUrl}
                 alt={`${name} token`}
-                width={isMobile ? 56 : 64}
-                height={isMobile ? 56 : 64}
+                width={isMobile ? 72 : 88}
+                height={isMobile ? 72 : 88}
                 style={{
-                  borderRadius: '16px',
+                  borderRadius: '20px',
                   objectFit: 'cover',
                   border: `3px solid ${alpha(theme.palette.primary.main, 0.25)}`,
                   boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.1)}`,
@@ -437,7 +437,7 @@ const TokenSummary = memo(({ token }) => {
                   right: 0,
                   bottom: 0,
                   backgroundColor: alpha(theme.palette.common.black, 0.7),
-                  borderRadius: '12px',
+                  borderRadius: '17px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -448,7 +448,7 @@ const TokenSummary = memo(({ token }) => {
                   }
                 }}
               >
-                <SearchIcon sx={{ color: 'white', fontSize: 24 }} />
+                <SearchIcon sx={{ color: 'white', fontSize: 28 }} />
               </Box>
             </Box>
             
@@ -460,8 +460,8 @@ const TokenSummary = memo(({ token }) => {
                 size="small"
                 sx={{
                   position: 'absolute',
-                  top: -6,
-                  left: -6,
+                  top: -8,
+                  left: -8,
                   background: `linear-gradient(135deg, 
                     #4285f4 0%, 
                     #34a853 25%, 
@@ -470,10 +470,10 @@ const TokenSummary = memo(({ token }) => {
                     #9c27b0 100%
                   )`,
                   borderRadius: '50%',
-                  width: 24,
-                  height: 24,
-                  minWidth: 24,
-                  minHeight: 24,
+                  width: 28,
+                  height: 28,
+                  minWidth: 28,
+                  minHeight: 28,
                   border: `2px solid ${theme.palette.background.paper}`,
                   boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.25)}, 
                              0 0 0 2px ${alpha('#4285f4', 0.2)}`,
@@ -504,7 +504,7 @@ const TokenSummary = memo(({ token }) => {
                 }}
               >
                 <SearchIcon sx={{ 
-                  fontSize: 14, 
+                  fontSize: 16, 
                   color: 'white',
                   filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
                 }} />
@@ -748,6 +748,128 @@ const TokenSummary = memo(({ token }) => {
                     </Typography>
                   </Box>
                 ))}
+                
+                {/* 24h Range integrated */}
+                {range24h && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      px: 1,
+                      py: 0.25,
+                      borderRadius: '6px',
+                      background: alpha(theme.palette.text.secondary, 0.08),
+                      border: `1px solid ${alpha(theme.palette.text.secondary, 0.15)}`,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        background: alpha(theme.palette.text.secondary, 0.12),
+                        transform: 'translateY(-1px)'
+                      }
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: alpha(theme.palette.text.secondary, 0.8)
+                      }}
+                    >
+                      24h
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.25
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          color: theme.palette.text.primary,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.25
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            width: 4,
+                            height: 4,
+                            borderRadius: '50%',
+                            backgroundColor: theme.palette.success.main
+                          }}
+                        />
+                        {currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.min, metrics.USD), 1 / metrics[activeFiatCurrency]))}
+                      </Typography>
+                      <Box
+                        sx={{
+                          width: 24,
+                          height: 2,
+                          backgroundColor: alpha(theme.palette.text.secondary, 0.2),
+                          mx: 0.5,
+                          borderRadius: '1px',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            width: `${range24h.percent}%`,
+                            background: `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.warning.main} 50%, ${theme.palette.error.main} 100%)`,
+                            borderRadius: '1px',
+                            transition: 'width 0.3s ease'
+                          }}
+                        />
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            left: `${range24h.percent}%`,
+                            top: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: 4,
+                            height: 4,
+                            borderRadius: '50%',
+                            backgroundColor: theme.palette.background.paper,
+                            border: `1px solid ${theme.palette.primary.main}`,
+                            boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.2)}`
+                          }}
+                        />
+                      </Box>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          color: theme.palette.text.primary,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.25
+                        }}
+                      >
+                        {currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.max, metrics.USD), 1 / metrics[activeFiatCurrency]))}
+                        <Box
+                          component="span"
+                          sx={{
+                            width: 4,
+                            height: 4,
+                            borderRadius: '50%',
+                            backgroundColor: theme.palette.error.main
+                          }}
+                        />
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
               </Stack>
             </Box>
 
@@ -829,45 +951,6 @@ const TokenSummary = memo(({ token }) => {
         </Stack>
 
 
-        {/* 24h Range */}
-        {range24h && (
-          <Box>
-            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: alpha(theme.palette.text.secondary, 0.8), mb: 0.5, display: 'block' }}>
-              24h Range
-            </Typography>
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.success.main, minWidth: '40px' }}>
-                <NumberTooltip
-                  prepend={currencySymbols[activeFiatCurrency]}
-                  number={fNumber(
-                    Decimal.mul(
-                      Decimal.mul(range24h.min, metrics.USD),
-                      1 / metrics[activeFiatCurrency]
-                    )
-                  )}
-                />
-              </Typography>
-              <Box sx={{ flex: 1, px: 0.5 }}>
-                <LowhighBarSlider
-                  value={range24h.percent}
-                  disabled
-                  sx={{ height: 2 }}
-                />
-              </Box>
-              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.info.main, minWidth: '40px' }}>
-                <NumberTooltip
-                  prepend={currencySymbols[activeFiatCurrency]}
-                  number={fNumber(
-                    Decimal.mul(
-                      Decimal.mul(range24h.max, metrics.USD),
-                      1 / metrics[activeFiatCurrency]
-                    )
-                  )}
-                />
-              </Typography>
-            </Stack>
-          </Box>
-        )}
 
 
         {/* Metrics Grid */}
