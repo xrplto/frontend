@@ -58,20 +58,20 @@ const ContentTypography = styled(Typography)(({ theme }) => ({
   fontWeight: 500,
   letterSpacing: '0.01em',
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.65rem'
+    fontSize: '0.55rem'
   }
 }));
 
 // Ultra-minimalist MetricBox
 const MetricBox = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2.5),
+  padding: theme.spacing(2),
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2)
+    padding: theme.spacing(1)
   },
   height: '100%',
-  minHeight: '90px',
+  minHeight: '80px',
   [theme.breakpoints.down('sm')]: {
-    minHeight: '75px'
+    minHeight: '55px'
   },
   display: 'flex',
   flexDirection: 'column',
@@ -95,13 +95,13 @@ const MetricTitle = styled(Typography)(({ theme }) => ({
   fontSize: '0.7rem',
   fontWeight: 400,
   color: alpha(theme.palette.text.secondary, 0.5),
-  marginBottom: theme.spacing(0.75),
+  marginBottom: theme.spacing(0.5),
   textTransform: 'none',
   letterSpacing: '0.03em',
   lineHeight: 1,
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.65rem',
-    marginBottom: theme.spacing(0.5)
+    fontSize: '0.6rem',
+    marginBottom: theme.spacing(0.125)
   }
 }));
 
@@ -111,12 +111,12 @@ const MetricValue = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
   color: theme.palette.text.primary,
   lineHeight: 1,
-  marginBottom: theme.spacing(0.5),
+  marginBottom: theme.spacing(0.25),
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   letterSpacing: '-0.01em',
   [theme.breakpoints.down('sm')]: {
-    fontSize: '1rem',
-    marginBottom: theme.spacing(0.25)
+    fontSize: '0.875rem',
+    marginBottom: 0
   }
 }));
 
@@ -136,7 +136,7 @@ const PercentageChange = styled('span', {
   letterSpacing: '0',
   
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.65rem'
+    fontSize: '0.6rem'
   }
 }));
 
@@ -147,7 +147,7 @@ const VolumePercentage = styled(Typography)(({ theme }) => ({
   fontWeight: 400,
   letterSpacing: '0.02em',
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.6rem'
+    fontSize: '0.55rem'
   }
 }));
 
@@ -508,7 +508,7 @@ export default function Summary() {
                 }
               }}
             >
-              {[...Array(5)].map((_, index) => (
+              {[...Array(6)].map((_, index) => (
                 <Grid
                   item
                   key={`summary-skeleton-${index}`}
@@ -516,8 +516,8 @@ export default function Summary() {
                     flex: '1 0 auto',
                     [(theme) => theme.breakpoints.down('sm')]: {
                       flex: 'none',
-                      width: 'calc(50%)', // Make width exactly 50% without gap consideration
-                      maxWidth: 'calc(50%)',
+                      width: 'calc(33.33%)', // Make width exactly 33.33% for 3 per row
+                      maxWidth: 'calc(33.33%)',
                       padding: '0 !important'
                     }
                   }}
@@ -526,7 +526,7 @@ export default function Summary() {
                     variant="rectangular"
                     sx={{
                       borderRadius: '8px',
-                      height: { xs: 75, sm: 90, md: 90 },
+                      height: { xs: 55, sm: 80, md: 80 },
                       minWidth: { xs: 'unset', sm: '110px', md: '140px' },
                       width: { xs: '100%' },
                       background: (theme) =>
@@ -569,7 +569,7 @@ export default function Summary() {
                   spacing={{ xs: 1, sm: 1.5, md: 2 }}
                 >
                   {/* Market Cap Box */}
-                  <Grid item xs={6} md={1.5}>
+                  <Grid item xs={4} md={1.5}>
                     <MetricBox>
                       <MetricTitle>Market Cap</MetricTitle>
                       <MetricValue>
@@ -583,7 +583,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* DEX Volume Box */}
-                  <Grid item xs={6} md={1.5}>
+                  <Grid item xs={4} md={1.5}>
                     <MetricBox>
                       <MetricTitle>24h Volume</MetricTitle>
                       <MetricValue>
@@ -597,7 +597,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* XRP Price Box */}
-                  <Grid item xs={6} md={1.5}>
+                  <Grid item xs={4} md={1.5}>
                     <MetricBox>
                       <MetricTitle>XRP</MetricTitle>
                       <MetricValue>
@@ -611,7 +611,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* Stablecoins Box */}
-                  <Grid item xs={6} md={1.5}>
+                  <Grid item xs={4} md={1.5}>
                     <MetricBox>
                       <MetricTitle>Stables</MetricTitle>
                       <MetricValue>
@@ -623,7 +623,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* Meme Tokens Box */}
-                  <Grid item xs={6} md={1.5}>
+                  <Grid item xs={4} md={1.5}>
                     <MetricBox>
                       <MetricTitle>Memes</MetricTitle>
                       <MetricValue>
@@ -635,7 +635,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* Sentiment Score */}
-                  <Grid item xs={6} md={1.5}>
+                  <Grid item xs={4} md={1.5}>
                     <MetricBox>
                       <MetricTitle
                         sx={{
@@ -646,7 +646,7 @@ export default function Summary() {
                       >
                         Sentiment
                       </MetricTitle>
-                      <Stack spacing={0.75} sx={{ width: '100%' }}>
+                      <Stack spacing={{ xs: 0.5, sm: 0.75 }} sx={{ width: '100%' }}>
                         <Stack direction="row" alignItems="baseline" spacing={0.5}>
                           <Typography
                             sx={{ 
@@ -657,7 +657,7 @@ export default function Summary() {
                               fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
                               letterSpacing: '-0.01em',
                               [theme.breakpoints.down('sm')]: {
-                                fontSize: '1rem'
+                                fontSize: '0.875rem'
                               }
                             }}
                           >
@@ -668,7 +668,10 @@ export default function Summary() {
                               fontSize: '0.7rem',
                               fontWeight: 400,
                               color: alpha(theme.palette.text.secondary, 0.4),
-                              lineHeight: 1
+                              lineHeight: 1,
+                              [theme.breakpoints.down('sm')]: {
+                                fontSize: '0.55rem'
+                              }
                             }}
                           >
                             /100
@@ -709,12 +712,12 @@ export default function Summary() {
                   {/* Combined Platform Chart */}
                   <Grid item xs={12} md={3}>
                     <MetricBox sx={{ 
-                      p: { xs: 2, sm: 2.5 }, 
+                      p: { xs: 1, sm: 2 }, 
                       background: theme => alpha(theme.palette.background.paper, 0.3),
                       border: theme => `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                       alignItems: 'center'
                     }}>
-                      <MetricTitle sx={{ mb: 1.5, textAlign: 'center' }}>New Tokens • 30d</MetricTitle>
+                      <MetricTitle sx={{ mb: 1, textAlign: 'center' }}>New Tokens • 30d</MetricTitle>
                       <ResponsiveContainer width="100%" height={45}>
                         <AreaChart
                           key={`combined-${chartData.length}`}
