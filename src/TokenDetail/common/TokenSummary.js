@@ -586,6 +586,35 @@ const TokenSummary = memo(({ token }) => {
                     </Box>
                   </Tooltip>
                 )}
+                {id && (
+                  <Tooltip title={`Rank #${id - 1}`} placement="top">
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.25,
+                        px: { xs: 0.75, sm: 1 },
+                        py: { xs: 0.25, sm: 0.3 },
+                        borderRadius: '12px',
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                        ml: 0.5
+                      }}
+                    >
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.primary.main, 
+                          fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                          lineHeight: 1
+                        }}
+                      >
+                        #{id - 1}
+                      </Typography>
+                    </Box>
+                  </Tooltip>
+                )}
                 {rating && (
                   <Rating
                     value={rating}
@@ -943,39 +972,6 @@ const TokenSummary = memo(({ token }) => {
               </Stack>
             </Stack>
 
-            {/* Badges and Actions row */}
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ width: '100%', mt: 1 }}>
-              {/* Left badges */}
-              <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center">
-                  {id && (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        px: 1.25,
-                        py: 0.4,
-                        borderRadius: '16px',
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'translateY(-1px)',
-                          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
-                        }
-                      }}
-                    >
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                        #{id - 1}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontWeight: 600, fontSize: { xs: '0.6rem', sm: '0.7rem' }, display: { xs: 'none', sm: 'block' } }}>
-                        Rank
-                      </Typography>
-                    </Box>
-                  )}
-              </Stack>
-              
-            </Stack>
             
             {/* Tags and Status */}
             <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
