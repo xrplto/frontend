@@ -6,6 +6,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
+import PeopleIcon from '@mui/icons-material/People';
 
 // Material
 import {
@@ -42,6 +43,9 @@ import HighchartsReact from 'highcharts-react-official';
 import accessibility from 'highcharts/modules/accessibility';
 import { format } from 'date-fns';
 import { fCurrency5, fVolume } from 'src/utils/formatNumber';
+
+// Components
+import RichListChart from '../richlist/RichListChart';
 // ----------------------------------------------------------------------
 
 // Initialize the accessibility module
@@ -1378,21 +1382,35 @@ function PriceChart({ token }) {
                       >
                         <CandlestickChartIcon sx={{ fontSize: '16px' }} />
                       </EnhancedToggleButton>
+                      <EnhancedToggleButton
+                        value={2}
+                        sx={{
+                          p: 0.25,
+                          minWidth: '24px',
+                          height: '24px',
+                          borderRadius: 0.75
+                        }}
+                        aria-label="rich list chart"
+                      >
+                        <PeopleIcon sx={{ fontSize: '16px' }} />
+                      </EnhancedToggleButton>
                     </StyledToggleButtonGroup>
                   </Paper>
 
-                  <Chip
-                    size="small"
-                    label={range}
-                    sx={{
-                      bgcolor: alpha(getRangeColor(range), 0.1),
-                      color: getRangeColor(range),
-                      fontWeight: 600,
-                      fontSize: '0.6rem',
-                      height: '18px',
-                      '& .MuiChip-label': { px: 0.5 }
-                    }}
-                  />
+                  {chartType !== 2 && (
+                    <Chip
+                      size="small"
+                      label={range}
+                      sx={{
+                        bgcolor: alpha(getRangeColor(range), 0.1),
+                        color: getRangeColor(range),
+                        fontWeight: 600,
+                        fontSize: '0.6rem',
+                        height: '18px',
+                        '& .MuiChip-label': { px: 0.5 }
+                      }}
+                    />
+                  )}
 
                   {lastPrice !== null && priceChange !== 0 && (
                     <Chip
@@ -1414,43 +1432,45 @@ function PriceChart({ token }) {
                 </Box>
 
                 {/* Right side - Time range buttons */}
-                <Paper
-                  elevation={0}
-                  sx={{
-                    display: 'flex',
-                    borderRadius: 1,
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.08)} 100%)`,
-                    backdropFilter: 'blur(24px)',
-                    flexWrap: 'wrap',
-                    p: 0.1
-                  }}
-                >
-                  <ToggleButtonGroup
-                    color="primary"
-                    value={range}
-                    exclusive
-                    onChange={handleChange}
-                    size="small"
-                    sx={{ m: 0 }}
+                {chartType !== 2 && (
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      display: 'flex',
+                      borderRadius: 1,
+                      background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.08)} 100%)`,
+                      backdropFilter: 'blur(24px)',
+                      flexWrap: 'wrap',
+                      p: 0.1
+                    }}
                   >
-                    {['12h', '1D', '7D', '1M'].map((timeRange) => (
-                      <EnhancedToggleButton
-                        key={timeRange}
-                        sx={{
-                          minWidth: '24px',
-                          p: 0.25,
-                          height: '24px',
-                          borderRadius: 0.75
-                        }}
-                        value={timeRange}
-                      >
-                        <Typography variant="caption" fontWeight={600} fontSize="0.6rem">
-                          {timeRange}
-                        </Typography>
-                      </EnhancedToggleButton>
-                    ))}
-                  </ToggleButtonGroup>
-                </Paper>
+                    <ToggleButtonGroup
+                      color="primary"
+                      value={range}
+                      exclusive
+                      onChange={handleChange}
+                      size="small"
+                      sx={{ m: 0 }}
+                    >
+                      {['12h', '1D', '7D', '1M'].map((timeRange) => (
+                        <EnhancedToggleButton
+                          key={timeRange}
+                          sx={{
+                            minWidth: '24px',
+                            p: 0.25,
+                            height: '24px',
+                            borderRadius: 0.75
+                          }}
+                          value={timeRange}
+                        >
+                          <Typography variant="caption" fontWeight={600} fontSize="0.6rem">
+                            {timeRange}
+                          </Typography>
+                        </EnhancedToggleButton>
+                      ))}
+                    </ToggleButtonGroup>
+                  </Paper>
+                )}
               </Box>
             </Stack>
           ) : (
@@ -1495,29 +1515,31 @@ function PriceChart({ token }) {
                   {activeFiatCurrency}
                 </Typography>
 
-                <Chip
-                  size="small"
-                  label={range}
-                  sx={{
-                    bgcolor: alpha(getRangeColor(range), 0.1),
-                    color: getRangeColor(range),
-                    fontWeight: 600,
-                    fontSize: '0.7rem',
-                    height: '20px',
-                    '& .MuiChip-label': { px: 0.75 }
-                  }}
-                  icon={
-                    <Box
-                      sx={{
-                        width: '5px',
-                        height: '5px',
-                        borderRadius: '50%',
-                        bgcolor: getRangeColor(range),
-                        boxShadow: `0 0 8px ${alpha(getRangeColor(range), 0.5)}`
-                      }}
-                    />
-                  }
-                />
+                {chartType !== 2 && (
+                  <Chip
+                    size="small"
+                    label={range}
+                    sx={{
+                      bgcolor: alpha(getRangeColor(range), 0.1),
+                      color: getRangeColor(range),
+                      fontWeight: 600,
+                      fontSize: '0.7rem',
+                      height: '20px',
+                      '& .MuiChip-label': { px: 0.75 }
+                    }}
+                    icon={
+                      <Box
+                        sx={{
+                          width: '5px',
+                          height: '5px',
+                          borderRadius: '50%',
+                          bgcolor: getRangeColor(range),
+                          boxShadow: `0 0 8px ${alpha(getRangeColor(range), 0.5)}`
+                        }}
+                      />
+                    }
+                  />
+                )}
 
                 {lastPrice !== null && priceChange !== 0 && (
                   <Chip
@@ -1604,13 +1626,25 @@ function PriceChart({ token }) {
                     >
                       <CandlestickChartIcon fontSize="small" />
                     </EnhancedToggleButton>
+                    <EnhancedToggleButton
+                      value={2}
+                      sx={{
+                        p: 0.5,
+                        minWidth: '28px',
+                        height: '28px',
+                        borderRadius: 1
+                      }}
+                      aria-label="rich list chart"
+                    >
+                      <PeopleIcon fontSize="small" />
+                    </EnhancedToggleButton>
                   </StyledToggleButtonGroup>
                 </Paper>
               </Box>
             </Box>
           )}
 
-          {!isMobile && (
+          {!isMobile && chartType !== 2 && (
             <Box>
               <Paper
                 elevation={0}
@@ -1797,7 +1831,8 @@ function PriceChart({ token }) {
                   </Typography>
                 </Box>
               )
-            ) : dataOHLC?.length > 0 ? (
+            ) : chartType === 1 ? (
+              dataOHLC?.length > 0 ? (
               <Fade in={!isLoading}>
                 <Stack>
                   <HighchartsReact
@@ -1844,6 +1879,14 @@ function PriceChart({ token }) {
                   Try selecting a different time period.
                 </Typography>
               </Box>
+            )
+            ) : (
+              // chartType === 2 - RichListChart
+              <Fade in={!isLoading}>
+                <Box sx={{ p: 0 }}>
+                  <RichListChart token={token} />
+                </Box>
+              </Fade>
             )}
           </>
         )}
