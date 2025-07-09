@@ -65,6 +65,10 @@ const CurrencyContent = styled('div')(
       transform: translateY(-1px);
       box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.08)};
     }
+    @media (max-width: 600px) {
+      padding: 12px 16px;
+      margin: 3px 0;
+    }
 `
 );
 
@@ -177,7 +181,11 @@ const TokenImage = styled(Image)(({ theme }) => ({
   width: '32px',
   height: '32px',
   borderRadius: '50%',
-  objectFit: 'cover'
+  objectFit: 'cover',
+  [theme.breakpoints.down('sm')]: {
+    width: '28px',
+    height: '28px'
+  }
 }));
 
 const Swap = ({ token }) => {
@@ -1419,29 +1427,29 @@ const Swap = ({ token }) => {
   };
 
   return (
-    <Stack alignItems="center" width="100%">
+    <Stack alignItems="center" width="100%" sx={{ px: { xs: 0, sm: 0 } }}>
       <OverviewWrapper>
         <ConverterFrame>
           <CurrencyContent style={{ backgroundColor: color1 }}>
             <Box display="flex" flexDirection="column" flex="1" gap="3px">
               <Box display="flex" justifyContent="space-between" alignItems="top" width="100%">
-                <Typography lineHeight="1.2" variant="body2" fontSize="0.875rem">
+                <Typography lineHeight="1.2" variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}>
                   You sell
                 </Typography>
               </Box>
               <Stack direction="row" alignItems="center" spacing={0.5}>
                 <TokenImage
                   src={`https://s1.xrpl.to/token/${curr1.md5}`}
-                  width={24}
-                  height={24}
+                  width={32}
+                  height={32}
                   alt={`${curr1.name} token icon`}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
                 />
-                <Typography variant="subtitle1" fontSize="1rem">
+                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                   {curr1.name}
                 </Typography>
               </Stack>
-              <Typography variant="caption" color="textSecondary" fontSize="0.75rem">
+              <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 {curr1.user}
               </Typography>
             </Box>
@@ -1454,15 +1462,15 @@ const Swap = ({ token }) => {
                   spacing={0.5}
                   sx={{ mb: 0.5 }}
                 >
-                  <Typography variant="caption" fontSize="0.75rem">
+                  <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                     Balance{' '}
-                    <Typography variant="caption" color="primary" fontSize="0.75rem">
+                    <Typography variant="caption" color="primary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                       {accountPairBalance?.curr1.value}
                     </Typography>
                   </Typography>
 
                   <Button
-                    sx={{ px: 0.5, py: 0, minWidth: 0, fontSize: '0.75rem', height: '20px' }}
+                    sx={{ px: { xs: 0.75, sm: 0.5 }, py: 0, minWidth: 0, fontSize: { xs: '0.7rem', sm: '0.75rem' }, height: { xs: '24px', sm: '20px' } }}
                     onClick={onFillMax}
                   >
                     MAX
@@ -1481,14 +1489,14 @@ const Swap = ({ token }) => {
                     autoComplete: 'off',
                     padding: '0px 0 6px 0px',
                     border: 'none',
-                    fontSize: '16px',
+                    fontSize: { xs: '18px', sm: '16px' },
                     textAlign: 'end',
                     appearance: 'none',
                     fontWeight: 700
                   }
                 }}
               />
-              <Typography variant="caption" color="textSecondary" fontSize="0.75rem">
+              <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 {curr1IsXRP || curr2IsXRP
                   ? `~${fNumber(tokenPrice1)} XRP`
                   : `~${currencySymbols[activeFiatCurrency]} ${fNumber(tokenPrice1)}`}
@@ -1499,23 +1507,23 @@ const Swap = ({ token }) => {
           <CurrencyContent style={{ backgroundColor: color2 }}>
             <Box display="flex" flexDirection="column" flex="1" gap="3px">
               <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-                <Typography variant="body2" fontSize="0.875rem">
+                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}>
                   You buy
                 </Typography>
               </Box>
               <Stack direction="row" alignItems="center" spacing={0.5}>
                 <TokenImage
                   src={`https://s1.xrpl.to/token/${curr2.md5}`}
-                  width={24}
-                  height={24}
+                  width={32}
+                  height={32}
                   alt={`${curr2.name} token icon`}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
                 />
-                <Typography variant="subtitle1" fontSize="1rem">
+                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                   {curr2.name}
                 </Typography>
               </Stack>
-              <Typography variant="caption" color="textSecondary" fontSize="0.75rem">
+              <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 {curr2.user}
               </Typography>
             </Box>
@@ -1528,9 +1536,9 @@ const Swap = ({ token }) => {
                   spacing={0.5}
                   sx={{ mb: 0.5 }}
                 >
-                  <Typography variant="caption" fontSize="0.75rem">
+                  <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                     Balance{' '}
-                    <Typography variant="caption" color="primary" fontSize="0.75rem">
+                    <Typography variant="caption" color="primary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                       {accountPairBalance?.curr2.value}
                     </Typography>
                   </Typography>
@@ -1548,14 +1556,14 @@ const Swap = ({ token }) => {
                     autoComplete: 'off',
                     padding: '0px 0 6px 0px',
                     border: 'none',
-                    fontSize: '16px',
+                    fontSize: { xs: '18px', sm: '16px' },
                     textAlign: 'end',
                     appearance: 'none',
                     fontWeight: 700
                   }
                 }}
               />
-              <Typography variant="caption" color="textSecondary" fontSize="0.75rem">
+              <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 {curr1IsXRP || curr2IsXRP
                   ? `~${fNumber(tokenPrice2)} XRP`
                   : `~${currencySymbols[activeFiatCurrency]} ${fNumber(tokenPrice2)}`}
@@ -1569,9 +1577,9 @@ const Swap = ({ token }) => {
               onClick={onRevertExchange}
               sx={{
                 backgroundColor: 'transparent',
-                padding: '3px',
-                width: '28px',
-                height: '28px',
+                padding: { xs: '4px', sm: '3px' },
+                width: { xs: '32px', sm: '28px' },
+                height: { xs: '32px', sm: '28px' },
                 '&:hover': {
                   backgroundColor: 'transparent'
                 }
@@ -1579,8 +1587,8 @@ const Swap = ({ token }) => {
             >
               <Icon
                 icon={exchangeIcon}
-                width="16"
-                height="16"
+                width="18"
+                height="18"
                 style={{
                   color: theme.palette.text.primary,
                   transform: 'rotate(90deg)',
@@ -1593,7 +1601,7 @@ const Swap = ({ token }) => {
           {/* Add slippage control */}
           <Box sx={{ px: 1.5, py: 0.5 }}>
             <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="caption" color="textSecondary" fontSize="0.75rem">
+              <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Slippage tolerance
               </Typography>
               <Stack direction="row" spacing={0.25} alignItems="center">
@@ -1604,10 +1612,10 @@ const Swap = ({ token }) => {
                     variant={slippage === preset ? 'contained' : 'text'}
                     onClick={() => setSlippage(preset)}
                     sx={{
-                      minWidth: '28px',
-                      height: '22px',
-                      fontSize: '0.7rem',
-                      padding: '2px 6px'
+                      minWidth: { xs: '32px', sm: '28px' },
+                      height: { xs: '26px', sm: '22px' },
+                      fontSize: { xs: '0.7rem', sm: '0.7rem' },
+                      padding: { xs: '3px 8px', sm: '2px 6px' }
                     }}
                   >
                     {preset}%
@@ -1626,18 +1634,18 @@ const Swap = ({ token }) => {
                   }}
                   disableUnderline
                   sx={{
-                    width: '35px',
+                    width: { xs: '40px', sm: '35px' },
                     input: {
-                      fontSize: '0.7rem',
+                      fontSize: { xs: '0.7rem', sm: '0.7rem' },
                       textAlign: 'center',
-                      padding: '2px 4px',
+                      padding: { xs: '3px 4px', sm: '2px 4px' },
                       border: '1px solid rgba(0,0,0,0.2)',
                       borderRadius: '3px',
-                      height: '18px'
+                      height: { xs: '20px', sm: '18px' }
                     }
                   }}
                 />
-                <Typography variant="caption" fontSize="0.7rem">
+                <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.7rem' } }}>
                   %
                 </Typography>
               </Stack>
@@ -1655,7 +1663,7 @@ const Swap = ({ token }) => {
         sx={{ mt: 0.5, mb: 0.5, width: '100%' }}
       >
         <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={16} />
-        <Typography variant="caption" fontSize="0.8rem">
+        <Typography variant="caption" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
           1 {curr1.name} = {revert ? tokenExch2.toFixed(3) : (1 / tokenExch2).toFixed(3)}{' '}
           {curr2.name}
         </Typography>
@@ -1668,8 +1676,8 @@ const Swap = ({ token }) => {
             onClick={handlePlaceOrder}
             sx={{
               mt: 0,
-              height: '40px',
-              fontSize: '0.9rem'
+              height: { xs: '44px', sm: '40px' },
+              fontSize: { xs: '0.95rem', sm: '0.9rem' }
             }}
             disabled={
               isProcessing == 1 || 
@@ -1717,9 +1725,11 @@ const App = ({ token }) => {
           background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.05)} 100%)`,
           backdropFilter: 'blur(24px)',
           backgroundSize: '200% 200%',
-          animation: 'gradient 5s ease infinite',
+          animation: { xs: 'none', sm: 'gradient 5s ease infinite' },
           color: (theme) => (theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.main),
           boxShadow: (theme) => `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
+          fontSize: { xs: '0.95rem', sm: '1rem' },
+          padding: { xs: '10px 24px', sm: '8px 22px' },
           '@keyframes gradient': {
             '0%': {
               backgroundPosition: '0% 50%'
@@ -1756,7 +1766,7 @@ const App = ({ token }) => {
             }
           },
           '&:hover': {
-            transform: 'translateY(-2px) scale(1.02)',
+            transform: { xs: 'none', sm: 'translateY(-2px) scale(1.02)' },
             background: (theme) =>
               theme.palette.mode === 'dark'
                 ? `linear-gradient(45deg, 
