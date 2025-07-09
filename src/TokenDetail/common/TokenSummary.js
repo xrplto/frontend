@@ -543,9 +543,9 @@ const TokenSummary = memo(({ token }) => {
 
           {/* Token Details */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1, gap: 2 }}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1, gap: 1 }}>
               {/* Left side: Name, user, origin */}
-              <Stack spacing={0.75} justifyContent="center" sx={{ height: { xs: 60, sm: 88 } }}>
+              <Stack spacing={0.75} justifyContent="center" sx={{ height: { xs: 60, sm: 88 }, minWidth: 0, flex: 1 }}>
                 <Stack direction="row" alignItems="center" spacing={0.5}>
                 <Typography
                   variant="h4"
@@ -634,11 +634,112 @@ const TokenSummary = memo(({ token }) => {
                       {origin || 'XRPL'}
                     </Typography>
                   </Box>
+                  
+                  {/* Action Buttons */}
+                  <Stack direction="row" spacing={0.5} sx={{ ml: 1 }}>
+                    <Tooltip title={`${isRemove ? 'Remove' : 'Set'} Trustline`}>
+                      <IconButton 
+                        size="small" 
+                        disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5}
+                        sx={{ 
+                          width: 32,
+                          height: 32,
+                          borderRadius: '8px',
+                          border: `1px solid ${isRemove ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`,
+                          background: isRemove 
+                            ? alpha(theme.palette.error.main, 0.08)
+                            : alpha(theme.palette.success.main, 0.08),
+                          transition: 'all 0.2s ease',
+                          padding: '6px',
+                          '&:hover': {
+                            transform: 'translateY(-1px)',
+                            background: isRemove
+                              ? alpha(theme.palette.error.main, 0.15)
+                              : alpha(theme.palette.success.main, 0.15),
+                            boxShadow: `0 4px 12px ${isRemove ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`
+                          },
+                          '& .MuiSvgIcon-root': {
+                            fontSize: '18px',
+                            color: isRemove ? theme.palette.error.main : theme.palette.success.main
+                          }
+                        }}
+                        onClick={handleSetTrust}
+                      >
+                        {isRemove ? <LinkOffIcon /> : <LinkIcon />}
+                      </IconButton>
+                    </Tooltip>
+                    {creator && (
+                      <Tooltip title="View Creator Activity">
+                        <IconButton
+                          size="small"
+                          onClick={() => setCreatorTxOpen(true)}
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '8px',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                            background: alpha(theme.palette.background.paper, 0.8),
+                            transition: 'all 0.2s ease',
+                            padding: '6px',
+                            '&:hover': {
+                              transform: 'translateY(-1px)',
+                              background: alpha(theme.palette.info.main, 0.08),
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                            },
+                            '& .MuiSvgIcon-root': {
+                              fontSize: '18px',
+                              color: alpha(theme.palette.text.primary, 0.7)
+                            }
+                          }}
+                        >
+                          <TimelineIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Box sx={{ 
+                      '& .MuiIconButton-root': { 
+                        width: '32px !important', 
+                        height: '32px !important',
+                        minWidth: '32px !important',
+                        minHeight: '32px !important',
+                        padding: '6px !important',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.1)} !important`,
+                        '& .MuiSvgIcon-root': {
+                          fontSize: '18px !important'
+                        },
+                        '&:hover': {
+                          transform: 'translateY(-1px) !important',
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)} !important`
+                        }
+                      } 
+                    }}>
+                      <Share token={token} />
+                    </Box>
+                    <Box sx={{ 
+                      '& .MuiIconButton-root': { 
+                        width: '32px !important', 
+                        height: '32px !important',
+                        minWidth: '32px !important',
+                        minHeight: '32px !important',
+                        padding: '6px !important',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.1)} !important`,
+                        '& .MuiSvgIcon-root': {
+                          fontSize: '18px !important'
+                        },
+                        '&:hover': {
+                          transform: 'translateY(-1px) !important',
+                          border: `1px solid ${alpha(theme.palette.warning.main, 0.3)} !important`
+                        }
+                      } 
+                    }}>
+                      <Watch token={token} />
+                    </Box>
+                  </Stack>
                 </Stack>
               </Stack>
               
               {/* Center: Price with integrated 24h range */}
-              <Stack alignItems="center" spacing={0.5}>
+              <Stack alignItems="center" spacing={0.5} sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
                 <Stack direction="row" alignItems="center" spacing={{ xs: 1.5, sm: 2 }}>
                   <Typography
                     variant="h5"
@@ -740,7 +841,7 @@ const TokenSummary = memo(({ token }) => {
               </Stack>
               
               {/* Right: Percentage changes with bigger containers */}
-              <Stack direction="row" spacing={{ xs: 0.5, sm: 0.75 }} alignItems="center">
+              <Stack direction="row" spacing={{ xs: 0.75, sm: 1 }} alignItems="center" sx={{ flex: 1, justifyContent: 'flex-end' }}>
                 {priceChanges.map((item) => (
                   <Box
                     key={item.label}
@@ -748,7 +849,7 @@ const TokenSummary = memo(({ token }) => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: { xs: 0.5, sm: 0.75 },
-                      px: { xs: 1, sm: 1.5 },
+                      px: { xs: 1.25, sm: 2 },
                       py: { xs: 0.5, sm: 0.75 },
                       borderRadius: '10px',
                       background: alpha(item.color, 0.1),
@@ -793,8 +894,57 @@ const TokenSummary = memo(({ token }) => {
               </Stack>
             </Stack>
             
-            {/* Badges row */}
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ width: '100%' }}>
+            {/* Metrics row */}
+            <Stack direction="row" alignItems="flex-start" sx={{ width: '100%', mt: 1 }}>
+              {/* Metrics */}
+              <Stack direction="row" spacing={{ xs: 1, sm: 2 }} sx={{ width: '100%' }}>
+                {metricsData.map((metric, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      flex: 1,
+                      p: { xs: 0.75, sm: 1 },
+                      borderRadius: '8px',
+                      background: `linear-gradient(135deg, ${alpha(metric.color, 0.08)} 0%, ${alpha(metric.color, 0.05)} 100%)`,
+                      border: `1px solid ${alpha(metric.color, 0.15)}`,
+                      textAlign: 'center',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        transform: 'translateY(-1px)',
+                        boxShadow: `0 4px 12px ${alpha(metric.color, 0.15)}`
+                      }
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                        color: alpha(theme.palette.text.secondary, 0.8),
+                        display: 'block',
+                        mb: 0.25,
+                        fontWeight: 500
+                      }}
+                    >
+                      {metric.title}
+                    </Typography>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        fontSize: { xs: '0.85rem', sm: '1rem' },
+                        fontWeight: 700,
+                        color: metric.color,
+                        lineHeight: 1
+                      }}
+                    >
+                      {metric.value}
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Stack>
+
+            {/* Badges and Actions row */}
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ width: '100%', mt: 1 }}>
               {/* Left badges */}
               <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center">
                   {id && (
@@ -824,8 +974,9 @@ const TokenSummary = memo(({ token }) => {
                     </Box>
                   )}
               </Stack>
+              
             </Stack>
-
+            
             {/* Tags and Status */}
             <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
               {isExpired && (
@@ -841,200 +992,11 @@ const TokenSummary = memo(({ token }) => {
               )}
             </Stack>
           </Box>
-
-          {/* Action Buttons */}
-          <Stack 
-            direction="row" 
-            spacing={0.5}
-            sx={{
-              flexWrap: { xs: 'wrap', sm: 'nowrap' },
-              justifyContent: { xs: 'flex-end', sm: 'center' },
-              rowGap: { xs: 0.5, sm: 0 }
-            }}
-          >
-            <Tooltip title={`${isRemove ? 'Remove' : 'Set'} Trustline`}>
-              <IconButton 
-                size="small" 
-                disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5}
-                sx={{ 
-                  position: 'relative',
-                  borderRadius: '12px',
-                  border: `2px solid ${isRemove ? alpha(theme.palette.error.main, 0.3) : alpha(theme.palette.success.main, 0.3)}`,
-                  background: isRemove 
-                    ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.12)} 0%, ${alpha(theme.palette.error.main, 0.08)} 100%)`
-                    : `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.12)} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`,
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  overflow: 'hidden',
-                  boxShadow: isRemove 
-                    ? `0 4px 16px ${alpha(theme.palette.error.main, 0.15)}, 0 1px 2px ${alpha(theme.palette.error.main, 0.1)}`
-                    : `0 4px 16px ${alpha(theme.palette.success.main, 0.15)}, 0 1px 2px ${alpha(theme.palette.success.main, 0.1)}`,
-                  padding: { xs: '6px', sm: '8px' },
-                  minWidth: { xs: '32px', sm: '40px' },
-                  minHeight: { xs: '32px', sm: '40px' },
-                  transform: { xs: 'scale(1)', sm: 'scale(1.1)' },
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: isRemove
-                      ? `radial-gradient(circle at center, ${alpha(theme.palette.error.main, 0.2)} 0%, transparent 70%)`
-                      : `radial-gradient(circle at center, ${alpha(theme.palette.success.main, 0.2)} 0%, transparent 70%)`,
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease',
-                    zIndex: -1
-                  },
-                  '&:hover': {
-                    transform: 'translateY(-4px) scale(1.15)',
-                    border: `2px solid ${isRemove ? theme.palette.error.main : theme.palette.success.main}`,
-                    boxShadow: isRemove
-                      ? `0 16px 48px ${alpha(theme.palette.error.main, 0.25)}, 0 4px 16px ${alpha(theme.palette.error.main, 0.2)}, 0 0 0 4px ${alpha(theme.palette.error.main, 0.1)}`
-                      : `0 16px 48px ${alpha(theme.palette.success.main, 0.25)}, 0 4px 16px ${alpha(theme.palette.success.main, 0.2)}, 0 0 0 4px ${alpha(theme.palette.success.main, 0.1)}`,
-                    background: isRemove
-                      ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.2)} 0%, ${alpha(theme.palette.error.main, 0.15)} 100%)`
-                      : `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.2)} 0%, ${alpha(theme.palette.success.main, 0.15)} 100%)`,
-                    '&::before': {
-                      opacity: 1
-                    },
-                    '& .MuiSvgIcon-root': {
-                      color: theme.palette.background.paper,
-                      filter: `drop-shadow(0 1px 2px ${alpha(theme.palette.common.black, 0.3)})`
-                    }
-                  },
-                  '&:active': {
-                    transform: 'translateY(-2px) scale(1.08)'
-                  },
-                  '& .MuiSvgIcon-root': {
-                    fontSize: { xs: '16px', sm: '20px' },
-                    color: isRemove ? theme.palette.error.main : theme.palette.success.main,
-                    transition: 'all 0.3s ease'
-                  },
-                  '&.Mui-disabled': {
-                    opacity: 0.4,
-                    transform: 'scale(1)'
-                  }
-                }}
-                onClick={handleSetTrust}
-              >
-                {isRemove ? <LinkOffIcon /> : <LinkIcon />}
-              </IconButton>
-            </Tooltip>
-            {creator && (
-              <Tooltip title="View Creator Activity">
-                <IconButton
-                  size="small"
-                  onClick={() => setCreatorTxOpen(true)}
-                  sx={{
-                    position: 'relative',
-                    borderRadius: '8px',
-                    border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    overflow: 'hidden',
-                    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
-                    padding: { xs: '4px', sm: '6px' },
-                    minWidth: { xs: '28px', sm: '36px' },
-                    minHeight: { xs: '28px', sm: '36px' },
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.08)} 0%, ${alpha(theme.palette.info.main, 0.05)} 100%)`,
-                      opacity: 0,
-                      transition: 'opacity 0.3s ease',
-                      zIndex: -1
-                    },
-                    '&:hover': {
-                      transform: 'translateY(-4px) scale(1.02)',
-                      border: `2px solid ${alpha(theme.palette.info.main, 0.3)}`,
-                      boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(theme.palette.info.main, 0.1)}`,
-                      '&::before': {
-                        opacity: 1
-                      },
-                      '& .MuiSvgIcon-root': {
-                        color: theme.palette.info.main
-                      }
-                    },
-                    '&:active': {
-                      transform: 'translateY(-2px) scale(0.98)'
-                    },
-                    '& .MuiSvgIcon-root': {
-                      fontSize: { xs: '14px', sm: '18px' },
-                      color: alpha(theme.palette.text.primary, 0.8),
-                      transition: 'color 0.3s ease'
-                    }
-                  }}
-                >
-                  <TimelineIcon />
-                </IconButton>
-              </Tooltip>
-            )}
-            <Share token={token} />
-            <Watch token={token} />
-          </Stack>
         </Stack>
 
 
 
 
-        {/* Metrics Grid */}
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-            gap: { xs: 0.75, sm: 1 }
-          }}
-        >
-          {metricsData.map((metric, index) => (
-            <Box
-              key={index}
-              sx={{
-                p: { xs: 0.75, sm: 1 },
-                borderRadius: '6px',
-                background: `linear-gradient(135deg, ${alpha(metric.color, 0.06)} 0%, ${alpha(metric.color, 0.03)} 100%)`,
-                border: `1px solid ${alpha(metric.color, 0.08)}`,
-                textAlign: 'center',
-                transition: 'all 0.15s ease',
-                '&:hover': {
-                  transform: 'translateY(-1px)',
-                  boxShadow: `0 2px 8px ${alpha(metric.color, 0.1)}`
-                }
-              }}
-            >
-              <Typography
-                variant="caption"
-                sx={{
-                  fontSize: { xs: '0.55rem', sm: '0.65rem' },
-                  color: alpha(theme.palette.text.secondary, 0.8),
-                  display: 'block',
-                  mb: 0.25
-                }}
-              >
-                {metric.title}
-              </Typography>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  fontSize: { xs: '0.7rem', sm: '0.85rem' },
-                  fontWeight: 600,
-                  color: metric.color,
-                  lineHeight: 1
-                }}
-              >
-                {metric.value}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
       </Stack>
       
       {/* TrustSet Dialog */}
