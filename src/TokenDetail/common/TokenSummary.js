@@ -543,12 +543,14 @@ const TokenSummary = memo(({ token }) => {
 
           {/* Token Details */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.5 }}>
-              <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1, gap: 2 }}>
+              {/* Left side: Name, user, origin */}
+              <Stack spacing={0.75} justifyContent="center" sx={{ height: { xs: 60, sm: 88 } }}>
+                <Stack direction="row" alignItems="center" spacing={0.5}>
                 <Typography
-                  variant="h6"
+                  variant="h4"
                   sx={{
-                    fontSize: { xs: '0.9rem', sm: '1.2rem' },
+                    fontSize: { xs: '1.5rem', sm: '2rem' },
                     fontWeight: 800,
                     background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
                     backgroundClip: 'text',
@@ -558,7 +560,8 @@ const TokenSummary = memo(({ token }) => {
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     letterSpacing: '-0.02em',
-                    maxWidth: { xs: '120px', sm: 'none' }
+                    maxWidth: { xs: '200px', sm: 'none' },
+                    lineHeight: 1
                   }}
                 >
                   {name}
@@ -570,8 +573,8 @@ const TokenSummary = memo(({ token }) => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        width: { xs: 20, sm: 24 },
-                        height: { xs: 20, sm: 24 },
+                        width: { xs: 28, sm: 36 },
+                        height: { xs: 28, sm: 36 },
                         borderRadius: '50%',
                         background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
                         boxShadow: `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`,
@@ -579,7 +582,7 @@ const TokenSummary = memo(({ token }) => {
                         ml: 0.5
                       }}
                     >
-                      <VerifiedIcon sx={{ fontSize: { xs: 12, sm: 14 }, color: 'white' }} />
+                      <VerifiedIcon sx={{ fontSize: { xs: 16, sm: 20 }, color: 'white' }} />
                     </Box>
                   </Tooltip>
                 )}
@@ -596,96 +599,172 @@ const TokenSummary = memo(({ token }) => {
                     }}
                   />
                 )}
-                <Typography 
-                  variant="body2" 
-                  color="text.secondary" 
-                  sx={{ 
-                    fontSize: { xs: '0.7rem', sm: '0.8rem' },
-                    opacity: 0.8,
-                    fontWeight: 500,
-                    ml: { xs: 0.5, sm: 1 }
-                  }}
-                >
-                  {user || name}
-                </Typography>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    px: { xs: 0.75, sm: 1.25 },
-                    py: { xs: 0.3, sm: 0.4 },
-                    borderRadius: '16px',
-                    background: origin ? alpha(theme.palette.background.paper, 0.9) : `linear-gradient(135deg, ${alpha('#23288E', 0.15)} 0%, ${alpha('#1976d2', 0.08)} 100%)`,
-                    border: `1px solid ${origin ? alpha(theme.palette.divider, 0.2) : alpha('#1976d2', 0.3)}`,
-                    boxShadow: origin ? `0 2px 8px ${alpha(theme.palette.common.black, 0.05)}` : `0 2px 8px ${alpha('#1976d2', 0.15)}`,
-                    transition: 'all 0.3s ease',
-                    ml: { xs: 0.5, sm: 1 },
-                    '&:hover': {
-                      transform: 'translateY(-1px)',
-                      boxShadow: origin ? `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}` : `0 4px 12px ${alpha('#1976d2', 0.25)}`,
-                      borderColor: origin ? alpha(theme.palette.primary.main, 0.3) : alpha('#1976d2', 0.4)
-                    }
-                  }}
-                >
-                  <Box sx={{ transform: 'scale(1.5)' }}>
-                    {getOriginIcon(origin || 'XRPL')}
-                  </Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: origin ? theme.palette.text.primary : '#1976d2', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                    {origin || 'XRPL'}
+                </Stack>
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <Typography 
+                    variant="h6" 
+                    color="text.secondary" 
+                    sx={{ 
+                      fontSize: { xs: '1.1rem', sm: '1.4rem' },
+                      opacity: 0.85,
+                      fontWeight: 600,
+                      letterSpacing: '-0.01em',
+                      lineHeight: 1
+                    }}
+                  >
+                    {user || name}
                   </Typography>
-                </Box>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      px: { xs: 1, sm: 1.25 },
+                      py: { xs: 0.4, sm: 0.5 },
+                      borderRadius: '10px',
+                      background: origin ? alpha(theme.palette.background.paper, 0.9) : `linear-gradient(135deg, ${alpha('#23288E', 0.15)} 0%, ${alpha('#1976d2', 0.08)} 100%)`,
+                      border: `1px solid ${origin ? alpha(theme.palette.divider, 0.2) : alpha('#1976d2', 0.3)}`,
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <Box sx={{ transform: 'scale(1.8)' }}>
+                      {getOriginIcon(origin || 'XRPL')}
+                    </Box>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: origin ? theme.palette.text.primary : '#1976d2', fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+                      {origin || 'XRPL'}
+                    </Typography>
+                  </Box>
+                </Stack>
               </Stack>
-            </Stack>
-            
-            {/* Price displayed below name/user */}
-            <Typography
-              variant="h4"
-              sx={{
-                fontSize: { xs: '1.25rem', sm: '2rem' },
-                fontWeight: 900,
-                color: theme.palette.text.primary,
-                lineHeight: 1,
-                letterSpacing: '-0.03em',
-                mb: 1
-              }}
-            >
-              <NumberTooltip
-                prepend={currencySymbols[activeFiatCurrency]}
-                number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
-              />
-            </Typography>
-            
-            {/* Badges and percentages row */}
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ width: '100%' }}>
-              {/* Percentages group */}
-              <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center" flexWrap="wrap">
-                {/* Percentage changes */}
+              
+              {/* Center: Price with integrated 24h range */}
+              <Stack alignItems="center" spacing={0.5}>
+                <Stack direction="row" alignItems="center" spacing={{ xs: 1.5, sm: 2 }}>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontSize: { xs: '1.5rem', sm: '2rem' },
+                      fontWeight: 900,
+                      color: theme.palette.text.primary,
+                      lineHeight: 1,
+                      letterSpacing: '-0.03em'
+                    }}
+                  >
+                    <NumberTooltip
+                      prepend={currencySymbols[activeFiatCurrency]}
+                      number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+                    />
+                  </Typography>
+                  
+                  {/* 24h Range integrated with price */}
+                  {range24h && (
+                    <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 0.75 }}>
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          fontSize: { xs: '0.7rem', sm: '0.8rem' }, 
+                          fontWeight: 600, 
+                          color: theme.palette.success.main,
+                          opacity: 0.9
+                        }}
+                      >
+                        {currencySymbols[activeFiatCurrency]}{formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
+                      </Typography>
+                      
+                      <Stack alignItems="center" spacing={0}>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            fontSize: { xs: '0.55rem', sm: '0.65rem' }, 
+                            color: theme.palette.text.secondary, 
+                            fontWeight: 500,
+                            opacity: 0.7,
+                            lineHeight: 1
+                          }}
+                        >
+                          24h
+                        </Typography>
+                        <Box
+                          sx={{
+                            width: { xs: 50, sm: 70 },
+                            height: 3,
+                            backgroundColor: alpha(theme.palette.divider, 0.2),
+                            borderRadius: '1.5px',
+                            position: 'relative',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              width: `${range24h.percent}%`,
+                              background: `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.warning.main} 50%, ${theme.palette.error.main} 100%)`,
+                              borderRadius: '1.5px',
+                              opacity: 0.8
+                            }}
+                          />
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              left: `${range24h.percent}%`,
+                              top: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              width: 5,
+                              height: 5,
+                              borderRadius: '50%',
+                              backgroundColor: theme.palette.background.paper,
+                              border: `1.5px solid ${theme.palette.primary.main}`,
+                              boxShadow: `0 0 3px ${alpha(theme.palette.primary.main, 0.4)}`
+                            }}
+                          />
+                        </Box>
+                      </Stack>
+                      
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          fontSize: { xs: '0.7rem', sm: '0.8rem' }, 
+                          fontWeight: 600, 
+                          color: theme.palette.error.main,
+                          opacity: 0.9
+                        }}
+                      >
+                        {currencySymbols[activeFiatCurrency]}{formatValue(range24h.max * (metrics.USD / metrics[activeFiatCurrency]))}
+                      </Typography>
+                    </Stack>
+                  )}
+                </Stack>
+              </Stack>
+              
+              {/* Right: Percentage changes with bigger containers */}
+              <Stack direction="row" spacing={{ xs: 0.5, sm: 0.75 }} alignItems="center">
                 {priceChanges.map((item) => (
                   <Box
                     key={item.label}
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: { xs: 0.2, sm: 0.5 },
-                      px: { xs: 0.4, sm: 1 },
-                      py: { xs: 0.2, sm: 0.25 },
-                      borderRadius: '6px',
+                      gap: { xs: 0.5, sm: 0.75 },
+                      px: { xs: 1, sm: 1.5 },
+                      py: { xs: 0.5, sm: 0.75 },
+                      borderRadius: '10px',
                       background: alpha(item.color, 0.1),
                       border: `1px solid ${alpha(item.color, 0.2)}`,
                       transition: 'all 0.2s ease',
-                      flexShrink: 0,
-                      minWidth: { xs: 'max-content', sm: 'auto' },
                       '&:hover': {
                         background: alpha(item.color, 0.15),
-                        transform: { xs: 'none', sm: 'translateY(-1px)' }
+                        transform: 'translateY(-1px)',
+                        boxShadow: `0 4px 12px ${alpha(item.color, 0.2)}`
                       }
                     }}
                   >
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: { xs: '0.55rem', sm: '0.75rem' },
+                        fontSize: { xs: '0.7rem', sm: '0.85rem' },
                         fontWeight: 600,
                         color: alpha(theme.palette.text.secondary, 0.8)
                       }}
@@ -695,22 +774,29 @@ const TokenSummary = memo(({ token }) => {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: { xs: '0.6rem', sm: '0.75rem' },
+                        fontSize: { xs: '0.75rem', sm: '0.9rem' },
                         fontWeight: 700,
                         color: item.color,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 0.2
+                        gap: 0.3
                       }}
                     >
                       {formatPercentage(item.value)}
                       <Icon 
                         icon={item.value >= 0 ? 'mdi:arrow-up' : 'mdi:arrow-down'} 
-                        style={{ fontSize: isMobile ? '0.55rem' : '0.75rem' }}
+                        style={{ fontSize: isMobile ? '0.75rem' : '0.9rem' }}
                       />
                     </Typography>
                   </Box>
                 ))}
+              </Stack>
+            </Stack>
+            
+            {/* Badges row */}
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ width: '100%' }}>
+              {/* Left badges */}
+              <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center">
                   {id && (
                     <Box
                       sx={{
@@ -737,78 +823,6 @@ const TokenSummary = memo(({ token }) => {
                       </Typography>
                     </Box>
                   )}
-              </Stack>
-              
-              {/* 24h Range and other badges */}
-              <Stack 
-                direction="row" 
-                spacing={{ xs: 0.3, sm: 0.5 }} 
-                alignItems="center"
-              >
-                {range24h && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      px: { xs: 0.75, sm: 1.25 },
-                      py: { xs: 0.3, sm: 0.4 },
-                      borderRadius: '16px',
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-1px)',
-                        boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
-                      }
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' }, color: alpha(theme.palette.text.secondary, 0.8), fontWeight: 600 }}>
-                      24h
-                    </Typography>
-                    <Box
-                      sx={{
-                        width: { xs: 40, sm: 50 },
-                        height: 3,
-                        backgroundColor: alpha(theme.palette.divider, 0.3),
-                        borderRadius: '2px',
-                        position: 'relative',
-                        overflow: 'hidden'
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          width: `${range24h.percent}%`,
-                          background: `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.warning.main} 50%, ${theme.palette.error.main} 100%)`,
-                          borderRadius: '2px'
-                        }}
-                      />
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          left: `${range24h.percent}%`,
-                          top: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          width: 6,
-                          height: 6,
-                          borderRadius: '50%',
-                          backgroundColor: theme.palette.background.paper,
-                          border: `1px solid ${theme.palette.primary.main}`,
-                          boxShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.2)}`
-                        }}
-                      />
-                    </Box>
-                    <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' }, fontWeight: 700, color: theme.palette.text.primary }}>
-                      {currencySymbols[activeFiatCurrency]}{formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
-                      <Box component="span" sx={{ mx: 0.25, color: alpha(theme.palette.text.secondary, 0.6) }}>-</Box>
-                      {formatValue(range24h.max * (metrics.USD / metrics[activeFiatCurrency]))}
-                    </Typography>
-                  </Box>
-                )}
               </Stack>
             </Stack>
 
