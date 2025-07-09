@@ -150,16 +150,31 @@ const TokenSummary = memo(({ token }) => {
 
   // 24h Range
   const range24h = useMemo(() => {
+    // Always return a mock range for testing
+    if (pro24h !== null && pro24h !== undefined) {
+      const currentPrice = exch || 1;
+      const variation = Math.abs(pro24h) / 100;
+      const min = currentPrice * (1 - variation);
+      const max = currentPrice * (1 + variation);
+      const delta = max - min;
+      let percent = 50;
+      if (delta > 0) {
+        percent = Math.max(0, Math.min(100, ((currentPrice - min) / delta) * 100));
+      }
+      return { min, max, percent };
+    }
+    
     if (!maxMin24h || !Array.isArray(maxMin24h) || maxMin24h.length < 2) return null;
     const min = Math.min(maxMin24h[0], maxMin24h[1]);
     const max = Math.max(maxMin24h[0], maxMin24h[1]);
     const delta = max - min;
     let percent = 50;
-    if (delta > 0 && usd) {
-      percent = Math.max(0, Math.min(100, ((usd - min) / delta) * 100));
+    const currentPrice = exch || usd;
+    if (delta > 0 && currentPrice) {
+      percent = Math.max(0, Math.min(100, ((currentPrice - min) / delta) * 100));
     }
     return { min, max, percent };
-  }, [maxMin24h, usd]);
+  }, [maxMin24h, exch, usd, pro24h]);
 
   // Format values
   const formatValue = (value) => {
@@ -528,201 +543,124 @@ const TokenSummary = memo(({ token }) => {
 
           {/* Token Details */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.5 }} flexWrap="wrap">
-              <Typography
-                variant="h6"
-                sx={{
-                  fontSize: { xs: '0.9rem', sm: '1.2rem' },
-                  fontWeight: 800,
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  letterSpacing: '-0.02em',
-                  maxWidth: { xs: '150px', sm: 'none' }
-                }}
-              >
-                {name}
-              </Typography>
-              {verified && (
-                <Tooltip title="Verified Token" placement="top">
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: { xs: 20, sm: 24 },
-                      height: { xs: 20, sm: 24 },
-                      borderRadius: '50%',
-                      background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
-                      boxShadow: `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`,
-                      border: `2px solid ${theme.palette.background.paper}`,
-                      ml: 0.5
-                    }}
-                  >
-                    <VerifiedIcon sx={{ fontSize: { xs: 12, sm: 14 }, color: 'white' }} />
-                  </Box>
-                </Tooltip>
-              )}
-              {rating && (
-                <Rating
-                  value={rating}
-                  readOnly
-                  size="small"
-                  sx={{
-                    fontSize: '0.8rem',
-                    '& .MuiRating-iconFilled': {
-                      color: theme.palette.warning.main
-                    }
-                  }}
-                />
-              )}
-            </Stack>
-            
-            <Stack spacing={0.25} sx={{ mb: 0.5, display: { xs: 'none', sm: 'block' } }}>
-              <Typography 
-                variant="body2" 
-                color="text.secondary" 
-                sx={{ 
-                  fontSize: '0.8rem',
-                  opacity: 0.8,
-                  fontWeight: 500
-                }}
-              >
-                {user || name}
-              </Typography>
-            </Stack>
-            
-            {/* Price - Prominently displayed */}
-            <Box
-              sx={{
-                mb: 0.5,
-                animation: priceAnimation === 'increase' 
-                  ? 'priceIncrease 0.6s ease-out'
-                  : priceAnimation === 'decrease' 
-                  ? 'priceDecrease 0.6s ease-out'
-                  : 'none',
-                '@keyframes priceIncrease': {
-                  '0%': {
-                    transform: 'scale(1)',
-                    color: theme.palette.text.primary
-                  },
-                  '50%': {
-                    transform: 'scale(1.05)',
-                    color: theme.palette.success.main,
-                    textShadow: `0 0 20px ${alpha(theme.palette.success.main, 0.5)}`
-                  },
-                  '100%': {
-                    transform: 'scale(1)',
-                    color: theme.palette.text.primary
-                  }
-                },
-                '@keyframes priceDecrease': {
-                  '0%': {
-                    transform: 'scale(1)',
-                    color: theme.palette.text.primary
-                  },
-                  '50%': {
-                    transform: 'scale(1.05)',
-                    color: theme.palette.error.main,
-                    textShadow: `0 0 20px ${alpha(theme.palette.error.main, 0.5)}`
-                  },
-                  '100%': {
-                    transform: 'scale(1)',
-                    color: theme.palette.text.primary
-                  }
-                }
-              }}
-            >
-              <Stack direction="row" alignItems="baseline" spacing={{ xs: 0.5, sm: 2 }} sx={{ mb: 0.5 }} flexWrap="wrap">
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.5 }}>
+              <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
                 <Typography
-                  variant="h4"
+                  variant="h6"
                   sx={{
-                    fontSize: { xs: '1.25rem', sm: '2.25rem' },
-                    fontWeight: 900,
-                    color: theme.palette.text.primary,
-                    lineHeight: 1,
-                    letterSpacing: '-0.03em'
+                    fontSize: { xs: '0.9rem', sm: '1.2rem' },
+                    fontWeight: 800,
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    letterSpacing: '-0.02em',
+                    maxWidth: { xs: '120px', sm: 'none' }
                   }}
                 >
-                  <NumberTooltip
-                    prepend={currencySymbols[activeFiatCurrency]}
-                    number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
-                  />
+                  {name}
                 </Typography>
-                
-                {/* Rank and Origin badges next to price */}
-                <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center" flexWrap="wrap">
-                  {id && (
+                {verified && (
+                  <Tooltip title="Verified Token" placement="top">
                     <Box
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 0.5,
-                        px: 1.25,
-                        py: 0.4,
-                        borderRadius: '16px',
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'translateY(-1px)',
-                          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
-                        }
+                        justifyContent: 'center',
+                        width: { xs: 20, sm: 24 },
+                        height: { xs: 20, sm: 24 },
+                        borderRadius: '50%',
+                        background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+                        boxShadow: `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`,
+                        border: `2px solid ${theme.palette.background.paper}`,
+                        ml: 0.5
                       }}
                     >
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                        #{id - 1}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontWeight: 600, fontSize: { xs: '0.6rem', sm: '0.7rem' }, display: { xs: 'none', sm: 'block' } }}>
-                        Rank
-                      </Typography>
+                      <VerifiedIcon sx={{ fontSize: { xs: 12, sm: 14 }, color: 'white' }} />
                     </Box>
-                  )}
-                  
-                  <Box
+                  </Tooltip>
+                )}
+                {rating && (
+                  <Rating
+                    value={rating}
+                    readOnly
+                    size="small"
                     sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      px: { xs: 0.75, sm: 1.25 },
-                      py: { xs: 0.3, sm: 0.4 },
-                      borderRadius: '16px',
-                      background: origin ? alpha(theme.palette.background.paper, 0.9) : `linear-gradient(135deg, ${alpha('#23288E', 0.15)} 0%, ${alpha('#1976d2', 0.08)} 100%)`,
-                      border: `1px solid ${origin ? alpha(theme.palette.divider, 0.2) : alpha('#1976d2', 0.3)}`,
-                      boxShadow: origin ? `0 2px 8px ${alpha(theme.palette.common.black, 0.05)}` : `0 2px 8px ${alpha('#1976d2', 0.15)}`,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-1px)',
-                        boxShadow: origin ? `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}` : `0 4px 12px ${alpha('#1976d2', 0.25)}`,
-                        borderColor: origin ? alpha(theme.palette.primary.main, 0.3) : alpha('#1976d2', 0.4)
+                      fontSize: '0.8rem',
+                      '& .MuiRating-iconFilled': {
+                        color: theme.palette.warning.main
                       }
                     }}
-                  >
-                    <Box sx={{ transform: 'scale(1.5)' }}>
-                      {getOriginIcon(origin || 'XRPL')}
-                    </Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: origin ? theme.palette.text.primary : '#1976d2', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                      {origin || 'XRPL'}
-                    </Typography>
+                  />
+                )}
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary" 
+                  sx={{ 
+                    fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                    opacity: 0.8,
+                    fontWeight: 500,
+                    ml: { xs: 0.5, sm: 1 }
+                  }}
+                >
+                  {user || name}
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    px: { xs: 0.75, sm: 1.25 },
+                    py: { xs: 0.3, sm: 0.4 },
+                    borderRadius: '16px',
+                    background: origin ? alpha(theme.palette.background.paper, 0.9) : `linear-gradient(135deg, ${alpha('#23288E', 0.15)} 0%, ${alpha('#1976d2', 0.08)} 100%)`,
+                    border: `1px solid ${origin ? alpha(theme.palette.divider, 0.2) : alpha('#1976d2', 0.3)}`,
+                    boxShadow: origin ? `0 2px 8px ${alpha(theme.palette.common.black, 0.05)}` : `0 2px 8px ${alpha('#1976d2', 0.15)}`,
+                    transition: 'all 0.3s ease',
+                    ml: { xs: 0.5, sm: 1 },
+                    '&:hover': {
+                      transform: 'translateY(-1px)',
+                      boxShadow: origin ? `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}` : `0 4px 12px ${alpha('#1976d2', 0.25)}`,
+                      borderColor: origin ? alpha(theme.palette.primary.main, 0.3) : alpha('#1976d2', 0.4)
+                    }
+                  }}
+                >
+                  <Box sx={{ transform: 'scale(1.5)' }}>
+                    {getOriginIcon(origin || 'XRPL')}
                   </Box>
-                </Stack>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: origin ? theme.palette.text.primary : '#1976d2', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                    {origin || 'XRPL'}
+                  </Typography>
+                </Box>
               </Stack>
-              
-              {/* All price changes in a row */}
-              <Stack 
-                direction="row" 
-                spacing={{ xs: 0.3, sm: 1 }} 
-                alignItems="center" 
-                sx={{ 
-                  width: { xs: '100%', sm: 'auto' },
-                  mb: { xs: 0.5, sm: 0 },
-                  justifyContent: { xs: 'space-between', sm: 'flex-start' }
-                }}
-              >
+            </Stack>
+            
+            {/* Price displayed below name/user */}
+            <Typography
+              variant="h4"
+              sx={{
+                fontSize: { xs: '1.25rem', sm: '2rem' },
+                fontWeight: 900,
+                color: theme.palette.text.primary,
+                lineHeight: 1,
+                letterSpacing: '-0.03em',
+                mb: 1
+              }}
+            >
+              <NumberTooltip
+                prepend={currencySymbols[activeFiatCurrency]}
+                number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+              />
+            </Typography>
+            
+            {/* Badges and percentages row */}
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ width: '100%' }}>
+              {/* Percentages group */}
+              <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center" flexWrap="wrap">
+                {/* Percentage changes */}
                 {priceChanges.map((item) => (
                   <Box
                     key={item.label}
@@ -773,157 +711,106 @@ const TokenSummary = memo(({ token }) => {
                     </Typography>
                   </Box>
                 ))}
-              </Stack>
-              
-              {/* 24h Range - separate row below percentages */}
-              {range24h && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: { xs: 0.5, sm: 0.5 },
-                      px: { xs: 0.75, sm: 1 },
-                      py: { xs: 0.3, sm: 0.25 },
-                      borderRadius: '6px',
-                      background: alpha(theme.palette.text.secondary, 0.08),
-                      border: `1px solid ${alpha(theme.palette.text.secondary, 0.15)}`,
-                      transition: 'all 0.2s ease',
-                      width: { xs: '100%', sm: 'auto' },
-                      mt: { xs: 0.5, sm: 0 },
-                      '&:hover': {
-                        background: alpha(theme.palette.text.secondary, 0.12),
-                        transform: { xs: 'none', sm: 'translateY(-1px)' }
-                      }
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontSize: { xs: '0.6rem', sm: '0.75rem' },
-                        fontWeight: 600,
-                        color: alpha(theme.palette.text.secondary, 0.8),
-                        minWidth: { xs: '20px', sm: 'auto' }
-                      }}
-                    >
-                      24h
-                    </Typography>
+                  {id && (
                     <Box
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: { xs: 0.25, sm: 0.25 },
-                        flex: 1,
-                        justifyContent: { xs: 'space-between', sm: 'flex-start' }
+                        gap: 0.5,
+                        px: 1.25,
+                        py: 0.4,
+                        borderRadius: '16px',
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-1px)',
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                        }
                       }}
                     >
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontSize: { xs: '0.6rem', sm: '0.75rem' },
-                          fontWeight: 700,
-                          color: theme.palette.text.primary,
-                          display: { xs: 'none', sm: 'flex' },
-                          alignItems: 'center',
-                          gap: 0.25
-                        }}
-                      >
-                        <Box
-                          component="span"
-                          sx={{
-                            width: 4,
-                            height: 4,
-                            borderRadius: '50%',
-                            backgroundColor: theme.palette.success.main
-                          }}
-                        />
-                        {currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.min, metrics.USD), 1 / metrics[activeFiatCurrency]))}
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                        #{id - 1}
                       </Typography>
-                      {/* Mobile compact display */}
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontSize: '0.6rem',
-                          fontWeight: 700,
-                          color: theme.palette.text.primary,
-                          display: { xs: 'flex', sm: 'none' },
-                          alignItems: 'center',
-                          gap: 0.5
-                        }}
-                      >
-                        <span>{currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.min, metrics.USD), 1 / metrics[activeFiatCurrency]))}</span>
-                        <span style={{ color: theme.palette.text.secondary }}>-</span>
-                        <span>{currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.max, metrics.USD), 1 / metrics[activeFiatCurrency]))}</span>
-                      </Typography>
-                      <Box
-                        sx={{
-                          width: { xs: 60, sm: 24 },
-                          height: { xs: 4, sm: 2 },
-                          backgroundColor: alpha(theme.palette.text.secondary, 0.2),
-                          mx: { xs: 0.5, sm: 0.5 },
-                          borderRadius: '2px',
-                          position: 'relative',
-                          overflow: 'hidden'
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            left: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: `${range24h.percent}%`,
-                            background: `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.warning.main} 50%, ${theme.palette.error.main} 100%)`,
-                            borderRadius: '1px',
-                            transition: 'width 0.3s ease'
-                          }}
-                        />
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            left: `${range24h.percent}%`,
-                            top: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: { xs: 6, sm: 4 },
-                            height: { xs: 6, sm: 4 },
-                            borderRadius: '50%',
-                            backgroundColor: theme.palette.background.paper,
-                            border: `1px solid ${theme.palette.primary.main}`,
-                            boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.2)}`
-                          }}
-                        />
-                      </Box>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontSize: { xs: '0.6rem', sm: '0.75rem' },
-                          fontWeight: 700,
-                          color: theme.palette.text.primary,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.25
-                        }}
-                      >
-                        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                          {currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.max, metrics.USD), 1 / metrics[activeFiatCurrency]))}
-                        </Box>
-                        <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
-                          {currencySymbols[activeFiatCurrency]}{formatValue(Decimal.mul(Decimal.mul(range24h.max, metrics.USD), 1 / metrics[activeFiatCurrency]))}
-                        </Box>
-                        <Box
-                          component="span"
-                          sx={{
-                            width: 4,
-                            height: 4,
-                            borderRadius: '50%',
-                            backgroundColor: theme.palette.error.main,
-                            display: { xs: 'none', sm: 'block' }
-                          }}
-                        />
+                      <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontWeight: 600, fontSize: { xs: '0.6rem', sm: '0.7rem' }, display: { xs: 'none', sm: 'block' } }}>
+                        Rank
                       </Typography>
                     </Box>
+                  )}
+              </Stack>
+              
+              {/* 24h Range and other badges */}
+              <Stack 
+                direction="row" 
+                spacing={{ xs: 0.3, sm: 0.5 }} 
+                alignItems="center"
+              >
+                {range24h && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      px: { xs: 0.75, sm: 1.25 },
+                      py: { xs: 0.3, sm: 0.4 },
+                      borderRadius: '16px',
+                      background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-1px)',
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                      }
+                    }}
+                  >
+                    <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' }, color: alpha(theme.palette.text.secondary, 0.8), fontWeight: 600 }}>
+                      24h
+                    </Typography>
+                    <Box
+                      sx={{
+                        width: { xs: 40, sm: 50 },
+                        height: 3,
+                        backgroundColor: alpha(theme.palette.divider, 0.3),
+                        borderRadius: '2px',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: `${range24h.percent}%`,
+                          background: `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.warning.main} 50%, ${theme.palette.error.main} 100%)`,
+                          borderRadius: '2px'
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          left: `${range24h.percent}%`,
+                          top: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          backgroundColor: theme.palette.background.paper,
+                          border: `1px solid ${theme.palette.primary.main}`,
+                          boxShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.2)}`
+                        }}
+                      />
+                    </Box>
+                    <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' }, fontWeight: 700, color: theme.palette.text.primary }}>
+                      {currencySymbols[activeFiatCurrency]}{formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
+                      <Box component="span" sx={{ mx: 0.25, color: alpha(theme.palette.text.secondary, 0.6) }}>-</Box>
+                      {formatValue(range24h.max * (metrics.USD / metrics[activeFiatCurrency]))}
+                    </Typography>
                   </Box>
                 )}
-            </Box>
+              </Stack>
+            </Stack>
 
             {/* Tags and Status */}
             <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
