@@ -587,7 +587,7 @@ const TokenSummary = memo(({ token }) => {
                   </Tooltip>
                 )}
                 {id && (
-                  <Tooltip title={`Rank #${id - 1}`} placement="top">
+                  <Tooltip title={`Rank #${id}`} placement="top">
                     <Box
                       sx={{
                         display: 'flex',
@@ -611,7 +611,7 @@ const TokenSummary = memo(({ token }) => {
                           lineHeight: 1
                         }}
                       >
-                        #{id - 1}
+                        #{id}
                       </Typography>
                     </Box>
                   </Tooltip>
