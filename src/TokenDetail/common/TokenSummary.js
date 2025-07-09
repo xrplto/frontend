@@ -892,271 +892,456 @@ const TokenSummary = memo(({ token }) => {
                 </Stack>
               </Stack>
               
-              {/* Center: Price with integrated 24h range */}
+              {/* Desktop Price and Percentages - Hide on mobile */}
               <Stack 
-                alignItems={{ xs: 'flex-start', md: 'center' }} 
-                spacing={{ xs: 0.3, md: 0.5 }} 
+                direction="row" 
+                alignItems="center" 
+                spacing={2}
                 sx={{ 
-                  flex: { xs: 'none', md: 1 }, 
-                  display: 'flex', 
-                  justifyContent: { xs: 'flex-start', md: 'center' },
-                  width: { xs: '100%', md: 'auto' },
-                  order: { xs: 1, md: 0 }
+                  display: { xs: 'none', md: 'flex' },
+                  flex: 1,
+                  justifyContent: 'space-between'
                 }}
               >
-                <Stack direction={{ xs: 'row', sm: 'row' }} alignItems={{ xs: 'center', sm: 'center' }} spacing={{ xs: 0.75, sm: 1.5, md: 2 }}>
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' },
-                      fontWeight: 900,
-                      color: priceColor || theme.palette.text.primary,
-                      lineHeight: 1,
-                      letterSpacing: '-0.03em',
-                      transition: 'color 0.3s ease',
-                      '@keyframes priceFlash': {
-                        '0%': { opacity: 1 },
-                        '50%': { opacity: 0.7 },
-                        '100%': { opacity: 1 }
-                      },
-                      animation: priceColor ? 'priceFlash 0.8s ease' : 'none'
-                    }}
-                  >
-                    <NumberTooltip
-                      prepend={currencySymbols[activeFiatCurrency]}
-                      number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
-                    />
-                  </Typography>
-                  
-                  {/* 24h Range integrated with price */}
-                  {range24h && (
-                    <Stack direction="row" alignItems="center" spacing={{ xs: 0.4, sm: 0.75 }}>
-                      <Typography 
-                        variant="caption" 
-                        sx={{ 
-                          fontSize: { xs: '0.6rem', sm: '0.8rem' }, 
-                          fontWeight: 600, 
-                          color: theme.palette.success.main,
-                          opacity: 0.9
-                        }}
-                      >
-                        {currencySymbols[activeFiatCurrency]}{formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
-                      </Typography>
-                      
-                      <Stack alignItems="center" spacing={0}>
+                {/* Center: Price with integrated 24h range */}
+                <Stack alignItems="center" spacing={0.5}>
+                  <Stack direction="row" alignItems="center" spacing={2}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontSize: '2rem',
+                        fontWeight: 900,
+                        color: priceColor || theme.palette.text.primary,
+                        lineHeight: 1,
+                        letterSpacing: '-0.03em',
+                        transition: 'color 0.3s ease',
+                        '@keyframes priceFlash': {
+                          '0%': { opacity: 1 },
+                          '50%': { opacity: 0.7 },
+                          '100%': { opacity: 1 }
+                        },
+                        animation: priceColor ? 'priceFlash 0.8s ease' : 'none'
+                      }}
+                    >
+                      <NumberTooltip
+                        prepend={currencySymbols[activeFiatCurrency]}
+                        number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+                      />
+                    </Typography>
+                    
+                    {/* 24h Range integrated with price */}
+                    {range24h && (
+                      <Stack direction="row" alignItems="center" spacing={0.75}>
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: { xs: '0.5rem', sm: '0.65rem' }, 
-                            color: theme.palette.text.secondary, 
-                            fontWeight: 500,
-                            opacity: 0.7,
-                            lineHeight: 1
+                            fontSize: '0.8rem', 
+                            fontWeight: 600, 
+                            color: theme.palette.success.main,
+                            opacity: 0.9
                           }}
                         >
-                          24h
+                          {currencySymbols[activeFiatCurrency]}{formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
                         </Typography>
-                        <Box
-                          sx={{
-                            width: { xs: 40, sm: 70 },
-                            height: { xs: 2, sm: 3 },
-                            backgroundColor: alpha(theme.palette.divider, 0.2),
-                            borderRadius: '1.5px',
-                            position: 'relative',
-                            overflow: 'hidden'
+                        
+                        <Stack alignItems="center" spacing={0}>
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              fontSize: '0.65rem', 
+                              color: theme.palette.text.secondary, 
+                              fontWeight: 500,
+                              opacity: 0.7,
+                              lineHeight: 1
+                            }}
+                          >
+                            24h
+                          </Typography>
+                          <Box
+                            sx={{
+                              width: 70,
+                              height: 3,
+                              backgroundColor: alpha(theme.palette.divider, 0.2),
+                              borderRadius: '1.5px',
+                              position: 'relative',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                left: 0,
+                                top: 0,
+                                bottom: 0,
+                                width: `${range24h.percent}%`,
+                                background: `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.warning.main} 50%, ${theme.palette.error.main} 100%)`,
+                                borderRadius: '1.5px',
+                                opacity: 0.8
+                              }}
+                            />
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                left: `${range24h.percent}%`,
+                                top: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                width: 5,
+                                height: 5,
+                                borderRadius: '50%',
+                                backgroundColor: theme.palette.background.paper,
+                                border: `1.5px solid ${theme.palette.primary.main}`,
+                                boxShadow: `0 0 3px ${alpha(theme.palette.primary.main, 0.4)}`
+                              }}
+                            />
+                          </Box>
+                        </Stack>
+                        
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            fontSize: '0.8rem', 
+                            fontWeight: 600, 
+                            color: theme.palette.error.main,
+                            opacity: 0.9
                           }}
                         >
-                          <Box
-                            sx={{
-                              position: 'absolute',
-                              left: 0,
-                              top: 0,
-                              bottom: 0,
-                              width: `${range24h.percent}%`,
-                              background: `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.warning.main} 50%, ${theme.palette.error.main} 100%)`,
-                              borderRadius: '1.5px',
-                              opacity: 0.8
-                            }}
-                          />
-                          <Box
-                            sx={{
-                              position: 'absolute',
-                              left: `${range24h.percent}%`,
-                              top: '50%',
-                              transform: 'translate(-50%, -50%)',
-                              width: 5,
-                              height: 5,
-                              borderRadius: '50%',
-                              backgroundColor: theme.palette.background.paper,
-                              border: `1.5px solid ${theme.palette.primary.main}`,
-                              boxShadow: `0 0 3px ${alpha(theme.palette.primary.main, 0.4)}`
-                            }}
-                          />
-                        </Box>
+                          {currencySymbols[activeFiatCurrency]}{formatValue(range24h.max * (metrics.USD / metrics[activeFiatCurrency]))}
+                        </Typography>
                       </Stack>
-                      
-                      <Typography 
-                        variant="caption" 
-                        sx={{ 
-                          fontSize: { xs: '0.6rem', sm: '0.8rem' }, 
-                          fontWeight: 600, 
-                          color: theme.palette.error.main,
-                          opacity: 0.9
-                        }}
-                      >
-                        {currencySymbols[activeFiatCurrency]}{formatValue(range24h.max * (metrics.USD / metrics[activeFiatCurrency]))}
-                      </Typography>
-                    </Stack>
-                  )}
+                    )}
+                  </Stack>
                 </Stack>
-              </Stack>
-              
-              {/* Right: Percentage changes - Mobile: Show all periods with horizontal scroll */}
-              <Stack 
-                direction="row" 
-                spacing={{ xs: 0.4, sm: 0.75, md: 1 }} 
-                alignItems="center" 
-                sx={{ 
-                  flex: { xs: 'none', md: 1 }, 
-                  justifyContent: { xs: 'flex-start', md: 'flex-end' },
-                  width: { xs: '100%', md: 'auto' },
-                  order: { xs: 2, md: 0 },
-                  overflowX: { xs: 'auto', md: 'visible' },
-                  '&::-webkit-scrollbar': { display: 'none' },
-                  scrollbarWidth: 'none',
-                  WebkitOverflowScrolling: 'touch',
-                  scrollSnapType: 'x mandatory'
-                }}
-              >
-                {priceChanges.map((item, index) => (
-                  <Box
-                    key={item.label}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: { xs: 0.3, sm: 0.5, md: 0.75 },
-                      px: { xs: 0.75, sm: 1.25, md: 2 },
-                      py: { xs: 0.4, sm: 0.5, md: 0.75 },
-                      borderRadius: '10px',
-                      background: alpha(item.color, 0.1),
-                      border: `1px solid ${alpha(item.color, 0.2)}`,
-                      transition: 'all 0.2s ease',
-                      minWidth: { xs: '60px', sm: 'auto' },
-                      flexShrink: 0,
-                      scrollSnapAlign: 'start',
-                      '&:hover': {
-                        background: alpha(item.color, 0.15),
-                        transform: 'translateY(-1px)',
-                        boxShadow: `0 4px 12px ${alpha(item.color, 0.2)}`
-                      }
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
+                
+                {/* Right: Percentage changes */}
+                <Stack direction="row" spacing={1} alignItems="center">
+                  {priceChanges.map((item, index) => (
+                    <Box
+                      key={item.label}
                       sx={{
-                        fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.85rem' },
-                        fontWeight: 600,
-                        color: alpha(theme.palette.text.secondary, 0.8)
-                      }}
-                    >
-                      {item.label}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.9rem' },
-                        fontWeight: 700,
-                        color: item.color,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 0.3
+                        gap: 0.75,
+                        px: 2,
+                        py: 0.75,
+                        borderRadius: '10px',
+                        background: alpha(item.color, 0.1),
+                        border: `1px solid ${alpha(item.color, 0.2)}`,
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          background: alpha(item.color, 0.15),
+                          transform: 'translateY(-1px)',
+                          boxShadow: `0 4px 12px ${alpha(item.color, 0.2)}`
+                        }
                       }}
                     >
-                      {formatPercentage(item.value)}
-                      <Icon 
-                        icon={item.value >= 0 ? 'mdi:arrow-up' : 'mdi:arrow-down'} 
-                        style={{ fontSize: isMobile ? '0.65rem' : '0.9rem' }}
-                      />
-                    </Typography>
-                  </Box>
-                ))}
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          color: alpha(theme.palette.text.secondary, 0.8)
+                        }}
+                      >
+                        {item.label}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.9rem',
+                          fontWeight: 700,
+                          color: item.color,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.3
+                        }}
+                      >
+                        {formatPercentage(item.value)}
+                        <Icon 
+                          icon={item.value >= 0 ? 'mdi:arrow-up' : 'mdi:arrow-down'} 
+                          style={{ fontSize: '0.9rem' }}
+                        />
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
               </Stack>
-            </Stack>
-            
-
-            {/* Metrics row */}
-            <Stack direction="row" alignItems="flex-start" sx={{ width: '100%', mt: { xs: 0.3, sm: 1 } }}>
-              {/* Metrics */}
-              <Stack direction={{ xs: 'row', sm: 'row' }} spacing={{ xs: 0.4, sm: 2 }} sx={{ width: '100%', overflowX: { xs: 'auto', sm: 'visible' } }}>
-                {metricsData.map((metric, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      flex: { xs: 'none', sm: 1 },
-                      width: { xs: 'auto', sm: 'auto' },
-                      minWidth: { xs: '60px', sm: 'auto' },
-                      p: { xs: 0.4, sm: 1 },
-                      borderRadius: '8px',
-                      background: `linear-gradient(135deg, ${alpha(metric.color, 0.08)} 0%, ${alpha(metric.color, 0.05)} 100%)`,
-                      border: `1px solid ${alpha(metric.color, 0.15)}`,
-                      textAlign: 'center',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        transform: 'translateY(-1px)',
-                        boxShadow: `0 4px 12px ${alpha(metric.color, 0.15)}`
-                      }
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontSize: { xs: '0.55rem', sm: '0.75rem' },
-                        color: alpha(theme.palette.text.secondary, 0.8),
-                        display: 'block',
-                        mb: 0.25,
-                        fontWeight: 500
-                      }}
-                    >
-                      {metric.title}
-                    </Typography>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{
-                        fontSize: { xs: '0.7rem', sm: '1rem' },
-                        fontWeight: 700,
-                        color: metric.color,
-                        lineHeight: 1
-                      }}
-                    >
-                      {metric.value}
-                    </Typography>
-                  </Box>
-                ))}
-              </Stack>
-            </Stack>
-
-            
-            {/* Tags and Status */}
-            <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
-              {isExpired && (
-                <Chip
-                  label="Expired"
-                  size="small"
-                  color="error"
-                  sx={{ 
-                    fontSize: { xs: '0.55rem', sm: '0.6rem' }, 
-                    height: { xs: '14px', sm: '16px' } 
-                  }}
-                />
-              )}
             </Stack>
           </Box>
         </Stack>
 
+        {/* Price and 24h Range Section - Full width on mobile */}
+        <Box
+          sx={{
+            mx: { xs: -0.75, sm: 0 },
+            mt: { xs: 0.75, sm: 0 },
+            px: { xs: 0.75, sm: 0 },
+            display: { xs: 'block', md: 'none' }
+          }}
+        >
+          <Stack alignItems="flex-start" spacing={0.5} sx={{ width: '100%' }}>
+            <Typography
+              variant="h5"
+              sx={{
+                fontSize: { xs: '1.5rem', sm: '1.75rem' },
+                fontWeight: 900,
+                color: priceColor || theme.palette.text.primary,
+                lineHeight: 1,
+                letterSpacing: '-0.03em',
+                transition: 'color 0.3s ease',
+                '@keyframes priceFlash': {
+                  '0%': { opacity: 1 },
+                  '50%': { opacity: 0.7 },
+                  '100%': { opacity: 1 }
+                },
+                animation: priceColor ? 'priceFlash 0.8s ease' : 'none'
+              }}
+            >
+              <NumberTooltip
+                prepend={currencySymbols[activeFiatCurrency]}
+                number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+              />
+            </Typography>
+            
+            {/* 24h Range - Full width */}
+            {range24h && (
+              <Stack direction="row" alignItems="center" spacing={0.5} sx={{ width: '100%' }}>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.7rem', 
+                      fontWeight: 600, 
+                      color: theme.palette.success.main,
+                      opacity: 0.9
+                    }}
+                  >
+                    {currencySymbols[activeFiatCurrency]}{formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
+                  </Typography>
+                  
+                  <Stack alignItems="center" spacing={0} sx={{ flex: 1, mx: 1 }}>
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        fontSize: '0.55rem', 
+                        color: theme.palette.text.secondary, 
+                        fontWeight: 500,
+                        opacity: 0.7,
+                        lineHeight: 1
+                      }}
+                    >
+                      24h
+                    </Typography>
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: 3,
+                        backgroundColor: alpha(theme.palette.divider, 0.2),
+                        borderRadius: '1.5px',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: `${range24h.percent}%`,
+                          background: `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.warning.main} 50%, ${theme.palette.error.main} 100%)`,
+                          borderRadius: '1.5px',
+                          opacity: 0.8
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          left: `${range24h.percent}%`,
+                          top: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          backgroundColor: theme.palette.background.paper,
+                          border: `1.5px solid ${theme.palette.primary.main}`,
+                          boxShadow: `0 0 3px ${alpha(theme.palette.primary.main, 0.4)}`
+                        }}
+                      />
+                    </Box>
+                  </Stack>
+                  
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.7rem', 
+                      fontWeight: 600, 
+                      color: theme.palette.error.main,
+                      opacity: 0.9
+                    }}
+                  >
+                    {currencySymbols[activeFiatCurrency]}{formatValue(range24h.max * (metrics.USD / metrics[activeFiatCurrency]))}
+                  </Typography>
+                </Stack>
+              )}
+          </Stack>
+        </Box>
 
-
-
+        {/* Percentage Changes - Full width on mobile */}
+        <Box
+          sx={{
+            mx: { xs: -0.75, sm: 0 },
+            mt: { xs: 0.75, sm: 0 },
+            px: { xs: 0.75, sm: 0 },
+            display: { xs: 'block', md: 'none' }
+          }}
+        >
+          <Stack 
+            direction="row" 
+            spacing={0.5}
+            sx={{ 
+              width: '100%',
+              overflowX: 'auto',
+              '&::-webkit-scrollbar': { display: 'none' },
+              scrollbarWidth: 'none',
+              WebkitOverflowScrolling: 'touch',
+              scrollSnapType: 'x mandatory'
+            }}
+          >
+            {priceChanges.map((item, index) => (
+              <Box
+                key={item.label}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.4,
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: '10px',
+                  background: alpha(item.color, 0.1),
+                  border: `1px solid ${alpha(item.color, 0.2)}`,
+                  transition: 'all 0.2s ease',
+                  minWidth: '70px',
+                  flexShrink: 0,
+                  scrollSnapAlign: 'start',
+                  '&:hover': {
+                    background: alpha(item.color, 0.15),
+                    transform: 'translateY(-1px)',
+                    boxShadow: `0 4px 12px ${alpha(item.color, 0.2)}`
+                  }
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: '0.65rem',
+                    fontWeight: 600,
+                    color: alpha(theme.palette.text.secondary, 0.8)
+                  }}
+                >
+                  {item.label}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    color: item.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.3
+                  }}
+                >
+                  {formatPercentage(item.value)}
+                  <Icon 
+                    icon={item.value >= 0 ? 'mdi:arrow-up' : 'mdi:arrow-down'} 
+                    style={{ fontSize: '0.7rem' }}
+                  />
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
+        </Box>
       </Stack>
+
+      {/* Metrics section - Full width on mobile */}
+      <Box
+        sx={{
+          mx: { xs: -0.75, sm: 0 }, // Negative margin to break out of parent padding on mobile
+          mt: { xs: 1, sm: 2 },
+          px: { xs: 0.75, sm: 0 }
+        }}
+      >
+        <Stack direction="row" sx={{ width: '100%', overflowX: { xs: 'auto', sm: 'visible' }, '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
+          {metricsData.map((metric, index) => (
+            <Box
+              key={index}
+              sx={{
+                flex: { xs: 'none', sm: 1 },
+                width: { xs: 'auto', sm: 'auto' },
+                minWidth: { xs: '85px', sm: 'auto' },
+                p: { xs: 0.75, sm: 1 },
+                borderRadius: '8px',
+                background: `linear-gradient(135deg, ${alpha(metric.color, 0.08)} 0%, ${alpha(metric.color, 0.05)} 100%)`,
+                border: `1px solid ${alpha(metric.color, 0.15)}`,
+                textAlign: 'center',
+                transition: 'all 0.2s ease',
+                mr: { xs: 0.5, sm: 2 },
+                '&:last-child': { mr: 0 },
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  boxShadow: `0 4px 12px ${alpha(metric.color, 0.15)}`
+                }
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                  color: alpha(theme.palette.text.secondary, 0.8),
+                  display: 'block',
+                  mb: 0.25,
+                  fontWeight: 500
+                }}
+              >
+                {metric.title}
+              </Typography>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontSize: { xs: '0.85rem', sm: '1rem' },
+                  fontWeight: 700,
+                  color: metric.color,
+                  lineHeight: 1
+                }}
+              >
+                {metric.value}
+              </Typography>
+            </Box>
+          ))}
+        </Stack>
+      </Box>
+
+      {/* Tags and Status - Full width on mobile */}
+      {isExpired && (
+        <Box
+          sx={{
+            mx: { xs: -0.75, sm: 0 },
+            mt: { xs: 0.5, sm: 1 },
+            px: { xs: 0.75, sm: 0 }
+          }}
+        >
+          <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
+            <Chip
+              label="Expired"
+              size="small"
+              color="error"
+              sx={{ 
+                fontSize: { xs: '0.55rem', sm: '0.6rem' }, 
+                height: { xs: '14px', sm: '16px' } 
+              }}
+            />
+          </Stack>
+        </Box>
+      )}
       
       {/* TrustSet Dialog */}
       {trustToken && (
