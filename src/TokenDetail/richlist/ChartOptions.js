@@ -1,6 +1,6 @@
 // Material
 import {
-    /*alpha,*/
+    alpha,
     useTheme
 } from '@mui/material';
 
@@ -115,40 +115,42 @@ export default function ChartOptions(series) {
         tooltip: {
             shared: true,
             intersect: false,
-            theme: 'dark',
+            theme: theme.palette.mode,
             style: {
-                fontSize: '14px',
-                fontFamily: undefined
+                fontSize: '12px',
+                fontFamily: theme.typography.fontFamily,
+                fontWeight: 500
             },
-            x: {
-                show: false,
-                format: 'MM/dd/yyyy, h:mm:ss TT',
-            },
-            y: {
-                formatter: (y) => {
-                    if (typeof y !== 'undefined') {
-                        return `Trustlines: ${fIntNumber(y)}`;
-                    }
-                    return y;
-                },
-                title: {
-                    formatter: (seriesName) => {
-                      return seriesName;
-                    }
-                }
-            },
-            /*z: {
-                formatter: (z) => {
-                    if (typeof z !== 'undefined') {
-                        return `Active Addresses: ${fIntNumber(z)}`;
-                    }
-                    return z;
-                },
-                title: ''
-            },*/
-            marker: {
-                show: true,
-            },
+            custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                const value = series[seriesIndex][dataPointIndex];
+                const date = new Date(w.globals.seriesX[seriesIndex][dataPointIndex]);
+                
+                return `<div style="
+                    background: ${theme.palette.mode === 'dark' 
+                        ? alpha(theme.palette.grey[900], 0.95)
+                        : alpha(theme.palette.background.paper, 0.98)};
+                    color: ${theme.palette.text.primary};
+                    padding: 12px 16px;
+                    border-radius: ${theme.shape.borderRadius * 1.5}px;
+                    border: 1px solid ${alpha(theme.palette.divider, 0.1)};
+                    box-shadow: ${theme.palette.mode === 'dark'
+                        ? `0 0 20px ${alpha(theme.palette.primary.main, 0.2)}`
+                        : `0 4px 20px ${alpha(theme.palette.common.black, 0.1)}`};
+                    backdrop-filter: blur(10px);
+                    min-width: 180px;
+                ">
+                    <div style="font-weight: 700; color: ${theme.palette.primary.main}; margin-bottom: 8px;">
+                        Address Statistics
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span style="opacity: 0.8;">Total Addresses:</span>
+                        <strong style="color: ${theme.palette.success.main};">${fIntNumber(value)}</strong>
+                    </div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 8px;">
+                        ${date.toLocaleDateString()} ${date.toLocaleTimeString()}
+                    </div>
+                </div>`;
+            }
         },
 
         // plotOptions

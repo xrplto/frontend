@@ -131,6 +131,36 @@ const LoadingSkeleton = styled(Box)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius
 }));
 
+const StyledTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .MuiTooltip-tooltip`]: {
+    backgroundColor: theme.palette.mode === 'dark' 
+      ? alpha(theme.palette.grey[900], 0.95)
+      : alpha(theme.palette.background.paper, 0.98),
+    color: theme.palette.text.primary,
+    boxShadow: theme.palette.mode === 'dark'
+      ? `0 0 20px ${alpha(theme.palette.primary.main, 0.2)}`
+      : `0 4px 20px ${alpha(theme.palette.common.black, 0.1)}`,
+    fontSize: '0.75rem',
+    padding: '10px 14px',
+    borderRadius: theme.shape.borderRadius * 1.5,
+    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    backdropFilter: 'blur(10px)',
+    maxWidth: 220,
+    fontWeight: 500,
+    lineHeight: 1.5
+  },
+  [`& .MuiTooltip-arrow`]: {
+    color: theme.palette.mode === 'dark' 
+      ? alpha(theme.palette.grey[900], 0.95)
+      : alpha(theme.palette.background.paper, 0.98),
+    '&::before': {
+      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+    }
+  }
+}));
+
 // Optimize array processing with more efficient loop
 const extractGraphData = (items) => {
   const res = [];
@@ -211,14 +241,46 @@ const RichListChart = memo(({ token }) => {
   }, [theme]);
 
   const getIntervalTooltip = useCallback((currentRange) => {
-    const intervals = {
-      ALL: 'All available data - Complete address history',
-      '3M': 'Last 3 months - Recent address trends',
-      '1M': 'Last month - Monthly address changes',
-      '7D': 'Last week - Weekly address activity'
+    const tooltipContent = {
+      ALL: {
+        title: 'All Time Data',
+        description: 'Complete historical address data',
+        details: 'Shows the full history of unique addresses holding this token'
+      },
+      '3M': {
+        title: '3 Month View',
+        description: 'Quarterly address trends',
+        details: 'Displays address growth patterns over the last 90 days'
+      },
+      '1M': {
+        title: '1 Month View',
+        description: 'Monthly address activity',
+        details: 'Recent 30-day holder distribution changes'
+      },
+      '7D': {
+        title: '7 Day View',
+        description: 'Weekly address movements',
+        details: 'Short-term holder activity for the past week'
+      }
     };
-    return intervals[currentRange] || 'Address data intervals';
-  }, []);
+    
+    const content = tooltipContent[currentRange];
+    if (!content) return 'Address data intervals';
+    
+    return (
+      <Box sx={{ p: 0.5 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5, color: theme.palette.primary.main }}>
+          {content.title}
+        </Typography>
+        <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
+          {content.description}
+        </Typography>
+        <Typography variant="caption" sx={{ display: 'block', opacity: 0.8 }}>
+          {content.details}
+        </Typography>
+      </Box>
+    );
+  }, [theme]);
 
   return (
     <>
@@ -304,7 +366,7 @@ const RichListChart = memo(({ token }) => {
                 size="small"
                 sx={{ m: 0 }}
               >
-                <Tooltip title={getIntervalTooltip('7D')} arrow placement="top">
+                <StyledTooltip title={getIntervalTooltip('7D')} arrow placement="top" PopperProps={{ style: { zIndex: 9999 } }}>
                   <EnhancedToggleButton
                     sx={{ minWidth: isMobile ? '24px' : '32px', p: isMobile ? 0.15 : 0.5, height: isMobile ? '20px' : '28px', borderRadius: 1 }}
                     value="7D"
@@ -313,8 +375,8 @@ const RichListChart = memo(({ token }) => {
                       7D
                     </Typography>
                   </EnhancedToggleButton>
-                </Tooltip>
-                <Tooltip title={getIntervalTooltip('1M')} arrow placement="top">
+                </StyledTooltip>
+                <StyledTooltip title={getIntervalTooltip('1M')} arrow placement="top" PopperProps={{ style: { zIndex: 9999 } }}>
                   <EnhancedToggleButton
                     sx={{ minWidth: isMobile ? '24px' : '32px', p: isMobile ? 0.15 : 0.5, height: isMobile ? '20px' : '28px', borderRadius: 1 }}
                     value="1M"
@@ -323,8 +385,8 @@ const RichListChart = memo(({ token }) => {
                       1M
                     </Typography>
                   </EnhancedToggleButton>
-                </Tooltip>
-                <Tooltip title={getIntervalTooltip('3M')} arrow placement="top">
+                </StyledTooltip>
+                <StyledTooltip title={getIntervalTooltip('3M')} arrow placement="top" PopperProps={{ style: { zIndex: 9999 } }}>
                   <EnhancedToggleButton
                     sx={{ minWidth: isMobile ? '24px' : '32px', p: isMobile ? 0.15 : 0.5, height: isMobile ? '20px' : '28px', borderRadius: 1 }}
                     value="3M"
@@ -333,8 +395,8 @@ const RichListChart = memo(({ token }) => {
                       3M
                     </Typography>
                   </EnhancedToggleButton>
-                </Tooltip>
-                <Tooltip title={getIntervalTooltip('ALL')} arrow placement="top">
+                </StyledTooltip>
+                <StyledTooltip title={getIntervalTooltip('ALL')} arrow placement="top" PopperProps={{ style: { zIndex: 9999 } }}>
                   <EnhancedToggleButton
                     sx={{ minWidth: isMobile ? '26px' : '34px', p: isMobile ? 0.15 : 0.5, height: isMobile ? '20px' : '28px', borderRadius: 1 }}
                     value="ALL"
@@ -343,7 +405,7 @@ const RichListChart = memo(({ token }) => {
                       ALL
                     </Typography>
                   </EnhancedToggleButton>
-                </Tooltip>
+                </StyledTooltip>
               </StyledToggleButtonGroup>
             </Paper>
           </Box>
