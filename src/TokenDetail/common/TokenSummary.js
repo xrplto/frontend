@@ -372,6 +372,14 @@ const TokenSummary = memo(({ token }) => {
             style={{ fontSize: '10px', color: '#B72136' }}
           />
         );
+      case 'XRPL':
+        return (
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.5 8L2 12.5L6.5 17" stroke="#1976d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M17.5 8L22 12.5L17.5 17" stroke="#1976d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M14.5 4L9.5 20" stroke="#1976d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        );
       default:
         return <AutoAwesomeIcon sx={{ fontSize: '8px', color: '#637381' }} />;
     }
@@ -667,34 +675,32 @@ const TokenSummary = memo(({ token }) => {
                     </Box>
                   )}
                   
-                  {origin && (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        px: 1.25,
-                        py: 0.4,
-                        borderRadius: '16px',
-                        background: alpha(theme.palette.background.paper, 0.9),
-                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                        boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.05)}`,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'translateY(-1px)',
-                          boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`,
-                          borderColor: alpha(theme.palette.primary.main, 0.3)
-                        }
-                      }}
-                    >
-                      <Box sx={{ transform: 'scale(1.5)' }}>
-                        {getOriginIcon(origin)}
-                      </Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.text.primary, fontSize: '0.875rem' }}>
-                        {origin}
-                      </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      px: 1.25,
+                      py: 0.4,
+                      borderRadius: '16px',
+                      background: origin ? alpha(theme.palette.background.paper, 0.9) : `linear-gradient(135deg, ${alpha('#23288E', 0.15)} 0%, ${alpha('#1976d2', 0.08)} 100%)`,
+                      border: `1px solid ${origin ? alpha(theme.palette.divider, 0.2) : alpha('#1976d2', 0.3)}`,
+                      boxShadow: origin ? `0 2px 8px ${alpha(theme.palette.common.black, 0.05)}` : `0 2px 8px ${alpha('#1976d2', 0.15)}`,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-1px)',
+                        boxShadow: origin ? `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}` : `0 4px 12px ${alpha('#1976d2', 0.25)}`,
+                        borderColor: origin ? alpha(theme.palette.primary.main, 0.3) : alpha('#1976d2', 0.4)
+                      }
+                    }}
+                  >
+                    <Box sx={{ transform: 'scale(1.5)' }}>
+                      {getOriginIcon(origin || 'XRPL')}
                     </Box>
-                  )}
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: origin ? theme.palette.text.primary : '#1976d2', fontSize: '0.875rem' }}>
+                      {origin || 'XRPL'}
+                    </Typography>
+                  </Box>
                 </Stack>
               </Stack>
               
