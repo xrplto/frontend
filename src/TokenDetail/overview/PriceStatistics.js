@@ -62,23 +62,25 @@ const badge24hStyle = {
 
 // Enhanced styled components
 const ModernTableCell = styled(TableCell)(({ theme }) => ({
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   padding: theme.spacing(1.5),
   '&:first-of-type': {
-    paddingLeft: theme.spacing(1.5)
+    paddingLeft: theme.spacing(2),
+    fontWeight: 600,
+    color: alpha(theme.palette.text.primary, 0.9)
   },
   '&:last-of-type': {
-    paddingRight: theme.spacing(1.5),
-    paddingLeft: theme.spacing(40)
+    paddingRight: theme.spacing(2),
+    paddingLeft: theme.spacing(4)
   },
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(1),
     '&:first-of-type': {
-      paddingLeft: theme.spacing(1)
+      paddingLeft: theme.spacing(1.5)
     },
     '&:last-of-type': {
-      paddingRight: theme.spacing(1),
-      paddingLeft: theme.spacing(20)
+      paddingRight: theme.spacing(1.5),
+      paddingLeft: theme.spacing(2)
     }
   }
 }));
@@ -86,13 +88,13 @@ const ModernTableCell = styled(TableCell)(({ theme }) => ({
 const StyledTable = styled(Table)(({ theme }) => ({
   background: 'transparent',
   '& .MuiTableRow-root': {
-    transition: 'all 0.2s ease',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     '&:hover': {
-      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.02)} 0%, ${alpha(
+      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.03)} 0%, ${alpha(
         theme.palette.primary.main,
         0.01
       )} 100%)`,
-      backdropFilter: 'blur(5px)'
+      backdropFilter: 'blur(10px)'
     }
   }
 }));
@@ -204,17 +206,22 @@ export default function PriceStatistics({ token }) {
   return (
     <Box
       sx={{
-        borderRadius: '24px',
-        background: `linear-gradient(135deg, ${alpha(
+        borderRadius: { xs: '12px', sm: '16px' },
+        background: `linear-gradient(145deg, ${alpha(
           theme.palette.background.paper,
-          0.7
-        )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
-        backdropFilter: 'blur(25px)',
+          0.95
+        )} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
+        backdropFilter: 'blur(20px)',
         border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-        boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)}`,
+        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(theme.palette.common.black, 0.02)}`,
         position: 'relative',
         overflow: 'hidden',
-        mb: 2
+        mb: { xs: 1, sm: 2 },
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&:hover': {
+          transform: { xs: 'none', sm: 'translateY(-2px)' },
+          boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.12)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.04)}`
+        }
       }}
     >
       <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
@@ -222,24 +229,24 @@ export default function PriceStatistics({ token }) {
       {/* Enhanced Header */}
       <Box
         sx={{
-          p: isMobile ? 1.5 : 2,
+          p: { xs: 1.5, sm: 2 },
           background: `linear-gradient(135deg, ${alpha(
             theme.palette.primary.main,
-            0.05
-          )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+            0.08
+          )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
         }}
       >
         <Typography
           variant="h6"
           sx={{
-            fontSize: isMobile ? '0.95rem' : '1.1rem',
-            fontWeight: 700,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
+            fontSize: { xs: '1rem', sm: '1.2rem' },
+            fontWeight: 800,
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.01em'
+            letterSpacing: '-0.02em'
           }}
         >
           {name} Additional Details
@@ -254,8 +261,8 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 600,
-                  color: alpha(theme.palette.text.primary, 0.9),
+                  fontWeight: 700,
+                  color: alpha(theme.palette.text.primary, 0.85),
                   fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
@@ -290,25 +297,26 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     pl: isMobile ? 0.75 : 1,
                     pr: isMobile ? 0.75 : 1,
-                    borderRadius: '8px',
-                    height: isMobile ? '24px' : '28px',
+                    borderRadius: '10px',
+                    height: isMobile ? '26px' : '32px',
                     cursor: 'pointer',
-                    background: `linear-gradient(135deg, ${alpha(
+                    background: `linear-gradient(145deg, ${alpha(
                       theme.palette.primary.main,
-                      0.08
-                    )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                    backdropFilter: 'blur(8px)',
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                      0.1
+                    )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+                    backdropFilter: 'blur(10px)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                     color: theme.palette.primary.main,
-                    fontWeight: 500,
-                    transition: 'all 0.2s ease',
+                    fontWeight: 600,
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      background: `linear-gradient(135deg, ${alpha(
+                      background: `linear-gradient(145deg, ${alpha(
                         theme.palette.primary.main,
-                        0.12
-                      )} 0%, ${alpha(theme.palette.primary.main, 0.06)} 100%)`,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-                      transform: 'translateY(-1px)'
+                        0.15
+                      )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
                     }
                   }}
                   onClick={handleOpenIssuerInfo}
@@ -318,22 +326,18 @@ export default function PriceStatistics({ token }) {
                     <IconButton
                       size="small"
                       sx={{
-                        p: isMobile ? 0.5 : 0.75,
-                        borderRadius: '6px',
-                        background: `linear-gradient(135deg, ${alpha(
-                          theme.palette.background.paper,
-                          0.8
-                        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                        backdropFilter: 'blur(8px)',
+                        p: 0.5,
+                        width: 32,
+                        height: 32,
+                        borderRadius: '8px',
+                        background: alpha(theme.palette.background.paper, 0.8),
                         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                        transition: 'all 0.2s ease',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': {
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.primary.main,
-                            0.08
-                          )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                          transform: 'translateY(-1px)'
+                          background: alpha(theme.palette.primary.main, 0.08),
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                          transform: 'translateY(-1px)',
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
                         }
                       }}
                     >
@@ -358,8 +362,8 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontWeight: 700,
+                    color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                   noWrap
@@ -382,24 +386,25 @@ export default function PriceStatistics({ token }) {
                     sx={{
                       pl: isMobile ? 0.75 : 1,
                       pr: isMobile ? 0.75 : 1,
-                      borderRadius: '8px',
-                      height: isMobile ? '24px' : '28px',
-                      background: `linear-gradient(135deg, ${alpha(
+                      borderRadius: '10px',
+                      height: isMobile ? '26px' : '32px',
+                      background: `linear-gradient(145deg, ${alpha(
                         theme.palette.secondary.main,
-                        0.08
-                      )} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
-                      backdropFilter: 'blur(8px)',
-                      border: `1px solid ${alpha(theme.palette.secondary.main, 0.15)}`,
+                        0.1
+                      )} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
                       color: theme.palette.secondary.main,
-                      fontWeight: 500,
-                      transition: 'all 0.2s ease',
+                      fontWeight: 600,
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        background: `linear-gradient(135deg, ${alpha(
+                        background: `linear-gradient(145deg, ${alpha(
                           theme.palette.secondary.main,
-                          0.12
-                        )} 0%, ${alpha(theme.palette.secondary.main, 0.06)} 100%)`,
-                        border: `1px solid ${alpha(theme.palette.secondary.main, 0.25)}`,
-                        transform: 'translateY(-1px)'
+                          0.15
+                        )} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                        transform: 'translateY(-2px)',
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.2)}`
                       }
                     }}
                   />
@@ -408,22 +413,18 @@ export default function PriceStatistics({ token }) {
                       <IconButton
                         size="small"
                         sx={{
-                          p: isMobile ? 0.5 : 0.75,
-                          borderRadius: '6px',
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.background.paper,
-                            0.8
-                          )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                          backdropFilter: 'blur(8px)',
+                          p: 0.5,
+                          width: 32,
+                          height: 32,
+                          borderRadius: '8px',
+                          background: alpha(theme.palette.background.paper, 0.8),
                           border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                          transition: 'all 0.2s ease',
+                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                           '&:hover': {
-                            background: `linear-gradient(135deg, ${alpha(
-                              theme.palette.secondary.main,
-                              0.08
-                            )} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
-                            border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-                            transform: 'translateY(-1px)'
+                            background: alpha(theme.palette.secondary.main, 0.08),
+                            border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                            transform: 'translateY(-1px)',
+                            boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.2)}`
                           }
                         }}
                       >
@@ -445,21 +446,22 @@ export default function PriceStatistics({ token }) {
                         }
                         size="small"
                         sx={{
-                          borderRadius: '8px',
-                          height: isMobile ? '18px' : '28px',
-                          background: `linear-gradient(135deg, ${alpha(
+                          borderRadius: '10px',
+                          height: isMobile ? '20px' : '26px',
+                          background: `linear-gradient(145deg, ${alpha(
                             theme.palette.info.main,
                             0.1
                           )} 0%, ${alpha(theme.palette.info.main, 0.05)} 100%)`,
-                          backdropFilter: 'blur(8px)',
+                          backdropFilter: 'blur(10px)',
                           border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
                           color: theme.palette.info.main,
-                          fontWeight: 500,
+                          fontWeight: 600,
                           fontSize: isMobile ? '0.65rem' : '0.75rem',
-                          minWidth: isMobile ? '18px' : 'unset',
+                          minWidth: isMobile ? '20px' : 'unset',
                           justifyContent: isMobile ? 'center' : 'flex-start',
-                          pl: isMobile ? 0 : 1,
-                          pr: isMobile ? 0 : 1
+                          pl: isMobile ? 0.5 : 1,
+                          pr: isMobile ? 0.5 : 1,
+                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
                       />
                     </Tooltip>
@@ -479,8 +481,8 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 600,
-                  color: alpha(theme.palette.text.primary, 0.9),
+                  fontWeight: 700,
+                  color: alpha(theme.palette.text.primary, 0.85),
                   fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
@@ -492,9 +494,12 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 600,
-                  color: theme.palette.warning.main,
-                  fontSize: isMobile ? '0.9rem' : '1rem'
+                  fontWeight: 700,
+                  background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${alpha(theme.palette.warning.main, 0.8)} 100%)`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: isMobile ? '0.95rem' : '1.1rem'
                 }}
               >
                 <NumberTooltip number={fNumber(voldivmarket)} />
@@ -508,8 +513,8 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 600,
-                  color: alpha(theme.palette.text.primary, 0.9),
+                  fontWeight: 700,
+                  color: alpha(theme.palette.text.primary, 0.85),
                   fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
@@ -521,9 +526,12 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 600,
-                  color: theme.palette.secondary.main,
-                  fontSize: isMobile ? '0.9rem' : '1rem'
+                  fontWeight: 700,
+                  background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${alpha(theme.palette.secondary.main, 0.8)} 100%)`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: isMobile ? '0.95rem' : '1.1rem'
                 }}
               >
                 <NumberTooltip number={fNumber(dom || 0)} /> %
@@ -539,8 +547,8 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 600,
-                  color: alpha(theme.palette.text.primary, 0.9),
+                  fontWeight: 700,
+                  color: alpha(theme.palette.text.primary, 0.85),
                   fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
@@ -552,7 +560,7 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 600,
+                  fontWeight: 700,
                   background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${alpha(
                     theme.palette.info.main,
                     0.8
@@ -560,7 +568,7 @@ export default function PriceStatistics({ token }) {
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  fontSize: isMobile ? '0.9rem' : '1rem'
+                  fontSize: isMobile ? '0.95rem' : '1.1rem'
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{' '}
@@ -576,8 +584,8 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontWeight: 700,
+                    color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                   noWrap
@@ -589,9 +597,12 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: theme.palette.warning.main,
-                    fontSize: isMobile ? '0.9rem' : '1rem'
+                    fontWeight: 700,
+                    background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${alpha(theme.palette.warning.main, 0.8)} 100%)`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontSize: isMobile ? '0.95rem' : '1.1rem'
                   }}
                 >
                   <NumberTooltip number={fNumber(amount)} />
@@ -607,8 +618,8 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontWeight: 700,
+                    color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                   noWrap
@@ -620,9 +631,12 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: theme.palette.info.main,
-                    fontSize: isMobile ? '0.9rem' : '1rem'
+                    fontWeight: 700,
+                    background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${alpha(theme.palette.info.main, 0.8)} 100%)`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontSize: isMobile ? '0.95rem' : '1.1rem'
                   }}
                 >
                   <NumberTooltip number={fNumber(holders)} />
@@ -638,8 +652,8 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontWeight: 700,
+                    color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                   noWrap
@@ -651,9 +665,12 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: theme.palette.secondary.main,
-                    fontSize: isMobile ? '0.9rem' : '1rem'
+                    fontWeight: 700,
+                    background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${alpha(theme.palette.secondary.main, 0.8)} 100%)`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontSize: isMobile ? '0.95rem' : '1.1rem'
                   }}
                 >
                   <NumberTooltip number={fNumber(trustlines)} />
@@ -669,8 +686,8 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontWeight: 700,
+                    color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                   noWrap
@@ -682,9 +699,12 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: theme.palette.warning.main,
-                    fontSize: isMobile ? '0.9rem' : '1rem'
+                    fontWeight: 700,
+                    background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${alpha(theme.palette.warning.main, 0.8)} 100%)`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontSize: isMobile ? '0.95rem' : '1.1rem'
                   }}
                 >
                   <NumberTooltip number={fNumber(uniqueTraders24h)} />
@@ -700,8 +720,8 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontWeight: 700,
+                    color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                   noWrap
@@ -713,9 +733,12 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: theme.palette.secondary.main,
-                    fontSize: isMobile ? '0.9rem' : '1rem'
+                    fontWeight: 700,
+                    background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${alpha(theme.palette.secondary.main, 0.8)} 100%)`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontSize: isMobile ? '0.95rem' : '1.1rem'
                   }}
                 >
                   <NumberTooltip number={fNumber(vol24htx)} />
@@ -731,8 +754,8 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontWeight: 700,
+                    color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                   noWrap
@@ -745,7 +768,7 @@ export default function PriceStatistics({ token }) {
                   variant="body2"
                   sx={{
                     fontWeight: 600,
-                    color: theme.palette.text.secondary,
+                    color: alpha(theme.palette.text.secondary, 0.8),
                     fontSize: isMobile ? '0.9rem' : '1rem'
                   }}
                 >
@@ -762,8 +785,8 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
-                    color: alpha(theme.palette.text.primary, 0.9),
+                    fontWeight: 700,
+                    color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                   noWrap
@@ -867,24 +890,26 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
             rel="noopener noreferrer"
             size="small"
             sx={{
-              width: isMobile ? 24 : 28,
-              height: isMobile ? 24 : 28,
+              width: isMobile ? 26 : 32,
+              height: isMobile ? 26 : 32,
               p: 0.5,
-              borderRadius: '6px',
-              background: `linear-gradient(135deg, ${alpha(
+              borderRadius: '8px',
+              background: `linear-gradient(145deg, ${alpha(
                 theme.palette.primary.main,
-                0.08
-              )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                0.1
+              )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
               color: theme.palette.primary.main,
-
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              
               '&:hover': {
-                background: `linear-gradient(135deg, ${alpha(
+                background: `linear-gradient(145deg, ${alpha(
                   theme.palette.primary.main,
                   0.15
                 )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                transform: 'scale(1.05)'
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                transform: 'translateY(-2px)',
+                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
               }
             }}
           >
@@ -916,23 +941,26 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
             onClick={() => toggleLinksDrawer(true)}
             size="small"
             sx={{
-              width: isMobile ? 24 : 28,
-              height: isMobile ? 24 : 28,
+              width: isMobile ? 26 : 32,
+              height: isMobile ? 26 : 32,
               p: 0.5,
-              borderRadius: '6px',
-              background: `linear-gradient(135deg, ${alpha(
+              borderRadius: '8px',
+              background: `linear-gradient(145deg, ${alpha(
                 theme.palette.secondary.main,
-                0.08
-              )} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.secondary.main, 0.12)}`,
+                0.1
+              )} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
               color: theme.palette.secondary.main,
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
 
               '&:hover': {
-                background: `linear-gradient(135deg, ${alpha(
+                background: `linear-gradient(145deg, ${alpha(
                   theme.palette.secondary.main,
                   0.15
                 )} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                transform: 'translateY(-2px)',
+                boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.2)}`
               }
             }}
           >
@@ -985,28 +1013,30 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
               )
             }
             sx={{
-              height: isMobile ? '20px' : '22px',
-              fontSize: isMobile ? '0.6rem' : '0.65rem',
-              borderRadius: '4px',
-              px: isMobile ? 0.5 : 0.75,
-              background: `linear-gradient(135deg, ${alpha(
+              height: isMobile ? '22px' : '26px',
+              fontSize: isMobile ? '0.65rem' : '0.75rem',
+              borderRadius: '8px',
+              px: isMobile ? 0.75 : 1,
+              background: `linear-gradient(145deg, ${alpha(
                 theme.palette.background.paper,
-                0.8
-              )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                0.95
+              )} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
               color: theme.palette.text.primary,
-              fontWeight: 500,
+              fontWeight: 600,
               cursor: 'pointer',
               minHeight: 'auto',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
 
               '&:hover': {
-                background: `linear-gradient(135deg, ${alpha(
+                background: `linear-gradient(145deg, ${alpha(
                   theme.palette.primary.main,
-                  0.08
-                )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                  0.1
+                )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                 color: theme.palette.primary.main,
-                transform: isMobile ? 'scale(1.02)' : 'none'
+                transform: 'translateY(-1px)',
+                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
               }
             }}
           />
@@ -1018,26 +1048,29 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
           size="small"
           onClick={() => toggleTagsDrawer(true)}
           sx={{
-            height: isMobile ? '20px' : '22px',
-            fontSize: isMobile ? '0.6rem' : '0.65rem',
-            borderRadius: '4px',
-            px: isMobile ? 0.5 : 0.75,
-            background: `linear-gradient(135deg, ${alpha(
+            height: isMobile ? '22px' : '26px',
+            fontSize: isMobile ? '0.65rem' : '0.75rem',
+            borderRadius: '8px',
+            px: isMobile ? 0.75 : 1,
+            background: `linear-gradient(145deg, ${alpha(
               theme.palette.primary.main,
-              0.08
-            )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+              0.1
+            )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
             color: theme.palette.primary.main,
-            fontWeight: 500,
+            fontWeight: 600,
             cursor: 'pointer',
             minHeight: 'auto',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
 
             '&:hover': {
-              background: `linear-gradient(135deg, ${alpha(
+              background: `linear-gradient(145deg, ${alpha(
                 theme.palette.primary.main,
-                0.12
+                0.15
               )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+              transform: 'translateY(-1px)',
+              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
             }
           }}
         />

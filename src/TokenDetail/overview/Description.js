@@ -16,8 +16,7 @@ import {
   Paper,
   Fade,
   CardHeader,
-  Box,
-  Chip
+  Box
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
@@ -47,32 +46,31 @@ const ReadMore = ({ children }) => {
     setShowFullContent(!showFullContent);
   };
 
-  const ContentClosed = styled('div')(
-    ({ theme }) => `
-        -webkit-box-flex: 1;
-        flex-grow: 1;
-        height: 10em;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        position: relative;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  const ContentClosed = styled('div')(({ theme }) => ({
+    WebkitBoxFlex: 1,
+    flexGrow: 1,
+    height: '10em',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    position: 'relative',
+    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
     
-        &::after {
-            content: "";
-            position: absolute;
-            left: 0px;
-            bottom: 0px;
-            width: 100%;
-            height: 5em;
-            background: linear-gradient(180deg, 
-              rgba(255,255,255,0) 0%, 
-              ${theme.palette.background.default} 85%,
-              ${theme.palette.background.default} 100%);
-            z-index: 2;
-            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-    `
-  );
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      left: 0,
+      bottom: 0,
+      width: '100%',
+      height: '5em',
+      background: `linear-gradient(180deg, 
+        transparent 0%, 
+        ${alpha(theme.palette.background.paper, 0.7)} 60%,
+        ${alpha(theme.palette.background.paper, 0.95)} 85%,
+        ${theme.palette.background.paper} 100%)`,
+      zIndex: 2,
+      transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+    }
+  }));
 
   const ContentOpened = styled('div')(
     ({ theme }) => `
@@ -84,41 +82,31 @@ const ReadMore = ({ children }) => {
     `
   );
 
-  const ReadMoreButton = styled(Link)(
-    ({ theme }) => `
-        margin-top: 8px;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        color: ${theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF'};
-        background: ${
-          theme.palette.mode === 'dark'
-            ? 'linear-gradient(135deg, rgba(34, 177, 76, 0.1) 0%, rgba(46, 204, 113, 0.05) 100%)'
-            : 'linear-gradient(135deg, rgba(51, 102, 255, 0.1) 0%, rgba(77, 121, 255, 0.05) 100%)'
-        };
-        border: 1px solid ${
-          theme.palette.mode === 'dark' ? 'rgba(34, 177, 76, 0.2)' : 'rgba(51, 102, 255, 0.2)'
-        };
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 3;
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        
-        &:hover {
-            background: ${
-              theme.palette.mode === 'dark'
-                ? 'linear-gradient(135deg, rgba(34, 177, 76, 0.15) 0%, rgba(46, 204, 113, 0.08) 100%)'
-                : 'linear-gradient(135deg, rgba(51, 102, 255, 0.15) 0%, rgba(77, 121, 255, 0.08) 100%)'
-            };
-            transform: translateY(-2px);
-        }
-    `
-  );
+  const ReadMoreButton = styled(Link)(({ theme }) => ({
+    marginTop: '8px',
+    padding: '6px 14px',
+    borderRadius: '10px',
+    fontSize: '0.8125rem',
+    fontWeight: 600,
+    color: theme.palette.primary.main,
+    background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    zIndex: 3,
+    position: 'relative',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    
+    '&:hover': {
+      background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+      border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+      transform: 'translateY(-2px)',
+      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+    }
+  }));
 
   return (
     <Stack spacing={1}>
@@ -159,65 +147,66 @@ const ReadMore = ({ children }) => {
 
 // Enhanced styled components
 const StyledCard = styled(Paper)(({ theme }) => ({
-  borderRadius: '24px',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(
+  borderRadius: { xs: '12px', sm: '16px' },
+  background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
     theme.palette.background.paper,
-    0.5
+    0.85
   )} 100%)`,
-  backdropFilter: 'blur(25px)',
+  backdropFilter: 'blur(20px)',
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)}`,
+  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(theme.palette.common.black, 0.02)}`,
   position: 'relative',
   overflow: 'hidden',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: { xs: 'none', sm: 'translateY(-2px)' },
+    boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.12)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.04)}`
+  }
 }));
 
 const StyledCardHeader = styled(CardHeader)(({ theme }) => ({
-  padding: '20px 24px 16px',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(
+  padding: { xs: '16px', sm: '20px 24px 16px' },
+  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
     theme.palette.primary.main,
-    0.02
+    0.03
   )} 100%)`,
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
 
   '& .MuiCardHeader-title': {
-    fontSize: '1.125rem',
-    fontWeight: 700,
-    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
+    fontSize: { xs: '1rem', sm: '1.2rem' },
+    fontWeight: 800,
+    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
     backgroundClip: 'text',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    letterSpacing: '-0.01em'
+    letterSpacing: '-0.02em'
   }
 }));
 
 const ActionButton = styled(IconButton)(({ theme }) => ({
-  padding: '8px',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.4
-  )} 100%)`,
-  backdropFilter: 'blur(8px)',
-  WebkitBackdropFilter: 'blur(8px)',
+  padding: '6px',
+  width: 32,
+  height: 32,
+  background: alpha(theme.palette.background.paper, 0.8),
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  borderRadius: '12px',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  borderRadius: '8px',
+  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
 
   '&:hover': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-      theme.palette.primary.main,
-      0.04
-    )} 100%)`,
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-    transform: 'translateY(-1px)'
+    background: alpha(theme.palette.primary.main, 0.08),
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
   }
 }));
 
 const ContentContainer = styled(Box)(({ theme }) => ({
-  padding: '0 24px 24px',
+  padding: { xs: '0 16px 16px', sm: '0 24px 24px' },
   position: 'relative'
 }));
 
@@ -310,32 +299,31 @@ export default function Description({
     marketDominance: dom
   };
 
-  const ContentClosed = styled('div')(
-    ({ theme }) => `
-        -webkit-box-flex: 1;
-        flex-grow: 1;
-        height: 8em;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        position: relative;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  const ContentClosed = styled('div')(({ theme }) => ({
+    WebkitBoxFlex: 1,
+    flexGrow: 1,
+    height: '8em',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    position: 'relative',
+    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
     
-        &::after {
-            content: "";
-            position: absolute;
-            left: 0px;
-            bottom: 0px;
-            width: 100%;
-            height: 4em;
-            background: linear-gradient(180deg, 
-              rgba(255,255,255,0) 0%, 
-              ${theme.palette.background.default} 70%,
-              ${theme.palette.background.default} 100%);
-            z-index: 2;
-            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-    `
-  );
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      left: 0,
+      bottom: 0,
+      width: '100%',
+      height: '4em',
+      background: `linear-gradient(180deg, 
+        transparent 0%, 
+        ${alpha(theme.palette.background.paper, 0.7)} 50%,
+        ${alpha(theme.palette.background.paper, 0.95)} 80%,
+        ${theme.palette.background.paper} 100%)`,
+      zIndex: 2,
+      transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+    }
+  }));
 
   const ContentOpened = styled('div')(
     ({ theme }) => `
@@ -348,20 +336,21 @@ export default function Description({
   );
 
   const ExpandButton = styled(ActionButton)(({ theme }) => ({
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+    background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(
       theme.palette.primary.main,
-      0.04
+      0.05
     )} 100%)`,
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
     color: theme.palette.primary.main,
 
     '&:hover': {
-      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(
+      background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(
         theme.palette.primary.main,
-        0.06
+        0.08
       )} 100%)`,
-      border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-      transform: 'translateY(-1px)'
+      border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+      transform: 'translateY(-2px)',
+      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
     }
   }));
 
@@ -369,33 +358,24 @@ export default function Description({
     shouldForwardProp: (prop) => prop !== 'isActive'
   })(({ theme, isActive }) => ({
     background: isActive
-      ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.15)} 0%, ${alpha(
-          theme.palette.error.main,
-          0.08
-        )} 100%)`
-      : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-          theme.palette.background.paper,
-          0.4
-        )} 100%)`,
+      ? alpha(theme.palette.error.main, 0.08)
+      : alpha(theme.palette.background.paper, 0.8),
     border: `1px solid ${
-      isActive ? alpha(theme.palette.error.main, 0.3) : alpha(theme.palette.divider, 0.1)
+      isActive ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.divider, 0.1)
     }`,
     color: isActive ? theme.palette.error.main : 'inherit',
 
     '&:hover': {
       background: isActive
-        ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.2)} 0%, ${alpha(
-            theme.palette.error.main,
-            0.1
-          )} 100%)`
-        : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-            theme.palette.primary.main,
-            0.04
-          )} 100%)`,
+        ? alpha(theme.palette.error.main, 0.15)
+        : alpha(theme.palette.primary.main, 0.08),
       border: `1px solid ${
-        isActive ? alpha(theme.palette.error.main, 0.4) : alpha(theme.palette.primary.main, 0.2)
+        isActive ? alpha(theme.palette.error.main, 0.3) : alpha(theme.palette.primary.main, 0.3)
       }`,
-      transform: 'translateY(-1px)'
+      transform: 'translateY(-1px)',
+      boxShadow: `0 4px 12px ${
+        isActive ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.primary.main, 0.2)
+      }`
     }
   }));
 
@@ -405,31 +385,7 @@ export default function Description({
 
       <StyledCard elevation={0}>
         <StyledCardHeader
-          title={
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {`About ${user}`}
-              <Chip
-                label="Info"
-                size="small"
-                sx={{
-                  height: '20px',
-                  fontSize: '0.7rem',
-                  fontWeight: 500,
-                  background: (theme) =>
-                    theme.palette.mode === 'dark'
-                      ? 'rgba(34, 177, 76, 0.1)'
-                      : 'rgba(51, 102, 255, 0.1)',
-                  color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF'),
-                  border: (theme) =>
-                    `1px solid ${
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(34, 177, 76, 0.2)'
-                        : 'rgba(51, 102, 255, 0.2)'
-                    }`
-                }}
-              />
-            </Box>
-          }
+          title={`About ${user}`}
           subheader=""
           action={
             <Stack direction="row" spacing={1.5}>
@@ -478,63 +434,57 @@ export default function Description({
                       p: ({ node, ...props }) => (
                         <Typography
                           variant="body2"
-                          sx={{
+                          sx={(theme) => ({
                             mb: 2,
-                            lineHeight: 1.7,
-                            color: (theme) => theme.palette.text.primary,
-                            fontSize: '0.95rem'
-                          }}
+                            lineHeight: 1.8,
+                            color: alpha(theme.palette.text.primary, 0.9),
+                            fontSize: { xs: '0.9rem', sm: '0.95rem' },
+                            fontWeight: 400
+                          })}
                           {...props}
                         />
                       ),
                       h1: ({ node, ...props }) => (
                         <Typography
                           variant="h5"
-                          sx={{
+                          sx={(theme) => ({
                             mt: 3,
                             mb: 2,
-                            fontWeight: 700,
-                            background: (theme) =>
-                              theme.palette.mode === 'dark'
-                                ? 'linear-gradient(135deg, #22B14C 0%, #2ecc71 100%)'
-                                : 'linear-gradient(135deg, #3366FF 0%, #4d79ff 100%)',
+                            fontWeight: 800,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
                             WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                          }}
+                            WebkitTextFillColor: 'transparent',
+                            letterSpacing: '-0.02em'
+                          })}
                           {...props}
                         />
                       ),
                       h2: ({ node, ...props }) => (
                         <Typography
                           variant="h6"
-                          sx={{
+                          sx={(theme) => ({
                             mt: 2.5,
                             mb: 1.5,
-                            fontWeight: 600,
-                            background: (theme) =>
-                              theme.palette.mode === 'dark'
-                                ? 'linear-gradient(135deg, #22B14C 0%, #2ecc71 100%)'
-                                : 'linear-gradient(135deg, #3366FF 0%, #4d79ff 100%)',
+                            fontWeight: 700,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
                             WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                          }}
+                            WebkitTextFillColor: 'transparent',
+                            letterSpacing: '-0.01em'
+                          })}
                           {...props}
                         />
                       ),
                       h3: ({ node, ...props }) => (
                         <Typography
                           variant="subtitle1"
-                          sx={{
+                          sx={(theme) => ({
                             mt: 2,
                             mb: 1.5,
-                            fontWeight: 600,
-                            background: (theme) =>
-                              theme.palette.mode === 'dark'
-                                ? 'linear-gradient(135deg, #22B14C 0%, #2ecc71 100%)'
-                                : 'linear-gradient(135deg, #3366FF 0%, #4d79ff 100%)',
+                            fontWeight: 700,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.info.main} 100%)`,
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent'
-                          }}
+                          })}
                           {...props}
                         />
                       ),
@@ -545,10 +495,11 @@ export default function Description({
                             mb: 2,
                             pl: 2,
                             '& li': {
-                              mb: 0.5,
-                              color: (theme) => theme.palette.text.secondary,
-                              fontSize: '0.9rem',
-                              lineHeight: 1.6
+                              mb: 0.75,
+                              color: (theme) => alpha(theme.palette.text.secondary, 0.85),
+                              fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                              lineHeight: 1.7,
+                              fontWeight: 400
                             }
                           }}
                           {...props}
@@ -561,10 +512,11 @@ export default function Description({
                             mb: 2,
                             pl: 2,
                             '& li': {
-                              mb: 0.5,
-                              color: (theme) => theme.palette.text.secondary,
-                              fontSize: '0.9rem',
-                              lineHeight: 1.6
+                              mb: 0.75,
+                              color: (theme) => alpha(theme.palette.text.secondary, 0.85),
+                              fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                              lineHeight: 1.7,
+                              fontWeight: 400
                             }
                           }}
                           {...props}
@@ -573,10 +525,11 @@ export default function Description({
                       li: ({ node, ...props }) => (
                         <li
                           style={{
-                            marginBottom: '0.5rem',
-                            color: darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)',
+                            marginBottom: '0.75rem',
+                            color: darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)',
                             fontSize: '0.9rem',
-                            lineHeight: 1.6
+                            lineHeight: 1.7,
+                            fontWeight: 400
                           }}
                           {...props}
                         />
@@ -594,63 +547,57 @@ export default function Description({
                       p: ({ node, ...props }) => (
                         <Typography
                           variant="body2"
-                          sx={{
+                          sx={(theme) => ({
                             mb: 2,
-                            lineHeight: 1.7,
-                            color: (theme) => theme.palette.text.primary,
-                            fontSize: '0.95rem'
-                          }}
+                            lineHeight: 1.8,
+                            color: alpha(theme.palette.text.primary, 0.9),
+                            fontSize: { xs: '0.9rem', sm: '0.95rem' },
+                            fontWeight: 400
+                          })}
                           {...props}
                         />
                       ),
                       h1: ({ node, ...props }) => (
                         <Typography
                           variant="h5"
-                          sx={{
+                          sx={(theme) => ({
                             mt: 3,
                             mb: 2,
-                            fontWeight: 700,
-                            background: (theme) =>
-                              theme.palette.mode === 'dark'
-                                ? 'linear-gradient(135deg, #22B14C 0%, #2ecc71 100%)'
-                                : 'linear-gradient(135deg, #3366FF 0%, #4d79ff 100%)',
+                            fontWeight: 800,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
                             WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                          }}
+                            WebkitTextFillColor: 'transparent',
+                            letterSpacing: '-0.02em'
+                          })}
                           {...props}
                         />
                       ),
                       h2: ({ node, ...props }) => (
                         <Typography
                           variant="h6"
-                          sx={{
+                          sx={(theme) => ({
                             mt: 2.5,
                             mb: 1.5,
-                            fontWeight: 600,
-                            background: (theme) =>
-                              theme.palette.mode === 'dark'
-                                ? 'linear-gradient(135deg, #22B14C 0%, #2ecc71 100%)'
-                                : 'linear-gradient(135deg, #3366FF 0%, #4d79ff 100%)',
+                            fontWeight: 700,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
                             WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                          }}
+                            WebkitTextFillColor: 'transparent',
+                            letterSpacing: '-0.01em'
+                          })}
                           {...props}
                         />
                       ),
                       h3: ({ node, ...props }) => (
                         <Typography
                           variant="subtitle1"
-                          sx={{
+                          sx={(theme) => ({
                             mt: 2,
                             mb: 1.5,
-                            fontWeight: 600,
-                            background: (theme) =>
-                              theme.palette.mode === 'dark'
-                                ? 'linear-gradient(135deg, #22B14C 0%, #2ecc71 100%)'
-                                : 'linear-gradient(135deg, #3366FF 0%, #4d79ff 100%)',
+                            fontWeight: 700,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.info.main} 100%)`,
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent'
-                          }}
+                          })}
                           {...props}
                         />
                       ),
@@ -661,10 +608,11 @@ export default function Description({
                             mb: 2,
                             pl: 2,
                             '& li': {
-                              mb: 0.5,
-                              color: (theme) => theme.palette.text.secondary,
-                              fontSize: '0.9rem',
-                              lineHeight: 1.6
+                              mb: 0.75,
+                              color: (theme) => alpha(theme.palette.text.secondary, 0.85),
+                              fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                              lineHeight: 1.7,
+                              fontWeight: 400
                             }
                           }}
                           {...props}
@@ -677,10 +625,11 @@ export default function Description({
                             mb: 2,
                             pl: 2,
                             '& li': {
-                              mb: 0.5,
-                              color: (theme) => theme.palette.text.secondary,
-                              fontSize: '0.9rem',
-                              lineHeight: 1.6
+                              mb: 0.75,
+                              color: (theme) => alpha(theme.palette.text.secondary, 0.85),
+                              fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                              lineHeight: 1.7,
+                              fontWeight: 400
                             }
                           }}
                           {...props}
@@ -689,10 +638,11 @@ export default function Description({
                       li: ({ node, ...props }) => (
                         <li
                           style={{
-                            marginBottom: '0.5rem',
-                            color: darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)',
+                            marginBottom: '0.75rem',
+                            color: darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)',
                             fontSize: '0.9rem',
-                            lineHeight: 1.6
+                            lineHeight: 1.7,
+                            fontWeight: 400
                           }}
                           {...props}
                         />
