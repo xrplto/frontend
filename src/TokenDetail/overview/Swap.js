@@ -1173,15 +1173,10 @@ const Swap = ({ token }) => {
   };
 
   const handlePlaceOrder = (e) => {
-    // First check if trustlines are missing
-    if (!hasTrustline1 && curr1.currency !== 'XRP') {
-      const displayName = getCurrencyDisplayName(curr1.currency, token1?.name);
-      openSnackbar(`Please set trustline for ${displayName} first`, 'error');
-      return;
-    }
-    if (!hasTrustline2 && curr2.currency !== 'XRP') {
-      const displayName = getCurrencyDisplayName(curr2.currency, token2?.name);
-      openSnackbar(`Please set trustline for ${displayName} first`, 'error');
+    // Check if we need to create trustlines first
+    if (isLoggedIn && ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))) {
+      const missingCurrency = !hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2;
+      onCreateTrustline(missingCurrency);
       return;
     }
 
@@ -1301,14 +1296,15 @@ const Swap = ({ token }) => {
 
   const handleMsg = () => {
     if (isProcessing == 1) return 'Pending Exchanging';
-    if (!hasTrustline1 && curr1.currency !== 'XRP') {
-      const displayName = getCurrencyDisplayName(curr1.currency, token1?.name);
-      return `Set trustline for ${displayName} first`;
+    
+    // Check for missing trustlines
+    if (isLoggedIn && ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))) {
+      const missingToken = !hasTrustline1 && curr1.currency !== 'XRP' 
+        ? getCurrencyDisplayName(curr1.currency, token1?.name)
+        : getCurrencyDisplayName(curr2.currency, token2?.name);
+      return `Set Trustline for ${missingToken}`;
     }
-    if (!hasTrustline2 && curr2.currency !== 'XRP') {
-      const displayName = getCurrencyDisplayName(curr2.currency, token2?.name);
-      return `Set trustline for ${displayName} first`;
-    }
+    
     if (!amount1 || !amount2) return 'Enter an Amount';
     else if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
     else return 'Exchange';
@@ -1648,33 +1644,6 @@ const Swap = ({ token }) => {
             </Stack>
           </Box>
 
-          {/* Add trustline warning */}
-          {((!hasTrustline1 && curr1.currency !== 'XRP') ||
-            (!hasTrustline2 && curr2.currency !== 'XRP')) && (
-            <Box sx={{ px: 1.5, py: 0.5 }}>
-              <Alert severity="warning" sx={{ mb: 0.5, py: 0.5 }}>
-                <AlertTitle sx={{ fontSize: '0.8rem', mb: 0.5 }}>Missing Trustline</AlertTitle>
-                <Typography variant="caption" fontSize="0.75rem">
-                  You need to set a trustline for{' '}
-                  {!hasTrustline1 && curr1.currency !== 'XRP'
-                    ? getCurrencyDisplayName(curr1.currency, token1?.name)
-                    : getCurrencyDisplayName(curr2.currency, token2?.name)}
-                </Typography>
-                <Button
-                  size="small"
-                  onClick={() => {
-                    const missingCurrency =
-                      !hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2;
-                    onCreateTrustline(missingCurrency);
-                  }}
-                  disabled={isProcessing === 1}
-                  sx={{ ml: 1, fontSize: '0.7rem', padding: '2px 8px', height: '24px' }}
-                >
-                  {isProcessing === 1 ? 'Setting...' : 'Set Trustline'}
-                </Button>
-              </Alert>
-            </Box>
-          )}
         </ConverterFrame>
       </OverviewWrapper>
 
@@ -1703,10 +1672,9 @@ const Swap = ({ token }) => {
               fontSize: '0.9rem'
             }}
             disabled={
-              !canPlaceOrder ||
-              isProcessing == 1 ||
-              (!hasTrustline1 && curr1.currency !== 'XRP') ||
-              (!hasTrustline2 && curr2.currency !== 'XRP')
+              isProcessing == 1 || 
+              (!isLoggedIn) ||
+              (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
             }
           >
             {handleMsg()}
