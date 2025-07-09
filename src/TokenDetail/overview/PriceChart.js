@@ -130,8 +130,10 @@ const EnhancedToggleButton = styled(ToggleButton)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  background: `linear-gradient(135deg, ${alpha('#000', 0.8)} 0%, ${alpha('#001122', 0.9)} 100%)`,
-  color: '#ffffff',
+  background: theme.palette.mode === 'dark' 
+    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.default, 0.9)} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.grey[100], 0.8)} 0%, ${alpha(theme.palette.grey[200], 0.9)} 100%)`,
+  color: theme.palette.text.primary,
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -139,7 +141,7 @@ const EnhancedToggleButton = styled(ToggleButton)(({ theme }) => ({
     left: '-100%',
     width: '100%',
     height: '100%',
-    background: `linear-gradient(90deg, transparent, ${alpha('#00ff88', 0.3)}, transparent)`,
+    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.3)}, transparent)`,
     transition: 'left 0.6s'
   },
   '&:hover::before': {
@@ -147,17 +149,17 @@ const EnhancedToggleButton = styled(ToggleButton)(({ theme }) => ({
   },
   '&:hover': {
     transform: 'translateY(-1px) scale(1.02)',
-    boxShadow: `0 0 20px ${alpha('#00ff88', 0.4)}`,
-    filter: 'brightness(1.2)'
+    boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+    filter: 'brightness(1.1)'
   },
   '&.Mui-selected': {
-    background: `linear-gradient(135deg, ${alpha('#00ff88', 0.2)} 0%, ${alpha('#00ccff', 0.1)} 100%)`,
-    color: '#00ff88',
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.info.main, 0.1)} 100%)`,
+    color: theme.palette.primary.main,
     fontWeight: 700,
-    boxShadow: `0 0 15px ${alpha('#00ff88', 0.3)}`,
-    textShadow: `0 0 10px ${alpha('#00ff88', 0.6)}`,
+    boxShadow: `0 0 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+    textShadow: theme.palette.mode === 'dark' ? `0 0 10px ${alpha(theme.palette.primary.main, 0.6)}` : 'none',
     '&:hover': {
-      background: `linear-gradient(135deg, ${alpha('#00ff88', 0.3)} 0%, ${alpha('#00ccff', 0.15)} 100%)`
+      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.3)} 0%, ${alpha(theme.palette.info.main, 0.15)} 100%)`
     }
   }
 }));
@@ -166,9 +168,14 @@ const ChartContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   borderRadius: '16px',
   overflow: 'hidden',
-  background: `linear-gradient(135deg, ${alpha('#000', 0.9)} 0%, ${alpha('#001122', 0.95)} 100%)`,
+  background: theme.palette.mode === 'dark'
+    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.95)} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.grey[50], 0.9)} 100%)`,
   backdropFilter: 'blur(24px)',
-  boxShadow: `0 0 40px ${alpha('#00ff88', 0.15)}, 0 0 80px ${alpha('#00ccff', 0.1)}`,
+  boxShadow: theme.palette.mode === 'dark'
+    ? `0 0 40px ${alpha(theme.palette.primary.main, 0.15)}, 0 0 80px ${alpha(theme.palette.info.main, 0.1)}`
+    : `0 4px 24px ${alpha(theme.palette.grey[400], 0.2)}, 0 0 40px ${alpha(theme.palette.primary.light, 0.1)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -176,7 +183,9 @@ const ChartContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     height: '2px',
-    background: `linear-gradient(90deg, transparent, ${alpha('#00ff88', 0.8)}, ${alpha('#00ccff', 0.6)}, transparent)`
+    background: theme.palette.mode === 'dark'
+      ? `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.8)}, ${alpha(theme.palette.info.main, 0.6)}, transparent)`
+      : `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.6)}, transparent)`
   },
   '&::after': {
     content: '""',
@@ -185,7 +194,7 @@ const ChartContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     height: '1px',
-    background: `linear-gradient(90deg, transparent, ${alpha('#00ccff', 0.4)}, transparent)`
+    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.divider, 0.4)}, transparent)`
   }
 }));
 
@@ -216,7 +225,7 @@ function PriceChart({ token }) {
   const [minTime, setMinTime] = useState(0);
   const [maxTime, setMaxTime] = useState(0);
 
-  const { accountProfile, activeFiatCurrency, darkMode } = useContext(AppContext);
+  const { accountProfile, activeFiatCurrency } = useContext(AppContext);
   const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
   const router = useRouter();
@@ -619,7 +628,7 @@ function PriceChart({ token }) {
         events: {
           render: function () {
             const chart = this;
-            const imgUrl = darkMode
+            const imgUrl = theme.palette.mode === 'dark'
               ? '/logo/xrpl-to-logo-white.svg'
               : '/logo/xrpl-to-logo-black.svg';
             const imgWidth = '50';
@@ -636,7 +645,7 @@ function PriceChart({ token }) {
               .image(imgUrl, xPos, yPos, imgWidth, imgHeight)
               .attr({
                 zIndex: 5,
-                opacity: 0.4,
+                opacity: theme.palette.mode === 'dark' ? 0.4 : 0.2,
                 width: '100px'
               })
               .add();
@@ -851,7 +860,7 @@ function PriceChart({ token }) {
       ],
       tooltip: {
         enabled: true,
-        backgroundColor: darkMode
+        backgroundColor: theme.palette.mode === 'dark'
           ? alpha(theme.palette.grey[900], 0.95)
           : alpha(theme.palette.background.paper, 0.95),
         borderColor: alpha(theme.palette.primary.main, 0.3),
@@ -937,7 +946,7 @@ function PriceChart({ token }) {
         ]
       }
     }),
-    [data, mediumValue, theme, darkMode, range, user, name]
+    [data, mediumValue, theme, range, user, name, priceSeriesData, volumeSeriesData, isMobile, activeFiatCurrency, priceChange]
   );
 
   const options2 = useMemo(
@@ -970,7 +979,7 @@ function PriceChart({ token }) {
         events: {
           render: function () {
             const chart = this;
-            const imgUrl = darkMode
+            const imgUrl = theme.palette.mode === 'dark'
               ? '/logo/xrpl-to-logo-white.svg'
               : '/logo/xrpl-to-logo-black.svg';
             const imgWidth = '50';
@@ -987,7 +996,7 @@ function PriceChart({ token }) {
               .image(imgUrl, xPos, yPos, imgWidth, imgHeight)
               .attr({
                 zIndex: 5,
-                opacity: 0.4,
+                opacity: theme.palette.mode === 'dark' ? 0.4 : 0.2,
                 width: '100px'
               })
               .add();
@@ -1145,7 +1154,7 @@ function PriceChart({ token }) {
       ],
       tooltip: {
         enabled: true,
-        backgroundColor: darkMode
+        backgroundColor: theme.palette.mode === 'dark'
           ? alpha(theme.palette.grey[900], 0.95)
           : alpha(theme.palette.background.paper, 0.95),
         borderColor: alpha(theme.palette.primary.main, 0.3),
@@ -1245,7 +1254,7 @@ function PriceChart({ token }) {
         ]
       }
     }),
-    [dataOHLC, mediumValue, theme, darkMode, range, user, name]
+    [dataOHLC, mediumValue, theme, range, user, name, isMobile]
   );
 
   const rangeConfig = useMemo(
@@ -1293,7 +1302,9 @@ function PriceChart({ token }) {
                   variant="subtitle2"
                   sx={{
                     fontWeight: 700,
-                    background: 'linear-gradient(135deg, #00ff88 0%, #00ccff 50%, #ffffff 100%)',
+                    background: theme.palette.mode === 'dark'
+                      ? 'linear-gradient(135deg, #00ff88 0%, #00ccff 50%, #ffffff 100%)'
+                      : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.info.main} 50%, ${theme.palette.primary.dark} 100%)`,
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -1450,12 +1461,18 @@ function PriceChart({ token }) {
                   variant="h6"
                   sx={{
                     fontWeight: 700,
-                    background: 'linear-gradient(135deg, #00ff88 0%, #00ccff 50%, #ffffff 100%)',
+                    background: theme.palette.mode === 'dark'
+                      ? 'linear-gradient(135deg, #00ff88 0%, #00ccff 50%, #ffffff 100%)'
+                      : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.info.main} 50%, ${theme.palette.primary.dark} 100%)`,
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    textShadow: '0px 0px 20px rgba(0,255,136,0.5)',
-                    filter: 'drop-shadow(0 0 10px rgba(0, 255, 136, 0.6))',
+                    textShadow: theme.palette.mode === 'dark' 
+                      ? '0px 0px 20px rgba(0,255,136,0.5)'
+                      : `0px 0px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
+                    filter: theme.palette.mode === 'dark'
+                      ? 'drop-shadow(0 0 10px rgba(0, 255, 136, 0.6))'
+                      : `drop-shadow(0 0 10px ${alpha(theme.palette.primary.main, 0.4)})`,
                     whiteSpace: 'nowrap'
                   }}
                 >
