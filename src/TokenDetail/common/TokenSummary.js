@@ -1011,7 +1011,7 @@ const TokenSummary = memo(({ token }) => {
                 </Stack>
               </Stack>
               
-              {/* Right: Percentage changes - Mobile: Show only 24h, Desktop: Show all */}
+              {/* Right: Percentage changes - Mobile: Show all periods with horizontal scroll */}
               <Stack 
                 direction="row" 
                 spacing={{ xs: 0.4, sm: 0.75, md: 1 }} 
@@ -1023,14 +1023,16 @@ const TokenSummary = memo(({ token }) => {
                   order: { xs: 2, md: 0 },
                   overflowX: { xs: 'auto', md: 'visible' },
                   '&::-webkit-scrollbar': { display: 'none' },
-                  scrollbarWidth: 'none'
+                  scrollbarWidth: 'none',
+                  WebkitOverflowScrolling: 'touch',
+                  scrollSnapType: 'x mandatory'
                 }}
               >
                 {priceChanges.map((item, index) => (
                   <Box
                     key={item.label}
                     sx={{
-                      display: { xs: index === 2 ? 'flex' : 'none', sm: 'flex' },
+                      display: 'flex',
                       alignItems: 'center',
                       gap: { xs: 0.3, sm: 0.5, md: 0.75 },
                       px: { xs: 0.75, sm: 1.25, md: 2 },
@@ -1040,6 +1042,8 @@ const TokenSummary = memo(({ token }) => {
                       border: `1px solid ${alpha(item.color, 0.2)}`,
                       transition: 'all 0.2s ease',
                       minWidth: { xs: '60px', sm: 'auto' },
+                      flexShrink: 0,
+                      scrollSnapAlign: 'start',
                       '&:hover': {
                         background: alpha(item.color, 0.15),
                         transform: 'translateY(-1px)',
