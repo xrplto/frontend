@@ -65,7 +65,6 @@ import { AppContext } from 'src/AppContext';
 
 // Component
 import CategoriesDrawer from 'src/components/CategoriesDrawer';
-import { borderRadius } from 'styled-system';
 import { useRouter } from 'next/router';
 
 // Add XPMarket icon component

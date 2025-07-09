@@ -268,7 +268,7 @@ function CryptoHeatmap({ exchRate }) {
           </div>`;
       }
     }
-  }), [markets, sortBy, darkMode, activeFiatCurrency]);
+  }), [markets, sortBy, activeFiatCurrency]);
 
   return (
     <Stack spacing={3}>

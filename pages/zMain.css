@@ -43,6 +43,16 @@
   pointer-events: none !important;
 }
 
+/* Spin animation for refresh button */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Dropdown menu CSS */
 #dropdown_menu {
   margin: 0;
