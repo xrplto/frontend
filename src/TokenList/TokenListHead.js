@@ -48,10 +48,51 @@ const TABLE_HEAD = [
   { no: 0, id: 'star', label: '', align: 'left', width: '', order: false },
   {
     no: 1,
+    id: 'rank',
+    label: (
+      <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+        #
+      </Typography>
+    ),
+    align: 'center',
+    width: '3%',
+    order: false
+  },
+  {
+    no: 2,
+    id: 'user',
+    label: (
+      <Tooltip
+        title="Token issuer account"
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            Issuer
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
+      </Tooltip>
+    ),
+    align: 'left',
+    width: '8%',
+    order: true
+  },
+  {
+    no: 3,
     id: 'name',
     label: (
       <Tooltip
-        title="Token name, issuer and launch type"
+        title="Token name and launch type"
         placement="top"
         componentsProps={{
           tooltip: {
@@ -72,11 +113,11 @@ const TABLE_HEAD = [
       </Tooltip>
     ),
     align: 'left',
-    width: '11%',
+    width: '10%',
     order: true
   },
   {
-    no: 2,
+    no: 4,
     id: 'exch',
     label: (
       <Typography variant="inherit" sx={{ fontWeight: '600' }}>
@@ -88,7 +129,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 3,
+    no: 5,
     id: 'pro5m',
     label: (
       <Tooltip
@@ -117,7 +158,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 4,
+    no: 6,
     id: 'pro1h',
     label: (
       <Tooltip
@@ -146,7 +187,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 5,
+    no: 7,
     id: 'pro24h',
     label: (
       <Tooltip
@@ -175,7 +216,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 6,
+    no: 8,
     id: 'pro7d',
     label: (
       <Tooltip
@@ -204,7 +245,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 7,
+    no: 9,
     id: 'vol24hxrp',
     label: (
       <Tooltip
@@ -233,7 +274,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 8,
+    no: 10,
     id: 'dateon',
     label: (
       <Tooltip
@@ -262,7 +303,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 9,
+    no: 11,
     id: 'vol24htx',
     label: (
       <Tooltip
@@ -291,7 +332,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 10,
+    no: 12,
     id: 'tvl',
     label: (
       <Tooltip
@@ -320,7 +361,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 11,
+    no: 13,
     id: 'marketcap',
     label: (
       <Tooltip
@@ -349,7 +390,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 12,
+    no: 14,
     id: 'holders',
     label: (
       <Tooltip
@@ -378,7 +419,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 13,
+    no: 15,
     id: 'supply',
     label: (
       <Tooltip
@@ -407,7 +448,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 14,
+    no: 16,
     id: 'historyGraph',
     label: (
       <Typography variant="inherit" sx={{ fontWeight: '600' }}>
@@ -481,11 +522,49 @@ export default function TokenListHead({
             minWidth: isMobile ? '28px' : '24px',
             padding: isMobile ? '8px 4px' : '16px 8px'
           },
-          // Second column (name - matches TokenRow combined ID+Name) - sticky
+          // Second column (rank) - sticky
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
             zIndex: 2,
             left: isMobile ? '28px' : '24px',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.7
+            )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
+            backdropFilter: 'blur(25px)',
+            padding: isMobile ? '8px 4px' : '16px 12px',
+            '&:before': scrollLeft
+              ? {
+                  content: "''",
+                  boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
+                  position: 'absolute',
+                  top: '0',
+                  right: '0',
+                  bottom: '-1px',
+                  width: '30px',
+                  transform: 'translate(100%)',
+                  transition: 'box-shadow .3s',
+                  pointerEvents: 'none'
+                }
+              : {}
+          },
+          // Third column (user) - sticky
+          '& .MuiTableCell-root:nth-of-type(3)': {
+            position: 'sticky',
+            zIndex: 2,
+            left: isMobile ? '52px' : '80px',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.7
+            )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
+            backdropFilter: 'blur(25px)',
+            padding: isMobile ? '8px 4px' : '16px 12px'
+          },
+          // Fourth column (name) - sticky
+          '& .MuiTableCell-root:nth-of-type(4)': {
+            position: 'sticky',
+            zIndex: 2,
+            left: isMobile ? '130px' : '200px',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.7
@@ -529,6 +608,7 @@ export default function TokenListHead({
         {TABLE_HEAD.map((headCell) => {
           // Skip certain columns on mobile
           if (isMobile) {
+            if (headCell.id === 'rank') return null;
             if (headCell.id === 'pro5m') return null;
             if (headCell.id === 'pro7d') return null;
             if (headCell.id === 'vol24hxrp') return null;

@@ -299,8 +299,8 @@ const getOriginIcon = (origin, isMobile) => {
 const AdminImageWrapper = styled(Box)(({ theme }) => ({
   borderRadius: '50%',
   overflow: 'hidden',
-  width: '44px',
-  height: '44px',
+  width: '36px',
+  height: '36px',
   position: 'relative',
   border: '2px solid transparent',
   background: `linear-gradient(${theme.palette.background.paper}, ${theme.palette.background.paper}) padding-box,
@@ -317,8 +317,8 @@ const AdminImageWrapper = styled(Box)(({ theme }) => ({
     boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.3)}`
   },
   [theme.breakpoints.down('md')]: {
-    width: '28px',
-    height: '28px',
+    width: '22px',
+    height: '22px',
     borderWidth: '1px'
   }
 }));
@@ -326,8 +326,8 @@ const AdminImageWrapper = styled(Box)(({ theme }) => ({
 const TokenImageWrapper = styled(Box)(({ theme }) => ({
   borderRadius: '50%',
   overflow: 'hidden',
-  width: '44px',
-  height: '44px',
+  width: '36px',
+  height: '36px',
   position: 'relative',
   backgroundColor: theme.palette.mode === 'dark' 
     ? alpha(theme.palette.grey[800], 0.5)
@@ -341,8 +341,8 @@ const TokenImageWrapper = styled(Box)(({ theme }) => ({
     boxShadow: `0 8px 16px ${alpha(theme.palette.common.black, 0.1)}`
   },
   [theme.breakpoints.down('md')]: {
-    width: '28px',
-    height: '28px'
+    width: '22px',
+    height: '22px'
   }
 }));
 
@@ -442,6 +442,28 @@ function FTokenRow({
         left: isMobile ? '24px' : '24px',
         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
+        width: isMobile ? '24px' : '56px',
+        minWidth: isMobile ? '24px' : '56px'
+      },
+      third: {
+        p: isMobile ? '6px 2px' : '16px 12px',
+        position: 'sticky',
+        zIndex: 1001,
+        left: isMobile ? '48px' : '80px',
+        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px)',
+        width: isMobile ? '80px' : '120px',
+        minWidth: isMobile ? '80px' : '120px'
+      },
+      fourth: {
+        p: isMobile ? '6px 2px' : '16px 12px',
+        position: 'sticky',
+        zIndex: 1001,
+        left: isMobile ? '128px' : '200px',
+        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px)',
+        width: isMobile ? '80px' : '180px',
+        minWidth: isMobile ? '80px' : '180px',
         '&:before': scrollLeft
           ? {
               content: "''",
@@ -616,25 +638,43 @@ function FTokenRow({
           </Tooltip>
         )}
       </TableCell>
-      <TableCell align="left" sx={stickyCellStyles.second}>
-        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
+      {!isMobile && (
+        <TableCell align="center" sx={stickyCellStyles.second}>
           <Typography
             variant="h4"
             sx={{
               fontWeight: '700',
-              fontSize: isMobile ? '11px' : '15px',
+              fontSize: '15px',
               color: alpha(theme.palette.text.secondary, 0.7),
-              minWidth: isMobile ? '20px' : '32px',
               textAlign: 'center',
               fontFamily: 'Inter, sans-serif'
             }}
           >
             {idx + 1}
           </Typography>
+        </TableCell>
+      )}
+      <TableCell align="left" sx={stickyCellStyles.third}>
+        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
+          {isMobile && (
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: '700',
+                fontSize: '11px',
+                color: alpha(theme.palette.text.secondary, 0.7),
+                minWidth: '20px',
+                textAlign: 'center',
+                fontFamily: 'Inter, sans-serif'
+              }}
+            >
+              {idx + 1}
+            </Typography>
+          )}
           <Box
             sx={{
-              width: isMobile ? 24 : 56,
-              height: isMobile ? 24 : 56,
+              width: isMobile ? 24 : 40,
+              height: isMobile ? 24 : 40,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -645,9 +685,9 @@ function FTokenRow({
                 <Image
                   src={imgError ? fallbackImgUrl : imgUrl}
                   alt={`${user} ${name} Logo`}
-                  width={isMobile ? 22 : 40}
-                  height={isMobile ? 22 : 40}
-                  sizes="(max-width: 768px) 22px, 40px"
+                  width={isMobile ? 20 : 32}
+                  height={isMobile ? 20 : 32}
+                  sizes="(max-width: 768px) 20px, 32px"
                   quality={90}
                   loading="lazy"
                   placeholder="blur"
@@ -661,9 +701,9 @@ function FTokenRow({
                 <Image
                   src={imgError ? fallbackImgUrl : imgUrl}
                   alt={`${user} ${name} Logo`}
-                  width={isMobile ? 22 : 40}
-                  height={isMobile ? 22 : 40}
-                  sizes="(max-width: 768px) 22px, 40px"
+                  width={isMobile ? 20 : 32}
+                  height={isMobile ? 20 : 32}
+                  sizes="(max-width: 768px) 20px, 32px"
                   quality={90}
                   loading="lazy"
                   placeholder="blur"
@@ -674,73 +714,73 @@ function FTokenRow({
               </TokenImageWrapper>
             )}
           </Box>
-          <Stack direction="column" spacing={isMobile ? 0.1 : 0.5}>
+          <Stack direction="column" spacing={0}>
             <Typography
-              variant="token"
+              variant="p2"
               sx={{
-                fontWeight: '600',
-                fontSize: isMobile ? '12px' : '16px',
-                lineHeight: 1.2,
-                width: isMobile ? '80px' : '140px',
-                minWidth: isMobile ? '80px' : '140px',
-                letterSpacing: '-0.01em',
-                cursor: 'pointer',
-                color: theme.palette.text.primary,
-                position: 'relative',
-                '&:after': isOMCF === 'yes' ? {
-                  content: '""',
-                  position: 'absolute',
-                  left: 0,
-                  bottom: -2,
-                  width: '100%',
-                  height: '2px',
-                  background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.success.light})`,
-                  borderRadius: '2px'
-                } : {}
+                fontWeight: '400',
+                fontSize: isMobile ? '10px' : '13px',
+                lineHeight: 1.3,
+                color: alpha(theme.palette.text.secondary, 0.8),
+                display: 'flex',
+                alignItems: 'center',
+                fontFamily: 'Inter, sans-serif'
               }}
               noWrap
             >
-              {truncate(name, isMobile ? 12 : 16)}
+              {truncate(user, isMobile ? 10 : 18)}
             </Typography>
-            <Stack direction="row" spacing={isMobile ? 0.2 : 0.5} alignItems="center">
-              <Typography
-                variant="p2"
-                sx={{
-                  fontWeight: '400',
-                  fontSize: isMobile ? '10px' : '13px',
-                  lineHeight: 1.3,
-                  color: alpha(theme.palette.text.secondary, 0.8),
-                  display: 'flex',
-                  alignItems: 'center',
-                  fontFamily: 'Inter, sans-serif'
-                }}
-                noWrap
-              >
-                {truncate(user, isMobile ? 10 : 18)}
-              </Typography>
-              <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin, isMobile)}</Tooltip>
-              {origin && !isMobile && (
-                <>
-                  <Tooltip title="Blackholed Issuer">
-                    <LockIcon sx={{ fontSize: '12px', color: '#00AB55' }} />
-                  </Tooltip>
-                  {origin === 'xrp.fun' ? (
-                    <Tooltip title="Liquidity Pool Not Burned">
-                      <ElectricBoltIcon
-                        sx={{ fontSize: '12px', color: '#FF5630' }}
-                      />
-                    </Tooltip>
-                  ) : (
-                    <Tooltip title="Burned Liquidity Pool">
-                      <LocalFireDepartmentIcon
-                        sx={{ fontSize: '12px', color: '#1890FF' }}
-                      />
-                    </Tooltip>
-                  )}
-                </>
-              )}
-            </Stack>
           </Stack>
+        </Stack>
+      </TableCell>
+      <TableCell align="left" sx={stickyCellStyles.fourth}>
+        <Stack direction="row" spacing={isMobile ? 0.2 : 0.5} alignItems="center">
+          <Typography
+            variant="token"
+            sx={{
+              fontWeight: '600',
+              fontSize: isMobile ? '12px' : '16px',
+              lineHeight: 1.2,
+              letterSpacing: '-0.01em',
+              cursor: 'pointer',
+              color: theme.palette.text.primary,
+              position: 'relative',
+              '&:after': isOMCF === 'yes' ? {
+                content: '""',
+                position: 'absolute',
+                left: 0,
+                bottom: -2,
+                width: '100%',
+                height: '2px',
+                background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.success.light})`,
+                borderRadius: '2px'
+              } : {}
+            }}
+            noWrap
+          >
+            {truncate(name, isMobile ? 12 : 20)}
+          </Typography>
+          <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin, isMobile)}</Tooltip>
+          {origin && !isMobile && (
+            <>
+              <Tooltip title="Blackholed Issuer">
+                <LockIcon sx={{ fontSize: '12px', color: '#00AB55' }} />
+              </Tooltip>
+              {origin === 'xrp.fun' ? (
+                <Tooltip title="Liquidity Pool Not Burned">
+                  <ElectricBoltIcon
+                    sx={{ fontSize: '12px', color: '#FF5630' }}
+                  />
+                </Tooltip>
+              ) : (
+                <Tooltip title="Burned Liquidity Pool">
+                  <LocalFireDepartmentIcon
+                    sx={{ fontSize: '12px', color: '#1890FF' }}
+                  />
+                </Tooltip>
+              )}
+            </>
+          )}
         </Stack>
       </TableCell>
       <TableCell
