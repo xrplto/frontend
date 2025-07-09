@@ -71,7 +71,7 @@ const TokenSummary = memo(({ token }) => {
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency, accountProfile, sync } = useContext(AppContext);
   const [prevPrice, setPrevPrice] = useState(null);
-  const [priceAnimation, setPriceAnimation] = useState('');
+  const [priceColor, setPriceColor] = useState(null);
   const [trustToken, setTrustToken] = useState(null);
   const [isRemove, setIsRemove] = useState(false);
   const [balance, setBalance] = useState(0);
@@ -110,19 +110,27 @@ const TokenSummary = memo(({ token }) => {
 
   // Watch for price changes and trigger animation
   useEffect(() => {
-    if (prevPrice !== null && exch !== prevPrice) {
-      const isIncrease = exch > prevPrice;
-      setPriceAnimation(isIncrease ? 'increase' : 'decrease');
+    if (prevPrice !== null && exch !== null && exch !== prevPrice) {
+      const currentPrice = parseFloat(exch);
+      const previousPrice = parseFloat(prevPrice);
       
-      // Remove animation class after animation completes
-      const timer = setTimeout(() => {
-        setPriceAnimation('');
-      }, 600);
-      
-      return () => clearTimeout(timer);
+      if (!isNaN(currentPrice) && !isNaN(previousPrice)) {
+        if (currentPrice > previousPrice) {
+          setPriceColor(theme.palette.success.main);
+        } else if (currentPrice < previousPrice) {
+          setPriceColor(theme.palette.error.main);
+        }
+        
+        // Remove color after 2 seconds
+        const timer = setTimeout(() => {
+          setPriceColor(null);
+        }, 2000);
+        
+        return () => clearTimeout(timer);
+      }
     }
     setPrevPrice(exch);
-  }, [exch, prevPrice]);
+  }, [exch, prevPrice, theme.palette.success.main, theme.palette.error.main]);
 
   // Price changes
   const priceChanges = useMemo(() => [
@@ -776,9 +784,16 @@ const TokenSummary = memo(({ token }) => {
                     sx={{
                       fontSize: { xs: '1.5rem', sm: '2rem' },
                       fontWeight: 900,
-                      color: theme.palette.text.primary,
+                      color: priceColor || theme.palette.text.primary,
                       lineHeight: 1,
-                      letterSpacing: '-0.03em'
+                      letterSpacing: '-0.03em',
+                      transition: 'color 0.3s ease',
+                      '@keyframes priceFlash': {
+                        '0%': { opacity: 1 },
+                        '50%': { opacity: 0.7 },
+                        '100%': { opacity: 1 }
+                      },
+                      animation: priceColor ? 'priceFlash 0.8s ease' : 'none'
                     }}
                   >
                     <NumberTooltip
