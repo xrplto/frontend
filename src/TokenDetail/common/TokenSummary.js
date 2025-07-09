@@ -119,6 +119,8 @@ const TokenSummary = memo(({ token }) => {
           setPriceColor(theme.palette.success.main);
         } else if (currentPrice < previousPrice) {
           setPriceColor(theme.palette.error.main);
+        } else {
+          setPriceColor(theme.palette.info.main);
         }
         
         // Remove color after 2 seconds
