@@ -34,7 +34,6 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import NumberTooltip from './NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
 import { fNumberWithCurreny } from 'src/utils/formatNumber';
-import BearBullLabel from './BearBullLabel';
 import useDebounce from 'src/hooks/useDebounce';
 
 const BASE_URL = process.env.API_URL;
@@ -791,7 +790,17 @@ export default function SearchModal({ onClose, open }) {
                               prepend={currencySymbols[activeFiatCurrency]}
                               number={fNumberWithCurreny(exch, exchRate)}
                             />
-                            <BearBullLabel value={pro24h} variant="h4" />
+                            <Typography 
+                              variant="h4" 
+                              noWrap 
+                              sx={{ 
+                                color: pro24h < 0 ? theme.palette.error.main : theme.palette.primary.light 
+                              }}
+                            >
+                              {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) 
+                                ? `${parseFloat(pro24h).toFixed(2)}%` 
+                                : '-'}
+                            </Typography>
                           </Stack>
                         </Box>
                       </MenuItem>
