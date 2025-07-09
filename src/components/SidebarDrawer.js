@@ -212,6 +212,11 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
           </MenuItem>
         </AccordionDetails>
       </Accordion>
+      <Link underline="none" color="inherit" href="/collections" rel="noreferrer noopener nofollow">
+        <MenuItem sx={{ py: 0.5, px: 1.5 }}>
+          <Typography variant="s6">NFTs</Typography>
+        </MenuItem>
+      </Link>
       <Link underline="none" color="inherit" href="/swap" rel="noreferrer noopener nofollow">
         <MenuItem sx={{ py: 0.5, px: 1.5 }}>
           <Typography variant="s6">Swap</Typography>
