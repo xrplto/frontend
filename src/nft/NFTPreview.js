@@ -52,16 +52,21 @@ function t(key) {
 import Tabs from './Tabs';
 
 // Material
-import { Card, CardMedia, Link, Typography, Box, IconButton, Modal, Backdrop, Tooltip } from '@mui/material';
+import { Card, CardMedia, Link, Typography, Box, IconButton, Modal, Backdrop, Tooltip, Stack, Chip, Avatar } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import CloseIcon from '@mui/icons-material/Close';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import ShareIcon from '@mui/icons-material/Share';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
+import { styled } from '@mui/material/styles';
 
 // Utils
 import { getNftFilesUrls /*, nftName*/ } from 'src/utils/parse/utils';
+import { fVolume } from 'src/utils/formatNumber';
 
-export default function NFTPreview({ nft }) {
+export default function NFTPreview({ nft, showDetails = false }) {
   const { darkMode } = useContext(AppContext);
   const noImg = '/static/nft_no_image.webp';
   //const imgUrl = getImgUrl(nft/*, 480*/) || noImg;
@@ -214,7 +219,13 @@ export default function NFTPreview({ nft }) {
 
   //console.log('imageUrl after', imageUrl, 'imgOrAnimUrl', imgOrAnimUrl)
 
-  let imageStyle = { width: '100%', height: 'auto' };
+  let imageStyle = { 
+    width: '100%', 
+    height: '100%', 
+    objectFit: 'contain',
+    maxWidth: '100%',
+    maxHeight: '100%'
+  };
   if (imageUrl) {
     if (imageUrl.slice(0, 10) === 'data:image') {
       imageStyle.imageRendering = 'pixelated';
@@ -290,14 +301,23 @@ export default function NFTPreview({ nft }) {
       component="button"
       underline="none"
       onClick={() => handleOpenImage(file.cachedUrl)}
-      width="100%"
+      sx={{ 
+        width: '100%', 
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative'
+      }}
     >
       {loadingImage(nft)}
       <img
         style={{
           ...imageStyle,
-          display: loaded ? 'inline-block' : 'none',
-          verticalAlign: 'bottom' /* removes bottom line */
+          display: loaded ? 'block' : 'none',
+          position: 'absolute',
+          top: 0,
+          left: 0
         }}
         onLoad={() => {
           setLoaded(true);
@@ -322,16 +342,85 @@ export default function NFTPreview({ nft }) {
     </Link>
   );
 
+  // Styled components
+  const StyledCard = styled(Card)(({ theme }) => ({
+    borderRadius: theme.spacing(2),
+    overflow: 'hidden',
+    boxShadow: theme.shadows[4],
+    backgroundColor: theme.palette.background.paper,
+    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: theme.shadows[8]
+    }
+  }));
+
+  const MediaContainer = styled(Box)(({ theme }) => ({
+    position: 'relative',
+    width: '100%',
+    aspectRatio: '1 / 1',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[100],
+    overflow: 'hidden',
+    [theme.breakpoints.down('md')]: {
+      aspectRatio: '4 / 3'
+    },
+    [theme.breakpoints.down('sm')]: {
+      aspectRatio: '16 / 9'
+    }
+  }));
+
+  const NFTName = nft?.name || nft?.meta?.name || nft?.meta?.Name || 'Untitled NFT';
+  const collectionName = nft?.collection || nft?.meta?.collection?.name || '';
+  const ownerAddress = nft?.account || '';
+  const rarity = nft?.rarity_rank || null;
+
   return (
     <>
-      <Card sx={{ borderRadius: 2, overflow: 'hidden', boxShadow: 3 }}>
+      <StyledCard>
+        {/* Header Section */}
+        <Box sx={{ p: 2, pb: 1 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {NFTName}
+              </Typography>
+              {collectionName && (
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Avatar sx={{ width: 20, height: 20 }} src="/static/collection-placeholder.png" />
+                  <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {collectionName}
+                  </Typography>
+                </Stack>
+              )}
+            </Box>
+            <Stack direction="row" spacing={1}>
+              {rarity && (
+                <Chip 
+                  label={`Rank #${rarity}`} 
+                  size="small" 
+                  color="primary" 
+                  variant="outlined"
+                  sx={{ fontWeight: 600 }}
+                />
+              )}
+              <Tooltip title="Share">
+                <IconButton size="small" onClick={handleTweetNFT}>
+                  <ShareIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+          </Stack>
+        </Box>
+
+        {/* Tabs Section */}
         {contentTabList.length > 1 && (
           <Box
             sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              p: 2,
+              px: 2,
+              pb: 1,
               borderBottom: 1,
               borderColor: 'divider'
             }}
@@ -341,30 +430,21 @@ export default function NFTPreview({ nft }) {
               tab={contentTab}
               setTab={setContentTab}
               name="content"
-              sx={{ '& .MuiTab-root': { minWidth: 'auto' } }}
+              sx={{ '& .MuiTab-root': { minWidth: 'auto', py: 1 } }}
             />
-            <Link
-              href={clUrl[contentTab]}
-              target="_blank"
-              rel="noreferrer"
-              sx={{ textDecoration: 'none' }}
-            >
-              <Typography variant="body2" color="primary">
-                {t('tabs.' + contentTab)} Link
-              </Typography>
-            </Link>
           </Box>
         )}
 
-        <Box sx={{ position: 'relative' }}>
+        {/* Media Container */}
+        <MediaContainer>
           {((imageUrl && contentTab === 'image') ||
             (animationUrl && contentTab === 'animation')) && (
             <>
               {typeof imgOrAnimUrl === 'object' && imgOrAnimUrl.length > 1 ? (
-                <div className="navigation-wrapper">
-                  <div ref={sliderRef} className="keen-slider">
+                <div className="navigation-wrapper" style={{ width: '100%', height: '100%' }}>
+                  <div ref={sliderRef} className="keen-slider" style={{ height: '100%' }}>
                     {imgOrAnimUrl.map((file, index) => (
-                      <div key={index} className={`keen-slider__slide number-slide${index + 1}`}>
+                      <div key={index} className={`keen-slider__slide number-slide${index + 1}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                         {renderImageLink(file)}
                       </div>
                     ))}
@@ -504,7 +584,13 @@ export default function NFTPreview({ nft }) {
                 muted
                 loop
                 controls
-                style={{ width: '100%', height: 'auto', borderRadius: 8 }}
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  borderRadius: 8 
+                }}
               >
                 <source src={videoUrl[currentSlide]?.cachedUrl} type="video/mp4" />
               </video>
@@ -532,6 +618,7 @@ export default function NFTPreview({ nft }) {
                     ar
                     poster={LoadingGif}
                     autoplay
+                    style={{ width: '100%', height: '100%' }}
                     {...modelAttr?.reduce((prev, curr) => {
                       prev[curr.attribute] = curr.value;
                       return prev;
@@ -541,33 +628,14 @@ export default function NFTPreview({ nft }) {
               )}
             </>
           )}
-          {contentTabList.length < 2 && defaultUrl && (
-            <Box sx={{ p: 2 }}>
-              <Link href={defaultUrl} target="_blank" rel="noreferrer">
-                <Typography variant="body1" noWrap>
-                  {t('tabs.' + defaultTab)} Link
-                </Typography>
-              </Link>
-            </Box>
-          )}
 
           {defaultTab !== 'model' && audioUrl && (
             <Box sx={{ p: 2, textAlign: 'center' }}>
               <audio
                 src={audioUrl[currentSlide]?.cachedUrl}
                 controls
-                style={{ width: '100%', marginBottom: 16 }}
+                style={{ width: '100%' }}
               ></audio>
-              <Link
-                href={clUrl.audio}
-                target="_blank"
-                rel="noreferrer"
-                sx={{ textDecoration: 'none' }}
-              >
-                <Typography variant="body2" color="primary">
-                  {t('tabs.audio')} Link
-                </Typography>
-              </Link>
             </Box>
           )}
           {viewerUrl && (
@@ -584,8 +652,41 @@ export default function NFTPreview({ nft }) {
               </Link>
             </Box>
           )}
-        </Box>
-      </Card>
+        </MediaContainer>
+
+        {/* Footer Section - Quick Info */}
+        {showDetails && (
+          <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', bgcolor: 'background.default' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+              <Stack direction="row" spacing={2}>
+                {nft?.transferFee && (
+                  <Chip
+                    icon={<Icon icon="mdi:percent" />}
+                    label={`${(nft.transferFee / 1000).toFixed(1)}% Fee`}
+                    size="small"
+                    variant="filled"
+                    sx={{ bgcolor: 'action.selected' }}
+                  />
+                )}
+                {nft?.volume > 0 && (
+                  <Chip
+                    icon={<Icon icon="mdi:chart-line" />}
+                    label={`${fVolume(nft.volume)} XRP Vol`}
+                    size="small"
+                    variant="filled"
+                    sx={{ bgcolor: 'action.selected' }}
+                  />
+                )}
+              </Stack>
+              {ownerAddress && (
+                <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 150 }}>
+                  Owner: {ownerAddress.slice(0, 6)}...{ownerAddress.slice(-4)}
+                </Typography>
+              )}
+            </Stack>
+          </Box>
+        )}
+      </StyledCard>
     </>
   );
 }

@@ -699,58 +699,7 @@ export default function NFTDetailsMobile({ nft }) {
           </Stack>
         </Box>
       )}
-      <Typography
-        variant="h2a"
-        sx={{
-          fontWeight: 700,
-          fontSize: '1.5rem',
-          background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
-            theme.palette.primary.main,
-            0.8
-          )} 100%)`,
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          mt: 1,
-          mb: 1
-        }}
-      >
-        {nftName}
-      </Typography>
-      {self && rarity_rank > 0 && (
-        <Box
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.5,
-            mb: 1,
-            px: 1,
-            py: 0.5,
-            borderRadius: '6px',
-            backgroundColor: alpha(theme.palette.warning.main, 0.08),
-            border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`
-          }}
-        >
-          <LeaderboardOutlinedIcon
-            sx={{
-              width: '14px',
-              height: '14px',
-              color: theme.palette.warning.main
-            }}
-          />
-          <Typography
-            sx={{
-              fontWeight: 600,
-              color: theme.palette.warning.main,
-              fontSize: '0.75rem',
-              lineHeight: 1
-            }}
-          >
-            #{fIntNumber(rarity_rank)}
-          </Typography>
-        </Box>
-      )}
-      <NFTPreview nft={nft} /> {/* NFTokenID={NFTokenID} meta={meta} dfile={dfile} */}
+      <NFTPreview nft={nft} showDetails={true} /> {/* NFTokenID={NFTokenID} meta={meta} dfile={dfile} */}
       {/* Make offer start */}
       <Paper
         sx={{

@@ -84,9 +84,11 @@ function getProperties(meta) {
 
 // Styled components
 const Container = styled(Box)(({ theme }) => ({
-  maxWidth: 600,
-  margin: '0 auto',
-  padding: theme.spacing(2),
+  width: '100%',
+  padding: theme.spacing(3),
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(2)
+  },
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(1)
   }
@@ -187,14 +189,9 @@ export default function NFTDetails({ nft }) {
 
   return (
     <Container>
-      {/* Title */}
-      <Typography variant="h6" gutterBottom sx={{ mb: 3, fontWeight: 600 }}>
-        {name || 'Untitled NFT'}
-      </Typography>
-
       {/* NFT Preview */}
-      <Box sx={{ mb: 3 }}>
-        <NFTPreview nft={nft} />
+      <Box sx={{ mb: 3, width: '100%' }}>
+        <NFTPreview nft={nft} showDetails={true} />
       </Box>
 
       {/* Basic Info */}

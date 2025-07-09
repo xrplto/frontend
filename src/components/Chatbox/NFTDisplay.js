@@ -565,8 +565,9 @@ const NFTDisplay = ({ nftLink }) => {
           <Paper elevation={0}>
             <Box
               sx={{
-                p: 0.75,
-                maxHeight: '80vh',
+                p: 0.5,
+                maxHeight: '400px',
+                width: '240px',
                 overflowY: 'auto',
                 '&::-webkit-scrollbar': {
                   width: '2px'
@@ -583,17 +584,17 @@ const NFTDisplay = ({ nftLink }) => {
               {/* Media display */}
               <Box
                 sx={{
-                  mb: 0.75,
-                  borderRadius: 0.5,
+                  mb: 0.5,
+                  borderRadius: 0.4,
                   overflow: 'hidden',
                   boxShadow:
                     theme.palette.mode === 'dark'
-                      ? '0 3px 8px rgba(0, 0, 0, 0.3)'
-                      : '0 3px 8px rgba(0, 0, 0, 0.1)',
+                      ? '0 2px 6px rgba(0, 0, 0, 0.3)'
+                      : '0 2px 6px rgba(0, 0, 0, 0.1)',
                   position: 'relative',
-                  transition: 'transform 0.2s ease',
+                  transition: 'transform 0.15s ease',
                   '&:hover': {
-                    transform: 'scale(1.01)',
+                    transform: 'scale(1.02)',
                     '& .media-overlay': {
                       opacity: 1
                     }
@@ -631,22 +632,28 @@ const NFTDisplay = ({ nftLink }) => {
                 </Box>
               </Box>
 
-              {/* NFT Title and Info - Micro compact */}
+              {/* NFT Title and Info - Ultra compact */}
               <Box
                 sx={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  mb: 0.4
+                  mb: 0.3,
+                  gap: 0.5
                 }}
               >
                 <Typography
-                  variant="h6"
+                  variant="subtitle2"
                   sx={{
                     fontWeight: 700,
                     color: theme.palette.primary.main,
-                    letterSpacing: '-0.02em',
-                    fontSize: '0.8rem'
+                    letterSpacing: '-0.01em',
+                    fontSize: '0.7rem',
+                    lineHeight: 1.2,
+                    flex: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
                   }}
                 >
                   {nft ? nft.name : name}
@@ -655,173 +662,221 @@ const NFTDisplay = ({ nftLink }) => {
                   <Typography
                     variant="caption"
                     sx={{
-                      fontWeight: 'bold',
-                      bgcolor:
-                        theme.palette.mode === 'dark'
-                          ? 'rgba(255,255,255,0.1)'
-                          : theme.palette.primary.lighter,
-                      color:
-                        theme.palette.mode === 'dark'
-                          ? theme.palette.primary.lighter
-                          : theme.palette.primary.dark,
-                      px: 0.4,
-                      py: 0.1,
-                      borderRadius: 0.4,
-                      fontSize: '0.5rem',
-                      boxShadow:
-                        theme.palette.mode === 'dark' ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'
+                      fontWeight: 600,
+                      bgcolor: theme.palette.primary.main,
+                      color: theme.palette.primary.contrastText,
+                      px: 0.3,
+                      py: 0.05,
+                      borderRadius: 0.3,
+                      fontSize: '0.45rem',
+                      lineHeight: 1.3,
+                      whiteSpace: 'nowrap'
                     }}
                   >
-                    #{nft.rarity_rank}/{nft.total}
+                    #{nft.rarity_rank}
                   </Typography>
                 )}
               </Box>
 
-              {/* Collection and other details - Micro compact */}
+              {/* Collection and other details - Ultra compact */}
               <Box
                 sx={{
-                  mb: 0.75,
-                  p: 0.4,
-                  borderRadius: 0.4,
+                  mb: 0.5,
+                  p: 0.3,
+                  borderRadius: 0.3,
                   backgroundColor:
-                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
                   border: `1px solid ${
-                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
-                  }`
+                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+                  }`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 0.15
                 }}
               >
                 {nft?.collection && (
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography
-                      variant="body2"
+                      variant="caption"
                       color="text.secondary"
-                      fontWeight={500}
-                      fontSize="0.6rem"
+                      sx={{ fontSize: '0.5rem' }}
                     >
-                      Collection:
+                      Collection
                     </Typography>
-                    <Typography variant="body2" fontWeight="medium" fontSize="0.6rem">
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        fontSize: '0.5rem', 
+                        fontWeight: 600,
+                        maxWidth: '120px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
                       {nft.collection}
                     </Typography>
                   </Box>
                 )}
-                {nft?.royalty && (
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.2 }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      fontWeight={500}
-                      fontSize="0.6rem"
-                    >
-                      Royalty:
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium" fontSize="0.6rem">
-                      {(nft.royalty / 1000).toFixed(2)}%
-                    </Typography>
-                  </Box>
-                )}
-                {nft?.cfloor && (
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0 }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      fontWeight={500}
-                      fontSize="0.6rem"
-                    >
-                      Floor:
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      fontWeight="bold"
-                      color="primary.main"
-                      fontSize="0.6rem"
-                    >
-                      {nft.cfloor.amount} {nft.cfloor.currency}
-                    </Typography>
-                  </Box>
-                )}
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  {nft?.royalty && (
+                    <Box sx={{ display: 'flex', gap: 0.3, flex: 1 }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ fontSize: '0.5rem' }}
+                      >
+                        Fee:
+                      </Typography>
+                      <Typography 
+                        variant="caption" 
+                        sx={{ fontSize: '0.5rem', fontWeight: 600 }}
+                      >
+                        {(nft.royalty / 1000).toFixed(1)}%
+                      </Typography>
+                    </Box>
+                  )}
+                  {nft?.cfloor && (
+                    <Box sx={{ display: 'flex', gap: 0.3, flex: 1 }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ fontSize: '0.5rem' }}
+                      >
+                        Floor:
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ 
+                          fontSize: '0.5rem', 
+                          fontWeight: 700,
+                          color: theme.palette.primary.main
+                        }}
+                      >
+                        {nft.cfloor.amount}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
               </Box>
 
-              {/* Properties - Micro compact Grid */}
+              {/* Properties - Ultra compact */}
               {nft?.props && nft.props.length > 0 && (
-                <>
+                <Box
+                  sx={{
+                    mb: 0.5,
+                    p: 0.3,
+                    borderRadius: 0.3,
+                    backgroundColor:
+                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+                    border: `1px solid ${
+                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+                    }`
+                  }}
+                >
                   <Typography
-                    variant="subtitle2"
+                    variant="caption"
                     sx={{
-                      mb: 0.2,
+                      fontSize: '0.5rem',
                       fontWeight: 600,
-                      color: theme.palette.text.primary,
-                      fontSize: '0.6rem',
+                      color: theme.palette.text.secondary,
                       textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
+                      letterSpacing: '0.3px',
+                      mb: 0.2,
+                      display: 'block'
                     }}
                   >
-                    Properties
+                    Properties ({nft.props.length})
                   </Typography>
                   <Box
                     sx={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(3, 1fr)',
-                      gap: 0.3,
-                      mb: 0.75
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 0.2,
+                      maxHeight: '60px',
+                      overflowY: 'auto',
+                      '&::-webkit-scrollbar': {
+                        width: '2px'
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                        borderRadius: '1px'
+                      }
                     }}
                   >
-                    {nft.props.map((prop, index) => (
+                    {nft.props.slice(0, 6).map((prop, index) => (
                       <Box
                         key={index}
                         sx={{
-                          p: 0.3,
-                          borderRadius: 0.4,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 0.3,
+                          px: 0.4,
+                          py: 0.15,
+                          borderRadius: 0.3,
                           backgroundColor:
                             theme.palette.mode === 'dark'
                               ? 'rgba(255,255,255,0.05)'
-                              : theme.palette.background.neutral,
+                              : theme.palette.grey[100],
                           border: `1px solid ${
                             theme.palette.mode === 'dark'
-                              ? 'rgba(255,255,255,0.1)'
-                              : 'rgba(0,0,0,0.05)'
+                              ? 'rgba(255,255,255,0.08)'
+                              : 'rgba(0,0,0,0.06)'
                           }`,
-                          transition: 'all 0.2s ease',
+                          transition: 'all 0.15s ease',
+                          cursor: 'default',
                           '&:hover': {
-                            transform: 'translateY(-2px)',
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-                            borderColor: theme.palette.primary.lighter
+                            backgroundColor:
+                              theme.palette.mode === 'dark'
+                                ? 'rgba(255,255,255,0.08)'
+                                : theme.palette.grey[200]
                           }
                         }}
                       >
                         <Typography
                           variant="caption"
                           sx={{
-                            color: theme.palette.text.secondary,
-                            display: 'block',
-                            mb: 0.1,
                             fontSize: '0.45rem',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px'
+                            color: theme.palette.text.secondary,
+                            lineHeight: 1
                           }}
                         >
-                          {prop.type}
+                          {prop.type}:
                         </Typography>
                         <Typography
-                          variant="body2"
+                          variant="caption"
                           sx={{
+                            fontSize: '0.45rem',
                             fontWeight: 600,
-                            fontSize: '0.55rem',
-                            whiteSpace: 'nowrap',
+                            color: theme.palette.primary.main,
+                            lineHeight: 1,
+                            maxWidth: '60px',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            color: theme.palette.primary.main
+                            whiteSpace: 'nowrap'
                           }}
                         >
                           {prop.value}
                         </Typography>
                       </Box>
                     ))}
+                    {nft.props.length > 6 && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.45rem',
+                          color: theme.palette.text.secondary,
+                          fontStyle: 'italic',
+                          display: 'flex',
+                          alignItems: 'center',
+                          px: 0.3
+                        }}
+                      >
+                        +{nft.props.length - 6} more
+                      </Typography>
+                    )}
                   </Box>
-                </>
+                </Box>
               )}
 
               {/* Token ID with Copy Button - Micro compact */}
