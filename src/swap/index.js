@@ -452,56 +452,6 @@ const StatusIndicator = styled('div')(
 `
 );
 
-const TrustlineWarning = styled('div')(
-  ({ theme }) => `
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    margin: 0 16px 8px;
-    border-radius: 8px;
-    background: ${alpha(theme.palette.warning.main, 0.1)};
-    border: 1px solid ${alpha(theme.palette.warning.main, 0.3)};
-    
-    @media (max-width: 600px) {
-      margin: 0 10px 8px;
-      padding: 10px 14px;
-      gap: 10px;
-      flex-direction: column;
-      align-items: flex-start;
-    }
-`
-);
-
-const TrustlineButton = styled(Button)(
-  ({ theme }) => `
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    min-width: 90px;
-    height: 32px;
-    text-transform: none;
-    
-    background: ${theme.palette.warning.main};
-    color: ${theme.palette.warning.contrastText};
-    
-    &:hover {
-      background: ${theme.palette.warning.dark};
-    }
-    
-    &:disabled {
-      background: ${alpha(theme.palette.warning.main, 0.5)};
-      color: ${alpha(theme.palette.warning.contrastText, 0.7)};
-    }
-    
-    @media (max-width: 600px) {
-      width: 100%;
-      padding: 8px 12px;
-      height: 36px;
-    }
-`
-);
 
 const ShareButton = styled(Button)(
   ({ theme }) => `
@@ -1478,6 +1428,13 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
   };
 
   const handlePlaceOrder = (e) => {
+    // Check if we need to create trustlines first
+    if (isLoggedIn && ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))) {
+      const missingCurrency = !hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2;
+      onCreateTrustline(missingCurrency);
+      return;
+    }
+
     const fAmount1 = Number(amount1);
     const fAmount2 = Number(amount2);
     console.log('handlePlaceOrder debug:', {
@@ -1674,6 +1631,15 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
   const handleMsg = () => {
     if (isProcessing == 1) return 'Pending Exchanging';
+    
+    // Check for missing trustlines
+    if (isLoggedIn && ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))) {
+      const missingToken = !hasTrustline1 && curr1.currency !== 'XRP' 
+        ? getCurrencyDisplayName(curr1.currency, token1?.name)
+        : getCurrencyDisplayName(curr2.currency, token2?.name);
+      return `Set Trustline for ${missingToken}`;
+    }
+    
     if (!amount1 || !amount2) return 'Enter an Amount';
     else if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
     else return 'Exchange';
@@ -2496,52 +2462,17 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 padding: '24px 32px'
               }}
             >
-              {(!hasTrustline1 && curr1.currency !== 'XRP') ||
-              (!hasTrustline2 && curr2.currency !== 'XRP') ? (
-                <TrustlineWarning>
-                  <Icon
-                    icon={infoFill}
-                    width={16}
-                    height={16}
-                    style={{
-                      color: theme.palette.warning.main,
-                      flexShrink: 0
-                    }}
-                  />
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      flex: 1,
-                      color: theme.palette.warning.main,
-                      fontSize: '0.85rem'
-                    }}
-                  >
-                    Missing trustline for{' '}
-                    <Typography component="span" sx={{ fontWeight: 600 }}>
-                      {!hasTrustline1 && curr1.currency !== 'XRP'
-                        ? getCurrencyDisplayName(curr1.currency, token1?.name)
-                        : getCurrencyDisplayName(curr2.currency, token2?.name)}
-                    </Typography>
-                  </Typography>
-                  <TrustlineButton
-                    onClick={() => {
-                      const missingCurrency =
-                        !hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2;
-                      onCreateTrustline(missingCurrency);
-                    }}
-                    disabled={isProcessing === 1}
-                  >
-                    {isProcessing === 1 ? 'Setting...' : 'Set Trustline'}
-                  </TrustlineButton>
-                </TrustlineWarning>
-              ) : null}
 
               {accountProfile && accountProfile.account ? (
                 <ExchangeButton
                   variant="contained"
                   fullWidth
                   onClick={handlePlaceOrder}
-                  disabled={!canPlaceOrder || isProcessing == 1}
+                  disabled={
+                    isProcessing == 1 || 
+                    (!isLoggedIn) ||
+                    (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
+                  }
                   sx={{
                     minHeight: { xs: '48px', sm: '56px' },
                     fontSize: { xs: '16px', sm: '18px' },
