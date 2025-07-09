@@ -420,13 +420,13 @@ const TokenSummary = memo(({ token }) => {
   return (
     <Box
       sx={{
-        p: { xs: 1, sm: 2 },
-        borderRadius: { xs: '12px', sm: '16px' },
+        p: { xs: 0.75, sm: 2 },
+        borderRadius: { xs: '10px', sm: '16px' },
         background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
         backdropFilter: 'blur(20px)',
         border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
         boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(theme.palette.common.black, 0.02)}`,
-        mb: { xs: 1, sm: 2 },
+        mb: { xs: 0.75, sm: 2 },
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&:hover': {
           transform: { xs: 'none', sm: 'translateY(-2px)' },
@@ -434,11 +434,11 @@ const TokenSummary = memo(({ token }) => {
         }
       }}
     >
-      <Stack spacing={{ xs: 1, sm: 2 }}>
+      <Stack spacing={{ xs: 0.5, sm: 2 }}>
         {/* Header with Token Info */}
-        <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="flex-start">
-          {/* Token Image */}
-          <Box sx={{ position: 'relative' }}>
+        <Stack direction="row" spacing={{ xs: 0.75, sm: 2 }} alignItems="flex-start" sx={{ height: { xs: 'auto', sm: 'auto' } }}>
+          {/* Token Image and Mobile Actions */}
+          <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flexShrink: 0 }}>
             <Box
               sx={{
                 position: 'relative',
@@ -452,12 +452,12 @@ const TokenSummary = memo(({ token }) => {
               <Image
                 src={tokenImageUrl}
                 alt={`${name} token`}
-                width={isMobile ? 60 : 88}
-                height={isMobile ? 60 : 88}
+                width={isMobile ? 48 : 88}
+                height={isMobile ? 48 : 88}
                 style={{
-                  borderRadius: isMobile ? '16px' : '20px',
+                  borderRadius: isMobile ? '12px' : '20px',
                   objectFit: 'cover',
-                  border: `${isMobile ? '2px' : '3px'} solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                  border: `${isMobile ? '1.5px' : '3px'} solid ${alpha(theme.palette.primary.main, 0.25)}`,
                   boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.1)}`,
                   transition: 'all 0.3s ease'
                 }}
@@ -549,18 +549,25 @@ const TokenSummary = memo(({ token }) => {
                 }} />
               </IconButton>
             </Tooltip>
+            
           </Box>
 
           {/* Token Details */}
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1, gap: 1 }}>
+          <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
+            {/* Mobile: Stack everything vertically, Desktop: Row layout */}
+            <Stack 
+              direction={{ xs: 'column', md: 'row' }} 
+              alignItems={{ xs: 'flex-start', md: 'center' }} 
+              justifyContent={{ xs: 'flex-start', md: 'space-between' }} 
+              sx={{ mb: { xs: 0.3, md: 1 }, gap: { xs: 0.3, md: 1 }, flex: 1 }}
+            >
               {/* Left side: Name, user, origin */}
-              <Stack spacing={0.75} justifyContent="center" sx={{ height: { xs: 60, sm: 88 }, minWidth: 0, flex: 1 }}>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
+              <Stack spacing={{ xs: 0.4, sm: 0.75 }} justifyContent="center" sx={{ height: { xs: 'auto', sm: 88 }, minWidth: 0, flex: { xs: 'none', md: 1 } }}>
+                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ flexWrap: 'wrap' }}>
                 <Typography
                   variant="h4"
                   sx={{
-                    fontSize: { xs: '1.5rem', sm: '2rem' },
+                    fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' },
                     fontWeight: 800,
                     background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
                     backgroundClip: 'text',
@@ -570,7 +577,7 @@ const TokenSummary = memo(({ token }) => {
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     letterSpacing: '-0.02em',
-                    maxWidth: { xs: '200px', sm: 'none' },
+                    maxWidth: { xs: '140px', sm: '200px', md: 'none' },
                     lineHeight: 1
                   }}
                 >
@@ -645,11 +652,15 @@ const TokenSummary = memo(({ token }) => {
                     variant="h6" 
                     color="text.secondary" 
                     sx={{ 
-                      fontSize: { xs: '1.1rem', sm: '1.4rem' },
+                      fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.4rem' },
                       opacity: 0.85,
                       fontWeight: 600,
                       letterSpacing: '-0.01em',
-                      lineHeight: 1
+                      lineHeight: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: { xs: '120px', sm: '160px', md: 'none' }
                     }}
                   >
                     {user || name}
@@ -675,8 +686,111 @@ const TokenSummary = memo(({ token }) => {
                     </Typography>
                   </Box>
                   
-                  {/* Action Buttons */}
-                  <Stack direction="row" spacing={0.5} sx={{ ml: 1 }}>
+                  {/* Mobile Action Buttons - Show on mobile, hide on desktop */}
+                  <Stack direction="row" spacing={0.3} sx={{ ml: 0.5, display: { xs: 'flex', md: 'none' } }}>
+                    <Tooltip title={`${isRemove ? 'Remove' : 'Set'} Trustline`}>
+                      <IconButton 
+                        size="small" 
+                        disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5}
+                        sx={{ 
+                          width: 20,
+                          height: 20,
+                          borderRadius: '5px',
+                          border: `1px solid ${isRemove ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`,
+                          background: isRemove 
+                            ? alpha(theme.palette.error.main, 0.08)
+                            : alpha(theme.palette.success.main, 0.08),
+                          transition: 'all 0.2s ease',
+                          padding: '2px',
+                          '&:hover': {
+                            transform: 'translateY(-1px)',
+                            background: isRemove
+                              ? alpha(theme.palette.error.main, 0.15)
+                              : alpha(theme.palette.success.main, 0.15),
+                            boxShadow: `0 4px 12px ${isRemove ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`
+                          },
+                          '& .MuiSvgIcon-root': {
+                            fontSize: '12px',
+                            color: isRemove ? theme.palette.error.main : theme.palette.success.main
+                          }
+                        }}
+                        onClick={handleSetTrust}
+                      >
+                        {isRemove ? <LinkOffIcon /> : <LinkIcon />}
+                      </IconButton>
+                    </Tooltip>
+                    {creator && (
+                      <Tooltip title="View Creator Activity">
+                        <IconButton
+                          size="small"
+                          onClick={() => setCreatorTxOpen(true)}
+                          sx={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: '5px',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                            background: alpha(theme.palette.background.paper, 0.8),
+                            transition: 'all 0.2s ease',
+                            padding: '2px',
+                            '&:hover': {
+                              transform: 'translateY(-1px)',
+                              background: alpha(theme.palette.info.main, 0.08),
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                            },
+                            '& .MuiSvgIcon-root': {
+                              fontSize: '12px',
+                              color: alpha(theme.palette.text.primary, 0.7)
+                            }
+                          }}
+                        >
+                          <TimelineIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Box sx={{ 
+                      '& .MuiIconButton-root': { 
+                        width: '20px !important', 
+                        height: '20px !important',
+                        minWidth: '20px !important',
+                        minHeight: '20px !important',
+                        padding: '2px !important',
+                        borderRadius: '5px !important',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.1)} !important`,
+                        '& .MuiSvgIcon-root': {
+                          fontSize: '12px !important'
+                        },
+                        '&:hover': {
+                          transform: 'translateY(-1px) !important',
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)} !important`
+                        }
+                      } 
+                    }}>
+                      <Share token={token} />
+                    </Box>
+                    <Box sx={{ 
+                      '& .MuiIconButton-root': { 
+                        width: '20px !important', 
+                        height: '20px !important',
+                        minWidth: '20px !important',
+                        minHeight: '20px !important',
+                        padding: '2px !important',
+                        borderRadius: '5px !important',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.1)} !important`,
+                        '& .MuiSvgIcon-root': {
+                          fontSize: '12px !important'
+                        },
+                        '&:hover': {
+                          transform: 'translateY(-1px) !important',
+                          border: `1px solid ${alpha(theme.palette.warning.main, 0.3)} !important`
+                        }
+                      } 
+                    }}>
+                      <Watch token={token} />
+                    </Box>
+                  </Stack>
+                  
+                  {/* Action Buttons - Hide on mobile, show on desktop */}
+                  <Stack direction="row" spacing={0.5} sx={{ ml: 1, display: { xs: 'none', md: 'flex' } }}>
                     <Tooltip title={`${isRemove ? 'Remove' : 'Set'} Trustline`}>
                       <IconButton 
                         size="small" 
@@ -779,12 +893,22 @@ const TokenSummary = memo(({ token }) => {
               </Stack>
               
               {/* Center: Price with integrated 24h range */}
-              <Stack alignItems="center" spacing={0.5} sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                <Stack direction="row" alignItems="center" spacing={{ xs: 1.5, sm: 2 }}>
+              <Stack 
+                alignItems={{ xs: 'flex-start', md: 'center' }} 
+                spacing={{ xs: 0.3, md: 0.5 }} 
+                sx={{ 
+                  flex: { xs: 'none', md: 1 }, 
+                  display: 'flex', 
+                  justifyContent: { xs: 'flex-start', md: 'center' },
+                  width: { xs: '100%', md: 'auto' },
+                  order: { xs: 1, md: 0 }
+                }}
+              >
+                <Stack direction={{ xs: 'row', sm: 'row' }} alignItems={{ xs: 'center', sm: 'center' }} spacing={{ xs: 0.75, sm: 1.5, md: 2 }}>
                   <Typography
                     variant="h5"
                     sx={{
-                      fontSize: { xs: '1.5rem', sm: '2rem' },
+                      fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' },
                       fontWeight: 900,
                       color: priceColor || theme.palette.text.primary,
                       lineHeight: 1,
@@ -806,11 +930,11 @@ const TokenSummary = memo(({ token }) => {
                   
                   {/* 24h Range integrated with price */}
                   {range24h && (
-                    <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 0.75 }}>
+                    <Stack direction="row" alignItems="center" spacing={{ xs: 0.4, sm: 0.75 }}>
                       <Typography 
                         variant="caption" 
                         sx={{ 
-                          fontSize: { xs: '0.7rem', sm: '0.8rem' }, 
+                          fontSize: { xs: '0.6rem', sm: '0.8rem' }, 
                           fontWeight: 600, 
                           color: theme.palette.success.main,
                           opacity: 0.9
@@ -823,7 +947,7 @@ const TokenSummary = memo(({ token }) => {
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: { xs: '0.55rem', sm: '0.65rem' }, 
+                            fontSize: { xs: '0.5rem', sm: '0.65rem' }, 
                             color: theme.palette.text.secondary, 
                             fontWeight: 500,
                             opacity: 0.7,
@@ -834,8 +958,8 @@ const TokenSummary = memo(({ token }) => {
                         </Typography>
                         <Box
                           sx={{
-                            width: { xs: 50, sm: 70 },
-                            height: 3,
+                            width: { xs: 40, sm: 70 },
+                            height: { xs: 2, sm: 3 },
                             backgroundColor: alpha(theme.palette.divider, 0.2),
                             borderRadius: '1.5px',
                             position: 'relative',
@@ -874,7 +998,7 @@ const TokenSummary = memo(({ token }) => {
                       <Typography 
                         variant="caption" 
                         sx={{ 
-                          fontSize: { xs: '0.7rem', sm: '0.8rem' }, 
+                          fontSize: { xs: '0.6rem', sm: '0.8rem' }, 
                           fontWeight: 600, 
                           color: theme.palette.error.main,
                           opacity: 0.9
@@ -887,21 +1011,35 @@ const TokenSummary = memo(({ token }) => {
                 </Stack>
               </Stack>
               
-              {/* Right: Percentage changes with bigger containers */}
-              <Stack direction="row" spacing={{ xs: 0.75, sm: 1 }} alignItems="center" sx={{ flex: 1, justifyContent: 'flex-end' }}>
-                {priceChanges.map((item) => (
+              {/* Right: Percentage changes - Mobile: Show only 24h, Desktop: Show all */}
+              <Stack 
+                direction="row" 
+                spacing={{ xs: 0.4, sm: 0.75, md: 1 }} 
+                alignItems="center" 
+                sx={{ 
+                  flex: { xs: 'none', md: 1 }, 
+                  justifyContent: { xs: 'flex-start', md: 'flex-end' },
+                  width: { xs: '100%', md: 'auto' },
+                  order: { xs: 2, md: 0 },
+                  overflowX: { xs: 'auto', md: 'visible' },
+                  '&::-webkit-scrollbar': { display: 'none' },
+                  scrollbarWidth: 'none'
+                }}
+              >
+                {priceChanges.map((item, index) => (
                   <Box
                     key={item.label}
                     sx={{
-                      display: 'flex',
+                      display: { xs: index === 2 ? 'flex' : 'none', sm: 'flex' },
                       alignItems: 'center',
-                      gap: { xs: 0.5, sm: 0.75 },
-                      px: { xs: 1.25, sm: 2 },
-                      py: { xs: 0.5, sm: 0.75 },
+                      gap: { xs: 0.3, sm: 0.5, md: 0.75 },
+                      px: { xs: 0.75, sm: 1.25, md: 2 },
+                      py: { xs: 0.4, sm: 0.5, md: 0.75 },
                       borderRadius: '10px',
                       background: alpha(item.color, 0.1),
                       border: `1px solid ${alpha(item.color, 0.2)}`,
                       transition: 'all 0.2s ease',
+                      minWidth: { xs: '60px', sm: 'auto' },
                       '&:hover': {
                         background: alpha(item.color, 0.15),
                         transform: 'translateY(-1px)',
@@ -912,7 +1050,7 @@ const TokenSummary = memo(({ token }) => {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: { xs: '0.7rem', sm: '0.85rem' },
+                        fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.85rem' },
                         fontWeight: 600,
                         color: alpha(theme.palette.text.secondary, 0.8)
                       }}
@@ -922,7 +1060,7 @@ const TokenSummary = memo(({ token }) => {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: { xs: '0.75rem', sm: '0.9rem' },
+                        fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.9rem' },
                         fontWeight: 700,
                         color: item.color,
                         display: 'flex',
@@ -933,7 +1071,7 @@ const TokenSummary = memo(({ token }) => {
                       {formatPercentage(item.value)}
                       <Icon 
                         icon={item.value >= 0 ? 'mdi:arrow-up' : 'mdi:arrow-down'} 
-                        style={{ fontSize: isMobile ? '0.75rem' : '0.9rem' }}
+                        style={{ fontSize: isMobile ? '0.65rem' : '0.9rem' }}
                       />
                     </Typography>
                   </Box>
@@ -941,16 +1079,19 @@ const TokenSummary = memo(({ token }) => {
               </Stack>
             </Stack>
             
+
             {/* Metrics row */}
-            <Stack direction="row" alignItems="flex-start" sx={{ width: '100%', mt: 1 }}>
+            <Stack direction="row" alignItems="flex-start" sx={{ width: '100%', mt: { xs: 0.3, sm: 1 } }}>
               {/* Metrics */}
-              <Stack direction="row" spacing={{ xs: 1, sm: 2 }} sx={{ width: '100%' }}>
+              <Stack direction={{ xs: 'row', sm: 'row' }} spacing={{ xs: 0.4, sm: 2 }} sx={{ width: '100%', overflowX: { xs: 'auto', sm: 'visible' } }}>
                 {metricsData.map((metric, index) => (
                   <Box
                     key={index}
                     sx={{
-                      flex: 1,
-                      p: { xs: 0.75, sm: 1 },
+                      flex: { xs: 'none', sm: 1 },
+                      width: { xs: 'auto', sm: 'auto' },
+                      minWidth: { xs: '60px', sm: 'auto' },
+                      p: { xs: 0.4, sm: 1 },
                       borderRadius: '8px',
                       background: `linear-gradient(135deg, ${alpha(metric.color, 0.08)} 0%, ${alpha(metric.color, 0.05)} 100%)`,
                       border: `1px solid ${alpha(metric.color, 0.15)}`,
@@ -965,7 +1106,7 @@ const TokenSummary = memo(({ token }) => {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                        fontSize: { xs: '0.55rem', sm: '0.75rem' },
                         color: alpha(theme.palette.text.secondary, 0.8),
                         display: 'block',
                         mb: 0.25,
@@ -977,7 +1118,7 @@ const TokenSummary = memo(({ token }) => {
                     <Typography
                       variant="subtitle2"
                       sx={{
-                        fontSize: { xs: '0.85rem', sm: '1rem' },
+                        fontSize: { xs: '0.7rem', sm: '1rem' },
                         fontWeight: 700,
                         color: metric.color,
                         lineHeight: 1
