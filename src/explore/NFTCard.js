@@ -31,16 +31,16 @@ import { alpha } from '@mui/material/styles';
 const CardWrapper = styled(Card)(({ theme }) => ({
   width: '100%',
   aspectRatio: '1 / 1.4',
-  borderRadius: 16,
+  borderRadius: theme.spacing(1.5),
   background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
     theme.palette.background.paper,
     0.8
   )} 100%)`,
   backdropFilter: 'blur(20px)',
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
+  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}, 0 1px 4px ${alpha(
     theme.palette.primary.main,
-    0.04
+    0.02
   )}`,
   padding: 0,
   cursor: 'pointer',
@@ -49,6 +49,10 @@ const CardWrapper = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   position: 'relative',
+  [theme.breakpoints.down('sm')]: {
+    borderRadius: theme.spacing(1),
+    boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.03)}`,
+  },
   '&:hover': {
     transform: 'translateY(-4px)',
     boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
@@ -57,6 +61,15 @@ const CardWrapper = styled(Card)(({ theme }) => ({
     )}`,
     '& .card-media': {
       transform: 'scale(1.05)'
+    },
+    [theme.breakpoints.down('sm')]: {
+      transform: 'translateY(-2px)',
+      boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.08)}`,
+    }
+  },
+  '&:active': {
+    [theme.breakpoints.down('sm')]: {
+      transform: 'scale(0.98)',
     }
   }
 }));
@@ -145,8 +158,8 @@ export default function NFTCard({ nft, handleRemove }) {
               borderRadius: '8px',
               fontWeight: 'bold',
               backdropFilter: 'blur(4px)',
-              padding: '2px 6px',
-              fontSize: '0.6rem',
+              padding: { xs: '1px 4px', sm: '2px 6px' },
+              fontSize: { xs: '0.55rem', sm: '0.6rem' },
               height: 'auto'
             }}
           >
@@ -283,7 +296,7 @@ export default function NFTCard({ nft, handleRemove }) {
 
         <CardContent
           sx={{
-            padding: '12px 12px 8px',
+            padding: { xs: '8px 8px 6px', sm: '12px 12px 8px' },
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.9
@@ -319,8 +332,8 @@ export default function NFTCard({ nft, handleRemove }) {
                 display: '-webkit-box',
                 WebkitLineClamp: 1,
                 WebkitBoxOrient: 'vertical',
-                fontSize: '0.85rem',
-                mb: 0.5,
+                fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                mb: { xs: 0.3, sm: 0.5 },
                 letterSpacing: '0.1px',
                 color: theme.palette.text.primary,
                 lineHeight: 1.3
@@ -335,7 +348,7 @@ export default function NFTCard({ nft, handleRemove }) {
                   color="text.secondary"
                   noWrap
                   sx={{
-                    fontSize: '0.75rem',
+                    fontSize: { xs: '0.7rem', sm: '0.75rem' },
                     fontWeight: 600,
                     display: 'flex',
                     alignItems: 'center',
@@ -366,16 +379,16 @@ export default function NFTCard({ nft, handleRemove }) {
                     variant="filled"
                     color="info"
                     label={
-                      <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 700 }}>
+                      <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem' }, fontWeight: 700 }}>
                         # {fIntNumber(MasterSequence)}
                       </Typography>
                     }
                     size="small"
                     sx={{
-                      height: '24px',
-                      borderRadius: '12px',
+                      height: { xs: '20px', sm: '24px' },
+                      borderRadius: { xs: '10px', sm: '12px' },
                       p: '0 2px',
-                      '& .MuiChip-label': { px: '6px' },
+                      '& .MuiChip-label': { px: { xs: '4px', sm: '6px' } },
                       background: alpha(theme.palette.info.main, 0.1),
                       border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
                       color: theme.palette.info.main,
@@ -397,16 +410,16 @@ export default function NFTCard({ nft, handleRemove }) {
                       <LeaderboardOutlinedIcon sx={{ width: '14px', height: '14px', ml: '6px' }} />
                     }
                     label={
-                      <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 700 }}>
+                      <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem' }, fontWeight: 700 }}>
                         {fIntNumber(rarity_rank)}
                       </Typography>
                     }
                     size="small"
                     sx={{
-                      height: '24px',
-                      borderRadius: '12px',
+                      height: { xs: '20px', sm: '24px' },
+                      borderRadius: { xs: '10px', sm: '12px' },
                       p: '0 2px',
-                      '& .MuiChip-label': { px: '6px' },
+                      '& .MuiChip-label': { px: { xs: '4px', sm: '6px' } },
                       background: alpha(theme.palette.info.main, 0.1),
                       border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
                       color: theme.palette.info.main,

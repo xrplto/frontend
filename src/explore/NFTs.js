@@ -36,6 +36,8 @@ export default function NFTs({ collection }) {
 
   const theme = useTheme();
   const { setDeletingNfts } = useContext(AppContext);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   const [nfts, setNfts] = useState([]);
   const [page, setPage] = useState(0);
@@ -141,8 +143,20 @@ export default function NFTs({ collection }) {
   }, [debouncedSearch]);
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, backgroundColor: alpha(theme.palette.background.paper, 0.9), borderRadius: 3 }}>
-      <Box display="flex" alignItems="center" mb={3} gap={2}>
+    <Box sx={{ 
+      p: { xs: 0, sm: 2, md: 3 }, 
+      backgroundColor: alpha(theme.palette.background.paper, 0.9), 
+      borderRadius: { xs: 0, sm: 3 },
+      minHeight: '100vh'
+    }}>
+      <Box 
+        display="flex" 
+        alignItems="center" 
+        mb={{ xs: 2, sm: 3 }} 
+        gap={{ xs: 1, sm: 2 }}
+        flexDirection={{ xs: 'row', sm: 'row' }}
+        px={{ xs: 2, sm: 0 }}
+      >
         <IconButton
           aria-label="filter"
           onClick={handleShowFilter}
@@ -154,19 +168,23 @@ export default function NFTs({ collection }) {
             border: `2px solid ${
               showFilter ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.3)
             }`,
-            borderRadius: '12px',
-            width: 48,
-            height: 48,
+            borderRadius: { xs: '10px', sm: '12px' },
+            width: { xs: 40, sm: 48 },
+            height: { xs: 40, sm: 48 },
+            minWidth: { xs: 40, sm: 48 },
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
               backgroundColor: theme.palette.primary.main,
               color: theme.palette.primary.contrastText,
-              transform: 'translateY(-2px) scale(1.05)',
+              transform: isMobile ? 'none' : 'translateY(-2px) scale(1.05)',
               boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.4)}`
+            },
+            '&:active': {
+              transform: 'scale(0.95)'
             }
           }}
         >
-          <FilterListIcon />
+          <FilterListIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
         </IconButton>
 
         <Paper
@@ -196,7 +214,7 @@ export default function NFTs({ collection }) {
             id="textFilter"
             fullWidth
             variant="outlined"
-            placeholder="Search by name or attribute..."
+            placeholder={isMobile ? "Search NFTs..." : "Search by name or attribute..."}
             onChange={handleChangeSearch}
             autoComplete="off"
             value={search}
@@ -204,14 +222,14 @@ export default function NFTs({ collection }) {
             onKeyDown={(e) => e.stopPropagation()}
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start" sx={{ ml: 0.5, mr: 0.5 }}>
+                <InputAdornment position="start" sx={{ ml: { xs: 0, sm: 0.5 }, mr: 0.5 }}>
                   <SearchIcon
                     sx={{
                       color: theme.palette.primary.main,
-                      fontSize: 20,
+                      fontSize: { xs: 18, sm: 20 },
                       transition: 'transform 0.2s ease-in-out',
                       '&:hover': {
-                        transform: 'scale(1.1)'
+                        transform: isMobile ? 'none' : 'scale(1.1)'
                       }
                     }}
                   />
@@ -260,8 +278,8 @@ export default function NFTs({ collection }) {
                 }
               },
               '& .MuiOutlinedInput-input': {
-                padding: '14px 16px',
-                fontSize: 15,
+                padding: { xs: '10px 12px', sm: '14px 16px' },
+                fontSize: { xs: 14, sm: 15 },
                 fontWeight: 500,
                 letterSpacing: '0.3px'
               }
@@ -272,7 +290,7 @@ export default function NFTs({ collection }) {
 
       {showFilter && (
         <Fade in={showFilter} timeout={300}>
-          <Box sx={{ mb: 3 }}>
+          <Box sx={{ mb: { xs: 2, sm: 3 }, px: { xs: 2, sm: 0 } }}>
             <FilterDetail
               collection={collection}
               filter={filter}
@@ -315,7 +333,7 @@ export default function NFTs({ collection }) {
         endMessage={
           <Fade in timeout={500}>
             <Box sx={{ 
-              p: 6, 
+              p: { xs: 4, sm: 6 }, 
               textAlign: 'center',
               animation: 'fadeInUp 0.5s ease-out',
               '@keyframes fadeInUp': {
@@ -323,24 +341,31 @@ export default function NFTs({ collection }) {
                 to: { opacity: 1, transform: 'translateY(0)' }
               }
             }}>
-              <Image
-                src="/static/empty-folder.png"
-                alt="No more NFTs"
-                width={140}
-                height={140}
-                style={{ 
-                  marginBottom: '24px',
-                  opacity: 0.8,
-                  filter: 'grayscale(20%)'
-                }}
-              />
+              <Box sx={{ 
+                width: { xs: 100, sm: 140 }, 
+                height: { xs: 100, sm: 140 },
+                margin: '0 auto',
+                mb: { xs: 2, sm: 3 }
+              }}>
+                <Image
+                  src="/static/empty-folder.png"
+                  alt="No more NFTs"
+                  width={isMobile ? 100 : 140}
+                  height={isMobile ? 100 : 140}
+                  style={{ 
+                    opacity: 0.8,
+                    filter: 'grayscale(20%)'
+                  }}
+                />
+              </Box>
               <Typography 
-                variant="h5" 
+                variant={isMobile ? "h6" : "h5"} 
                 color="textSecondary"
                 sx={{ 
                   fontWeight: 600,
                   letterSpacing: '0.5px',
-                  mb: 1
+                  mb: 1,
+                  fontSize: { xs: '1.1rem', sm: '1.5rem' }
                 }}
               >
                 That's all for now!
@@ -348,7 +373,10 @@ export default function NFTs({ collection }) {
               <Typography 
                 variant="body2" 
                 color="textSecondary"
-                sx={{ opacity: 0.7 }}
+                sx={{ 
+                  opacity: 0.7,
+                  fontSize: { xs: '0.875rem', sm: '0.875rem' }
+                }}
               >
                 You've reached the end of the collection
               </Typography>
@@ -359,14 +387,16 @@ export default function NFTs({ collection }) {
         <Box
           sx={{
             display: 'grid',
-            gap: 1,
+            gap: { xs: '8px', sm: 1 },
             gridTemplateColumns: {
-              xs: 'repeat(4, 1fr)',
-              sm: 'repeat(6, 1fr)',
-              md: 'repeat(8, 1fr)',
-              lg: 'repeat(10, 1fr)',
-              xl: 'repeat(11, 1fr)'
+              xs: 'repeat(2, 1fr)',
+              sm: 'repeat(3, 1fr)',
+              md: 'repeat(4, 1fr)',
+              lg: 'repeat(6, 1fr)',
+              xl: 'repeat(8, 1fr)'
             },
+            px: { xs: 1, sm: 0 },
+            mx: { xs: -1, sm: 0 },
             animation: 'fadeIn 0.3s ease-in-out',
             '@keyframes fadeIn': {
               from: { opacity: 0, transform: 'translateY(10px)' },
