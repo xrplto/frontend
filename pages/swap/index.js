@@ -12,7 +12,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Utils
-import { XRP_TOKEN, USD_TOKEN } from 'src/utils/constants';
+import { XRP_TOKEN, USD_TOKEN, RLUSD_TOKEN } from 'src/utils/constants';
 
 // Components
 import Logo from 'src/components/Logo';
@@ -33,7 +33,7 @@ const Root = styled('div')(({ theme }) => ({
 
 const DEFAULT_PAIR = {
   curr1: XRP_TOKEN,
-  curr2: USD_TOKEN
+  curr2: RLUSD_TOKEN
 };
 
 const ORDER_TYPE_BIDS = 'bids';

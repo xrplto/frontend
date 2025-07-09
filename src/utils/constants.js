@@ -224,6 +224,17 @@ export const USD_TOKEN = {
   isOMCF: 'yes'
 };
 
+export const RLUSD_TOKEN = {
+  md5: '0dd550278b74cb6690fdae351e8e0df3',
+  name: 'RLUSD',
+  user: 'Ripple USD',
+  issuer: 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De',
+  currency: '524C555344000000000000000000000000000000',
+  ext: 'png',
+  exch: '1',
+  isOMCF: 'yes'
+};
+
 export const COLLECTION_FAMILIES = [
   {
     title: 'Art',
