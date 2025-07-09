@@ -573,8 +573,8 @@ const TokenSummary = memo(({ token }) => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        width: { xs: 28, sm: 36 },
-                        height: { xs: 28, sm: 36 },
+                        width: { xs: 24, sm: 28 },
+                        height: { xs: 24, sm: 28 },
                         borderRadius: '50%',
                         background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
                         boxShadow: `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`,
@@ -582,7 +582,7 @@ const TokenSummary = memo(({ token }) => {
                         ml: 0.5
                       }}
                     >
-                      <VerifiedIcon sx={{ fontSize: { xs: 16, sm: 20 }, color: 'white' }} />
+                      <VerifiedIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: 'white' }} />
                     </Box>
                   </Tooltip>
                 )}
@@ -592,10 +592,11 @@ const TokenSummary = memo(({ token }) => {
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 0.25,
-                        px: { xs: 0.75, sm: 1 },
-                        py: { xs: 0.25, sm: 0.3 },
-                        borderRadius: '12px',
+                        justifyContent: 'center',
+                        minWidth: { xs: 24, sm: 28 },
+                        height: { xs: 24, sm: 28 },
+                        px: { xs: 0.5, sm: 0.75 },
+                        borderRadius: { xs: '12px', sm: '14px' },
                         background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
                         ml: 0.5
@@ -606,7 +607,7 @@ const TokenSummary = memo(({ token }) => {
                         sx={{ 
                           fontWeight: 700, 
                           color: theme.palette.primary.main, 
-                          fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                          fontSize: { xs: '0.65rem', sm: '0.75rem' },
                           lineHeight: 1
                         }}
                       >
