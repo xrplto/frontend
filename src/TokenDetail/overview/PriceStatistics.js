@@ -68,7 +68,8 @@ const ModernTableCell = styled(TableCell)(({ theme }) => ({
     paddingLeft: theme.spacing(1.5)
   },
   '&:last-of-type': {
-    paddingRight: theme.spacing(1.5)
+    paddingRight: theme.spacing(1.5),
+    paddingLeft: theme.spacing(40)
   },
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(1),
@@ -76,7 +77,8 @@ const ModernTableCell = styled(TableCell)(({ theme }) => ({
       paddingLeft: theme.spacing(1)
     },
     '&:last-of-type': {
-      paddingRight: theme.spacing(1)
+      paddingRight: theme.spacing(1),
+      paddingLeft: theme.spacing(20)
     }
   }
 }));
