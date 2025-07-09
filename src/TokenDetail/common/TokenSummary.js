@@ -436,7 +436,119 @@ const TokenSummary = memo(({ token }) => {
     >
       <Stack spacing={{ xs: 0.5, sm: 2 }}>
         {/* Header with Token Info */}
-        <Stack direction="row" spacing={{ xs: 0.75, sm: 2 }} alignItems="flex-start" sx={{ height: { xs: 'auto', sm: 'auto' } }}>
+        <Stack direction="row" spacing={{ xs: 0.75, sm: 2 }} alignItems="flex-start" sx={{ height: { xs: 'auto', sm: 'auto' }, position: 'relative' }}>
+          {/* Mobile Action Buttons - Top right corner */}
+          <Stack 
+            direction="row" 
+            spacing={0.3} 
+            sx={{ 
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              display: { xs: 'flex', md: 'none' },
+              zIndex: 2
+            }}
+          >
+            <Tooltip title={`${isRemove ? 'Remove' : 'Set'} Trustline`}>
+              <IconButton 
+                size="small" 
+                disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5}
+                sx={{ 
+                  width: 24,
+                  height: 24,
+                  borderRadius: '6px',
+                  border: `1px solid ${isRemove ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`,
+                  background: isRemove 
+                    ? alpha(theme.palette.error.main, 0.08)
+                    : alpha(theme.palette.success.main, 0.08),
+                  transition: 'all 0.2s ease',
+                  padding: '4px',
+                  '&:hover': {
+                    transform: 'translateY(-1px)',
+                    background: isRemove
+                      ? alpha(theme.palette.error.main, 0.15)
+                      : alpha(theme.palette.success.main, 0.15),
+                    boxShadow: `0 4px 12px ${isRemove ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`
+                  },
+                  '& .MuiSvgIcon-root': {
+                    fontSize: '14px',
+                    color: isRemove ? theme.palette.error.main : theme.palette.success.main
+                  }
+                }}
+                onClick={handleSetTrust}
+              >
+                {isRemove ? <LinkOffIcon /> : <LinkIcon />}
+              </IconButton>
+            </Tooltip>
+            {creator && (
+              <Tooltip title="View Creator Activity">
+                <IconButton
+                  size="small"
+                  onClick={() => setCreatorTxOpen(true)}
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: '6px',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    background: alpha(theme.palette.background.paper, 0.8),
+                    transition: 'all 0.2s ease',
+                    padding: '4px',
+                    '&:hover': {
+                      transform: 'translateY(-1px)',
+                      background: alpha(theme.palette.info.main, 0.08),
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                    },
+                    '& .MuiSvgIcon-root': {
+                      fontSize: '14px',
+                      color: alpha(theme.palette.text.primary, 0.7)
+                    }
+                  }}
+                >
+                  <TimelineIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+            <Box sx={{ 
+              '& .MuiIconButton-root': { 
+                width: '24px !important', 
+                height: '24px !important',
+                minWidth: '24px !important',
+                minHeight: '24px !important',
+                padding: '4px !important',
+                borderRadius: '6px !important',
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)} !important`,
+                '& .MuiSvgIcon-root': {
+                  fontSize: '14px !important'
+                },
+                '&:hover': {
+                  transform: 'translateY(-1px) !important',
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.3)} !important`
+                }
+              } 
+            }}>
+              <Share token={token} />
+            </Box>
+            <Box sx={{ 
+              '& .MuiIconButton-root': { 
+                width: '24px !important', 
+                height: '24px !important',
+                minWidth: '24px !important',
+                minHeight: '24px !important',
+                padding: '4px !important',
+                borderRadius: '6px !important',
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)} !important`,
+                '& .MuiSvgIcon-root': {
+                  fontSize: '14px !important'
+                },
+                '&:hover': {
+                  transform: 'translateY(-1px) !important',
+                  border: `1px solid ${alpha(theme.palette.warning.main, 0.3)} !important`
+                }
+              } 
+            }}>
+              <Watch token={token} />
+            </Box>
+          </Stack>
           {/* Token Image and Mobile Actions */}
           <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flexShrink: 0 }}>
             <Box
@@ -686,108 +798,6 @@ const TokenSummary = memo(({ token }) => {
                     </Typography>
                   </Box>
                   
-                  {/* Mobile Action Buttons - Show on mobile, hide on desktop */}
-                  <Stack direction="row" spacing={0.3} sx={{ ml: 0.5, display: { xs: 'flex', md: 'none' } }}>
-                    <Tooltip title={`${isRemove ? 'Remove' : 'Set'} Trustline`}>
-                      <IconButton 
-                        size="small" 
-                        disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5}
-                        sx={{ 
-                          width: 20,
-                          height: 20,
-                          borderRadius: '5px',
-                          border: `1px solid ${isRemove ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`,
-                          background: isRemove 
-                            ? alpha(theme.palette.error.main, 0.08)
-                            : alpha(theme.palette.success.main, 0.08),
-                          transition: 'all 0.2s ease',
-                          padding: '2px',
-                          '&:hover': {
-                            transform: 'translateY(-1px)',
-                            background: isRemove
-                              ? alpha(theme.palette.error.main, 0.15)
-                              : alpha(theme.palette.success.main, 0.15),
-                            boxShadow: `0 4px 12px ${isRemove ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`
-                          },
-                          '& .MuiSvgIcon-root': {
-                            fontSize: '12px',
-                            color: isRemove ? theme.palette.error.main : theme.palette.success.main
-                          }
-                        }}
-                        onClick={handleSetTrust}
-                      >
-                        {isRemove ? <LinkOffIcon /> : <LinkIcon />}
-                      </IconButton>
-                    </Tooltip>
-                    {creator && (
-                      <Tooltip title="View Creator Activity">
-                        <IconButton
-                          size="small"
-                          onClick={() => setCreatorTxOpen(true)}
-                          sx={{
-                            width: 20,
-                            height: 20,
-                            borderRadius: '5px',
-                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                            background: alpha(theme.palette.background.paper, 0.8),
-                            transition: 'all 0.2s ease',
-                            padding: '2px',
-                            '&:hover': {
-                              transform: 'translateY(-1px)',
-                              background: alpha(theme.palette.info.main, 0.08),
-                              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
-                            },
-                            '& .MuiSvgIcon-root': {
-                              fontSize: '12px',
-                              color: alpha(theme.palette.text.primary, 0.7)
-                            }
-                          }}
-                        >
-                          <TimelineIcon />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                    <Box sx={{ 
-                      '& .MuiIconButton-root': { 
-                        width: '20px !important', 
-                        height: '20px !important',
-                        minWidth: '20px !important',
-                        minHeight: '20px !important',
-                        padding: '2px !important',
-                        borderRadius: '5px !important',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.1)} !important`,
-                        '& .MuiSvgIcon-root': {
-                          fontSize: '12px !important'
-                        },
-                        '&:hover': {
-                          transform: 'translateY(-1px) !important',
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)} !important`
-                        }
-                      } 
-                    }}>
-                      <Share token={token} />
-                    </Box>
-                    <Box sx={{ 
-                      '& .MuiIconButton-root': { 
-                        width: '20px !important', 
-                        height: '20px !important',
-                        minWidth: '20px !important',
-                        minHeight: '20px !important',
-                        padding: '2px !important',
-                        borderRadius: '5px !important',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.1)} !important`,
-                        '& .MuiSvgIcon-root': {
-                          fontSize: '12px !important'
-                        },
-                        '&:hover': {
-                          transform: 'translateY(-1px) !important',
-                          border: `1px solid ${alpha(theme.palette.warning.main, 0.3)} !important`
-                        }
-                      } 
-                    }}>
-                      <Watch token={token} />
-                    </Box>
-                  </Stack>
                   
                   {/* Action Buttons - Hide on mobile, show on desktop */}
                   <Stack direction="row" spacing={0.5} sx={{ ml: 1, display: { xs: 'none', md: 'flex' } }}>
