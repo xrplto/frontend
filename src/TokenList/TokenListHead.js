@@ -497,7 +497,7 @@ export default function TokenListHead({
           '& .MuiTableCell-root': {
             fontSize: isMobile ? '11px' : '13px',
             fontWeight: '600',
-            padding: isMobile ? '8px 4px' : '20px 12px',
+            padding: isMobile ? '4px 2px' : '12px 8px',
             height: 'auto',
             whiteSpace: 'nowrap',
             color: darkMode ? '#919EAB' : '#637381',
@@ -518,21 +518,21 @@ export default function TokenListHead({
               0.7
             )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
             backdropFilter: 'blur(25px)',
-            width: isMobile ? '28px' : '24px',
-            minWidth: isMobile ? '28px' : '24px',
-            padding: isMobile ? '8px 4px' : '16px 8px'
+            width: isMobile ? '20px' : '20px',
+            minWidth: isMobile ? '20px' : '20px',
+            padding: isMobile ? '4px 2px' : '12px 4px'
           },
           // Second column (rank) - sticky
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
             zIndex: 2,
-            left: isMobile ? '28px' : '24px',
+            left: isMobile ? '20px' : '20px',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.7
             )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
             backdropFilter: 'blur(25px)',
-            padding: isMobile ? '8px 4px' : '16px 12px',
+            padding: isMobile ? '4px 2px' : '12px 8px',
             '&:before': scrollLeft
               ? {
                   content: "''",
@@ -552,7 +552,7 @@ export default function TokenListHead({
           '& .MuiTableCell-root:nth-of-type(3)': {
             position: 'sticky',
             zIndex: 2,
-            left: isMobile ? '52px' : '80px',
+            left: isMobile ? '40px' : '60px',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.7
@@ -564,13 +564,13 @@ export default function TokenListHead({
           '& .MuiTableCell-root:nth-of-type(4)': {
             position: 'sticky',
             zIndex: 2,
-            left: isMobile ? '130px' : '200px',
+            left: isMobile ? '110px' : '160px',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.7
             )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
             backdropFilter: 'blur(25px)',
-            padding: isMobile ? '8px 4px' : '16px 12px',
+            padding: isMobile ? '4px 2px' : '12px 8px',
             '&:before': scrollLeft
               ? {
                   content: "''",

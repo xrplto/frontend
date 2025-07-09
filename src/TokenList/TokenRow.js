@@ -211,17 +211,17 @@ const getOriginIcon = (origin, isMobile) => {
     case 'FirstLedger':
       return <OpenInNewIcon sx={{ fontSize: isMobile ? '8px' : '12px', color: '#013CFE' }} />;
     case 'XPMarket':
-      return <XPMarketIcon sx={{ fontSize: isMobile ? '10px' : '14px', color: '#6D1FEE', marginRight: isMobile ? '1px' : '2px' }} />;
+      return <XPMarketIcon sx={{ fontSize: isMobile ? '8px' : '12px', color: '#6D1FEE', marginRight: isMobile ? '1px' : '2px' }} />;
     case 'LedgerMeme':
       return (
         <LedgerMemeIcon
-          sx={{ fontSize: isMobile ? '10px' : '14px', color: '#cfff04', marginRight: isMobile ? '1px' : '2px', marginTop: isMobile ? '1px' : '2px' }}
+          sx={{ fontSize: isMobile ? '8px' : '12px', color: '#cfff04', marginRight: isMobile ? '1px' : '2px', marginTop: isMobile ? '1px' : '2px' }}
         />
       );
     case 'Horizon':
       return (
         <HorizonIcon
-          sx={{ fontSize: isMobile ? '10px' : '14px', color: '#f97316', marginRight: isMobile ? '1px' : '2px', marginTop: isMobile ? '1px' : '2px' }}
+          sx={{ fontSize: isMobile ? '8px' : '12px', color: '#f97316', marginRight: isMobile ? '1px' : '2px', marginTop: isMobile ? '1px' : '2px' }}
         />
       );
     case 'aigent.run':
@@ -299,10 +299,10 @@ const getOriginIcon = (origin, isMobile) => {
 const AdminImageWrapper = styled(Box)(({ theme }) => ({
   borderRadius: '50%',
   overflow: 'hidden',
-  width: '36px',
-  height: '36px',
+  width: '28px',
+  height: '28px',
   position: 'relative',
-  border: '2px solid transparent',
+  border: '1px solid transparent',
   background: `linear-gradient(${theme.palette.background.paper}, ${theme.palette.background.paper}) padding-box,
               linear-gradient(135deg, ${theme.palette.primary.main}20, ${theme.palette.primary.dark}20) border-box`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -317,8 +317,8 @@ const AdminImageWrapper = styled(Box)(({ theme }) => ({
     boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.3)}`
   },
   [theme.breakpoints.down('md')]: {
-    width: '22px',
-    height: '22px',
+    width: '20px',
+    height: '20px',
     borderWidth: '1px'
   }
 }));
@@ -326,8 +326,8 @@ const AdminImageWrapper = styled(Box)(({ theme }) => ({
 const TokenImageWrapper = styled(Box)(({ theme }) => ({
   borderRadius: '50%',
   overflow: 'hidden',
-  width: '36px',
-  height: '36px',
+  width: '28px',
+  height: '28px',
   position: 'relative',
   backgroundColor: theme.palette.mode === 'dark' 
     ? alpha(theme.palette.grey[800], 0.5)
@@ -341,8 +341,8 @@ const TokenImageWrapper = styled(Box)(({ theme }) => ({
     boxShadow: `0 8px 16px ${alpha(theme.palette.common.black, 0.1)}`
   },
   [theme.breakpoints.down('md')]: {
-    width: '22px',
-    height: '22px'
+    width: '20px',
+    height: '20px'
   }
 }));
 
@@ -372,7 +372,7 @@ function FTokenRow({
     () => ({
       width: isMobile ? '40px' : '90px',
       minWidth: isMobile ? '40px' : '90px',
-      padding: isMobile ? '2px 0px' : '16px 12px',
+      padding: isMobile ? '2px 0px' : '12px 8px',
       '& .MuiTypography-root': {
         textAlign: 'right',
         width: '100%'
@@ -407,16 +407,16 @@ function FTokenRow({
         }
       },
       '& .MuiTypography-root': {
-        fontSize: isMobile ? '11px' : '14px',
+        fontSize: isMobile ? '10px' : '13px',
         fontWeight: '500',
         letterSpacing: '-0.01em'
       },
       '& .MuiTableCell-root': {
-        padding: isMobile ? '8px 4px' : '20px 16px',
+        padding: isMobile ? '4px 2px' : '12px 8px',
         whiteSpace: 'nowrap',
         borderBottom: 'none',
         '&:not(:first-of-type)': {
-          paddingLeft: isMobile ? '4px' : '12px'
+          paddingLeft: isMobile ? '2px' : '8px'
         }
       }
     }),
@@ -431,39 +431,39 @@ function FTokenRow({
         left: 0,
         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
-        width: isMobile ? '24px' : '24px',
-        minWidth: isMobile ? '24px' : '24px',
-        padding: isMobile ? '6px 2px' : '16px 8px'
+        width: isMobile ? '20px' : '20px',
+        minWidth: isMobile ? '20px' : '20px',
+        padding: isMobile ? '4px 2px' : '12px 4px'
       },
       second: {
-        p: isMobile ? '6px 2px' : '16px 12px',
+        p: isMobile ? '4px 2px' : '12px 8px',
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '24px' : '24px',
+        left: isMobile ? '20px' : '20px',
         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
-        width: isMobile ? '24px' : '56px',
-        minWidth: isMobile ? '24px' : '56px'
+        width: isMobile ? '20px' : '40px',
+        minWidth: isMobile ? '20px' : '40px'
       },
       third: {
-        p: isMobile ? '6px 2px' : '16px 12px',
+        p: isMobile ? '4px 2px' : '12px 8px',
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '48px' : '80px',
+        left: isMobile ? '40px' : '60px',
         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
-        width: isMobile ? '80px' : '120px',
-        minWidth: isMobile ? '80px' : '120px'
+        width: isMobile ? '70px' : '100px',
+        minWidth: isMobile ? '70px' : '100px'
       },
       fourth: {
-        p: isMobile ? '6px 2px' : '16px 12px',
+        p: isMobile ? '4px 2px' : '12px 8px',
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '128px' : '200px',
+        left: isMobile ? '110px' : '160px',
         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
-        width: isMobile ? '80px' : '180px',
-        minWidth: isMobile ? '80px' : '180px',
+        width: isMobile ? '70px' : '140px',
+        minWidth: isMobile ? '70px' : '140px',
         '&:before': scrollLeft
           ? {
               content: "''",
@@ -615,7 +615,7 @@ function FTokenRow({
               sx={{ 
                 cursor: 'pointer', 
                 color: '#FFB800', 
-                fontSize: isMobile ? '16px' : '20px',
+                fontSize: isMobile ? '14px' : '18px',
                 filter: 'drop-shadow(0 2px 4px rgba(255, 184, 0, 0.3))'
               }}
             />
@@ -627,7 +627,7 @@ function FTokenRow({
               sx={{ 
                 cursor: 'pointer', 
                 color: alpha(theme.palette.text.primary, 0.3),
-                fontSize: isMobile ? '16px' : '20px',
+                fontSize: isMobile ? '14px' : '18px',
                 transition: 'all 0.3s ease',
                 '&:hover': { 
                   color: '#FFB800',
@@ -643,8 +643,8 @@ function FTokenRow({
           <Typography
             variant="h4"
             sx={{
-              fontWeight: '700',
-              fontSize: '15px',
+              fontWeight: '600',
+              fontSize: '13px',
               color: alpha(theme.palette.text.secondary, 0.7),
               textAlign: 'center',
               fontFamily: 'Inter, sans-serif'
@@ -655,15 +655,15 @@ function FTokenRow({
         </TableCell>
       )}
       <TableCell align="left" sx={stickyCellStyles.third}>
-        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
+        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.3 : 0.5}>
           {isMobile && (
             <Typography
               variant="h4"
               sx={{
-                fontWeight: '700',
-                fontSize: '11px',
+                fontWeight: '600',
+                fontSize: '10px',
                 color: alpha(theme.palette.text.secondary, 0.7),
-                minWidth: '20px',
+                minWidth: '18px',
                 textAlign: 'center',
                 fontFamily: 'Inter, sans-serif'
               }}
@@ -673,8 +673,8 @@ function FTokenRow({
           )}
           <Box
             sx={{
-              width: isMobile ? 24 : 40,
-              height: isMobile ? 24 : 40,
+              width: isMobile ? 20 : 32,
+              height: isMobile ? 20 : 32,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -719,7 +719,7 @@ function FTokenRow({
               variant="p2"
               sx={{
                 fontWeight: '400',
-                fontSize: isMobile ? '10px' : '13px',
+                fontSize: isMobile ? '9px' : '12px',
                 lineHeight: 1.3,
                 color: alpha(theme.palette.text.secondary, 0.8),
                 display: 'flex',
@@ -739,7 +739,7 @@ function FTokenRow({
             variant="token"
             sx={{
               fontWeight: '600',
-              fontSize: isMobile ? '12px' : '16px',
+              fontSize: isMobile ? '11px' : '14px',
               lineHeight: 1.2,
               letterSpacing: '-0.01em',
               cursor: 'pointer',
@@ -787,7 +787,7 @@ function FTokenRow({
         align="right"
         sx={{
           color: priceColor,
-          padding: isMobile ? '6px 2px' : '16px 12px'
+          padding: isMobile ? '4px 2px' : '12px 8px'
         }}
       >
         <TransitionTypo
@@ -839,13 +839,13 @@ function FTokenRow({
       <TableCell
         align="right"
         sx={{
-          padding: isMobile ? '6px 2px' : '16px 12px'
+          padding: isMobile ? '4px 2px' : '12px 8px'
         }}
       >
         <Typography
           variant="caption"
           sx={{
-            fontSize: isMobile ? '10px' : '12px',
+            fontSize: isMobile ? '9px' : '11px',
             fontWeight: '400',
             color: alpha(theme.palette.text.secondary, 0.6),
             fontFamily: 'Inter, sans-serif'
@@ -881,7 +881,7 @@ function FTokenRow({
       )}
       <TableCell align="right">
         <Stack spacing={0.5} alignItems="flex-end">
-          <Typography variant="h4" sx={{ fontSize: isMobile ? '10px' : '14px' }}>
+          <Typography variant="h4" sx={{ fontSize: isMobile ? '9px' : '12px' }}>
             {currencySymbols[activeFiatCurrency]}
             {convertedValues.marketCap >= 1000000
               ? `${(convertedValues.marketCap / 1000000).toFixed(1)}M`
@@ -1007,9 +1007,9 @@ function FTokenRow({
         <TableCell
           align="right"
           sx={{
-            width: '280px',
-            minWidth: '280px',
-            maxWidth: '280px',
+            width: '240px',
+            minWidth: '240px',
+            maxWidth: '240px',
             pr: '8px !important',
             pl: '8px !important',
             py: '10px !important',
