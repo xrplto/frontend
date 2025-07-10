@@ -49,7 +49,7 @@ const formatBalance = (balance) => {
 };
 
 // Token Card Component
-const TokenCard = ({ token, account, isXRP = false }) => {
+const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { darkMode, activeFiatCurrency, openSnackbar, accountProfile, setSync } = useContext(AppContext);
@@ -97,12 +97,51 @@ const TokenCard = ({ token, account, isXRP = false }) => {
 
   // Calculate value
   const value = useMemo(() => {
+    const tokenName = isXRP ? 'XRP' : (token.currencyName || token.currency);
+    // exchRate is XRP per 1 USD (e.g., 0.415021 XRP = 1 USD)
+    // To get USD per XRP, we need 1 / exchRate
+    const xrpToFiat = exchRate ? 1 / exchRate : 0;
+    
     if (isXRP) {
-      return (token.balance || 0) * (token.exchRate || 1);
+      // For XRP, value = balance * (1 / exchRate) to get fiat value
+      const xrpValue = (token.balance || 0) * xrpToFiat;
+      console.log(`[TokenCard] ${tokenName} value calculation:`, {
+        balance: token.balance,
+        exchRate,
+        xrpToFiat,
+        value: xrpValue
+      });
+      return xrpValue;
     }
-    if (!token.balance || !token.exch || !token.exchRate) return 0;
-    return Number(token.balance) * Number(token.exch) * Number(token.exchRate);
-  }, [token, isXRP]);
+    
+    // Debug log token data
+    console.log(`[TokenCard] ${tokenName} token data:`, {
+      balance: token.balance,
+      exch: token.exch,
+      value: token.value,
+      exchRate,
+      xrpToFiat,
+      fullToken: token
+    });
+    
+    // Check if we have a pre-calculated value in XRP from the API
+    if (token.value !== undefined && token.value !== null) {
+      // The API provides value in XRP, convert to fiat
+      const calcValue = Number(token.value) * xrpToFiat;
+      console.log(`[TokenCard] ${tokenName} using API value: ${token.value} XRP * ${xrpToFiat} = ${calcValue}`);
+      return calcValue;
+    }
+    
+    // Fallback: calculate from balance and exch
+    if (!token.balance || !token.exch) {
+      console.log(`[TokenCard] ${tokenName} missing balance or exch, returning 0`);
+      return 0;
+    }
+    
+    const calcValue = Number(token.balance) * Number(token.exch) * xrpToFiat;
+    console.log(`[TokenCard] ${tokenName} calculated: ${token.balance} * ${token.exch} * ${xrpToFiat} = ${calcValue}`);
+    return calcValue;
+  }, [token, isXRP, exchRate]);
 
   const percentOwned = useMemo(() => {
     if (isXRP) {
@@ -296,6 +335,13 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency];
   
+  console.log('[TrustLines] Component state:', {
+    activeFiatCurrency,
+    exchRate,
+    metrics,
+    xrpBalance
+  });
+  
   const [loading, setLoading] = useState(false);
   const [lines, setLines] = useState([]);
   const [showAll, setShowAll] = useState(false);
@@ -319,12 +365,15 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     const fetchLines = async () => {
       setLoading(true);
       try {
+        console.log(`[TrustLines] Fetching trustlines for account: ${account}`);
         const res = await axios.get(`https://api.xrpl.to/api/trustlines?account=${account}&includeRates=true&limit=400`);
         if (res.data?.success) {
+          console.log('[TrustLines] API response:', res.data);
+          console.log('[TrustLines] First 3 trustlines:', res.data.trustlines.slice(0, 3));
           setLines(res.data.trustlines);
         }
       } catch (err) {
-        console.error('Error fetching trustlines:', err);
+        console.error('[TrustLines] Error fetching trustlines:', err);
       } finally {
         setLoading(false);
       }
@@ -337,8 +386,21 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
 
   // Calculate total value
   useEffect(() => {
-    const trustlinesSum = lines.reduce((acc, line) => acc + (parseFloat(line.value) || 0), 0);
-    const xrpValue = (xrpBalance || 0) * (exchRate || 1);
+    // exchRate is XRP per 1 USD, so we need to invert it
+    const xrpToFiat = exchRate ? 1 / exchRate : 0;
+    
+    // Calculate total value using the same logic as individual tokens
+    const trustlinesSum = lines.reduce((acc, line) => {
+      // If API provides a pre-calculated value in XRP, use it
+      if (line.value !== undefined && line.value !== null) {
+        return acc + (Number(line.value) * xrpToFiat);
+      }
+      // Otherwise calculate from balance * exch
+      const balance = parseFloat(line.balance) || 0;
+      const exch = parseFloat(line.exch) || 0;
+      return acc + (balance * exch * xrpToFiat);
+    }, 0);
+    const xrpValue = (xrpBalance || 0) * xrpToFiat;
     const totalSum = trustlinesSum + xrpValue;
     
     if (onUpdateTotalValue) {
@@ -347,7 +409,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     
     if (onTrustlinesData) {
       const allAssets = xrpBalance
-        ? [{ currency: 'XRP', balance: xrpBalance, value: xrpValue, exchRate }, ...lines]
+        ? [{ currency: 'XRP', balance: xrpBalance, value: xrpValue, exch: 1, exchRate }, ...lines]
         : lines;
       onTrustlinesData(allAssets);
     }
@@ -404,8 +466,19 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
             <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>Total Value</Typography>
             <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
               {currencySymbols[activeFiatCurrency]}
-              {((lines.reduce((acc, line) => acc + (parseFloat(line.value) || 0), 0) + 
-                ((xrpBalance || 0) * (exchRate || 1)))).toFixed(2)}
+              {(() => {
+                const xrpToFiat = exchRate ? 1 / exchRate : 0;
+                return ((lines.reduce((acc, line) => {
+                  // Use the same calculation as in the useEffect
+                  if (line.value !== undefined && line.value !== null) {
+                    return acc + (Number(line.value) * xrpToFiat);
+                  }
+                  const balance = parseFloat(line.balance) || 0;
+                  const exch = parseFloat(line.exch) || 0;
+                  return acc + (balance * exch * xrpToFiat);
+                }, 0) + 
+                  ((xrpBalance || 0) * xrpToFiat))).toFixed(2);
+              })()}
             </Typography>
           </Box>
         </Stack>
@@ -417,9 +490,10 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           <Fade in timeout={300}>
             <Box>
               <TokenCard
-                token={{ balance: xrpBalance, exchRate }}
+                token={{ balance: xrpBalance }}
                 account={account}
                 isXRP
+                exchRate={exchRate}
               />
             </Box>
           </Fade>
@@ -428,7 +502,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
         {displayedLines.map((line, index) => (
           <Fade in timeout={300 + index * 50} key={`${line.currency}-${line.issuer}`}>
             <Box>
-              <TokenCard token={line} account={account} />
+              <TokenCard token={line} account={account} exchRate={exchRate} />
             </Box>
           </Fade>
         ))}
