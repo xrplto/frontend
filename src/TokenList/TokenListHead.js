@@ -14,453 +14,205 @@ import {
 } from '@mui/material';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import InfoIcon from '@mui/icons-material/Info';
 
-const SmallInfoIcon = (props) => {
-  const { darkMode, ...otherProps } = props;
-  return (
-    <InfoIcon
-      {...otherProps}
-      sx={{
-        fontSize: '12px',
-        ml: 0.3,
-        mr: 0.2,
-        opacity: 0.7,
-        transition: 'opacity 0.2s ease',
-        '&:hover': {
-          opacity: 1
-        }
-      }}
-    />
-  );
-};
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  fontWeight: 700,
+  fontSize: '0.75rem',
+  letterSpacing: '0.5px',
+  textTransform: 'uppercase',
+  color: theme.palette.text.secondary,
+  padding: '16px 8px',
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  whiteSpace: 'nowrap',
+  '&:first-of-type': {
+    paddingLeft: 16
+  },
+  '&:last-of-type': {
+    paddingRight: 16
+  }
+}));
 
-const StickyTableCell = styled(TableCell)(({ theme }) => ({
-  position: 'sticky',
-  zIndex: 11,
-  top: 0,
-  fontWeight: '600',
-  fontSize: '13px',
-  letterSpacing: '0.02em',
-  textTransform: 'uppercase'
+const StyledTableSortLabel = styled(TableSortLabel)(({ theme }) => ({
+  '&.MuiTableSortLabel-root': {
+    color: 'inherit',
+    '&:hover': {
+      color: theme.palette.text.primary
+    },
+    '&.Mui-active': {
+      color: theme.palette.primary.main,
+      '& .MuiTableSortLabel-icon': {
+        color: theme.palette.primary.main
+      }
+    }
+  }
 }));
 
 const TABLE_HEAD = [
-  { no: 0, id: 'star', label: '', align: 'left', width: '', order: false },
+  { 
+    id: 'star', 
+    label: '', 
+    align: 'left', 
+    width: '', 
+    order: false,
+    sticky: true,
+    mobileHide: false
+  },
   {
-    no: 1,
     id: 'rank',
-    label: (
-      <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-        #
-      </Typography>
-    ),
+    label: '#',
     align: 'center',
     width: '3%',
-    order: false
+    order: false,
+    sticky: true,
+    mobileHide: true
   },
   {
-    no: 2,
     id: 'user',
-    label: (
-      <Tooltip
-        title="Token issuer account"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            Issuer
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: 'ISSUER',
     align: 'left',
     width: '8%',
-    order: true
+    order: true,
+    sticky: true,
+    mobileHide: false
   },
   {
-    no: 3,
     id: 'name',
-    label: (
-      <Tooltip
-        title="Token name and launch type"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            Name
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: 'NAME',
     align: 'left',
     width: '10%',
-    order: true
+    order: true,
+    sticky: true,
+    mobileHide: false
   },
   {
-    no: 4,
     id: 'exch',
-    label: (
-      <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-        Price
-      </Typography>
-    ),
+    label: 'PRICE',
     align: 'right',
     width: '8%',
-    order: true
+    order: true,
+    sticky: false,
+    mobileHide: false
   },
   {
-    no: 5,
     id: 'pro5m',
-    label: (
-      <Tooltip
-        title="Price change in the last 5 minutes"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            5m %
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: '5M %',
     align: 'right',
     width: '7%',
-    order: true
+    order: true,
+    sticky: false,
+    mobileHide: true,
+    tooltip: '5 minute change'
   },
   {
-    no: 6,
     id: 'pro1h',
-    label: (
-      <Tooltip
-        title="Price change in the last hour"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            1h %
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: '1H %',
     align: 'right',
     width: '7%',
-    order: true
+    order: true,
+    sticky: false,
+    mobileHide: true,
+    tooltip: '1 hour change'
   },
   {
-    no: 7,
     id: 'pro24h',
-    label: (
-      <Tooltip
-        title="Price change in the last 24 hours"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            24h %
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: '24H %',
     align: 'right',
     width: '7%',
-    order: true
+    order: true,
+    sticky: false,
+    mobileHide: false,
+    tooltip: '24 hour change'
   },
   {
-    no: 8,
     id: 'pro7d',
-    label: (
-      <Tooltip
-        title="Price change in the last 7 days"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            7d %
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: '7D %',
     align: 'right',
     width: '7%',
-    order: true
+    order: true,
+    sticky: false,
+    mobileHide: true,
+    tooltip: '7 day change'
   },
   {
-    no: 9,
     id: 'vol24hxrp',
-    label: (
-      <Tooltip
-        title="Amount of XRP that has been traded with this token in the last 24 hours"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            Volume
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: 'VOLUME',
     align: 'right',
     width: '8%',
-    order: true
+    order: true,
+    sticky: false,
+    mobileHide: true,
+    tooltip: '24h volume in XRP'
   },
   {
-    no: 10,
     id: 'dateon',
-    label: (
-      <Tooltip
-        title="Time since token creation"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            Created
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: 'CREATED',
     align: 'right',
     width: '8%',
-    order: true
+    order: true,
+    sticky: false,
+    mobileHide: true,
+    tooltip: 'Token creation date'
   },
   {
-    no: 11,
     id: 'vol24htx',
-    label: (
-      <Tooltip
-        title="Trades represents the total number of trade transactions for an asset on the XRPL DEX within the last 24 hours, indicating market activity and liquidity."
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            Trades
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: 'TRADES',
     align: 'right',
     width: '7%',
-    order: true
+    order: true,
+    sticky: false,
+    mobileHide: true,
+    tooltip: '24h trade count'
   },
   {
-    no: 12,
     id: 'tvl',
-    label: (
-      <Tooltip
-        title="Total Value Locked (TVL) represents the total value of assets deposited in the protocol"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            TVL
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: 'TVL',
     align: 'right',
     width: '10%',
-    order: true
+    order: true,
+    sticky: false,
+    mobileHide: true,
+    tooltip: 'Total Value Locked'
   },
   {
-    no: 13,
     id: 'marketcap',
-    label: (
-      <Tooltip
-        title="Circulating supply * price"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            Market Cap
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: 'MARKET CAP',
     align: 'right',
     width: '10%',
-    order: true
+    order: true,
+    sticky: false,
+    mobileHide: false,
+    tooltip: 'Market capitalization'
   },
   {
-    no: 14,
     id: 'holders',
-    label: (
-      <Tooltip
-        title="Number of unique addresses holding this token on the XRPL"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            Holders
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: 'HOLDERS',
     align: 'right',
     width: '10%',
-    order: true
+    order: true,
+    sticky: false,
+    mobileHide: true,
+    tooltip: 'Number of holders'
   },
   {
-    no: 15,
     id: 'supply',
-    label: (
-      <Tooltip
-        title="Supply is token held by everyone"
-        placement="top"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              fontSize: '12px',
-              fontWeight: '500'
-            }
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'help' }}>
-          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-            Supply
-          </Typography>
-          <SmallInfoIcon />
-        </Box>
-      </Tooltip>
-    ),
+    label: 'SUPPLY',
     align: 'right',
     width: '13%',
-    order: true
+    order: true,
+    sticky: false,
+    mobileHide: true,
+    tooltip: 'Circulating supply'
   },
   {
-    no: 16,
     id: 'historyGraph',
-    label: (
-      <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-        Last 24h
-      </Typography>
-    ),
+    label: 'LAST 24H',
     align: 'right',
     width: '15%',
-    order: false
+    order: false,
+    sticky: false,
+    mobileHide: true
   },
-  { id: '' }
+  { id: '', width: '' }
 ];
 
 export default function TokenListHead({
@@ -473,179 +225,107 @@ export default function TokenListHead({
 }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { darkMode } = useContext(AppContext);
+
   const createSortHandler = (id, no) => (event) => {
     onRequestSort(event, id, no);
   };
 
-  const { darkMode } = useContext(AppContext);
+  const getStickyLeft = (id) => {
+    if (!TABLE_HEAD.find(h => h.id === id)?.sticky) return 'unset';
+    
+    // Fixed positions for sticky columns
+    const stickyPositions = {
+      'star': 0,
+      'rank': isMobile ? 0 : 20,
+      'user': isMobile ? 20 : 60,
+      'name': isMobile ? 110 : 160
+    };
+    
+    return stickyPositions[id] || 'unset';
+  };
 
   return (
     <TableHead
       sx={{
         position: 'sticky',
-        zIndex: 1,
-        transform: `translateY(${scrollTopLength}px)`,
-        background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(
-          theme.palette.background.paper,
-          0.5
-        )} 100%)`,
-        backdropFilter: 'blur(25px)',
-        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.12)}`
+        top: scrollTopLength || 0,
+        zIndex: 10,
+        background: theme.palette.background.paper,
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: '1px',
+          background: alpha(theme.palette.divider, 0.12)
+        }
       }}
     >
-      <TableRow
-        sx={{
-          '& .MuiTableCell-root': {
-            fontSize: isMobile ? '11px' : '13px',
-            fontWeight: '600',
-            padding: isMobile ? '4px 2px' : '12px 8px',
-            height: 'auto',
-            whiteSpace: 'nowrap',
-            color: darkMode ? '#919EAB' : '#637381',
-            textTransform: 'uppercase',
-            letterSpacing: '0.02em',
-            borderBottom: 'none',
-            '&:not(:first-of-type)': {
-              paddingLeft: isMobile ? '4px' : '8px'
-            },
-            overflow: 'visible'
-          },
-          // First column (star) - sticky
-          '& .MuiTableCell-root:nth-of-type(1)': {
-            position: 'sticky',
-            zIndex: 2,
-            left: 0,
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.7
-            )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
-            backdropFilter: 'blur(25px)',
-            width: isMobile ? '20px' : '20px',
-            minWidth: isMobile ? '20px' : '20px',
-            padding: isMobile ? '4px 2px' : '12px 4px'
-          },
-          // Second column (rank) - sticky
-          '& .MuiTableCell-root:nth-of-type(2)': {
-            position: 'sticky',
-            zIndex: 2,
-            left: isMobile ? '20px' : '20px',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.7
-            )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
-            backdropFilter: 'blur(25px)',
-            padding: isMobile ? '4px 2px' : '12px 8px',
-            '&:before': scrollLeft
-              ? {
-                  content: "''",
-                  boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
-                  position: 'absolute',
-                  top: '0',
-                  right: '0',
-                  bottom: '-1px',
-                  width: '30px',
-                  transform: 'translate(100%)',
-                  transition: 'box-shadow .3s',
-                  pointerEvents: 'none'
-                }
-              : {}
-          },
-          // Third column (user) - sticky
-          '& .MuiTableCell-root:nth-of-type(3)': {
-            position: 'sticky',
-            zIndex: 2,
-            left: isMobile ? '40px' : '60px',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.7
-            )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
-            backdropFilter: 'blur(25px)',
-            padding: isMobile ? '8px 4px' : '16px 12px'
-          },
-          // Fourth column (name) - sticky
-          '& .MuiTableCell-root:nth-of-type(4)': {
-            position: 'sticky',
-            zIndex: 2,
-            left: isMobile ? '110px' : '160px',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.7
-            )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
-            backdropFilter: 'blur(25px)',
-            padding: isMobile ? '4px 2px' : '12px 8px',
-            '&:before': scrollLeft
-              ? {
-                  content: "''",
-                  boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
-                  position: 'absolute',
-                  top: '0',
-                  right: '0',
-                  bottom: '-1px',
-                  width: '30px',
-                  transform: 'translate(100%)',
-                  transition: 'box-shadow .3s',
-                  pointerEvents: 'none'
-                }
-              : {}
-          },
-          '& .MuiTableSortLabel-root': {
-            fontSize: isMobile ? '11px' : '13px',
-            fontWeight: '600',
-            color: 'inherit',
-            '&:hover': {
-              color: darkMode ? '#fff' : '#212B36'
-            },
-            '&.Mui-active': {
-              color: darkMode ? '#fff' : '#212B36',
-              '& .MuiTableSortLabel-icon': {
-                color: 'inherit'
-              }
-            },
-            '& .MuiTableSortLabel-icon': {
-              fontSize: isMobile ? '14px' : '16px'
-            }
-          }
-        }}
-      >
-        {TABLE_HEAD.map((headCell) => {
-          // Skip certain columns on mobile
-          if (isMobile) {
-            if (headCell.id === 'rank') return null;
-            if (headCell.id === 'pro5m') return null;
-            if (headCell.id === 'pro7d') return null;
-            if (headCell.id === 'vol24hxrp') return null;
-            if (headCell.id === 'vol24htx') return null;
-            if (headCell.id === 'tvl') return null;
-            if (headCell.id === 'holders') return null;
-            if (headCell.id === 'supply') return null;
-            if (headCell.id === 'historyGraph') return null;
-          }
+      <TableRow>
+        {TABLE_HEAD.filter(column => !column.id || !isMobile || !column.mobileHide).map((headCell) => {
+          const isSticky = headCell.sticky && (!isMobile || !headCell.mobileHide);
           
           return (
-            <StickyTableCell
+            <StyledTableCell
               key={headCell.id}
               align={headCell.align}
               sortDirection={orderBy === headCell.id ? order : false}
-              width={headCell.width}
+              sx={{
+                width: headCell.width,
+                ...(isSticky && {
+                  position: 'sticky',
+                  left: getStickyLeft(headCell.id),
+                  zIndex: 11,
+                  background: theme.palette.background.paper,
+                  '&::after': scrollLeft && headCell.id === 'name' ? {
+                    content: '""',
+                    position: 'absolute',
+                    right: -1,
+                    top: 0,
+                    bottom: 0,
+                    width: '1px',
+                    background: alpha(theme.palette.divider, 0.12),
+                    boxShadow: `2px 0 4px ${alpha(theme.palette.common.black, 0.08)}`
+                  } : {}
+                })
+              }}
             >
               {headCell.order ? (
-                <TableSortLabel
-                  hideSortIcon={!headCell.order}
-                  active={orderBy === headCell.id}
-                  direction={orderBy === headCell.id ? order : 'desc'}
-                  onClick={createSortHandler(headCell.id, headCell.no)}
-                >
-                  {headCell.label}
-                  {orderBy === headCell.id && (
-                    <Box component="span" sx={{ ...visuallyHidden }}>
-                      {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                    </Box>
-                  )}
-                </TableSortLabel>
+                headCell.tooltip ? (
+                  <Tooltip title={headCell.tooltip} placement="top">
+                    <StyledTableSortLabel
+                      active={orderBy === headCell.id}
+                      direction={orderBy === headCell.id ? order : 'desc'}
+                      onClick={createSortHandler(headCell.id, headCell.no)}
+                    >
+                      {headCell.label}
+                      {orderBy === headCell.id && (
+                        <Box component="span" sx={{ ...visuallyHidden }}>
+                          {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                        </Box>
+                      )}
+                    </StyledTableSortLabel>
+                  </Tooltip>
+                ) : (
+                  <StyledTableSortLabel
+                    active={orderBy === headCell.id}
+                    direction={orderBy === headCell.id ? order : 'desc'}
+                    onClick={createSortHandler(headCell.id, headCell.no)}
+                  >
+                    {headCell.label}
+                    {orderBy === headCell.id && (
+                      <Box component="span" sx={{ ...visuallyHidden }}>
+                        {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                      </Box>
+                    )}
+                  </StyledTableSortLabel>
+                )
               ) : (
                 headCell.label
               )}
-            </StickyTableCell>
+            </StyledTableCell>
           );
         })}
       </TableRow>
