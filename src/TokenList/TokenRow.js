@@ -386,6 +386,7 @@ function FTokenRow({
       borderBottom: 'none',
       position: 'relative',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      backgroundColor: 'transparent',
       '&:after': {
         content: '""',
         position: 'absolute',
@@ -396,11 +397,9 @@ function FTokenRow({
         background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.divider, 0.1)}, transparent)`
       },
       '&:hover': {
-        backgroundColor: darkMode
-          ? alpha(theme.palette.primary.dark, 0.04)
-          : alpha(theme.palette.primary.light, 0.04),
+        backgroundColor: alpha(theme.palette.primary.main, 0.04),
         transform: 'translateY(-1px)',
-        boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.05)}`,
+        boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.05)}`,
         cursor: 'pointer',
         '&:after': {
           opacity: 0
@@ -415,12 +414,13 @@ function FTokenRow({
         padding: isMobile ? '4px 2px' : '12px 8px',
         whiteSpace: 'nowrap',
         borderBottom: 'none',
+        backgroundColor: 'transparent',
         '&:not(:first-of-type)': {
           paddingLeft: isMobile ? '2px' : '8px'
         }
       }
     }),
-    [darkMode, isMobile, theme]
+    [isMobile, theme]
   );
 
   const stickyCellStyles = useMemo(
@@ -429,8 +429,10 @@ function FTokenRow({
         position: 'sticky',
         zIndex: 1001,
         left: 0,
-        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
+        background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
+          ? alpha('#030310', 0.85)
+          : alpha(theme.palette.background.default, 0.95),
+        backdropFilter: 'blur(10px)',
         width: isMobile ? '20px' : '20px',
         minWidth: isMobile ? '20px' : '20px',
         padding: isMobile ? '4px 2px' : '12px 4px'
@@ -440,8 +442,10 @@ function FTokenRow({
         position: 'sticky',
         zIndex: 1001,
         left: isMobile ? '20px' : '20px',
-        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
+        background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
+          ? alpha('#030310', 0.85)
+          : alpha(theme.palette.background.default, 0.95),
+        backdropFilter: 'blur(10px)',
         width: isMobile ? '20px' : '40px',
         minWidth: isMobile ? '20px' : '40px'
       },
@@ -450,8 +454,10 @@ function FTokenRow({
         position: 'sticky',
         zIndex: 1001,
         left: isMobile ? '40px' : '60px',
-        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
+        background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
+          ? alpha('#030310', 0.85)
+          : alpha(theme.palette.background.default, 0.95),
+        backdropFilter: 'blur(10px)',
         width: isMobile ? '70px' : '100px',
         minWidth: isMobile ? '70px' : '100px'
       },
@@ -460,8 +466,10 @@ function FTokenRow({
         position: 'sticky',
         zIndex: 1001,
         left: isMobile ? '110px' : '160px',
-        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
+        background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
+          ? alpha('#030310', 0.85)
+          : alpha(theme.palette.background.default, 0.95),
+        backdropFilter: 'blur(10px)',
         width: isMobile ? '70px' : '140px',
         minWidth: isMobile ? '70px' : '140px',
         '&:before': scrollLeft
@@ -480,7 +488,7 @@ function FTokenRow({
           : {}
       }
     }),
-    [darkMode, isMobile, scrollLeft]
+    [theme, isMobile, scrollLeft]
   );
 
   const dateTypographyStyle = useMemo(
@@ -721,7 +729,7 @@ function FTokenRow({
                 fontWeight: '400',
                 fontSize: isMobile ? '9px' : '12px',
                 lineHeight: 1.3,
-                color: alpha(theme.palette.text.secondary, 0.8),
+                color: theme.palette.text.secondary,
                 display: 'flex',
                 alignItems: 'center',
                 fontFamily: 'Inter, sans-serif'

@@ -20,6 +20,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
   const [loading, setLoading] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
+  const [themeName, setThemeName] = useState('XrplToLightTheme');
   const [activeFiatCurrency, setActiveFiatCurrency] = useState('USD');
   const [accountProfile, setAccountProfile] = useState(null);
   const [profiles, setProfiles] = useState([]);
@@ -42,20 +43,35 @@ export function ContextProvider({ children, data, openSnackbar }) {
     setDarkMode(!darkMode);
   };
 
+  const setTheme = (newThemeName) => {
+    window.localStorage.setItem('appThemeName', newThemeName);
+    setThemeName(newThemeName);
+    // Update darkMode for backward compatibility
+    setDarkMode(newThemeName === 'XrplToDarkTheme' || newThemeName === 'SyncWaveTheme');
+  };
+
   const toggleFiatCurrency = (newValue) => {
     window.localStorage.setItem('appFiatCurrency', newValue);
     setActiveFiatCurrency(newValue);
   };
 
   useEffect(() => {
+    const savedThemeName = window.localStorage.getItem('appThemeName');
     const isDarkMode = window.localStorage.getItem('appTheme');
     const fiatCurrency = window.localStorage.getItem('appFiatCurrency');
+    
     if (fiatCurrency) {
       setActiveFiatCurrency(fiatCurrency);
     }
-
-    if (isDarkMode) {
-      // convert to boolean
+    
+    // Load the theme
+    if (savedThemeName) {
+      setThemeName(savedThemeName);
+      setDarkMode(savedThemeName === 'XrplToDarkTheme' || savedThemeName === 'SyncWaveTheme');
+    } else if (isDarkMode) {
+      // Backward compatibility: convert boolean to theme name
+      const theme = isDarkMode === 'true' ? 'XrplToDarkTheme' : 'XrplToLightTheme';
+      setThemeName(theme);
       setDarkMode(isDarkMode === 'true');
     }
   }, []);
@@ -260,6 +276,8 @@ export function ContextProvider({ children, data, openSnackbar }) {
       toggleTheme,
       darkMode,
       setDarkMode,
+      themeName,
+      setTheme,
       accountProfile,
       setActiveProfile,
       profiles,
@@ -301,6 +319,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
     }),
     [
       darkMode,
+      themeName,
       accountProfile,
       profiles,
       sync,

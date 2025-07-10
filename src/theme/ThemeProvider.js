@@ -8,9 +8,10 @@ import { StyledEngineProvider } from '@mui/material/styles';
 const ThemeProviderWrapper = (props) => {
   const [isMounted, setIsMounted] = useState(false);
 
-  const { darkMode } = useContext(AppContext);
+  const { darkMode, themeName } = useContext(AppContext);
 
-  const theme = themeCreator(darkMode);
+  // Use themeName if available, otherwise fall back to darkMode for backward compatibility
+  const theme = themeCreator(themeName || darkMode);
 
   useEffect(() => {
     setIsMounted(true);
