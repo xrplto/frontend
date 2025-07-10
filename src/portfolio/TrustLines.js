@@ -1,6 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect, useRef, useContext, useMemo, useCallback } from 'react';
-import Decimal from 'decimal.js';
+import { useState, useEffect, useContext, useMemo } from 'react';
 import {
   Box,
   Stack,
@@ -11,7 +10,6 @@ import {
   IconButton,
   Avatar,
   alpha,
-  Tooltip,
   Chip,
   Button,
   CircularProgress,
@@ -22,14 +20,10 @@ import {
   Verified as VerifiedIcon,
   AccountBalanceWallet as WalletIcon,
   TrendingUp as TrendingIcon,
-  Warning as WarningIcon,
   KeyboardArrowUp as CollapseIcon
 } from '@mui/icons-material';
-import { PulseLoader } from 'react-spinners';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
-import { isInstalled, submitTransaction } from '@gemwallet/api';
-import sdk from '@crossmarkio/sdk';
 import CustomQRDialog from 'src/components/QRDialog';
 import CustomDialog from 'src/components/Dialog';
 import useWebSocket from 'react-use-websocket';
@@ -52,8 +46,7 @@ const formatBalance = (balance) => {
 const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { darkMode, activeFiatCurrency, openSnackbar, accountProfile, setSync } = useContext(AppContext);
-  const [loading, setLoading] = useState(false);
+  const { activeFiatCurrency, openSnackbar, accountProfile, setSync } = useContext(AppContext);
   const BASE_URL = process.env.API_URL;
   
   // Dialog state
@@ -97,50 +90,24 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
 
   // Calculate value
   const value = useMemo(() => {
-    const tokenName = isXRP ? 'XRP' : (token.currencyName || token.currency);
     // exchRate is XRP per 1 USD (e.g., 0.415021 XRP = 1 USD)
     // To get USD per XRP, we need 1 / exchRate
     const xrpToFiat = exchRate ? 1 / exchRate : 0;
     
     if (isXRP) {
       // For XRP, value = balance * (1 / exchRate) to get fiat value
-      const xrpValue = (token.balance || 0) * xrpToFiat;
-      console.log(`[TokenCard] ${tokenName} value calculation:`, {
-        balance: token.balance,
-        exchRate,
-        xrpToFiat,
-        value: xrpValue
-      });
-      return xrpValue;
+      return (token.balance || 0) * xrpToFiat;
     }
-    
-    // Debug log token data
-    console.log(`[TokenCard] ${tokenName} token data:`, {
-      balance: token.balance,
-      exch: token.exch,
-      value: token.value,
-      exchRate,
-      xrpToFiat,
-      fullToken: token
-    });
     
     // Check if we have a pre-calculated value in XRP from the API
     if (token.value !== undefined && token.value !== null) {
       // The API provides value in XRP, convert to fiat
-      const calcValue = Number(token.value) * xrpToFiat;
-      console.log(`[TokenCard] ${tokenName} using API value: ${token.value} XRP * ${xrpToFiat} = ${calcValue}`);
-      return calcValue;
+      return Number(token.value) * xrpToFiat;
     }
     
     // Fallback: calculate from balance and exch
-    if (!token.balance || !token.exch) {
-      console.log(`[TokenCard] ${tokenName} missing balance or exch, returning 0`);
-      return 0;
-    }
-    
-    const calcValue = Number(token.balance) * Number(token.exch) * xrpToFiat;
-    console.log(`[TokenCard] ${tokenName} calculated: ${token.balance} * ${token.exch} * ${xrpToFiat} = ${calcValue}`);
-    return calcValue;
+    if (!token.balance || !token.exch) return 0;
+    return Number(token.balance) * Number(token.exch) * xrpToFiat;
   }, [token, isXRP, exchRate]);
 
   const percentOwned = useMemo(() => {
@@ -321,7 +288,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
         content={dialogState.content}
         title={dialogState.stepTitle}
         handleClose={handleConfirmClose}
-        handleContinue={() => {/* Add continue logic */}}
+        handleContinue={() => {}}
       />
     </>
   );
@@ -334,13 +301,6 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   const { sync, activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency];
-  
-  console.log('[TrustLines] Component state:', {
-    activeFiatCurrency,
-    exchRate,
-    metrics,
-    xrpBalance
-  });
   
   const [loading, setLoading] = useState(false);
   const [lines, setLines] = useState([]);
@@ -365,15 +325,12 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     const fetchLines = async () => {
       setLoading(true);
       try {
-        console.log(`[TrustLines] Fetching trustlines for account: ${account}`);
         const res = await axios.get(`https://api.xrpl.to/api/trustlines?account=${account}&includeRates=true&limit=400`);
         if (res.data?.success) {
-          console.log('[TrustLines] API response:', res.data);
-          console.log('[TrustLines] First 3 trustlines:', res.data.trustlines.slice(0, 3));
           setLines(res.data.trustlines);
         }
       } catch (err) {
-        console.error('[TrustLines] Error fetching trustlines:', err);
+        console.error('Error fetching trustlines:', err);
       } finally {
         setLoading(false);
       }
