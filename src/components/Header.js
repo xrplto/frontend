@@ -143,10 +143,7 @@ const HeaderWrapper = styled(Box)(
     border-bottom: 1px solid ${alpha(theme.palette.divider, 0.12)};
     position: relative;
     z-index: 1100;
-    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.5
-    )} 100%);
+    background: transparent;
     backdrop-filter: blur(25px);
     box-shadow: 0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)};
     
@@ -183,10 +180,7 @@ const StyledLink = styled(Link, {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
-    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.3
-    )} 100%);
+    background: transparent;
     backdrop-filter: blur(10px);
     border: 1px solid ${alpha(theme.palette.divider, 0.08)};
     position: relative;
@@ -241,10 +235,7 @@ const StyledMenuItem = styled(MenuItem, {
     margin: 4px 8px;
     border-radius: 10px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.2
-    )} 100%);
+    background: transparent;
     backdrop-filter: blur(10px);
     border: 1px solid ${alpha(theme.palette.divider, 0.06)};
     position: relative;
@@ -448,10 +439,7 @@ export default function Header(props) {
                 PaperProps={{
                   sx: {
                     mt: 1,
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.95
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                    background: 'transparent',
                     backdropFilter: 'blur(20px)',
                     borderRadius: '16px',
                     border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
@@ -874,10 +862,7 @@ export default function Header(props) {
                     sx={{
                       borderRadius: '12px',
                       height: '32px',
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.background.paper,
-                        0.8
-                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                      background: 'transparent',
                       backdropFilter: 'blur(10px)',
                       border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
                       color: theme.palette.text.primary,

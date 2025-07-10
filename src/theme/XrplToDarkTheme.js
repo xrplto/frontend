@@ -5,14 +5,14 @@ import '@mui/lab/themeAugmentation';
 
 const themeColors = {
   primary: '#147DFE',
-  secondary: '#9EA4C1',
-  success: '#57CA22',
-  warning: '#FFA319',
-  error: '#FF1943',
-  info: '#33C2FF',
+  secondary: '#8B92A8',
+  success: '#4CAF50',
+  warning: '#FF9800',
+  error: '#F44336',
+  info: '#2196F3',
   black: '#FFFFFF',
   white: '#000000',
-  primaryAlt: '#111633',
+  primaryAlt: '#0A0E1A',
   trueWhite: '#ffffff'
 };
 
@@ -53,12 +53,12 @@ const colors = {
     sidebar: {
       background: themeColors.primaryAlt,
       textColor: themeColors.secondary,
-      dividerBg: '#272C48',
-      menuItemColor: '#9EA4C1',
+      dividerBg: '#1A1F2E',
+      menuItemColor: '#8B92A8',
       menuItemColorActive: '#ffffff',
       menuItemBg: themeColors.primaryAlt,
-      menuItemBgActive: 'rgba(43, 48, 77, .6)',
-      menuItemIconColor: '#444A6B',
+      menuItemBgActive: 'rgba(20, 125, 254, 0.1)',
+      menuItemIconColor: '#5A6378',
       menuItemIconColorActive: '#ffffff',
       menuItemHeadingColor: darken(themeColors.secondary, 0.3)
     }
@@ -301,15 +301,15 @@ export const XrplToDarkTheme = createTheme({
   },
   header: {
     height: '80px',
-    background: themeColors.primaryAlt,
-    boxShadow: '0px 1px 0px #272C48',
+    background: '#111827',
+    boxShadow: '0px 1px 0px #1F2937',
     textColor: colors.secondary.main
   },
   spacing: 9,
   currency: {
-    background1: '#2E2E2E',
-    background2: '#1C1C1C',
-    border: '1px solid #32373C'
+    background1: '#1F2937',
+    background2: '#111827',
+    border: '1px solid #374151'
   },
   palette: {
     common: {
@@ -455,7 +455,22 @@ export const XrplToDarkTheme = createTheme({
           flexDirection: 'column',
           minHeight: '100%',
           width: '100%',
-          flex: 1
+          flex: 1,
+          background: '#0A0E1A',
+          scrollbarColor: `${alpha('#147DFE', 0.5)} ${alpha('#0A0E1A', 0.3)}`,
+          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
+            backgroundColor: alpha('#0A0E1A', 0.3),
+            width: '8px',
+            height: '8px'
+          },
+          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
+            borderRadius: 8,
+            backgroundColor: alpha('#147DFE', 0.5),
+            border: `1px solid ${alpha('#147DFE', 0.3)}`,
+          },
+          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: alpha('#147DFE', 0.7)
+          }
         },
         '#__next': {
           width: '100%',
@@ -593,18 +608,19 @@ export const XrplToDarkTheme = createTheme({
     },
     MuiChip: {
       styleOverrides: {
-        root: {},
+        root: {
+          borderRadius: '4px',
+          transition: 'background-color 0.2s'
+        },
         colorSecondary: {
           background: colors.alpha.black[5],
           color: colors.alpha.black[100],
-
           '&:hover': {
             background: colors.alpha.black[10]
           }
         },
         deleteIcon: {
           color: colors.alpha.black[50],
-
           '&:hover': {
             color: colors.alpha.black[70]
           }
@@ -692,7 +708,7 @@ export const XrplToDarkTheme = createTheme({
           textTransform: 'none',
           paddingLeft: 16,
           paddingRight: 16,
-
+          transition: 'all 0.2s',
           '.MuiSvgIcon-root': {
             transition: 'all .2s'
           }
@@ -700,10 +716,29 @@ export const XrplToDarkTheme = createTheme({
         endIcon: {
           marginRight: -8
         },
+        contained: {
+          backgroundColor: colors.primary.main,
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+          '&:hover': {
+            backgroundColor: colors.primary.light,
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)'
+          }
+        },
         containedSecondary: {
           backgroundColor: colors.secondary.main,
           color: colors.alpha.white[100],
-          border: '1px solid ' + colors.alpha.black[30]
+          border: '1px solid ' + colors.alpha.black[30],
+          '&:hover': {
+            backgroundColor: colors.secondary.light
+          }
+        },
+        outlined: {
+          borderColor: colors.primary.main,
+          color: colors.primary.main,
+          '&:hover': {
+            borderColor: colors.primary.light,
+            backgroundColor: alpha(colors.primary.main, 0.08)
+          }
         },
         outlinedSecondary: {
           backgroundColor: colors.alpha.white[100],
@@ -829,25 +864,27 @@ export const XrplToDarkTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          background: '#000000',
+          background: '#111827',
           padding: 0,
-          border: '1px solid #21252B'
+          border: '1px solid #1F2937',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
+          transition: 'box-shadow 0.2s'
         }
-        // elevation0: {
-        //   boxShadow: 'none'
-        // },
-        // elevation: {
-        //   boxShadow: colors.shadows.card
-        // },
-        // elevation2: {
-        //   boxShadow: colors.shadows.cardSm
-        // },
-        // elevation24: {
-        //   boxShadow: colors.shadows.cardLg
-        // },
-        // outlined: {
-        //   boxShadow: colors.shadows.card
-        // }
+      }
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: '8px',
+          border: '1px solid #1F2937',
+          background: '#111827',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
+          transition: 'all 0.2s',
+          '&:hover': {
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15)',
+            borderColor: alpha('#147DFE', 0.3)
+          }
+        }
       }
     },
     MuiLink: {

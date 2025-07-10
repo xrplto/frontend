@@ -118,8 +118,12 @@ export default function SearchToolbar({
         gap: 1,
         borderRadius: 2,
         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        background: alpha(theme.palette.background.paper, 0.5),
-        backdropFilter: 'blur(10px)',
+        background: darkMode 
+          ? alpha(theme.palette.background.paper, 0.15)
+          : alpha(theme.palette.background.paper, 0.25),
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)}`,
         flexWrap: 'wrap'
       }}
     >

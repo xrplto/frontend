@@ -53,9 +53,7 @@ const TopWrapper = styled(Box)(
     display: flex;
     align-items: center;
     height: ${theme.spacing(5)};
-    background: ${theme.palette.mode === 'dark' 
-      ? alpha(theme.palette.background.paper, 0.95)
-      : theme.palette.background.paper};
+    background: transparent;
     backdrop-filter: blur(20px);
     border-bottom: 1px solid ${alpha(theme.palette.divider, 0.05)};
     position: relative;
@@ -113,7 +111,7 @@ const MobileMetric = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(0.5, 1),
   borderRadius: theme.spacing(1),
-  background: alpha(theme.palette.background.default, 0.5),
+  background: 'transparent',
   border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
   minHeight: theme.spacing(4)
 }));
@@ -237,16 +235,12 @@ const LiveCircle = styled('div')(({ theme }) => ({
 const MetricContainer = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(0.75, 1.25),
   borderRadius: theme.spacing(1),
-  background: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.background.default, 0.4)
-    : alpha(theme.palette.grey[100], 0.6),
+  background: 'transparent',
   minWidth: 'auto',
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   '&:hover': {
-    background: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.default, 0.6)
-      : alpha(theme.palette.grey[200], 0.6),
+    background: alpha(theme.palette.action.hover, 0.05),
     transform: 'translateY(-1px)'
   }
 }));
@@ -326,9 +320,7 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   alignItems: 'center',
   padding: theme.spacing(2.5, 3),
-  background: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.background.paper, 0.98)
-    : theme.palette.background.paper,
+  background: 'transparent',
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
   position: 'sticky',
   top: 0,

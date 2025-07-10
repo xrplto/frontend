@@ -5,14 +5,14 @@ import '@mui/lab/themeAugmentation';
 
 const themeColors = {
   primary: '#147DFE',
-  secondary: '#6E759F',
-  success: '#57CA22',
-  warning: '#FFA319',
-  error: '#FF1943',
-  info: '#33C2FF',
+  secondary: '#64748B',
+  success: '#10B981',
+  warning: '#F59E0B',
+  error: '#EF4444',
+  info: '#3B82F6',
   black: '#000000',
   white: '#ffffff',
-  primaryAlt: '#000C57'
+  primaryAlt: '#E5F3FF'
 };
 
 const colors = {
@@ -416,7 +416,23 @@ export const XrplToLightTheme = createTheme({
           flexDirection: 'column',
           minHeight: '100%',
           width: '100%',
-          flex: 1
+          flex: 1,
+          background: '#F9FAFB',
+          scrollbarColor: `${alpha('#147DFE', 0.4)} ${alpha('#147DFE', 0.1)}`,
+          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
+            backgroundColor: alpha('#147DFE', 0.05),
+            width: '8px',
+            height: '8px'
+          },
+          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
+            borderRadius: 8,
+            backgroundColor: alpha('#147DFE', 0.3),
+            border: `2px solid transparent`,
+            backgroundClip: 'content-box',
+          },
+          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: alpha('#147DFE', 0.5)
+          }
         },
         '#__next': {
           width: '100%',
@@ -658,9 +674,24 @@ export const XrplToLightTheme = createTheme({
           textTransform: 'none',
           paddingLeft: 16,
           paddingRight: 16,
-
+          transition: 'all 0.2s',
           '.MuiSvgIcon-root': {
             transition: 'all .2s'
+          }
+        },
+        contained: {
+          backgroundColor: colors.primary.main,
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+          '&:hover': {
+            backgroundColor: colors.primary.dark,
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)'
+          }
+        },
+        outlined: {
+          borderColor: colors.primary.main,
+          '&:hover': {
+            backgroundColor: alpha(colors.primary.main, 0.04),
+            borderColor: colors.primary.dark
           }
         },
         endIcon: {
@@ -795,9 +826,15 @@ export const XrplToLightTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          background: '#F4F5FB',
+          background: colors.alpha.white[100],
           padding: 0,
-          border: '1px solid #E0E7EC'
+          border: '1px solid #E5E7EB',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.2s',
+          '&:hover': {
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
+            borderColor: alpha('#147DFE', 0.2)
+          }
         },
         // elevation0: {
         //   boxShadow: 'none'

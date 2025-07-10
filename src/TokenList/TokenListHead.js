@@ -251,7 +251,7 @@ export default function TokenListHead({
         position: 'sticky',
         top: scrollTopLength || 0,
         zIndex: 10,
-        background: theme.palette.background.paper,
+        background: 'transparent',
         '&::after': {
           content: '""',
           position: 'absolute',
@@ -278,7 +278,7 @@ export default function TokenListHead({
                   position: 'sticky',
                   left: getStickyLeft(headCell.id),
                   zIndex: 11,
-                  background: theme.palette.background.paper,
+                  background: 'transparent',
                   '&::after': scrollLeft && headCell.id === 'name' ? {
                     content: '""',
                     position: 'absolute',
