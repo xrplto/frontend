@@ -328,6 +328,35 @@ export default function SearchToolbar({
             '&:hover': { background: alpha('#9c27b0', 0.3) }
           }}
         />
+        
+        {/* Top Categories */}
+        {tags && tags.length > 0 && (
+          <>
+            <Divider orientation="vertical" flexItem sx={{ mx: 0.5, height: 20 }} />
+            
+            {/* Display first 5 categories from tags array */}
+            {tags.slice(0, 5).map((tag, index) => {
+              const normalizedTag = tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
+              const colors = ['#e91e63', '#00bcd4', '#4caf50', '#673ab7', '#ff9800'];
+              const emojis = ['🏷️', '📍', '⭐', '💫', '🎯'];
+              
+              return (
+                <Chip
+                  key={tag}
+                  label={`${emojis[index]} ${tag}`}
+                  size="small"
+                  onClick={() => handleViewChange(`/view/${normalizedTag}`)}
+                  sx={{
+                    cursor: 'pointer',
+                    background: tagName === tag ? alpha(colors[index], 0.2) : 'transparent',
+                    border: `1px solid ${alpha(colors[index], 0.3)}`,
+                    '&:hover': { background: alpha(colors[index], 0.3) }
+                  }}
+                />
+              );
+            })}
+          </>
+        )}
       </Stack>
 
       {/* Right Section - Categories & Rows */}
