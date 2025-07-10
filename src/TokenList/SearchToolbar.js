@@ -30,6 +30,7 @@ import CategoryIcon from '@mui/icons-material/Category';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import ViewListIcon from '@mui/icons-material/ViewList';
+import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -387,25 +388,18 @@ export default function SearchToolbar({
           NFT Collections
         </MenuItem>
         <Divider sx={{ my: 0.5 }} />
-        <MenuItem onClick={() => handleViewChange('/trending')}>
-          <LocalFireDepartmentIcon sx={{ mr: 1.5, fontSize: 20, color: '#ff5722' }} />
-          Trending Now
+        <MenuItem onClick={() => handleViewChange('/watchlist')}>
+          <StarIcon sx={{ mr: 1.5, fontSize: 20, color: '#ffc107' }} />
+          My Watchlist
         </MenuItem>
-        <MenuItem onClick={() => handleViewChange('/spotlight')}>
-          <StarIcon sx={{ mr: 1.5, fontSize: 20, color: '#2196f3' }} />
-          Spotlight
+        <Divider sx={{ my: 0.5 }} />
+        <MenuItem onClick={() => handleViewChange('/tokens-heatmap')}>
+          <GridViewIcon sx={{ mr: 1.5, fontSize: 20, color: '#ff5722' }} />
+          Heatmap View
         </MenuItem>
-        <MenuItem onClick={() => handleViewChange('/gainers/24h')}>
-          <TrendingUpIcon sx={{ mr: 1.5, fontSize: 20, color: '#4caf50' }} />
-          Top Gainers
-        </MenuItem>
-        <MenuItem onClick={() => handleViewChange('/new')}>
-          <NewReleasesIcon sx={{ mr: 1.5, fontSize: 20, color: '#ff9800' }} />
-          New Listings
-        </MenuItem>
-        <MenuItem onClick={() => handleViewChange('/most-viewed')}>
-          <VisibilityIcon sx={{ mr: 1.5, fontSize: 20, color: '#9c27b0' }} />
-          Most Viewed
+        <MenuItem onClick={() => handleViewChange('/top-traders')}>
+          <LeaderboardIcon sx={{ mr: 1.5, fontSize: 20, color: '#2196f3' }} />
+          Top Traders
         </MenuItem>
       </Menu>
 
