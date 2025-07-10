@@ -34,7 +34,7 @@ function OGPTestPage({ imageUrls }) {
               OGP Image Gallery
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              All 7 Open Graph images for testing social media preview functionality
+              All 9 Open Graph images for testing social media preview functionality
             </Typography>
             
             <Grid container spacing={2}>
@@ -185,7 +185,11 @@ export async function getStaticProps() {
     'fe8c16be4b0505d9df97e8cb12758b02'
   ];
   
-  const imageUrls = imageHashes.map(hash => `http://s1.xrpl.to/ogp/${hash}`);
+  const imageUrls = [
+    ...imageHashes.map(hash => `http://s1.xrpl.to/ogp/${hash}`),
+    'https://s1.xrpl.to/ogp/landing.webp',
+    'https://s1.xrpl.to/ogp/new.webp'
+  ];
   
   const ogp = {
     canonical: 'https://xrpl.to/ogp-test',

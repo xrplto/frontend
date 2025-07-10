@@ -364,7 +364,7 @@ export const XrplToLightTheme = createTheme({
       sm: 600,
       md: 960,
       lg: 1280,
-      xl: 1840
+      xl: 1800
     }
   },
   components: {
@@ -385,8 +385,13 @@ export const XrplToLightTheme = createTheme({
       styleOverrides: {
         root: {
           paddingLeft: '16px !important',
-          paddingRight: '16px !important',
-          maxWidth: '100% !important'
+          paddingRight: '16px !important'
+        },
+        maxWidthLg: {
+          maxWidth: '1500px !important'
+        },
+        maxWidthXl: {
+          maxWidth: '1800px !important'
         }
       }
     },
