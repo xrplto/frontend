@@ -503,8 +503,9 @@ export default function Summary() {
                 minWidth: { xs: 'unset', sm: '700px', md: '900px' },
                 width: '100%',
                 [(theme) => theme.breakpoints.down('sm')]: {
-                  flexWrap: 'wrap',
-                  gap: '8px'
+                  flexWrap: 'nowrap',
+                  gap: '8px',
+                  minWidth: '600px' // Ensure minimum width for 6 items
                 }
               }}
             >
@@ -515,9 +516,8 @@ export default function Summary() {
                   sx={{
                     flex: '1 0 auto',
                     [(theme) => theme.breakpoints.down('sm')]: {
-                      flex: 'none',
-                      width: 'calc(33.33%)', // Make width exactly 33.33% for 3 per row
-                      maxWidth: 'calc(33.33%)',
+                      flex: '0 0 auto',
+                      width: '95px', // Fixed width for mobile
                       padding: '0 !important'
                     }
                   }}
@@ -547,6 +547,19 @@ export default function Summary() {
               mt: { xs: 0, sm: 0, md: 0 },
               [(theme) => theme.breakpoints.up('md')]: {
                 pb: 2
+              },
+              [(theme) => theme.breakpoints.down('sm')]: {
+                overflowX: 'auto',
+                '&::-webkit-scrollbar': {
+                  height: 4
+                },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: 'transparent'
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: alpha(theme.palette.divider, 0.2),
+                  borderRadius: 2
+                }
               }
             }}
           >
@@ -567,9 +580,16 @@ export default function Summary() {
                 <Grid
                   container
                   spacing={{ xs: 1, sm: 1.5, md: 2 }}
+                  sx={{
+                    [(theme) => theme.breakpoints.down('sm')]: {
+                      flexWrap: 'nowrap',
+                      minWidth: '600px', // Ensure minimum width for 6 items
+                      gap: '8px'
+                    }
+                  }}
                 >
                   {/* Market Cap Box */}
-                  <Grid item xs={4} md={1.5}>
+                  <Grid item xs={2} md={1.5} sx={{ [(theme) => theme.breakpoints.down('sm')]: { flex: '0 0 auto', width: '95px' } }}>
                     <MetricBox>
                       <MetricTitle>Market Cap</MetricTitle>
                       <MetricValue>
@@ -583,7 +603,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* DEX Volume Box */}
-                  <Grid item xs={4} md={1.5}>
+                  <Grid item xs={2} md={1.5} sx={{ [(theme) => theme.breakpoints.down('sm')]: { flex: '0 0 auto', width: '95px' } }}>
                     <MetricBox>
                       <MetricTitle>24h Volume</MetricTitle>
                       <MetricValue>
@@ -597,7 +617,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* XRP Price Box */}
-                  <Grid item xs={4} md={1.5}>
+                  <Grid item xs={2} md={1.5} sx={{ [(theme) => theme.breakpoints.down('sm')]: { flex: '0 0 auto', width: '95px' } }}>
                     <MetricBox>
                       <MetricTitle>XRP</MetricTitle>
                       <MetricValue>
@@ -611,7 +631,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* Stablecoins Box */}
-                  <Grid item xs={4} md={1.5}>
+                  <Grid item xs={2} md={1.5} sx={{ [(theme) => theme.breakpoints.down('sm')]: { flex: '0 0 auto', width: '95px' } }}>
                     <MetricBox>
                       <MetricTitle>Stables</MetricTitle>
                       <MetricValue>
@@ -623,7 +643,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* Meme Tokens Box */}
-                  <Grid item xs={4} md={1.5}>
+                  <Grid item xs={2} md={1.5} sx={{ [(theme) => theme.breakpoints.down('sm')]: { flex: '0 0 auto', width: '95px' } }}>
                     <MetricBox>
                       <MetricTitle>Memes</MetricTitle>
                       <MetricValue>
@@ -635,7 +655,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* Sentiment Score */}
-                  <Grid item xs={4} md={1.5}>
+                  <Grid item xs={2} md={1.5} sx={{ [(theme) => theme.breakpoints.down('sm')]: { flex: '0 0 auto', width: '95px' } }}>
                     <MetricBox>
                       <MetricTitle
                         sx={{
@@ -710,7 +730,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* Combined Platform Chart */}
-                  <Grid item xs={12} md={3}>
+                  <Grid item xs={12} md={3} sx={{ [(theme) => theme.breakpoints.down('sm')]: { display: 'none' } }}>
                     <MetricBox sx={{ 
                       p: { xs: 1, sm: 2 }, 
                       background: theme => alpha(theme.palette.background.paper, 0.3),
