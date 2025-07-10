@@ -207,20 +207,43 @@ export default function PriceStatistics({ token }) {
     <Box
       sx={{
         borderRadius: { xs: '12px', sm: '16px' },
-        background: `linear-gradient(145deg, ${alpha(
-          theme.palette.background.paper,
-          0.95
-        )} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
-        backdropFilter: 'blur(20px)',
-        border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(theme.palette.common.black, 0.02)}`,
+        background: `linear-gradient(135deg, 
+          ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+          ${alpha(theme.palette.background.paper, 0.5)} 50%,
+          ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+        backdropFilter: 'blur(40px) saturate(150%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+        boxShadow: `
+          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
         position: 'relative',
         overflow: 'hidden',
         mb: { xs: 1, sm: 2 },
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `linear-gradient(
+            135deg,
+            ${alpha(theme.palette.primary.main, 0.05)} 0%,
+            transparent 50%,
+            ${alpha(theme.palette.secondary.main, 0.05)} 100%
+          )`,
+          pointerEvents: 'none'
+        },
         '&:hover': {
           transform: { xs: 'none', sm: 'translateY(-2px)' },
-          boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.12)}, 0 2px 4px ${alpha(theme.palette.common.black, 0.04)}`
+          boxShadow: `
+            0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+            0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+          border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
         }
       }}
     >
@@ -230,11 +253,26 @@ export default function PriceStatistics({ token }) {
       <Box
         sx={{
           p: { xs: 1.5, sm: 2 },
-          background: `linear-gradient(135deg, ${alpha(
-            theme.palette.primary.main,
-            0.08
-          )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+          background: `linear-gradient(135deg, 
+            ${alpha(theme.palette.primary.main, 0.1)} 0%, 
+            ${alpha(theme.palette.primary.main, 0.05)} 50%,
+            ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+          backdropFilter: 'blur(20px)',
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+          position: 'relative',
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '1px',
+            background: `linear-gradient(90deg, 
+              transparent, 
+              ${alpha(theme.palette.primary.main, 0.3)}, 
+              transparent)`,
+            opacity: 0.5
+          }
         }}
       >
         <Typography

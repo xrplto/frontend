@@ -473,7 +473,50 @@ export default function Summary() {
         mt: { xs: 0, sm: 0, md: 2 },
         mb: { xs: 2, sm: 2, md: 3 },
         width: '100%',
-        maxWidth: '100%'
+        maxWidth: '100%',
+        background: `linear-gradient(135deg, 
+          ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+          ${alpha(theme.palette.background.paper, 0.5)} 50%,
+          ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+        backdropFilter: 'blur(40px) saturate(150%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+        borderRadius: { xs: '12px', sm: '16px' },
+        boxShadow: `
+          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+        padding: { xs: 2, sm: 3 },
+        overflow: 'hidden',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `linear-gradient(
+            135deg,
+            ${alpha(theme.palette.primary.main, 0.05)} 0%,
+            transparent 50%,
+            ${alpha(theme.palette.secondary.main, 0.05)} 100%
+          )`,
+          pointerEvents: 'none',
+          zIndex: 0
+        },
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: `
+            0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+            0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+          border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
+        },
+        '& > *': {
+          position: 'relative',
+          zIndex: 1
+        }
       }}
     >
 
