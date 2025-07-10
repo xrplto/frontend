@@ -76,17 +76,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const [showDate, setShowDate] = useState(false);
   const [viewType, setViewType] = useState('row');
 
-  // Handle URL parameters for sorting
-  useEffect(() => {
-    const { sort, order: urlOrder } = router.query;
-    if (sort) {
-      setOrderBy(sort);
-      if (urlOrder) {
-        setOrder(urlOrder);
-      }
-      setSync((prev) => prev + 1);
-    }
-  }, [router.query]);
+  // Removed URL query parameter handling - now using direct state management
 
   const tableContainerRef = useRef(null);
   const tableRef = useRef(null);
@@ -539,7 +529,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         </Suspense>
       )}
 
-      <Box sx={{ mb: 1 }}>
+      <Box sx={{ mb: 0.5 }}>
         <SearchToolbar
           tags={tags}
           tagName={tagName}
@@ -560,6 +550,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           setSync={setSync}
           sync={sync}
           currentOrderBy={orderBy}
+          setOrderBy={setOrderBy}
         />
       </Box>
 
@@ -567,8 +558,8 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         sx={{
           display: 'flex',
           gap: 0,
-          paddingTop: '4px',
-          paddingBottom: '4px',
+          paddingTop: '2px',
+          paddingBottom: '2px',
           overflowX: 'auto',
           overflowY: 'visible',
           width: '100%',
@@ -579,8 +570,8 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           '::-webkit-scrollbar': { display: 'none' },
           scrollbarWidth: 'none',
           '& .MuiTableCell-root': {
-            padding: '4px 8px',
-            height: '40px',
+            padding: '2px 6px',
+            height: '32px',
             contain: 'layout style paint'
           },
           '& .MuiTableRow-root': {
@@ -626,7 +617,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
       </Box>
       <Box
         sx={{
-          mt: 1,
+          mt: 0.25,
           display: isMobile ? 'block' : 'flex',
           justifyContent: isMobile ? 'flex-start' : 'center',
           width: '100%'

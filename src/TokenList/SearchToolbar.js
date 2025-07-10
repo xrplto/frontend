@@ -1,217 +1,41 @@
-import axios from 'axios';
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
-import { update_filteredCount } from 'src/redux/statusSlice';
-
-// Material
+import React, { useState, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/router';
 import {
-  alpha,
-  styled,
-  useTheme,
   Box,
   Button,
-  Chip,
-  Divider,
+  ButtonGroup,
   IconButton,
-  InputAdornment,
-  Link,
-  MenuItem,
-  OutlinedInput,
-  Select,
-  Stack,
-  Tab,
-  Tabs,
-  Tooltip,
-  ToggleButton,
-  ToggleButtonGroup,
-  toggleButtonGroupClasses,
-  Paper,
   Menu,
-  SvgIcon,
-  Typography
+  MenuItem,
+  Divider,
+  Chip,
+  Stack,
+  Typography,
+  Tooltip,
+  Paper,
+  alpha,
+  useTheme
 } from '@mui/material';
-import StarOutlineIcon from '@mui/icons-material/StarOutline';
-import StarRateIcon from '@mui/icons-material/StarRate';
-import QueryStatsIcon from '@mui/icons-material/QueryStats';
-import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
-import WhatshotIcon from '@mui/icons-material/Whatshot';
 
-import FiberNewIcon from '@mui/icons-material/FiberNew';
-import DoNotTouchIcon from '@mui/icons-material/DoNotTouch';
-import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
+// Icons
 import AppsIcon from '@mui/icons-material/Apps';
-import CategoryIcon from '@mui/icons-material/Category';
-import CollectionsIcon from '@mui/icons-material/Collections'; // Import the icon for "NFTs"
-import DehazeIcon from '@mui/icons-material/Dehaze';
-import WindowIcon from '@mui/icons-material/Window';
+import GridViewIcon from '@mui/icons-material/GridView';
+import TableRowsIcon from '@mui/icons-material/TableRows';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import NewReleasesIcon from '@mui/icons-material/NewReleases';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
-import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import StorefrontIcon from '@mui/icons-material/Storefront';
-import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import ViewList from '@mui/icons-material/ViewList';
+import StarIcon from '@mui/icons-material/Star';
+import CategoryIcon from '@mui/icons-material/Category';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import CollectionsIcon from '@mui/icons-material/Collections';
+import ViewListIcon from '@mui/icons-material/ViewList';
 
-// Iconify
-import { Icon } from '@iconify/react';
-import searchFill from '@iconify/icons-eva/search-fill';
-import chartLineUp from '@iconify/icons-ph/chart-line-up';
-
-// Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-
-// Component
 import CategoriesDrawer from 'src/components/CategoriesDrawer';
-import { useRouter } from 'next/router';
 
-// Add XPMarket icon component
-const XPMarketIcon = (props) => {
-  // Filter out non-DOM props that might cause warnings
-  const { darkMode, ...otherProps } = props;
-
-  return (
-    <SvgIcon {...otherProps} viewBox="0 0 32 32">
-      <path
-        d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
-        fill="inherit"
-      />
-      <path
-        d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
-        fill="inherit"
-      />
-      <path
-        d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
-        fill="inherit"
-      />
-    </SvgIcon>
-  );
-};
-
-function normalizeTag(tag) {
-  if (tag && tag.length > 0) {
-    const tag1 = tag.split(' ').join('-'); // Replace space
-    const tag2 = tag1.replace(/&/g, 'and'); // Replace &
-    const tag3 = tag2.toLowerCase(); // Make lowercase
-    const final = tag3.replace(/[^a-zA-Z0-9-]/g, '');
-    return final;
-  }
-  return '';
-}
-
-// ----------------------------------------------------------------------
-// Clean professional RootStyle
-const RootStyle = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  background: theme.palette.background.paper,
-  padding: theme.spacing(1.5, 0),
-  position: 'relative',
-  [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(0.75, 0)
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.25, 0),
-    gap: theme.spacing(0.5)
-  }
-}));
-
-const SearchBox = styled(OutlinedInput)(({ theme }) => ({
-  width: 200,
-  transition: theme.transitions.create(['width'], {
-    easing: theme.transitions.easing.easeInOut,
-    duration: theme.transitions.duration.shorter
-  }),
-  '&.Mui-focused': { width: 280 },
-  '& fieldset': {
-    borderWidth: `1px !important`,
-    borderColor: `${theme.palette.grey[500_32]} !important`
-  }
-}));
-
-const HeaderWrapper = styled(Box)(
-  ({ theme }) => `
-    width: 100%;
-    display: flex;
-    align-items: center;
-    height: ${theme.spacing(10)};
-    margin-bottom: ${theme.spacing(0)};
-    border-radius: 0px;
-    border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
-`
-);
-
-// Clean professional StyledToggleButtonGroup
-const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
-  [`& .${toggleButtonGroupClasses.grouped}`]: {
-    margin: theme.spacing(0.3),
-    border: 0,
-    borderRadius: '8px',
-    height: '28px',
-    transition: 'all 0.2s ease',
-    [theme.breakpoints.down('md')]: {
-      margin: theme.spacing(0.15),
-      height: '22px',
-      borderRadius: '5px'
-    },
-    [theme.breakpoints.down('sm')]: {
-      margin: theme.spacing(0.05),
-      height: '18px',
-      borderRadius: '3px',
-      padding: '0 6px'
-    },
-    [`&.${toggleButtonGroupClasses.disabled}`]: {
-      border: 0
-    },
-    '&:hover': {
-      background: alpha(theme.palette.primary.main, 0.05),
-      [theme.breakpoints.down('sm')]: {
-        background: 'transparent'
-      }
-    },
-    '&.Mui-selected': {
-      background: theme.palette.primary.main,
-      color: '#ffffff',
-      border: 'none !important'
-    }
-  },
-  [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]: {
-    marginLeft: -1,
-    borderLeft: '1px solid transparent'
-  }
-}));
-
-const RowsSelector = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(0.5),
-  padding: theme.spacing(0.5, 1.5),
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.background.default, 0.5),
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  boxShadow: 'none'
-}));
-
-const CustomRowsSelect = styled(Select)(({ theme }) => ({
-  '& .MuiOutlinedInput-notchedOutline': {
-    border: 'none'
-  },
-  '& .MuiSelect-select': {
-    paddingRight: theme.spacing(3),
-    paddingLeft: theme.spacing(1),
-    fontWeight: 600,
-    color: theme.palette.primary.main,
-    minWidth: 60
-  },
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.04)
-  }
-}));
-
+// Helper function
 function getTagValue(tags, tagName) {
   if (!tags || tags.length < 1 || !tagName) return 0;
   const idx = tags.indexOf(tagName);
@@ -219,110 +43,6 @@ function getTagValue(tags, tagName) {
   return idx + 1;
 }
 
-// Clean professional Chip styling function
-const getEnhancedChipStyles = (theme, isActive, color, isLoading) => ({
-  borderRadius: '10px',
-  height: '32px',
-  fontWeight: 500,
-  fontSize: '0.875rem',
-  transition: 'all 0.2s ease',
-  [theme.breakpoints.down('md')]: {
-    height: '26px',
-    fontSize: '0.75rem',
-    borderRadius: '6px'
-  },
-  [theme.breakpoints.down('sm')]: {
-    height: '22px',
-    fontSize: '0.65rem',
-    borderRadius: '4px',
-    minWidth: 'unset'
-  },
-  background: isActive
-    ? alpha(theme.palette.primary.main, 0.1)
-    : alpha(theme.palette.background.default, 0.7),
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  color: isActive ? color || theme.palette.primary.main : theme.palette.text.primary,
-  boxShadow: 'none',
-  '&:hover': {
-    background: isActive
-      ? alpha(theme.palette.primary.main, 0.15)
-      : alpha(theme.palette.background.default, 0.9),
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-    [theme.breakpoints.down('sm')]: {
-      background: isActive
-        ? alpha(theme.palette.primary.main, 0.1)
-        : alpha(theme.palette.background.default, 0.7)
-    }
-  },
-  '& .MuiChip-label': {
-    px: 2,
-    fontWeight: 500,
-    [theme.breakpoints.down('md')]: {
-      px: 1.25
-    },
-    [theme.breakpoints.down('sm')]: {
-      px: 0.75,
-      fontWeight: 400
-    }
-  },
-  '& .MuiChip-icon': {
-    fontSize: '18px',
-    marginLeft: '8px',
-    [theme.breakpoints.down('md')]: {
-      fontSize: '16px',
-      marginLeft: '6px'
-    },
-    [theme.breakpoints.down('sm')]: {
-      fontSize: '14px',
-      marginLeft: '4px'
-    }
-  },
-  '@keyframes spin': {
-    '0%': { transform: 'rotate(0deg)' },
-    '100%': { transform: 'rotate(360deg)' }
-  },
-  opacity: isLoading ? 0.7 : 1
-});
-
-// Clean mobile chip styles
-const getMobileChipStyles = (theme) => ({
-  borderRadius: '10px',
-  height: '36px',
-  fontWeight: 500,
-  background: alpha(theme.palette.background.paper, 0.9),
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  boxShadow: 'none',
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    background: alpha(theme.palette.background.paper, 0.95),
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-  }
-});
-
-// ShadowContent styled component - moved outside to prevent recreation
-const ShadowContent = styled('div')(
-  ({ theme }) => `
-      -webkit-box-flex: 1;
-      flex-grow: 1;
-      height: 1em;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      position: relative;
-  
-      &::before {
-          content: "";
-          position: absolute;
-          left: 0px;
-          top: 0px;
-          width: 8em;
-          height: 100%;
-          background: linear-gradient(270deg, ${theme.palette.background.default}, rgba(255,255,255,0));
-          z-index: 1000;
-      }
-  `
-);
-
-// ----------------------------------------------------------------------
 export default function SearchToolbar({
   tags,
   tagName,
@@ -342,925 +62,359 @@ export default function SearchToolbar({
   setPage,
   setSync,
   sync,
-  currentOrderBy
+  currentOrderBy,
+  setOrderBy
 }) {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const { accountProfile, openSnackbar, darkMode } = useContext(AppContext);
-  const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
   const theme = useTheme();
+  const { darkMode } = useContext(AppContext);
+  
+  const [mainMenuAnchor, setMainMenuAnchor] = useState(null);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
 
-  const [tagValue, setTagValue] = useState(0);
-  const [openCategoriesDrawer, setOpenCategoriesDrawer] = useState(false);
-  const [gainersAnchorEl, setGainersAnchorEl] = useState(null);
-  const [tokensAnchorEl, setTokensAnchorEl] = useState(null);
-  const [trendingCategoriesAnchorEl, setTrendingCategoriesAnchorEl] = useState(null);
-  const [isLoading, setIsLoading] = useState({
-    new: false,
-    gainers: false,
-    mostViewed: false,
-    spotlight: false,
-    trending: false,
-    trendingCategories: false
-  });
+  // Determine current view
+  const currentView = useMemo(() => {
+    if (router.pathname === '/collections') return 'nfts';
+    if (router.pathname === '/trending') return 'trending';
+    if (router.pathname === '/spotlight') return 'spotlight';
+    if (router.pathname === '/most-viewed') return 'most-viewed';
+    if (router.pathname === '/new') return 'new';
+    if (router.pathname.includes('/gainers')) return 'gainers';
+    if (router.query.view) return router.query.view;
+    return 'tokens';
+  }, [router]);
 
-  // Add ref for tabs to control scroll position
-  const tabsRef = useRef(null);
-
-  // Update tagValue only when tags or tagName changes to prevent unnecessary re-renders
-  useEffect(() => {
-    setTagValue(getTagValue(tags, tagName));
-  }, [tags, tagName]);
-
-  // Ensure tabs scroll to beginning to show Tokens tab on mount and when tagValue is 0
-  useEffect(() => {
-    if (tabsRef.current && (tagValue === 0 || !tagName)) {
-      // Small delay to ensure tabs are rendered
-      setTimeout(() => {
-        // Try multiple approaches to ensure the first tab is visible
-        const tabsContainer = tabsRef.current.querySelector('.MuiTabs-scroller');
-        const firstTab = tabsRef.current.querySelector('.MuiTab-root');
-
-        if (tabsContainer) {
-          tabsContainer.scrollLeft = 0;
-          tabsContainer.scrollTo({ left: 0, behavior: 'smooth' });
-        }
-
-        // Also try using the first tab's scrollIntoView
-        if (firstTab) {
-          firstTab.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest',
-            inline: 'start'
-          });
-        }
-      }, 100);
+  // Get current period for gainers
+  const currentPeriod = useMemo(() => {
+    if (currentOrderBy === 'pro5m') return '5m';
+    if (currentOrderBy === 'pro1h') return '1h';
+    if (currentOrderBy === 'pro24h') return '24h';
+    if (currentOrderBy === 'pro7d') return '7d';
+    // Check URL path for gainers
+    if (router.pathname.includes('/gainers/')) {
+      const period = router.pathname.split('/gainers/')[1];
+      return period || '24h';
     }
-  }, [tagValue, tagName]);
+    return '24h';
+  }, [currentOrderBy, router.pathname]);
 
-  // Also ensure scroll to beginning on initial mount
-  useEffect(() => {
-    if (tabsRef.current) {
-      setTimeout(() => {
-        const tabsContainer = tabsRef.current.querySelector('.MuiTabs-scroller');
-        const firstTab = tabsRef.current.querySelector('.MuiTab-root');
+  const handleMainMenuClick = (event) => setMainMenuAnchor(event.currentTarget);
+  const handleMainMenuClose = () => setMainMenuAnchor(null);
 
-        if (tabsContainer) {
-          tabsContainer.scrollLeft = 0;
-        }
-
-        if (firstTab) {
-          firstTab.scrollIntoView({
-            behavior: 'auto',
-            block: 'nearest',
-            inline: 'start'
-          });
-        }
-      }, 200);
-    }
-  }, []);
-
-  // Get current sorting period from URL or use the currentOrderBy prop
-  const currentPeriod = router.query.sort || currentOrderBy;
-  const periodLabels = {
-    pro5m: '5m',
-    pro1h: '1h',
-    pro24h: '24h',
-    pro7d: '7d'
-  };
-
-  const handleChangeRows = useCallback(
-    (e) => {
-      setRows(parseInt(e.target.value, 10));
-    },
-    [setRows]
-  );
-
-  const handleDelete = useCallback(() => {}, []);
-
-  const handleGainersClick = useCallback((event) => {
-    setGainersAnchorEl(event.currentTarget);
-  }, []);
-
-  const handleGainersClose = useCallback(() => {
-    setGainersAnchorEl(null);
-  }, []);
-
-  const handleGainersPeriodSelect = useCallback(
-    async (period) => {
-      setIsLoading((prev) => ({ ...prev, gainers: true }));
-      try {
-        // Map API periods to clean URL periods
-        const periodMap = {
-          pro5m: '5m',
-          pro1h: '1h',
-          pro24h: '24h',
-          pro7d: '7d'
-        };
-        const urlPeriod = periodMap[period] || period;
-        window.location.href = `/gainers/${urlPeriod}`;
-      } finally {
-        setIsLoading((prev) => ({ ...prev, gainers: false }));
-        handleGainersClose();
-      }
-    },
-    [handleGainersClose]
-  );
-
-  const handleTokensClick = useCallback((event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setTokensAnchorEl(event.currentTarget);
-  }, []);
-
-  const handleTokensClose = useCallback(() => {
-    setTokensAnchorEl(null);
-  }, []);
-
-  const handleTokenOptionSelect = useCallback(
-    async (path) => {
-      try {
-        window.location.href = path;
-      } finally {
-        handleTokensClose();
-      }
-    },
-    [handleTokensClose]
-  );
-
-  // Memoize the handlers to prevent recreating on each render
-  const handleNewClick = useCallback(async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsLoading((prev) => ({ ...prev, new: true }));
-    try {
-      window.location.href = '/new';
-    } finally {
-      setIsLoading((prev) => ({ ...prev, new: false }));
-    }
-  }, []);
-
-  const handleMostViewedClick = useCallback(async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsLoading((prev) => ({ ...prev, mostViewed: true }));
-    try {
-      window.location.href = '/most-viewed';
-    } finally {
-      setIsLoading((prev) => ({ ...prev, mostViewed: false }));
-    }
-  }, []);
-
-  const handleSpotlightClick = useCallback(async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsLoading((prev) => ({ ...prev, spotlight: true }));
-    try {
-      window.location.href = '/spotlight';
-    } finally {
-      setIsLoading((prev) => ({ ...prev, spotlight: false }));
-    }
-  }, []);
-
-  const handleTrendingClick = useCallback(async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsLoading((prev) => ({ ...prev, trending: true }));
-    try {
-      window.location.href = '/trending';
-    } finally {
-      setIsLoading((prev) => ({ ...prev, trending: false }));
-    }
-  }, []);
-
-  const handleTrendingCategoriesClick = useCallback((event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setTrendingCategoriesAnchorEl(event.currentTarget);
-  }, []);
-
-  const handleTrendingCategoriesClose = useCallback(() => {
-    setTrendingCategoriesAnchorEl(null);
-  }, []);
-
-  const handleCategorySelect = useCallback(
-    async (category) => {
-      setIsLoading((prev) => ({ ...prev, trendingCategories: true }));
-      try {
-        // Use the view path format with lowercase category
-        window.location.href = `/view/${category.toLowerCase()}`;
-      } finally {
-        setIsLoading((prev) => ({ ...prev, trendingCategories: false }));
-        handleTrendingCategoriesClose();
-      }
-    },
-    [handleTrendingCategoriesClose]
-  );
-
-  const toggleCategoriesDrawer = useCallback((isOpen = true) => {
-    setOpenCategoriesDrawer(isOpen);
-  }, []);
-
-  // Memoize trending categories to prevent recalculation on every render
-  const trendingCategories = useMemo(() => {
-    if (!tags || tags.length === 0) return [];
-
-    // Map colors to categories
-    const categoryColors = {
-      defi: '#FF5630',
-      meme: '#FFAB00',
-      ai: '#36B37E',
-      gaming: '#9155FD',
-      nft: '#2499EF',
-      metaverse: '#7635DC',
-      exchange: '#00AB55',
-      privacy: '#B71D18'
-    };
-
-    // Select 4 popular categories from tags
-    // In a real app, these would be determined by analytics
-    const popularCategories = ['defi', 'meme', 'ai', 'gaming'].filter((cat) => tags.includes(cat));
-
-    // If we don't have enough categories from our predefined list, add more from tags
-    let result = [...popularCategories];
-    let i = 0;
-    while (result.length < 4 && i < tags.length) {
-      const tag = tags[i];
-      if (!result.includes(tag)) {
-        result.push(tag);
-      }
-      i++;
-    }
-
-    // Map to the format we need
-    return result.slice(0, 4).map((cat) => ({
-      name: cat.charAt(0).toUpperCase() + cat.slice(1), // Capitalize first letter
-      tag: cat,
-      color: categoryColors[cat] || '#637381' // Use predefined color or default
-    }));
-  }, [tags]);
-
-  // Memoize style objects to prevent recreation
-  const mobileChipStyles = useMemo(() => getMobileChipStyles(theme), [theme]);
-
-  // Memoize chip styles to prevent recalculation
-  const tokensChipStyles = useMemo(
-    () =>
-      getEnhancedChipStyles(
-        theme,
-        tagValue === 0 && !currentPeriod || currentPeriod === 'vol24hxrp',
-        theme.palette.primary.main,
-        false
-      ),
-    [theme, tagValue, currentPeriod]
-  );
-
-  const nftsChipStyles = useMemo(
-    () => getEnhancedChipStyles(theme, tagValue === 1, theme.palette.success.main, false),
-    [theme, tagValue]
-  );
-
-  const trendingChipStyles = useMemo(
-    () =>
-      getEnhancedChipStyles(
-        theme,
-        currentPeriod === 'trendingScore',
-        '#FF5630',
-        isLoading.trending
-      ),
-    [theme, currentPeriod, isLoading.trending]
-  );
-
-  const spotlightChipStyles = useMemo(
-    () =>
-      getEnhancedChipStyles(
-        theme,
-        currentPeriod === 'assessmentScore',
-        '#2499EF',
-        isLoading.spotlight
-      ),
-    [theme, currentPeriod, isLoading.spotlight]
-  );
-
-  const mostViewedChipStyles = useMemo(
-    () => getEnhancedChipStyles(theme, currentPeriod === 'nginxScore', '#9155FD', isLoading.mostViewed),
-    [theme, currentPeriod, isLoading.mostViewed]
-  );
-
-  const gainersChipStyles = useMemo(
-    () =>
-      getEnhancedChipStyles(
-        theme,
-        currentPeriod && ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentPeriod),
-        '#00AB55',
-        isLoading.gainers
-      ),
-    [theme, currentPeriod, isLoading.gainers]
-  );
-
-  const newChipStyles = useMemo(
-    () => getEnhancedChipStyles(theme, currentPeriod === 'dateon', '#FFAB00', isLoading.new),
-    [theme, currentPeriod, isLoading.new]
-  );
-
-  const categoriesChipStyles = useMemo(
-    () => getEnhancedChipStyles(theme, false, '#5569ff', false),
-    [theme]
-  );
-
-  // Memoize trending category chip styles
-  const getTrendingCategoryChipStyles = useCallback(
-    (category) => getEnhancedChipStyles(theme, false, category.color, false),
-    [theme]
-  );
-
-  // Memoize the category click handler
-  const handleCategoryClick = useCallback(
-    (categoryTag) => {
-      handleCategorySelect(categoryTag);
-    },
-    [handleCategorySelect]
-  );
-
-  // Memoize the categories drawer handler
-  const handleCategoriesDrawerOpen = useCallback(() => {
-    setOpenCategoriesDrawer(true);
+  const handleViewChange = useCallback((path) => {
+    window.location.href = path;
+    handleMainMenuClose();
   }, []);
 
   return (
-    <>
-      <RootStyle>
-        {/* Clean Toggle Button Group */}
-        <Paper
-          elevation={0}
+    <Paper
+      elevation={0}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        p: 0.5,
+        gap: 1,
+        borderRadius: 2,
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        background: alpha(theme.palette.background.paper, 0.5),
+        backdropFilter: 'blur(10px)',
+        flexWrap: 'wrap'
+      }}
+    >
+      {/* Left Section - View Selector */}
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Button
+          variant="contained"
+          size="small"
+          onClick={handleMainMenuClick}
+          endIcon={<KeyboardArrowDownIcon />}
           sx={{
-            display: 'flex',
-            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            flexWrap: 'wrap',
-            borderRadius: '12px',
-            padding: '4px',
-            [theme.breakpoints.down('md')]: {
-              borderRadius: '8px',
-              padding: '2px'
-            },
-            [theme.breakpoints.down('sm')]: {
-              borderRadius: '4px',
-              padding: '1px'
-            },
-            background: alpha(theme.palette.background.default, 0.5),
-            boxShadow: 'none'
+            background: theme.palette.mode === 'dark' 
+              ? 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)'
+              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            boxShadow: 'none',
+            textTransform: 'none',
+            fontWeight: 600,
+            px: 2,
+            '&:hover': {
+              boxShadow: 2
+            }
           }}
         >
-          <StyledToggleButtonGroup
-            size="small"
-            exclusive
-            value={viewType}
-            onChange={(_, newType) => setViewType(newType)}
-          >
-            <ToggleButton size="small" value="row">
-              <DehazeIcon sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' } }} />
-            </ToggleButton>
-            <ToggleButton
-              size="small"
-              value="heatmap"
+          {currentView === 'tokens' && <><AppsIcon sx={{ fontSize: 18, mr: 0.5 }} /> Tokens</>}
+          {currentView === 'nfts' && <><CollectionsIcon sx={{ fontSize: 18, mr: 0.5 }} /> NFTs</>}
+          {currentView === 'trending' && <><LocalFireDepartmentIcon sx={{ fontSize: 18, mr: 0.5 }} /> Trending</>}
+          {currentView === 'gainers' && <><TrendingUpIcon sx={{ fontSize: 18, mr: 0.5 }} /> Gainers</>}
+          {currentView === 'new' && <><NewReleasesIcon sx={{ fontSize: 18, mr: 0.5 }} /> New</>}
+        </Button>
+
+        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+
+        {/* View Type Toggle */}
+        <ButtonGroup size="small" variant="outlined">
+          <Tooltip title="List View">
+            <Button
+              onClick={() => setViewType('row')}
+              variant={viewType === 'row' ? 'contained' : 'outlined'}
+              sx={{ minWidth: 36, px: 1 }}
+            >
+              <TableRowsIcon fontSize="small" />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Grid View">
+            <Button
               onClick={() => window.location.href = '/tokens-heatmap'}
+              variant={viewType === 'heatmap' ? 'contained' : 'outlined'}
+              sx={{ minWidth: 36, px: 1 }}
             >
-              <WindowIcon sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' } }} />
-            </ToggleButton>
-          </StyledToggleButtonGroup>
-        </Paper>
+              <GridViewIcon fontSize="small" />
+            </Button>
+          </Tooltip>
+        </ButtonGroup>
+      </Stack>
 
-        {/* Clean Tabs */}
-        <Tabs
-          value={tagValue}
-          variant="scrollable"
-          scrollButtons="auto"
-          aria-label="tag-tabs"
-          sx={{
-            '& .MuiTabs-indicator': {
-              display: 'none'
-            },
-            '& .MuiTabs-flexContainer': {
-              justifyContent: 'flex-start',
-              gap: '8px',
-              // Mobile compact gap
-              [theme.breakpoints.down('md')]: {
-                gap: '4px'
-              },
-              [theme.breakpoints.down('sm')]: {
-                gap: '2px'
-              }
-            },
-            '& .MuiTab-root': {
-              minHeight: '36px',
-              padding: '0 6px',
-              minWidth: 'unset',
-              // Mobile compact tab
-              [theme.breakpoints.down('md')]: {
-                minHeight: '28px',
-                padding: '0 2px'
-              },
-              [theme.breakpoints.down('sm')]: {
-                minHeight: '22px',
-                padding: '0 1px'
-              }
-            },
-            '& .MuiTabs-scrollButtons': {
-              '&.Mui-disabled': {
-                opacity: 0.3
-              }
-            }
-          }}
-          ref={tabsRef}
-        >
-          {/* Tokens Tab */}
-          <Tab
-            disableRipple
-            label={
-              <Chip
-                size="small"
-                icon={<AppsIcon sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' } }} />}
-                label={'Tokens'}
-                onClick={handleTokensClick}
-                sx={tokensChipStyles}
-              />
-            }
-            style={{
-              paddingLeft: 0,
-              paddingRight: 0
-            }}
-          />
-
-          {/* NFTs Tab */}
-          <Tab
-            disableRipple
-            label={
-              <Link
-                href={`/collections`}
-                sx={{ pl: 0, pr: 0, display: 'inline-flex' }}
-                underline="none"
-                rel="noreferrer noopener nofollow"
-              >
-                <Chip
-                  size="small"
-                  icon={<CollectionsIcon sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' } }} />}
-                  label={'NFTs'}
-                  onClick={handleDelete}
-                  sx={nftsChipStyles}
-                />
-              </Link>
-            }
-            style={{
-              paddingLeft: 0,
-              paddingRight: 0
-            }}
-          />
-
-          {/* Trending Tab */}
-          <Tab
-            disableRipple
-            label={
-              <Chip
-                size="small"
-                icon={
-                  <LocalFireDepartmentIcon
-                    sx={{
-                      fontSize: { xs: '14px', sm: '16px', md: '18px' },
-                      animation: isLoading.trending ? 'spin 1s linear infinite' : 'none'
-                    }}
-                  />
-                }
-                label={'Trending'}
-                onClick={handleTrendingClick}
-                disabled={isLoading.trending}
-                sx={trendingChipStyles}
-              />
-            }
-            style={{
-              paddingLeft: 0,
-              paddingRight: 0
-            }}
-          />
-
-          {/* Spotlight Tab */}
-          <Tab
-            disableRipple
-            label={
-              <Chip
-                size="small"
-                icon={
-                  <SearchIcon
-                    sx={{
-                      fontSize: { xs: '14px', sm: '16px', md: '18px' },
-                      animation: isLoading.spotlight ? 'spin 1s linear infinite' : 'none'
-                    }}
-                  />
-                }
-                label={'Spotlight'}
-                onClick={handleSpotlightClick}
-                disabled={isLoading.spotlight}
-                sx={spotlightChipStyles}
-              />
-            }
-            style={{
-              paddingLeft: 0,
-              paddingRight: 0
-            }}
-          />
-
-          {/* Most Viewed Tab */}
-          <Tab
-            disableRipple
-            label={
-              <Chip
-                size="small"
-                icon={
-                  <VisibilityIcon
-                    sx={{
-                      fontSize: { xs: '14px', sm: '16px', md: '18px' },
-                      animation: isLoading.mostViewed ? 'spin 1s linear infinite' : 'none'
-                    }}
-                  />
-                }
-                label={'Most Viewed'}
-                onClick={handleMostViewedClick}
-                disabled={isLoading.mostViewed}
-                sx={mostViewedChipStyles}
-              />
-            }
-            style={{
-              paddingLeft: 0,
-              paddingRight: 0
-            }}
-          />
-
-          {/* Gainers Tab */}
-          <Tab
-            disableRipple
-            label={
-              <Chip
-                size="small"
-                icon={
-                  <TrendingUpIcon
-                    sx={{
-                      fontSize: { xs: '14px', sm: '16px', md: '18px' },
-                      animation: isLoading.gainers ? 'spin 1s linear infinite' : 'none'
-                    }}
-                  />
-                }
-                label={
-                  currentPeriod && periodLabels[currentPeriod]
-                    ? `Gainers ${periodLabels[currentPeriod]}`
-                    : 'Gainers'
-                }
-                onClick={handleGainersClick}
-                disabled={isLoading.gainers}
-                sx={gainersChipStyles}
-              />
-            }
-            style={{
-              paddingLeft: 0,
-              paddingRight: 0
-            }}
-          />
-
-          {/* New Tokens Tab */}
-          <Tab
-            disableRipple
-            label={
-              <Chip
-                size="small"
-                icon={
-                  <FiberNewIcon
-                    sx={{
-                      fontSize: { xs: '14px', sm: '16px', md: '18px' },
-                      animation: isLoading.new ? 'spin 1s linear infinite' : 'none'
-                    }}
-                  />
-                }
-                label={'New'}
-                onClick={handleNewClick}
-                disabled={isLoading.new}
-                sx={newChipStyles}
-              />
-            }
-            style={{
-              paddingLeft: 0,
-              paddingRight: 0
-            }}
-          />
-
-          {/* Trending Categories */}
-          {trendingCategories.map((category) => (
-            <Tab
-              key={category.tag}
-              disableRipple
-              label={
-                <Chip
-                  size="small"
-                  icon={<WhatshotIcon sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' } }} />}
-                  label={category.name}
-                  onClick={() => handleCategoryClick(category.tag)}
-                  sx={getTrendingCategoryChipStyles(category)}
-                />
-              }
-              style={{
-                paddingLeft: 0,
-                paddingRight: 0
-              }}
-            />
-          ))}
-
-          {/* Categories Tab */}
-          <Tab
-            key={0}
-            value={0}
-            disableRipple
-            label={
-              <Chip
-                size="small"
-                icon={<CategoryIcon sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' } }} />}
-                label={'Categories'}
-                onClick={handleCategoriesDrawerOpen}
-                sx={categoriesChipStyles}
-              />
-            }
-            style={{
-              paddingLeft: 0,
-              paddingRight: 0
-            }}
-          />
-        </Tabs>
-
-        {/* Clean Rows Selector */}
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, ml: 'auto' }}>
-          <RowsSelector>
-            <ViewList fontSize="small" color="action" />
-            <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>
-              Rows
-            </Typography>
-            <CustomRowsSelect value={rows} onChange={handleChangeRows} size="small">
-              <MenuItem value={100}>100</MenuItem>
-              <MenuItem value={50}>50</MenuItem>
-              <MenuItem value={20}>20</MenuItem>
-            </CustomRowsSelect>
-          </RowsSelector>
-        </Box>
-
-        <CategoriesDrawer
-          isOpen={openCategoriesDrawer}
-          toggleDrawer={toggleCategoriesDrawer}
-          tags={tags}
-        />
-
-        {/* Clean Menu */}
-        <Menu
-          anchorEl={gainersAnchorEl}
-          open={Boolean(gainersAnchorEl)}
-          onClose={handleGainersClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left'
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'left'
-          }}
-          PaperProps={{
-            sx: {
-              mt: 1,
-              minWidth: '160px',
-              borderRadius: '12px',
-              [theme.breakpoints.down('md')]: {
-                borderRadius: '10px',
-                minWidth: '140px'
-              },
-              [theme.breakpoints.down('sm')]: {
-                borderRadius: '8px',
-                minWidth: '120px'
-              },
-              background: theme.palette.background.paper,
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              boxShadow: 'none',
-              '& .MuiMenuItem-root': {
-                fontSize: '0.875rem',
-                minHeight: '40px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                borderRadius: '8px',
-                margin: '4px 8px',
-                transition: 'all 0.2s ease',
-                // Mobile compact menu items
-                [theme.breakpoints.down('md')]: {
-                  fontSize: '0.8125rem',
-                  minHeight: '36px',
-                  margin: '3px 6px',
-                  borderRadius: '6px'
-                },
-                [theme.breakpoints.down('sm')]: {
-                  fontSize: '0.75rem',
-                  minHeight: '32px',
-                  margin: '2px 4px',
-                  borderRadius: '4px'
-                },
-                '&:hover': {
-                  background: alpha(theme.palette.primary.main, 0.05),
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                  [theme.breakpoints.down('sm')]: {
-                    background: 'transparent'
-                  }
-                }
-              }
-            }
-          }}
-        >
-          {Object.entries(periodLabels).map(([period, label]) => (
-            <MenuItem
-              key={period}
-              onClick={() => handleGainersPeriodSelect(period)}
+      {/* Center Section - Quick Filters */}
+      <Stack 
+        direction="row" 
+        spacing={0.5} 
+        sx={{ 
+          flex: 1,
+          overflowX: 'auto',
+          px: 1,
+          alignItems: 'center',
+          '&::-webkit-scrollbar': { display: 'none' },
+          scrollbarWidth: 'none'
+        }}
+      >
+        {/* Period selector for gainers or price change sorting */}
+        {(currentView === 'gainers' || ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentOrderBy)) && (
+          <>
+            <ButtonGroup 
+              size="small" 
+              variant="outlined"
               sx={{
-                backgroundColor: currentPeriod === period ? 'transparent' : 'transparent',
-                color: currentPeriod === period ? '#00AB55' : 'inherit',
-                fontWeight: currentPeriod === period ? 600 : 400,
-                border:
-                  currentPeriod === period
-                    ? `1px solid ${alpha(theme.palette.divider, 0.15)}`
-                    : 'none'
-              }}
-            >
-              {`${label} Gainers`}
-              {currentPeriod === period && <TrendingUpIcon sx={{ fontSize: '16px', ml: 1 }} />}
-            </MenuItem>
-          ))}
-        </Menu>
-
-        {/* Clean Tokens Menu */}
-        <Menu
-          anchorEl={tokensAnchorEl}
-          open={Boolean(tokensAnchorEl)}
-          onClose={handleTokensClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left'
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'left'
-          }}
-          PaperProps={{
-            sx: {
-              mt: 1,
-              minWidth: '180px',
-              borderRadius: '12px',
-              [theme.breakpoints.down('md')]: {
-                borderRadius: '10px',
-                minWidth: '160px'
-              },
-              [theme.breakpoints.down('sm')]: {
-                borderRadius: '8px',
-                minWidth: '140px'
-              },
-              background: theme.palette.background.paper,
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              boxShadow: 'none',
-              '& .MuiMenuItem-root': {
-                fontSize: '0.875rem',
-                minHeight: '40px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 1,
-                borderRadius: '8px',
-                margin: '4px 8px',
-                transition: 'all 0.2s ease',
-                // Mobile compact menu items
-                [theme.breakpoints.down('md')]: {
-                  fontSize: '0.8125rem',
-                  minHeight: '36px',
-                  margin: '3px 6px',
-                  borderRadius: '6px'
+                '& .MuiButton-root': {
+                  minWidth: 32,
+                  px: 0.75,
+                  py: 0.25,
+                  fontSize: '0.7rem',
+                  fontWeight: 500,
+                  borderColor: alpha(theme.palette.divider, 0.2),
+                  '&:hover': {
+                    borderColor: alpha(theme.palette.primary.main, 0.3),
+                    background: alpha(theme.palette.primary.main, 0.05)
+                  }
                 },
-                [theme.breakpoints.down('sm')]: {
-                  fontSize: '0.75rem',
-                  minHeight: '32px',
-                  margin: '2px 4px',
-                  borderRadius: '4px'
-                },
-                '&:hover': {
-                  background: alpha(theme.palette.primary.main, 0.05),
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                  [theme.breakpoints.down('sm')]: {
-                    background: 'transparent'
+                '& .MuiButton-contained': {
+                  background: theme.palette.primary.main,
+                  color: '#fff',
+                  fontWeight: 600,
+                  '&:hover': {
+                    background: theme.palette.primary.dark
                   }
                 }
-              }
-            }
+              }}
+            >
+              <Button
+                onClick={() => {
+                  if (currentView === 'gainers') {
+                    window.location.href = '/gainers/5m';
+                  } else {
+                    setOrderBy('pro5m');
+                    setSync(prev => prev + 1);
+                  }
+                }}
+                variant={currentPeriod === '5m' ? 'contained' : 'outlined'}
+              >
+                5m
+              </Button>
+              <Button
+                onClick={() => {
+                  if (currentView === 'gainers') {
+                    window.location.href = '/gainers/1h';
+                  } else {
+                    setOrderBy('pro1h');
+                    setSync(prev => prev + 1);
+                  }
+                }}
+                variant={currentPeriod === '1h' ? 'contained' : 'outlined'}
+              >
+                1h
+              </Button>
+              <Button
+                onClick={() => {
+                  if (currentView === 'gainers') {
+                    window.location.href = '/gainers/24h';
+                  } else {
+                    setOrderBy('pro24h');
+                    setSync(prev => prev + 1);
+                  }
+                }}
+                variant={currentPeriod === '24h' ? 'contained' : 'outlined'}
+              >
+                24h
+              </Button>
+              <Button
+                onClick={() => {
+                  if (currentView === 'gainers') {
+                    window.location.href = '/gainers/7d';
+                  } else {
+                    setOrderBy('pro7d');
+                    setSync(prev => prev + 1);
+                  }
+                }}
+                variant={currentPeriod === '7d' ? 'contained' : 'outlined'}
+              >
+                7d
+              </Button>
+            </ButtonGroup>
+            <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+          </>
+        )}
+        <Chip
+          label="🔥 Hot"
+          size="small"
+          onClick={() => handleViewChange('/trending')}
+          sx={{
+            cursor: 'pointer',
+            background: currentView === 'trending' ? alpha('#ff5722', 0.2) : 'transparent',
+            border: `1px solid ${alpha('#ff5722', 0.3)}`,
+            '&:hover': { background: alpha('#ff5722', 0.3) }
           }}
-        >
-          <MenuItem
-            onClick={() => handleTokenOptionSelect('/')}
+        />
+        <Chip
+          label="💎 Gems"
+          size="small"
+          onClick={() => handleViewChange('/spotlight')}
+          sx={{
+            cursor: 'pointer',
+            background: currentView === 'spotlight' ? alpha('#2196f3', 0.2) : 'transparent',
+            border: `1px solid ${alpha('#2196f3', 0.3)}`,
+            '&:hover': { background: alpha('#2196f3', 0.3) }
+          }}
+        />
+        <Chip
+          label="🚀 Gainers"
+          size="small"
+          onClick={() => handleViewChange('/gainers/24h')}
+          sx={{
+            cursor: 'pointer',
+            background: currentView === 'gainers' ? alpha('#4caf50', 0.2) : 'transparent',
+            border: `1px solid ${alpha('#4caf50', 0.3)}`,
+            '&:hover': { background: alpha('#4caf50', 0.3) }
+          }}
+        />
+        <Chip
+          label="✨ New"
+          size="small"
+          onClick={() => handleViewChange('/new')}
+          sx={{
+            cursor: 'pointer',
+            background: currentView === 'new' ? alpha('#ff9800', 0.2) : 'transparent',
+            border: `1px solid ${alpha('#ff9800', 0.3)}`,
+            '&:hover': { background: alpha('#ff9800', 0.3) }
+          }}
+        />
+        <Chip
+          label="👁️ Popular"
+          size="small"
+          onClick={() => handleViewChange('/most-viewed')}
+          sx={{
+            cursor: 'pointer',
+            background: currentView === 'most-viewed' ? alpha('#9c27b0', 0.2) : 'transparent',
+            border: `1px solid ${alpha('#9c27b0', 0.3)}`,
+            '&:hover': { background: alpha('#9c27b0', 0.3) }
+          }}
+        />
+      </Stack>
+
+      {/* Right Section - Categories & Rows */}
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Tooltip title="Categories">
+          <IconButton 
+            size="small"
+            onClick={() => setCategoriesOpen(true)}
             sx={{
-              backgroundColor: !router.query.view ? 'transparent' : 'transparent',
-              color: !router.query.view ? '#00AB55' : 'inherit',
-              fontWeight: !router.query.view ? 600 : 400,
-              border: !router.query.view
-                ? `1px solid ${alpha(theme.palette.divider, 0.15)}`
-                : 'none'
+              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+              borderRadius: 1
             }}
           >
-            <Stack direction="row" spacing={1} alignItems="center">
-              <AutoAwesomeIcon sx={{ fontSize: '16px', color: '#637381' }} />
-              <span>All</span>
-            </Stack>
-          </MenuItem>
-          <MenuItem
-            onClick={() => handleTokenOptionSelect('/view/firstledger')}
+            <CategoryIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title="Rows per page">
+          <Stack 
+            direction="row" 
+            spacing={0.5} 
+            alignItems="center"
             sx={{
-              backgroundColor: router.query.view === 'firstledger' ? 'transparent' : 'transparent',
-              color: router.query.view === 'firstledger' ? '#00AB55' : 'inherit',
-              fontWeight: router.query.view === 'firstledger' ? 600 : 400,
-              border:
-                router.query.view === 'firstledger'
-                  ? `1px solid ${alpha(theme.palette.divider, 0.15)}`
-                  : 'none'
+              px: 1,
+              py: 0.5,
+              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+              borderRadius: 1,
+              display: { xs: 'none', md: 'flex' }
             }}
           >
-            <Stack direction="row" spacing={1} alignItems="center">
-              <OpenInNewIcon sx={{ fontSize: '16px', color: '#0C53B7' }} />
-              <span>FirstLedger</span>
-            </Stack>
-          </MenuItem>
-          <MenuItem
-            onClick={() => handleTokenOptionSelect('/view/magnetic-x')}
-            sx={{
-              backgroundColor: router.query.view === 'magnetic-x' ? 'transparent' : 'transparent',
-              color: router.query.view === 'magnetic-x' ? '#00AB55' : 'inherit',
-              fontWeight: router.query.view === 'magnetic-x' ? 600 : 400,
-              border:
-                router.query.view === 'magnetic-x'
-                  ? `1px solid ${alpha(theme.palette.divider, 0.15)}`
-                  : 'none'
-            }}
-          >
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Box
-                component="img"
-                src="/magneticx-logo.webp"
-                alt="Magnetic X"
-                sx={{
-                  width: '16px',
-                  height: '16px',
-                  objectFit: 'contain'
-                }}
-              />
-              <span>Magnetic X</span>
-            </Stack>
-          </MenuItem>
-          <MenuItem
-            onClick={() => handleTokenOptionSelect('/view/xpmarket')}
-            sx={{
-              backgroundColor: router.query.view === 'xpmarket' ? 'transparent' : 'transparent',
-              color: router.query.view === 'xpmarket' ? '#00AB55' : 'inherit',
-              fontWeight: router.query.view === 'xpmarket' ? 600 : 400,
-              border:
-                router.query.view === 'xpmarket'
-                  ? `1px solid ${alpha(theme.palette.divider, 0.15)}`
-                  : 'none'
-            }}
-          >
-            <Stack direction="row" spacing={1} alignItems="center">
-              <XPMarketIcon sx={{ fontSize: '16px', color: '#6D1FEE' }} />
-              <span>XPmarket</span>
-            </Stack>
-          </MenuItem>
-          <MenuItem
-            onClick={() => handleTokenOptionSelect('/view/xrpfun')}
-            sx={{
-              backgroundColor: router.query.view === 'xrpfun' ? 'transparent' : 'transparent',
-              color: router.query.view === 'xrpfun' ? '#00AB55' : 'inherit',
-              fontWeight: router.query.view === 'xrpfun' ? 600 : 400,
-              border:
-                router.query.view === 'xrpfun'
-                  ? `1px solid ${alpha(theme.palette.divider, 0.15)}`
-                  : 'none'
-            }}
-          >
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Icon
-                icon={chartLineUp}
-                style={{
-                  fontSize: '16px',
-                  color: '#B72136',
-                  backgroundColor: '#fff',
-                  borderRadius: '2px'
-                }}
-              />
-              <span>xrp.fun</span>
-            </Stack>
-          </MenuItem>
-        </Menu>
-      </RootStyle>
-    </>
+            <ViewListIcon fontSize="small" sx={{ color: 'text.secondary' }} />
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              {rows}
+            </Typography>
+          </Stack>
+        </Tooltip>
+      </Stack>
+
+      {/* Main Menu */}
+      <Menu
+        anchorEl={mainMenuAnchor}
+        open={Boolean(mainMenuAnchor)}
+        onClose={handleMainMenuClose}
+        PaperProps={{
+          sx: {
+            minWidth: 200,
+            borderRadius: 2,
+            mt: 0.5
+          }
+        }}
+      >
+        <MenuItem onClick={() => handleViewChange('/')}>
+          <AppsIcon sx={{ mr: 1.5, fontSize: 20 }} />
+          All Tokens
+        </MenuItem>
+        <MenuItem onClick={() => handleViewChange('/collections')}>
+          <CollectionsIcon sx={{ mr: 1.5, fontSize: 20 }} />
+          NFT Collections
+        </MenuItem>
+        <Divider sx={{ my: 0.5 }} />
+        <MenuItem onClick={() => handleViewChange('/trending')}>
+          <LocalFireDepartmentIcon sx={{ mr: 1.5, fontSize: 20, color: '#ff5722' }} />
+          Trending Now
+        </MenuItem>
+        <MenuItem onClick={() => handleViewChange('/spotlight')}>
+          <StarIcon sx={{ mr: 1.5, fontSize: 20, color: '#2196f3' }} />
+          Spotlight
+        </MenuItem>
+        <MenuItem onClick={() => handleViewChange('/gainers/24h')}>
+          <TrendingUpIcon sx={{ mr: 1.5, fontSize: 20, color: '#4caf50' }} />
+          Top Gainers
+        </MenuItem>
+        <MenuItem onClick={() => handleViewChange('/new')}>
+          <NewReleasesIcon sx={{ mr: 1.5, fontSize: 20, color: '#ff9800' }} />
+          New Listings
+        </MenuItem>
+        <MenuItem onClick={() => handleViewChange('/most-viewed')}>
+          <VisibilityIcon sx={{ mr: 1.5, fontSize: 20, color: '#9c27b0' }} />
+          Most Viewed
+        </MenuItem>
+      </Menu>
+
+
+      <CategoriesDrawer
+        isOpen={categoriesOpen}
+        toggleDrawer={(open) => setCategoriesOpen(open)}
+        tags={tags}
+      />
+    </Paper>
   );
 }

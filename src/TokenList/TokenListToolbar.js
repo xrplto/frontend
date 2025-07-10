@@ -23,15 +23,15 @@ const StyledToolbar = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: theme.spacing(1, 0),
-  gap: theme.spacing(1),
+  padding: theme.spacing(0.5, 0),
+  gap: theme.spacing(0.75),
   flexWrap: 'wrap',
   [theme.breakpoints.down('md')]: {
     flexDirection: 'row',
     alignItems: 'stretch',
     flexWrap: 'wrap',
-    gap: theme.spacing(0.5),
-    padding: theme.spacing(0.5)
+    gap: theme.spacing(0.25),
+    padding: theme.spacing(0.25)
   }
 }));
 
