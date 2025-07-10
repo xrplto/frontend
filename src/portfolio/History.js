@@ -73,18 +73,18 @@ const History = ({ account }) => {
         {/* Header Section */}
         <Box
           sx={{
-            px: 3,
-            py: 3,
+            px: { xs: 2, sm: 3 },
+            py: { xs: 1.5, sm: 2 },
             borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
             background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
             backdropFilter: 'blur(10px)'
           }}
         >
-          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
-            <Stack direction="row" alignItems="center" spacing={2}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between" sx={{ mb: 2 }}>
+            <Stack direction="row" alignItems="center" spacing={{ xs: 1.5, sm: 2 }}>
               <Box
                 sx={{
-                  p: 1.5,
+                  p: { xs: 0.75, sm: 1 },
                   borderRadius: '16px',
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
                   display: 'flex',
@@ -105,7 +105,7 @@ const History = ({ account }) => {
                 <HistoryIcon
                   sx={{
                     color: 'white',
-                    fontSize: '1.5rem',
+                    fontSize: { xs: '1rem', sm: '1.2rem' },
                     filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
                   }}
                 />
@@ -114,7 +114,7 @@ const History = ({ account }) => {
                 <Typography
                   sx={{
                     color: theme.palette.text.primary,
-                    fontSize: '1.4rem',
+                    fontSize: { xs: '1rem', sm: '1.2rem' },
                     fontWeight: 700,
                     letterSpacing: '-0.02em',
                     lineHeight: 1.2,

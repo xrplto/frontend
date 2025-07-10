@@ -1,824 +1,463 @@
 import axios from 'axios';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext, useMemo, useCallback } from 'react';
 import Decimal from 'decimal.js';
-import CryptoJS from 'crypto-js';
-// Material
 import {
   Box,
   Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
+  Card,
   Typography,
   useMediaQuery,
   useTheme,
   IconButton,
-  Select,
-  MenuItem,
   Avatar,
-  alpha
+  alpha,
+  Tooltip,
+  Chip,
+  Button,
+  CircularProgress,
+  Fade
 } from '@mui/material';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
-// Loader
+import {
+  DeleteOutline as DeleteIcon,
+  Verified as VerifiedIcon,
+  AccountBalanceWallet as WalletIcon,
+  TrendingUp as TrendingIcon,
+  Warning as WarningIcon,
+  KeyboardArrowUp as CollapseIcon
+} from '@mui/icons-material';
 import { PulseLoader } from 'react-spinners';
-// Utils
-import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
-import { currencySymbols } from 'src/utils/constants';
-// Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-// Components
-import TrustLineRow from './TrustLineRow';
+import { currencySymbols } from 'src/utils/constants';
+import { isInstalled, submitTransaction } from '@gemwallet/api';
+import sdk from '@crossmarkio/sdk';
+import CustomQRDialog from 'src/components/QRDialog';
+import CustomDialog from 'src/components/Dialog';
 import useWebSocket from 'react-use-websocket';
 import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
-function truncate(str, n) {
-  if (!str) return '';
-  return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
-}
-
-function truncateAccount(str) {
-  if (!str) return '';
-  return str.slice(0, 9) + '...' + str.slice(-9);
-}
-
-const trustlineFlags = {
-  lsfLowReserve: 0x00010000,
-  lsfHighReserve: 0x00020000,
-  lsfLowAuth: 0x00040000,
-  lsfHighAuth: 0x00080000,
-  lsfLowNoRipple: 0x00100000,
-  lsfHighNoRipple: 0x00200000,
-  lsfLowFreeze: 0x00400000,
-  lsfHighFreeze: 0x00800000
+// Helper function to format balance
+const formatBalance = (balance) => {
+  const num = Number(balance);
+  if (num === 0) return '0';
+  if (num < 0.000001) return num.toExponential(2);
+  if (num < 1) return num.toFixed(6).replace(/\.?0+$/, '');
+  return num.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: num < 1000 ? 4 : 2
+  });
 };
 
-// Function to get color based on percentage
-const getPercentageColor = (percentage) => {
-  if (percentage <= 20) {
-    // Green for low percentages (0-20%)
-    return '#007B55';
-  } else if (percentage <= 50) {
-    // Transition from green to yellow (20-50%)
-    const ratio = (percentage - 20) / 30;
-    const r = Math.round(0 + (255 - 0) * ratio);
-    const g = Math.round(123 + (193 - 123) * ratio);
-    const b = Math.round(85 + (7 - 85) * ratio);
-    return `rgb(${r}, ${g}, ${b})`;
-  } else {
-    // Transition from yellow to red (50%+)
-    const ratio = Math.min((percentage - 50) / 30, 1);
-    const r = Math.round(255 + (244 - 255) * ratio);
-    const g = Math.round(193 + (67 - 193) * ratio);
-    const b = Math.round(7 + (54 - 7) * ratio);
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-};
-
-export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, onTrustlinesData }) {
-  const BASE_URL = process.env.API_URL;
-
+// Token Card Component
+const TokenCard = ({ token, account, isXRP = false }) => {
   const theme = useTheme();
-  const { accountProfile, openSnackbar, sync, activeFiatCurrency, darkMode } =
-    useContext(AppContext);
-  const isLoggedIn = accountProfile && accountProfile.account;
-  const isMobile = useMediaQuery('(max-width:600px)');
-  const dispatch = useDispatch();
-  const metrics = useSelector(selectMetrics);
-  const exchRate = metrics[activeFiatCurrency];
-
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { darkMode, activeFiatCurrency, openSnackbar, accountProfile, setSync } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [total, setTotal] = useState(0);
-  const [lines, setLines] = useState([]);
-  const [totalValue, setTotalValue] = useState(0);
-
-  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-
-  const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-    onOpen: () => {},
-    onClose: () => {},
-    shouldReconnect: (closeEvent) => true,
-    onMessage: (event) => processMessages(event)
+  const BASE_URL = process.env.API_URL;
+  
+  // Dialog state
+  const [dialogState, setDialogState] = useState({
+    openScanQR: false,
+    openConfirm: false,
+    xamanStep: 0,
+    xamanTitle: '',
+    stepTitle: '',
+    content: '',
+    uuid: null,
+    qrUrl: null,
+    nextUrl: null
   });
 
-  const processMessages = (event) => {
-    try {
-      var t1 = Date.now();
-      const json = JSON.parse(event.data);
-      dispatch(update_metrics(json));
-    } catch (err) {
-      console.error(err);
+  // Remove trustline logic
+  const handleRemove = async () => {
+    if (!accountProfile?.account) {
+      openSnackbar('Please connect wallet!', 'error');
+      return;
+    }
+    if (accountProfile.account !== account) {
+      openSnackbar('You are not the owner of this account!', 'error');
+      return;
+    }
+    setDialogState(prev => ({ ...prev, xamanStep: token.balance > 0 ? 1 : 3 }));
+  };
+
+  const handleConfirmClose = () => {
+    setDialogState(prev => ({ ...prev, openConfirm: false, xamanStep: 0 }));
+    setSync(prev => !prev);
+  };
+
+  const handleScanQRClose = () => {
+    setDialogState(prev => ({ ...prev, openScanQR: false }));
+    if (dialogState.uuid) {
+      axios.delete(`${BASE_URL}/xumm/logout/${dialogState.uuid}`);
+      setDialogState(prev => ({ ...prev, uuid: null }));
     }
   };
 
-  const getLines = () => {
-    setLoading(true);
-    axios
-      .get(`https://api.xrpl.to/api/trustlines?account=${account}&includeRates=true&limit=400`)
-      .then((res) => {
-        let ret = res.status === 200 ? res.data : undefined;
-        if (ret && ret.success) {
-          setTotal(ret.total);
-          setLines(ret.trustlines);
-          const totalValue = ret.trustlines.reduce((acc, line) => {
-            const value = parseFloat(line.value) || 0;
-            return acc + value;
-          }, 0);
-          setTotalValue(totalValue);
-        }
-      })
-      .catch((err) => {
-        console.log('Error on getting account lines!!!', err);
-      })
-      .then(function () {
-        setLoading(false);
-      });
-  };
+  // Calculate value
+  const value = useMemo(() => {
+    if (isXRP) {
+      return (token.balance || 0) * (token.exchRate || 1);
+    }
+    if (!token.balance || !token.exch || !token.exchRate) return 0;
+    return Number(token.balance) * Number(token.exch) * Number(token.exchRate);
+  }, [token, isXRP]);
 
+  const percentOwned = useMemo(() => {
+    if (isXRP) {
+      return ((parseFloat(token.balance) / 99_990_000_000) * 100).toFixed(8);
+    }
+    return token.percentOwned || '0';
+  }, [token, isXRP]);
+
+  return (
+    <>
+      <Card
+        sx={{
+          background: theme.palette.mode === 'dark' 
+            ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`
+            : `linear-gradient(135deg, ${alpha('#ffffff', 0.9)} 0%, ${alpha('#f5f5f5', 0.5)} 100%)`,
+          backdropFilter: 'blur(10px)',
+          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          borderRadius: 2,
+          overflow: 'hidden',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: theme.shadows[4],
+            borderColor: alpha(theme.palette.primary.main, 0.2)
+          }
+        }}
+      >
+        <Box sx={{ p: { xs: 1, sm: 1.5 } }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }} alignItems={{ xs: 'stretch', sm: 'center' }}>
+            {/* Left side - Token info */}
+            <Stack direction="row" spacing={1.5} alignItems="center" flex={1}>
+              <Avatar
+                src={isXRP ? '/xrp.svg' : `https://s1.xrpl.to/token/${token.md5}`}
+                sx={{
+                  width: { xs: 36, sm: 40 },
+                  height: { xs: 36, sm: 40 },
+                  borderRadius: 1,
+                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : '#fff',
+                  boxShadow: theme.shadows[1],
+                  '& img': {
+                    objectFit: 'contain',
+                    padding: 0.5
+                  }
+                }}
+              />
+              
+              <Box flex={1} minWidth={0}>
+                <Stack direction="row" alignItems="center" spacing={0.5} mb={0.25}>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                      fontWeight: 700,
+                      color: theme.palette.text.primary,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {isXRP ? 'XRP' : (token.currencyName || token.currency)}
+                  </Typography>
+                  {(isXRP || token.verified) && (
+                    <VerifiedIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: theme.palette.success.main }} />
+                  )}
+                  {token.origin && (
+                    <Chip 
+                      label={token.origin} 
+                      size="small" 
+                      sx={{ 
+                        height: 16, 
+                        fontSize: '0.6rem',
+                        '& .MuiChip-label': { px: 0.75 }
+                      }}
+                    />
+                  )}
+                </Stack>
+                
+                {!isXRP && token.issuer && (
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: { xs: '0.6rem', sm: '0.65rem' },
+                      color: theme.palette.text.secondary,
+                      fontFamily: 'monospace'
+                    }}
+                  >
+                    {token.user || `${token.issuer.slice(0, 8)}...${token.issuer.slice(-4)}`}
+                  </Typography>
+                )}
+              </Box>
+            </Stack>
+
+            {/* Right side - Stats grid */}
+            <Stack 
+              direction="row" 
+              spacing={{ xs: 2, sm: 3 }} 
+              alignItems="center"
+              sx={{ 
+                ml: { xs: 0, sm: 'auto' },
+                pl: { xs: 0, sm: 2 }
+              }}
+            >
+              <Box sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem' }, display: 'block' }}>
+                  Balance
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
+                  {formatBalance(token.balance)}
+                </Typography>
+              </Box>
+              
+              <Box sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem' }, display: 'block' }}>
+                  Value
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                    color: theme.palette.primary.main 
+                  }}
+                >
+                  {currencySymbols[activeFiatCurrency]}{value.toFixed(2)}
+                </Typography>
+              </Box>
+              
+              <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, display: { xs: isMobile ? 'none' : 'block', sm: 'block' } }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem' }, display: 'block' }}>
+                  % Owned
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontWeight: 600, 
+                    fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                    color: percentOwned > 50 ? theme.palette.error.main : 
+                           percentOwned > 20 ? theme.palette.warning.main : 
+                           theme.palette.success.main
+                  }}
+                >
+                  {percentOwned}%
+                </Typography>
+              </Box>
+
+              {!isXRP && accountProfile?.account === account && (
+                <IconButton
+                  size="small"
+                  onClick={handleRemove}
+                  sx={{
+                    p: 0.5,
+                    color: theme.palette.error.main,
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.error.main, 0.1)
+                    }
+                  }}
+                >
+                  <DeleteIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                </IconButton>
+              )}
+            </Stack>
+          </Stack>
+        </Box>
+      </Card>
+
+      {/* Dialogs */}
+      <CustomQRDialog
+        open={dialogState.openScanQR}
+        type={dialogState.xamanTitle}
+        onClose={handleScanQRClose}
+        qrUrl={dialogState.qrUrl}
+        nextUrl={dialogState.nextUrl}
+      />
+      
+      <CustomDialog
+        open={dialogState.openConfirm}
+        content={dialogState.content}
+        title={dialogState.stepTitle}
+        handleClose={handleConfirmClose}
+        handleContinue={() => {/* Add continue logic */}}
+      />
+    </>
+  );
+};
+
+// Main TrustLines Component
+export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, onTrustlinesData }) {
+  const theme = useTheme();
+  const dispatch = useDispatch();
+  const { sync, activeFiatCurrency } = useContext(AppContext);
+  const metrics = useSelector(selectMetrics);
+  const exchRate = metrics[activeFiatCurrency];
+  
+  const [loading, setLoading] = useState(false);
+  const [lines, setLines] = useState([]);
+  const [showAll, setShowAll] = useState(false);
+  
+  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
+  
+  useWebSocket(WSS_FEED_URL, {
+    onMessage: (event) => {
+      try {
+        const json = JSON.parse(event.data);
+        dispatch(update_metrics(json));
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    shouldReconnect: () => true
+  });
+
+  // Fetch trustlines
   useEffect(() => {
-    getLines();
+    const fetchLines = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(`https://api.xrpl.to/api/trustlines?account=${account}&includeRates=true&limit=400`);
+        if (res.data?.success) {
+          setLines(res.data.trustlines);
+        }
+      } catch (err) {
+        console.error('Error fetching trustlines:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (account) {
+      fetchLines();
+    }
   }, [account, sync]);
 
+  // Calculate total value
   useEffect(() => {
-    const trustlinesSum = lines.reduce((acc, line) => {
-      const value = parseFloat(line.value) || 0;
-      return acc + value;
-    }, 0);
-
+    const trustlinesSum = lines.reduce((acc, line) => acc + (parseFloat(line.value) || 0), 0);
     const xrpValue = (xrpBalance || 0) * (exchRate || 1);
     const totalSum = trustlinesSum + xrpValue;
-
-    setTotalValue(totalSum);
-
-    if (typeof onUpdateTotalValue === 'function') {
+    
+    if (onUpdateTotalValue) {
       onUpdateTotalValue(totalSum);
     }
-
-    if (typeof onTrustlinesData === 'function') {
-      // Include XRP as the first item in trustlines data
+    
+    if (onTrustlinesData) {
       const allAssets = xrpBalance
-        ? [
-            {
-              currency: 'XRP',
-              balance: xrpBalance,
-              value: xrpValue,
-              issuer: null,
-              md5: '84e5efeb89c4eae8f68188982dc290d8' // XRP's md5 hash
-            },
-            ...lines
-          ]
+        ? [{ currency: 'XRP', balance: xrpBalance, value: xrpValue, exchRate }, ...lines]
         : lines;
       onTrustlinesData(allAssets);
     }
   }, [lines, xrpBalance, exchRate, onUpdateTotalValue, onTrustlinesData]);
 
-  const tableRef = useRef(null);
+  const displayedLines = showAll ? lines : lines.slice(0, 6);
+  const hasMore = lines.length > 6;
 
-  const handleChangePage = (newPage) => {
-    setPage(newPage);
-  };
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const paginatedLines = lines.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  if (!loading && lines.length === 0 && !xrpBalance) {
+    return (
+      <Card sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
+        <WalletIcon sx={{ fontSize: 48, color: theme.palette.text.secondary, mb: 2 }} />
+        <Typography variant="h6" gutterBottom>No Assets Found</Typography>
+        <Typography variant="body2" color="text.secondary">
+          This account doesn't have any tokens yet
+        </Typography>
+      </Card>
+    );
+  }
 
   return (
-    <Box>
-      {loading ? (
-        <Stack
-          alignItems="center"
-          justifyContent="center"
-          sx={{
-            py: 8,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-            borderRadius: 3,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-            backdropFilter: 'blur(10px)'
-          }}
-        >
-          <PulseLoader color={theme.palette.primary.main} size={12} />
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2, fontWeight: 500 }}>
-            Loading your assets...
-          </Typography>
+    <Stack spacing={1}>
+      {/* Summary Card */}
+      <Card
+        sx={{
+          p: { xs: 1, sm: 1.5 },
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+          borderRadius: 1.5
+        }}
+      >
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <TrendingIcon sx={{ fontSize: { xs: 24, sm: 28 }, color: theme.palette.primary.main }} />
+            <Box>
+              <Typography variant="body1" sx={{ fontWeight: 700, fontSize: { xs: '0.85rem', sm: '1rem' } }}>
+                Portfolio Overview
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                {lines.length + (xrpBalance ? 1 : 0)} assets
+              </Typography>
+            </Box>
+          </Stack>
+          
+          <Box textAlign="right">
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>Total Value</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+              {currencySymbols[activeFiatCurrency]}
+              {((lines.reduce((acc, line) => acc + (parseFloat(line.value) || 0), 0) + 
+                ((xrpBalance || 0) * (exchRate || 1)))).toFixed(2)}
+            </Typography>
+          </Box>
         </Stack>
-      ) : (
-        lines &&
-        lines.length === 0 && (
-          <Stack
-            direction="column"
-            alignItems="center"
-            justifyContent="center"
-            spacing={2}
-            sx={{
-              py: 8,
-              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.03)} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
-              borderRadius: 3,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-              backdropFilter: 'blur(10px)'
-            }}
-          >
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: '50%',
-                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
-                border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`
-              }}
-            >
-              <ErrorOutlineIcon
-                sx={{
-                  fontSize: 32,
-                  color: theme.palette.primary.main,
-                  opacity: 0.7
-                }}
+      </Card>
+
+      {/* Token List */}
+      <Stack spacing={0.75}>
+        {xrpBalance > 0 && (
+          <Fade in timeout={300}>
+            <Box>
+              <TokenCard
+                token={{ balance: xrpBalance, exchRate }}
+                account={account}
+                isXRP
               />
             </Box>
-            <Stack spacing={0.5} textAlign="center">
-              <Typography variant="h6" color="text.primary" sx={{ fontWeight: 600 }}>
-                No TrustLines Found
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                This account doesn't have any token trustlines yet
-              </Typography>
-            </Stack>
-          </Stack>
-        )
-      )}
-
-      {(total > 0 || (xrpBalance !== null && xrpBalance !== undefined)) && (
-        <Box
-          sx={{
-            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 50%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
-            borderRadius: 3,
-            p: 0,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            backdropFilter: 'blur(20px)',
-            boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.1)}`,
-            position: 'relative',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '2px',
-              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
-            }
-          }}
-          ref={tableRef}
-        >
-          <Table
-            size="small"
-            sx={{
-              '& .MuiTableCell-root': {
-                py: 1.5,
-                px: isMobile ? 1 : 2,
-                fontSize: '0.875rem',
-                lineHeight: 1.4,
-                borderBottom: 'none'
-              },
-              '& .MuiTableBody-root .MuiTableRow-root': {
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                position: 'relative',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.12)}`,
-                  '& .MuiTableCell-root': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.08)
-                  }
-                },
-                '&:not(:last-child)': {
-                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-                }
-              }
-            }}
-          >
-            <TableHead>
-              <TableRow>
-                <TableCell
-                  sx={{
-                    color: theme.palette.primary.main,
-                    fontWeight: 700,
-                    fontSize: '0.9rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    borderBottom: 'none',
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
-                    backdropFilter: 'blur(10px)',
-                    position: 'relative',
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: '2px',
-                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
-                    }
-                  }}
-                >
-                  Currency
-                </TableCell>
-                <TableCell
-                  align="right"
-                  sx={{
-                    display: { xs: 'none', sm: 'table-cell' },
-                    color: theme.palette.primary.main,
-                    fontWeight: 700,
-                    fontSize: '0.9rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    borderBottom: 'none',
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
-                    backdropFilter: 'blur(10px)',
-                    position: 'relative',
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: '2px',
-                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
-                    }
-                  }}
-                >
-                  Balance
-                </TableCell>
-                <TableCell
-                  align="right"
-                  sx={{
-                    color: theme.palette.primary.main,
-                    fontWeight: 700,
-                    fontSize: '0.9rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    borderBottom: 'none',
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
-                    backdropFilter: 'blur(10px)',
-                    position: 'relative',
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: '2px',
-                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
-                    }
-                  }}
-                >
-                  Value ({activeFiatCurrency})
-                </TableCell>
-                <TableCell
-                  align="right"
-                  sx={{
-                    display: { xs: 'none', md: 'table-cell' },
-                    color: theme.palette.primary.main,
-                    fontWeight: 700,
-                    fontSize: '0.9rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    borderBottom: 'none',
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
-                    backdropFilter: 'blur(10px)',
-                    position: 'relative',
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: '2px',
-                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
-                    }
-                  }}
-                >
-                  % Owned
-                </TableCell>
-                {isLoggedIn && accountProfile?.account === account && (
-                  <TableCell
-                    align="center"
-                    sx={{
-                      color: theme.palette.primary.main,
-                      fontWeight: 700,
-                      fontSize: '0.9rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      borderBottom: 'none',
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
-                      backdropFilter: 'blur(10px)',
-                      position: 'relative',
-                      width: '80px',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '2px',
-                        background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
-                      }
-                    }}
-                  >
-                    Action
-                  </TableCell>
-                )}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {xrpBalance && page === 0 && (
-                <TableRow
-                  sx={{
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.04)
-                    }
-                  }}
-                >
-                  <TableCell>
-                    <Stack direction="row" spacing={1.5} alignItems="center">
-                      <Box
-                        sx={{
-                          position: 'relative',
-                          '&::before': {
-                            content: '""',
-                            position: 'absolute',
-                            top: -2,
-                            left: -2,
-                            right: -2,
-                            bottom: -2,
-                            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                            borderRadius: '12px',
-                            zIndex: 0,
-                            opacity: 0.4
-                          }
-                        }}
-                      >
-                        <Avatar
-                          alt="XRP"
-                          src="/xrp.svg"
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: '8px',
-                            boxShadow: '0 4px 12px 0 rgba(0,0,0,0.15)',
-                            backgroundColor:
-                              theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : '#fff',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            position: 'relative',
-                            zIndex: 1,
-                            '&:hover': {
-                              transform: 'scale(1.1) rotate(5deg)',
-                              boxShadow: '0 8px 25px 0 rgba(0,0,0,0.2)'
-                            },
-                            '& img': {
-                              objectFit: 'contain',
-                              width: '100%',
-                              height: '100%',
-                              borderRadius: '8px',
-                              padding: '2px'
-                            }
-                          }}
-                        />
-                      </Box>
-                      <Stack spacing={0.5}>
-                        <Typography
-                          variant="body2"
-                          noWrap
-                          sx={{
-                            fontWeight: 700,
-                            fontSize: '0.95rem',
-                            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text'
-                          }}
-                        >
-                          XRP
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: theme.palette.text.secondary,
-                            fontSize: '0.75rem',
-                            fontWeight: 500
-                          }}
-                        >
-                          Native Asset
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{
-                      display: { xs: 'none', sm: 'table-cell' }
-                    }}
-                  >
-                    <Typography variant="body2" noWrap>
-                      {new Decimal(xrpBalance).toDP(2, Decimal.ROUND_DOWN).toString()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography variant="body2" noWrap>
-                      {currencySymbols[activeFiatCurrency]}
-                      {new Decimal((xrpBalance || 0) * (exchRate || 1))
-                        .toDP(2, Decimal.ROUND_DOWN)
-                        .toString()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{
-                      display: { xs: 'none', md: 'table-cell' }
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      noWrap
-                      sx={{
-                        color:
-                          xrpBalance > 0
-                            ? getPercentageColor((parseFloat(xrpBalance) / 99_990_000_000) * 100)
-                            : theme.palette.text.primary,
-                        fontWeight: 600
-                      }}
-                    >
-                      {xrpBalance > 0
-                        ? ((parseFloat(xrpBalance) / 99_990_000_000) * 100).toFixed(12)
-                        : '0.000000000000'}
-                      %
-                    </Typography>
-                  </TableCell>
-                  {isLoggedIn && accountProfile?.account === account && (
-                    <TableCell align="center">
-                      <Typography variant="body2" color="text.secondary">
-                        -
-                      </Typography>
-                    </TableCell>
-                  )}
-                </TableRow>
-              )}
-              {paginatedLines
-                .filter((line) => line.currency !== 'XRP')
-                .map((line) => (
-                  <TrustLineRow key={`${line.currency}-${line.account}`} line={line} />
-                ))}
-            </TableBody>
-          </Table>
-        </Box>
-      )}
-      {total > 0 && (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            px: 3,
-            py: 2,
-            gap: 4,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
-            borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-            backdropFilter: 'blur(10px)'
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
-              backdropFilter: 'blur(20px)',
-              borderRadius: 2,
-              px: 2,
-              py: 1,
-              minHeight: '48px',
-              border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.08)}`,
-              position: 'relative',
-              overflow: 'hidden',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '2px',
-                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                opacity: 0.6
-              }
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{
-                color: theme.palette.primary.main,
-                fontWeight: 600,
-                fontSize: '0.9rem'
-              }}
-            >
-              {`${page + 1} / ${Math.ceil(total / rowsPerPage)} pages`}
-            </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 1,
-                borderLeft: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                pl: 2
-              }}
-            >
-              <IconButton
-                onClick={() => handleChangePage(page - 1)}
-                disabled={page === 0}
-                size="small"
-                sx={{
-                  color: theme.palette.primary.main,
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '8px',
-                  border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.secondary.main, 0.15)} 100%)`,
-                    borderColor: theme.palette.primary.main,
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
-                  },
-                  '&.Mui-disabled': {
-                    color: alpha(theme.palette.primary.main, 0.3),
-                    borderColor: alpha(theme.palette.primary.main, 0.1),
-                    background: alpha(theme.palette.primary.main, 0.02),
-                    transform: 'none',
-                    boxShadow: 'none'
-                  },
-                  '& .MuiSvgIcon-root': {
-                    fontSize: '22px'
-                  }
-                }}
-              >
-                <KeyboardArrowLeft />
-              </IconButton>
-              <IconButton
-                onClick={() => handleChangePage(page + 1)}
-                disabled={page >= Math.ceil(total / rowsPerPage) - 1}
-                size="small"
-                sx={{
-                  color: theme.palette.primary.main,
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '8px',
-                  border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.secondary.main, 0.15)} 100%)`,
-                    borderColor: theme.palette.primary.main,
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
-                  },
-                  '&.Mui-disabled': {
-                    color: alpha(theme.palette.primary.main, 0.3),
-                    borderColor: alpha(theme.palette.primary.main, 0.1),
-                    background: alpha(theme.palette.primary.main, 0.02),
-                    transform: 'none',
-                    boxShadow: 'none'
-                  },
-                  '& .MuiSvgIcon-root': {
-                    fontSize: '22px'
-                  }
-                }}
-              >
-                <KeyboardArrowRight />
-              </IconButton>
+          </Fade>
+        )}
+        
+        {displayedLines.map((line, index) => (
+          <Fade in timeout={300 + index * 50} key={`${line.currency}-${line.issuer}`}>
+            <Box>
+              <TokenCard token={line} account={account} />
             </Box>
-          </Box>
-          <Box
+          </Fade>
+        ))}
+      </Stack>
+
+      {/* Show More Button */}
+      {hasMore && (
+        <Box sx={{ textAlign: 'center', mt: 1 }}>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => setShowAll(!showAll)}
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
-              backdropFilter: 'blur(20px)',
-              borderRadius: 2,
+              borderRadius: 1,
+              textTransform: 'none',
+              fontSize: { xs: '0.7rem', sm: '0.8rem' },
+              py: 0.5,
               px: 2,
-              py: 1,
-              minHeight: '48px',
-              boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.08)}`,
-              border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-              position: 'relative',
-              overflow: 'hidden',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '2px',
-                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                opacity: 0.6
+              borderColor: alpha(theme.palette.primary.main, 0.3),
+              '&:hover': {
+                borderColor: theme.palette.primary.main,
+                backgroundColor: alpha(theme.palette.primary.main, 0.05)
               }
             }}
           >
-            <Select
-              value={rowsPerPage}
-              onChange={handleChangeRowsPerPage}
-              size="small"
-              sx={{
-                height: '36px',
-                width: '50px',
-                minWidth: '50px',
-                color: theme.palette.primary.main,
-                '.MuiSelect-select': {
-                  py: 0,
-                  px: 0,
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.9rem',
-                  letterSpacing: '0.5px',
-                  marginRight: '-8px',
-                  paddingLeft: '4px'
-                },
-                '.MuiOutlinedInput-notchedOutline': {
-                  borderColor: alpha(theme.palette.primary.main, 0.25),
-                  borderWidth: '2px',
-                  borderRadius: '8px'
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: alpha(theme.palette.primary.main, 0.5)
-                },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: theme.palette.primary.main,
-                  borderWidth: '2px'
-                },
-                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-                '&:hover': {
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`
-                }
-              }}
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    mt: 1,
-                    borderRadius: '8px',
-                    boxShadow: theme.shadows[8],
-                    border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                    backdropFilter: 'blur(20px)',
-                    '.MuiMenuItem-root': {
-                      color: theme.palette.primary.main,
-                      justifyContent: 'center',
-                      fontSize: '0.9rem',
-                      letterSpacing: '0.5px',
-                      py: 1.5,
-                      fontWeight: 600,
-                      '&:hover': {
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`
-                      },
-                      '&.Mui-selected': {
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.secondary.main, 0.15)} 100%)`,
-                        '&:hover': {
-                          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.25)} 0%, ${alpha(theme.palette.secondary.main, 0.18)} 100%)`
-                        }
-                      }
-                    }
-                  }
-                }
-              }}
-            >
-              {[10, 25, 50].map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
-            <Typography
-              variant="body2"
-              sx={{
-                color: theme.palette.primary.main,
-                fontWeight: 600,
-                fontSize: '0.9rem',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              items / page
-            </Typography>
-          </Box>
+            {showAll ? 'Show Less' : `Show ${lines.length - 6} More`}
+          </Button>
         </Box>
       )}
-    </Box>
+    </Stack>
   );
 }

@@ -103,7 +103,7 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
       underline="none"
       sx={{ display: 'block', width: '100%', height: '100%' }}
     >
-      <NFTCardWrapper sx={{ height: smallSize ? '140px' : '170px' }}>
+      <NFTCardWrapper sx={{ height: smallSize ? '120px' : '150px' }}>
         {isAdmin && (
           <IconButton
             size="small"
@@ -128,9 +128,9 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
           sx={{
             position: 'relative',
             overflow: 'hidden',
-            height: smallSize ? '90px' : '115px',
-            minHeight: smallSize ? '90px' : '115px',
-            maxHeight: smallSize ? '90px' : '115px',
+            height: smallSize ? '75px' : '95px',
+            minHeight: smallSize ? '75px' : '95px',
+            maxHeight: smallSize ? '75px' : '95px',
             bgcolor: alpha(theme.palette.grey[500], 0.1)
           }}
         >
@@ -139,7 +139,7 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
               variant="rectangular"
               sx={{
                 width: '100%',
-                height: smallSize ? '90px' : '115px',
+                height: smallSize ? '75px' : '95px',
                 position: 'absolute'
               }}
             />
@@ -152,9 +152,9 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
             onLoad={onImageLoaded}
             sx={{
               width: '100%',
-              height: smallSize ? '90px' : '115px',
-              minHeight: smallSize ? '90px' : '115px',
-              maxHeight: smallSize ? '90px' : '115px',
+              height: smallSize ? '75px' : '95px',
+              minHeight: smallSize ? '75px' : '95px',
+              maxHeight: smallSize ? '75px' : '95px',
               objectFit: 'cover',
               transition: 'transform 0.2s ease',
               opacity: loadingImg ? 0 : 1,
@@ -296,9 +296,9 @@ function CollectionCard({ collectionData, type, account, handleRemove, smallSize
           sx={{
             position: 'relative',
             overflow: 'hidden',
-            height: smallSize ? '90px' : '115px',
-            minHeight: smallSize ? '90px' : '115px',
-            maxHeight: smallSize ? '90px' : '115px',
+            height: smallSize ? '75px' : '95px',
+            minHeight: smallSize ? '75px' : '95px',
+            maxHeight: smallSize ? '75px' : '95px',
             bgcolor: alpha(theme.palette.grey[500], 0.1)
           }}
         >
@@ -542,8 +542,13 @@ const NFTPortfolio = ({
 
       <Box
         sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: 'repeat(2, 1fr)',
+            sm: 'repeat(3, 1fr)',
+            md: 'repeat(4, 1fr)',
+            lg: 'repeat(5, 1fr)'
+          },
           gap: smallSize ? '8px' : '12px',
           width: '100%'
         }}
