@@ -143,7 +143,7 @@ const HeaderWrapper = styled(Box)(
     border-bottom: 1px solid ${alpha(theme.palette.divider, 0.12)};
     position: relative;
     z-index: 1100;
-    background: transparent;
+    background: ${alpha(theme.palette.background.default, 0.8)};
     backdrop-filter: blur(25px);
     box-shadow: 0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)};
     

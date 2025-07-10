@@ -456,10 +456,10 @@ export const XrplToDarkTheme = createTheme({
           minHeight: '100%',
           width: '100%',
           flex: 1,
-          background: '#0A0E1A',
-          scrollbarColor: `${alpha('#147DFE', 0.5)} ${alpha('#0A0E1A', 0.3)}`,
+          background: '#000000',
+          scrollbarColor: `${alpha('#147DFE', 0.5)} ${alpha('#000000', 0.3)}`,
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            backgroundColor: alpha('#0A0E1A', 0.3),
+            backgroundColor: alpha('#000000', 0.3),
             width: '8px',
             height: '8px'
           },

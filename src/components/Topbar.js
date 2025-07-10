@@ -53,11 +53,11 @@ const TopWrapper = styled(Box)(
     display: flex;
     align-items: center;
     height: ${theme.spacing(5)};
-    background: transparent;
+    background: ${alpha(theme.palette.background.default, 0.8)};
     backdrop-filter: blur(20px);
     border-bottom: 1px solid ${alpha(theme.palette.divider, 0.05)};
     position: relative;
-    z-index: 1100;
+    z-index: 1099;
     box-shadow: 0 1px 3px ${alpha(theme.palette.common.black, 0.05)};
 `
 );
