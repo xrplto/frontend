@@ -143,7 +143,7 @@ const HeaderWrapper = styled(Box)(
     border-bottom: 1px solid ${alpha(theme.palette.divider, 0.12)};
     position: relative;
     z-index: 1100;
-    background: ${alpha(theme.palette.background.default, 0.8)};
+    background: ${theme.palette.mode === 'light' ? '#F8F9FA' : alpha(theme.palette.background.default, 0.8)};
     backdrop-filter: blur(25px);
     box-shadow: 0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)};
     
@@ -419,7 +419,7 @@ export default function Header(props) {
             >
               <StyledLink
                 underline="none"
-                color={darkMode ? 'white' : 'black'}
+                color={darkMode ? 'white' : theme.palette.text.primary}
                 darkMode={darkMode}
                 theme={theme}
                 onClick={handleTokensClick}
@@ -744,7 +744,7 @@ export default function Header(props) {
 
               <StyledLink
                 underline="none"
-                color={darkMode ? 'white' : 'black'}
+                color={darkMode ? 'white' : theme.palette.text.primary}
                 darkMode={darkMode}
                 theme={theme}
                 href="/collections"
@@ -753,7 +753,7 @@ export default function Header(props) {
               </StyledLink>
               <StyledLink
                 underline="none"
-                color={darkMode ? 'white' : 'black'}
+                color={darkMode ? 'white' : theme.palette.text.primary}
                 darkMode={darkMode}
                 theme={theme}
                 href="/swap"

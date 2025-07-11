@@ -266,9 +266,9 @@ export const XrplToLightTheme = createTheme({
   },
   header: {
     height: '80px',
-    background: colors.alpha.white[100],
+    background: '#F8F9FA',
     boxShadow: colors.shadows.cardSm,
-    textColor: colors.secondary.main
+    textColor: colors.alpha.black[100]
   },
   spacing: 9,
 
