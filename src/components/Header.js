@@ -244,24 +244,24 @@ const StyledLink = styled(Link, {
     }
     
     &:hover {
-      color: ${darkMode ? theme.palette.success.main : theme.palette.primary.main};
+      color: ${theme.palette.primary.main};
       background: ${theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
         ? alpha(theme.palette.primary.main, 0.04)
         : `linear-gradient(135deg, ${alpha(
-            darkMode ? theme.palette.success.main : theme.palette.primary.main,
+            theme.palette.primary.main,
             0.12
           )} 0%, ${alpha(
-            darkMode ? theme.palette.success.main : theme.palette.primary.main,
+            theme.palette.primary.main,
             0.06
           )} 100%)`};
       border: 1px solid ${alpha(
-        darkMode ? theme.palette.success.main : theme.palette.primary.main,
+        theme.palette.primary.main,
         0.25
       )};
       transform: translateY(-2px);
       box-shadow: 
         0 8px 24px ${alpha(
-          darkMode ? theme.palette.success.main : theme.palette.primary.main,
+          theme.palette.primary.main,
           0.15
         )},
         inset 0 1px 2px ${alpha(theme.palette.common.white, 0.15)};
@@ -315,24 +315,24 @@ const StyledMenuItem = styled(MenuItem, {
     }
     
     &:hover {
-      color: ${darkMode ? theme.palette.success.main : theme.palette.primary.main};
+      color: ${theme.palette.primary.main};
       background: ${theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
         ? alpha(theme.palette.primary.main, 0.04)
         : `linear-gradient(135deg, ${alpha(
-            darkMode ? theme.palette.success.main : theme.palette.primary.main,
+            theme.palette.primary.main,
             0.1
           )} 0%, ${alpha(
-            darkMode ? theme.palette.success.main : theme.palette.primary.main,
+            theme.palette.primary.main,
             0.05
           )} 100%)`};
       border: 1px solid ${alpha(
-        darkMode ? theme.palette.success.main : theme.palette.primary.main,
+        theme.palette.primary.main,
         0.2
       )};
       transform: translateX(4px);
       box-shadow: 
         0 4px 16px ${alpha(
-          darkMode ? theme.palette.success.main : theme.palette.primary.main,
+          theme.palette.primary.main,
           0.12
         )},
         inset 0 1px 2px ${alpha(theme.palette.common.white, 0.1)};
