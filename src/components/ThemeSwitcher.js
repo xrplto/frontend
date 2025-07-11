@@ -14,6 +14,7 @@ import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
 import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 import baselinePalette from '@iconify/icons-ic/baseline-palette';
 import baselineWaves from '@iconify/icons-ic/baseline-waves';
+import baselineLocalFlorist from '@iconify/icons-ic/baseline-local-florist';
 import { AppContext } from 'src/AppContext';
 
 const themes = [
@@ -40,6 +41,12 @@ const themes = [
     name: 'Ripple Blue',
     icon: baselineWaves,
     color: '#0080ff'
+  },
+  {
+    id: 'XShroomTheme',
+    name: 'XShroom',
+    icon: baselineLocalFlorist,
+    color: '#FFB84D'
   }
 ];
 
@@ -120,7 +127,7 @@ export default function ThemeSwitcher() {
                   borderRadius: '6px',
                   backgroundColor: theme.color,
                   border: theme.id === 'XrplToLightTheme' ? '1px solid #e0e0e0' : 'none',
-                  boxShadow: theme.id === 'SyncWaveTheme' || theme.id === 'RippleBlueTheme'
+                  boxShadow: theme.id === 'SyncWaveTheme' || theme.id === 'RippleBlueTheme' || theme.id === 'XShroomTheme'
                     ? `0 0 10px ${theme.color}` 
                     : 'none'
                 }}
