@@ -462,11 +462,10 @@ export default function Header(props) {
             >
               <StyledLink
                 underline="none"
-                color={darkMode ? 'white' : theme.palette.text.primary}
                 darkMode={darkMode}
                 theme={theme}
                 onClick={handleTokensClick}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', color: theme.palette.text.primary }}
               >
                 {t('Tokens')}
                 <KeyboardArrowDownIcon />
@@ -807,19 +806,19 @@ export default function Header(props) {
 
               <StyledLink
                 underline="none"
-                color={darkMode ? 'white' : theme.palette.text.primary}
                 darkMode={darkMode}
                 theme={theme}
                 href="/collections"
+                style={{ color: theme.palette.text.primary }}
               >
                 {t('NFTs')}
               </StyledLink>
               <StyledLink
                 underline="none"
-                color={darkMode ? 'white' : theme.palette.text.primary}
                 darkMode={darkMode}
                 theme={theme}
                 href="/swap"
+                style={{ color: theme.palette.text.primary }}
               >
                 {t('Swap')}
               </StyledLink>

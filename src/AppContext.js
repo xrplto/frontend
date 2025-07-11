@@ -19,7 +19,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
   const [sync, setSync] = useState(0);
   const [loading, setLoading] = useState(false);
   const [connecting, setConnecting] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [themeName, setThemeName] = useState('XrplToLightTheme');
   const [activeFiatCurrency, setActiveFiatCurrency] = useState('USD');
   const [accountProfile, setAccountProfile] = useState(null);
