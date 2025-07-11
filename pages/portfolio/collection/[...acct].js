@@ -22,9 +22,7 @@ import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import NFTCard from 'src/explore/NFTCard';
-import CollectionCard from 'src/explore/CollectionCard';
-import FilterDetail from 'src/explore/FilterDetail';
+import { NFTCard, CollectionCard, FilterDetail } from 'src/collection/CollectionView';
 
 // Loader
 import { PulseLoader } from 'react-spinners';

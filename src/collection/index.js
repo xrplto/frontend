@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 // Components
 import SpinNFT from './SpinNFT';
-import ViewNFT from './ViewNFT';
+import CollectionView from './CollectionView';
 
 export default function Collection({ data }) {
     const [view, setView] = useState(data?.collection?.type);
@@ -16,7 +16,7 @@ export default function Collection({ data }) {
             {(view === 'random' || view === 'sequence') && pendingNfts > 0 ? (
                 <SpinNFT collection={data.collection} setView={setView} />
             ) : (
-                <ViewNFT collection={data.collection} />
+                <CollectionView collection={data.collection} />
             )}
         </>
     );
