@@ -347,19 +347,21 @@ export default function SearchModal({ open, onClose }) {
                           </ListItemAvatar>
                           <ListItemText
                             primary={collection.name}
-                            secondary={`${collection.items || 0} items`}
+                            secondary={collection.type ? `${collection.type} collection` : 'Collection'}
                             primaryTypographyProps={{ fontSize: '0.85rem', noWrap: true }}
                             secondaryTypographyProps={{ fontSize: '0.75rem', noWrap: true }}
                             sx={{ pr: 1 }}
                           />
                           <Stack alignItems="flex-end" spacing={0}>
-                            {collection.floor && (
+                            {collection.floor && collection.floor.amount && (
                               <Typography variant="body2" fontSize="0.8rem" fontWeight={500}>
-                                Floor: {collection.floor.amount} {collection.floor.currency}
+                                Floor: {collection.floor.amount} {collection.floor.currency || 'XRP'}
                               </Typography>
                             )}
-                            {collection.verified === 'yes' && (
-                              <Chip label="Verified" size="small" color="primary" sx={{ height: 18, fontSize: '0.65rem' }} />
+                            {collection.totalVolume !== undefined && collection.totalVolume > 0 && (
+                              <Typography variant="caption" fontSize="0.7rem" color="text.secondary">
+                                Vol: {collection.totalVolume.toLocaleString()} XRP
+                              </Typography>
                             )}
                           </Stack>
                         </ListItemButton>
