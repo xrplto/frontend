@@ -45,7 +45,7 @@ const History = ({ account }) => {
     <Paper
       elevation={0}
       sx={{
-        background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
+        background: 'transparent',
         backdropFilter: 'blur(20px)',
         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         borderRadius: 4,
@@ -76,7 +76,7 @@ const History = ({ account }) => {
             px: { xs: 2, sm: 3 },
             py: { xs: 1.5, sm: 2 },
             borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+            background: 'transparent',
             backdropFilter: 'blur(10px)'
           }}
         >
@@ -141,7 +141,7 @@ const History = ({ account }) => {
               label={`${getFilterStats(filter)} ${filter === 'token' ? 'Trades' : 'NFTs'}`}
               size="small"
               sx={{
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                bgcolor: 'transparent',
                 color: theme.palette.primary.main,
                 fontWeight: 600,
                 border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
@@ -159,7 +159,7 @@ const History = ({ account }) => {
             onChange={handleFilterChange}
             size="medium"
             sx={{
-              bgcolor: alpha(theme.palette.background.paper, 0.5),
+              bgcolor: 'transparent',
               backdropFilter: 'blur(16px)',
               borderRadius: '20px',
               padding: '6px',
@@ -197,7 +197,7 @@ const History = ({ account }) => {
                   }
                 },
                 '&:hover:not(.Mui-selected)': {
-                  bgcolor: alpha(theme.palette.primary.main, 0.08),
+                  bgcolor: 'transparent',
                   color: theme.palette.primary.main,
                   transform: 'translateY(-1px)',
                   boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.15)}`
@@ -228,7 +228,7 @@ const History = ({ account }) => {
         <Box
           sx={{
             position: 'relative',
-            background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(theme.palette.background.paper, 0.2)} 100%)`,
+            background: 'transparent',
             backdropFilter: 'blur(10px)'
           }}
         >

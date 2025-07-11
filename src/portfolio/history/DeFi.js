@@ -199,12 +199,7 @@ const DeFiHistory = ({ account }) => {
   return (
     <Box
       sx={{
-        background: darkMode
-          ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-              theme.palette.primary.dark,
-              0.04
-            )} 100%)`
-          : theme.palette.background.paper,
+        background: 'transparent',
         borderRadius: isSmallScreen ? 2 : 3,
         p: isSmallScreen ? 0.5 : 2,
         border: `1px solid ${alpha(theme.palette.primary.main, darkMode ? 0.2 : 0.1)}`,
@@ -253,7 +248,7 @@ const DeFiHistory = ({ account }) => {
                 width: isSmallScreen ? 48 : 64,
                 height: isSmallScreen ? 48 : 64,
                 borderRadius: '50%',
-                background: alpha(theme.palette.primary.main, 0.1),
+                background: 'transparent',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -284,7 +279,7 @@ const DeFiHistory = ({ account }) => {
               },
               '& .MuiTableRow-root': {
                 '&:hover': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                  backgroundColor: 'transparent',
                   transition: 'background-color 0.2s ease'
                 }
               }
@@ -297,7 +292,7 @@ const DeFiHistory = ({ account }) => {
                     color: theme.palette.primary.main,
                     fontWeight: 'bold',
                     borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    background: alpha(theme.palette.primary.main, 0.03),
+                    background: 'transparent',
                     '&:first-of-type': {
                       borderTopLeftRadius: 8
                     },
@@ -314,7 +309,7 @@ const DeFiHistory = ({ account }) => {
                     fontWeight: 600,
                     fontSize: '0.875rem',
                     borderBottom: `2px solid ${alpha(theme.palette.divider, 0.8)}`,
-                    background: darkMode ? alpha(theme.palette.background.paper, 0.6) : theme.palette.grey[50],
+                    background: 'transparent',
                     backdropFilter: 'blur(8px)',
                     letterSpacing: '0.5px',
                     textTransform: 'uppercase',
@@ -329,7 +324,7 @@ const DeFiHistory = ({ account }) => {
                     fontWeight: 600,
                     fontSize: '0.875rem',
                     borderBottom: `2px solid ${alpha(theme.palette.divider, 0.8)}`,
-                    background: darkMode ? alpha(theme.palette.background.paper, 0.6) : theme.palette.grey[50],
+                    background: 'transparent',
                     backdropFilter: 'blur(8px)',
                     letterSpacing: '0.5px',
                     textTransform: 'uppercase'
@@ -343,7 +338,7 @@ const DeFiHistory = ({ account }) => {
                     fontWeight: 600,
                     fontSize: '0.875rem',
                     borderBottom: `2px solid ${alpha(theme.palette.divider, 0.8)}`,
-                    background: darkMode ? alpha(theme.palette.background.paper, 0.6) : theme.palette.grey[50],
+                    background: 'transparent',
                     backdropFilter: 'blur(8px)',
                     letterSpacing: '0.5px',
                     textTransform: 'uppercase'
@@ -357,7 +352,7 @@ const DeFiHistory = ({ account }) => {
                     fontWeight: 600,
                     fontSize: '0.875rem',
                     borderBottom: `2px solid ${alpha(theme.palette.divider, 0.8)}`,
-                    background: darkMode ? alpha(theme.palette.background.paper, 0.6) : theme.palette.grey[50],
+                    background: 'transparent',
                     backdropFilter: 'blur(8px)',
                     letterSpacing: '0.5px',
                     textTransform: 'uppercase',
@@ -383,7 +378,7 @@ const DeFiHistory = ({ account }) => {
               px: isSmallScreen ? 1 : 3,
               py: isSmallScreen ? 1 : 2,
               gap: isSmallScreen ? 1 : 2,
-              background: darkMode ? alpha(theme.palette.background.paper, 0.4) : theme.palette.grey[50],
+              background: 'transparent',
               backdropFilter: 'blur(10px)',
               flexWrap: 'wrap'
             }}
@@ -393,7 +388,7 @@ const DeFiHistory = ({ account }) => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1.5,
-                background: alpha(theme.palette.background.paper, 0.8),
+                background: 'transparent',
                 backdropFilter: 'blur(8px)',
                 borderRadius: 1.5,
                 px: isSmallScreen ? 0.75 : 1.5,
@@ -433,7 +428,7 @@ const DeFiHistory = ({ account }) => {
                     height: isSmallScreen ? '28px' : '36px',
                     borderRadius: '8px',
                     border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                    background: theme.palette.background.paper,
+                    background: 'transparent',
                     boxShadow: theme.shadows[1],
                     transition: 'all 0.2s ease',
                     '&:hover': {
@@ -465,7 +460,7 @@ const DeFiHistory = ({ account }) => {
                     height: isSmallScreen ? '28px' : '36px',
                     borderRadius: '8px',
                     border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                    background: theme.palette.background.paper,
+                    background: 'transparent',
                     boxShadow: theme.shadows[1],
                     transition: 'all 0.2s ease',
                     '&:hover': {
@@ -494,7 +489,7 @@ const DeFiHistory = ({ account }) => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1,
-                background: alpha(theme.palette.background.paper, 0.8),
+                background: 'transparent',
                 backdropFilter: 'blur(8px)',
                 borderRadius: 1.5,
                 px: isSmallScreen ? 0.75 : 1.5,
