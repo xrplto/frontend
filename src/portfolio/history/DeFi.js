@@ -1028,7 +1028,7 @@ const HistoryRow = (props) => {
             ))}
           {TransactionType === 'AMMDeposit' && (
             <Chip
-              color="secondaryOrigin"
+              color="secondary"
               label="Add"
               size="small"
               sx={{

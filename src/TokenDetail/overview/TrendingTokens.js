@@ -77,39 +77,13 @@ const TrendingCard = styled(Card, {
   }
 }));
 
-const RankChip = styled(Chip)(({ theme, rank }) => ({
-  background:
-    rank <= 3
-      ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)'
-      : rank <= 5
-      ? 'linear-gradient(135deg, #E5E5E5 0%, #C0C0C0 50%, #A9A9A9 100%)'
-      : 'linear-gradient(135deg, #CD7F32 0%, #B8860B 50%, #DAA520 100%)',
-  color: '#fff',
-  fontWeight: 'bold',
-  fontSize: '0.7rem',
-  height: '22px',
-  minWidth: '26px',
-  boxShadow: `0 1px 4px ${alpha('#000', 0.3)}`,
-  border: '1px solid rgba(255,255,255,0.2)',
-  '& .MuiChip-label': {
-    padding: '0 4px',
-    textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-  }
-}));
+// Removed styled component - will use inline styles instead
 
 const HeaderSection = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'darkMode'
 })(({ theme, darkMode }) => ({
   position: 'relative',
-  background: darkMode
-    ? `linear-gradient(135deg, ${alpha('#FF6B35', 0.15)} 0%, ${alpha('#F7931E', 0.15)} 50%, ${alpha(
-        '#FF6B35',
-        0.1
-      )} 100%)`
-    : `linear-gradient(135deg, ${alpha('#FF6B35', 0.08)} 0%, ${alpha('#F7931E', 0.08)} 50%, ${alpha(
-        '#FF6B35',
-        0.05
-      )} 100%)`,
+  background: 'transparent',
   borderRadius: '10px',
   padding: theme.spacing(theme.breakpoints.down('sm') ? 0.75 : 1, theme.breakpoints.down('sm') ? 1 : 1.5),
   marginBottom: theme.spacing(theme.breakpoints.down('sm') ? 1 : 1.5),
@@ -120,13 +94,8 @@ const HeaderSection = styled(Box, {
 const GlowingButton = styled(Button, {
   shouldForwardProp: (prop) => prop !== 'darkMode'
 })(({ theme, darkMode }) => ({
-  background: darkMode
-    ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`
-    : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(
-        theme.palette.success.main,
-        0.1
-      )} 100%)`,
-  color: `${darkMode ? '#fff' : theme.palette.primary.main} !important`,
+  background: 'transparent',
+  color: `${theme.palette.primary.main} !important`,
   borderRadius: '10px',
   padding: theme.spacing(0.75, 2.5),
   textTransform: 'none',
@@ -134,18 +103,13 @@ const GlowingButton = styled(Button, {
   fontSize: '0.8rem',
   position: 'relative',
   overflow: 'hidden',
-  border: darkMode ? 'none' : `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-  boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.4)}`,
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+  boxShadow: 'none',
   '&:hover': {
-    background: darkMode
-      ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`
-      : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(
-          theme.palette.success.main,
-          0.15
-        )} 100%)`,
-    color: `${darkMode ? '#fff' : theme.palette.primary.dark} !important`,
+    background: alpha(theme.palette.primary.main, 0.05),
+    color: `${theme.palette.primary.dark} !important`,
     transform: 'translateY(-1px)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.5)}`
+    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}`
   }
 }));
 
@@ -396,7 +360,28 @@ const TrendingTokens = () => {
                       </Stack>
                     </Stack>
 
-                    <RankChip className="rank-chip" rank={rank} label={`#${rank}`} size="small" />
+                    <Chip 
+                      className="rank-chip" 
+                      label={`#${rank}`} 
+                      size="small"
+                      sx={{
+                        background: 'transparent',
+                        color: rank <= 3 
+                          ? '#FFD700'
+                          : rank <= 5
+                          ? '#C0C0C0'
+                          : '#CD7F32',
+                        fontWeight: 'bold',
+                        fontSize: '0.7rem',
+                        height: '22px',
+                        minWidth: '26px',
+                        boxShadow: 'none',
+                        border: `1px solid ${rank <= 3 ? '#FFD700' : rank <= 5 ? '#C0C0C0' : '#CD7F32'}`,
+                        '& .MuiChip-label': {
+                          padding: '0 4px'
+                        }
+                      }}
+                    />
                   </Box>
                 </Link>
               </CardContent>

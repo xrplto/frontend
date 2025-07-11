@@ -364,11 +364,9 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
-    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-      ? `linear-gradient(180deg, ${alpha('#030310', 0.98)} 0%, ${alpha('#030310', 0.95)} 100%)`
-      : `linear-gradient(180deg, ${theme.palette.background.default} 0%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
+    background: 'transparent',
     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    backdropFilter: 'blur(40px)',
+    backdropFilter: 'none',
     boxShadow: 'none'
   }
 }));

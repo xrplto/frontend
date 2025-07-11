@@ -228,7 +228,7 @@ export const BoredApeTheme = createTheme({
       disabled: alpha('#FAFAFA', 0.5)
     },
     background: {
-      paper: alpha('#008B8B', 0.3),
+      paper: 'rgba(0, 139, 139, 0.01)', // Very transparent to avoid alpha() errors
       default: '#0F0F0F'
     },
     action: {
@@ -283,9 +283,9 @@ export const BoredApeTheme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          backgroundColor: alpha('#1A1A1A', 0.85),
-          background: `linear-gradient(135deg, ${alpha('#0A0A0A', 0.9)} 0%, ${alpha('#1A1A1A', 0.85)} 100%)`,
-          backdropFilter: 'blur(20px) saturate(200%)',
+          backgroundColor: 'transparent',
+          background: 'transparent',
+          backdropFilter: 'none',
           border: `1px solid ${alpha('#40E0D0', 0.3)}`,
           borderRadius: '16px',
           boxShadow: '0px 0px 30px rgba(64, 224, 208, 0.15), 0px 8px 32px rgba(64, 224, 208, 0.1), inset 0px 1px 1px rgba(255, 255, 255, 0.1)',
@@ -293,14 +293,7 @@ export const BoredApeTheme = createTheme({
           position: 'relative',
           overflow: 'hidden',
           '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.5), transparent)',
-            opacity: 0.5
+            display: 'none'
           },
           '&:hover': {
             transform: 'translateY(-2px)',
@@ -378,11 +371,11 @@ export const BoredApeTheme = createTheme({
         root: {
           borderRadius: '16px',
           border: `1px solid ${alpha('#40E0D0', 0.3)}`,
-          background: `linear-gradient(135deg, ${alpha('#40E0D0', 0.1)} 0%, ${alpha('#00D4FF', 0.05)} 100%)`,
+          background: 'transparent',
           fontWeight: 500,
-          boxShadow: '0px 0px 10px rgba(64, 224, 208, 0.2)',
+          boxShadow: 'none',
           '&:hover': {
-            background: `linear-gradient(135deg, ${alpha('#40E0D0', 0.2)} 0%, ${alpha('#00D4FF', 0.1)} 100%)`,
+            background: alpha('#40E0D0', 0.05),
             borderColor: alpha('#FFD700', 0.5),
             boxShadow: '0px 0px 20px rgba(255, 215, 0, 0.3)'
           }
@@ -404,21 +397,13 @@ export const BoredApeTheme = createTheme({
         root: {
           borderRadius: '16px',
           border: `1px solid ${alpha('#40E0D0', 0.15)}`,
-          background: `linear-gradient(135deg, ${alpha('#0A0A0A', 0.8)} 0%, ${alpha('#1A1A1A', 0.7)} 100%)`,
-          backdropFilter: 'blur(20px) saturate(180%)',
+          background: 'transparent',
+          backdropFilter: 'none',
           boxShadow: '0px 0px 30px rgba(64, 224, 208, 0.12), 0px 8px 32px rgba(64, 224, 208, 0.08), inset 0px 1px 1px rgba(255, 255, 255, 0.05)',
           transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           position: 'relative',
           '&::after': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(135deg, transparent, rgba(255, 215, 0, 0.1), transparent)',
-            opacity: 0,
-            transition: 'opacity 0.4s'
+            display: 'none'
           },
           '&:hover': {
             transform: 'translateY(-6px) scale(1.02)',

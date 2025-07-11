@@ -79,9 +79,7 @@ const OverviewWrapper = styled(Box)(
     overflow-x: hidden;
     overflow-y: auto;
     min-height: 100vh;
-    background: ${theme.palette.mode === 'dark' 
-      ? 'linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%)' 
-      : 'linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%)'};
+    background: transparent;
 `
 );
 
@@ -90,7 +88,7 @@ const StyledModal = styled(Modal)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   padding: theme.spacing(1),
-  backdropFilter: 'blur(8px)',
+  backdropFilter: 'none',
   backgroundColor: alpha(theme.palette.common.black, 0.5)
 }));
 
@@ -101,10 +99,8 @@ const ModalContent = styled(Paper)(({ theme }) => ({
   maxHeight: '90vh',
   overflow: 'auto',
   padding: theme.spacing(3),
-  background: `linear-gradient(135deg, 
-    ${alpha(theme.palette.background.paper, 0.95)} 0%, 
-    ${alpha(theme.palette.background.paper, 0.9)} 100%)`,
-  backdropFilter: 'blur(40px) saturate(150%)',
+  background: 'transparent',
+  backdropFilter: 'none',
   borderRadius: '24px',
   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
   boxShadow: `
@@ -115,12 +111,9 @@ const ModalContent = styled(Paper)(({ theme }) => ({
 
 // Styled container for consistent glass-morphism effect
 const OuterBorderContainer = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, 
-    ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-    ${alpha(theme.palette.background.paper, 0.5)} 50%,
-    ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-  backdropFilter: 'blur(40px) saturate(150%)',
-  WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+  background: 'transparent',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
   borderRadius: '16px',
   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
   padding: theme.spacing(2),
@@ -132,19 +125,7 @@ const OuterBorderContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: `linear-gradient(
-      135deg,
-      ${alpha(theme.palette.primary.main, 0.05)} 0%,
-      transparent 50%,
-      ${alpha(theme.palette.secondary.main, 0.05)} 100%
-    )`,
-    pointerEvents: 'none'
+    display: 'none'
   },
   '&:hover': {
     transform: 'translateY(-2px)',
@@ -417,8 +398,8 @@ export default function Portfolio({ account, limit, collection, type }) {
 
         return `
           <div style="
-            background: ${alpha(theme.palette.background.paper, 0.95)};
-            backdrop-filter: blur(20px);
+            background: transparent;
+            backdrop-filter: none;
             border: 1px solid ${alpha(theme.palette.divider, 0.2)};
             border-radius: 12px;
             padding: 12px 16px;
@@ -733,8 +714,8 @@ export default function Portfolio({ account, limit, collection, type }) {
 
         return `
           <div style="
-            background: ${alpha(theme.palette.background.paper, 0.95)};
-            backdrop-filter: blur(20px);
+            background: transparent;
+            backdrop-filter: none;
             border: 1px solid ${alpha(theme.palette.divider, 0.2)};
             border-radius: 12px;
             padding: 12px 16px;
@@ -1029,8 +1010,8 @@ export default function Portfolio({ account, limit, collection, type }) {
 
         return `
           <div style="
-            background: ${alpha(theme.palette.background.paper, 0.95)};
-            backdrop-filter: blur(20px);
+            background: transparent;
+            backdrop-filter: none;
             border: 1px solid ${alpha(theme.palette.divider, 0.2)};
             border-radius: 12px;
             padding: 12px 16px;
@@ -1198,8 +1179,8 @@ export default function Portfolio({ account, limit, collection, type }) {
   const OuterBorderContainer = styled(Box)(({ theme }) => ({
     padding: theme.spacing(1),
     borderRadius: '12px',
-    background: `${alpha(theme.palette.background.paper, 0.3)}`,
-    backdropFilter: 'blur(20px)',
+    background: 'transparent',
+    backdropFilter: 'none',
     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
     marginBottom: theme.spacing(1),
     boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
@@ -1500,12 +1481,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                     sx={{
                       p: { xs: 1.5, sm: 2 },
                       borderRadius: { xs: '12px', sm: '16px' },
-                      background: `linear-gradient(135deg, 
-                        ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-                        ${alpha(theme.palette.background.paper, 0.5)} 50%,
-                        ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-                      backdropFilter: 'blur(40px) saturate(150%)',
-                      WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                      background: 'transparent',
+                      backdropFilter: 'none',
+                      WebkitBackdropFilter: 'none',
                       border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                       boxShadow: `
                         0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
@@ -1522,12 +1500,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: `linear-gradient(
-                          135deg,
-                          ${alpha(theme.palette.primary.main, 0.05)} 0%,
-                          transparent 50%,
-                          ${alpha(theme.palette.secondary.main, 0.05)} 100%
-                        )`,
+                        display: 'none',
                         pointerEvents: 'none'
                       },
                       '&:hover': {
@@ -1602,14 +1575,11 @@ export default function Portfolio({ account, limit, collection, type }) {
                               }
                               size="small"
                               sx={{
-                                bgcolor: alpha(
-                                  activeRankColors[activeRanks[account]] ||
-                                    theme.palette.primary.main,
-                                  0.1
-                                ),
+                                bgcolor: 'transparent',
                                 color:
                                   activeRankColors[activeRanks[account]] ||
                                   theme.palette.primary.main,
+                                border: `1px solid ${activeRankColors[activeRanks[account]] || theme.palette.primary.main}`,
                                 fontWeight: 600,
                                 fontSize: '0.7rem',
                                 height: 24,
@@ -1623,8 +1593,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 label="AMM"
                                 size="small"
                                 sx={{
-                                  bgcolor: alpha(theme.palette.warning.main, 0.1),
+                                  bgcolor: 'transparent',
                                   color: theme.palette.warning.main,
+                                  border: `1px solid ${theme.palette.warning.main}`,
                                   fontWeight: 600,
                                   fontSize: '0.7rem',
                                   height: 24,
@@ -1643,12 +1614,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                 <Card
                     sx={{
                       borderRadius: { xs: '12px', sm: '16px' },
-                      background: `linear-gradient(135deg, 
-                        ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-                        ${alpha(theme.palette.background.paper, 0.5)} 50%,
-                        ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-                      backdropFilter: 'blur(40px) saturate(150%)',
-                      WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                      background: 'transparent',
+                      backdropFilter: 'none',
+                      WebkitBackdropFilter: 'none',
                       border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                       boxShadow: `
                         0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
@@ -1688,7 +1656,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                           sx={{
                             p: { xs: 0.8, sm: 1.2 },
                             borderRadius: '14px',
-                            background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.light} 100%)`,
+                            background: 'transparent',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1699,7 +1667,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                               position: 'absolute',
                               inset: 0,
                               borderRadius: '14px',
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.2)} 0%, transparent 100%)`,
+                              background: 'transparent',
                               pointerEvents: 'none'
                             }
                           }}
@@ -1741,7 +1709,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                         sx={{
                           p: 2,
                           borderRadius: '12px',
-                          background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                          background: 'transparent',
                           border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
                           textAlign: 'center'
                         }}
@@ -1831,7 +1799,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     <Box
                       sx={{
                         p: 2.5,
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                        background: 'transparent',
                         borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                       }}
                     >
@@ -1847,7 +1815,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               p: 1,
                               borderRadius: '12px',
-                              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
+                              background: 'transparent',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -1921,7 +1889,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               p: 2,
                               borderRadius: '12px',
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                              background: 'transparent',
                               border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
                               transition: 'all 0.2s ease',
                               '&:hover': {
@@ -1973,7 +1941,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               p: 2,
                               borderRadius: '12px',
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.08)} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                              background: 'transparent',
                               border: `1px solid ${alpha(theme.palette.error.main, 0.1)}`,
                               transition: 'all 0.2s ease',
                               '&:hover': {
@@ -2025,7 +1993,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               p: 2,
                               borderRadius: '12px',
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.08)} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                              background: 'transparent',
                               border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
                               transition: 'all 0.2s ease',
                               '&:hover': {
@@ -2077,12 +2045,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                   <Card
                     sx={{
                       borderRadius: { xs: '12px', sm: '16px' },
-                      background: `linear-gradient(135deg, 
-                        ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-                        ${alpha(theme.palette.background.paper, 0.5)} 50%,
-                        ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-                      backdropFilter: 'blur(40px) saturate(150%)',
-                      WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                      background: 'transparent',
+                      backdropFilter: 'none',
+                      WebkitBackdropFilter: 'none',
                       border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                       boxShadow: `
                         0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
@@ -2122,7 +2087,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                           sx={{
                             p: { xs: 0.8, sm: 1.2 },
                             borderRadius: '14px',
-                            background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${theme.palette.warning.light} 100%)`,
+                            background: 'transparent',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -2133,7 +2098,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                               position: 'absolute',
                               inset: 0,
                               borderRadius: '14px',
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.2)} 0%, transparent 100%)`,
+                              background: 'transparent',
                               pointerEvents: 'none'
                             }
                           }}
@@ -2180,7 +2145,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                       ) : (
                         <Box
                           sx={{
-                            background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                            background: 'transparent',
                             borderRadius: '12px',
                             overflow: 'auto',
                             border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
@@ -2212,7 +2177,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             <TableHead>
                               <TableRow
                                 sx={{
-                                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                                  background: 'transparent',
                                   '& .MuiTableCell-root': {
                                     fontWeight: 700,
                                     color: theme.palette.text.primary,
@@ -2339,7 +2304,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                         sx={{
                           p: 1.2,
                           borderRadius: '14px',
-                          background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${theme.palette.info.light} 100%)`,
+                          background: 'transparent',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -2392,7 +2357,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                         sx={{
                           p: 2,
                           borderRadius: '12px',
-                          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                          background: 'transparent',
                           border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
                           transition: 'all 0.2s ease',
                           '&:hover': {
@@ -2426,7 +2391,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                         sx={{
                           p: 2,
                           borderRadius: '12px',
-                          background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                          background: 'transparent',
                           border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
                           transition: 'all 0.2s ease',
                           '&:hover': {
@@ -2504,12 +2469,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                   <Card
                     sx={{
                       borderRadius: { xs: '12px', sm: '16px' },
-                      background: `linear-gradient(135deg, 
-                        ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-                        ${alpha(theme.palette.background.paper, 0.5)} 50%,
-                        ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-                      backdropFilter: 'blur(40px) saturate(150%)',
-                      WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                      background: 'transparent',
+                      backdropFilter: 'none',
+                      WebkitBackdropFilter: 'none',
                       border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                       boxShadow: `
                         0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
@@ -2559,7 +2521,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               p: { xs: 0.4, sm: 0.8 },
                               borderRadius: { xs: '8px', sm: '10px' },
-                              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
+                              background: 'transparent',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -2570,7 +2532,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 position: 'absolute',
                                 inset: 0,
                                 borderRadius: '14px',
-                                background: `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.2)} 0%, transparent 100%)`,
+                                background: 'transparent',
                                 pointerEvents: 'none'
                               }
                             }}
@@ -2615,7 +2577,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                           size="small"
                           sx={{
                             bgcolor: `${alpha(theme.palette.background.paper, 0.6)}`,
-                            backdropFilter: 'blur(10px)',
+                            backdropFilter: 'none',
                             borderRadius: { xs: '6px', sm: '12px' },
                             padding: { xs: '0px', sm: '2px' },
                             border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -2658,7 +2620,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               p: { xs: 0.5, sm: 1.2 },
                               borderRadius: { xs: '4px', sm: '12px' },
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.08)} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                              background: 'transparent',
                               border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
                               transition: 'all 0.2s ease',
                               '&:hover': {
@@ -2715,7 +2677,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               p: { xs: 0.5, sm: 1.2 },
                               borderRadius: { xs: '4px', sm: '12px' },
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                              background: 'transparent',
                               border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
                               transition: 'all 0.2s ease',
                               '&:hover': {
@@ -2759,17 +2721,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               p: { xs: 0.5, sm: 1.2 },
                               borderRadius: { xs: '4px', sm: '12px' },
-                              background: `linear-gradient(135deg, ${alpha(
-                                (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
-                                  ? theme.palette.success.main
-                                  : theme.palette.error.main,
-                                0.08
-                              )} 0%, ${alpha(
-                                (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
-                                  ? theme.palette.success.main
-                                  : theme.palette.error.main,
-                                0.03
-                              )} 100%)`,
+                              background: 'transparent',
                               border: `1px solid ${alpha(
                                 (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
                                   ? theme.palette.success.main
@@ -2844,7 +2796,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               p: { xs: 0.5, sm: 1.2 },
                               borderRadius: { xs: '4px', sm: '12px' },
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.08)} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                              background: 'transparent',
                               border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
                               transition: 'all 0.2s ease',
                               '&:hover': {
