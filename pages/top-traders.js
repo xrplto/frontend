@@ -61,7 +61,7 @@ const ModalContent = styled(Paper)(({ theme }) => ({
   height: '90vh',
   display: 'flex',
   flexDirection: 'column',
-  backgroundColor: alpha(theme.palette.grey[900], 0.85),
+  backgroundColor: 'transparent',
   borderRadius: '24px',
   boxShadow: `0 16px 40px ${alpha(theme.palette.common.black, 0.2)}`,
   padding: theme.spacing(3),
@@ -74,7 +74,7 @@ const ModalContent = styled(Paper)(({ theme }) => ({
     left: 0,
     right: 0,
     height: '3px',
-    background: theme.palette.primary.main,
+    background: 'transparent',
     borderRadius: '24px 24px 0 0'
   },
   '& .MuiTabs-root': {
@@ -89,14 +89,14 @@ const ModalContent = styled(Paper)(({ theme }) => ({
     height: '55vh',
     borderRadius: '16px',
     overflow: 'hidden',
-    background: alpha(theme.palette.background.paper, 0.5),
+    background: 'transparent',
     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
   },
   '& .metrics-section': {
     height: '35vh',
     overflowY: 'auto',
     padding: theme.spacing(2),
-    backgroundColor: alpha(theme.palette.background.default, 0.5),
+    backgroundColor: 'transparent',
     borderRadius: '16px',
     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
   }
@@ -128,10 +128,10 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
         left: '16px',
         right: '16px',
         height: '1px',
-        background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.divider, 0.1)}, transparent)`
+        background: 'transparent'
       },
       '&:hover': {
-        backgroundColor: alpha(theme.palette.primary.main, 0.04),
+        backgroundColor: 'transparent',
         transform: 'translateY(-1px)',
         boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.05)}`,
         '&:after': {
@@ -874,7 +874,7 @@ export default function Analytics() {
               gap: 3,
               p: 6,
               borderRadius: '24px',
-              background: alpha(theme.palette.background.paper, 0.7),
+              background: 'transparent',
               backdropFilter: 'blur(20px)',
               border: `1px solid ${alpha(theme.palette.divider, 0.15)}`
             }}
@@ -910,10 +910,7 @@ export default function Analytics() {
             sx={{
               p: 4,
               borderRadius: '24px',
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.error.main,
-                0.1
-              )} 0%, ${alpha(theme.palette.error.main, 0.05)} 100%)`,
+              background: 'transparent',
               border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
               textAlign: 'center'
             }}
@@ -937,11 +934,7 @@ export default function Analytics() {
           sx={{
             flex: 1,
             py: { xs: 1, sm: 2, md: 3 },
-            background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
-              ? '#030310'
-              : theme.palette.mode === 'dark'
-                ? `linear-gradient(to bottom, ${theme.palette.background.paper}, ${theme.palette.background.default})`
-                : theme.palette.background.default,
+            background: 'transparent',
             minHeight: '100vh'
           }}
         >
@@ -984,9 +977,7 @@ export default function Analytics() {
               sx={{
                 borderRadius: '16px',
                 p: { xs: 1, sm: 2 },
-                backgroundColor: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
-                  ? alpha('#030310', 0.85)
-                  : alpha(theme.palette.background.paper, 0.6),
+                backgroundColor: 'transparent',
                 backdropFilter: 'blur(12px)',
                 border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                 boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.15)}`
@@ -1001,7 +992,7 @@ export default function Analytics() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       py: 8,
-                      background: alpha(theme.palette.background.paper, 0.7),
+                      background: 'transparent',
                       borderRadius: '16px',
                       border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                       backdropFilter: 'blur(10px)'
@@ -1044,10 +1035,7 @@ export default function Analytics() {
                     sx={{
                       p: 4,
                       textAlign: 'center',
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.error.main,
-                        0.15
-                      )} 0%, ${alpha(theme.palette.error.main, 0.1)} 100%)`,
+                      background: 'transparent',
                       borderRadius: '16px',
                       border: `1px solid ${alpha(theme.palette.error.main, 0.25)}`,
                       backdropFilter: 'blur(10px)'
@@ -1121,7 +1109,7 @@ export default function Analytics() {
                           maxWidth: 450,
                           '& .MuiOutlinedInput-root': {
                             borderRadius: '12px',
-                            backgroundColor: alpha(theme.palette.background.default, 0.6),
+                            backgroundColor: 'transparent',
                             '& fieldset': {
                               borderColor: alpha(theme.palette.divider, 0.3)
                             },
@@ -1159,7 +1147,7 @@ export default function Analytics() {
                             px: 1.5,
                             py: 0.5,
                             borderRadius: '12px',
-                            background: alpha(theme.palette.info.main, 0.1)
+                            background: 'transparent'
                           }}
                         >
                           <Typography variant="caption" color="info.main" sx={{ fontWeight: 600 }}>
@@ -1398,10 +1386,10 @@ export default function Analytics() {
                       onClick={handleCloseRoiModal}
                       sx={{
                         borderRadius: '12px',
-                        background: (theme) => alpha(theme.palette.background.paper, 0.8),
+                        background: 'transparent',
                         border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                         '&:hover': {
-                          background: (theme) => alpha(theme.palette.error.main, 0.1),
+                          background: 'transparent',
                           border: (theme) => `1px solid ${alpha(theme.palette.error.main, 0.2)}`
                         }
                       }}
@@ -1418,7 +1406,7 @@ export default function Analytics() {
                       mb: 2,
                       p: 1.5,
                       borderRadius: '12px',
-                      background: (theme) => alpha(theme.palette.background.paper, 0.7),
+                      background: 'transparent',
                       border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.2)}`
                     }}
                   >
@@ -1456,14 +1444,10 @@ export default function Analytics() {
                         textTransform: 'none',
                         minHeight: 48,
                         '&:hover': {
-                          background: (theme) => alpha(theme.palette.primary.main, 0.04)
+                          background: 'transparent'
                         },
                         '&.Mui-selected': {
-                          background: (theme) =>
-                            `linear-gradient(135deg, ${alpha(
-                              theme.palette.primary.main,
-                              0.2
-                            )} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%)`,
+                          background: 'transparent',
                           color: 'primary.main',
                           borderBottom: (theme) => `2px solid ${theme.palette.primary.main}`
                         }
