@@ -1,48 +1,54 @@
 import { alpha, createTheme, darken, lighten } from '@mui/material';
 import '@mui/lab/themeAugmentation';
 
-// Bored Ape color palette extracted from the image
+// Bored Ape color palette - Enhanced with high shine
 const themeColors = {
-  primary: '#FFD700',      // Gold/Yellow from banana hair and jersey
-  secondary: '#40E0D0',    // Turquoise from ape face
-  success: '#00D4FF',      // Sky Blue from diamond earring
-  warning: '#F4A460',      // Sandy Brown from skin
+  primary: '#FFD700',      // Pure Gold from banana hair and jersey
+  secondary: '#40E0D0',    // Diamond Turquoise from ape face
+  success: '#00D4FF',      // Electric Sky Blue from diamond earring
+  warning: '#F4A460',      // Satin Sandy Brown from skin
   error: '#FF6B6B',        // Soft Red
-  info: '#1E90FF',         // Dodger Blue from background
-  black: '#1A1A1A',        // Deep Black
-  white: '#FAFAFA',        // Off White
-  primaryAlt: '#008B8B',   // Dark Cyan
-  trueWhite: '#FFFFFF'
+  info: '#1E90FF',         // Royal Dodger Blue from background
+  black: '#0A0A0A',        // Ultra Deep Black
+  white: '#FEFEFE',        // Pristine White
+  primaryAlt: '#008B8B',   // Deep Cyan
+  trueWhite: '#FFFFFF',
+  gold: '#FFF700',         // Bright Gold
+  diamond: '#E0FFFF'       // Diamond shine
 };
 
 const colors = {
   gradients: {
-    blue1: 'linear-gradient(135deg, #40E0D0 0%, #00CED1 100%)',
-    blue2: 'linear-gradient(135deg, #1E90FF 0%, #0080FF 100%)',
-    blue3: 'linear-gradient(127.55deg, #008B8B 3.73%, #40E0D0 92.26%)',
-    blue4: 'linear-gradient(-20deg, #40E0D0 0%, #FFD700 100%)',
-    blue5: 'linear-gradient(135deg, #1E90FF 10%, #00BFFF 100%)',
-    orange1: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-    orange2: 'linear-gradient(135deg, #F4A460 0%, #DDA0DD 100%)',
-    orange3: 'linear-gradient(120deg, #FFD700 0%, #40E0D0 100%)',
-    purple1: 'linear-gradient(135deg, #40E0D0 0%, #BA55D3 100%)',
-    purple3: 'linear-gradient(135deg, #9370DB 0%, #8A2BE2 100%)',
-    pink1: 'linear-gradient(135deg, #F4A460 0%, #FFB6C1 100%)',
-    pink2: 'linear-gradient(135deg, #DDA0DD 0%, #DA70D6 100%)',
-    green1: 'linear-gradient(135deg, #40E0D0 0%, #48D1CC 100%)',
-    green2: 'linear-gradient(to bottom, #00FA9A 0%, #40E0D0 100%)',
-    black1: 'linear-gradient(100.66deg, #2A2A2A 6.56%, #1A1A1A 93.57%)',
-    black2: 'linear-gradient(60deg, #1A1A1A 0%, #008B8B 100%)'
+    blue1: 'linear-gradient(135deg, #40E0D0 0%, #00E5E5 25%, #00CED1 50%, #40E0D0 100%)',
+    blue2: 'linear-gradient(135deg, #1E90FF 0%, #00BFFF 25%, #0080FF 50%, #1E90FF 100%)',
+    blue3: 'linear-gradient(127.55deg, #008B8B 3.73%, #40E0D0 50%, #00E5E5 92.26%)',
+    blue4: 'linear-gradient(-20deg, #40E0D0 0%, #FFD700 33%, #FFF700 66%, #40E0D0 100%)',
+    blue5: 'linear-gradient(135deg, #1E90FF 0%, #00D4FF 25%, #00BFFF 75%, #40E0D0 100%)',
+    orange1: 'linear-gradient(135deg, #FFD700 0%, #FFF700 25%, #FFA500 75%, #FFD700 100%)',
+    orange2: 'linear-gradient(135deg, #F4A460 0%, #FFB6C1 50%, #DDA0DD 100%)',
+    orange3: 'linear-gradient(120deg, #FFD700 0%, #FFF700 25%, #40E0D0 75%, #00E5E5 100%)',
+    purple1: 'linear-gradient(135deg, #40E0D0 0%, #9370DB 50%, #BA55D3 100%)',
+    purple3: 'linear-gradient(135deg, #9370DB 0%, #BA55D3 50%, #8A2BE2 100%)',
+    pink1: 'linear-gradient(135deg, #F4A460 0%, #FFDAB9 50%, #FFB6C1 100%)',
+    pink2: 'linear-gradient(135deg, #DDA0DD 0%, #FF69B4 50%, #DA70D6 100%)',
+    green1: 'linear-gradient(135deg, #40E0D0 0%, #00E5E5 50%, #48D1CC 100%)',
+    green2: 'linear-gradient(to bottom, #00FA9A 0%, #40E0D0 50%, #00E5E5 100%)',
+    black1: 'linear-gradient(100.66deg, #1A1A1A 0%, #0A0A0A 50%, #000000 100%)',
+    black2: 'linear-gradient(60deg, #0A0A0A 0%, #008B8B 50%, #40E0D0 100%)',
+    gold1: 'linear-gradient(135deg, #FFD700 0%, #FFF700 20%, #FFD700 40%, #FFA500 60%, #FFD700 80%, #FFF700 100%)',
+    diamond1: 'linear-gradient(135deg, #40E0D0 0%, #E0FFFF 25%, #40E0D0 50%, #00D4FF 75%, #40E0D0 100%)'
   },
   shadows: {
-    success: '0px 4px 12px rgba(0, 212, 255, 0.4), 0px 8px 24px rgba(0, 212, 255, 0.2)',
-    error: '0px 4px 12px rgba(255, 107, 107, 0.4), 0px 8px 24px rgba(255, 107, 107, 0.2)',
-    info: '0px 4px 12px rgba(30, 144, 255, 0.4), 0px 8px 24px rgba(30, 144, 255, 0.2)',
-    primary: '0px 4px 12px rgba(255, 215, 0, 0.4), 0px 8px 24px rgba(255, 215, 0, 0.2)',
-    warning: '0px 4px 12px rgba(244, 164, 96, 0.4), 0px 8px 24px rgba(244, 164, 96, 0.2)',
-    card: '0px 8px 24px rgba(64, 224, 208, 0.15), 0px 2px 8px rgba(0, 0, 0, 0.2)',
-    cardSm: '0px 4px 12px rgba(64, 224, 208, 0.12), 0px 1px 4px rgba(0, 0, 0, 0.15)',
-    cardLg: '0px 16px 48px rgba(255, 215, 0, 0.2), 0px 8px 24px rgba(64, 224, 208, 0.15)'
+    success: '0px 0px 20px rgba(0, 212, 255, 0.6), 0px 4px 16px rgba(0, 212, 255, 0.4), 0px 8px 32px rgba(0, 212, 255, 0.3)',
+    error: '0px 0px 20px rgba(255, 107, 107, 0.6), 0px 4px 16px rgba(255, 107, 107, 0.4), 0px 8px 32px rgba(255, 107, 107, 0.3)',
+    info: '0px 0px 20px rgba(30, 144, 255, 0.6), 0px 4px 16px rgba(30, 144, 255, 0.4), 0px 8px 32px rgba(30, 144, 255, 0.3)',
+    primary: '0px 0px 30px rgba(255, 215, 0, 0.8), 0px 4px 20px rgba(255, 215, 0, 0.6), 0px 12px 40px rgba(255, 215, 0, 0.4)',
+    warning: '0px 0px 20px rgba(244, 164, 96, 0.6), 0px 4px 16px rgba(244, 164, 96, 0.4), 0px 8px 32px rgba(244, 164, 96, 0.3)',
+    card: '0px 0px 40px rgba(64, 224, 208, 0.25), 0px 8px 32px rgba(64, 224, 208, 0.2), 0px 2px 8px rgba(0, 0, 0, 0.3)',
+    cardSm: '0px 0px 20px rgba(64, 224, 208, 0.2), 0px 4px 16px rgba(64, 224, 208, 0.15), 0px 1px 4px rgba(0, 0, 0, 0.2)',
+    cardLg: '0px 0px 60px rgba(255, 215, 0, 0.35), 0px 16px 56px rgba(255, 215, 0, 0.25), 0px 8px 32px rgba(64, 224, 208, 0.2)',
+    gold: '0px 0px 40px rgba(255, 247, 0, 0.8), 0px 0px 80px rgba(255, 215, 0, 0.6), 0px 0px 120px rgba(255, 215, 0, 0.4)',
+    diamond: '0px 0px 30px rgba(224, 255, 255, 0.8), 0px 0px 60px rgba(64, 224, 208, 0.6), 0px 0px 90px rgba(64, 224, 208, 0.4)'
   },
   layout: {
     general: {
@@ -144,8 +150,8 @@ export const BoredApeTheme = createTheme({
     borderRadiusLg: '16px',
     borderRadiusXl: '20px',
     backgroundAlt: alpha('#008B8B', 0.4),
-    backgroundAsset: alpha('#40E0D0', 0.08),
-    backgroundTrait: alpha('#FFD700', 0.12),
+    backgroundAsset: `linear-gradient(135deg, ${alpha('#40E0D0', 0.08)} 0%, ${alpha('#00D4FF', 0.05)} 100%)`,
+    backgroundTrait: `linear-gradient(135deg, ${alpha('#FFD700', 0.15)} 0%, ${alpha('#FFF700', 0.08)} 100%)`,
     borderTrait: '#FFD700'
   },
   sidebar: {
@@ -159,13 +165,13 @@ export const BoredApeTheme = createTheme({
     menuItemIconColor: colors.layout.sidebar.menuItemIconColor,
     menuItemIconColorActive: colors.layout.sidebar.menuItemIconColorActive,
     menuItemHeadingColor: colors.layout.sidebar.menuItemHeadingColor,
-    boxShadow: '0px 4px 24px rgba(64, 224, 208, 0.2)',
+    boxShadow: '0px 0px 30px rgba(64, 224, 208, 0.3), 0px 4px 24px rgba(64, 224, 208, 0.2)',
     width: '290px'
   },
   header: {
     height: '80px',
     background: alpha('#0F0F0F', 0.9),
-    boxShadow: '0px 2px 12px rgba(255, 215, 0, 0.2)',
+    boxShadow: '0px 0px 20px rgba(255, 215, 0, 0.3), 0px 2px 12px rgba(255, 215, 0, 0.2)',
     textColor: colors.secondary.main
   },
   spacing: 9,
@@ -278,14 +284,28 @@ export const BoredApeTheme = createTheme({
         root: {
           backgroundImage: 'none',
           backgroundColor: alpha('#1A1A1A', 0.85),
-          backdropFilter: 'blur(8px)',
-          border: `1px solid ${alpha('#40E0D0', 0.2)}`,
-          borderRadius: '12px',
-          boxShadow: '0px 8px 24px rgba(64, 224, 208, 0.1)',
-          transition: 'all 0.3s ease',
+          background: `linear-gradient(135deg, ${alpha('#0A0A0A', 0.9)} 0%, ${alpha('#1A1A1A', 0.85)} 100%)`,
+          backdropFilter: 'blur(20px) saturate(200%)',
+          border: `1px solid ${alpha('#40E0D0', 0.3)}`,
+          borderRadius: '16px',
+          boxShadow: '0px 0px 30px rgba(64, 224, 208, 0.15), 0px 8px 32px rgba(64, 224, 208, 0.1), inset 0px 1px 1px rgba(255, 255, 255, 0.1)',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '1px',
+            background: 'linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.5), transparent)',
+            opacity: 0.5
+          },
           '&:hover': {
-            boxShadow: '0px 12px 36px rgba(64, 224, 208, 0.15)',
-            borderColor: alpha('#FFD700', 0.3)
+            transform: 'translateY(-2px)',
+            boxShadow: '0px 0px 40px rgba(255, 215, 0, 0.25), 0px 12px 40px rgba(64, 224, 208, 0.2), inset 0px 1px 1px rgba(255, 255, 255, 0.2)',
+            borderColor: alpha('#FFD700', 0.5)
           }
         }
       }
@@ -301,12 +321,29 @@ export const BoredApeTheme = createTheme({
           transition: 'all 0.3s ease'
         },
         contained: {
-          background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-          boxShadow: '0px 4px 12px rgba(255, 215, 0, 0.3)',
+          background: 'linear-gradient(135deg, #FFD700 0%, #FFF700 25%, #FFA500 75%, #FFD700 100%)',
+          boxShadow: '0px 0px 20px rgba(255, 215, 0, 0.5), 0px 4px 16px rgba(255, 215, 0, 0.3), inset 0px 1px 1px rgba(255, 255, 255, 0.4)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: '-50%',
+            left: '-50%',
+            width: '200%',
+            height: '200%',
+            background: 'linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.5) 50%, transparent 70%)',
+            transform: 'rotate(45deg)',
+            transition: 'all 0.6s',
+            opacity: 0
+          },
           '&:hover': {
-            background: 'linear-gradient(135deg, #FFD700 0%, #FFB84D 100%)',
-            boxShadow: '0px 6px 18px rgba(255, 215, 0, 0.4)',
-            transform: 'translateY(-1px)'
+            background: 'linear-gradient(135deg, #FFF700 0%, #FFD700 25%, #FFB84D 75%, #FFF700 100%)',
+            boxShadow: '0px 0px 30px rgba(255, 215, 0, 0.7), 0px 6px 24px rgba(255, 215, 0, 0.5), inset 0px 1px 1px rgba(255, 255, 255, 0.6)',
+            transform: 'translateY(-2px) scale(1.02)',
+            '&::before': {
+              animation: 'shine 0.6s ease-in-out'
+            }
           }
         },
         outlined: {
@@ -341,11 +378,13 @@ export const BoredApeTheme = createTheme({
         root: {
           borderRadius: '16px',
           border: `1px solid ${alpha('#40E0D0', 0.3)}`,
-          backgroundColor: alpha('#40E0D0', 0.1),
+          background: `linear-gradient(135deg, ${alpha('#40E0D0', 0.1)} 0%, ${alpha('#00D4FF', 0.05)} 100%)`,
           fontWeight: 500,
+          boxShadow: '0px 0px 10px rgba(64, 224, 208, 0.2)',
           '&:hover': {
-            backgroundColor: alpha('#40E0D0', 0.2),
-            borderColor: alpha('#FFD700', 0.4)
+            background: `linear-gradient(135deg, ${alpha('#40E0D0', 0.2)} 0%, ${alpha('#00D4FF', 0.1)} 100%)`,
+            borderColor: alpha('#FFD700', 0.5),
+            boxShadow: '0px 0px 20px rgba(255, 215, 0, 0.3)'
           }
         }
       }
@@ -365,14 +404,29 @@ export const BoredApeTheme = createTheme({
         root: {
           borderRadius: '16px',
           border: `1px solid ${alpha('#40E0D0', 0.15)}`,
-          background: alpha('#1A1A1A', 0.7),
-          backdropFilter: 'blur(8px)',
-          boxShadow: '0px 8px 24px rgba(64, 224, 208, 0.08)',
-          transition: 'all 0.3s ease',
+          background: `linear-gradient(135deg, ${alpha('#0A0A0A', 0.8)} 0%, ${alpha('#1A1A1A', 0.7)} 100%)`,
+          backdropFilter: 'blur(20px) saturate(180%)',
+          boxShadow: '0px 0px 30px rgba(64, 224, 208, 0.12), 0px 8px 32px rgba(64, 224, 208, 0.08), inset 0px 1px 1px rgba(255, 255, 255, 0.05)',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          position: 'relative',
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, transparent, rgba(255, 215, 0, 0.1), transparent)',
+            opacity: 0,
+            transition: 'opacity 0.4s'
+          },
           '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: '0px 16px 48px rgba(255, 215, 0, 0.15)',
-            borderColor: alpha('#FFD700', 0.3)
+            transform: 'translateY(-6px) scale(1.02)',
+            boxShadow: '0px 0px 50px rgba(255, 215, 0, 0.25), 0px 16px 56px rgba(255, 215, 0, 0.15), inset 0px 1px 1px rgba(255, 255, 255, 0.1)',
+            borderColor: alpha('#FFD700', 0.5),
+            '&::after': {
+              opacity: 1
+            }
           }
         }
       }
@@ -404,7 +458,8 @@ export const BoredApeTheme = createTheme({
             },
             '&.Mui-focused fieldset': {
               borderColor: themeColors.primary,
-              borderWidth: '2px'
+              borderWidth: '2px',
+              boxShadow: '0px 0px 20px rgba(255, 215, 0, 0.3)'
             }
           }
         }
@@ -413,13 +468,14 @@ export const BoredApeTheme = createTheme({
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
-          backgroundColor: alpha('#1A1A1A', 0.95),
-          border: `1px solid ${alpha('#FFD700', 0.3)}`,
+          background: `linear-gradient(135deg, ${alpha('#0A0A0A', 0.98)} 0%, ${alpha('#1A1A1A', 0.95)} 100%)`,
+          border: `1px solid ${alpha('#FFD700', 0.4)}`,
           color: themeColors.white,
-          borderRadius: '8px',
-          backdropFilter: 'blur(8px)',
+          borderRadius: '12px',
+          backdropFilter: 'blur(20px) saturate(180%)',
           fontSize: '0.8125rem',
-          padding: '8px 12px'
+          padding: '10px 16px',
+          boxShadow: '0px 0px 30px rgba(255, 215, 0, 0.3), 0px 8px 24px rgba(0, 0, 0, 0.4)'
         },
         arrow: {
           color: alpha('#1A1A1A', 0.95),
@@ -459,16 +515,20 @@ export const BoredApeTheme = createTheme({
           '&::before': {
             content: '""',
             position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '120%',
+            height: '120%',
             backgroundImage: `url('/static/boredapexrp.png')`,
-            backgroundSize: '250px',
-            backgroundRepeat: 'repeat',
-            opacity: 0.02,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.08,
+            filter: 'contrast(1.3) brightness(1.2) saturate(1.2)',
             zIndex: -2,
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            animation: 'floatBackground 20s ease-in-out infinite'
           },
           '&::after': {
             content: '""',
@@ -477,11 +537,11 @@ export const BoredApeTheme = createTheme({
             left: 0,
             right: 0,
             bottom: 0,
-            background: `radial-gradient(ellipse at center, transparent 0%, rgba(15, 15, 15, 0.6) 50%, rgba(15, 15, 15, 0.9) 100%)`,
+            background: `radial-gradient(ellipse at center, transparent 0%, rgba(10, 10, 10, 0.4) 40%, rgba(10, 10, 10, 0.8) 80%, rgba(10, 10, 10, 0.95) 100%)`,
             pointerEvents: 'none',
             zIndex: -1
           },
-          scrollbarColor: `${alpha('#FFD700', 0.5)} ${alpha('#1A1A1A', 0.3)}`,
+          scrollbarColor: `${alpha('#FFD700', 0.6)} ${alpha('#0A0A0A', 0.4)}`,
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
             backgroundColor: alpha('#1A1A1A', 0.3),
             width: '10px',
@@ -489,11 +549,13 @@ export const BoredApeTheme = createTheme({
           },
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: 10,
-            backgroundColor: alpha('#FFD700', 0.5),
-            border: `2px solid ${alpha('#1A1A1A', 0.3)}`,
+            background: `linear-gradient(135deg, ${alpha('#FFD700', 0.6)} 0%, ${alpha('#FFA500', 0.5)} 100%)`,
+            border: `2px solid ${alpha('#FFD700', 0.3)}`,
+            boxShadow: '0px 0px 10px rgba(255, 215, 0, 0.3)',
           },
           '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
-            backgroundColor: alpha('#FFD700', 0.7)
+            background: `linear-gradient(135deg, ${alpha('#FFF700', 0.8)} 0%, ${alpha('#FFD700', 0.7)} 100%)`,
+            boxShadow: '0px 0px 20px rgba(255, 215, 0, 0.5)'
           }
         },
         '#__next': {
@@ -509,6 +571,44 @@ export const BoredApeTheme = createTheme({
           width: '100%',
           MozOsxFontSmoothing: 'grayscale',
           WebkitFontSmoothing: 'antialiased'
+        },
+        '@keyframes shine': {
+          '0%': {
+            opacity: 0,
+            transform: 'translateX(-100%) translateY(-100%)'
+          },
+          '50%': {
+            opacity: 1
+          },
+          '100%': {
+            opacity: 0,
+            transform: 'translateX(100%) translateY(100%)'
+          }
+        },
+        '@keyframes goldPulse': {
+          '0%': {
+            boxShadow: '0 0 30px rgba(255, 215, 0, 0.4)'
+          },
+          '50%': {
+            boxShadow: '0 0 50px rgba(255, 215, 0, 0.8), 0 0 80px rgba(255, 215, 0, 0.4)'
+          },
+          '100%': {
+            boxShadow: '0 0 30px rgba(255, 215, 0, 0.4)'
+          }
+        },
+        '@keyframes floatBackground': {
+          '0%, 100%': {
+            transform: 'translate(-50%, -50%) scale(1.0)'
+          },
+          '25%': {
+            transform: 'translate(-48%, -52%) scale(1.02)'
+          },
+          '50%': {
+            transform: 'translate(-52%, -48%) scale(1.05)'
+          },
+          '75%': {
+            transform: 'translate(-48%, -50%) scale(1.02)'
+          }
         }
       }
     }
