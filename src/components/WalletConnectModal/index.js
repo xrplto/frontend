@@ -26,7 +26,7 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   },
   '& .MuiDialog-paper': {
     borderRadius: '16px',
-    background: alpha(theme.palette.background.paper, 0.85),
+    background: 'transparent',
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
     border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
@@ -41,6 +41,8 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
 const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
   padding: theme.spacing(2, 2.5),
   background: 'transparent',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   position: 'relative'
 }));
@@ -48,15 +50,19 @@ const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   padding: theme.spacing(2.5),
   background: 'transparent',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
   position: 'relative'
 }));
 
 const ActionButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: alpha(theme.palette.text.primary, 0.08),
+  backgroundColor: 'transparent',
+  border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
   borderRadius: '8px',
   transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor: alpha(theme.palette.text.primary, 0.12)
+    backgroundColor: 'transparent',
+    border: `1px solid ${alpha(theme.palette.text.primary, 0.2)}`
   },
   '& .MuiSvgIcon-root': {
     color: theme.palette.text.secondary,
@@ -68,12 +74,12 @@ const WalletItem = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(1.5, 2),
   cursor: 'pointer',
   borderRadius: '12px',
-  background: alpha(theme.palette.background.paper, 0.6),
+  background: 'transparent',
   backdropFilter: 'blur(10px)',
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   transition: 'all 0.2s ease',
   '&:hover': {
-    background: alpha(theme.palette.background.paper, 0.8),
+    background: 'transparent',
     border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
     transform: 'translateY(-1px)',
     '& .wallet-name': {
@@ -90,12 +96,14 @@ const WalletIcon = styled('img')(({ theme }) => ({
 }));
 
 const DownloadButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  backgroundColor: 'transparent',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
   borderRadius: '6px',
   padding: theme.spacing(0.5),
   transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.15)
+    backgroundColor: 'transparent',
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.4)}`
   },
   '& .MuiSvgIcon-root': {
     color: theme.palette.primary.main,
@@ -122,7 +130,7 @@ const FeeTag = styled('div')(({ theme, isFree }) => ({
   fontWeight: 500,
   textTransform: 'uppercase',
   display: 'inline-block',
-  background: alpha(isFree ? theme.palette.success.main : theme.palette.warning.main, 0.1),
+  background: 'transparent',
   color: isFree ? theme.palette.success.main : theme.palette.warning.main,
   border: `1px solid ${alpha(isFree ? theme.palette.success.main : theme.palette.warning.main, 0.2)}`
 }));
@@ -134,7 +142,7 @@ const RecommendedChip = styled('div')(({ theme }) => ({
   fontWeight: 500,
   textTransform: 'uppercase',
   display: 'inline-block',
-  background: alpha(theme.palette.info.main, 0.1),
+  background: 'transparent',
   color: theme.palette.info.main,
   border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
 }));
