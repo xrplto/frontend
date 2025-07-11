@@ -848,6 +848,7 @@ const NFTGrid = ({ collection }) => {
   const theme = useTheme();
   const { setDeletingNfts } = useContext(AppContext);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const [nfts, setNfts] = useState([]);
   const [page, setPage] = useState(0);
@@ -856,8 +857,19 @@ const NFTGrid = ({ collection }) => {
   const [loading, setLoading] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [filter, setFilter] = useState(0);
-  const [subFilter, setSubFilter] = useState(0);
+  const [subFilter, setSubFilter] = useState('default');
   const [filterAttrs, setFilterAttrs] = useState([]);
+
+  const sortOptions = [
+    { value: 'default', label: 'Default', icon: '📊', desc: 'Collection order' },
+    { value: 'pricexrpasc', label: 'Price: Low to High', icon: '💰', desc: 'Cheapest first' },
+    { value: 'pricexrpdesc', label: 'Price: High to Low', icon: '💎', desc: 'Most expensive' },
+    { value: 'rarityasc', label: 'Rarity: Common First', icon: '🌟', desc: 'Common to rare' },
+    { value: 'raritydesc', label: 'Rarity: Rare First', icon: '👑', desc: 'Rare to common' },
+    { value: 'recent', label: 'Recently Listed', icon: '🆕', desc: 'Newest listings' }
+  ];
+
+  const currentSort = sortOptions.find(opt => opt.value === subFilter) || sortOptions[0];
 
   // Fetch NFTs
   const fetchNfts = useCallback(() => {
@@ -923,67 +935,364 @@ const NFTGrid = ({ collection }) => {
 
   return (
     <Box sx={{ p: { xs: 0, sm: 0 }, backgroundColor: 'transparent' }}>
-      {/* Search Bar */}
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 2,
-          mb: 3,
-          alignItems: 'center'
-        }}
-      >
-        <IconButton
-          onClick={() => setShowFilter(!showFilter)}
+      {/* Search and Filter Header */}
+      <Box sx={{ mb: 3 }}>
+        {/* Search Bar */}
+        <Box
           sx={{
-            border: `1px solid ${showFilter ? theme.palette.primary.main : alpha(theme.palette.divider, 0.3)}`,
-            color: showFilter ? theme.palette.primary.main : theme.palette.text.primary,
-            backgroundColor: 'transparent',
-            '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.08),
-              borderColor: theme.palette.primary.main
-            }
+            display: 'flex',
+            gap: 2,
+            mb: 2,
+            alignItems: 'stretch'
           }}
         >
-          <FilterListIcon />
-        </IconButton>
+          <Paper
+            elevation={0}
+            sx={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              px: 2.5,
+              py: 1.5,
+              borderRadius: '16px',
+              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+              backgroundColor: 'transparent',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:focus-within': {
+                borderColor: theme.palette.primary.main,
+                transform: 'translateY(-1px)',
+                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.08)}`
+              }
+            }}
+          >
+            <SearchIcon sx={{ color: theme.palette.text.secondary, mr: 1.5, fontSize: '1.3rem' }} />
+            <TextField
+              fullWidth
+              variant="standard"
+              placeholder={isMobile ? "Search NFTs..." : "Search by name, ID, or attribute..."}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                debouncedSearch(e.target.value);
+              }}
+              InputProps={{
+                disableUnderline: true,
+                sx: { fontSize: '0.95rem' },
+                endAdornment: (
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    {search && (
+                      <IconButton 
+                        size="small" 
+                        onClick={() => {
+                          setSearch('');
+                          debouncedSearch('');
+                        }}
+                        sx={{
+                          p: 0.5,
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.error.main, 0.08),
+                            color: theme.palette.error.main
+                          }
+                        }}
+                      >
+                        <ClearIcon fontSize="small" />
+                      </IconButton>
+                    )}
+                    {loading && <ClipLoader color={theme.palette.primary.main} size={16} />}
+                  </Stack>
+                )
+              }}
+            />
+          </Paper>
 
-        <Paper
-          elevation={0}
-          sx={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            px: 2,
-            py: 1,
-            borderRadius: 2,
+          <Stack direction="row" spacing={1}>
+            {/* Sort Dropdown */}
+            <Button
+              variant="outlined"
+              onClick={(e) => setAnchorEl(e.currentTarget)}
+              endIcon={<ExpandMoreIcon />}
+              sx={{
+                px: 2,
+                borderRadius: '16px',
+                textTransform: 'none',
+                fontWeight: 600,
+                border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+                color: theme.palette.text.primary,
+                backgroundColor: 'transparent',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                  borderColor: theme.palette.primary.main,
+                  transform: 'translateY(-1px)'
+                }
+              }}
+            >
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Typography sx={{ fontSize: '1rem' }}>{currentSort.icon}</Typography>
+                {!isMobile && (
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {currentSort.label}
+                  </Typography>
+                )}
+              </Stack>
+            </Button>
+
+            <Button
+              variant={showFilter ? "contained" : "outlined"}
+              onClick={() => setShowFilter(!showFilter)}
+              startIcon={<TuneIcon />}
+              sx={{
+                px: 3,
+                borderRadius: '16px',
+                textTransform: 'none',
+                fontWeight: 600,
+                minWidth: 'auto',
+                backgroundColor: showFilter ? theme.palette.primary.main : 'transparent',
+                border: `1px solid ${showFilter ? theme.palette.primary.main : alpha(theme.palette.divider, 0.3)}`,
+                color: showFilter ? 'white' : theme.palette.text.primary,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  backgroundColor: showFilter ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.08),
+                  borderColor: theme.palette.primary.main,
+                  transform: 'translateY(-1px)'
+                }
+              }}
+            >
+              {!isMobile && 'Filters'}
+              {(filter > 0 || filterAttrs.length > 0) && (
+                <Chip
+                  size="small"
+                  label={[
+                    ((filter & 1) ? 1 : 0) +
+                    ((filter & 2) ? 1 : 0) +
+                    ((filter & 4) ? 1 : 0) +
+                    ((filter & 16) ? 1 : 0) +
+                    filterAttrs.length
+                  ]}
+                  sx={{
+                    ml: 1,
+                    height: 20,
+                    backgroundColor: showFilter ? 'white' : alpha(theme.palette.primary.main, 0.2),
+                    color: showFilter ? theme.palette.primary.main : 'white',
+                    fontWeight: 700,
+                    fontSize: '0.7rem'
+                  }}
+                />
+              )}
+            </Button>
+          </Stack>
+        </Box>
+
+        {/* Quick Filter Pills */}
+        {!showFilter && (filter > 0 || filterAttrs.length > 0) && (
+          <Fade in>
+            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ gap: 1 }}>
+              {(filter & 1) !== 0 && (
+                <Chip
+                  label="Buy with Mints"
+                  size="small"
+                  onDelete={() => setFilter(filter ^ 1)}
+                  sx={{
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                    color: theme.palette.primary.main,
+                    fontWeight: 600,
+                    '& .MuiChip-deleteIcon': {
+                      color: theme.palette.primary.main,
+                      '&:hover': {
+                        color: theme.palette.primary.dark
+                      }
+                    }
+                  }}
+                />
+              )}
+              {(filter & 2) !== 0 && (
+                <Chip
+                  label="Recently Minted"
+                  size="small"
+                  onDelete={() => setFilter(filter ^ 2)}
+                  sx={{
+                    backgroundColor: alpha(theme.palette.success.main, 0.1),
+                    border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`,
+                    color: theme.palette.success.main,
+                    fontWeight: 600,
+                    '& .MuiChip-deleteIcon': {
+                      color: theme.palette.success.main,
+                      '&:hover': {
+                        color: theme.palette.success.dark
+                      }
+                    }
+                  }}
+                />
+              )}
+              {(filter & 4) !== 0 && (
+                <Chip
+                  label="Buy Now"
+                  size="small"
+                  onDelete={() => setFilter(filter ^ 4)}
+                  sx={{
+                    backgroundColor: alpha(theme.palette.warning.main, 0.1),
+                    border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+                    color: theme.palette.warning.main,
+                    fontWeight: 600,
+                    '& .MuiChip-deleteIcon': {
+                      color: theme.palette.warning.main,
+                      '&:hover': {
+                        color: theme.palette.warning.dark
+                      }
+                    }
+                  }}
+                />
+              )}
+              {(filter & 16) !== 0 && (
+                <Chip
+                  label="Rarity Sorting"
+                  size="small"
+                  onDelete={() => setFilter(filter ^ 16)}
+                  sx={{
+                    backgroundColor: alpha(theme.palette.info.main, 0.1),
+                    border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
+                    color: theme.palette.info.main,
+                    fontWeight: 600,
+                    '& .MuiChip-deleteIcon': {
+                      color: theme.palette.info.main,
+                      '&:hover': {
+                        color: theme.palette.info.dark
+                      }
+                    }
+                  }}
+                />
+              )}
+              {filterAttrs.length > 0 && (
+                <Chip
+                  label={`${filterAttrs.reduce((sum, attr) => sum + attr.value.length, 0)} Attributes`}
+                  size="small"
+                  onDelete={() => setFilterAttrs([])}
+                  sx={{
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                    border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                    color: theme.palette.secondary.main,
+                    fontWeight: 600,
+                    '& .MuiChip-deleteIcon': {
+                      color: theme.palette.secondary.main,
+                      '&:hover': {
+                        color: theme.palette.secondary.dark
+                      }
+                    }
+                  }}
+                />
+              )}
+              <Button
+                size="small"
+                onClick={() => {
+                  setFilter(0);
+                  setFilterAttrs([]);
+                  setSubFilter(0);
+                }}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  color: theme.palette.error.main,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.error.main, 0.08)
+                  }
+                }}
+              >
+                Clear All
+              </Button>
+            </Stack>
+          </Fade>
+        )}
+      </Box>
+
+      {/* Sort Menu Popover */}
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        PaperProps={{
+          sx: {
+            mt: 1,
+            borderRadius: '16px',
             border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
             backgroundColor: 'transparent',
-            '&:focus-within': {
-              borderColor: theme.palette.primary.main
-            }
-          }}
-        >
-          <SearchIcon sx={{ color: theme.palette.primary.main, mr: 1 }} />
-          <TextField
-            fullWidth
-            variant="standard"
-            placeholder={isMobile ? "Search NFTs..." : "Search by name or attribute..."}
-            onChange={(e) => debouncedSearch(e.target.value)}
-            InputProps={{
-              disableUnderline: true,
-              endAdornment: search && (
-                <IconButton size="small" onClick={() => {
-                  setSearch('');
-                  debouncedSearch('');
-                }}>
-                  <ClearIcon fontSize="small" />
-                </IconButton>
-              )
+            backdropFilter: 'blur(20px)',
+            minWidth: 280
+          }
+        }}
+      >
+        <Box sx={{ p: 1 }}>
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              px: 2, 
+              py: 1, 
+              display: 'block', 
+              color: 'text.secondary',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
             }}
-          />
-          {loading && <ClipLoader color={theme.palette.primary.main} size={16} />}
-        </Paper>
-      </Box>
+          >
+            Sort by
+          </Typography>
+          {sortOptions.map((option) => (
+            <Box
+              key={option.value}
+              onClick={() => {
+                setSubFilter(option.value);
+                setAnchorEl(null);
+                setPage(0);
+              }}
+              sx={{
+                px: 2,
+                py: 1.5,
+                cursor: 'pointer',
+                borderRadius: '12px',
+                backgroundColor: subFilter === option.value ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.05)
+                }
+              }}
+            >
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Typography sx={{ fontSize: '1.2rem' }}>{option.icon}</Typography>
+                <Box sx={{ flex: 1 }}>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontWeight: subFilter === option.value ? 600 : 500,
+                      color: subFilter === option.value ? theme.palette.primary.main : 'text.primary'
+                    }}
+                  >
+                    {option.label}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                    {option.desc}
+                  </Typography>
+                </Box>
+                {subFilter === option.value && (
+                  <CheckCircleIcon 
+                    sx={{ 
+                      fontSize: '1.2rem', 
+                      color: theme.palette.primary.main 
+                    }} 
+                  />
+                )}
+              </Stack>
+            </Box>
+          ))}
+        </Box>
+      </Popover>
 
       {/* Filter Section */}
       {showFilter && (
@@ -1275,10 +1584,20 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
 }
 
 // FilterDetail Component  
-function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, setFilterAttrs, setPage }) {
+function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, filterAttrs, setFilterAttrs, setPage }) {
+  const theme = useTheme();
   const type = collection?.type;
   const extra = collection?.extra;
   const attrs = collection?.attrs || [];
+  const [expandedPanels, setExpandedPanels] = useState(['status', 'sort']);
+
+  const handlePanelChange = (panel) => (event, isExpanded) => {
+    setExpandedPanels(prev => 
+      isExpanded 
+        ? [...prev, panel]
+        : prev.filter(p => p !== panel)
+    );
+  };
 
   const handleFlagChange = (e) => {
     const value = e.target.value;
@@ -1300,53 +1619,229 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
     setPage(0);
   };
 
+  const activeFiltersCount = 
+    ((filter & 1) ? 1 : 0) + 
+    ((filter & 2) ? 1 : 0) + 
+    ((filter & 4) ? 1 : 0) + 
+    ((filter & 8) ? 1 : 0) + 
+    ((filter & 16) ? 1 : 0) +
+    (filterAttrs?.length || 0);
+
   return (
-    <Box sx={{ background: 'transparent', p: 3, borderRadius: 2, border: theme => `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 700, fontSize: '1.2rem', mb: 1 }}>
-          Filter & Sort
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+    <Box 
+      sx={{ 
+        background: 'transparent', 
+        p: 2, 
+        borderRadius: '20px', 
+        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+        position: 'sticky',
+        top: 20,
+        maxHeight: 'calc(100vh - 40px)',
+        overflowY: 'auto',
+        '&::-webkit-scrollbar': {
+          width: '6px'
+        },
+        '&::-webkit-scrollbar-track': {
+          background: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          background: alpha(theme.palette.primary.main, 0.2),
+          borderRadius: '3px',
+          '&:hover': {
+            background: alpha(theme.palette.primary.main, 0.3)
+          }
+        }
+      }}
+    >
+      <Box sx={{ mb: 3, p: 1 }}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+          <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 700, fontSize: '1.1rem' }}>
+            Filters
+          </Typography>
+          {activeFiltersCount > 0 && (
+            <Chip
+              label={`${activeFiltersCount} active`}
+              size="small"
+              sx={{
+                height: '22px',
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                color: theme.palette.primary.main,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+              }}
+            />
+          )}
+        </Stack>
+        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
           Refine your search results
         </Typography>
       </Box>
 
-      <Stack spacing={2}>
-        <StyledAccordion defaultExpanded>
-          <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <Box sx={{ p: 1, borderRadius: '10px', background: 'transparent', border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.2)}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <FactCheckIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />
+      <Stack spacing={1.5}>
+        <StyledAccordion 
+          expanded={expandedPanels.includes('status')} 
+          onChange={handlePanelChange('status')}
+          sx={{
+            background: 'transparent',
+            border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+            borderRadius: '12px !important',
+            overflow: 'hidden',
+            '&::before': { display: 'none' },
+            '&.Mui-expanded': {
+              margin: 0,
+              borderColor: alpha(theme.palette.primary.main, 0.15)
+            }
+          }}
+        >
+          <StyledAccordionSummary 
+            expandIcon={
+              <ExpandMoreIcon sx={{ 
+                fontSize: '1.2rem',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                color: theme.palette.primary.main
+              }} />
+            }
+            sx={{
+              minHeight: '56px',
+              padding: '8px 16px',
+              '&.Mui-expanded': {
+                minHeight: '56px'
+              },
+              '& .MuiAccordionSummary-content': {
+                margin: '8px 0',
+                '&.Mui-expanded': {
+                  margin: '8px 0'
+                }
+              }
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
+              <Box 
+                sx={{ 
+                  p: 0.75, 
+                  borderRadius: '10px', 
+                  background: alpha(theme.palette.primary.main, 0.08),
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center' 
+                }}
+              >
+                <FactCheckIcon sx={{ color: 'primary.main', fontSize: '1.1rem' }} />
               </Box>
-              <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 600, fontSize: '1rem' }}>
+              <Typography variant="subtitle1" sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem', flex: 1 }}>
                 Status
               </Typography>
+              {((filter & 1) || (filter & 2) || (filter & 4) || (filter & 16)) && (
+                <Chip
+                  label={[
+                    (filter & 1) && 'Buy with Mints',
+                    (filter & 2) && 'Recently Minted',
+                    (filter & 4) && 'Buy Now',
+                    (filter & 16) && 'Rarity'
+                  ].filter(Boolean).length}
+                  size="small"
+                  sx={{
+                    height: '20px',
+                    fontSize: '0.65rem',
+                    fontWeight: 600,
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    color: theme.palette.primary.main,
+                    minWidth: '24px'
+                  }}
+                />
+              )}
             </Stack>
           </StyledAccordionSummary>
           <StyledAccordionDetails>
             <Stack spacing={3}>
               {type === 'bulk' && (
-                <Box sx={{ p: 3, borderRadius: '16px', background: 'transparent', border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.12)}`, transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { transform: 'translateY(-2px)', border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.2)}` } }}>
+                <Box 
+                  sx={{ 
+                    p: 2.5, 
+                    borderRadius: '12px', 
+                    background: (filter & 1) ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
+                    border: `1px solid ${(filter & 1) ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.08)}`, 
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+                    cursor: 'pointer',
+                    '&:hover': { 
+                      transform: 'translateY(-1px)', 
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.08)}`,
+                      borderColor: alpha(theme.palette.primary.main, 0.3)
+                    } 
+                  }}
+                  onClick={() => handleFlagChange({ target: { value: 1 } })}
+                >
                   <Stack direction="row" alignItems="center" spacing={3}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 48, height: 48, borderRadius: '12px', background: 'transparent', border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.2)}` }}>
-                      <Checkbox checked={(filter & 1) !== 0} onChange={handleFlagChange} value={1} color="primary" sx={{ '& .MuiSvgIcon-root': { fontSize: '1.5rem' } }} />
+                    <Box 
+                      sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        width: 40, 
+                        height: 40, 
+                        borderRadius: '10px', 
+                        background: (filter & 1) ? theme.palette.primary.main : 'transparent',
+                        border: `1px solid ${(filter & 1) ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.2)}`,
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <Checkbox 
+                        checked={(filter & 1) !== 0} 
+                        onChange={handleFlagChange} 
+                        value={1} 
+                        color="primary" 
+                        sx={{ 
+                          padding: 0,
+                          '& .MuiSvgIcon-root': { 
+                            fontSize: '1.2rem',
+                            color: (filter & 1) ? 'white' : theme.palette.primary.main
+                          } 
+                        }} 
+                      />
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1.1rem' }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.95rem' }}>
                           Buy with Mints
                         </Typography>
-                        <Box sx={{ px: 2, py: 0.5, borderRadius: '20px', background: (theme) => theme.palette.primary.main, color: 'white', fontWeight: 700, fontSize: '0.75rem' }}>
-                          {extra?.buyWithMints || 0}
-                        </Box>
+                        <Chip
+                          label={extra?.buyWithMints || 0}
+                          size="small"
+                          sx={{
+                            height: '24px',
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            backgroundColor: (filter & 1) ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.1),
+                            color: (filter & 1) ? 'white' : theme.palette.primary.main,
+                            border: 'none'
+                          }}
+                        />
                       </Stack>
                       <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
                           Available for bulk minting purchases
                         </Typography>
                         <Tooltip title="Disabled on Spinning collections, only enabled on Bulk collections." placement="top" arrow>
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: '50%', background: (theme) => alpha(theme.palette.info.main, 0.1), color: 'info.main', cursor: 'help', transition: 'all 0.2s ease', '&:hover': { background: (theme) => alpha(theme.palette.info.main, 0.2), transform: 'scale(1.1)' } }}>
-                            <Icon icon={infoFilled} style={{ fontSize: '12px' }} />
+                          <Box 
+                            sx={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center', 
+                              width: 18, 
+                              height: 18, 
+                              borderRadius: '50%', 
+                              background: alpha(theme.palette.info.main, 0.1), 
+                              color: 'info.main', 
+                              cursor: 'help', 
+                              transition: 'all 0.2s ease', 
+                              '&:hover': { 
+                                background: alpha(theme.palette.info.main, 0.2), 
+                                transform: 'scale(1.1)' 
+                              } 
+                            }}
+                          >
+                            <Icon icon={infoFilled} style={{ fontSize: '10px' }} />
                           </Box>
                         </Tooltip>
                       </Stack>
@@ -1385,56 +1880,164 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                 </Box>
               )}
 
-              <Box sx={{ p: 3, borderRadius: '16px', background: 'transparent', border: (theme) => `1px solid ${alpha(theme.palette.warning.main, 0.12)}`, transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { transform: 'translateY(-2px)', border: (theme) => `1px solid ${alpha(theme.palette.warning.main, 0.2)}` } }}>
-                <Stack direction="row" alignItems="center" spacing={3}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 48, height: 48, borderRadius: '12px', background: 'transparent', border: (theme) => `1px solid ${alpha(theme.palette.warning.main, 0.2)}` }}>
-                    <Checkbox checked={(filter & 4) !== 0} onChange={handleFlagChange} value={4} color="warning" sx={{ '& .MuiSvgIcon-root': { fontSize: '1.5rem' } }} />
+              <Box 
+                sx={{ 
+                  p: 2.5, 
+                  borderRadius: '12px', 
+                  background: (filter & 4) ? alpha(theme.palette.warning.main, 0.04) : 'transparent',
+                  border: `1px solid ${(filter & 4) ? alpha(theme.palette.warning.main, 0.2) : alpha(theme.palette.divider, 0.08)}`, 
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+                  cursor: 'pointer',
+                  '&:hover': { 
+                    transform: 'translateY(-1px)', 
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.warning.main, 0.08)}`,
+                    borderColor: alpha(theme.palette.warning.main, 0.3)
+                  } 
+                }}
+                onClick={() => handleFlagChange({ target: { value: 4 } })}
+              >
+                <Stack direction="row" alignItems="center" spacing={2.5}>
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      width: 40, 
+                      height: 40, 
+                      borderRadius: '10px', 
+                      background: (filter & 4) ? theme.palette.warning.main : 'transparent',
+                      border: `1px solid ${(filter & 4) ? theme.palette.warning.main : alpha(theme.palette.warning.main, 0.2)}`,
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <Checkbox 
+                      checked={(filter & 4) !== 0} 
+                      onChange={handleFlagChange} 
+                      value={4} 
+                      sx={{ 
+                        padding: 0,
+                        color: (filter & 4) ? 'white' : theme.palette.warning.main,
+                        '&.Mui-checked': {
+                          color: 'white'
+                        },
+                        '& .MuiSvgIcon-root': { 
+                          fontSize: '1.2rem'
+                        } 
+                      }} 
+                    />
                   </Box>
                   <Box sx={{ flex: 1 }}>
-                    <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1.1rem' }}>
+                    <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 0.5 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.95rem' }}>
                         Buy Now
                       </Typography>
-                      <Box sx={{ px: 2, py: 0.5, borderRadius: '20px', background: (theme) => theme.palette.warning.main, color: 'white', fontWeight: 700, fontSize: '0.75rem' }}>
-                        {extra?.onSaleCount || 0}
-                      </Box>
+                      <Chip
+                        label={extra?.onSaleCount || 0}
+                        size="small"
+                        sx={{
+                          height: '24px',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          backgroundColor: (filter & 4) ? theme.palette.warning.main : alpha(theme.palette.warning.main, 0.1),
+                          color: (filter & 4) ? 'white' : theme.palette.warning.main,
+                          border: 'none'
+                        }}
+                      />
                     </Stack>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
                       NFTs available for immediate purchase
                     </Typography>
                   </Box>
                 </Stack>
 
                 {(filter & 0x04) !== 0 && (
-                  <Box sx={{ mt: 3, p: 3, background: 'transparent', border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: '12px' }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'warning.main' }} />
-                      Sort Options
-                    </Typography>
-                    <RadioGroup value={subFilter} onChange={handleOnSaleFlagChange}>
-                      <Stack spacing={1}>
-                        {[
-                          { value: 'pricenoxrp', label: 'Price No XRP', desc: 'Exclude XRP pricing' },
-                          { value: 'pricexrpasc', label: 'Price Low to High', desc: 'Lowest prices first' },
-                          { value: 'pricexrpdesc', label: 'Price High to Low', desc: 'Highest prices first' }
-                        ].map((option) => (
-                          <Box key={option.value} sx={{ p: 2, borderRadius: '10px', background: 'transparent', border: (theme) => `1px solid ${subFilter === option.value ? alpha(theme.palette.warning.main, 0.2) : alpha(theme.palette.divider, 0.08)}`, transition: 'all 0.2s ease', '&:hover': { background: 'transparent', border: (theme) => `1px solid ${alpha(theme.palette.warning.main, 0.15)}` } }}>
-                            <FormControlLabel
-                              value={option.value}
-                              control={<Radio color="warning" size="small" sx={{ mr: 1 }} />}
-                              label={
-                                <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>{option.label}</Typography>
-                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>{option.desc}</Typography>
-                                </Box>
-                              }
-                              sx={{ margin: 0, width: '100%', '& .MuiFormControlLabel-label': { width: '100%' } }}
-                            />
-                          </Box>
-                        ))}
-                      </Stack>
-                    </RadioGroup>
-                  </Box>
+                  <Fade in={true}>
+                    <Box 
+                      sx={{ 
+                        mt: 2, 
+                        p: 2, 
+                        background: alpha(theme.palette.warning.main, 0.02), 
+                        border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`, 
+                        borderRadius: '10px' 
+                      }}
+                    >
+                      <Typography 
+                        variant="subtitle2" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: 'text.primary', 
+                          mb: 1.5, 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 1,
+                          fontSize: '0.85rem'
+                        }}
+                      >
+                        <TuneIcon sx={{ fontSize: '1rem', color: theme.palette.warning.main }} />
+                        Sort by Price
+                      </Typography>
+                      <RadioGroup value={subFilter} onChange={handleOnSaleFlagChange}>
+                        <Stack spacing={0.5}>
+                          {[
+                            { value: 'pricenoxrp', label: 'No XRP', desc: 'Exclude XRP', icon: '🚫' },
+                            { value: 'pricexrpasc', label: 'Low to High', desc: 'Cheapest first', icon: '📈' },
+                            { value: 'pricexrpdesc', label: 'High to Low', desc: 'Most expensive', icon: '📉' }
+                          ].map((option) => (
+                            <Box 
+                              key={option.value} 
+                              sx={{ 
+                                p: 1.5, 
+                                borderRadius: '8px', 
+                                background: subFilter === option.value ? alpha(theme.palette.warning.main, 0.08) : 'transparent',
+                                border: `1px solid ${subFilter === option.value ? alpha(theme.palette.warning.main, 0.2) : 'transparent'}`, 
+                                transition: 'all 0.2s ease', 
+                                cursor: 'pointer',
+                                '&:hover': { 
+                                  background: alpha(theme.palette.warning.main, 0.05),
+                                  borderColor: alpha(theme.palette.warning.main, 0.15)
+                                } 
+                              }}
+                              onClick={() => handleOnSaleFlagChange({ target: { value: option.value } })}
+                            >
+                              <FormControlLabel
+                                value={option.value}
+                                control={
+                                  <Radio 
+                                    size="small" 
+                                    sx={{ 
+                                      p: 0.5,
+                                      color: theme.palette.warning.main,
+                                      '&.Mui-checked': {
+                                        color: theme.palette.warning.main
+                                      }
+                                    }} 
+                                  />
+                                }
+                                label={
+                                  <Stack direction="row" alignItems="center" spacing={1} sx={{ ml: 0.5 }}>
+                                    <Typography sx={{ fontSize: '1rem' }}>{option.icon}</Typography>
+                                    <Box>
+                                      <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.85rem' }}>
+                                        {option.label}
+                                      </Typography>
+                                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                        {option.desc}
+                                      </Typography>
+                                    </Box>
+                                  </Stack>
+                                }
+                                sx={{ 
+                                  margin: 0, 
+                                  width: '100%',
+                                  '& .MuiFormControlLabel-label': { width: '100%' } 
+                                }}
+                              />
+                            </Box>
+                          ))}
+                        </Stack>
+                      </RadioGroup>
+                    </Box>
+                  </Fade>
                 )}
               </Box>
 
@@ -1466,15 +2069,73 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
           </StyledAccordionDetails>
         </StyledAccordion>
 
-        <StyledAccordion defaultExpanded>
-          <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <Box sx={{ p: 1, borderRadius: '10px', background: 'transparent', border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.2)}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <BookmarkAddedIcon sx={{ color: 'success.main', fontSize: '1.2rem' }} />
+        <StyledAccordion 
+          expanded={expandedPanels.includes('attributes')} 
+          onChange={handlePanelChange('attributes')}
+          sx={{
+            background: 'transparent',
+            border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+            borderRadius: '12px !important',
+            overflow: 'hidden',
+            '&::before': { display: 'none' },
+            '&.Mui-expanded': {
+              margin: 0,
+              borderColor: alpha(theme.palette.success.main, 0.15)
+            }
+          }}
+        >
+          <StyledAccordionSummary 
+            expandIcon={
+              <ExpandMoreIcon sx={{ 
+                fontSize: '1.2rem',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                color: theme.palette.success.main
+              }} />
+            }
+            sx={{
+              minHeight: '56px',
+              padding: '8px 16px',
+              '&.Mui-expanded': {
+                minHeight: '56px'
+              },
+              '& .MuiAccordionSummary-content': {
+                margin: '8px 0',
+                '&.Mui-expanded': {
+                  margin: '8px 0'
+                }
+              }
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
+              <Box 
+                sx={{ 
+                  p: 0.75, 
+                  borderRadius: '10px', 
+                  background: alpha(theme.palette.success.main, 0.08),
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center' 
+                }}
+              >
+                <CategoryIcon sx={{ color: 'success.main', fontSize: '1.1rem' }} />
               </Box>
-              <Typography variant="h6" sx={{ color: 'success.main', fontWeight: 600, fontSize: '1rem' }}>
+              <Typography variant="subtitle1" sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem', flex: 1 }}>
                 Attributes
               </Typography>
+              {filterAttrs?.length > 0 && (
+                <Chip
+                  label={filterAttrs.length}
+                  size="small"
+                  sx={{
+                    height: '20px',
+                    fontSize: '0.65rem',
+                    fontWeight: 600,
+                    backgroundColor: alpha(theme.palette.success.main, 0.1),
+                    color: theme.palette.success.main,
+                    minWidth: '24px'
+                  }}
+                />
+              )}
             </Stack>
           </StyledAccordionSummary>
           <StyledAccordionDetails>
