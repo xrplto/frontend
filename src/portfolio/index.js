@@ -80,6 +80,9 @@ const OverviewWrapper = styled(Box)(
     overflow-x: hidden;
     overflow-y: auto;
     min-height: 100vh;
+    background: ${theme.palette.mode === 'dark' 
+      ? 'linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%)' 
+      : 'linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%)'};
 `
 );
 
@@ -87,7 +90,9 @@ const StyledModal = styled(Modal)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: theme.spacing(1)
+  padding: theme.spacing(1),
+  backdropFilter: 'blur(8px)',
+  backgroundColor: alpha(theme.palette.common.black, 0.5)
 }));
 
 const ModalContent = styled(Paper)(({ theme }) => ({
@@ -96,10 +101,60 @@ const ModalContent = styled(Paper)(({ theme }) => ({
   maxWidth: 1000,
   maxHeight: '90vh',
   overflow: 'auto',
+  padding: theme.spacing(3),
+  background: `linear-gradient(135deg, 
+    ${alpha(theme.palette.background.paper, 0.95)} 0%, 
+    ${alpha(theme.palette.background.paper, 0.9)} 100%)`,
+  backdropFilter: 'blur(40px) saturate(150%)',
+  borderRadius: '24px',
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+  boxShadow: `
+    0 24px 48px ${alpha(theme.palette.common.black, 0.2)}, 
+    0 4px 8px ${alpha(theme.palette.common.black, 0.1)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+}));
+
+// Styled container for consistent glass-morphism effect
+const OuterBorderContainer = styled(Box)(({ theme }) => ({
+  background: `linear-gradient(135deg, 
+    ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+    ${alpha(theme.palette.background.paper, 0.5)} 50%,
+    ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+  backdropFilter: 'blur(40px) saturate(150%)',
+  WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+  borderRadius: '16px',
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
   padding: theme.spacing(2),
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: theme.shadows[24]
+  boxShadow: `
+    0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+    0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: `linear-gradient(
+      135deg,
+      ${alpha(theme.palette.primary.main, 0.05)} 0%,
+      transparent 50%,
+      ${alpha(theme.palette.secondary.main, 0.05)} 100%
+    )`,
+    pointerEvents: 'none'
+  },
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: `
+      0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+      0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
+  }
 }));
 
 export default function Portfolio({ account, limit, collection, type }) {
@@ -1265,50 +1320,62 @@ export default function Portfolio({ account, limit, collection, type }) {
 
   return (
     <OverviewWrapper>
-      <Container maxWidth="xl" sx={{ mt: { xs: 0.5, sm: 2 }, px: { xs: 2, sm: 3 } }}>
-        <Grid container spacing={isMobile ? 0.5 : 2}>
+      <Container maxWidth="xl" sx={{ mt: { xs: 1, sm: 3 }, px: { xs: 1, sm: 3 } }}>
+        <Grid container spacing={{ xs: 1.5, sm: 3 }}>
           <Grid item xs={12} md={3} order={{ xs: 2, md: 1 }}>
             <OuterBorderContainer>
               <Stack sx={{ height: '100%', justifyContent: 'space-between' }}>
                 <Stack
                   sx={{
-                    borderRadius: '8px',
-                    p: { xs: 0.5, sm: 1 },
                     color: theme.palette.text.primary,
-                    flex: '1 1 auto',
-                    mb: { xs: 0.5, sm: 1 }
+                    flex: '1 1 auto'
                   }}
-                  spacing={{ xs: 0.5, sm: 1 }}
+                  spacing={{ xs: 1, sm: 1.5 }}
                 >
                   <Box
                     sx={{
-                      p: 0,
-                      borderRadius: '16px',
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                      backdropFilter: 'blur(20px)',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                      boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
-                      overflow: 'hidden',
+                      p: { xs: 1.5, sm: 2 },
+                      borderRadius: { xs: '12px', sm: '16px' },
+                      background: `linear-gradient(135deg, 
+                        ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+                        ${alpha(theme.palette.background.paper, 0.5)} 50%,
+                        ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                      backdropFilter: 'blur(40px) saturate(150%)',
+                      WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      boxShadow: `
+                        0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                        0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+                      mb: { xs: 1, sm: 2 },
                       position: 'relative',
+                      overflow: 'hidden',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `0 12px 48px ${alpha(theme.palette.common.black, 0.12)}`,
-                        border: `1px solid ${alpha(activeRankColors[activeRanks[account]] || theme.palette.primary.main, 0.3)}`
-                      },
                       '&::before': {
                         content: '""',
                         position: 'absolute',
                         top: 0,
                         left: 0,
                         right: 0,
-                        height: { xs: '1px', sm: '3px' },
-                        background: `linear-gradient(90deg, ${activeRankColors[activeRanks[account]] || theme.palette.primary.main}, ${alpha(activeRankColors[activeRanks[account]] || theme.palette.primary.main, 0.6)})`,
-                        opacity: 0.8
+                        bottom: 0,
+                        background: `linear-gradient(
+                          135deg,
+                          ${alpha(theme.palette.primary.main, 0.05)} 0%,
+                          transparent 50%,
+                          ${alpha(theme.palette.secondary.main, 0.05)} 100%
+                        )`,
+                        pointerEvents: 'none'
+                      },
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: `
+                          0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+                          0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
                       }
                     }}
                   >
-                    <Box sx={{ p: { xs: 1, sm: 2.5 } }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 2 } }}>
                         <Box sx={{ position: 'relative' }}>
                           <Avatar
@@ -1406,38 +1473,52 @@ export default function Portfolio({ account, limit, collection, type }) {
                           </Box>
                         </Box>
                       </Box>
-                    </Box>
                   </Box>
+                </Stack>
 
-                  <Card
+                <Card
                     sx={{
-                      p: 0,
-                      borderRadius: '16px',
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                      backdropFilter: 'blur(20px)',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                      boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+                      borderRadius: { xs: '12px', sm: '16px' },
+                      background: `linear-gradient(135deg, 
+                        ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+                        ${alpha(theme.palette.background.paper, 0.5)} 50%,
+                        ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                      backdropFilter: 'blur(40px) saturate(150%)',
+                      WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      boxShadow: `
+                        0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                        0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
                       overflow: 'hidden',
                       position: 'relative',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `0 12px 48px ${alpha(theme.palette.common.black, 0.12)}`,
-                        border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`
-                      },
                       '&::before': {
                         content: '""',
                         position: 'absolute',
                         top: 0,
                         left: 0,
                         right: 0,
-                        height: { xs: '1px', sm: '3px' },
-                        background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.success.light})`,
-                        opacity: 0.8
+                        bottom: 0,
+                        background: `linear-gradient(
+                          135deg,
+                          ${alpha(theme.palette.success.main, 0.05)} 0%,
+                          transparent 50%,
+                          ${alpha(theme.palette.success.light, 0.05)} 100%
+                        )`,
+                        pointerEvents: 'none'
+                      },
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: `
+                          0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+                          0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
                       }
                     }}
                   >
-                    <Box sx={{ p: { xs: 1, sm: 2.5 } }}>
+                    <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 2 }, mb: { xs: 1, sm: 2 } }}>
                         <Box
                           sx={{
@@ -1541,30 +1622,44 @@ export default function Portfolio({ account, limit, collection, type }) {
                   {/* XRP Balance Display */}
                   <Card
                     sx={{
-                      p: 0,
                       mt: { xs: 0.75, sm: 1.5 },
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                      backdropFilter: 'blur(20px)',
-                      borderRadius: '16px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                      boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+                      borderRadius: { xs: '12px', sm: '16px' },
+                      background: `linear-gradient(135deg, 
+                        ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+                        ${alpha(theme.palette.background.paper, 0.5)} 50%,
+                        ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                      backdropFilter: 'blur(40px) saturate(150%)',
+                      WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      boxShadow: `
+                        0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                        0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
                       overflow: 'hidden',
                       position: 'relative',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `0 12px 48px ${alpha(theme.palette.common.black, 0.12)}`,
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-                      },
                       '&::before': {
                         content: '""',
                         position: 'absolute',
                         top: 0,
                         left: 0,
                         right: 0,
-                        height: { xs: '1px', sm: '3px' },
-                        background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.warning.main})`,
-                        opacity: 0.8
+                        bottom: 0,
+                        background: `linear-gradient(
+                          135deg,
+                          ${alpha(theme.palette.primary.main, 0.05)} 0%,
+                          transparent 50%,
+                          ${alpha(theme.palette.warning.main, 0.05)} 100%
+                        )`,
+                        pointerEvents: 'none'
+                      },
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: `
+                          0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+                          0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
                       }
                     }}
                   >
@@ -1813,34 +1908,47 @@ export default function Portfolio({ account, limit, collection, type }) {
                       </Grid>
                     </Box>
                   </Card>
-                </Stack>
 
                 <Box sx={{ mt: { xs: 0.75, sm: 1.5 } }}>
                   <Card
                     sx={{
-                      borderRadius: '16px',
-                      p: 0,
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                      backdropFilter: 'blur(20px)',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                      boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+                      borderRadius: { xs: '12px', sm: '16px' },
+                      background: `linear-gradient(135deg, 
+                        ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+                        ${alpha(theme.palette.background.paper, 0.5)} 50%,
+                        ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                      backdropFilter: 'blur(40px) saturate(150%)',
+                      WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      boxShadow: `
+                        0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                        0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
                       overflow: 'hidden',
                       position: 'relative',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `0 12px 48px ${alpha(theme.palette.common.black, 0.12)}`,
-                        border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`
-                      },
                       '&::before': {
                         content: '""',
                         position: 'absolute',
                         top: 0,
                         left: 0,
                         right: 0,
-                        height: { xs: '1px', sm: '3px' },
-                        background: `linear-gradient(90deg, ${theme.palette.warning.main}, ${theme.palette.success.main}, ${theme.palette.error.main})`,
-                        opacity: 0.8
+                        bottom: 0,
+                        background: `linear-gradient(
+                          135deg,
+                          ${alpha(theme.palette.warning.main, 0.05)} 0%,
+                          transparent 50%,
+                          ${alpha(theme.palette.success.main, 0.05)} 100%
+                        )`,
+                        pointerEvents: 'none'
+                      },
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: `
+                          0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+                          0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
                       }
                     }}
                   >
@@ -2020,30 +2128,44 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                 <Card
                   sx={{
-                    borderRadius: '16px',
+                    borderRadius: { xs: '12px', sm: '16px' },
                     mt: { xs: 0.75, sm: 1.5 },
-                    p: 0,
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                    backdropFilter: 'blur(20px)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+                    background: `linear-gradient(135deg, 
+                      ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+                      ${alpha(theme.palette.background.paper, 0.5)} 50%,
+                      ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                    backdropFilter: 'blur(40px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    boxShadow: `
+                      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
                     overflow: 'hidden',
                     position: 'relative',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 12px 48px ${alpha(theme.palette.common.black, 0.12)}`,
-                      border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`
-                    },
                     '&::before': {
                       content: '""',
                       position: 'absolute',
                       top: 0,
                       left: 0,
                       right: 0,
-                      height: { xs: '1px', sm: '3px' },
-                      background: `linear-gradient(90deg, ${theme.palette.info.main}, ${theme.palette.primary.main}, ${theme.palette.warning.main})`,
-                      opacity: 0.8
+                      bottom: 0,
+                      background: `linear-gradient(
+                        135deg,
+                        ${alpha(theme.palette.info.main, 0.05)} 0%,
+                        transparent 50%,
+                        ${alpha(theme.palette.primary.main, 0.05)} 100%
+                      )`,
+                      pointerEvents: 'none'
+                    },
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: `
+                        0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+                        0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
                     }
                   }}
                 >
@@ -2217,28 +2339,43 @@ export default function Portfolio({ account, limit, collection, type }) {
                 <Box sx={{ mb: 2 }}>
                   <Card
                     sx={{
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                      backdropFilter: 'blur(20px)',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                      boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
-                      borderRadius: '16px',
+                      borderRadius: { xs: '12px', sm: '16px' },
+                      background: `linear-gradient(135deg, 
+                        ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+                        ${alpha(theme.palette.background.paper, 0.5)} 50%,
+                        ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                      backdropFilter: 'blur(40px) saturate(150%)',
+                      WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      boxShadow: `
+                        0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                        0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
                       overflow: 'hidden',
                       position: 'relative',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `0 12px 48px ${alpha(theme.palette.common.black, 0.12)}`,
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
-                      },
                       '&::before': {
                         content: '""',
                         position: 'absolute',
                         top: 0,
                         left: 0,
                         right: 0,
-                        height: { xs: '1px', sm: '3px' },
-                        background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.info.main}, ${theme.palette.success.main})`,
-                        opacity: 0.8
+                        bottom: 0,
+                        background: `linear-gradient(
+                          135deg,
+                          ${alpha(theme.palette.primary.main, 0.05)} 0%,
+                          transparent 50%,
+                          ${alpha(theme.palette.info.main, 0.05)} 100%
+                        )`,
+                        pointerEvents: 'none'
+                      },
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: `
+                          0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+                          0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
                       }
                     }}
                   >
@@ -2589,21 +2726,49 @@ export default function Portfolio({ account, limit, collection, type }) {
               </Grid>
             </Grid>
 
-            <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: { xs: 1.5, sm: 2 } }}>
               <Grid item xs={12} md={4}>
                 <Card
                   sx={{
-                    p: 2,
+                    p: { xs: 1.5, sm: 2 },
                     height: '100%',
-                    borderRadius: '12px',
-                    background: `${alpha(theme.palette.background.paper, 0.5)}`,
-                    backdropFilter: 'blur(20px)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    boxShadow: `0 2px 12px ${alpha(theme.palette.common.black, 0.04)}`,
-                    transition: 'all 0.2s ease',
+                    borderRadius: { xs: '12px', sm: '16px' },
+                    background: `linear-gradient(135deg, 
+                      ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+                      ${alpha(theme.palette.background.paper, 0.5)} 50%,
+                      ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                    backdropFilter: 'blur(40px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    boxShadow: `
+                      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: `linear-gradient(
+                        135deg,
+                        ${alpha(theme.palette.primary.main, 0.03)} 0%,
+                        transparent 50%,
+                        ${alpha(theme.palette.secondary.main, 0.03)} 100%
+                      )`,
+                      pointerEvents: 'none'
+                    },
                     '&:hover': {
-                      background: `${alpha(theme.palette.background.paper, 0.7)}`,
-                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`
+                      transform: 'translateY(-2px)',
+                      boxShadow: `
+                        0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+                        0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
                     }
                   }}
                 >
@@ -2657,17 +2822,45 @@ export default function Portfolio({ account, limit, collection, type }) {
               <Grid item xs={12} md={4}>
                 <Card
                   sx={{
-                    p: 2,
+                    p: { xs: 1.5, sm: 2 },
                     height: '100%',
-                    borderRadius: '12px',
-                    background: `${alpha(theme.palette.background.paper, 0.5)}`,
-                    backdropFilter: 'blur(20px)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    boxShadow: `0 2px 12px ${alpha(theme.palette.common.black, 0.04)}`,
-                    transition: 'all 0.2s ease',
+                    borderRadius: { xs: '12px', sm: '16px' },
+                    background: `linear-gradient(135deg, 
+                      ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+                      ${alpha(theme.palette.background.paper, 0.5)} 50%,
+                      ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                    backdropFilter: 'blur(40px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    boxShadow: `
+                      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: `linear-gradient(
+                        135deg,
+                        ${alpha(theme.palette.primary.main, 0.03)} 0%,
+                        transparent 50%,
+                        ${alpha(theme.palette.secondary.main, 0.03)} 100%
+                      )`,
+                      pointerEvents: 'none'
+                    },
                     '&:hover': {
-                      background: `${alpha(theme.palette.background.paper, 0.7)}`,
-                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`
+                      transform: 'translateY(-2px)',
+                      boxShadow: `
+                        0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+                        0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
                     }
                   }}
                 >
@@ -2721,17 +2914,45 @@ export default function Portfolio({ account, limit, collection, type }) {
               <Grid item xs={12} md={4}>
                 <Card
                   sx={{
-                    p: 2,
+                    p: { xs: 1.5, sm: 2 },
                     height: '100%',
-                    borderRadius: '12px',
-                    background: `${alpha(theme.palette.background.paper, 0.5)}`,
-                    backdropFilter: 'blur(20px)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    boxShadow: `0 2px 12px ${alpha(theme.palette.common.black, 0.04)}`,
-                    transition: 'all 0.2s ease',
+                    borderRadius: { xs: '12px', sm: '16px' },
+                    background: `linear-gradient(135deg, 
+                      ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+                      ${alpha(theme.palette.background.paper, 0.5)} 50%,
+                      ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                    backdropFilter: 'blur(40px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    boxShadow: `
+                      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: `linear-gradient(
+                        135deg,
+                        ${alpha(theme.palette.primary.main, 0.03)} 0%,
+                        transparent 50%,
+                        ${alpha(theme.palette.secondary.main, 0.03)} 100%
+                      )`,
+                      pointerEvents: 'none'
+                    },
                     '&:hover': {
-                      background: `${alpha(theme.palette.background.paper, 0.7)}`,
-                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`
+                      transform: 'translateY(-2px)',
+                      boxShadow: `
+                        0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+                        0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
                     }
                   }}
                 >
@@ -2821,12 +3042,44 @@ export default function Portfolio({ account, limit, collection, type }) {
                 flex: 1,
                 mb: 1.5,
                 color: theme.palette.text.primary,
-                borderRadius: '16px',
-                background: `${alpha(theme.palette.background.paper, 0.5)}`,
-                backdropFilter: 'blur(20px)',
-                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                boxShadow: `0 2px 12px ${alpha(theme.palette.common.black, 0.04)}`,
-                overflow: 'hidden'
+                borderRadius: { xs: '12px', sm: '16px' },
+                background: `linear-gradient(135deg, 
+                  ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+                  ${alpha(theme.palette.background.paper, 0.5)} 50%,
+                  ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                backdropFilter: 'blur(40px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                boxShadow: `
+                  0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                  0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                  inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: `linear-gradient(
+                    135deg,
+                    ${alpha(theme.palette.primary.main, 0.05)} 0%,
+                    transparent 50%,
+                    ${alpha(theme.palette.secondary.main, 0.05)} 100%
+                  )`,
+                  pointerEvents: 'none'
+                },
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: `
+                    0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+                    0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+                    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
+                }
               }}
             >
               <CardContent sx={{ p: 0, overflow: 'hidden' }}>

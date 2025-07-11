@@ -140,30 +140,55 @@ const HeaderWrapper = styled(Box)(
     height: ${theme.spacing(7)};
     margin-bottom: ${theme.spacing(0)};
     border-radius: 0px;
-    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.12)};
     position: relative;
     z-index: 1100;
-    background: ${theme.palette.mode === 'light' ? '#F8F9FA' : alpha(theme.palette.background.default, 0.8)};
-    backdrop-filter: blur(25px);
-    box-shadow: 0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)};
+    background: linear-gradient(135deg, 
+      ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+      ${alpha(theme.palette.background.paper, 0.5)} 50%,
+      ${alpha(theme.palette.background.paper, 0.6)} 100%);
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.2)};
+    box-shadow: 
+      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)};
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
     
     ${theme.breakpoints.down('sm')} {
       height: ${theme.spacing(6)};
-      box-shadow: 0 4px 16px 0 ${alpha(theme.palette.common.black, 0.05)};
-      backdrop-filter: blur(15px);
+      backdrop-filter: blur(30px) saturate(150%);
+      -webkit-backdrop-filter: blur(30px) saturate(150%);
     }
     
     &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        135deg,
+        ${alpha(theme.palette.primary.main, 0.05)} 0%,
+        transparent 50%,
+        ${alpha(theme.palette.secondary.main, 0.05)} 100%
+      );
+      pointer-events: none;
+    }
+    
+    &::after {
       content: "";
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
       height: 1px;
-      background: linear-gradient(to right, ${alpha(
-        theme.palette.divider,
-        0
-      )}, ${alpha(theme.palette.divider, 0.15)}, ${alpha(theme.palette.divider, 0)});
+      background: linear-gradient(to right, 
+        ${alpha(theme.palette.divider, 0)}, 
+        ${alpha(theme.palette.divider, 0.15)}, 
+        ${alpha(theme.palette.divider, 0)});
       opacity: 0.8;
     }
 `
@@ -180,9 +205,16 @@ const StyledLink = styled(Link, {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
-    background: transparent;
-    backdrop-filter: blur(10px);
-    border: 1px solid ${alpha(theme.palette.divider, 0.08)};
+    background: linear-gradient(135deg, 
+      ${alpha(theme.palette.background.paper, 0.5)} 0%, 
+      ${alpha(theme.palette.background.paper, 0.3)} 50%,
+      ${alpha(theme.palette.background.paper, 0.4)} 100%);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid ${alpha(theme.palette.divider, 0.15)};
+    box-shadow: 
+      0 2px 8px ${alpha(theme.palette.common.black, 0.08)}, 
+      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.08)};
     position: relative;
     overflow: hidden;
     
@@ -204,20 +236,22 @@ const StyledLink = styled(Link, {
       color: ${darkMode ? theme.palette.success.main : theme.palette.primary.main};
       background: linear-gradient(135deg, ${alpha(
         darkMode ? theme.palette.success.main : theme.palette.primary.main,
-        0.08
+        0.12
       )} 0%, ${alpha(
         darkMode ? theme.palette.success.main : theme.palette.primary.main,
-        0.03
+        0.06
       )} 100%);
       border: 1px solid ${alpha(
         darkMode ? theme.palette.success.main : theme.palette.primary.main,
-        0.15
+        0.25
       )};
       transform: translateY(-2px);
-      box-shadow: 0 4px 16px ${alpha(
-        darkMode ? theme.palette.success.main : theme.palette.primary.main,
-        0.15
-      )};
+      box-shadow: 
+        0 8px 24px ${alpha(
+          darkMode ? theme.palette.success.main : theme.palette.primary.main,
+          0.15
+        )},
+        inset 0 1px 2px ${alpha(theme.palette.common.white, 0.15)};
       cursor: pointer;
       
       &::before {
@@ -235,9 +269,16 @@ const StyledMenuItem = styled(MenuItem, {
     margin: 4px 8px;
     border-radius: 10px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: transparent;
-    backdrop-filter: blur(10px);
-    border: 1px solid ${alpha(theme.palette.divider, 0.06)};
+    background: linear-gradient(135deg, 
+      ${alpha(theme.palette.background.paper, 0.4)} 0%, 
+      ${alpha(theme.palette.background.paper, 0.2)} 50%,
+      ${alpha(theme.palette.background.paper, 0.3)} 100%);
+    backdrop-filter: blur(15px) saturate(120%);
+    -webkit-backdrop-filter: blur(15px) saturate(120%);
+    border: 1px solid ${alpha(theme.palette.divider, 0.1)};
+    box-shadow: 
+      0 1px 4px ${alpha(theme.palette.common.black, 0.05)}, 
+      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.05)};
     position: relative;
     overflow: hidden;
     
@@ -259,20 +300,22 @@ const StyledMenuItem = styled(MenuItem, {
       color: ${darkMode ? theme.palette.success.main : theme.palette.primary.main};
       background: linear-gradient(135deg, ${alpha(
         darkMode ? theme.palette.success.main : theme.palette.primary.main,
-        0.08
+        0.1
       )} 0%, ${alpha(
         darkMode ? theme.palette.success.main : theme.palette.primary.main,
-        0.03
+        0.05
       )} 100%);
       border: 1px solid ${alpha(
         darkMode ? theme.palette.success.main : theme.palette.primary.main,
-        0.12
+        0.2
       )};
       transform: translateX(4px);
-      box-shadow: 0 4px 12px ${alpha(
-        darkMode ? theme.palette.success.main : theme.palette.primary.main,
-        0.12
-      )};
+      box-shadow: 
+        0 4px 16px ${alpha(
+          darkMode ? theme.palette.success.main : theme.palette.primary.main,
+          0.12
+        )},
+        inset 0 1px 2px ${alpha(theme.palette.common.white, 0.1)};
       
       &::before {
         left: 100%;
@@ -439,17 +482,37 @@ export default function Header(props) {
                 PaperProps={{
                   sx: {
                     mt: 1,
-                    background: 'transparent',
-                    backdropFilter: 'blur(20px)',
+                    background: `linear-gradient(135deg, 
+                      ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+                      ${alpha(theme.palette.background.paper, 0.5)} 50%,
+                      ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                    backdropFilter: 'blur(40px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
                     borderRadius: '16px',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                    boxShadow: `0 8px 32px ${alpha(
-                      theme.palette.common.black,
-                      0.08
-                    )}, 0 2px 8px ${alpha(theme.palette.primary.main, 0.04)}`,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    boxShadow: `
+                      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
                     overflow: 'hidden',
                     position: 'relative',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: `linear-gradient(
+                        135deg,
+                        ${alpha(theme.palette.primary.main, 0.05)} 0%,
+                        transparent 50%,
+                        ${alpha(theme.palette.secondary.main, 0.05)} 100%
+                      )`,
+                      pointerEvents: 'none'
+                    },
+                    '&::after': {
                       content: '""',
                       position: 'absolute',
                       top: 0,
@@ -862,9 +925,16 @@ export default function Header(props) {
                     sx={{
                       borderRadius: '12px',
                       height: '32px',
-                      background: 'transparent',
-                      backdropFilter: 'blur(10px)',
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                      background: `linear-gradient(135deg, 
+                        ${alpha(theme.palette.background.paper, 0.5)} 0%, 
+                        ${alpha(theme.palette.background.paper, 0.3)} 50%,
+                        ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                      backdropFilter: 'blur(20px) saturate(150%)',
+                      WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                      boxShadow: `
+                        0 2px 8px ${alpha(theme.palette.common.black, 0.08)}, 
+                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.08)}`,
                       color: theme.palette.text.primary,
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       position: 'relative',
@@ -886,10 +956,12 @@ export default function Header(props) {
                         transform: 'translateY(-2px)',
                         background: `linear-gradient(135deg, ${alpha(
                           theme.palette.primary.main,
-                          0.08
-                        )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                        boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.15)}`,
+                          0.12
+                        )} 0%, ${alpha(theme.palette.primary.main, 0.06)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                        boxShadow: `
+                          0 8px 24px ${alpha(theme.palette.primary.main, 0.15)},
+                          inset 0 1px 2px ${alpha(theme.palette.common.white, 0.15)}`,
                         color: theme.palette.primary.main,
                         '&::before': {
                           left: '100%'

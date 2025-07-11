@@ -864,11 +864,49 @@ export const XrplToDarkTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          background: '#111827',
+          background: `linear-gradient(135deg, 
+            ${alpha('#111827', 0.5)} 0%, 
+            ${alpha('#111827', 0.3)} 50%,
+            ${alpha('#111827', 0.4)} 100%)`,
           padding: 0,
-          border: '1px solid #1F2937',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
-          transition: 'box-shadow 0.2s'
+          border: `1px solid ${alpha('#1F2937', 0.15)}`,
+          backdropFilter: 'blur(60px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(60px) saturate(180%)',
+          boxShadow: `
+            0 10px 40px ${alpha('#000000', 0.18)}, 
+            0 2px 4px ${alpha('#000000', 0.06)},
+            inset 0 1px 2px ${alpha('#ffffff', 0.15)}`,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `linear-gradient(
+              135deg,
+              ${alpha(themeColors.primary, 0.08)} 0%,
+              transparent 50%,
+              ${alpha(themeColors.secondary, 0.08)} 100%
+            )`,
+            pointerEvents: 'none',
+            zIndex: 0
+          },
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: `
+              0 15px 50px ${alpha('#000000', 0.22)}, 
+              0 3px 6px ${alpha('#000000', 0.08)},
+              inset 0 1px 3px ${alpha('#ffffff', 0.2)}`,
+            border: `1px solid ${alpha('#1F2937', 0.2)}`
+          },
+          '& > *': {
+            position: 'relative',
+            zIndex: 1
+          }
         }
       }
     },
@@ -876,13 +914,47 @@ export const XrplToDarkTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: '8px',
-          border: '1px solid #1F2937',
-          background: '#111827',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
-          transition: 'all 0.2s',
+          border: `1px solid ${alpha('#1F2937', 0.15)}`,
+          background: `linear-gradient(135deg, 
+            ${alpha('#111827', 0.5)} 0%, 
+            ${alpha('#111827', 0.3)} 50%,
+            ${alpha('#111827', 0.4)} 100%)`,
+          backdropFilter: 'blur(60px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(60px) saturate(180%)',
+          boxShadow: `
+            0 10px 40px ${alpha('#000000', 0.18)}, 
+            0 2px 4px ${alpha('#000000', 0.06)},
+            inset 0 1px 2px ${alpha('#ffffff', 0.15)}`,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `linear-gradient(
+              135deg,
+              ${alpha(themeColors.primary, 0.08)} 0%,
+              transparent 50%,
+              ${alpha(themeColors.secondary, 0.08)} 100%
+            )`,
+            pointerEvents: 'none',
+            zIndex: 0
+          },
           '&:hover': {
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.15)',
-            borderColor: alpha('#147DFE', 0.3)
+            transform: 'translateY(-2px)',
+            boxShadow: `
+              0 15px 50px ${alpha('#000000', 0.22)}, 
+              0 3px 6px ${alpha('#000000', 0.08)},
+              inset 0 1px 3px ${alpha('#ffffff', 0.2)}`,
+            borderColor: alpha('#147DFE', 0.4)
+          },
+          '& > *': {
+            position: 'relative',
+            zIndex: 1
           }
         }
       }
