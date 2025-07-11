@@ -1,7 +1,7 @@
 import { alpha, createTheme, darken, lighten } from '@mui/material';
 import '@mui/lab/themeAugmentation';
 
-// Minimalist Bird theme - monochrome pixel art inspired
+// birdjpg theme - monochrome pixel art inspired
 const themeColors = {
   primary: '#1A1A1A',      // Black from bird
   secondary: '#F5F5F5',    // Off-white background

@@ -57,7 +57,7 @@ const themes = [
   },
   {
     id: 'BirdTheme',
-    name: 'Minimal Bird',
+    name: 'birdjpg',
     icon: baselinePalette,
     color: '#1A1A1A'
   }
