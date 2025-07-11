@@ -52,12 +52,8 @@ const TopWrapper = styled(Box)(
     display: flex;
     align-items: center;
     height: ${theme.spacing(5)};
-    background: ${theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
-      ? alpha('#030310', 0.9)
-      : theme.palette.primary.main === '#0080ff'
-        ? alpha(theme.palette.background.default, 0.9)
-        : alpha(theme.palette.background.default, 0.8)};
-    backdrop-filter: blur(20px);
+    background: transparent;
+    backdrop-filter: none;
     border-bottom: 1px solid ${alpha(theme.palette.divider, 0.05)};
     position: relative;
     z-index: 1099;

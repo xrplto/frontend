@@ -143,17 +143,9 @@ const HeaderWrapper = styled(Box)(
     border-radius: 0px;
     position: relative;
     z-index: 1100;
-    background: ${theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
-      ? `linear-gradient(135deg, 
-          ${alpha('#030310', 0.95)} 0%, 
-          ${alpha('#030310', 0.85)} 50%,
-          ${alpha('#030310', 0.9)} 100%)`
-      : `linear-gradient(135deg, 
-          ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-          ${alpha(theme.palette.background.paper, 0.5)} 50%,
-          ${alpha(theme.palette.background.paper, 0.6)} 100%)`};
-    backdrop-filter: blur(40px) saturate(150%);
-    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border-bottom: 1px solid ${alpha(theme.palette.divider, 0.2)};
     box-shadow: 
       0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
@@ -164,24 +156,12 @@ const HeaderWrapper = styled(Box)(
     
     ${theme.breakpoints.down('sm')} {
       height: ${theme.spacing(6)};
-      backdrop-filter: blur(30px) saturate(150%);
-      -webkit-backdrop-filter: blur(30px) saturate(150%);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
     
     &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(
-        135deg,
-        ${alpha(theme.palette.primary.main, 0.05)} 0%,
-        transparent 50%,
-        ${alpha(theme.palette.secondary.main, 0.05)} 100%
-      );
-      pointer-events: none;
+      display: none;
     }
     
     &::after {
