@@ -171,7 +171,7 @@ export async function getServerSideProps(ctx) {
       // Primary: Token image if md5 is available
       if (md5) {
         return {
-          url: `https://s1.xrpl.to/token/${md5}`,
+          url: `https://s1.xrpl.to/ogp/${md5}`,
           width,
           height,
           type: 'image/webp',
