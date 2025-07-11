@@ -13,12 +13,9 @@ import { AppContext } from 'src/AppContext';
 const TokenImage = styled(Image)(({ theme }) => ({
   borderRadius: '50%',
   overflow: 'hidden',
-  border: `2px solid ${theme.palette.mode === 'dark' 
-    ? alpha(theme.palette.divider, 0.2) 
-    : alpha(theme.palette.divider, 0.1)}`,
-  boxShadow: theme.palette.mode === 'dark'
-    ? '0 2px 8px rgba(0, 0, 0, 0.3)'
-    : '0 2px 8px rgba(0, 0, 0, 0.1)',
+  border: `1px solid ${theme.palette.mode === 'dark' 
+    ? alpha(theme.palette.divider, 0.1) 
+    : alpha(theme.palette.divider, 0.08)}`,
   transition: 'all 0.3s ease'
 }));
 
@@ -27,31 +24,22 @@ const SelectTokenButton = styled(Stack)(({ theme }) => ({
   borderRadius: '16px',
   cursor: 'pointer',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  backgroundColor: theme.palette.mode === 'dark' 
-    ? alpha(theme.palette.background.paper, 0.8)
-    : alpha(theme.palette.background.paper, 0.95),
+  backgroundColor: 'transparent',
   border: `1px solid ${theme.palette.mode === 'dark' 
-    ? alpha(theme.palette.divider, 0.1) 
-    : alpha(theme.palette.divider, 0.08)}`,
-  backdropFilter: 'blur(10px)',
-  boxShadow: theme.palette.mode === 'dark'
-    ? '0 4px 24px 0 rgba(0, 0, 0, 0.2), 0 1px 3px 0 rgba(0, 0, 0, 0.1)'
-    : '0 4px 24px 0 rgba(0, 0, 0, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.04)',
+    ? alpha(theme.palette.divider, 0.08) 
+    : alpha(theme.palette.divider, 0.06)}`,
+  backdropFilter: 'blur(8px)',
   '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.95)
-      : theme.palette.background.paper,
-    borderColor: theme.palette.primary.main,
-    boxShadow: theme.palette.mode === 'dark'
-      ? `0 8px 32px 0 ${alpha(theme.palette.primary.main, 0.3)}, 0 2px 8px 0 rgba(0, 0, 0, 0.2)`
-      : `0 8px 32px 0 ${alpha(theme.palette.primary.main, 0.15)}, 0 2px 8px 0 rgba(0, 0, 0, 0.08)`,
-    transform: 'translateY(-2px) scale(1.02)',
+    backgroundColor: alpha(theme.palette.background.paper, 0.1),
+    borderColor: alpha(theme.palette.primary.main, 0.3),
+    transform: 'translateY(-1px)',
     '& .arrow-icon': {
-      transform: 'rotate(180deg)'
+      transform: 'rotate(180deg)',
+      color: theme.palette.primary.main
     }
   },
   '&:active': {
-    transform: 'translateY(0) scale(1)'
+    transform: 'translateY(0)'
   }
 }));
 

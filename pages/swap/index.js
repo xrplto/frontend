@@ -5,7 +5,7 @@ import useWebSocket from 'react-use-websocket';
 import { useRouter } from 'next/router';
 
 // Material UI imports
-import { styled, Container, Box, Typography, Toolbar } from '@mui/material';
+import { styled, Container, Box, Typography, Toolbar, alpha } from '@mui/material';
 
 // Context
 import { useContext } from 'react';
@@ -207,7 +207,22 @@ function Overview({ data }) {
           >
             Swap
           </Typography>
-          <Box sx={{ width: '100%', maxWidth: '800px' }}>
+          <Box 
+            sx={(theme) => ({ 
+              width: '100%', 
+              maxWidth: '800px',
+              backgroundColor: 'transparent',
+              borderRadius: '16px',
+              backdropFilter: 'blur(20px)',
+              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.04)}`,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: `0 12px 48px ${alpha(theme.palette.common.black, 0.08)}`
+              }
+            })}
+          >
             <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
           </Box>
         </Box>

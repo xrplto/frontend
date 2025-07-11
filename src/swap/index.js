@@ -2069,197 +2069,238 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           </WalletDisplay>
         )}
 
-        <OverviewWrapper sx={{ width: '100%', mb: 3 }}>
-          <ConverterFrame>
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              spacing={1}
-              sx={{
-                px: { xs: 2, sm: 3, md: 4 },
-                pt: 2,
-                pb: 1,
-                position: 'relative'
-              }}
-            >
-              <Tooltip title="Copy shareable link with current token pair" arrow>
-                <ShareButton
-                  variant="outlined"
-                  onClick={handleShareUrl}
-                  startIcon={<Icon icon={shareIcon} width={14} height={14} />}
-                >
-                  Share
-                </ShareButton>
-              </Tooltip>
-              {isLoggedIn && (
-                <Stack direction="row" spacing={1}>
-                  <AllowButton variant="outlined" onClick={onFillHalf}>
-                    Half
-                  </AllowButton>
-                  <AllowButton variant="outlined" onClick={onFillMax}>
-                    Max
-                  </AllowButton>
-                </Stack>
-              )}
-            </Stack>
-            <CurrencyContent
-              style={{
-                order: 1,
-                backgroundColor: theme.palette.mode === 'dark' ? '#121212' : '#f5f5f5',
-                border: focusTop
-                  ? `1px solid ${theme?.general?.reactFrameworkColor}`
-                  : `1px solid ${
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(255, 255, 255, 0.1)'
-                        : 'rgba(0, 0, 0, 0.1)'
-                    }`,
-                borderTopLeftRadius: '10px',
-                borderTopRightRadius: '10px',
-                borderBottomLeftRadius: '0',
-                borderBottomRightRadius: '0',
-                margin: '0 16px',
-                padding: '20px 32px'
-              }}
-            >
-              <Stack>
-                <QueryToken token={token1} onChangeToken={onChangeToken1} />
+        {/* Minimalist Swap Container */}
+        <Box 
+          sx={{ 
+            width: '100%',
+            maxWidth: '480px',
+            margin: '0 auto',
+            backgroundColor: 'transparent',
+            backdropFilter: 'blur(24px)',
+            border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+            borderRadius: '20px',
+            overflow: 'hidden',
+            boxShadow: `0 20px 40px ${alpha(theme.palette.common.black, 0.04)}`,
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: `0 24px 48px ${alpha(theme.palette.common.black, 0.06)}`
+            }
+          }}
+        >
+          {/* Header Bar */}
+          <Box
+            sx={{
+              p: 2,
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+              background: alpha(theme.palette.background.paper, 0.02)
+            }}
+          >
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" fontWeight={600}>Swap</Typography>
+              <Stack direction="row" spacing={0.5}>
+                <IconButton size="small" onClick={handleShareUrl}>
+                  <Icon icon={shareIcon} width={18} height={18} />
+                </IconButton>
                 {isLoggedIn && (
-                  <Typography variant="s7">
-                    Balance{' '}
-                    <Typography variant="s2" color="primary">
-                      {revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value}
-                    </Typography>
-                  </Typography>
+                  <>
+                    <Button size="small" variant="text" onClick={onFillHalf} sx={{ minWidth: '40px' }}>50%</Button>
+                    <Button size="small" variant="text" onClick={onFillMax} sx={{ minWidth: '40px' }}>Max</Button>
+                  </>
                 )}
               </Stack>
-              <InputContent>
-                <Input
-                  placeholder="0"
-                  autoComplete="new-password"
-                  disableUnderline
-                  value={amount1}
-                  onChange={handleChangeAmount1}
-                  sx={{
-                    width: '100%',
-                    input: {
-                      autoComplete: 'off',
-                      padding: '12px 0px',
-                      border: 'none',
-                      fontSize: { xs: '20px', sm: '24px', md: '28px' },
-                      textAlign: 'end',
-                      appearance: 'none',
-                      fontWeight: 700,
-                      color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                      backgroundColor: 'transparent'
-                    }
-                  }}
-                  onFocus={() => setFocusTop(true)}
-                  onBlur={() => setFocusTop(false)}
-                />
-                <Typography
-                  variant="s2"
-                  color="primary"
-                  sx={{
-                    visibility: tokenPrice1 > 0 ? 'visible' : 'hidden',
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
-                  }}
-                >
-                  {currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}
-                </Typography>
-              </InputContent>
-            </CurrencyContent>
+            </Stack>
+          </Box>
 
-            <Box sx={{ position: 'relative', height: 0, my: -0.5, zIndex: 2, order: 2 }}>
-              <ToggleButton
-                onClick={onRevertExchange}
-                className={isSwitching ? 'switching' : ''}
-                disabled={isSwitching}
-                title="Switch currencies (Alt + S)"
+          <Box sx={{ p: 3 }}>
+            {/* First Token with Integrated Sparkline */}
+            <Box
+              sx={{
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: '16px',
+                border: `1px solid ${focusTop ? alpha(theme.palette.primary.main, 0.3) : alpha(theme.palette.divider, 0.05)}`,
+                transition: 'all 0.3s ease',
+                backgroundColor: alpha(theme.palette.background.paper, 0.02),
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.background.paper, 0.04),
+                  borderColor: alpha(theme.palette.primary.main, 0.1)
+                }
+              }}
+            >
+              {/* Sparkline Background */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '120px',
+                  height: '100%',
+                  opacity: 0.4,
+                  pointerEvents: 'none',
+                  maskImage: 'linear-gradient(to left, rgba(0,0,0,0.3), transparent)'
+                }}
               >
-                <Icon
-                  icon={exchangeIcon}
-                  width={24}
-                  height={24}
-                  color={theme.palette.mode === 'dark' ? '#fff' : '#000'}
+                <LoadChart
+                  url={`${BASE_URL}/sparkline/${revert ? token2.md5 : token1.md5}?period=24h&${revert ? token2.pro24h : token1.pro24h}`}
+                  style={{ width: '100%', height: '100%' }}
+                  showGradient={false}
+                  lineWidth={1.5}
+                  animation={false}
                 />
-              </ToggleButton>
+              </Box>
+              
+              {/* Token Content */}
+              <Box sx={{ p: 2.5, position: 'relative', zIndex: 1 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
+                  <QueryToken token={token1} onChangeToken={onChangeToken1} />
+                  <Input
+                    placeholder="0"
+                    disableUnderline
+                    value={amount1}
+                    onChange={handleChangeAmount1}
+                    sx={{
+                      width: '45%',
+                      input: {
+                        textAlign: 'right',
+                        fontSize: '24px',
+                        fontWeight: 700,
+                        padding: 0,
+                        background: 'transparent',
+                        color: theme.palette.text.primary,
+                        '&::placeholder': {
+                          color: alpha(theme.palette.text.primary, 0.3)
+                        }
+                      }
+                    }}
+                    onFocus={() => setFocusTop(true)}
+                    onBlur={() => setFocusTop(false)}
+                  />
+                </Stack>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Typography variant="caption" color="text.secondary">
+                    {isLoggedIn && `Balance: ${revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value}`}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {tokenPrice1 > 0 && `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}`}
+                  </Typography>
+                </Stack>
+              </Box>
             </Box>
 
-            <CurrencyContent
-              style={{
-                order: 3,
-                backgroundColor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
-                border: focusBottom
-                  ? `1px solid ${theme?.general?.reactFrameworkColor}`
-                  : `1px solid ${
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(255, 255, 255, 0.1)'
-                        : 'rgba(0, 0, 0, 0.1)'
-                    }`,
-                borderRadius: '0',
-                margin: '0 16px',
-                padding: '20px 32px'
+            {/* Minimalist Swap Button */}
+            <Box sx={{ position: 'relative', height: '24px', my: 2 }}>
+              <IconButton
+                onClick={onRevertExchange}
+                disabled={isSwitching}
+                sx={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '40px',
+                  height: '40px',
+                  backgroundColor: theme.palette.background.default,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  '&:hover': {
+                    backgroundColor: theme.palette.action.hover,
+                    '& svg': {
+                      transform: 'rotate(180deg)'
+                    }
+                  },
+                  '& svg': {
+                    transition: 'transform 0.3s ease'
+                  }
+                }}
+                title="Switch currencies (Alt + S)"
+              >
+                <Icon icon={exchangeIcon} width={18} height={18} />
+              </IconButton>
+            </Box>
+
+            {/* Second Token with Integrated Sparkline */}
+            <Box
+              sx={{
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: '16px',
+                border: `1px solid ${focusBottom ? alpha(theme.palette.primary.main, 0.3) : alpha(theme.palette.divider, 0.05)}`,
+                transition: 'all 0.3s ease',
+                backgroundColor: alpha(theme.palette.background.paper, 0.02),
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.background.paper, 0.04),
+                  borderColor: alpha(theme.palette.primary.main, 0.1)
+                }
               }}
             >
-              <Stack>
-                <QueryToken token={token2} onChangeToken={onChangeToken2} />
-                {isLoggedIn && (
-                  <Typography variant="s7">
-                    Balance{' '}
-                    <Typography variant="s2" color="primary">
-                      {revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value}
-                    </Typography>
-                  </Typography>
-                )}
-              </Stack>
-              <InputContent>
-                <Input
-                  placeholder="0"
-                  autoComplete="new-password"
-                  disableUnderline
-                  value={amount1 === '' ? '' : amount2}
-                  onChange={handleChangeAmount2}
-                  sx={{
-                    width: '100%',
-                    input: {
-                      autoComplete: 'off',
-                      padding: '12px 0px',
-                      border: 'none',
-                      fontSize: { xs: '20px', sm: '24px', md: '28px' },
-                      textAlign: 'end',
-                      appearance: 'none',
-                      fontWeight: 700,
-                      color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                      backgroundColor: 'transparent'
-                    }
-                  }}
-                  onFocus={() => setFocusBottom(true)}
-                  onBlur={() => setFocusBottom(false)}
+              {/* Sparkline Background */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '120px',
+                  height: '100%',
+                  opacity: 0.4,
+                  pointerEvents: 'none',
+                  maskImage: 'linear-gradient(to left, rgba(0,0,0,0.3), transparent)'
+                }}
+              >
+                <LoadChart
+                  url={`${BASE_URL}/sparkline/${revert ? token1.md5 : token2.md5}?period=24h&${revert ? token1.pro24h : token2.pro24h}`}
+                  style={{ width: '100%', height: '100%' }}
+                  showGradient={false}
+                  lineWidth={1.5}
+                  animation={false}
                 />
-                <Typography
-                  variant="s2"
-                  color="primary"
-                  sx={{
-                    visibility: tokenPrice2 > 0 ? 'visible' : 'hidden',
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
-                  }}
-                >
-                  {currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}
-                </Typography>
-              </InputContent>
-            </CurrencyContent>
+              </Box>
+              
+              {/* Token Content */}
+              <Box sx={{ p: 2.5, position: 'relative', zIndex: 1 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
+                  <QueryToken token={token2} onChangeToken={onChangeToken2} />
+                  <Input
+                    placeholder="0"
+                    disableUnderline
+                    value={amount1 === '' ? '' : amount2}
+                    onChange={handleChangeAmount2}
+                    sx={{
+                      width: '45%',
+                      input: {
+                        textAlign: 'right',
+                        fontSize: '24px',
+                        fontWeight: 700,
+                        padding: 0,
+                        background: 'transparent',
+                        color: theme.palette.text.primary,
+                        '&::placeholder': {
+                          color: alpha(theme.palette.text.primary, 0.3)
+                        }
+                      }
+                    }}
+                    onFocus={() => setFocusBottom(true)}
+                    onBlur={() => setFocusBottom(false)}
+                  />
+                </Stack>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Typography variant="caption" color="text.secondary">
+                    {isLoggedIn && `Balance: ${revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value}`}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {tokenPrice2 > 0 && `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}`}
+                  </Typography>
+                </Stack>
+              </Box>
+            </Box>
 
-            {/* Add slippage control before the price impact section */}
-            <CurrencyContent
-              style={{
-                order: 3.5,
-                backgroundColor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
-                border: `1px solid ${
-                  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                }`,
-                borderRadius: '0',
-                margin: '0 16px',
-                padding: '20px 32px'
+            {/* Minimalist Settings */}
+            <Box
+              sx={{
+                mt: 3,
+                p: 2,
+                borderRadius: '12px',
+                backgroundColor: alpha(theme.palette.background.paper, 0.03),
+                border: `1px solid ${alpha(theme.palette.divider, 0.03)}`
               }}
             >
               <Stack
@@ -2269,15 +2310,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 sx={{ width: '100%' }}
               >
                 <Stack direction="row" alignItems="center" spacing={1}>
-                  <Typography
-                    variant="s6"
-                    sx={{
-                      color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                      fontWeight: 500,
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
-                    }}
-                  >
-                    Slippage tolerance
+                  <Typography variant="body2" color="text.secondary">
+                    Slippage
                   </Typography>
                   <Tooltip title="Maximum price movement you're willing to accept" arrow>
                     <Icon
@@ -2302,11 +2336,11 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                       variant={slippage === preset ? 'contained' : 'text'}
                       onClick={() => setSlippage(preset)}
                       sx={{
-                        minWidth: { xs: '36px', sm: '42px' },
-                        height: { xs: '28px', sm: '32px' },
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        minWidth: '32px',
+                        height: '28px',
+                        fontSize: '0.75rem',
                         fontWeight: 600,
-                        padding: { xs: '4px 8px', sm: '6px 12px' },
+                        padding: '4px 8px',
                         borderRadius: '6px',
                         ...(slippage === preset
                           ? {
@@ -2387,20 +2421,10 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   </Stack>
                 </Stack>
               </Stack>
-            </CurrencyContent>
+            </Box>
 
-            <CurrencyContent
-              style={{
-                order: 4,
-                backgroundColor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
-                border: `1px solid ${
-                  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                }`,
-                borderRadius: '0',
-                margin: '0 16px',
-                padding: '20px 32px'
-              }}
-            >
+            {/* Price Impact Row */}
+            <Box sx={{ mt: 2 }}>
               <Stack
                 direction="row"
                 alignItems="center"
@@ -2411,13 +2435,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 }}
               >
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography
-                    variant="s6"
-                    sx={{
-                      color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
-                    }}
-                  >
+                  <Typography variant="body2" color="text.secondary">
                     Price impact
                   </Typography>
                   {loadingPrice ? (
@@ -2449,23 +2467,10 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   )}
                 </Stack>
               </Stack>
-            </CurrencyContent>
+            </Box>
 
-            <CurrencyContent
-              style={{
-                order: 5,
-                backgroundColor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
-                border: `1px solid ${
-                  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                }`,
-                borderTopLeftRadius: '0',
-                borderTopRightRadius: '0',
-                borderBottomLeftRadius: '10px',
-                borderBottomRightRadius: '10px',
-                margin: '0 16px 16px',
-                padding: '24px 32px'
-              }}
-            >
+            {/* Action Button */}
+            <Box sx={{ mt: 3 }}>
 
               {accountProfile && accountProfile.account ? (
                 <ExchangeButton
@@ -2478,9 +2483,15 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                     (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
                   }
                   sx={{
-                    minHeight: { xs: '48px', sm: '56px' },
-                    fontSize: { xs: '16px', sm: '18px' },
-                    fontWeight: 600
+                    minHeight: '52px',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    borderRadius: '12px',
+                    textTransform: 'none',
+                    boxShadow: 'none',
+                    '&:hover': {
+                      boxShadow: 'none'
+                    }
                   }}
                 >
                   {handleMsg()}
@@ -2492,309 +2503,21 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                     '& .MuiButton-root': {
                       width: '100% !important',
                       minWidth: '100% !important',
-                      padding: { xs: '12px 24px !important', sm: '16px 32px !important' },
-                      minHeight: { xs: '48px !important', sm: '56px !important' },
-                      fontSize: { xs: '16px !important', sm: '18px !important' }
+                      padding: '14px 24px !important',
+                      minHeight: '52px !important',
+                      fontSize: '16px !important',
+                      borderRadius: '12px !important',
+                      textTransform: 'none !important'
                     }
                   }}
                 >
                   <ConnectWallet pair={pair} />
                 </Box>
               )}
-            </CurrencyContent>
-          </ConverterFrame>
-        </OverviewWrapper>
+            </Box>
+          </Box>
+        </Box>
 
-        <Stack
-          direction="column"
-          spacing={0.75}
-          alignItems="center"
-          sx={{
-            width: '100%',
-            mt: 4,
-            mb: 3,
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.9
-            )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-            backdropFilter: 'blur(20px)',
-            borderRadius: '20px',
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 2px 8px ${alpha(
-              theme.palette.primary.main,
-              0.05
-            )}`,
-            padding: { xs: '12px', sm: '16px', md: '20px' },
-            position: 'relative',
-            overflow: 'visible',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: `0 16px 48px ${alpha(
-                theme.palette.common.black,
-                0.12
-              )}, 0 4px 16px ${alpha(theme.palette.primary.main, 0.1)}`,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-            },
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '3px',
-              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-              opacity: 0.8
-            }
-          }}
-        >
-          <Stack
-            direction="row"
-            alignItems="center"
-            spacing={1.5}
-            sx={{ width: '100%', p: 1, pb: 0 }}
-          >
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Box
-                component="img"
-                src={`https://s1.xrpl.to/token/${revert ? token2.md5 : token1.md5}`}
-                alt={revert ? token2.name : token1.name}
-                onError={(e) => (e.target.src = '/static/alt.webp')}
-                sx={{
-                  width: { xs: 26, sm: 32 },
-                  height: { xs: 26, sm: 32 },
-                  borderRadius: '6px',
-                  objectFit: 'cover'
-                }}
-              />
-              <Stack spacing={0}>
-                <Typography
-                  variant="s7"
-                  sx={{
-                    color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                    fontSize: { xs: '0.825rem', sm: '0.95rem' },
-                    lineHeight: 1.1
-                  }}
-                >
-                  {revert ? token2.name : token1.name}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color:
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(255, 255, 255, 0.7)'
-                        : 'rgba(0, 0, 0, 0.7)',
-                    fontSize: { xs: '0.675rem', sm: '0.75rem' },
-                    lineHeight: 1
-                  }}
-                >
-                  {revert
-                    ? token2.issuer
-                      ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
-                      : 'XRPL'
-                    : token1.issuer
-                      ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
-                      : 'XRPL'}
-                </Typography>
-              </Stack>
-            </Stack>
-            <Stack sx={{ flex: 1 }}>
-              <Typography
-                variant="s7"
-                align="right"
-                sx={{
-                  mb: 0.1,
-                  color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                  fontSize: { xs: '0.825rem', sm: '0.95rem' },
-                  lineHeight: 1.1
-                }}
-              >
-                {currencySymbols[activeFiatCurrency]}{' '}
-                {fNumber(
-                  (() => {
-                    const currentToken = revert ? token2 : token1;
-                    const currentLatestPrice = revert ? latestPrice2 : latestPrice1;
-                    const currentExchRate = revert ? tokenExch2 : tokenExch1;
-
-                    // For XRP, handle currency conversion like Summary.js
-                    if (currentToken?.currency === 'XRP') {
-                      if (activeFiatCurrency === 'XRP') {
-                        // When currency switcher is XRP, show USD price
-                        return new Decimal(1).div(metrics.USD || 1).toNumber();
-                      }
-                      // For other currencies, use Rate function logic
-                      return new Decimal(1).div(metrics[activeFiatCurrency] || 1).toNumber();
-                    }
-
-                    // For other tokens, use the exchange rate
-                    return new Decimal(currentExchRate)
-                      .div(metrics[activeFiatCurrency] || 1)
-                      .toNumber();
-                  })()
-                )}
-              </Typography>
-              <Box
-                sx={{
-                  height: { xs: '32px', sm: '40px' },
-                  width: '100%',
-                  mt: '-1px',
-                  position: 'relative',
-                  zIndex: 10,
-                  overflow: 'visible',
-                  borderRadius: '6px',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.background.paper,
-                    0.4
-                  )} 0%, ${alpha(theme.palette.background.paper, 0.1)} 100%)`,
-                  backdropFilter: 'blur(4px)',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.6
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.2)} 100%)`,
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    transform: 'translateY(-1px)',
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
-                  }
-                }}
-              >
-                <LoadChart
-                  url={`${BASE_URL}/sparkline/${revert ? token2.md5 : token1.md5}?period=24h&${
-                    revert ? token2.pro24h : token1.pro24h
-                  }`}
-                  showGradient={true}
-                  lineWidth={2.5}
-                />
-              </Box>
-            </Stack>
-          </Stack>
-          <Stack
-            direction="row"
-            alignItems="center"
-            spacing={1.5}
-            sx={{ width: '100%', p: 1, pt: 0 }}
-          >
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Box
-                component="img"
-                src={`https://s1.xrpl.to/token/${revert ? token1.md5 : token2.md5}`}
-                alt={revert ? token1.name : token2.name}
-                onError={(e) => (e.target.src = '/static/alt.webp')}
-                sx={{
-                  width: { xs: 26, sm: 32 },
-                  height: { xs: 26, sm: 32 },
-                  borderRadius: '6px',
-                  objectFit: 'cover'
-                }}
-              />
-              <Stack spacing={0}>
-                <Typography
-                  variant="s7"
-                  sx={{
-                    color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                    fontSize: { xs: '0.825rem', sm: '0.95rem' },
-                    lineHeight: 1.1
-                  }}
-                >
-                  {revert ? token1.name : token2.name}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color:
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(255, 255, 255, 0.7)'
-                        : 'rgba(0, 0, 0, 0.7)',
-                    fontSize: { xs: '0.675rem', sm: '0.75rem' },
-                    lineHeight: 1
-                  }}
-                >
-                  {revert
-                    ? token1.issuer
-                      ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
-                      : 'XRPL'
-                    : token2.issuer
-                      ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
-                      : 'XRPL'}
-                </Typography>
-              </Stack>
-            </Stack>
-            <Stack sx={{ flex: 1 }}>
-              <Typography
-                variant="s7"
-                align="right"
-                sx={{
-                  mb: 0.1,
-                  color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                  fontSize: { xs: '0.825rem', sm: '0.95rem' },
-                  lineHeight: 1.1
-                }}
-              >
-                {currencySymbols[activeFiatCurrency]}{' '}
-                {fNumber(
-                  (() => {
-                    const currentToken = revert ? token1 : token2;
-                    const currentLatestPrice = revert ? latestPrice1 : latestPrice2;
-                    const currentExchRate = revert ? tokenExch1 : tokenExch2;
-
-                    // For XRP, handle currency conversion like Summary.js
-                    if (currentToken?.currency === 'XRP') {
-                      if (activeFiatCurrency === 'XRP') {
-                        // When currency switcher is XRP, show USD price
-                        return new Decimal(1).div(metrics.USD || 1).toNumber();
-                      }
-                      // For other currencies, use Rate function logic
-                      return new Decimal(1).div(metrics[activeFiatCurrency] || 1).toNumber();
-                    }
-
-                    // For other tokens, use the exchange rate
-                    return new Decimal(currentExchRate)
-                      .div(metrics[activeFiatCurrency] || 1)
-                      .toNumber();
-                  })()
-                )}
-              </Typography>
-              <Box
-                sx={{
-                  height: { xs: '32px', sm: '40px' },
-                  width: '100%',
-                  mt: '-1px',
-                  position: 'relative',
-                  zIndex: 10,
-                  overflow: 'visible',
-                  borderRadius: '6px',
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.background.paper,
-                    0.4
-                  )} 0%, ${alpha(theme.palette.background.paper, 0.1)} 100%)`,
-                  backdropFilter: 'blur(4px)',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.background.paper,
-                      0.6
-                    )} 0%, ${alpha(theme.palette.background.paper, 0.2)} 100%)`,
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    transform: 'translateY(-1px)',
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
-                  }
-                }}
-              >
-                <LoadChart
-                  url={`${BASE_URL}/sparkline/${revert ? token1.md5 : token2.md5}?period=24h&${
-                    revert ? token1.pro24h : token2.pro24h
-                  }`}
-                  showGradient={true}
-                  lineWidth={2.5}
-                />
-              </Box>
-            </Stack>
-          </Stack>
-        </Stack>
 
         <QRDialog
           open={openScanQR}
