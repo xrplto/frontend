@@ -452,17 +452,21 @@ export const BirdTheme = createTheme({
           '&::before': {
             content: '""',
             position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '120%',
+            height: '120%',
             backgroundImage: `url('/static/birdjpg.png')`,
-            backgroundSize: '150px',
-            backgroundRepeat: 'repeat',
-            opacity: 0.15,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.25,
+            filter: 'contrast(1.5) brightness(0.9)',
             zIndex: -1,
             pointerEvents: 'none',
-            imageRendering: 'pixelated'
+            imageRendering: 'pixelated',
+            animation: 'pixelFloat 30s steps(8, end) infinite'
           },
           scrollbarColor: `${alpha('#1A1A1A', 0.4)} ${alpha('#1A1A1A', 0.08)}`,
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
@@ -492,6 +496,32 @@ export const BirdTheme = createTheme({
           width: '100%',
           MozOsxFontSmoothing: 'grayscale',
           WebkitFontSmoothing: 'antialiased'
+        },
+        '@keyframes pixelFloat': {
+          '0%, 100%': {
+            transform: 'translate(-50%, -50%) scale(1.0)'
+          },
+          '12.5%': {
+            transform: 'translate(-48%, -48%) scale(1.0)'
+          },
+          '25%': {
+            transform: 'translate(-52%, -48%) scale(1.02)'
+          },
+          '37.5%': {
+            transform: 'translate(-52%, -52%) scale(1.02)'
+          },
+          '50%': {
+            transform: 'translate(-50%, -52%) scale(1.04)'
+          },
+          '62.5%': {
+            transform: 'translate(-48%, -52%) scale(1.02)'
+          },
+          '75%': {
+            transform: 'translate(-48%, -50%) scale(1.02)'
+          },
+          '87.5%': {
+            transform: 'translate(-50%, -48%) scale(1.0)'
+          }
         }
       }
     }

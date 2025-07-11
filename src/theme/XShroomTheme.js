@@ -459,16 +459,20 @@ export const XShroomTheme = createTheme({
           '&::before': {
             content: '""',
             position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '120%',
+            height: '120%',
             backgroundImage: `url('/static/xshroom.png')`,
-            backgroundSize: '200px',
-            backgroundRepeat: 'repeat',
-            opacity: 0.03,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.06,
+            filter: 'contrast(1.2) brightness(1.1) saturate(1.1)',
             zIndex: -2,
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            animation: 'shroomFloat 25s ease-in-out infinite'
           },
           '&::after': {
             content: '""',
@@ -509,6 +513,20 @@ export const XShroomTheme = createTheme({
           width: '100%',
           MozOsxFontSmoothing: 'grayscale',
           WebkitFontSmoothing: 'antialiased'
+        },
+        '@keyframes shroomFloat': {
+          '0%, 100%': {
+            transform: 'translate(-50%, -50%) scale(1.0) rotate(0deg)'
+          },
+          '25%': {
+            transform: 'translate(-48%, -52%) scale(1.03) rotate(2deg)'
+          },
+          '50%': {
+            transform: 'translate(-52%, -48%) scale(1.06) rotate(-1deg)'
+          },
+          '75%': {
+            transform: 'translate(-48%, -50%) scale(1.03) rotate(1deg)'
+          }
         }
       }
     }
