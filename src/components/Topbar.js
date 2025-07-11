@@ -53,7 +53,9 @@ const TopWrapper = styled(Box)(
     display: flex;
     align-items: center;
     height: ${theme.spacing(5)};
-    background: ${alpha(theme.palette.background.default, 0.8)};
+    background: ${theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
+      ? alpha('#030310', 0.9)
+      : alpha(theme.palette.background.default, 0.8)};
     backdrop-filter: blur(20px);
     border-bottom: 1px solid ${alpha(theme.palette.divider, 0.05)};
     position: relative;
@@ -84,9 +86,11 @@ const APILabel = styled('a')(({ theme }) => ({
   color: theme.palette.text.primary,
   textDecoration: 'none',
   marginLeft: theme.spacing(1),
-  background: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.success.dark, 0.15)
-    : alpha(theme.palette.success.light, 0.15),
+  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+    ? alpha('#030310', 0.7)
+    : theme.palette.mode === 'dark'
+      ? alpha(theme.palette.success.dark, 0.15)
+      : alpha(theme.palette.success.light, 0.15),
   padding: '6px 12px',
   borderRadius: '12px',
   display: 'flex',
@@ -97,7 +101,9 @@ const APILabel = styled('a')(({ theme }) => ({
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   cursor: 'pointer',
   '&:hover': {
-    background: alpha(theme.palette.success.main, 0.2),
+    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+      ? alpha(theme.palette.primary.main, 0.04)
+      : alpha(theme.palette.success.main, 0.2),
     transform: 'translateY(-1px)',
     boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.2)}`
   }
@@ -111,7 +117,9 @@ const MobileMetric = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(0.5, 1),
   borderRadius: theme.spacing(1),
-  background: 'transparent',
+  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+    ? alpha('#030310', 0.5)
+    : 'transparent',
   border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
   minHeight: theme.spacing(4)
 }));
@@ -145,12 +153,16 @@ const StyledContainer = styled(Container)(({ theme }) => ({
 const TradeButton = styled(IconButton)(({ theme }) => ({
   marginLeft: theme.spacing(1),
   padding: theme.spacing(1.5),
-  background: alpha(theme.palette.primary.main, 0.1),
+  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+    ? alpha('#030310', 0.7)
+    : alpha(theme.palette.primary.main, 0.1),
   borderRadius: theme.spacing(1.5),
   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
   transition: 'all 0.2s ease',
   '&:hover': {
-    background: alpha(theme.palette.primary.main, 0.15),
+    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+      ? alpha(theme.palette.primary.main, 0.04)
+      : alpha(theme.palette.primary.main, 0.15),
     transform: 'translateY(-1px)'
   }
 }));
@@ -192,12 +204,16 @@ const LiveIndicator = styled('div')(({ theme }) => ({
   gap: theme.spacing(1),
   padding: theme.spacing(0.5, 1.5),
   borderRadius: '20px',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.15)} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`,
+  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+    ? alpha('#030310', 0.7)
+    : `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.15)} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`,
   border: `1px solid ${alpha(theme.palette.success.main, 0.25)}`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.15)}`,
   '&:hover': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.2)} 0%, ${alpha(theme.palette.success.main, 0.12)} 100%)`,
+    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+      ? alpha(theme.palette.primary.main, 0.04)
+      : `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.2)} 0%, ${alpha(theme.palette.success.main, 0.12)} 100%)`,
     transform: 'translateY(-1px)'
   }
 }));
@@ -240,7 +256,9 @@ const MetricContainer = styled(Stack)(({ theme }) => ({
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   '&:hover': {
-    background: alpha(theme.palette.action.hover, 0.05),
+    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+      ? alpha(theme.palette.primary.main, 0.04)
+      : alpha(theme.palette.action.hover, 0.05),
     transform: 'translateY(-1px)'
   }
 }));
@@ -266,7 +284,9 @@ const MetricValue = styled(Typography)(({ theme }) => ({
 const TradeCard = styled(Card)(({ theme }) => ({
   margin: theme.spacing(0.5, 1),
   borderRadius: theme.spacing(2),
-  background: theme.palette.background.paper,
+  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+    ? alpha('#030310', 0.7)
+    : theme.palette.background.paper,
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   transition: 'all 0.2s ease',
   position: 'relative',
@@ -320,7 +340,9 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   alignItems: 'center',
   padding: theme.spacing(2.5, 3),
-  background: 'transparent',
+  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+    ? alpha('#030310', 0.9)
+    : 'transparent',
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
   position: 'sticky',
   top: 0,
@@ -331,7 +353,9 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
-    background: `linear-gradient(180deg, ${theme.palette.background.default} 0%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
+    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+      ? `linear-gradient(180deg, ${alpha('#030310', 0.98)} 0%, ${alpha('#030310', 0.95)} 100%)`
+      : `linear-gradient(180deg, ${theme.palette.background.default} 0%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
     backdropFilter: 'blur(40px)',
     boxShadow: 'none'
@@ -1131,14 +1155,18 @@ const Topbar = () => {
                   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   textDecoration: 'none',
                   color: 'inherit',
-                  background: theme.palette.mode === 'dark'
-                    ? alpha(theme.palette.background.default, 0.3)
-                    : alpha(theme.palette.grey[50], 0.5),
+                  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+                    ? alpha('#030310', 0.5)
+                    : theme.palette.mode === 'dark'
+                      ? alpha(theme.palette.background.default, 0.3)
+                      : alpha(theme.palette.grey[50], 0.5),
                   cursor: 'pointer',
                   '&:hover': {
-                    background: theme.palette.mode === 'dark'
-                      ? alpha(theme.palette.background.default, 0.6)
-                      : alpha(theme.palette.grey[100], 0.8),
+                    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+                      ? alpha(theme.palette.primary.main, 0.04)
+                      : theme.palette.mode === 'dark'
+                        ? alpha(theme.palette.background.default, 0.6)
+                        : alpha(theme.palette.grey[100], 0.8),
                     transform: 'translateY(-1px)',
                     boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
                   }

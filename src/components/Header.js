@@ -142,10 +142,15 @@ const HeaderWrapper = styled(Box)(
     border-radius: 0px;
     position: relative;
     z-index: 1100;
-    background: linear-gradient(135deg, 
-      ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-      ${alpha(theme.palette.background.paper, 0.5)} 50%,
-      ${alpha(theme.palette.background.paper, 0.6)} 100%);
+    background: ${theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
+      ? `linear-gradient(135deg, 
+          ${alpha('#030310', 0.95)} 0%, 
+          ${alpha('#030310', 0.85)} 50%,
+          ${alpha('#030310', 0.9)} 100%)`
+      : `linear-gradient(135deg, 
+          ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+          ${alpha(theme.palette.background.paper, 0.5)} 50%,
+          ${alpha(theme.palette.background.paper, 0.6)} 100%)`};
     backdrop-filter: blur(40px) saturate(150%);
     -webkit-backdrop-filter: blur(40px) saturate(150%);
     border-bottom: 1px solid ${alpha(theme.palette.divider, 0.2)};
@@ -205,10 +210,15 @@ const StyledLink = styled(Link, {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
-    background: linear-gradient(135deg, 
-      ${alpha(theme.palette.background.paper, 0.5)} 0%, 
-      ${alpha(theme.palette.background.paper, 0.3)} 50%,
-      ${alpha(theme.palette.background.paper, 0.4)} 100%);
+    background: ${theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+      ? `linear-gradient(135deg, 
+          ${alpha('#030310', 0.8)} 0%, 
+          ${alpha('#030310', 0.6)} 50%,
+          ${alpha('#030310', 0.7)} 100%)`
+      : `linear-gradient(135deg, 
+          ${alpha(theme.palette.background.paper, 0.5)} 0%, 
+          ${alpha(theme.palette.background.paper, 0.3)} 50%,
+          ${alpha(theme.palette.background.paper, 0.4)} 100%)`};
     backdrop-filter: blur(20px) saturate(150%);
     -webkit-backdrop-filter: blur(20px) saturate(150%);
     border: 1px solid ${alpha(theme.palette.divider, 0.15)};
@@ -234,13 +244,15 @@ const StyledLink = styled(Link, {
     
     &:hover {
       color: ${darkMode ? theme.palette.success.main : theme.palette.primary.main};
-      background: linear-gradient(135deg, ${alpha(
-        darkMode ? theme.palette.success.main : theme.palette.primary.main,
-        0.12
-      )} 0%, ${alpha(
-        darkMode ? theme.palette.success.main : theme.palette.primary.main,
-        0.06
-      )} 100%);
+      background: ${theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+        ? alpha(theme.palette.primary.main, 0.04)
+        : `linear-gradient(135deg, ${alpha(
+            darkMode ? theme.palette.success.main : theme.palette.primary.main,
+            0.12
+          )} 0%, ${alpha(
+            darkMode ? theme.palette.success.main : theme.palette.primary.main,
+            0.06
+          )} 100%)`};
       border: 1px solid ${alpha(
         darkMode ? theme.palette.success.main : theme.palette.primary.main,
         0.25
@@ -269,10 +281,15 @@ const StyledMenuItem = styled(MenuItem, {
     margin: 4px 8px;
     border-radius: 10px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: linear-gradient(135deg, 
-      ${alpha(theme.palette.background.paper, 0.4)} 0%, 
-      ${alpha(theme.palette.background.paper, 0.2)} 50%,
-      ${alpha(theme.palette.background.paper, 0.3)} 100%);
+    background: ${theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+      ? `linear-gradient(135deg, 
+          ${alpha('#030310', 0.7)} 0%, 
+          ${alpha('#030310', 0.5)} 50%,
+          ${alpha('#030310', 0.6)} 100%)`
+      : `linear-gradient(135deg, 
+          ${alpha(theme.palette.background.paper, 0.4)} 0%, 
+          ${alpha(theme.palette.background.paper, 0.2)} 50%,
+          ${alpha(theme.palette.background.paper, 0.3)} 100%)`};
     backdrop-filter: blur(15px) saturate(120%);
     -webkit-backdrop-filter: blur(15px) saturate(120%);
     border: 1px solid ${alpha(theme.palette.divider, 0.1)};
@@ -298,13 +315,15 @@ const StyledMenuItem = styled(MenuItem, {
     
     &:hover {
       color: ${darkMode ? theme.palette.success.main : theme.palette.primary.main};
-      background: linear-gradient(135deg, ${alpha(
-        darkMode ? theme.palette.success.main : theme.palette.primary.main,
-        0.1
-      )} 0%, ${alpha(
-        darkMode ? theme.palette.success.main : theme.palette.primary.main,
-        0.05
-      )} 100%);
+      background: ${theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+        ? alpha(theme.palette.primary.main, 0.04)
+        : `linear-gradient(135deg, ${alpha(
+            darkMode ? theme.palette.success.main : theme.palette.primary.main,
+            0.1
+          )} 0%, ${alpha(
+            darkMode ? theme.palette.success.main : theme.palette.primary.main,
+            0.05
+          )} 100%)`};
       border: 1px solid ${alpha(
         darkMode ? theme.palette.success.main : theme.palette.primary.main,
         0.2
@@ -481,10 +500,15 @@ export default function Header(props) {
                 PaperProps={{
                   sx: {
                     mt: 1,
-                    background: `linear-gradient(135deg, 
-                      ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-                      ${alpha(theme.palette.background.paper, 0.5)} 50%,
-                      ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+                      ? `linear-gradient(135deg, 
+                          ${alpha('#030310', 0.95)} 0%, 
+                          ${alpha('#030310', 0.85)} 50%,
+                          ${alpha('#030310', 0.9)} 100%)`
+                      : `linear-gradient(135deg, 
+                          ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+                          ${alpha(theme.palette.background.paper, 0.5)} 50%,
+                          ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
                     backdropFilter: 'blur(40px) saturate(150%)',
                     WebkitBackdropFilter: 'blur(40px) saturate(150%)',
                     borderRadius: '16px',
@@ -924,10 +948,15 @@ export default function Header(props) {
                     sx={{
                       borderRadius: '12px',
                       height: '32px',
-                      background: `linear-gradient(135deg, 
-                        ${alpha(theme.palette.background.paper, 0.5)} 0%, 
-                        ${alpha(theme.palette.background.paper, 0.3)} 50%,
-                        ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                      background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+                        ? `linear-gradient(135deg, 
+                            ${alpha('#030310', 0.8)} 0%, 
+                            ${alpha('#030310', 0.6)} 50%,
+                            ${alpha('#030310', 0.7)} 100%)`
+                        : `linear-gradient(135deg, 
+                            ${alpha(theme.palette.background.paper, 0.5)} 0%, 
+                            ${alpha(theme.palette.background.paper, 0.3)} 50%,
+                            ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
                       backdropFilter: 'blur(20px) saturate(150%)',
                       WebkitBackdropFilter: 'blur(20px) saturate(150%)',
                       border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
@@ -953,10 +982,12 @@ export default function Header(props) {
                       },
                       '&:hover': {
                         transform: 'translateY(-2px)',
-                        background: `linear-gradient(135deg, ${alpha(
-                          theme.palette.primary.main,
-                          0.12
-                        )} 0%, ${alpha(theme.palette.primary.main, 0.06)} 100%)`,
+                        background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+                          ? alpha(theme.palette.primary.main, 0.04)
+                          : `linear-gradient(135deg, ${alpha(
+                              theme.palette.primary.main,
+                              0.12
+                            )} 0%, ${alpha(theme.palette.primary.main, 0.06)} 100%)`,
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
                         boxShadow: `
                           0 8px 24px ${alpha(theme.palette.primary.main, 0.15)},
