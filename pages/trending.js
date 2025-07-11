@@ -113,7 +113,7 @@ export async function getStaticProps() {
     ogp.canonical = 'https://xrpl.to/trending';
     ogp.title = 'Trending XRPL Tokens | Real-Time Charts & Market Data | XRP Ledger';
     ogp.url = 'https://xrpl.to/trending';
-    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
+    ogp.imgUrl = 'https://s1.xrpl.to/ogp/trending.webp';
     ogp.desc =
       'Discover trending XRPL tokens with real-time price charts and market activity. Track the hottest tokens by trending score on the XRP Ledger ecosystem updated in real-time.';
 

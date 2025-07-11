@@ -113,7 +113,7 @@ export async function getStaticProps() {
     ogp.canonical = 'https://xrpl.to/spotlight';
     ogp.title = 'Spotlight XRPL Tokens | Curated & Top-Rated | XRP Ledger';
     ogp.url = 'https://xrpl.to/spotlight';
-    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
+    ogp.imgUrl = 'https://s1.xrpl.to/ogp/spotlight.webp';
     ogp.desc =
       'Discover curated spotlight XRPL tokens with the highest assessment scores. Find top-rated, verified tokens with strong fundamentals on the XRP Ledger ecosystem.';
 
