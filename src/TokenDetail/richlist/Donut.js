@@ -7,7 +7,7 @@ import { CardHeader, Stack, Box, Typography, CircularProgress, useMediaQuery } f
 import { useTheme } from '@mui/material/styles';
 
 // Chart
-import { Chart } from 'src/components/Chart';
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -101,6 +101,36 @@ export default function Donut({ token }) {
 
   const modernColors = getModernColors(darkMode);
   const chartSize = isMobile ? 180 : isTablet ? 220 : 280;
+
+  // Transform data for Recharts
+  const chartData = (() => {
+    let sum = 0;
+    const data = richList.map((item, index) => {
+      const holding = new Decimal(item.holding).toFixed(2, Decimal.ROUND_DOWN);
+      const percent = new Decimal(holding).toNumber();
+      sum = Decimal.add(sum, holding).toNumber();
+      const pos = index + 1;
+      const label = `#${pos}`;
+      
+      return {
+        name: label,
+        value: percent,
+        wallet: item.wallet
+      };
+    });
+    
+    // Add "Others" slice
+    const othersPercent = Decimal.sub(100, sum).toNumber();
+    if (othersPercent > 0) {
+      data.push({
+        name: 'Others',
+        value: othersPercent,
+        wallet: null
+      });
+    }
+    
+    return data;
+  })();
 
   const state = {
     series: getSeries(richList),
@@ -349,13 +379,31 @@ export default function Donut({ token }) {
 
       {/* Chart */}
       <Stack alignItems="center" justifyContent="center" sx={{ p: isMobile ? 1.5 : 2 }}>
-        <Chart
-          options={state.options}
-          series={state.series}
-          type="donut"
-          width={chartSize}
-          height={chartSize}
-        />
+        <ResponsiveContainer width={chartSize} height={chartSize}>
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              innerRadius={chartSize * 0.35}
+              outerRadius={chartSize * 0.45}
+              paddingAngle={2}
+              dataKey="value"
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={modernColors[index % modernColors.length]} />
+              ))}
+            </Pie>
+            <RechartsTooltip 
+              formatter={(value) => fPercent(value)}
+              contentStyle={{ 
+                backgroundColor: theme.palette.background.paper,
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: 8
+              }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
       </Stack>
     </StackStyle>
   );

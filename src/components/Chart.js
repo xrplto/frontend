@@ -1,3 +1,2 @@
-import dynamic from 'next/dynamic';
-
-export const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+// Chart component removed - react-apexcharts dependency not available
+// Please use alternative charting libraries: highcharts, echarts, or recharts

@@ -21,13 +21,13 @@ import {
 import { alpha, keyframes } from '@mui/material/styles';
 
 // Chart
-import { Chart } from 'src/components/Chart';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 
 // Components
 import ChartOptions2 from './ChartOptions2';
 
 // Utils
-import { fCurrency5, fNumber } from 'src/utils/formatNumber';
+import { fCurrency5, fNumber, fPercent } from 'src/utils/formatNumber';
 
 // ----------------------------------------------------------------------
 
@@ -235,6 +235,19 @@ const TopListChart = memo(({ token }) => {
 
   const options = useMemo(() => ChartOptions2(CHART_DATA), [CHART_DATA]);
 
+  // Transform data for Recharts
+  const transformedData = useMemo(() => {
+    if (!graphData.labels || graphData.labels.length === 0) return [];
+    
+    return graphData.labels.map((label, index) => {
+      const dataPoint = { name: label };
+      CHART_DATA.forEach((series) => {
+        dataPoint[series.name] = series.data[index] || 0;
+      });
+      return dataPoint;
+    });
+  }, [graphData.labels, CHART_DATA]);
+
   // Memoize helper functions
   const getRangeColor = useCallback((currentRange) => {
     const colors = {
@@ -416,7 +429,60 @@ const TopListChart = memo(({ token }) => {
         ) : hasData ? (
           <Fade in={!isLoading}>
             <Box sx={{ p: 0, pb: 0 }} dir="ltr">
-              <Chart series={CHART_DATA} options={options} height={isMobile ? 240 : 364} />
+              <ResponsiveContainer width="100%" height={isMobile ? 240 : 364}>
+                <AreaChart data={transformedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    {CHART_DATA.map((series, index) => (
+                      <linearGradient key={`gradient-${index}`} id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={options.colors[index]} stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor={options.colors[index]} stopOpacity={0.2}/>
+                      </linearGradient>
+                    ))}
+                  </defs>
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 11, fill: theme.palette.text.secondary }}
+                    axisLine={{ stroke: theme.palette.divider }}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 11, fill: theme.palette.text.secondary }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(value) => {
+                      if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                      if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+                      return value;
+                    }}
+                  />
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} opacity={0.3} />
+                  <RechartsTooltip 
+                    contentStyle={{ 
+                      backgroundColor: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.divider}`,
+                      borderRadius: 8
+                    }}
+                    formatter={(value) => fPercent(value)}
+                  />
+                  <Legend 
+                    wrapperStyle={{ 
+                      paddingTop: '20px',
+                      fontSize: '12px'
+                    }}
+                  />
+                  {CHART_DATA.map((series, index) => (
+                    <Area
+                      key={series.name}
+                      type="monotone"
+                      dataKey={series.name}
+                      stroke={options.colors[index]}
+                      fillOpacity={1}
+                      fill={`url(#gradient-${index})`}
+                      strokeWidth={2}
+                    />
+                  ))}
+                </AreaChart>
+              </ResponsiveContainer>
             </Box>
           </Fade>
         ) : (
