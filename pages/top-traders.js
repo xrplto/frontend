@@ -111,16 +111,43 @@ function TabPanel({ children, value, index }) {
 }
 
 // Memoized TraderRow component to prevent unnecessary re-renders
-const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage }) => (
+const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, theme }) => (
   <TableRow
     key={trader._id}
     sx={{
       '&:last-child td, &:last-child th': { border: 0 },
-      cursor: 'pointer'
+      cursor: 'pointer',
+      borderBottom: 'none',
+      position: 'relative',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      backgroundColor: 'transparent',
+      '&:after': {
+        content: '""',
+        position: 'absolute',
+        bottom: 0,
+        left: '16px',
+        right: '16px',
+        height: '1px',
+        background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.divider, 0.1)}, transparent)`
+      },
+      '&:hover': {
+        backgroundColor: alpha(theme.palette.primary.main, 0.04),
+        transform: 'translateY(-1px)',
+        boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.05)}`,
+        '&:after': {
+          opacity: 0
+        }
+      }
     }}
     onClick={() => onRoiClick(trader)}
   >
-    <TableCell component="th" scope="row">
+    <TableCell 
+      component="th" 
+      scope="row"
+      sx={{
+        backgroundColor: 'transparent'
+      }}
+    >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography
           component="a"
@@ -152,20 +179,22 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage }
         )}
       </Box>
     </TableCell>
-    <TableCell align="right">{formatCurrency(trader.volume24h)}</TableCell>
+    <TableCell align="right" sx={{ backgroundColor: 'transparent' }}>{formatCurrency(trader.volume24h)}</TableCell>
     <TableCell
       align="right"
       sx={{
-        color: trader.profit24h >= 0 ? 'success.main' : 'error.main'
+        color: trader.profit24h >= 0 ? 'success.main' : 'error.main',
+        backgroundColor: 'transparent'
       }}
     >
       {formatCurrency(trader.profit24h)}
     </TableCell>
-    <TableCell align="right">{trader.totalTrades}</TableCell>
+    <TableCell align="right" sx={{ backgroundColor: 'transparent' }}>{trader.totalTrades}</TableCell>
     <TableCell
       align="right"
       sx={{
-        color: trader.totalProfit >= 0 ? 'success.main' : 'error.main'
+        color: trader.totalProfit >= 0 ? 'success.main' : 'error.main',
+        backgroundColor: 'transparent'
       }}
     >
       {formatCurrency(trader.totalProfit)}
@@ -173,12 +202,13 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage }
     <TableCell
       align="right"
       sx={{
-        color: trader.avgROI >= 0 ? 'success.main' : 'error.main'
+        color: trader.avgROI >= 0 ? 'success.main' : 'error.main',
+        backgroundColor: 'transparent'
       }}
     >
       {formatPercentage(trader.avgROI)}
     </TableCell>
-    <TableCell align="right">
+    <TableCell align="right" sx={{ backgroundColor: 'transparent' }}>
       <IconButton
         size="small"
         onClick={(e) => onRoiClick(trader, e)}
@@ -907,8 +937,9 @@ export default function Analytics() {
           sx={{
             flex: 1,
             py: { xs: 1, sm: 2, md: 3 },
-            background:
-              theme.palette.mode === 'dark'
+            background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
+              ? '#030310'
+              : theme.palette.mode === 'dark'
                 ? `linear-gradient(to bottom, ${theme.palette.background.paper}, ${theme.palette.background.default})`
                 : theme.palette.background.default,
             minHeight: '100vh'
@@ -953,7 +984,9 @@ export default function Analytics() {
               sx={{
                 borderRadius: '16px',
                 p: { xs: 1, sm: 2 },
-                backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                backgroundColor: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
+                  ? alpha('#030310', 0.85)
+                  : alpha(theme.palette.background.paper, 0.6),
                 backdropFilter: 'blur(12px)',
                 border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                 boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.15)}`
@@ -1174,20 +1207,8 @@ export default function Analytics() {
                               }
                             }
                           },
-                          '& .MuiTableRow-root': {
-                            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                            '&:hover': {
-                              transform: 'translateY(-2px)',
-                              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`,
-                              '& .MuiTableCell-root': {
-                                backgroundColor:
-                                  theme.palette.mode === 'dark'
-                                    ? alpha(theme.palette.common.white, 0.08)
-                                    : alpha(theme.palette.primary.main, 0.08)
-                              },
-                              cursor: 'pointer'
-                            }
+                          '& .MuiTableBody-root': {
+                            backgroundColor: 'transparent'
                           },
                           '& .MuiTypography-root': {
                             fontSize: isMobile ? '11px' : '14px',
@@ -1264,6 +1285,7 @@ export default function Analytics() {
                               onRoiClick={handleRoiClick}
                               formatCurrency={formatCurrency}
                               formatPercentage={formatPercentage}
+                              theme={theme}
                             />
                           ))}
                         </TableBody>
