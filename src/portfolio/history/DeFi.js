@@ -385,8 +385,7 @@ const DeFiHistory = ({ account }) => {
               gap: isSmallScreen ? 1 : 2,
               background: darkMode ? alpha(theme.palette.background.paper, 0.4) : theme.palette.grey[50],
               backdropFilter: 'blur(10px)',
-              flexWrap: 'wrap',
-              overflowX: 'auto'
+              flexWrap: 'wrap'
             }}
           >
             <Box

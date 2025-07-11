@@ -242,28 +242,7 @@ const History = ({ account }) => {
 
           <Box
             sx={{
-              overflow: 'auto',
-              maxHeight: '500px',
-              position: 'relative',
-              '&::-webkit-scrollbar': {
-                width: '8px'
-              },
-              '&::-webkit-scrollbar-track': {
-                background: alpha(theme.palette.divider, 0.05),
-                borderRadius: '12px',
-                margin: '8px'
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                borderRadius: '12px',
-                border: `2px solid ${alpha(theme.palette.background.paper, 0.2)}`,
-                '&:hover': {
-                  background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`
-                }
-              },
-              msOverflowStyle: 'auto',
-              scrollbarWidth: 'thin',
-              scrollbarColor: `${theme.palette.primary.main} ${alpha(theme.palette.divider, 0.1)}`
+              position: 'relative'
             }}
           >
             <Box

@@ -40,7 +40,7 @@ const SOURCE_TAGS = {
   74920348: {
     label: 'FirstLedger',
     color: '#0C53B7', // Blue
-    icon: <OpenInNewIcon sx={{ fontSize: '16px' }} />
+    icon: <OpenInNewIcon sx={{ fontSize: '0.875rem' }} />
   },
   10011010: {
     label: 'Magnetic X',
@@ -51,8 +51,8 @@ const SOURCE_TAGS = {
         src="/magneticx-logo.webp"
         alt="Magnetic X"
         sx={{
-          width: '16px',
-          height: '16px',
+          width: '18px',
+          height: '18px',
           objectFit: 'contain',
           filter:
             'brightness(0) saturate(100%) invert(46%) sepia(85%) saturate(1926%) hue-rotate(240deg) brightness(99%) contrast(96%)'
@@ -63,7 +63,7 @@ const SOURCE_TAGS = {
   20221212: {
     label: 'XPMarket',
     color: '#6D1FEE', // Purple
-    icon: <XPMarketIcon sx={{ fontSize: '16px' }} />
+    icon: <XPMarketIcon sx={{ fontSize: '0.875rem' }} />
   },
   110100111: {
     label: 'Sologenic',
@@ -72,7 +72,7 @@ const SOURCE_TAGS = {
       <Icon
         icon={chartLineUp}
         style={{
-          fontSize: '16px',
+          fontSize: '0.875rem',
           background: 'transparent'
         }}
       />
@@ -385,11 +385,19 @@ const HistoryRow = (props) => {
     <TableRow
       sx={{
         '& .MuiTableCell-root': {
-          py: 0.5,
-          px: 0.75,
-          height: '32px',
-          whiteSpace: 'nowrap'
-        }
+          py: 1,
+          px: 1.5,
+          height: '48px',
+          whiteSpace: 'nowrap',
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+        },
+        '&:hover': {
+          backgroundColor: alpha(theme.palette.primary.main, 0.02),
+          '& .action-button': {
+            opacity: 1
+          }
+        },
+        transition: 'background-color 0.2s ease'
       }}
     >
       <TableCell sx={{ color: theme.palette.text.primary, minWidth: '140px' }}>
@@ -401,13 +409,15 @@ const HistoryRow = (props) => {
                 label="Buy"
                 size="small"
                 sx={{
-                  height: '18px',
-                  backgroundColor: alpha('#00AB55', 0.1),
+                  height: '24px',
+                  backgroundColor: alpha('#00AB55', 0.12),
                   color: '#00AB55',
+                  fontWeight: 600,
                   '& .MuiChip-label': {
-                    px: 0.75,
-                    fontSize: '0.7rem',
-                    lineHeight: 1
+                    px: 1,
+                    fontSize: '0.75rem',
+                    lineHeight: 1.2,
+                    letterSpacing: '0.02em'
                   }
                 }}
               />
@@ -417,13 +427,15 @@ const HistoryRow = (props) => {
                 label="Sell"
                 size="small"
                 sx={{
-                  height: '18px',
-                  backgroundColor: alpha('#B72136', 0.1),
+                  height: '24px',
+                  backgroundColor: alpha('#B72136', 0.12),
                   color: '#B72136',
+                  fontWeight: 600,
                   '& .MuiChip-label': {
-                    px: 0.75,
-                    fontSize: '0.7rem',
-                    lineHeight: 1
+                    px: 1,
+                    fontSize: '0.75rem',
+                    lineHeight: 1.2,
+                    letterSpacing: '0.02em'
                   }
                 }}
               />
@@ -434,13 +446,15 @@ const HistoryRow = (props) => {
               label="Add"
               size="small"
               sx={{
-                height: '18px',
-                backgroundColor: alpha('#6D1FEE', 0.1),
+                height: '24px',
+                backgroundColor: alpha('#6D1FEE', 0.12),
                 color: '#6D1FEE',
+                fontWeight: 600,
                 '& .MuiChip-label': {
-                  px: 0.75,
-                  fontSize: '0.7rem',
-                  lineHeight: 1
+                  px: 1,
+                  fontSize: '0.75rem',
+                  lineHeight: 1.2,
+                  letterSpacing: '0.02em'
                 }
               }}
             />
@@ -451,13 +465,15 @@ const HistoryRow = (props) => {
               label="Remove"
               size="small"
               sx={{
-                height: '18px',
-                backgroundColor: alpha('#FFA000', 0.1),
+                height: '24px',
+                backgroundColor: alpha('#FFA000', 0.12),
                 color: '#FFA000',
+                fontWeight: 600,
                 '& .MuiChip-label': {
-                  px: 0.75,
-                  fontSize: '0.7rem',
-                  lineHeight: 1
+                  px: 1,
+                  fontSize: '0.75rem',
+                  lineHeight: 1.2,
+                  letterSpacing: '0.02em'
                 }
               }}
             />
@@ -468,13 +484,15 @@ const HistoryRow = (props) => {
               label="Trust"
               size="small"
               sx={{
-                height: '18px',
-                backgroundColor: alpha('#0C53B7', 0.1),
+                height: '24px',
+                backgroundColor: alpha('#0C53B7', 0.12),
                 color: '#0C53B7',
+                fontWeight: 600,
                 '& .MuiChip-label': {
-                  px: 0.75,
-                  fontSize: '0.7rem',
-                  lineHeight: 1
+                  px: 1,
+                  fontSize: '0.75rem',
+                  lineHeight: 1.2,
+                  letterSpacing: '0.02em'
                 }
               }}
             />
@@ -487,13 +505,15 @@ const HistoryRow = (props) => {
                   label="Buy"
                   size="small"
                   sx={{
-                    height: '18px',
-                    backgroundColor: alpha('#00AB55', 0.1),
+                    height: '24px',
+                    backgroundColor: alpha('#00AB55', 0.12),
                     color: '#00AB55',
+                    fontWeight: 600,
                     '& .MuiChip-label': {
-                      px: 0.75,
-                      fontSize: '0.7rem',
-                      lineHeight: 1
+                      px: 1,
+                      fontSize: '0.75rem',
+                      lineHeight: 1.2,
+                      letterSpacing: '0.02em'
                     }
                   }}
                 />
@@ -504,13 +524,15 @@ const HistoryRow = (props) => {
                   label="Sell"
                   size="small"
                   sx={{
-                    height: '18px',
-                    backgroundColor: alpha('#B72136', 0.1),
+                    height: '24px',
+                    backgroundColor: alpha('#B72136', 0.12),
                     color: '#B72136',
+                    fontWeight: 600,
                     '& .MuiChip-label': {
-                      px: 0.75,
-                      fontSize: '0.7rem',
-                      lineHeight: 1
+                      px: 1,
+                      fontSize: '0.75rem',
+                      lineHeight: 1.2,
+                      letterSpacing: '0.02em'
                     }
                   }}
                 />
@@ -521,13 +543,15 @@ const HistoryRow = (props) => {
                   label="Trade"
                   size="small"
                   sx={{
-                    height: '18px',
-                    backgroundColor: alpha('#8B5CF6', 0.1),
+                    height: '24px',
+                    backgroundColor: alpha('#8B5CF6', 0.12),
                     color: '#8B5CF6',
+                    fontWeight: 600,
                     '& .MuiChip-label': {
-                      px: 0.75,
-                      fontSize: '0.7rem',
-                      lineHeight: 1
+                      px: 1,
+                      fontSize: '0.75rem',
+                      lineHeight: 1.2,
+                      letterSpacing: '0.02em'
                     }
                   }}
                 />
@@ -538,13 +562,15 @@ const HistoryRow = (props) => {
                   label="Offer"
                   size="small"
                   sx={{
-                    height: '18px',
-                    backgroundColor: alpha('#8B5CF6', 0.1),
+                    height: '24px',
+                    backgroundColor: alpha('#8B5CF6', 0.12),
                     color: '#8B5CF6',
+                    fontWeight: 600,
                     '& .MuiChip-label': {
-                      px: 0.75,
-                      fontSize: '0.7rem',
-                      lineHeight: 1
+                      px: 1,
+                      fontSize: '0.75rem',
+                      lineHeight: 1.2,
+                      letterSpacing: '0.02em'
                     }
                   }}
                 />
@@ -557,43 +583,45 @@ const HistoryRow = (props) => {
               label="Cancel"
               size="small"
               sx={{
-                height: '18px',
-                backgroundColor: alpha('#B72136', 0.1),
+                height: '24px',
+                backgroundColor: alpha('#B72136', 0.12),
                 color: '#B72136',
+                fontWeight: 600,
                 '& .MuiChip-label': {
-                  px: 0.75,
-                  fontSize: '0.7rem',
-                  lineHeight: 1
+                  px: 1,
+                  fontSize: '0.75rem',
+                  lineHeight: 1.2,
+                  letterSpacing: '0.02em'
                 }
               }}
             />
           )}
         </Stack>
       </TableCell>
-      <TableCell sx={{ color: theme.palette.text.primary, width: '70px' }}>
-        <Typography sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.primary, 0.7) }}>
+      <TableCell sx={{ color: theme.palette.text.primary, width: '90px' }}>
+        <Typography sx={{ fontSize: '0.813rem', color: alpha(theme.palette.text.primary, 0.6), fontWeight: 500 }}>
           {getRelativeTime(rippleEpoch)}
         </Typography>
       </TableCell>
       <TableCell sx={{ color: theme.palette.text.primary }}>
         {TransactionType === 'AMMDeposit' && (
-          <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
-            <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
+          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ typography: 'body2' }}>
+            <Stack direction="row" alignItems="baseline" spacing={0}>
+              <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>{assetValue.valueBeforeDot}</Typography>
               {assetValue.valueAfterDot !== '' && (
-                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
+                <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: alpha(theme.palette.text.primary, 0.7) }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
             {tokenImageUrl && (
-              <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16, mr: 0.5 }} alt={assetName} />
+              <Avatar src={tokenImageUrl} sx={{ width: 20, height: 20, mr: 0.5, border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }} alt={assetName} />
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.813rem', fontWeight: 500 }}>
               {assetName}
             </Typography>
-            <Typography sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '0.75rem' }}>
+            <Typography sx={{ color: alpha(theme.palette.text.primary, 0.4), fontSize: '0.813rem', mx: 0.5 }}>
               /
             </Typography>
-            <Stack direction="row" alignItems="baseline">
+            <Stack direction="row" alignItems="baseline" spacing={0}>
               <Typography sx={{ fontSize: '0.75rem' }}>{assetValue2.valueBeforeDot}</Typography>
               {assetValue2.valueAfterDot !== '' && (
                 <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue2.valueAfterDot}</Typography>
@@ -602,23 +630,23 @@ const HistoryRow = (props) => {
             {tokenImageUrl2 && (
               <Avatar
                 src={tokenImageUrl2}
-                sx={{ width: 16, height: 16, mr: 0.5 }}
+                sx={{ width: 20, height: 20, mr: 0.5, border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}
                 alt={assetName2}
               />
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.813rem', fontWeight: 500 }}>
               {assetName2}
             </Typography>
           </Stack>
         )}
         {TransactionType === 'AMMWithdraw' && (
-          <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
+          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ typography: 'body2' }}>
             {assetValue.valueAfterDot === '' && assetValue2.valueAfterDot === '' ? (
               <Stack direction="row" spacing={0.25}>
                 {tokenImageUrl && (
                   <Avatar
                     src={tokenImageUrl}
-                    sx={{ width: 16, height: 16, mr: 0.5 }}
+                    sx={{ width: 20, height: 20, mr: 0.5, border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}
                     alt={assetName}
                   />
                 )}
@@ -633,7 +661,7 @@ const HistoryRow = (props) => {
                 {tokenImageUrl2 && (
                   <Avatar
                     src={tokenImageUrl2}
-                    sx={{ width: 16, height: 16, mr: 0.5 }}
+                    sx={{ width: 20, height: 20, mr: 0.5, border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}
                     alt={assetName2}
                   />
                 )}
@@ -643,7 +671,7 @@ const HistoryRow = (props) => {
               </Stack>
             ) : (
               <Stack direction="row" spacing={0.25}>
-                <Stack direction="row" alignItems="baseline">
+                <Stack direction="row" alignItems="baseline" spacing={0}>
                   <Typography sx={{ fontSize: '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
                   {assetValue.valueAfterDot !== '' && (
                     <Typography sx={{ fontSize: '0.75rem' }}>
@@ -654,7 +682,7 @@ const HistoryRow = (props) => {
                 {tokenImageUrl && (
                   <Avatar
                     src={tokenImageUrl}
-                    sx={{ width: 16, height: 16, mr: 0.5 }}
+                    sx={{ width: 20, height: 20, mr: 0.5, border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}
                     alt={assetName}
                   />
                 )}
@@ -666,7 +694,7 @@ const HistoryRow = (props) => {
                 >
                   /
                 </Typography>
-                <Stack direction="row" alignItems="baseline">
+                <Stack direction="row" alignItems="baseline" spacing={0}>
                   <Typography sx={{ fontSize: '0.75rem' }}>{assetValue2.valueBeforeDot}</Typography>
                   {assetValue2.valueAfterDot !== '' && (
                     <Typography sx={{ fontSize: '0.75rem' }}>
@@ -677,7 +705,7 @@ const HistoryRow = (props) => {
                 {tokenImageUrl2 && (
                   <Avatar
                     src={tokenImageUrl2}
-                    sx={{ width: 16, height: 16, mr: 0.5 }}
+                    sx={{ width: 20, height: 20, mr: 0.5, border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}
                     alt={assetName2}
                   />
                 )}
@@ -689,21 +717,21 @@ const HistoryRow = (props) => {
           </Stack>
         )}
         {TransactionType === 'Payment' && (
-          <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
-            <Stack direction="row" alignItems="baseline">
+          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ typography: 'body2' }}>
+            <Stack direction="row" alignItems="baseline" spacing={0}>
               <Typography sx={{ fontSize: '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
               {assetValue.valueAfterDot && (
                 <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
             {tokenImageUrl && (
-              <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16, mr: 0.5 }} alt={assetName} />
+              <Avatar src={tokenImageUrl} sx={{ width: 20, height: 20, mr: 0.5, border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }} alt={assetName} />
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.813rem', fontWeight: 500 }}>
               {assetName}
             </Typography>
-            <EastIcon sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '1rem' }} />
-            <Stack direction="row" alignItems="baseline">
+            <EastIcon sx={{ color: alpha(theme.palette.text.primary, 0.4), fontSize: '1.125rem', mx: 0.75 }} />
+            <Stack direction="row" alignItems="baseline" spacing={0}>
               <Typography sx={{ fontSize: '0.75rem' }}>{assetValue2.valueBeforeDot}</Typography>
               {assetValue2.valueAfterDot && (
                 <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue2.valueAfterDot}</Typography>
@@ -712,48 +740,48 @@ const HistoryRow = (props) => {
             {tokenImageUrl2 && (
               <Avatar
                 src={tokenImageUrl2}
-                sx={{ width: 16, height: 16, mr: 0.5 }}
+                sx={{ width: 20, height: 20, mr: 0.5, border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}
                 alt={assetName2}
               />
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.813rem', fontWeight: 500 }}>
               {assetName2}
             </Typography>
           </Stack>
         )}
         {TransactionType === 'TrustSet' && (
-          <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
-            <Typography sx={{ fontSize: '0.75rem', color: '#0C53B7' }}>Trustline for</Typography>
-            <Stack direction="row" alignItems="baseline">
+          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ typography: 'body2' }}>
+            <Typography sx={{ fontSize: '0.813rem', color: '#0C53B7', fontWeight: 500 }}>Trustline for</Typography>
+            <Stack direction="row" alignItems="baseline" spacing={0}>
               <Typography sx={{ fontSize: '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
               {assetValue.valueAfterDot && (
                 <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
             {tokenImageUrl && (
-              <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16, mr: 0.5 }} alt={assetName} />
+              <Avatar src={tokenImageUrl} sx={{ width: 20, height: 20, mr: 0.5, border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }} alt={assetName} />
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.813rem', fontWeight: 500 }}>
               {assetName}
             </Typography>
           </Stack>
         )}
         {TransactionType === 'OfferCreate' && (
-          <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
-            <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
+          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ typography: 'body2' }}>
+            <Stack direction="row" alignItems="baseline" spacing={0}>
+              <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>{assetValue.valueBeforeDot}</Typography>
               {assetValue.valueAfterDot !== '' && (
-                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
+                <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: alpha(theme.palette.text.primary, 0.7) }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
             {tokenImageUrl && (
-              <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16, mr: 0.5 }} alt={assetName} />
+              <Avatar src={tokenImageUrl} sx={{ width: 20, height: 20, mr: 0.5, border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }} alt={assetName} />
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.813rem', fontWeight: 500 }}>
               {assetName}
             </Typography>
-            <EastIcon sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '1rem' }} />
-            <Stack direction="row" alignItems="baseline">
+            <EastIcon sx={{ color: alpha(theme.palette.text.primary, 0.4), fontSize: '1.125rem', mx: 0.75 }} />
+            <Stack direction="row" alignItems="baseline" spacing={0}>
               <Typography sx={{ fontSize: '0.75rem' }}>{assetValue2.valueBeforeDot}</Typography>
               {assetValue2.valueAfterDot !== '' && (
                 <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue2.valueAfterDot}</Typography>
@@ -762,18 +790,18 @@ const HistoryRow = (props) => {
             {tokenImageUrl2 && (
               <Avatar
                 src={tokenImageUrl2}
-                sx={{ width: 16, height: 16, mr: 0.5 }}
+                sx={{ width: 20, height: 20, mr: 0.5, border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}
                 alt={assetName2}
               />
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.813rem', fontWeight: 500 }}>
               {assetName2}
             </Typography>
           </Stack>
         )}
         {TransactionType === 'OfferCancel' && (
-          <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
-            <Typography sx={{ fontSize: '0.75rem', color: '#B72136' }}>Offer Cancelled</Typography>
+          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ typography: 'body2' }}>
+            <Typography sx={{ fontSize: '0.813rem', color: '#B72136', fontWeight: 500 }}>Offer Cancelled</Typography>
           </Stack>
         )}
       </TableCell>
@@ -820,51 +848,59 @@ const HistoryRow = (props) => {
               }
               label={source}
               sx={{
-                height: '18px',
+                height: '24px',
                 backgroundColor: alpha(
                   SOURCE_TAGS[
                     Object.keys(SOURCE_TAGS).find((key) => SOURCE_TAGS[key].label === source)
                   ]?.color || theme.palette.primary.main,
-                  0.1
+                  0.12
                 ),
                 color:
                   SOURCE_TAGS[
                     Object.keys(SOURCE_TAGS).find((key) => SOURCE_TAGS[key].label === source)
                   ]?.color || theme.palette.primary.main,
-                borderRadius: '4px',
+                borderRadius: '6px',
+                fontWeight: 600,
                 '& .MuiChip-label': {
-                  px: 0.75,
-                  fontSize: '0.7rem',
-                  lineHeight: 1
+                  px: 1,
+                  fontSize: '0.75rem',
+                  lineHeight: 1.2,
+                  letterSpacing: '0.02em'
                 },
                 '& .MuiChip-icon': {
                   color: 'inherit',
-                  marginLeft: '4px',
-                  marginRight: '-4px'
+                  marginLeft: '6px',
+                  marginRight: '-2px',
+                  fontSize: '0.875rem'
                 }
               }}
             />
           </Tooltip>
         )}
       </TableCell>
-      <TableCell sx={{ width: '32px', p: 0.25 }}>
+      <TableCell sx={{ width: '40px', p: 0.5 }}>
         <IconButton
           size="small"
           onClick={handleViewClick}
+          className="action-button"
           sx={{
-            p: 0.25,
-            width: '20px',
-            height: '20px',
+            p: 0.5,
+            width: '28px',
+            height: '28px',
             color: theme.palette.primary.main,
+            opacity: 0.7,
+            transition: 'all 0.2s ease',
             '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.1)
+              backgroundColor: alpha(theme.palette.primary.main, 0.08),
+              opacity: 1,
+              transform: 'scale(1.1)'
             },
             '& .MuiSvgIcon-root': {
-              fontSize: '0.875rem'
+              fontSize: '1rem'
             }
           }}
         >
-          <LinkIcon />
+          <OpenInNewIcon />
         </IconButton>
       </TableCell>
     </TableRow>

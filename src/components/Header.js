@@ -465,7 +465,7 @@ export default function Header(props) {
                 darkMode={darkMode}
                 theme={theme}
                 onClick={handleTokensClick}
-                style={{ cursor: 'pointer', color: theme.palette.text.primary }}
+                style={{ cursor: 'pointer', color: theme.palette.primary.main }}
               >
                 {t('Tokens')}
                 <KeyboardArrowDownIcon />
@@ -809,7 +809,7 @@ export default function Header(props) {
                 darkMode={darkMode}
                 theme={theme}
                 href="/collections"
-                style={{ color: theme.palette.text.primary }}
+                style={{ color: theme.palette.primary.main }}
               >
                 {t('NFTs')}
               </StyledLink>
@@ -818,7 +818,7 @@ export default function Header(props) {
                 darkMode={darkMode}
                 theme={theme}
                 href="/swap"
-                style={{ color: theme.palette.text.primary }}
+                style={{ color: theme.palette.primary.main }}
               >
                 {t('Swap')}
               </StyledLink>
