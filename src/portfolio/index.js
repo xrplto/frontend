@@ -1756,10 +1756,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     sx={{
                       mt: { xs: 0.75, sm: 1.5 },
                       borderRadius: { xs: '12px', sm: '16px' },
-                      background: `linear-gradient(135deg, 
-                        ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-                        ${alpha(theme.palette.background.paper, 0.5)} 50%,
-                        ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                      background: 'transparent',
                       backdropFilter: 'blur(40px) saturate(150%)',
                       WebkitBackdropFilter: 'blur(40px) saturate(150%)',
                       border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
@@ -2259,10 +2256,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                   sx={{
                     borderRadius: { xs: '12px', sm: '16px' },
                     mt: { xs: 0.75, sm: 1.5 },
-                    background: `linear-gradient(135deg, 
-                      ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-                      ${alpha(theme.palette.background.paper, 0.5)} 50%,
-                      ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                    background: 'transparent',
                     backdropFilter: 'blur(40px) saturate(150%)',
                     WebkitBackdropFilter: 'blur(40px) saturate(150%)',
                     border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
@@ -2849,12 +2843,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                     p: { xs: 1, sm: 1.5 },
                     height: '100%',
                     borderRadius: { xs: '12px', sm: '16px' },
-                    background: `linear-gradient(135deg, 
-                      ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-                      ${alpha(theme.palette.background.paper, 0.5)} 50%,
-                      ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-                    backdropFilter: 'blur(40px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                    background: 'transparent',
+                    backdropFilter: 'none',
+                    WebkitBackdropFilter: 'none',
                     border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                     boxShadow: `
                       0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
@@ -2863,21 +2854,6 @@ export default function Portfolio({ account, limit, collection, type }) {
                     position: 'relative',
                     overflow: 'hidden',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: `linear-gradient(
-                        135deg,
-                        ${alpha(theme.palette.primary.main, 0.03)} 0%,
-                        transparent 50%,
-                        ${alpha(theme.palette.secondary.main, 0.03)} 100%
-                      )`,
-                      pointerEvents: 'none'
-                    },
                     '&:hover': {
                       transform: 'translateY(-2px)',
                       boxShadow: `
@@ -3027,10 +3003,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                 mb: 1.5,
                 color: theme.palette.text.primary,
                 borderRadius: { xs: '12px', sm: '16px' },
-                background: `linear-gradient(135deg, 
-                  ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-                  ${alpha(theme.palette.background.paper, 0.5)} 50%,
-                  ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                background: 'transparent',
                 backdropFilter: 'blur(40px) saturate(150%)',
                 WebkitBackdropFilter: 'blur(40px) saturate(150%)',
                 border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
@@ -3041,21 +3014,6 @@ export default function Portfolio({ account, limit, collection, type }) {
                 position: 'relative',
                 overflow: 'hidden',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: `linear-gradient(
-                    135deg,
-                    ${alpha(theme.palette.primary.main, 0.05)} 0%,
-                    transparent 50%,
-                    ${alpha(theme.palette.secondary.main, 0.05)} 100%
-                  )`,
-                  pointerEvents: 'none'
-                },
                 '&:hover': {
                   transform: 'translateY(-2px)',
                   boxShadow: `
@@ -3073,10 +3031,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                       px: 3,
                       py: 2,
                       borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.background.paper,
-                        0.8
-                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                      background: 'transparent',
                       backdropFilter: 'blur(10px)'
                     }}
                   >
@@ -3085,10 +3040,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                         sx={{
                           p: 1.5,
                           borderRadius: '16px',
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.primary.main,
-                            0.15
-                          )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                          background: 'transparent',
                           border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                           display: 'flex',
                           alignItems: 'center',

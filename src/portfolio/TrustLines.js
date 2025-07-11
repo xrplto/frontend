@@ -199,9 +199,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
     <>
       <Card
         sx={{
-          background: theme.palette.mode === 'dark' 
-            ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`
-            : `linear-gradient(135deg, ${alpha('#ffffff', 0.9)} 0%, ${alpha('#f5f5f5', 0.5)} 100%)`,
+          background: 'transparent',
           backdropFilter: 'blur(10px)',
           border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
           borderRadius: 2,
@@ -493,10 +491,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           sx={{
             p: { xs: 1.5, sm: 2 },
             borderRadius: '16px',
-            background: `linear-gradient(135deg, 
-              ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-              ${alpha(theme.palette.background.paper, 0.5)} 50%,
-              ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+            background: 'transparent',
             backdropFilter: 'blur(40px) saturate(150%)',
             WebkitBackdropFilter: 'blur(40px) saturate(150%)',
             border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
@@ -725,10 +720,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                       justifyContent: 'space-between',
                       p: 1,
                       borderRadius: '8px',
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.background.paper,
-                        0.8
-                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                      background: 'transparent',
                       border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                       transition: 'all 0.2s ease',
                       '&:hover': {
@@ -790,7 +782,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           <Card
             sx={{
               p: { xs: 0.75, sm: 1 },
-              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
+              background: 'transparent',
               border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
               borderRadius: 1.5
             }}
