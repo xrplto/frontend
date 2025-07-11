@@ -13,14 +13,16 @@ import {
   Chip,
   Button,
   CircularProgress,
-  Fade
+  Fade,
+  Grid
 } from '@mui/material';
 import {
   DeleteOutline as DeleteIcon,
   Verified as VerifiedIcon,
   AccountBalanceWallet as WalletIcon,
   TrendingUp as TrendingIcon,
-  KeyboardArrowUp as CollapseIcon
+  KeyboardArrowUp as CollapseIcon,
+  PieChart as PieChartIcon
 } from '@mui/icons-material';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
@@ -29,6 +31,14 @@ import CustomDialog from 'src/components/Dialog';
 import useWebSocket from 'react-use-websocket';
 import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
 import { useDispatch, useSelector } from 'react-redux';
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
+import {
+  extractDominantColor,
+  rgbToHex,
+  getTokenImageUrl,
+  getTokenFallbackColor
+} from 'src/utils/colorExtractor';
 
 // Helper function to format balance
 const formatBalance = (balance) => {
@@ -40,6 +50,74 @@ const formatBalance = (balance) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: num < 1000 ? 4 : 2
   });
+};
+
+// Function to process asset distribution data for pie chart
+const processAssetDistribution = async (trustlines, theme) => {
+  if (!trustlines || trustlines.length === 0) return null;
+
+  // Filter out assets with no value and sort by value
+  const sortedTrustlines = trustlines
+    .filter((asset) => asset.value && parseFloat(asset.value) > 0)
+    .sort((a, b) => b.value - a.value);
+
+  // If no assets have value, return null
+  if (sortedTrustlines.length === 0) return null;
+
+  // Take top 10 assets and group the rest as "Others"
+  const topAssets = sortedTrustlines.slice(0, 10);
+  const otherAssets = sortedTrustlines.slice(10);
+
+  // Ensure we have valid numeric values
+  const labels = topAssets.map((asset) => asset.currency);
+  const data = topAssets.map((asset) => parseFloat(asset.value) || 0);
+
+  // Add "Others" category if there are more than 10 assets
+  if (otherAssets.length > 0) {
+    const othersValue = otherAssets.reduce(
+      (sum, asset) => sum + (parseFloat(asset.value) || 0),
+      0
+    );
+    labels.push('Others');
+    data.push(othersValue);
+  }
+
+  // Extract colors from token icons
+  const backgroundColors = [];
+
+  for (let i = 0; i < topAssets.length; i++) {
+    const asset = topAssets[i];
+    let color = getTokenFallbackColor(asset.currency, i);
+
+    if (asset.currency === 'XRP') {
+      color = theme.palette.primary.main; // Use a specific color for XRP
+    } else {
+      try {
+        // Try to extract color from token icon if md5 exists
+        if (asset.md5) {
+          const imageUrl = getTokenImageUrl(asset.md5);
+          const extractedColor = await extractDominantColor(imageUrl);
+          color = rgbToHex(extractedColor);
+        }
+      } catch (error) {
+        console.warn(`Failed to extract color for ${asset.currency}:`, error);
+        // Keep the fallback color
+      }
+    }
+
+    backgroundColors.push(alpha(color, 0.8));
+  }
+
+  // Add color for "Others" category
+  if (otherAssets.length > 0) {
+    backgroundColors.push(alpha(theme.palette.grey[500], 0.8));
+  }
+
+  return {
+    series: data,
+    labels,
+    colors: backgroundColors
+  };
 };
 
 // Token Card Component
@@ -305,6 +383,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   const [loading, setLoading] = useState(false);
   const [lines, setLines] = useState([]);
   const [showAll, setShowAll] = useState(false);
+  const [assetDistribution, setAssetDistribution] = useState(null);
   
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
   
@@ -341,36 +420,46 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     }
   }, [account, sync]);
 
-  // Calculate total value
+  // Calculate total value and process asset distribution
   useEffect(() => {
-    // exchRate is XRP per 1 USD, so we need to invert it
-    const xrpToFiat = exchRate ? 1 / exchRate : 0;
-    
-    // Calculate total value using the same logic as individual tokens
-    const trustlinesSum = lines.reduce((acc, line) => {
-      // If API provides a pre-calculated value in XRP, use it
-      if (line.value !== undefined && line.value !== null) {
-        return acc + (Number(line.value) * xrpToFiat);
+    const processData = async () => {
+      // exchRate is XRP per 1 USD, so we need to invert it
+      const xrpToFiat = exchRate ? 1 / exchRate : 0;
+      
+      // Calculate total value using the same logic as individual tokens
+      const trustlinesSum = lines.reduce((acc, line) => {
+        // If API provides a pre-calculated value in XRP, use it
+        if (line.value !== undefined && line.value !== null) {
+          return acc + (Number(line.value) * xrpToFiat);
+        }
+        // Otherwise calculate from balance * exch
+        const balance = parseFloat(line.balance) || 0;
+        const exch = parseFloat(line.exch) || 0;
+        return acc + (balance * exch * xrpToFiat);
+      }, 0);
+      const xrpValue = (xrpBalance || 0) * xrpToFiat;
+      const totalSum = trustlinesSum + xrpValue;
+      
+      if (onUpdateTotalValue) {
+        onUpdateTotalValue(totalSum);
       }
-      // Otherwise calculate from balance * exch
-      const balance = parseFloat(line.balance) || 0;
-      const exch = parseFloat(line.exch) || 0;
-      return acc + (balance * exch * xrpToFiat);
-    }, 0);
-    const xrpValue = (xrpBalance || 0) * xrpToFiat;
-    const totalSum = trustlinesSum + xrpValue;
-    
-    if (onUpdateTotalValue) {
-      onUpdateTotalValue(totalSum);
-    }
-    
-    if (onTrustlinesData) {
+      
+      // Prepare assets data including XRP
       const allAssets = xrpBalance
-        ? [{ currency: 'XRP', balance: xrpBalance, value: xrpValue, exch: 1, exchRate }, ...lines]
+        ? [{ currency: 'XRP', balance: xrpBalance, value: xrpBalance, exch: 1, exchRate }, ...lines]
         : lines;
-      onTrustlinesData(allAssets);
-    }
-  }, [lines, xrpBalance, exchRate, onUpdateTotalValue, onTrustlinesData]);
+      
+      if (onTrustlinesData) {
+        onTrustlinesData(allAssets);
+      }
+      
+      // Process asset distribution for pie chart
+      const pieData = await processAssetDistribution(allAssets, theme);
+      setAssetDistribution(pieData);
+    };
+    
+    processData();
+  }, [lines, xrpBalance, exchRate, onUpdateTotalValue, onTrustlinesData, theme]);
 
   const displayedLines = showAll ? lines : lines.slice(0, 6);
   const hasMore = lines.length > 6;
@@ -396,99 +485,400 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   }
 
   return (
-    <Stack spacing={1}>
-      {/* Summary Card */}
-      <Card
-        sx={{
-          p: { xs: 1, sm: 1.5 },
-          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
-          border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-          borderRadius: 1.5
-        }}
-      >
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Stack direction="row" alignItems="center" spacing={1.5}>
-            <TrendingIcon sx={{ fontSize: { xs: 24, sm: 28 }, color: theme.palette.primary.main }} />
-            <Box>
-              <Typography variant="body1" sx={{ fontWeight: 700, fontSize: { xs: '0.85rem', sm: '1rem' } }}>
-                Portfolio Overview
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                {lines.length + (xrpBalance ? 1 : 0)} assets
-              </Typography>
-            </Box>
-          </Stack>
-          
-          <Box textAlign="right">
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>Total Value</Typography>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-              {currencySymbols[activeFiatCurrency]}
-              {(() => {
-                const xrpToFiat = exchRate ? 1 / exchRate : 0;
-                return ((lines.reduce((acc, line) => {
-                  // Use the same calculation as in the useEffect
-                  if (line.value !== undefined && line.value !== null) {
-                    return acc + (Number(line.value) * xrpToFiat);
-                  }
-                  const balance = parseFloat(line.balance) || 0;
-                  const exch = parseFloat(line.exch) || 0;
-                  return acc + (balance * exch * xrpToFiat);
-                }, 0) + 
-                  ((xrpBalance || 0) * xrpToFiat))).toFixed(2);
-              })()}
-            </Typography>
-          </Box>
-        </Stack>
-      </Card>
-
-      {/* Token List */}
-      <Stack spacing={0.75}>
-        {xrpBalance > 0 && (
-          <Fade in timeout={300}>
-            <Box>
-              <TokenCard
-                token={{ balance: xrpBalance }}
-                account={account}
-                isXRP
-                exchRate={exchRate}
-              />
-            </Box>
-          </Fade>
-        )}
-        
-        {displayedLines.map((line, index) => (
-          <Fade in timeout={300 + index * 50} key={`${line.currency}-${line.issuer}`}>
-            <Box>
-              <TokenCard token={line} account={account} exchRate={exchRate} />
-            </Box>
-          </Fade>
-        ))}
-      </Stack>
-
-      {/* Show More Button */}
-      {hasMore && (
-        <Box sx={{ textAlign: 'center', mt: 1 }}>
-          <Button
-            size="small"
-            variant="outlined"
-            onClick={() => setShowAll(!showAll)}
+    <Grid container spacing={{ xs: 1.5, sm: 3 }}>
+      {/* Asset Distribution Chart */}
+      <Grid item xs={12} md={4}>
+        <Box
+          sx={{
+            p: { xs: 2, sm: 2.5 },
+            borderRadius: '16px',
+            background: `linear-gradient(135deg, 
+              ${alpha(theme.palette.background.paper, 0.7)} 0%, 
+              ${alpha(theme.palette.background.paper, 0.5)} 50%,
+              ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+            backdropFilter: 'blur(40px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+            border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          <Box
             sx={{
-              borderRadius: 1,
-              textTransform: 'none',
-              fontSize: { xs: '0.7rem', sm: '0.8rem' },
-              py: 0.5,
-              px: 2,
-              borderColor: alpha(theme.palette.primary.main, 0.3),
-              '&:hover': {
-                borderColor: theme.palette.primary.main,
-                backgroundColor: alpha(theme.palette.primary.main, 0.05)
-              }
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              mb: 2
             }}
           >
-            {showAll ? 'Show Less' : `Show ${lines.length - 6} More`}
-          </Button>
+            <PieChartIcon
+              sx={{
+                fontSize: 20,
+                color: theme.palette.primary.main
+              }}
+            />
+            <Typography
+              variant="h6"
+              sx={{
+                color: theme.palette.primary.main,
+                fontWeight: 600,
+                fontSize: '1rem',
+                letterSpacing: '-0.01em'
+              }}
+            >
+              Asset Distribution
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              minHeight: 220,
+              maxHeight: 240
+            }}
+          >
+            {(() => {
+              try {
+                if (!assetDistribution || !assetDistribution.series || assetDistribution.series.length === 0) {
+                  return (
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      height: '100%',
+                      color: theme.palette.text.secondary
+                    }}>
+                      <Typography variant="body2">No asset data available</Typography>
+                    </Box>
+                  );
+                }
+
+                // Prepare chart data safely
+                const chartData = assetDistribution.labels?.map((label, index) => {
+                  const value = parseFloat(assetDistribution.series[index]) || 0;
+                  return {
+                    name: label,
+                    y: value,
+                    color: assetDistribution.colors[index]
+                  };
+                }).filter(item => item.y > 0) || [];
+
+                if (chartData.length === 0) {
+                  return (
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      height: '100%',
+                      color: theme.palette.text.secondary
+                    }}>
+                      <Typography variant="body2">No positive balances</Typography>
+                    </Box>
+                  );
+                }
+
+                const totalValue = assetDistribution.series.reduce((sum, val) => sum + val, 0);
+
+                return (
+                  <>
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 1
+                      }}
+                    >
+                      <HighchartsReact
+                        highcharts={Highcharts}
+                        options={{
+                          chart: {
+                            type: 'pie',
+                            backgroundColor: 'transparent',
+                            height: 220,
+                            animation: {
+                              duration: 1000
+                            }
+                          },
+                          title: {
+                            text: null
+                          },
+                          credits: {
+                            enabled: false
+                          },
+                          plotOptions: {
+                            pie: {
+                              innerSize: '60%',
+                              dataLabels: {
+                                enabled: false
+                              },
+                              states: {
+                                hover: {
+                                  brightness: 0.1
+                                }
+                              }
+                            }
+                          },
+                          tooltip: {
+                            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                            borderColor: theme.palette.divider,
+                            borderRadius: 8,
+                            style: {
+                              color: theme.palette.text.primary
+                            },
+                            formatter: function() {
+                              const total = this.series.data.reduce((sum, point) => sum + point.y, 0);
+                              const percentage = total > 0 ? ((this.y / total) * 100).toFixed(1) : '0.0';
+                              return `<b>${this.point.name}</b><br/>Amount: ${this.y.toLocaleString()} XRP<br/>Percentage: ${percentage}%`;
+                            },
+                            useHTML: true
+                          },
+                          series: [{
+                            name: 'Assets',
+                            type: 'pie',
+                            data: chartData
+                          }]
+                        }}
+                      />
+                    </Box>
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        textAlign: 'center',
+                        pointerEvents: 'none',
+                        zIndex: 0,
+                        p: 1,
+                        borderRadius: '50%',
+                        background: `radial-gradient(circle, ${alpha(
+                          theme.palette.background.paper,
+                          0.9
+                        )} 0%, transparent 70%)`
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        color="text.primary"
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: '0.85rem',
+                          letterSpacing: '-0.02em'
+                        }}
+                      >
+                        {totalValue.toLocaleString()}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{
+                          fontSize: '0.65rem',
+                          fontWeight: 500,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.02em'
+                        }}
+                      >
+                        XRP Value
+                      </Typography>
+                    </Box>
+                  </>
+                );
+              } catch (error) {
+                console.error('Error rendering pie chart:', error);
+                return (
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    height: '100%',
+                    color: theme.palette.error.main,
+                    flexDirection: 'column',
+                    gap: 1
+                  }}>
+                    <Typography variant="body2">Error loading chart</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {error.message || 'Please try again later'}
+                    </Typography>
+                  </Box>
+                );
+              }
+            })()}
+          </Box>
+
+          {assetDistribution && assetDistribution.labels && (
+            <Box sx={{ mt: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {assetDistribution.labels.slice(0, 3).map((label, index) => (
+                  <Box
+                    key={label}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      p: 1.5,
+                      borderRadius: '10px',
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.background.paper,
+                        0.8
+                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        transform: 'translateX(4px)',
+                        boxShadow: `0 4px 12px ${alpha(
+                          theme.palette.common.black,
+                          0.08
+                        )}`
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          bgcolor: assetDistribution.colors[index],
+                          boxShadow: `0 0 8px ${alpha(
+                            assetDistribution.colors[index],
+                            0.4
+                          )}`
+                        }}
+                      />
+                      <Typography
+                        variant="body2"
+                        noWrap
+                        sx={{
+                          maxWidth: 100,
+                          fontWeight: 500,
+                          fontSize: '0.85rem'
+                        }}
+                      >
+                        {label}
+                      </Typography>
+                    </Box>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      {assetDistribution.series[index].toLocaleString()} XRP
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
         </Box>
-      )}
-    </Stack>
+      </Grid>
+
+      {/* Trustlines */}
+      <Grid item xs={12} md={8}>
+        <Stack spacing={1}>
+          {/* Summary Card */}
+          <Card
+            sx={{
+              p: { xs: 1, sm: 1.5 },
+              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+              borderRadius: 1.5
+            }}
+          >
+            <Stack direction="row" alignItems="center" justifyContent="space-between">
+              <Stack direction="row" alignItems="center" spacing={1.5}>
+                <TrendingIcon sx={{ fontSize: { xs: 24, sm: 28 }, color: theme.palette.primary.main }} />
+                <Box>
+                  <Typography variant="body1" sx={{ fontWeight: 700, fontSize: { xs: '0.85rem', sm: '1rem' } }}>
+                    Portfolio Overview
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                    {lines.length + (xrpBalance ? 1 : 0)} assets
+                  </Typography>
+                </Box>
+              </Stack>
+              
+              <Box textAlign="right">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>Total Value</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                  {currencySymbols[activeFiatCurrency]}
+                  {(() => {
+                    const xrpToFiat = exchRate ? 1 / exchRate : 0;
+                    return ((lines.reduce((acc, line) => {
+                      // Use the same calculation as in the useEffect
+                      if (line.value !== undefined && line.value !== null) {
+                        return acc + (Number(line.value) * xrpToFiat);
+                      }
+                      const balance = parseFloat(line.balance) || 0;
+                      const exch = parseFloat(line.exch) || 0;
+                      return acc + (balance * exch * xrpToFiat);
+                    }, 0) + 
+                      ((xrpBalance || 0) * xrpToFiat))).toFixed(2);
+                  })()}
+                </Typography>
+              </Box>
+            </Stack>
+          </Card>
+
+          {/* Token List */}
+          <Stack spacing={0.75}>
+            {xrpBalance > 0 && (
+              <Fade in timeout={300}>
+                <Box>
+                  <TokenCard
+                    token={{ balance: xrpBalance }}
+                    account={account}
+                    isXRP
+                    exchRate={exchRate}
+                  />
+                </Box>
+              </Fade>
+            )}
+            
+            {displayedLines.map((line, index) => (
+              <Fade in timeout={300 + index * 50} key={`${line.currency}-${line.issuer}`}>
+                <Box>
+                  <TokenCard token={line} account={account} exchRate={exchRate} />
+                </Box>
+              </Fade>
+            ))}
+          </Stack>
+
+          {/* Show More Button */}
+          {hasMore && (
+            <Box sx={{ textAlign: 'center', mt: 1 }}>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => setShowAll(!showAll)}
+                sx={{
+                  borderRadius: 1,
+                  textTransform: 'none',
+                  fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                  py: 0.5,
+                  px: 2,
+                  borderColor: alpha(theme.palette.primary.main, 0.3),
+                  '&:hover': {
+                    borderColor: theme.palette.primary.main,
+                    backgroundColor: alpha(theme.palette.primary.main, 0.05)
+                  }
+                }}
+              >
+                {showAll ? 'Show Less' : `Show ${lines.length - 6} More`}
+              </Button>
+            </Box>
+          )}
+        </Stack>
+      </Grid>
+    </Grid>
   );
 }

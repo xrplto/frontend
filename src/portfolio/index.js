@@ -39,12 +39,11 @@ import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import Ranks from './Ranks';
 import { activeRankColors, rankGlowEffect } from 'src/components/Chatbox/RankStyles';
 import axios from 'axios';
-import {
-  extractDominantColor,
-  rgbToHex,
-  getTokenImageUrl,
-  getTokenFallbackColor
-} from 'src/utils/colorExtractor';
+
+// Configure axios defaults with timeout
+const axiosInstance = axios.create({
+  timeout: 10000 // 10 second timeout
+});
 
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
@@ -165,8 +164,8 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [traderStats, setTraderStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedChart, setSelectedChart] = useState(null);
-  const [assetDistribution, setAssetDistribution] = useState(null);
-  const [xrpBalance, setXrpBalance] = useState(null);
+  const [chartView, setChartView] = useState('roi');
+    const [xrpBalance, setXrpBalance] = useState(null);
   const [loadingBalance, setLoadingBalance] = useState(true);
   const [isAmm, setIsAmm] = useState(false);
 
@@ -183,23 +182,26 @@ export default function Portfolio({ account, limit, collection, type }) {
   useEffect(() => {
     const fetchTraderStats = async () => {
       try {
-        const response = await axios.get(
+        const response = await axiosInstance.get(
           `https://api.xrpl.to/api/analytics/trader-stats/${account}`
         );
         setTraderStats(response.data);
         // Set AMM status based on response
         setIsAmm(!!response.data?.AMM);
-        setLoading(false);
       } catch (error) {
         console.error('Error fetching trader stats:', error);
+        // Set empty data on error
+        setTraderStats(null);
+        setIsAmm(false);
+      } finally {
         setLoading(false);
       }
     };
 
     const fetchXrpBalance = async () => {
+      setLoadingBalance(true);
       try {
-        setLoadingBalance(true);
-        const response = await axios.post('https://xrplcluster.com/', {
+        const response = await axiosInstance.post('https://xrplcluster.com/', {
           method: 'account_info',
           params: [
             {
@@ -219,10 +221,10 @@ export default function Portfolio({ account, limit, collection, type }) {
         } else {
           setXrpBalance(0);
         }
-        setLoadingBalance(false);
       } catch (error) {
-        console.error('Error fetching XRP balance:', error);
+        console.warn('Error fetching XRP balance:', error.message);
         setXrpBalance(0);
+      } finally {
         setLoadingBalance(false);
       }
     };
@@ -239,7 +241,9 @@ export default function Portfolio({ account, limit, collection, type }) {
 
   // Process ROI history data for the chart
   const processChartData = () => {
-    if (!traderStats?.roiHistory) return null;
+    if (!traderStats?.roiHistory || traderStats.roiHistory.length === 0) {
+      return null;
+    }
 
     const sortedHistory = [...traderStats.roiHistory].sort(
       (a, b) => new Date(a.date) - new Date(b.date)
@@ -250,17 +254,17 @@ export default function Portfolio({ account, limit, collection, type }) {
         {
           name: 'Daily ROI',
           type: 'line',
-          data: sortedHistory.map((item) => item.dailyRoi)
+          data: sortedHistory.map((item) => item.dailyRoi || 0)
         },
         {
           name: 'Cumulative ROI',
           type: 'line',
-          data: sortedHistory.map((item) => item.cumulativeRoi)
+          data: sortedHistory.map((item) => item.cumulativeRoi || 0)
         },
         {
           name: 'Volume',
           type: 'column',
-          data: sortedHistory.map((item) => item.volume)
+          data: sortedHistory.map((item) => item.volume || 0)
         }
       ],
       xaxis: {
@@ -277,7 +281,9 @@ export default function Portfolio({ account, limit, collection, type }) {
 
   // Process trade history data for the chart
   const processTradeHistoryData = () => {
-    if (!traderStats?.tradeHistory) return null;
+    if (!traderStats?.tradeHistory || traderStats.tradeHistory.length === 0) {
+      return null;
+    }
 
     const sortedHistory = [...traderStats.tradeHistory].sort(
       (a, b) => new Date(a.date) - new Date(b.date)
@@ -288,12 +294,12 @@ export default function Portfolio({ account, limit, collection, type }) {
         {
           name: 'Daily Trades',
           type: 'column',
-          data: sortedHistory.map((item) => item.trades)
+          data: sortedHistory.map((item) => item.trades || 0)
         },
         {
           name: 'Cumulative Trades',
           type: 'line',
-          data: sortedHistory.map((item) => item.cumulativeTrades)
+          data: sortedHistory.map((item) => item.cumulativeTrades || 0)
         }
       ],
       xaxis: {
@@ -308,7 +314,9 @@ export default function Portfolio({ account, limit, collection, type }) {
   };
 
   const processVolumeHistoryData = () => {
-    if (!traderStats?.volumeHistory) return null;
+    if (!traderStats?.volumeHistory || traderStats.volumeHistory.length === 0) {
+      return null;
+    }
 
     const sortedHistory = [...traderStats.volumeHistory].sort(
       (a, b) => new Date(a.date) - new Date(b.date)
@@ -319,12 +327,12 @@ export default function Portfolio({ account, limit, collection, type }) {
         {
           name: 'Daily Volume',
           type: 'column',
-          data: sortedHistory.map((item) => item.h24Volume)
+          data: sortedHistory.map((item) => item.h24Volume || 0)
         },
         {
           name: 'Cumulative Volume',
           type: 'line',
-          data: sortedHistory.map((item) => item.cumulativeVolume)
+          data: sortedHistory.map((item) => item.cumulativeVolume || 0)
         }
       ],
       xaxis: {
@@ -338,7 +346,69 @@ export default function Portfolio({ account, limit, collection, type }) {
     };
   };
 
-  const chartOptions = {};
+  const chartOptions = {
+    yAxis: [
+      {
+        title: {
+          text: 'ROI (%)',
+          style: {
+            color: theme.palette.text.secondary,
+            fontSize: '11px'
+          }
+        },
+        labels: {
+          style: {
+            color: theme.palette.text.secondary,
+            fontSize: '10px'
+          },
+          formatter: function() {
+            return this.value + '%';
+          }
+        }
+      },
+      {
+        title: {
+          text: 'Volume (XRP)',
+          style: {
+            color: theme.palette.text.secondary,
+            fontSize: '11px'
+          }
+        },
+        opposite: true,
+        labels: {
+          style: {
+            color: theme.palette.text.secondary,
+            fontSize: '10px'
+          }
+        }
+      }
+    ],
+    plotOptions: {
+      column: {
+        borderRadius: 6,
+        borderWidth: 0,
+        pointPadding: 0.2,
+        groupPadding: 0.1
+      },
+      line: {
+        lineWidth: 2,
+        states: {
+          hover: {
+            lineWidth: 3
+          }
+        },
+        marker: {
+          enabled: false,
+          states: {
+            hover: {
+              enabled: true,
+              radius: 4
+            }
+          }
+        }
+      }
+    }
+  };
   
   /* Old ApexCharts options removed - now handled in renderChart
       custom: function ({ series, seriesIndex, dataPointIndex, w }) {
@@ -537,7 +607,66 @@ export default function Portfolio({ account, limit, collection, type }) {
     ]
   }; */
 
-  const tradeHistoryOptions = {};
+  const tradeHistoryOptions = {
+    yAxis: [
+      {
+        title: {
+          text: 'Daily Trades',
+          style: {
+            color: theme.palette.text.secondary,
+            fontSize: '11px'
+          }
+        },
+        labels: {
+          style: {
+            color: theme.palette.text.secondary,
+            fontSize: '10px'
+          }
+        }
+      },
+      {
+        title: {
+          text: 'Cumulative Trades',
+          style: {
+            color: theme.palette.text.secondary,
+            fontSize: '11px'
+          }
+        },
+        opposite: true,
+        labels: {
+          style: {
+            color: theme.palette.text.secondary,
+            fontSize: '10px'
+          }
+        }
+      }
+    ],
+    plotOptions: {
+      column: {
+        borderRadius: 6,
+        borderWidth: 0,
+        pointPadding: 0.2,
+        groupPadding: 0.1
+      },
+      line: {
+        lineWidth: 2,
+        states: {
+          hover: {
+            lineWidth: 3
+          }
+        },
+        marker: {
+          enabled: false,
+          states: {
+            hover: {
+              enabled: true,
+              radius: 4
+            }
+          }
+        }
+      }
+    }
+  };
   
   /* Old ApexCharts options
     chart: {
@@ -768,7 +897,72 @@ export default function Portfolio({ account, limit, collection, type }) {
     ]
   }; */
 
-  const volumeHistoryOptions = {};
+  const volumeHistoryOptions = {
+    yAxis: [
+      {
+        title: {
+          text: 'Daily Volume (XRP)',
+          style: {
+            color: theme.palette.text.secondary,
+            fontSize: '11px'
+          }
+        },
+        labels: {
+          style: {
+            color: theme.palette.text.secondary,
+            fontSize: '10px'
+          },
+          formatter: function() {
+            return (this.value / 1000).toFixed(0) + 'K';
+          }
+        }
+      },
+      {
+        title: {
+          text: 'Cumulative Volume (XRP)',
+          style: {
+            color: theme.palette.text.secondary,
+            fontSize: '11px'
+          }
+        },
+        opposite: true,
+        labels: {
+          style: {
+            color: theme.palette.text.secondary,
+            fontSize: '10px'
+          },
+          formatter: function() {
+            return (this.value / 1000).toFixed(0) + 'K';
+          }
+        }
+      }
+    ],
+    plotOptions: {
+      column: {
+        borderRadius: 6,
+        borderWidth: 0,
+        pointPadding: 0.2,
+        groupPadding: 0.1
+      },
+      line: {
+        lineWidth: 2,
+        states: {
+          hover: {
+            lineWidth: 3
+          }
+        },
+        marker: {
+          enabled: false,
+          states: {
+            hover: {
+              enabled: true,
+              radius: 4
+            }
+          }
+        }
+      }
+    }
+  };
   
   /* Old ApexCharts volume options
     chart: {
@@ -1039,7 +1233,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   const fetchCollections = async () => {
     setLoadingCollections(true);
     try {
-      const response = await axios.post('https://api.xrpnft.com/api/account/collectedCreated', {
+      const response = await axiosInstance.post('https://api.xrpnft.com/api/account/collectedCreated', {
         account,
         filter: 0,
         limit: 16,
@@ -1048,12 +1242,18 @@ export default function Portfolio({ account, limit, collection, type }) {
         subFilter: 'pricexrpasc',
         type: 'collected'
       });
-      setCollections(response.data.nfts);
-      setTotalValue(response.data.totalValue);
+      if (response.data) {
+        setCollections(response.data.nfts || []);
+        setTotalValue(response.data.totalValue || 0);
+      }
     } catch (error) {
-      console.error('Error fetching collections:', error);
+      // Silently handle the error - NFT collections are optional
+      console.warn('Could not fetch NFT collections:', error.message);
+      setCollections([]);
+      setTotalValue(0);
+    } finally {
+      setLoadingCollections(false);
     }
-    setLoadingCollections(false);
   };
 
   const handleExpandChart = (chartType) => {
@@ -1062,6 +1262,12 @@ export default function Portfolio({ account, limit, collection, type }) {
 
   const handleCloseModal = () => {
     setSelectedChart(null);
+  };
+
+  const handleChartViewChange = (event, newView) => {
+    if (newView !== null) {
+      setChartView(newView);
+    }
   };
 
   const renderChart = (chartData, options, type = 'line') => {
@@ -1083,8 +1289,9 @@ export default function Portfolio({ account, limit, collection, type }) {
       // Convert ApexCharts series to Highcharts format
       const highchartsSeries = chartData.series.map((serie) => {
         const seriesData = serie.data.map((value, index) => {
+          const timestamp = new Date(chartData.xaxis.categories[index]).getTime();
           return [
-            new Date(chartData.xaxis.categories[index]).getTime(),
+            timestamp,
             value
           ];
         });
@@ -1099,9 +1306,13 @@ export default function Portfolio({ account, limit, collection, type }) {
           })
         };
 
-        // Only add yAxis if it's defined in options
+        // Map series to correct yAxis based on series name
         if (options.yAxis && Array.isArray(options.yAxis) && options.yAxis.length > 1) {
-          seriesConfig.yAxis = serie.name === 'Volume' ? 1 : 0;
+          if (serie.name === 'Volume' || serie.name === 'Cumulative Volume' || serie.name === 'Cumulative Trades' || serie.name === 'Cumulative ROI') {
+            seriesConfig.yAxis = 1;
+          } else {
+            seriesConfig.yAxis = 0;
+          }
         }
 
         return seriesConfig;
@@ -1112,7 +1323,12 @@ export default function Portfolio({ account, limit, collection, type }) {
         chart: {
           type: type,
           backgroundColor: 'transparent',
-          height: { xs: 200, sm: 300 }
+          height: isMobile ? 180 : 200,
+          margin: [10, 10, 70, isMobile ? 35 : 45],
+          spacing: [5, 5, 5, 5],
+          animation: {
+            duration: 800
+          }
         },
         title: {
           text: null
@@ -1124,9 +1340,29 @@ export default function Portfolio({ account, limit, collection, type }) {
           type: 'datetime',
           labels: {
             style: {
-              color: theme.palette.text.secondary
+              color: theme.palette.text.secondary,
+              fontSize: '10px'
+            },
+            rotation: -45,
+            align: 'right',
+            y: 40,
+            formatter: function() {
+              // Format based on data range
+              const range = this.axis.max - this.axis.min;
+              const days = range / (24 * 3600 * 1000);
+              
+              if (days > 180) {
+                return Highcharts.dateFormat('%b %Y', this.value);
+              } else if (days > 60) {
+                return Highcharts.dateFormat('%b %d', this.value);
+              } else {
+                return Highcharts.dateFormat('%m/%d', this.value);
+              }
             }
-          }
+          },
+          tickPixelInterval: 80, // Dynamic spacing based on chart width
+          minPadding: 0.05,
+          maxPadding: 0.05
         },
         yAxis: options.yAxis || {
           title: {
@@ -1134,25 +1370,65 @@ export default function Portfolio({ account, limit, collection, type }) {
           },
           labels: {
             style: {
-              color: theme.palette.text.secondary
+              color: theme.palette.text.secondary,
+              fontSize: '10px'
             }
-          }
+          },
+          gridLineWidth: 1,
+          gridLineColor: alpha(theme.palette.divider, 0.1)
         },
         tooltip: {
           shared: true,
-          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
           borderColor: theme.palette.divider,
+          borderRadius: 8,
           style: {
-            color: theme.palette.text.primary
+            color: theme.palette.text.primary,
+            fontSize: '11px'
+          },
+          formatter: function() {
+            let tooltip = '<b>' + Highcharts.dateFormat('%b %d, %Y', this.x) + '</b><br/>';
+            
+            this.points.forEach(point => {
+              const value = point.y;
+              let formattedValue;
+              
+              if (point.series.name.includes('ROI') || point.series.name.includes('%')) {
+                formattedValue = value.toFixed(2) + '%';
+              } else if (point.series.name.includes('Volume')) {
+                formattedValue = value.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' XRP';
+              } else if (point.series.name.includes('Trades')) {
+                formattedValue = value.toLocaleString();
+              } else {
+                formattedValue = value.toLocaleString();
+              }
+              
+              tooltip += '<span style="color:' + point.color + '">●</span> ' + 
+                        point.series.name + ': <b>' + formattedValue + '</b><br/>';
+            });
+            
+            return tooltip;
           }
         },
         plotOptions: options.plotOptions || {},
         legend: options.legend || {
           enabled: true,
           itemStyle: {
-            color: theme.palette.text.primary
-          }
+            color: theme.palette.text.primary,
+            fontSize: '11px'
+          },
+          margin: 5,
+          padding: 2,
+          itemMarginTop: 2,
+          itemMarginBottom: 2
         },
+        colors: [
+          theme.palette.primary.main,
+          theme.palette.success.main,
+          alpha(theme.palette.info.main, 0.6),
+          theme.palette.warning.main,
+          theme.palette.error.main
+        ],
         ...options,
         series: highchartsSeries
       };
@@ -1198,120 +1474,8 @@ export default function Portfolio({ account, limit, collection, type }) {
     // fetchData(); // Commenting out or removing this call
   }, [account, collection, type]);
 
-  // Add function to process asset distribution data for pie chart
-  const processAssetDistribution = async (trustlines) => {
-    if (!trustlines || trustlines.length === 0) return null;
 
-    // Filter out assets with no value and sort by value
-    const sortedTrustlines = trustlines
-      .filter((asset) => asset.value && parseFloat(asset.value) > 0)
-      .sort((a, b) => b.value - a.value);
 
-    // If no assets have value, return null
-    if (sortedTrustlines.length === 0) return null;
-
-    // Take top 10 assets and group the rest as "Others"
-    const topAssets = sortedTrustlines.slice(0, 10);
-    const otherAssets = sortedTrustlines.slice(10);
-
-    // Ensure we have valid numeric values
-    const labels = topAssets.map((asset) => asset.currency);
-    const data = topAssets.map((asset) => parseFloat(asset.value) || 0);
-
-    // Add "Others" category if there are more than 10 assets
-    if (otherAssets.length > 0) {
-      const othersValue = otherAssets.reduce(
-        (sum, asset) => sum + (parseFloat(asset.value) || 0),
-        0
-      );
-      labels.push('Others');
-      data.push(othersValue);
-    }
-
-    // Verify we have valid data
-    const totalValue = data.reduce((sum, value) => sum + value, 0);
-
-    // Extract colors from token icons
-    const backgroundColors = [];
-
-    for (let i = 0; i < topAssets.length; i++) {
-      const asset = topAssets[i];
-      let color = getTokenFallbackColor(asset.currency, i);
-
-      if (asset.currency === 'XRP') {
-        color = theme.palette.primary.main; // Use a specific color for XRP
-      } else {
-        try {
-          // Try to extract color from token icon if md5 exists
-          if (asset.md5) {
-            const imageUrl = getTokenImageUrl(asset.md5);
-            const extractedColor = await extractDominantColor(imageUrl);
-            color = rgbToHex(extractedColor);
-          }
-        } catch (error) {
-          console.warn(`Failed to extract color for ${asset.currency}:`, error);
-          // Keep the fallback color
-        }
-      }
-
-      backgroundColors.push(alpha(color, 0.8));
-    }
-
-    // Add color for "Others" category
-    if (otherAssets.length > 0) {
-      backgroundColors.push(alpha(theme.palette.grey[500], 0.8));
-    }
-
-    return {
-      series: data,
-      labels,
-      colors: backgroundColors
-    };
-  };
-
-  // Update pie chart options for Highcharts
-  const pieChartOptions = {
-    chart: {
-      type: 'pie',
-      backgroundColor: 'transparent',
-      height: '100%'
-    },
-    title: {
-      text: null
-    },
-    credits: {
-      enabled: false
-    },
-    plotOptions: {
-      pie: {
-        innerSize: '60%',
-        dataLabels: {
-          enabled: false
-        },
-        showInLegend: false
-      }
-    },
-    tooltip: {
-      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-      borderColor: theme.palette.divider,
-      borderRadius: 8,
-      style: {
-        color: theme.palette.text.primary
-      },
-      formatter: function() {
-        const total = this.series.data.reduce((sum, point) => sum + point.y, 0);
-        const percentage = total > 0 ? ((this.y / total) * 100).toFixed(1) : '0.0';
-        return `<b>${this.point.name}</b><br/>Amount: ${this.y.toLocaleString()} XRP<br/>Percentage: ${percentage}%`;
-      },
-      useHTML: true
-    }
-  };
-
-  // Update the TrustLines component to pass data to parent
-  const handleTrustlinesData = async (trustlines) => {
-    const pieData = await processAssetDistribution(trustlines);
-    setAssetDistribution(pieData);
-  };
 
   // Render loading state or error state
   if (loading) {
@@ -2727,10 +2891,10 @@ export default function Portfolio({ account, limit, collection, type }) {
             </Grid>
 
             <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: { xs: 1.5, sm: 2 } }}>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12}>
                 <Card
                   sx={{
-                    p: { xs: 1.5, sm: 2 },
+                    p: { xs: 1, sm: 1.5 },
                     height: '100%',
                     borderRadius: { xs: '12px', sm: '16px' },
                     background: `linear-gradient(135deg, 
@@ -2777,7 +2941,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      mb: 1.5
+                      mb: 1
                     }}
                   >
                     <Typography
@@ -2785,219 +2949,87 @@ export default function Portfolio({ account, limit, collection, type }) {
                       sx={{
                         color: theme.palette.text.primary,
                         fontWeight: 600,
-                        fontSize: '1.1rem',
+                        fontSize: { xs: '0.95rem', sm: '1rem' },
                         letterSpacing: '-0.02em'
                       }}
                     >
-                      ROI Performance
+                      Performance Analytics
                     </Typography>
-                    <IconButton
-                      onClick={() => handleExpandChart('roi')}
-                      size="small"
-                      sx={{
-                        color: theme.palette.primary.main,
-                        bgcolor: alpha(theme.palette.primary.main, 0.08),
-                        borderRadius: '12px',
-                        p: 1,
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          bgcolor: alpha(theme.palette.primary.main, 0.15),
-                          transform: 'scale(1.05)'
-                        }
-                      }}
-                    >
-                      <OpenInFullIcon sx={{ fontSize: '1.1rem' }} />
-                    </IconButton>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <ToggleButtonGroup
+                        value={chartView}
+                        exclusive
+                        onChange={handleChartViewChange}
+                        size="small"
+                        sx={{
+                          bgcolor: alpha(theme.palette.background.default, 0.5),
+                          '& .MuiToggleButton-root': {
+                            px: 1.5,
+                            py: 0.25,
+                            border: 'none',
+                            borderRadius: '6px',
+                            mx: 0.25,
+                            color: theme.palette.text.secondary,
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              bgcolor: alpha(theme.palette.primary.main, 0.08)
+                            },
+                            '&.Mui-selected': {
+                              bgcolor: theme.palette.primary.main,
+                              color: theme.palette.primary.contrastText,
+                              '&:hover': {
+                                bgcolor: theme.palette.primary.dark
+                              }
+                            }
+                          }
+                        }}
+                      >
+                        <ToggleButton value="roi">ROI</ToggleButton>
+                        <ToggleButton value="activity">Activity</ToggleButton>
+                        <ToggleButton value="volume">Volume</ToggleButton>
+                      </ToggleButtonGroup>
+                      <IconButton
+                        onClick={() => handleExpandChart(chartView)}
+                        size="small"
+                        sx={{
+                          color: chartView === 'roi' ? theme.palette.primary.main : 
+                                 chartView === 'activity' ? theme.palette.success.main : 
+                                 theme.palette.info.main,
+                          bgcolor: alpha(
+                            chartView === 'roi' ? theme.palette.primary.main : 
+                            chartView === 'activity' ? theme.palette.success.main : 
+                            theme.palette.info.main, 
+                            0.08
+                          ),
+                          borderRadius: '8px',
+                          p: 0.5,
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            bgcolor: alpha(
+                              chartView === 'roi' ? theme.palette.primary.main : 
+                              chartView === 'activity' ? theme.palette.success.main : 
+                              theme.palette.info.main, 
+                              0.15
+                            ),
+                            transform: 'scale(1.05)'
+                          }
+                        }}
+                      >
+                        <OpenInFullIcon sx={{ fontSize: '0.9rem' }} />
+                      </IconButton>
+                    </Box>
                   </Box>
-                  <Box sx={{ height: { xs: 200, sm: 300 }, position: 'relative', minHeight: { xs: 200, sm: 300 } }}>
+                  <Box sx={{ height: { xs: 180, sm: 250 }, position: 'relative', minHeight: { xs: 180, sm: 250 } }}>
                     {loading ? (
-                      <Skeleton variant="rectangular" height={300} sx={{ borderRadius: '12px' }} />
+                      <Skeleton variant="rectangular" height="100%" sx={{ borderRadius: '12px' }} />
                     ) : (
-                      renderChart(processChartData(), chartOptions)
-                    )}
-                  </Box>
-                </Card>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Card
-                  sx={{
-                    p: { xs: 1.5, sm: 2 },
-                    height: '100%',
-                    borderRadius: { xs: '12px', sm: '16px' },
-                    background: `linear-gradient(135deg, 
-                      ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-                      ${alpha(theme.palette.background.paper, 0.5)} 50%,
-                      ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-                    backdropFilter: 'blur(40px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    boxShadow: `
-                      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: `linear-gradient(
-                        135deg,
-                        ${alpha(theme.palette.primary.main, 0.03)} 0%,
-                        transparent 50%,
-                        ${alpha(theme.palette.secondary.main, 0.03)} 100%
-                      )`,
-                      pointerEvents: 'none'
-                    },
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: `
-                        0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-                        0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-                      border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
-                    }
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      mb: 1.5
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: theme.palette.text.primary,
-                        fontWeight: 600,
-                        fontSize: '1.1rem',
-                        letterSpacing: '-0.02em'
-                      }}
-                    >
-                      Trading Activity
-                    </Typography>
-                    <IconButton
-                      onClick={() => handleExpandChart('activity')}
-                      size="small"
-                      sx={{
-                        color: theme.palette.success.main,
-                        bgcolor: alpha(theme.palette.success.main, 0.08),
-                        borderRadius: '12px',
-                        p: 1,
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          bgcolor: alpha(theme.palette.success.main, 0.15),
-                          transform: 'scale(1.05)'
-                        }
-                      }}
-                    >
-                      <OpenInFullIcon sx={{ fontSize: '1.1rem' }} />
-                    </IconButton>
-                  </Box>
-                  <Box sx={{ height: { xs: 200, sm: 300 }, position: 'relative', minHeight: { xs: 200, sm: 300 } }}>
-                    {loading ? (
-                      <Skeleton variant="rectangular" height={300} sx={{ borderRadius: '12px' }} />
-                    ) : (
-                      renderChart(processTradeHistoryData(), tradeHistoryOptions)
-                    )}
-                  </Box>
-                </Card>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Card
-                  sx={{
-                    p: { xs: 1.5, sm: 2 },
-                    height: '100%',
-                    borderRadius: { xs: '12px', sm: '16px' },
-                    background: `linear-gradient(135deg, 
-                      ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-                      ${alpha(theme.palette.background.paper, 0.5)} 50%,
-                      ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-                    backdropFilter: 'blur(40px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    boxShadow: `
-                      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: `linear-gradient(
-                        135deg,
-                        ${alpha(theme.palette.primary.main, 0.03)} 0%,
-                        transparent 50%,
-                        ${alpha(theme.palette.secondary.main, 0.03)} 100%
-                      )`,
-                      pointerEvents: 'none'
-                    },
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: `
-                        0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-                        0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-                      border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
-                    }
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      mb: 1.5
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: theme.palette.text.primary,
-                        fontWeight: 600,
-                        fontSize: '1.1rem',
-                        letterSpacing: '-0.02em'
-                      }}
-                    >
-                      Volume History
-                    </Typography>
-                    <IconButton
-                      onClick={() => handleExpandChart('volume')}
-                      size="small"
-                      sx={{
-                        color: theme.palette.info.main,
-                        bgcolor: alpha(theme.palette.info.main, 0.08),
-                        borderRadius: '12px',
-                        p: 1,
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          bgcolor: alpha(theme.palette.info.main, 0.15),
-                          transform: 'scale(1.05)'
-                        }
-                      }}
-                    >
-                      <OpenInFullIcon sx={{ fontSize: '1.1rem' }} />
-                    </IconButton>
-                  </Box>
-                  <Box sx={{ height: { xs: 200, sm: 300 }, position: 'relative', minHeight: { xs: 200, sm: 300 } }}>
-                    {loading ? (
-                      <Skeleton variant="rectangular" height={300} sx={{ borderRadius: '12px' }} />
-                    ) : (
-                      renderChart(processVolumeHistoryData(), volumeHistoryOptions)
+                      <>
+                        {chartView === 'roi' && renderChart(processChartData(), chartOptions)}
+                        {chartView === 'activity' && renderChart(processTradeHistoryData(), tradeHistoryOptions)}
+                        {chartView === 'volume' && renderChart(processVolumeHistoryData(), volumeHistoryOptions)}
+                      </>
                     )}
                   </Box>
                 </Card>
@@ -3239,324 +3271,6 @@ export default function Portfolio({ account, limit, collection, type }) {
                   </Box>
 
                   <TabPanel sx={{ p: 0, maxHeight: { xs: 'calc(100vh - 250px)', sm: 'auto' }, overflow: { xs: 'auto', sm: 'visible' } }} value="0">
-                    <Grid container spacing={0}>
-                      {/* Add pie chart section */}
-                      <Grid item xs={12} md={4}>
-                        <Box
-                          sx={{
-                            height: '100%',
-                            p: 2,
-                            background: `linear-gradient(135deg, ${alpha(
-                              theme.palette.primary.main,
-                              0.08
-                            )} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 50%, ${alpha(
-                              theme.palette.primary.main,
-                              0.03
-                            )} 100%)`,
-                            borderRadius: 3,
-                            border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            position: 'relative',
-                            backdropFilter: 'blur(20px)',
-                            boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.1)}`,
-                            overflow: 'hidden',
-                            mr: 1,
-                            '&::before': {
-                              content: '""',
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              height: '2px',
-                              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
-                            }
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1.5,
-                              mb: 3,
-                              p: 2,
-                              borderRadius: '12px',
-                              background: alpha(theme.palette.background.paper, 0.6),
-                              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
-                            }}
-                          >
-                            <Box
-                              sx={{
-                                width: 10,
-                                height: 10,
-                                borderRadius: '50%',
-                                bgcolor: theme.palette.primary.main,
-                                boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.4)}`
-                              }}
-                            />
-                            <Typography
-                              variant="subtitle1"
-                              sx={{
-                                color: theme.palette.primary.main,
-                                fontWeight: 600,
-                                fontSize: '1rem',
-                                letterSpacing: '-0.01em'
-                              }}
-                            >
-                              Asset Distribution
-                            </Typography>
-                          </Box>
-
-                          <Box
-                            sx={{
-                              flex: 1,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              position: 'relative',
-                              minHeight: 220,
-                              maxHeight: 240
-                            }}
-                          >
-                            {(() => {
-                              try {
-                                if (!assetDistribution || !assetDistribution.series || assetDistribution.series.length === 0) {
-                                  return (
-                                    <Box sx={{ 
-                                      display: 'flex', 
-                                      alignItems: 'center', 
-                                      justifyContent: 'center',
-                                      height: '100%',
-                                      color: theme.palette.text.secondary
-                                    }}>
-                                      <Typography variant="body2">No asset data available</Typography>
-                                    </Box>
-                                  );
-                                }
-
-                                // Prepare chart data safely
-                                const chartData = assetDistribution.labels?.map((label, index) => {
-                                  const value = parseFloat(assetDistribution.series[index]) || 0;
-                                  return {
-                                    name: label,
-                                    y: value,
-                                    color: assetDistribution.colors[index]
-                                  };
-                                }).filter(item => item.y > 0) || [];
-
-                                if (chartData.length === 0) {
-                                  return (
-                                    <Box sx={{ 
-                                      display: 'flex', 
-                                      alignItems: 'center', 
-                                      justifyContent: 'center',
-                                      height: '100%',
-                                      color: theme.palette.text.secondary
-                                    }}>
-                                      <Typography variant="body2">No positive balances</Typography>
-                                    </Box>
-                                  );
-                                }
-
-                                return (
-                                  <>
-                                    <Box
-                                      sx={{
-                                        position: 'relative',
-                                        width: '100%',
-                                        height: '100%',
-                                        zIndex: 1
-                                      }}
-                                    >
-                                      <HighchartsReact
-                                        highcharts={Highcharts}
-                                        options={{
-                                          chart: {
-                                            type: 'pie',
-                                            backgroundColor: 'transparent',
-                                            height: 220,
-                                            animation: {
-                                              duration: 1000
-                                            }
-                                          },
-                                          title: {
-                                            text: null
-                                          },
-                                          credits: {
-                                            enabled: false
-                                          },
-                                          plotOptions: {
-                                            pie: {
-                                              innerSize: '60%',
-                                              dataLabels: {
-                                                enabled: false
-                                              },
-                                              states: {
-                                                hover: {
-                                                  brightness: 0.1
-                                                }
-                                              }
-                                            }
-                                          },
-                                          tooltip: {
-                                            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-                                            borderColor: theme.palette.divider,
-                                            borderRadius: 8,
-                                            style: {
-                                              color: theme.palette.text.primary
-                                            },
-                                            formatter: function() {
-                                              const total = this.series.data.reduce((sum, point) => sum + point.y, 0);
-                                              const percentage = total > 0 ? ((this.y / total) * 100).toFixed(1) : '0.0';
-                                              return `<b>${this.point.name}</b><br/>Amount: ${this.y.toLocaleString()} XRP<br/>Percentage: ${percentage}%`;
-                                            },
-                                            useHTML: true
-                                          },
-                                          series: [{
-                                            name: 'Assets',
-                                            type: 'pie',
-                                            data: chartData
-                                          }]
-                                        }}
-                                      />
-                                    </Box>
-                                    <Box
-                                      sx={{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        textAlign: 'center',
-                                        pointerEvents: 'none',
-                                        zIndex: 0,
-                                        p: 1,
-                                        borderRadius: '50%',
-                                        background: `radial-gradient(circle, ${alpha(
-                                          theme.palette.background.paper,
-                                          0.9
-                                        )} 0%, transparent 70%)`
-                                      }}
-                                    >
-                                  <Typography
-                                    variant="h6"
-                                    color="text.primary"
-                                    sx={{
-                                      fontWeight: 700,
-                                      fontSize: '0.85rem',
-                                      letterSpacing: '-0.02em'
-                                    }}
-                                  >
-                                    {(totalValue || 0).toLocaleString()}
-                                  </Typography>
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{
-                                      fontSize: '0.65rem',
-                                      fontWeight: 500,
-                                      textTransform: 'uppercase',
-                                      letterSpacing: '0.02em'
-                                    }}
-                                  >
-                                    XRP Value
-                                  </Typography>
-                                    </Box>
-                                  </>
-                                );
-                              } catch (error) {
-                                console.error('Error rendering pie chart:', error);
-                                return (
-                                  <Box sx={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'center',
-                                    height: '100%',
-                                    color: theme.palette.error.main,
-                                    flexDirection: 'column',
-                                    gap: 1
-                                  }}>
-                                    <Typography variant="body2">Error loading chart</Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                      {error.message || 'Please try again later'}
-                                    </Typography>
-                                  </Box>
-                                );
-                              }
-                            })()}
-                          </Box>
-
-                          {assetDistribution && assetDistribution.labels && (
-                            <Box sx={{ mt: 2 }}>
-                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                {assetDistribution.labels.slice(0, 3).map((label, index) => (
-                                  <Box
-                                    key={label}
-                                    sx={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'space-between',
-                                      p: 1.5,
-                                      borderRadius: '10px',
-                                      background: `linear-gradient(135deg, ${alpha(
-                                        theme.palette.background.paper,
-                                        0.8
-                                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                                      border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                                      transition: 'all 0.2s ease',
-                                      '&:hover': {
-                                        transform: 'translateX(4px)',
-                                        boxShadow: `0 4px 12px ${alpha(
-                                          theme.palette.common.black,
-                                          0.08
-                                        )}`
-                                      }
-                                    }}
-                                  >
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                      <Box
-                                        sx={{
-                                          width: 12,
-                                          height: 12,
-                                          borderRadius: '50%',
-                                          bgcolor: assetDistribution.colors[index],
-                                          boxShadow: `0 0 8px ${alpha(
-                                            assetDistribution.colors[index],
-                                            0.4
-                                          )}`
-                                        }}
-                                      />
-                                      <Typography
-                                        variant="body2"
-                                        noWrap
-                                        sx={{
-                                          maxWidth: 100,
-                                          fontWeight: 500,
-                                          fontSize: '0.85rem'
-                                        }}
-                                      >
-                                        {label}
-                                      </Typography>
-                                    </Box>
-                                    <Typography
-                                      variant="caption"
-                                      color="text.secondary"
-                                      sx={{
-                                        fontWeight: 600,
-                                        fontSize: '0.8rem'
-                                      }}
-                                    >
-                                      {assetDistribution.series[index].toLocaleString()} XRP
-                                    </Typography>
-                                  </Box>
-                                ))}
-                              </Box>
-                            </Box>
-                          )}
-                        </Box>
-                      </Grid>
-
-                      {/* Trustlines table */}
-                      <Grid item xs={12} md={8}>
                         <Paper
                           sx={{
                             width: '100%',
@@ -3572,11 +3286,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                             account={account}
                             xrpBalance={xrpBalance}
                             onUpdateTotalValue={(value) => setTotalValue(value)}
-                            onTrustlinesData={handleTrustlinesData}
                           />
                         </Paper>
-                      </Grid>
-                    </Grid>
                   </TabPanel>
                   <TabPanel sx={{ p: 0, maxHeight: { xs: 'calc(100vh - 250px)', sm: 'auto' }, overflow: { xs: 'auto', sm: 'visible' } }} value="1">
                     <Paper
