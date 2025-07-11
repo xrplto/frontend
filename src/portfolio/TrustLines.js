@@ -214,15 +214,15 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
           }
         }}
       >
-        <Box sx={{ p: { xs: 1, sm: 1.5 } }}>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }} alignItems={{ xs: 'stretch', sm: 'center' }}>
+        <Box sx={{ p: { xs: 0.75, sm: 1 } }}>
+          <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} alignItems="center">
             {/* Left side - Token info */}
-            <Stack direction="row" spacing={1.5} alignItems="center" flex={1}>
+            <Stack direction="row" spacing={1} alignItems="center" flex={1}>
               <Avatar
                 src={isXRP ? '/xrp.svg' : `https://s1.xrpl.to/token/${token.md5}`}
                 sx={{
-                  width: { xs: 36, sm: 40 },
-                  height: { xs: 36, sm: 40 },
+                  width: { xs: 28, sm: 32 },
+                  height: { xs: 28, sm: 32 },
                   borderRadius: 1,
                   backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : '#fff',
                   boxShadow: theme.shadows[1],
@@ -234,11 +234,11 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
               />
               
               <Box flex={1} minWidth={0}>
-                <Stack direction="row" alignItems="center" spacing={0.5} mb={0.25}>
+                <Stack direction="row" alignItems="center" spacing={0.5}>
                   <Typography
                     variant="body1"
                     sx={{
-                      fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                      fontSize: { xs: '0.75rem', sm: '0.85rem' },
                       fontWeight: 700,
                       color: theme.palette.text.primary,
                       overflow: 'hidden',
@@ -249,16 +249,16 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                     {isXRP ? 'XRP' : (token.currencyName || token.currency)}
                   </Typography>
                   {(isXRP || token.verified) && (
-                    <VerifiedIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: theme.palette.success.main }} />
+                    <VerifiedIcon sx={{ fontSize: 12, color: theme.palette.success.main }} />
                   )}
                   {token.origin && (
                     <Chip 
                       label={token.origin} 
                       size="small" 
                       sx={{ 
-                        height: 16, 
-                        fontSize: '0.6rem',
-                        '& .MuiChip-label': { px: 0.75 }
+                        height: 14, 
+                        fontSize: '0.55rem',
+                        '& .MuiChip-label': { px: 0.5 }
                       }}
                     />
                   )}
@@ -282,47 +282,48 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
             {/* Right side - Stats grid */}
             <Stack 
               direction="row" 
-              spacing={{ xs: 2, sm: 3 }} 
+              spacing={{ xs: 1.5, sm: 2 }} 
               alignItems="center"
               sx={{ 
-                ml: { xs: 0, sm: 'auto' },
-                pl: { xs: 0, sm: 2 }
+                ml: 'auto'
               }}
             >
-              <Box sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem' }, display: 'block' }}>
+              <Box sx={{ textAlign: 'right', minWidth: { xs: 60, sm: 80 } }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', display: 'block', lineHeight: 1.2 }}>
                   Balance
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.7rem', sm: '0.8rem' }, lineHeight: 1.3 }}>
                   {formatBalance(token.balance)}
                 </Typography>
               </Box>
               
-              <Box sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem' }, display: 'block' }}>
+              <Box sx={{ textAlign: 'right', minWidth: { xs: 50, sm: 70 } }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', display: 'block', lineHeight: 1.2 }}>
                   Value
                 </Typography>
                 <Typography 
                   variant="body2" 
                   sx={{ 
                     fontWeight: 700, 
-                    fontSize: { xs: '0.75rem', sm: '0.85rem' },
-                    color: theme.palette.primary.main 
+                    fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                    color: theme.palette.primary.main,
+                    lineHeight: 1.3
                   }}
                 >
                   {currencySymbols[activeFiatCurrency]}{value.toFixed(2)}
                 </Typography>
               </Box>
               
-              <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, display: { xs: isMobile ? 'none' : 'block', sm: 'block' } }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem' }, display: 'block' }}>
+              <Box sx={{ textAlign: 'right', display: { xs: 'none', sm: 'block' }, minWidth: 50 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', display: 'block', lineHeight: 1.2 }}>
                   % Owned
                 </Typography>
                 <Typography 
                   variant="body2" 
                   sx={{ 
                     fontWeight: 600, 
-                    fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                    fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                    lineHeight: 1.3,
                     color: percentOwned > 50 ? theme.palette.error.main : 
                            percentOwned > 20 ? theme.palette.warning.main : 
                            theme.palette.success.main
@@ -344,7 +345,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                     }
                   }}
                 >
-                  <DeleteIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                  <DeleteIcon sx={{ fontSize: 16 }} />
                 </IconButton>
               )}
             </Stack>
@@ -485,12 +486,12 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   }
 
   return (
-    <Grid container spacing={{ xs: 1.5, sm: 3 }}>
+    <Grid container spacing={{ xs: 1.5, sm: 2 }}>
       {/* Asset Distribution Chart */}
       <Grid item xs={12} md={4}>
         <Box
           sx={{
-            p: { xs: 2, sm: 2.5 },
+            p: { xs: 1.5, sm: 2 },
             borderRadius: '16px',
             background: `linear-gradient(135deg, 
               ${alpha(theme.palette.background.paper, 0.7)} 0%, 
@@ -635,7 +636,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                             formatter: function() {
                               const total = this.series.data.reduce((sum, point) => sum + point.y, 0);
                               const percentage = total > 0 ? ((this.y / total) * 100).toFixed(1) : '0.0';
-                              return `<b>${this.point.name}</b><br/>Amount: ${this.y.toLocaleString()} XRP<br/>Percentage: ${percentage}%`;
+                              return `<b style="font-size: 11px">${this.point.name}</b><br/><span style="font-size: 10px">Amount: ${this.y.toLocaleString()} XRP<br/>Percentage: ${percentage}%</span>`;
                             },
                             useHTML: true
                           },
@@ -722,8 +723,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      p: 1.5,
-                      borderRadius: '10px',
+                      p: 1,
+                      borderRadius: '8px',
                       background: `linear-gradient(135deg, ${alpha(
                         theme.palette.background.paper,
                         0.8
@@ -788,7 +789,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           {/* Summary Card */}
           <Card
             sx={{
-              p: { xs: 1, sm: 1.5 },
+              p: { xs: 0.75, sm: 1 },
               background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
               border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
               borderRadius: 1.5
@@ -796,12 +797,12 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           >
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" spacing={1.5}>
-                <TrendingIcon sx={{ fontSize: { xs: 24, sm: 28 }, color: theme.palette.primary.main }} />
+                <TrendingIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: theme.palette.primary.main }} />
                 <Box>
-                  <Typography variant="body1" sx={{ fontWeight: 700, fontSize: { xs: '0.85rem', sm: '1rem' } }}>
+                  <Typography variant="body1" sx={{ fontWeight: 700, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
                     Portfolio Overview
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>
                     {lines.length + (xrpBalance ? 1 : 0)} assets
                   </Typography>
                 </Box>
@@ -809,7 +810,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
               
               <Box textAlign="right">
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>Total Value</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '0.9rem', sm: '1.1rem' } }}>
                   {currencySymbols[activeFiatCurrency]}
                   {(() => {
                     const xrpToFiat = exchRate ? 1 / exchRate : 0;
@@ -830,7 +831,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           </Card>
 
           {/* Token List */}
-          <Stack spacing={0.75}>
+          <Stack spacing={0.5}>
             {xrpBalance > 0 && (
               <Fade in timeout={300}>
                 <Box>
