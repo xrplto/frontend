@@ -51,20 +51,22 @@ function GainersPage({ data, period }) {
       <Header />
       {isMobile ? <Topbar /> : ''}
 
-      <Box
-        sx={{
-          width: '100%',
-          px: { xs: 0, sm: 2, md: 3 },
-          py: { xs: 0, sm: 0, md: 0 },
-          mt: { xs: 0, sm: 0, md: 0 },
-          mb: { xs: 0, sm: 0, md: 0 },
-          [(theme) => theme.breakpoints.down('md')]: {
-            marginTop: '-1px'
-          }
-        }}
-      >
-        <Summary />
-      </Box>
+      <Container maxWidth="xl">
+        <Box
+          sx={{
+            width: '100%',
+            px: { xs: 0, sm: 0, md: 0 },
+            py: { xs: 0, sm: 0, md: 0 },
+            mt: { xs: 0, sm: 0, md: 0 },
+            mb: { xs: 0, sm: 0, md: 0 },
+            [(theme) => theme.breakpoints.down('md')]: {
+              marginTop: '-1px'
+            }
+          }}
+        >
+          <Summary />
+        </Box>
+      </Container>
 
       <Container maxWidth="xl">
         <Grid container direction="row" justifyContent="left" alignItems="stretch" spacing={3}>

@@ -291,7 +291,13 @@ const getOriginIcon = (origin, isMobile) => {
         </Box>
       );
     default:
-      return <AutoAwesomeIcon sx={{ fontSize: isMobile ? '7px' : '9px', color: '#637381' }} />;
+      return (
+        <svg width={isMobile ? '7' : '9'} height={isMobile ? '7' : '9'} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6.5 8L2 12.5L6.5 17" stroke="#1976d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M17.5 8L22 12.5L17.5 17" stroke="#1976d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M14.5 4L9.5 20" stroke="#1976d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      );
   }
 };
 
