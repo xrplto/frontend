@@ -64,27 +64,9 @@ const MainContainer = styled(Box)(({ theme }) => ({
 }));
 
 const CompactCard = styled(Box)(({ theme }) => ({
-  background: theme.palette.mode === 'dark' 
-    ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
-        theme.palette.background.paper,
-        0.7
-      )} 100%)`
-    : `linear-gradient(145deg, ${alpha('#ffffff', 0.95)} 0%, ${alpha(
-        theme.palette.background.paper,
-        0.85
-      )} 100%)`,
-  backdropFilter: 'blur(20px) saturate(180%)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  background: 'transparent',
+  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   borderRadius: '24px',
-  boxShadow: theme.palette.mode === 'dark'
-    ? `0 20px 40px ${alpha(theme.palette.common.black, 0.3)}, 0 0 0 1px ${alpha(
-        theme.palette.common.white,
-        0.05
-      )}`
-    : `0 20px 40px ${alpha(theme.palette.primary.main, 0.08)}, 0 0 0 1px ${alpha(
-        theme.palette.divider,
-        0.05
-      )}`,
   padding: theme.spacing(3),
   marginBottom: theme.spacing(3),
   position: 'relative',
@@ -93,10 +75,7 @@ const CompactCard = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(2),
     marginBottom: theme.spacing(2),
-    borderRadius: '16px',
-    boxShadow: theme.palette.mode === 'dark'
-      ? `0 10px 20px ${alpha(theme.palette.common.black, 0.2)}`
-      : `0 10px 20px ${alpha(theme.palette.primary.main, 0.05)}`
+    borderRadius: '16px'
   },
   '&::before': {
     content: '""',
@@ -130,17 +109,9 @@ const CompactCard = styled(Box)(({ theme }) => ({
 const IconCover = styled(Box)(({ theme }) => ({
   width: '80px',
   height: '80px',
-  border: `3px solid ${alpha(theme.palette.background.paper, 0.95)}`,
+  border: `2px solid ${alpha(theme.palette.divider, 0.2)}`,
   borderRadius: '16px',
-  boxShadow: `0 6px 24px ${alpha(theme.palette.common.black, 0.1)}, 0 2px 8px ${alpha(
-    theme.palette.primary.main,
-    0.08
-  )}`,
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.8
-  )} 100%)`,
-  backdropFilter: 'blur(12px)',
+  background: 'transparent',
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -152,10 +123,7 @@ const IconCover = styled(Box)(({ theme }) => ({
   '&:hover': {
     transform: 'translateY(-3px) scale(1.05)',
     animation: 'none',
-    boxShadow: `0 12px 32px ${alpha(theme.palette.common.black, 0.15)}, 0 4px 12px ${alpha(
-      theme.palette.primary.main,
-      0.12
-    )}`
+    borderColor: alpha(theme.palette.primary.main, 0.3)
   },
   [theme.breakpoints.up('sm')]: {
     width: '100px',
@@ -206,17 +174,8 @@ const CardOverlay = styled(Box)({
 });
 
 const CompactStatsCard = styled(Box)(({ theme }) => ({
-  background: theme.palette.mode === 'dark'
-    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(
-        theme.palette.background.paper,
-        0.4
-      )} 100%)`
-    : `linear-gradient(135deg, ${alpha('#ffffff', 0.9)} 0%, ${alpha(
-        theme.palette.background.paper,
-        0.7
-      )} 100%)`,
-  backdropFilter: 'blur(16px) saturate(150%)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+  background: 'transparent',
+  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   borderRadius: { xs: '12px', sm: '16px' },
   padding: { xs: theme.spacing(1.5), sm: theme.spacing(2) },
   textAlign: 'center',

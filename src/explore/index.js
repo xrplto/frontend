@@ -8,7 +8,7 @@ import { alpha } from '@mui/material/styles';
 import { TabContext, TabPanel } from '@mui/lab';
 
 // Components
-import NFTs from './NFTs';
+import NFTExplorer from './NFTExplorer';
 import AccountTransactions from './CollectionActivity/AccountTransactions';
 import { AppContext } from 'src/AppContext';
 
@@ -71,7 +71,7 @@ export default function ExploreNFT({ collection }) {
               onChange={(e, newValue) => newValue && handleChange(e, newValue)}
               size="medium"
               sx={{
-                bgcolor: alpha(theme.palette.background.paper, 0.6),
+                bgcolor: 'transparent',
                 borderRadius: '16px',
                 padding: '4px',
                 border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -89,7 +89,7 @@ export default function ExploreNFT({ collection }) {
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   position: 'relative',
                   '&.Mui-selected': {
-                    bgcolor: theme.palette.background.paper,
+                    bgcolor: 'transparent',
                     color: theme.palette.primary.main,
                     fontWeight: 600,
                     boxShadow: `0 4px 12px ${alpha(
@@ -109,7 +109,7 @@ export default function ExploreNFT({ collection }) {
                     }
                   },
                   '&:hover': {
-                    bgcolor: alpha(theme.palette.background.paper, 0.8),
+                    bgcolor: 'transparent',
                     color: theme.palette.primary.main,
                     transform: 'translateY(-1px)'
                   }
@@ -159,7 +159,7 @@ export default function ExploreNFT({ collection }) {
             )}
           </Box>
           <TabPanel value="tab-nfts" sx={{ pl: 0, pr: 0 }}>
-            <NFTs collection={collection} />
+            <NFTExplorer collection={collection} />
           </TabPanel>
           <TabPanel value="tab-creator-transactions" sx={{ pl: 0, pr: 0 }}>
             <AccountTransactions creatorAccount={collection?.account} />
