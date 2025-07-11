@@ -204,6 +204,7 @@ const StyledLink = styled(Link, {
   shouldForwardProp: (prop) => prop !== 'darkMode'
 })(
   ({ darkMode, theme }) => `
+    color: ${theme.palette.primary.main} !important;
     font-weight: 600;
     margin-right: 20px;
     padding: 8px 16px;
@@ -485,7 +486,7 @@ export default function Header(props) {
                 darkMode={darkMode}
                 theme={theme}
                 onClick={handleTokensClick}
-                style={{ cursor: 'pointer', color: theme.palette.primary.main }}
+                style={{ cursor: 'pointer' }}
               >
                 {t('Tokens')}
                 <KeyboardArrowDownIcon />
@@ -834,7 +835,6 @@ export default function Header(props) {
                 darkMode={darkMode}
                 theme={theme}
                 href="/collections"
-                style={{ color: theme.palette.primary.main }}
               >
                 {t('NFTs')}
               </StyledLink>
@@ -843,7 +843,6 @@ export default function Header(props) {
                 darkMode={darkMode}
                 theme={theme}
                 href="/swap"
-                style={{ color: theme.palette.primary.main }}
               >
                 {t('Swap')}
               </StyledLink>
