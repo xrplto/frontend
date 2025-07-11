@@ -43,7 +43,9 @@ const LowhighBarSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-track': {
     border: 'none',
     height: 3,
-    background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.warning.main}, ${theme.palette.error.main})`,
+    background: theme.palette.mode === 'dark' 
+      ? `linear-gradient(90deg, #66BB6A, #FFA726, #FF5252)`
+      : `linear-gradient(90deg, #388E3C, #F57C00, #D32F2F)`,
     borderRadius: '2px',
     boxShadow: `0 2px 4px ${alpha(theme.palette.primary.main, 0.15)}`
   },
@@ -116,9 +118,9 @@ const TokenSummary = memo(({ token }) => {
       
       if (!isNaN(currentPrice) && !isNaN(previousPrice)) {
         if (currentPrice > previousPrice) {
-          setPriceColor(theme.palette.success.main);
+          setPriceColor(theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C');
         } else if (currentPrice < previousPrice) {
-          setPriceColor(theme.palette.error.main);
+          setPriceColor(theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F');
         } else {
           setPriceColor(theme.palette.info.main);
         }
@@ -139,24 +141,32 @@ const TokenSummary = memo(({ token }) => {
     {
       value: pro5m,
       label: '5m',
-      color: pro5m >= 0 ? theme.palette.success.main : theme.palette.error.main
+      color: pro5m >= 0 
+        ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C')
+        : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F')
     },
     {
       value: pro1h,
       label: '1h',
-      color: pro1h >= 0 ? theme.palette.success.main : theme.palette.error.main
+      color: pro1h >= 0 
+        ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C')
+        : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F')
     },
     {
       value: pro24h,
       label: '24h',
-      color: pro24h >= 0 ? theme.palette.success.main : theme.palette.error.main
+      color: pro24h >= 0 
+        ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C')
+        : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F')
     },
     {
       value: pro7d,
       label: '7d',
-      color: pro7d >= 0 ? theme.palette.success.main : theme.palette.error.main
+      color: pro7d >= 0 
+        ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C')
+        : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F')
     }
-  ], [pro5m, pro1h, pro24h, pro7d, theme.palette.success.main, theme.palette.error.main]);
+  ], [pro5m, pro1h, pro24h, pro7d, theme.palette.mode]);
 
   // 24h Range
   const range24h = useMemo(() => {
@@ -420,7 +430,7 @@ const TokenSummary = memo(({ token }) => {
   return (
     <Box
       sx={{
-        p: { xs: 0.75, sm: 2 },
+        p: { xs: 0.75, sm: 1.5 },
         borderRadius: { xs: '10px', sm: '16px' },
         background: `linear-gradient(135deg, 
           ${alpha(theme.palette.background.paper, 0.7)} 0%, 
@@ -462,9 +472,9 @@ const TokenSummary = memo(({ token }) => {
         }
       }}
     >
-      <Stack spacing={{ xs: 0.5, sm: 2 }}>
+      <Stack spacing={{ xs: 0.5, sm: 1.5 }}>
         {/* Header with Token Info */}
-        <Stack direction="row" spacing={{ xs: 0.75, sm: 2 }} alignItems="flex-start" sx={{ height: { xs: 'auto', sm: 'auto' }, position: 'relative' }}>
+        <Stack direction="row" spacing={{ xs: 0.75, sm: 1.5 }} alignItems="flex-start" sx={{ height: { xs: 'auto', sm: 'auto' }, position: 'relative' }}>
           {/* Mobile Action Buttons - Top right corner */}
           <Stack 
             direction="row" 
@@ -702,8 +712,29 @@ const TokenSummary = memo(({ token }) => {
               sx={{ mb: { xs: 0.3, md: 1 }, gap: { xs: 0.3, md: 1 }, flex: 1 }}
             >
               {/* Left side: Name, user, origin */}
-              <Stack spacing={{ xs: 0.4, sm: 0.75 }} justifyContent="center" sx={{ height: { xs: 'auto', sm: 88 }, minWidth: 0, flex: { xs: 'none', md: 1 } }}>
+              <Stack spacing={{ xs: 0.3, sm: 0.5 }} justifyContent="center" sx={{ minWidth: 0, flex: { xs: 'none', md: 1 } }}>
                 <Stack direction="row" alignItems="center" spacing={0.5} sx={{ flexWrap: 'wrap' }}>
+                {/* Mobile Price - Balanced size */}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    display: { xs: 'block', md: 'none' },
+                    fontSize: { xs: '0.9rem', sm: '1rem' },
+                    fontWeight: 700,
+                    color: priceColor || theme.palette.text.primary,
+                    lineHeight: 1,
+                    letterSpacing: '-0.01em',
+                    transition: 'color 0.3s ease',
+                    animation: priceColor ? 'priceFlash 0.5s ease' : 'none',
+                    mr: 0.4,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  <NumberTooltip
+                    prepend={currencySymbols[activeFiatCurrency]}
+                    number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+                  />
+                </Typography>
                 <Typography
                   variant="h4"
                   sx={{
@@ -825,32 +856,6 @@ const TokenSummary = memo(({ token }) => {
                       {origin || 'XRPL'}
                     </Typography>
                   </Box>
-                  {/* Mobile Price - After origin */}
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      display: { xs: 'block', md: 'none' },
-                      fontSize: { xs: '1rem', sm: '1.2rem' },
-                      fontWeight: 800,
-                      color: priceColor || theme.palette.text.primary,
-                      lineHeight: 1,
-                      letterSpacing: '-0.02em',
-                      ml: 0.5,
-                      transition: 'color 0.3s ease',
-                      '@keyframes priceFlash': {
-                        '0%': { opacity: 1 },
-                        '50%': { opacity: 0.7 },
-                        '100%': { opacity: 1 }
-                      },
-                      animation: priceColor ? 'priceFlash 0.8s ease' : 'none'
-                    }}
-                  >
-                    <NumberTooltip
-                      prepend={currencySymbols[activeFiatCurrency]}
-                      number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
-                    />
-                  </Typography>
-                  
                   
                   {/* Action Buttons - Hide on mobile, show on desktop */}
                   <Stack direction="row" spacing={0.5} sx={{ ml: 1, display: { xs: 'none', md: 'flex' } }}>
@@ -955,7 +960,7 @@ const TokenSummary = memo(({ token }) => {
                 </Stack>
               </Stack>
               
-              {/* Desktop Price and Percentages - Hide on mobile */}
+              {/* Desktop Price and Percentages - Moved left */}
               <Stack 
                 direction="row" 
                 alignItems="center" 
@@ -963,27 +968,23 @@ const TokenSummary = memo(({ token }) => {
                 sx={{ 
                   display: { xs: 'none', md: 'flex' },
                   flex: 1,
-                  justifyContent: 'space-between'
+                  justifyContent: 'flex-start',
+                  ml: -1
                 }}
               >
                 {/* Center: Price with integrated 24h range */}
-                <Stack alignItems="center" spacing={0.5}>
-                  <Stack direction="row" alignItems="center" spacing={2}>
+                <Stack alignItems="center" spacing={0.25}>
+                  <Stack direction="row" alignItems="center" spacing={1.5}>
                     <Typography
-                      variant="h5"
+                      variant="body1"
                       sx={{
-                        fontSize: '2rem',
-                        fontWeight: 900,
+                        fontSize: '1.4rem',
+                        fontWeight: 700,
                         color: priceColor || theme.palette.text.primary,
                         lineHeight: 1,
-                        letterSpacing: '-0.03em',
+                        letterSpacing: '-0.01em',
                         transition: 'color 0.3s ease',
-                        '@keyframes priceFlash': {
-                          '0%': { opacity: 1 },
-                          '50%': { opacity: 0.7 },
-                          '100%': { opacity: 1 }
-                        },
-                        animation: priceColor ? 'priceFlash 0.8s ease' : 'none'
+                        animation: priceColor ? 'priceFlash 0.5s ease' : 'none'
                       }}
                     >
                       <NumberTooltip
@@ -992,15 +993,15 @@ const TokenSummary = memo(({ token }) => {
                       />
                     </Typography>
                     
-                    {/* 24h Range integrated with price */}
+                    {/* 24h Range - Slightly bigger */}
                     {range24h && (
-                      <Stack direction="row" alignItems="center" spacing={0.75}>
+                      <Stack direction="row" alignItems="center" spacing={0.5}>
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: '0.8rem', 
-                            fontWeight: 600, 
-                            color: theme.palette.success.main,
+                            fontSize: '0.7rem', 
+                            fontWeight: 500, 
+                            color: theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C',
                             opacity: 0.9
                           }}
                         >
@@ -1011,21 +1012,21 @@ const TokenSummary = memo(({ token }) => {
                           <Typography 
                             variant="caption" 
                             sx={{ 
-                              fontSize: '0.65rem', 
+                              fontSize: '0.6rem', 
                               color: theme.palette.text.secondary, 
                               fontWeight: 500,
-                              opacity: 0.7,
-                              lineHeight: 1
+                              opacity: 0.6,
+                              lineHeight: 0.8
                             }}
                           >
                             24h
                           </Typography>
                           <Box
                             sx={{
-                              width: 70,
-                              height: 3,
-                              backgroundColor: alpha(theme.palette.divider, 0.2),
-                              borderRadius: '1.5px',
+                              width: 50,
+                              height: 2,
+                              backgroundColor: alpha(theme.palette.divider, 0.12),
+                              borderRadius: '1px',
                               position: 'relative',
                               overflow: 'hidden'
                             }}
@@ -1037,9 +1038,11 @@ const TokenSummary = memo(({ token }) => {
                                 top: 0,
                                 bottom: 0,
                                 width: `${range24h.percent}%`,
-                                background: `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.warning.main} 50%, ${theme.palette.error.main} 100%)`,
-                                borderRadius: '1.5px',
-                                opacity: 0.8
+                                background: theme.palette.mode === 'dark'
+                                  ? `linear-gradient(90deg, #66BB6A 0%, #FFA726 50%, #FF5252 100%)`
+                                  : `linear-gradient(90deg, #388E3C 0%, #F57C00 50%, #D32F2F 100%)`,
+                                borderRadius: '1px',
+                                opacity: 0.85
                               }}
                             />
                             <Box
@@ -1048,12 +1051,11 @@ const TokenSummary = memo(({ token }) => {
                                 left: `${range24h.percent}%`,
                                 top: '50%',
                                 transform: 'translate(-50%, -50%)',
-                                width: 5,
-                                height: 5,
+                                width: 3,
+                                height: 3,
                                 borderRadius: '50%',
                                 backgroundColor: theme.palette.background.paper,
-                                border: `1.5px solid ${theme.palette.primary.main}`,
-                                boxShadow: `0 0 3px ${alpha(theme.palette.primary.main, 0.4)}`
+                                border: `1px solid ${theme.palette.primary.main}`
                               }}
                             />
                           </Box>
@@ -1062,9 +1064,9 @@ const TokenSummary = memo(({ token }) => {
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: '0.8rem', 
-                            fontWeight: 600, 
-                            color: theme.palette.error.main,
+                            fontSize: '0.7rem', 
+                            fontWeight: 500, 
+                            color: theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F',
                             opacity: 0.9
                           }}
                         >
@@ -1075,34 +1077,34 @@ const TokenSummary = memo(({ token }) => {
                   </Stack>
                 </Stack>
                 
-                {/* Right: Percentage changes */}
-                <Stack direction="row" spacing={1} alignItems="center">
+                {/* Right: Percentage changes - Smaller */}
+                <Stack direction="row" spacing={0.75} alignItems="center" sx={{ ml: 2 }}>
                   {priceChanges.map((item, index) => (
                     <Box
                       key={item.label}
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 0.75,
-                        px: 2,
-                        py: 0.75,
-                        borderRadius: '10px',
-                        background: alpha(item.color, 0.1),
-                        border: `1px solid ${alpha(item.color, 0.2)}`,
+                        gap: 0.5,
+                        px: 1.25,
+                        py: 0.5,
+                        borderRadius: '8px',
+                        background: alpha(item.color, 0.08),
+                        border: `1px solid ${alpha(item.color, 0.15)}`,
                         transition: 'all 0.2s ease',
                         '&:hover': {
-                          background: alpha(item.color, 0.15),
+                          background: alpha(item.color, 0.12),
                           transform: 'translateY(-1px)',
-                          boxShadow: `0 4px 12px ${alpha(item.color, 0.2)}`
+                          boxShadow: `0 3px 8px ${alpha(item.color, 0.15)}`
                         }
                       }}
                     >
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.85rem',
+                          fontSize: '0.75rem',
                           fontWeight: 600,
-                          color: alpha(theme.palette.text.secondary, 0.8)
+                          color: alpha(theme.palette.text.secondary, 0.7)
                         }}
                       >
                         {item.label}
@@ -1110,18 +1112,18 @@ const TokenSummary = memo(({ token }) => {
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.9rem',
+                          fontSize: '0.8rem',
                           fontWeight: 700,
                           color: item.color,
                           display: 'flex',
                           alignItems: 'center',
-                          gap: 0.3
+                          gap: 0.25
                         }}
                       >
                         {formatPercentage(item.value)}
                         <Icon 
                           icon={item.value >= 0 ? 'mdi:arrow-up' : 'mdi:arrow-down'} 
-                          style={{ fontSize: '0.9rem' }}
+                          style={{ fontSize: '0.8rem' }}
                         />
                       </Typography>
                     </Box>
@@ -1148,8 +1150,9 @@ const TokenSummary = memo(({ token }) => {
                 sx={{ 
                   fontSize: '0.7rem', 
                   fontWeight: 600, 
-                  color: theme.palette.success.main,
-                  opacity: 0.9
+                  color: theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C',
+                  opacity: 1,
+                  textShadow: theme.palette.mode === 'dark' ? '0 0 4px rgba(102, 187, 106, 0.3)' : 'none'
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
@@ -1185,7 +1188,9 @@ const TokenSummary = memo(({ token }) => {
                       top: 0,
                       bottom: 0,
                       width: `${range24h.percent}%`,
-                      background: `linear-gradient(90deg, ${theme.palette.success.main} 0%, ${theme.palette.warning.main} 50%, ${theme.palette.error.main} 100%)`,
+                      background: theme.palette.mode === 'dark'
+                        ? `linear-gradient(90deg, #66BB6A 0%, #FFA726 50%, #FF5252 100%)`
+                        : `linear-gradient(90deg, #388E3C 0%, #F57C00 50%, #D32F2F 100%)`,
                       borderRadius: '1.5px',
                       opacity: 0.8
                     }}
@@ -1212,8 +1217,9 @@ const TokenSummary = memo(({ token }) => {
                 sx={{ 
                   fontSize: '0.7rem', 
                   fontWeight: 600, 
-                  color: theme.palette.error.main,
-                  opacity: 0.9
+                  color: theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F',
+                  opacity: 1,
+                  textShadow: theme.palette.mode === 'dark' ? '0 0 4px rgba(255, 82, 82, 0.3)' : 'none'
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{formatValue(range24h.max * (metrics.USD / metrics[activeFiatCurrency]))}

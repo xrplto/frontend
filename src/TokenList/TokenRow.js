@@ -81,9 +81,9 @@ const formatTimeAgo = (dateValue, fallbackValue) => {
   return `${days}d ${hours % 24}h`;
 };
 
-const getPriceColor = (bearbull) => {
-  if (bearbull === -1) return '#FF6C40';
-  if (bearbull === 1) return '#54D62C';
+const getPriceColor = (bearbull, theme) => {
+  if (bearbull === -1) return theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F';
+  if (bearbull === 1) return theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C';
   return '';
 };
 
@@ -104,10 +104,23 @@ const renderPercentageWithIcon = (value, variant, theme, isMobile) => {
   const formattedValue = parseFloat(value).toFixed(2);
   const isNegative = formattedValue < 0;
   const displayValue = `${isNegative ? -formattedValue : formattedValue}%`;
-  const color = isNegative ? theme.palette.error.main : theme.palette.primary.light;
+  const color = isNegative 
+    ? (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F')
+    : (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C');
 
   return (
-    <Typography variant={variant} noWrap align="right" sx={{ color }}>
+    <Typography 
+      variant={variant} 
+      noWrap 
+      align="right" 
+      sx={{ 
+        color,
+        fontWeight: '600',
+        textShadow: isNegative 
+          ? '0 0 8px rgba(255, 82, 82, 0.3)' 
+          : '0 0 8px rgba(102, 187, 106, 0.3)'
+      }}
+    >
       {displayValue}
     </Typography>
   );
@@ -591,13 +604,13 @@ function FTokenRow({
   }, [BASE_URL, md5, isOlderThanOneDay]);
 
   useEffect(() => {
-    setPriceColor(getPriceColor(memoizedToken.bearbull));
+    setPriceColor(getPriceColor(memoizedToken.bearbull, theme));
     const timer = setTimeout(() => {
       setPriceColor('');
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [time, memoizedToken.bearbull]);
+  }, [time, memoizedToken.bearbull, theme]);
 
   const imgUrl = useMemo(() => `https://s1.xrpl.to/token/${md5}`, [md5]);
   const fallbackImgUrl = '/static/alt.webp';

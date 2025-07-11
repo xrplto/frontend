@@ -15,6 +15,7 @@ import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 import baselinePalette from '@iconify/icons-ic/baseline-palette';
 import baselineWaves from '@iconify/icons-ic/baseline-waves';
 import baselineLocalFlorist from '@iconify/icons-ic/baseline-local-florist';
+import baselinePets from '@iconify/icons-ic/baseline-pets';
 import { AppContext } from 'src/AppContext';
 
 const themes = [
@@ -47,6 +48,18 @@ const themes = [
     name: 'XShroom',
     icon: baselineLocalFlorist,
     color: '#FFB84D'
+  },
+  {
+    id: 'BoredApeTheme',
+    name: 'Bored Ape',
+    icon: baselinePets,
+    color: '#40E0D0'
+  },
+  {
+    id: 'BirdTheme',
+    name: 'Minimal Bird',
+    icon: baselinePalette,
+    color: '#1A1A1A'
   }
 ];
 
@@ -126,8 +139,8 @@ export default function ThemeSwitcher() {
                   height: 24,
                   borderRadius: '6px',
                   backgroundColor: theme.color,
-                  border: theme.id === 'XrplToLightTheme' ? '1px solid #e0e0e0' : 'none',
-                  boxShadow: theme.id === 'SyncWaveTheme' || theme.id === 'RippleBlueTheme' || theme.id === 'XShroomTheme'
+                  border: theme.id === 'XrplToLightTheme' ? '1px solid #e0e0e0' : theme.id === 'BirdTheme' ? '1px solid #1A1A1A' : 'none',
+                  boxShadow: theme.id === 'SyncWaveTheme' || theme.id === 'RippleBlueTheme' || theme.id === 'XShroomTheme' || theme.id === 'BoredApeTheme'
                     ? `0 0 10px ${theme.color}` 
                     : 'none'
                 }}
@@ -135,7 +148,7 @@ export default function ThemeSwitcher() {
                 <Icon 
                   icon={theme.icon} 
                   fontSize={16} 
-                  color={theme.id === 'XrplToLightTheme' ? '#000' : '#fff'}
+                  color={theme.id === 'XrplToLightTheme' || theme.id === 'BirdTheme' ? '#fff' : theme.id === 'XrplToDarkTheme' ? '#fff' : '#fff'}
                 />
               </Box>
             </ListItemIcon>

@@ -426,23 +426,28 @@ export default function PriceStatistics({ token }) {
                       pr: isMobile ? 0.75 : 1,
                       borderRadius: '10px',
                       height: isMobile ? '26px' : '32px',
-                      background: `linear-gradient(145deg, ${alpha(
-                        theme.palette.secondary.main,
-                        0.1
-                      )} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+                      background: theme.palette.mode === 'dark'
+                        ? `linear-gradient(145deg, ${alpha('#9C27B0', 0.15)} 0%, ${alpha('#9C27B0', 0.08)} 100%)`
+                        : `linear-gradient(145deg, ${alpha('#7B1FA2', 0.12)} 0%, ${alpha('#7B1FA2', 0.06)} 100%)`,
                       backdropFilter: 'blur(10px)',
-                      border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-                      color: theme.palette.secondary.main,
+                      border: theme.palette.mode === 'dark'
+                        ? `1px solid ${alpha('#9C27B0', 0.3)}`
+                        : `1px solid ${alpha('#7B1FA2', 0.25)}`,
+                      color: theme.palette.mode === 'dark' ? '#CE93D8' : '#7B1FA2',
                       fontWeight: 600,
                       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      textShadow: theme.palette.mode === 'dark' ? '0 0 8px rgba(156, 39, 176, 0.4)' : 'none',
                       '&:hover': {
-                        background: `linear-gradient(145deg, ${alpha(
-                          theme.palette.secondary.main,
-                          0.15
-                        )} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
-                        border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                        background: theme.palette.mode === 'dark'
+                          ? `linear-gradient(145deg, ${alpha('#9C27B0', 0.2)} 0%, ${alpha('#9C27B0', 0.12)} 100%)`
+                          : `linear-gradient(145deg, ${alpha('#7B1FA2', 0.15)} 0%, ${alpha('#7B1FA2', 0.08)} 100%)`,
+                        border: theme.palette.mode === 'dark'
+                          ? `1px solid ${alpha('#9C27B0', 0.4)}`
+                          : `1px solid ${alpha('#7B1FA2', 0.3)}`,
                         transform: 'translateY(-2px)',
-                        boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.2)}`
+                        boxShadow: theme.palette.mode === 'dark'
+                          ? `0 4px 12px ${alpha('#9C27B0', 0.3)}`
+                          : `0 4px 12px ${alpha('#7B1FA2', 0.2)}`
                       }
                     }}
                   />
@@ -459,10 +464,16 @@ export default function PriceStatistics({ token }) {
                           border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                           '&:hover': {
-                            background: alpha(theme.palette.secondary.main, 0.08),
-                            border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                            background: theme.palette.mode === 'dark'
+                              ? alpha('#9C27B0', 0.08)
+                              : alpha('#7B1FA2', 0.06),
+                            border: theme.palette.mode === 'dark'
+                              ? `1px solid ${alpha('#9C27B0', 0.3)}`
+                              : `1px solid ${alpha('#7B1FA2', 0.25)}`,
                             transform: 'translateY(-1px)',
-                            boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.2)}`
+                            boxShadow: theme.palette.mode === 'dark'
+                              ? `0 4px 12px ${alpha('#9C27B0', 0.2)}`
+                              : `0 4px 12px ${alpha('#7B1FA2', 0.15)}`
                           }
                         }}
                       >
@@ -470,7 +481,7 @@ export default function PriceStatistics({ token }) {
                           sx={{
                             width: isMobile ? 12 : 14,
                             height: isMobile ? 12 : 14,
-                            color: theme.palette.secondary.main
+                            color: theme.palette.mode === 'dark' ? '#CE93D8' : '#7B1FA2'
                           }}
                         />
                       </IconButton>
@@ -552,7 +563,7 @@ export default function PriceStatistics({ token }) {
                 variant="body2"
                 sx={{
                   fontWeight: 700,
-                  color: alpha(theme.palette.text.primary, 0.85),
+                  color: theme.palette.text.primary,
                   fontSize: isMobile ? '0.8rem' : '0.875rem'
                 }}
                 noWrap
@@ -565,11 +576,11 @@ export default function PriceStatistics({ token }) {
                 variant="body2"
                 sx={{
                   fontWeight: 700,
-                  background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${alpha(theme.palette.secondary.main, 0.8)} 100%)`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  fontSize: isMobile ? '0.95rem' : '1.1rem'
+                  color: theme.palette.mode === 'dark' ? '#66BB6A' : '#2E7D32',
+                  fontSize: isMobile ? '0.95rem' : '1.1rem',
+                  textShadow: theme.palette.mode === 'dark' 
+                    ? '0 0 12px rgba(102, 187, 106, 0.3)' 
+                    : 'none'
                 }}
               >
                 <NumberTooltip number={fNumber(dom || 0)} /> %
@@ -691,7 +702,7 @@ export default function PriceStatistics({ token }) {
                   variant="body2"
                   sx={{
                     fontWeight: 700,
-                    color: alpha(theme.palette.text.primary, 0.85),
+                    color: theme.palette.text.primary,
                     fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                   noWrap
@@ -704,11 +715,11 @@ export default function PriceStatistics({ token }) {
                   variant="body2"
                   sx={{
                     fontWeight: 700,
-                    background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${alpha(theme.palette.secondary.main, 0.8)} 100%)`,
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    fontSize: isMobile ? '0.95rem' : '1.1rem'
+                    color: theme.palette.mode === 'dark' ? '#64B5F6' : '#1976D2',
+                    fontSize: isMobile ? '0.95rem' : '1.1rem',
+                    textShadow: theme.palette.mode === 'dark' 
+                      ? '0 0 12px rgba(100, 181, 246, 0.3)' 
+                      : 'none'
                   }}
                 >
                   <NumberTooltip number={fNumber(trustlines)} />
@@ -759,7 +770,7 @@ export default function PriceStatistics({ token }) {
                   variant="body2"
                   sx={{
                     fontWeight: 700,
-                    color: alpha(theme.palette.text.primary, 0.85),
+                    color: theme.palette.text.primary,
                     fontSize: isMobile ? '0.8rem' : '0.875rem'
                   }}
                   noWrap
@@ -772,11 +783,11 @@ export default function PriceStatistics({ token }) {
                   variant="body2"
                   sx={{
                     fontWeight: 700,
-                    background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${alpha(theme.palette.secondary.main, 0.8)} 100%)`,
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    fontSize: isMobile ? '0.95rem' : '1.1rem'
+                    color: theme.palette.mode === 'dark' ? '#FFB74D' : '#F57C00',
+                    fontSize: isMobile ? '0.95rem' : '1.1rem',
+                    textShadow: theme.palette.mode === 'dark' 
+                      ? '0 0 12px rgba(255, 183, 77, 0.3)' 
+                      : 'none'
                   }}
                 >
                   <NumberTooltip number={fNumber(vol24htx)} />

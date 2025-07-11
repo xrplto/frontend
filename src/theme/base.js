@@ -3,13 +3,17 @@ import { XrplToLightTheme } from './XrplToLightTheme';
 import { SyncWaveTheme } from './SyncWaveTheme';
 import { rippleBlueTheme } from './rippleBlueTheme';
 import { XShroomTheme } from './XShroomTheme';
+import { BoredApeTheme } from './BoredApeTheme';
+import { BirdTheme } from './BirdTheme';
 
 const themeMap = {
   XrplToDarkTheme,
   XrplToLightTheme,
   SyncWaveTheme,
   RippleBlueTheme: rippleBlueTheme,
-  XShroomTheme
+  XShroomTheme,
+  BoredApeTheme,
+  BirdTheme
 };
 
 export function themeCreator(themeName) {
