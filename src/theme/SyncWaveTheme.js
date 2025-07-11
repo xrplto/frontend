@@ -266,10 +266,10 @@ export const SyncWaveTheme = createTheme({
           paddingRight: '16px !important'
         },
         maxWidthLg: {
-          maxWidth: '1600px !important'
+          maxWidth: '1700px !important'
         },
         maxWidthXl: {
-          maxWidth: '1920px !important'
+          maxWidth: '2000px !important'
         }
       }
     },
