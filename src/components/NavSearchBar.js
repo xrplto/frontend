@@ -42,17 +42,15 @@ const NavSearchBar = ({
           py: 1.5,
           height: '46px',
           width: '270px',
-          backgroundColor: darkMode
-            ? alpha(theme.palette.background.paper, 0.12)
-            : alpha(theme.palette.background.paper, 0.95),
+          backgroundColor: 'transparent',
+          backdropFilter: 'blur(10px) saturate(150%)',
+          WebkitBackdropFilter: 'blur(10px) saturate(150%)',
           border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.12 : 0.18)}`,
           boxShadow: 'none',
           transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
           position: 'relative',
           '&:hover': {
-            backgroundColor: darkMode
-              ? alpha(theme.palette.background.paper, 0.16)
-              : alpha(theme.palette.background.paper, 1),
+            backgroundColor: 'transparent',
             border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.25 : 0.35)}`,
             boxShadow: 'none',
             transform: 'translateY(-1px)'

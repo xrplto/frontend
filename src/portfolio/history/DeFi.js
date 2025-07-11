@@ -432,7 +432,7 @@ const DeFiHistory = ({ account }) => {
                     boxShadow: theme.shadows[1],
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      background: theme.palette.action.hover,
+                      background: 'transparent',
                       borderColor: theme.palette.primary.main,
                       transform: 'translateX(-2px)',
                       boxShadow: theme.shadows[2]
@@ -440,7 +440,7 @@ const DeFiHistory = ({ account }) => {
                     '&.Mui-disabled': {
                       color: alpha(theme.palette.text.primary, 0.3),
                       borderColor: alpha(theme.palette.divider, 0.3),
-                      background: alpha(theme.palette.action.disabled, 0.1),
+                      background: 'transparent',
                       boxShadow: 'none'
                     },
                     '& .MuiSvgIcon-root': {
@@ -464,7 +464,7 @@ const DeFiHistory = ({ account }) => {
                     boxShadow: theme.shadows[1],
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      background: theme.palette.action.hover,
+                      background: 'transparent',
                       borderColor: theme.palette.primary.main,
                       transform: 'translateX(2px)',
                       boxShadow: theme.shadows[2]
@@ -472,7 +472,7 @@ const DeFiHistory = ({ account }) => {
                     '&.Mui-disabled': {
                       color: alpha(theme.palette.text.primary, 0.3),
                       borderColor: alpha(theme.palette.divider, 0.3),
-                      background: alpha(theme.palette.action.disabled, 0.1),
+                      background: 'transparent',
                       boxShadow: 'none'
                     },
                     '& .MuiSvgIcon-root': {
@@ -532,9 +532,9 @@ const DeFiHistory = ({ account }) => {
                     borderColor: alpha(theme.palette.primary.main, 0.4),
                     borderWidth: '1px'
                   },
-                  background: alpha(theme.palette.primary.main, 0.05),
+                  background: 'transparent',
                   '&:hover': {
-                    background: alpha(theme.palette.primary.main, 0.1)
+                    background: 'transparent'
                   }
                 }}
                 MenuProps={{
@@ -551,12 +551,12 @@ const DeFiHistory = ({ account }) => {
                         letterSpacing: '0.5px',
                         py: 1,
                         '&:hover': {
-                          background: alpha(theme.palette.primary.main, 0.1)
+                          background: 'transparent'
                         },
                         '&.Mui-selected': {
-                          background: alpha(theme.palette.primary.main, 0.08),
+                          background: 'transparent',
                           '&:hover': {
-                            background: alpha(theme.palette.primary.main, 0.12)
+                            background: 'transparent'
                           }
                         }
                       }
@@ -1511,7 +1511,7 @@ const HistoryRow = (props) => {
             borderRadius: '6px',
             transition: 'all 0.2s ease',
             '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              backgroundColor: 'transparent',
               borderColor: theme.palette.primary.main,
               transform: 'scale(1.05)',
               boxShadow: theme.shadows[1]
