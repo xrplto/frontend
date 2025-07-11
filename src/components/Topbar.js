@@ -55,7 +55,9 @@ const TopWrapper = styled(Box)(
     height: ${theme.spacing(5)};
     background: ${theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
       ? alpha('#030310', 0.9)
-      : alpha(theme.palette.background.default, 0.8)};
+      : theme.palette.primary.main === '#0080ff'
+        ? alpha(theme.palette.background.default, 0.9)
+        : alpha(theme.palette.background.default, 0.8)};
     backdrop-filter: blur(20px);
     border-bottom: 1px solid ${alpha(theme.palette.divider, 0.05)};
     position: relative;
@@ -67,7 +69,8 @@ const TopWrapper = styled(Box)(
 const ContentWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(0.5),
-  py: theme.spacing(1),
+  paddingTop: 0,
+  paddingBottom: 0,
   overflow: 'auto',
   width: '100%',
   justifyContent: 'space-between',
@@ -88,24 +91,28 @@ const APILabel = styled('a')(({ theme }) => ({
   marginLeft: theme.spacing(1),
   background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
     ? alpha('#030310', 0.7)
-    : theme.palette.mode === 'dark'
-      ? alpha(theme.palette.success.dark, 0.15)
-      : alpha(theme.palette.success.light, 0.15),
+    : theme.palette.primary.main === '#0080ff'
+      ? alpha(theme.palette.primary.main, 0.1)
+      : theme.palette.mode === 'dark'
+        ? alpha(theme.palette.success.dark, 0.15)
+        : alpha(theme.palette.success.light, 0.15),
   padding: '6px 12px',
   borderRadius: '12px',
   display: 'flex',
   alignItems: 'center',
   gap: '6px',
   minHeight: '32px',
-  border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+  border: `1px solid ${theme.palette.primary.main === '#0080ff' ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`,
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   cursor: 'pointer',
   '&:hover': {
     background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
       ? alpha(theme.palette.primary.main, 0.04)
-      : alpha(theme.palette.success.main, 0.2),
+      : theme.palette.primary.main === '#0080ff'
+        ? alpha(theme.palette.primary.main, 0.15)
+        : alpha(theme.palette.success.main, 0.2),
     transform: 'translateY(-1px)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.2)}`
+    boxShadow: `0 4px 12px ${theme.palette.primary.main === '#0080ff' ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`
   }
 }));
 
@@ -144,6 +151,11 @@ const H24Style = styled('div')(({ theme }) => ({
 const SWITCH_INTERVAL = 3000; // 3 seconds between switches
 
 const StyledContainer = styled(Container)(({ theme }) => ({
+  paddingTop: 0,
+  paddingBottom: 0,
+  height: '100%',
+  display: 'flex',
+  alignItems: 'center',
   [theme.breakpoints.down('md')]: {
     paddingLeft: theme.spacing(0.5),
     paddingRight: theme.spacing(0.5)
@@ -171,9 +183,9 @@ const PulsatingCircle = styled('div')(({ theme }) => ({
   width: '8px',
   height: '8px',
   borderRadius: '50%',
-  backgroundColor: theme.palette.success.main,
+  backgroundColor: theme.palette.primary.main === '#0080ff' ? theme.palette.primary.main : theme.palette.success.main,
   position: 'relative',
-  boxShadow: `0 0 10px ${alpha(theme.palette.success.main, 0.5)}`,
+  boxShadow: `0 0 10px ${alpha(theme.palette.primary.main === '#0080ff' ? theme.palette.primary.main : theme.palette.success.main, 0.5)}`,
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -206,14 +218,18 @@ const LiveIndicator = styled('div')(({ theme }) => ({
   borderRadius: '20px',
   background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
     ? alpha('#030310', 0.7)
-    : `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.15)} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`,
-  border: `1px solid ${alpha(theme.palette.success.main, 0.25)}`,
+    : theme.palette.primary.main === '#0080ff'
+      ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`
+      : `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.15)} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`,
+  border: `1px solid ${theme.palette.primary.main === '#0080ff' ? alpha(theme.palette.primary.main, 0.25) : alpha(theme.palette.success.main, 0.25)}`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.15)}`,
+  boxShadow: `0 4px 12px ${theme.palette.primary.main === '#0080ff' ? alpha(theme.palette.primary.main, 0.15) : alpha(theme.palette.success.main, 0.15)}`,
   '&:hover': {
     background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
       ? alpha(theme.palette.primary.main, 0.04)
-      : `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.2)} 0%, ${alpha(theme.palette.success.main, 0.12)} 100%)`,
+      : theme.palette.primary.main === '#0080ff'
+        ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.primary.main, 0.12)} 100%)`
+        : `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.2)} 0%, ${alpha(theme.palette.success.main, 0.12)} 100%)`,
     transform: 'translateY(-1px)'
   }
 }));
@@ -222,7 +238,7 @@ const LiveCircle = styled('div')(({ theme }) => ({
   width: '8px',
   height: '8px',
   borderRadius: '50%',
-  backgroundColor: theme.palette.success.main,
+  backgroundColor: theme.palette.primary.main === '#0080ff' ? theme.palette.primary.main : theme.palette.success.main,
   position: 'relative',
   '&::before': {
     content: '""',

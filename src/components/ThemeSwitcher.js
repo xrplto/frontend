@@ -13,6 +13,7 @@ import { Icon } from '@iconify/react';
 import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
 import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 import baselinePalette from '@iconify/icons-ic/baseline-palette';
+import baselineWaves from '@iconify/icons-ic/baseline-waves';
 import { AppContext } from 'src/AppContext';
 
 const themes = [
@@ -33,6 +34,12 @@ const themes = [
     name: 'Sync Wave',
     icon: baselinePalette,
     color: '#00ffff'
+  },
+  {
+    id: 'RippleBlueTheme',
+    name: 'Ripple Blue',
+    icon: baselineWaves,
+    color: '#0080ff'
   }
 ];
 
@@ -113,7 +120,7 @@ export default function ThemeSwitcher() {
                   borderRadius: '6px',
                   backgroundColor: theme.color,
                   border: theme.id === 'XrplToLightTheme' ? '1px solid #e0e0e0' : 'none',
-                  boxShadow: theme.id === 'SyncWaveTheme' 
+                  boxShadow: theme.id === 'SyncWaveTheme' || theme.id === 'RippleBlueTheme'
                     ? `0 0 10px ${theme.color}` 
                     : 'none'
                 }}

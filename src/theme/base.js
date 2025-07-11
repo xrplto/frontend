@@ -1,11 +1,13 @@
 import { XrplToDarkTheme } from './XrplToDarkTheme';
 import { XrplToLightTheme } from './XrplToLightTheme';
 import { SyncWaveTheme } from './SyncWaveTheme';
+import { rippleBlueTheme } from './rippleBlueTheme';
 
 const themeMap = {
   XrplToDarkTheme,
   XrplToLightTheme,
-  SyncWaveTheme
+  SyncWaveTheme,
+  RippleBlueTheme: rippleBlueTheme
 };
 
 export function themeCreator(themeName) {
