@@ -172,10 +172,8 @@ const ChartContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   borderRadius: '16px',
   overflow: 'hidden',
-  background: theme.palette.mode === 'dark'
-    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.95)} 100%)`
-    : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.grey[50], 0.9)} 100%)`,
-  backdropFilter: 'blur(24px)',
+  background: 'transparent',
+  backdropFilter: 'none',
   boxShadow: theme.palette.mode === 'dark'
     ? `0 0 40px ${alpha(theme.palette.primary.main, 0.15)}, 0 0 80px ${alpha(theme.palette.info.main, 0.1)}`
     : `0 4px 24px ${alpha(theme.palette.grey[400], 0.2)}, 0 0 40px ${alpha(theme.palette.primary.light, 0.1)}`,

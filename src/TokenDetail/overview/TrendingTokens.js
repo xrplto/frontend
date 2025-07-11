@@ -63,11 +63,8 @@ const TrendingCard = styled(Card, {
 })(({ theme, darkMode, rank }) => ({
   position: 'relative',
   borderRadius: '12px',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.4
-  )} 100%)`,
-  backdropFilter: 'blur(10px)',
+  background: 'transparent',
+  backdropFilter: 'none',
   border:
     rank <= 3
       ? `2px solid ${alpha('#FFD700', 0.3)}`
@@ -76,17 +73,7 @@ const TrendingCard = styled(Card, {
   cursor: 'pointer',
   overflow: 'hidden',
   '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '1px',
-    background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.4)}, ${alpha(
-      theme.palette.success.main,
-      0.4
-    )}, ${alpha(theme.palette.info.main, 0.4)})`,
-    opacity: 0.6
+    display: 'none'
   }
 }));
 
@@ -215,12 +202,9 @@ const TrendingTokens = () => {
     return (
       <StackStyle sx={{ 
         mt: 1.5,
-        background: `linear-gradient(135deg, 
-          ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-          ${alpha(theme.palette.background.paper, 0.5)} 50%,
-          ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-        backdropFilter: 'blur(40px) saturate(150%)',
-        WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+        background: 'transparent',
+        backdropFilter: 'none',
+        WebkitBackdropFilter: 'none',
         border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
         borderRadius: { xs: '12px', sm: '16px' },
         boxShadow: `
@@ -232,19 +216,7 @@ const TrendingTokens = () => {
         overflow: 'hidden',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `linear-gradient(
-            135deg,
-            ${alpha(theme.palette.primary.main, 0.05)} 0%,
-            transparent 50%,
-            ${alpha(theme.palette.secondary.main, 0.05)} 100%
-          )`,
-          pointerEvents: 'none'
+          display: 'none'
         },
         '&:hover': {
           transform: 'translateY(-2px)',
@@ -288,12 +260,9 @@ const TrendingTokens = () => {
   return (
     <StackStyle sx={{ 
       mt: 1.5,
-      background: `linear-gradient(135deg, 
-        ${alpha(theme.palette.background.paper, 0.7)} 0%, 
-        ${alpha(theme.palette.background.paper, 0.5)} 50%,
-        ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-      backdropFilter: 'blur(40px) saturate(150%)',
-      WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+      background: 'transparent',
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none',
       border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
       borderRadius: { xs: '12px', sm: '16px' },
       boxShadow: `
@@ -305,19 +274,7 @@ const TrendingTokens = () => {
       overflow: 'hidden',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       '&::before': {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: `linear-gradient(
-          135deg,
-          ${alpha(theme.palette.primary.main, 0.05)} 0%,
-          transparent 50%,
-          ${alpha(theme.palette.secondary.main, 0.05)} 100%
-        )`,
-        pointerEvents: 'none'
+        display: 'none'
       },
       '&:hover': {
         transform: 'translateY(-2px)',
