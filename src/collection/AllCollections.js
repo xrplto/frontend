@@ -153,90 +153,10 @@ function Collections() {
         flex: 1,
         py: { xs: 2, sm: 3, md: 4 },
         backgroundColor: 'transparent',
-        backgroundImage: `linear-gradient(135deg, ${alpha(
-          theme.palette.background.default,
-          0.95
-        )} 0%, ${alpha(theme.palette.background.default, 0.8)} 100%)`,
         minHeight: '100vh',
-        position: 'relative',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `
-            radial-gradient(circle at 20% 50%, ${alpha(
-              theme.palette.primary.main,
-              0.05
-            )} 0%, transparent 40%), 
-            radial-gradient(circle at 80% 20%, ${alpha(
-              theme.palette.success.main,
-              0.05
-            )} 0%, transparent 40%),
-            radial-gradient(circle at 50% 80%, ${alpha(
-              theme.palette.info.main,
-              0.03
-            )} 0%, transparent 50%)
-          `,
-          animation: 'breathe 10s ease-in-out infinite',
-          '@keyframes breathe': {
-            '0%, 100%': { opacity: 0.8 },
-            '50%': { opacity: 1 }
-          },
-          pointerEvents: 'none'
-        }
+        position: 'relative'
       }}
     >
-      {/* Updated Header Section */}
-      <Container maxWidth="xl" sx={{ mt: { xs: 1, sm: 3, md: 4 }, mb: { xs: 2, sm: 3, md: 4 }, px: { xs: 2, sm: 3 } }}>
-        <Box
-          sx={{
-            textAlign: 'center',
-            mb: { xs: 3, sm: 4, md: 5 }
-          }}
-        >
-          <Typography
-            variant="h3"
-            sx={{
-              color: theme.palette.text.primary,
-              fontWeight: 800,
-              fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' },
-              letterSpacing: '-0.03em',
-              mb: 2,
-              position: 'relative',
-              display: 'inline-block',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                bottom: -8,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '80px',
-                height: '4px',
-                background: `linear-gradient(90deg, transparent, ${theme.palette.primary.main}, transparent)`,
-                borderRadius: 2
-              }
-            }}
-          >
-            NFT Collections
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: theme.palette.text.secondary,
-              fontSize: { xs: '0.875rem', sm: '1.1rem', md: '1.2rem' },
-              maxWidth: '700px',
-              mx: 'auto',
-              lineHeight: 1.8,
-              mt: 3
-            }}
-          >
-            Explore the top NFT collections on XRPL sorted by trading volume and floor price
-          </Typography>
-        </Box>
-      </Container>
 
       {/* Statistics Cards Section */}
       <Container maxWidth="xl" sx={{ mb: { xs: 3, sm: 5, md: 6 }, px: { xs: 2, sm: 3 } }}>
@@ -249,15 +169,12 @@ function Collections() {
                 p: { xs: 2.5, sm: 4 },
                 height: '100%',
                 borderRadius: '20px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.primary.main,
-                  0.05
-                )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                background: 'transparent',
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   transform: 'translateY(-4px)',
-                  boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`
+                  borderColor: alpha(theme.palette.primary.main, 0.3)
                 }
               }}
             >
@@ -271,7 +188,8 @@ function Collections() {
                       width: { xs: 32, sm: 40 },
                       height: { xs: 32, sm: 40 },
                       borderRadius: '12px',
-                      background: alpha(theme.palette.primary.main, 0.1),
+                      background: 'transparent',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -298,15 +216,12 @@ function Collections() {
                 p: { xs: 2.5, sm: 4 },
                 height: '100%',
                 borderRadius: '20px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.success.main,
-                  0.05
-                )} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+                background: 'transparent',
+                border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   transform: 'translateY(-4px)',
-                  boxShadow: `0 8px 24px ${alpha(theme.palette.success.main, 0.15)}`
+                  borderColor: alpha(theme.palette.success.main, 0.3)
                 }
               }}
             >
@@ -320,7 +235,8 @@ function Collections() {
                       width: { xs: 32, sm: 40 },
                       height: { xs: 32, sm: 40 },
                       borderRadius: '12px',
-                      background: alpha(theme.palette.success.main, 0.1),
+                      background: 'transparent',
+                      border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -347,15 +263,12 @@ function Collections() {
                 p: { xs: 2.5, sm: 4 },
                 height: '100%',
                 borderRadius: '20px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.info.main,
-                  0.05
-                )} 0%, ${alpha(theme.palette.info.main, 0.02)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
+                background: 'transparent',
+                border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   transform: 'translateY(-4px)',
-                  boxShadow: `0 8px 24px ${alpha(theme.palette.info.main, 0.15)}`
+                  borderColor: alpha(theme.palette.info.main, 0.3)
                 }
               }}
             >
@@ -369,7 +282,8 @@ function Collections() {
                       width: { xs: 32, sm: 40 },
                       height: { xs: 32, sm: 40 },
                       borderRadius: '12px',
-                      background: alpha(theme.palette.info.main, 0.1),
+                      background: 'transparent',
+                      border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -438,28 +352,12 @@ function Collections() {
         <Box
           sx={{
             borderRadius: '24px',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.95
-            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
-              theme.palette.primary.main,
-              0.04
-            )}`,
+            background: 'transparent',
+            backdropFilter: 'none',
+            border: 'none',
+            boxShadow: 'none',
             overflow: 'hidden',
-            position: 'relative',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '2px',
-              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-              opacity: 0.8
-            }
+            position: 'relative'
           }}
         >
           <CollectionList type={CollectionListType.ALL} />

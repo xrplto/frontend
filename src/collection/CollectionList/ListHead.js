@@ -17,9 +17,9 @@ const StickyTableCell = styled(TableCell)({
   position: 'sticky',
   zIndex: 1000,
   top: 0,
-  fontWeight: '600',
-  fontSize: '13px',
-  letterSpacing: '0.02em',
+  fontWeight: '500',
+  fontSize: '11px',
+  letterSpacing: '0.01em',
   textTransform: 'uppercase'
 });
 
@@ -29,11 +29,7 @@ const TABLE_HEAD = (isMobile) => {
       {
         no: 0,
         id: 'name',
-        label: (
-          <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: '10px' }}>
-            Collection
-          </Typography>
-        ),
+        label: 'Collection',
         align: 'left',
         width: '45%',
         order: false
@@ -41,11 +37,7 @@ const TABLE_HEAD = (isMobile) => {
       {
         no: 1,
         id: 'floor.amount',
-        label: (
-          <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: '10px' }}>
-            Floor
-          </Typography>
-        ),
+        label: 'Floor',
         align: 'right',
         width: '18%',
         order: true
@@ -53,11 +45,7 @@ const TABLE_HEAD = (isMobile) => {
       {
         no: 2,
         id: 'volume',
-        label: (
-          <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: '10px' }}>
-            24h Vol
-          </Typography>
-        ),
+        label: '24h Vol',
         align: 'right',
         width: '18%',
         order: true
@@ -65,11 +53,7 @@ const TABLE_HEAD = (isMobile) => {
       {
         no: 3,
         id: 'totalVolume',
-        label: (
-          <Typography variant="inherit" sx={{ fontWeight: '600', fontSize: '10px' }}>
-            Total
-          </Typography>
-        ),
+        label: 'Total',
         align: 'right',
         width: '19%',
         order: true
@@ -80,11 +64,7 @@ const TABLE_HEAD = (isMobile) => {
     {
       no: 0,
       id: 'name',
-      label: (
-        <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-          Collection
-        </Typography>
-      ),
+      label: 'Collection',
       align: 'left',
       width: '35%',
       order: false
@@ -92,11 +72,7 @@ const TABLE_HEAD = (isMobile) => {
     {
       no: 1,
       id: 'floor.amount',
-      label: (
-        <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-          Floor
-        </Typography>
-      ),
+      label: 'Floor',
       align: 'right',
       width: '13%',
       order: true
@@ -104,11 +80,7 @@ const TABLE_HEAD = (isMobile) => {
     {
       no: 2,
       id: 'volume',
-      label: (
-        <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-          Volume (24h)
-        </Typography>
-      ),
+      label: 'Volume (24h)',
       align: 'right',
       width: '13%',
       order: true
@@ -116,11 +88,7 @@ const TABLE_HEAD = (isMobile) => {
     {
       no: 3,
       id: 'totalVolume',
-      label: (
-        <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-          Total Volume
-        </Typography>
-      ),
+      label: 'Total Volume',
       align: 'right',
       width: '13%',
       order: true
@@ -128,11 +96,7 @@ const TABLE_HEAD = (isMobile) => {
     {
       no: 4,
       id: 'owners',
-      label: (
-        <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-          Owners
-        </Typography>
-      ),
+      label: 'Owners',
       align: 'right',
       width: '13%',
       order: true
@@ -140,11 +104,7 @@ const TABLE_HEAD = (isMobile) => {
     {
       no: 5,
       id: 'items',
-      label: (
-        <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-          Supply
-        </Typography>
-      ),
+      label: 'Supply',
       align: 'right',
       width: '13%',
       order: true
@@ -167,55 +127,42 @@ export default function ListHead({ order, orderBy, onRequestSort, scrollTopLengt
         position: 'sticky',
         zIndex: 1002,
         transform: `translateY(${scrollTopLength}px)`,
-        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${
-          darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-        }`,
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '1px',
-          background: `linear-gradient(90deg, transparent, ${
-            darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-          }, transparent)`
-        }
+        background: 'transparent',
+        backdropFilter: 'none',
+        borderBottom: 'none'
       }}
     >
       <TableRow
         sx={{
           '& .MuiTableCell-root': {
-            fontSize: isMobile ? '10px' : '13px',
-            fontWeight: '600',
-            padding: isMobile ? '12px 4px' : '20px 12px',
+            fontSize: isMobile ? '9px' : '11px',
+            fontWeight: '500',
+            padding: isMobile ? '8px 4px' : '12px 8px',
             height: 'auto',
             whiteSpace: 'nowrap',
-            color: darkMode ? '#919EAB' : '#637381',
+            color: darkMode ? 'rgba(145, 158, 171, 0.8)' : 'rgba(99, 115, 129, 0.8)',
             textTransform: 'uppercase',
-            letterSpacing: '0.02em',
+            letterSpacing: '0.01em',
             borderBottom: 'none',
             '&:not(:first-of-type)': {
-              paddingLeft: isMobile ? '4px' : '8px'
+              paddingLeft: isMobile ? '4px' : '6px'
             }
           },
           '& .MuiTableSortLabel-root': {
-            fontSize: isMobile ? '10px' : '13px',
-            fontWeight: '600',
+            fontSize: isMobile ? '9px' : '11px',
+            fontWeight: '500',
             color: 'inherit',
             '&:hover': {
-              color: darkMode ? '#fff' : '#212B36'
+              color: darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(33, 43, 54, 0.9)'
             },
             '&.Mui-active': {
-              color: darkMode ? '#fff' : '#212B36',
+              color: darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(33, 43, 54, 0.9)',
               '& .MuiTableSortLabel-icon': {
                 color: 'inherit'
               }
             },
             '& .MuiTableSortLabel-icon': {
-              fontSize: '16px'
+              fontSize: '14px'
             }
           }
         }}

@@ -29,14 +29,14 @@ const CollectionImageWrapper = styled(Box)(({ theme }) => ({
     height: '40px'
   },
   position: 'relative',
-  border: '2px solid rgba(145, 158, 171, 0.08)',
+  border: '1px solid rgba(145, 158, 171, 0.05)',
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
     cursor: 'pointer',
     transform: 'scale(1.05)',
-    borderColor: 'rgba(99, 115, 129, 0.24)',
+    borderColor: 'rgba(99, 115, 129, 0.15)',
     '& > img': {
-      opacity: 0.8
+      opacity: 0.9
     }
   }
 }));
@@ -110,18 +110,15 @@ function Row({ id, item, isMine }) {
 
   const tableRowStyle = useMemo(
     () => ({
-      borderBottom: '1px solid rgba(145, 158, 171, 0.08)',
+      borderBottom: 'none',
       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      backgroundColor: 'transparent',
       '&:hover': {
         '& .MuiTableCell-root': {
-          backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(145, 158, 171, 0.04)',
-          backdropFilter: 'blur(6px)'
+          backgroundColor: 'transparent'
         },
         cursor: 'pointer',
-        transform: 'translateY(-1px)',
-        boxShadow: darkMode
-          ? '0 4px 16px rgba(0, 0, 0, 0.24)'
-          : '0 4px 16px rgba(145, 158, 171, 0.16)'
+        transform: 'translateY(-1px)'
       },
       '& .MuiTypography-root': {
         fontSize: isMobile ? '11px' : '14px',
@@ -131,6 +128,7 @@ function Row({ id, item, isMine }) {
         padding: isMobile ? '8px 4px' : '16px 12px',
         whiteSpace: 'nowrap',
         borderBottom: 'none',
+        backgroundColor: 'transparent',
         '&:not(:first-of-type)': {
           paddingLeft: isMobile ? '4px' : '8px'
         }
