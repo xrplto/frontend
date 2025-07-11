@@ -34,6 +34,7 @@ import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
 import WalletConnectModal from './WalletConnectModal';
 import SearchModal from './SearchModal';
+import Wallet from 'src/components/Wallet';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 
 // Iconify
@@ -356,7 +357,7 @@ export default function Header(props) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  const { darkMode, setDarkMode } = useContext(AppContext);
+  const { darkMode, setDarkMode, accountProfile } = useContext(AppContext);
   const [tokensAnchorEl, setTokensAnchorEl] = useState(null);
   const openTokensMenu = Boolean(tokensAnchorEl);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -933,82 +934,85 @@ export default function Header(props) {
                 spacing={0.5}
                 sx={{ display: { xs: 'none', md: 'flex' }, mr: 0 }}
               >
-                <Link
-                  underline="none"
-                  color="inherit"
-                  href={`/watchlist`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Chip
-                    variant={'outlined'}
-                    icon={<StarOutlineIcon fontSize="small" />}
-                    label={'Watchlist'}
-                    onClick={() => {}}
-                    size="small"
-                    sx={{
-                      borderRadius: '12px',
-                      height: '32px',
-                      background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-                        ? `linear-gradient(135deg, 
-                            ${alpha('#030310', 0.8)} 0%, 
-                            ${alpha('#030310', 0.6)} 50%,
-                            ${alpha('#030310', 0.7)} 100%)`
-                        : `linear-gradient(135deg, 
-                            ${alpha(theme.palette.background.paper, 0.5)} 0%, 
-                            ${alpha(theme.palette.background.paper, 0.3)} 50%,
-                            ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                      backdropFilter: 'blur(20px) saturate(150%)',
-                      WebkitBackdropFilter: 'blur(20px) saturate(150%)',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                      boxShadow: `
-                        0 2px 8px ${alpha(theme.palette.common.black, 0.08)}, 
-                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.08)}`,
-                      color: theme.palette.text.primary,
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: '-100%',
-                        width: '100%',
-                        height: '100%',
-                        background: `linear-gradient(90deg, transparent, ${alpha(
-                          theme.palette.primary.main,
-                          0.1
-                        )}, transparent)`,
-                        transition: 'left 0.5s ease'
-                      },
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
+                {accountProfile && (
+                  <Link
+                    underline="none"
+                    color="inherit"
+                    href={`/watchlist`}
+                    rel="noreferrer noopener nofollow"
+                  >
+                    <Chip
+                      variant={'outlined'}
+                      icon={<StarOutlineIcon fontSize="small" />}
+                      label={'Watchlist'}
+                      onClick={() => {}}
+                      size="small"
+                      sx={{
+                        borderRadius: '12px',
+                        height: '32px',
                         background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-                          ? alpha(theme.palette.primary.main, 0.04)
-                          : `linear-gradient(135deg, ${alpha(
-                              theme.palette.primary.main,
-                              0.12
-                            )} 0%, ${alpha(theme.palette.primary.main, 0.06)} 100%)`,
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                          ? `linear-gradient(135deg, 
+                              ${alpha('#030310', 0.8)} 0%, 
+                              ${alpha('#030310', 0.6)} 50%,
+                              ${alpha('#030310', 0.7)} 100%)`
+                          : `linear-gradient(135deg, 
+                              ${alpha(theme.palette.background.paper, 0.5)} 0%, 
+                              ${alpha(theme.palette.background.paper, 0.3)} 50%,
+                              ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                        backdropFilter: 'blur(20px) saturate(150%)',
+                        WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
                         boxShadow: `
-                          0 8px 24px ${alpha(theme.palette.primary.main, 0.15)},
-                          inset 0 1px 2px ${alpha(theme.palette.common.white, 0.15)}`,
-                        color: theme.palette.primary.main,
+                          0 2px 8px ${alpha(theme.palette.common.black, 0.08)}, 
+                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.08)}`,
+                        color: theme.palette.text.primary,
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        overflow: 'hidden',
                         '&::before': {
-                          left: '100%'
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: '-100%',
+                          width: '100%',
+                          height: '100%',
+                          background: `linear-gradient(90deg, transparent, ${alpha(
+                            theme.palette.primary.main,
+                            0.1
+                          )}, transparent)`,
+                          transition: 'left 0.5s ease'
+                        },
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+                            ? alpha(theme.palette.primary.main, 0.04)
+                            : `linear-gradient(135deg, ${alpha(
+                                theme.palette.primary.main,
+                                0.12
+                              )} 0%, ${alpha(theme.palette.primary.main, 0.06)} 100%)`,
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                          boxShadow: `
+                            0 8px 24px ${alpha(theme.palette.primary.main, 0.15)},
+                            inset 0 1px 2px ${alpha(theme.palette.common.white, 0.15)}`,
+                          color: theme.palette.primary.main,
+                          '&::before': {
+                            left: '100%'
+                          }
+                        },
+                        '& .MuiChip-label': {
+                          px: 1.5,
+                          fontWeight: 500,
+                          fontSize: '0.875rem'
+                        },
+                        '& .MuiChip-icon': {
+                          color: 'inherit',
+                          fontSize: '1rem'
                         }
-                      },
-                      '& .MuiChip-label': {
-                        px: 1.5,
-                        fontWeight: 500,
-                        fontSize: '0.875rem'
-                      },
-                      '& .MuiChip-icon': {
-                        color: 'inherit',
-                        fontSize: '1rem'
-                      }
-                    }}
-                  />
-                </Link>
+                      }}
+                    />
+                  </Link>
+                )}
+                <Wallet style={{ marginRight: '4px' }} />
               </Stack>
             )}
 

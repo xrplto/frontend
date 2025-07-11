@@ -1,6 +1,5 @@
 import React, { useState, useContext, useEffect, useMemo, useCallback } from 'react';
 import Decimal from 'decimal.js';
-import Wallet from 'src/components/Wallet';
 import 'src/utils/i18n';
 import {
   alpha,
@@ -1049,7 +1048,6 @@ const Topbar = () => {
                   Live Trades
                 </Typography>
               </APILabel>
-              {!fullSearch && isDesktop && <Wallet style={{ marginRight: '4px' }} />}
             </Box>
           )}
         </ContentWrapper>
