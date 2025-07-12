@@ -41,6 +41,10 @@ import { normalizeCurrencyCode } from 'src/utils/parse/utils';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
+// Wallet SDK
+import sdk from '@crossmarkio/sdk';
+import { isInstalled as isGemInstalled, submitTransaction } from '@gemwallet/api';
+
 // Components
 import QRDialog from 'src/components/QRDialog';
 import { useRef } from 'react';
@@ -209,7 +213,7 @@ export default function Orders({ pair }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
 
-  const { accountProfile, sync, setSync, darkMode } = useContext(AppContext);
+  const { accountProfile, sync, setSync, darkMode, openSnackbar } = useContext(AppContext);
   const accountAddress = accountProfile?.account;
 
   const [openScanQR, setOpenScanQR] = useState(false);
@@ -296,7 +300,15 @@ export default function Orders({ pair }) {
   }, [allOffers, curr1Name, curr2Name, curr1?.issuer, curr2?.issuer]);
 
   const handleCancel = (event, seq) => {
-    onOfferCancelXumm(seq);
+    const wallet_type = accountProfile?.wallet_type;
+    if (wallet_type === 'gem') {
+      onOfferCancelGem(seq);
+    } else if (wallet_type === 'crossmark') {
+      onOfferCancelCrossmark(seq);
+    } else {
+      // Default to Xaman/XUMM
+      onOfferCancelXumm(seq);
+    }
   };
 
   useEffect(() => {
@@ -335,6 +347,61 @@ export default function Orders({ pair }) {
       }
     };
   }, [openScanQR, uuid]);
+
+  const onOfferCancelGem = async (seq) => {
+    setLoading(true);
+    try {
+      const gemInstalled = await isGemInstalled();
+      if (gemInstalled) {
+        const transaction = {
+          TransactionType: 'OfferCancel',
+          Account: accountProfile.account,
+          OfferSequence: seq,
+          Fee: '12'  // Add fee as required by XRPL
+        };
+        
+        // GemWallet expects the transaction wrapped in a transaction property
+        const result = await submitTransaction({ transaction });
+        
+        if (result && (result.type === 'response' || result.result?.meta?.TransactionResult === 'tesSUCCESS')) {
+          setSync(sync + 1);
+          openSnackbar('Offer cancelled successfully', 'success');
+        } else {
+          openSnackbar('Failed to cancel offer', 'error');
+        }
+      } else {
+        openSnackbar('GemWallet is not installed', 'error');
+      }
+    } catch (err) {
+      console.error('Error cancelling offer with GemWallet:', err);
+      openSnackbar(err.message || 'Failed to cancel offer', 'error');
+    }
+    setLoading(false);
+  };
+  
+  const onOfferCancelCrossmark = async (seq) => {
+    setLoading(true);
+    try {
+      const transaction = {
+        TransactionType: 'OfferCancel',
+        Account: accountProfile.account,
+        OfferSequence: seq
+      };
+      
+      const response = await sdk.methods.signAndSubmitAndWait(transaction);
+      
+      if (response?.response?.data?.meta?.isSuccess) {
+        setSync(sync + 1);
+        openSnackbar('Offer cancelled successfully', 'success');
+      } else {
+        openSnackbar('Failed to cancel offer', 'error');
+      }
+    } catch (err) {
+      console.error('Error cancelling offer with Crossmark:', err);
+      openSnackbar(err.message || 'Failed to cancel offer', 'error');
+    }
+    setLoading(false);
+  };
 
   const onOfferCancelXumm = async (seq) => {
     setLoading(true);
