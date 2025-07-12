@@ -41,13 +41,15 @@ import { fNumberWithSuffix } from 'src/utils/formatNumber';
 
 // ----------------------------------------------------------------------
 const CompactContainer = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.3
-  )} 100%)`,
-  backdropFilter: 'blur(10px)',
+  background: 'transparent',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
   borderRadius: '12px',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+  boxShadow: `
+    0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+    0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
   padding: theme.spacing(2),
   position: 'relative',
   overflow: 'hidden',
@@ -58,10 +60,10 @@ const CompactContainer = styled(Box)(({ theme }) => ({
 }));
 
 const ModernToggleGroup = styled(ToggleButtonGroup)(({ theme }) => ({
-  backgroundColor: alpha(theme.palette.background.paper, 0.4),
+  backgroundColor: 'transparent',
   borderRadius: '8px',
   padding: '2px',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
   '& .MuiToggleButton-root': {
     border: 'none',
     borderRadius: '6px !important',

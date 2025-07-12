@@ -49,20 +49,21 @@ const ChartContainer = styled(Box)(({ theme }) => ({
     position: 'relative',
     borderRadius: '16px',
     overflow: 'hidden',
-    background: theme.palette.mode === 'dark'
-        ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.05)} 0%, ${alpha(theme.palette.background.default, 0.02)} 100%)`
-        : `linear-gradient(135deg, ${alpha(theme.palette.grey[50], 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
-    backdropFilter: 'blur(10px)',
-    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    boxShadow: theme.palette.mode === 'dark'
-        ? `0 8px 32px ${alpha(theme.palette.common.black, 0.4)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.05)}`
-        : `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.8)}`,
+    background: 'transparent',
+    backdropFilter: 'none',
+    WebkitBackdropFilter: 'none',
+    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+    boxShadow: `
+        0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+        0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     '&:hover': {
         transform: 'translateY(-2px)',
-        boxShadow: theme.palette.mode === 'dark'
-            ? `0 12px 48px ${alpha(theme.palette.common.black, 0.5)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
-            : `0 12px 48px ${alpha(theme.palette.common.black, 0.12)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.9)}`,
+        boxShadow: `
+            0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+            0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
     },
     '& .highcharts-container': {
         borderRadius: '16px'
@@ -75,7 +76,7 @@ const ChartHeader = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     padding: theme.spacing(2, 3),
-    background: `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, transparent 100%)`,
+    background: 'transparent',
     zIndex: 10,
     pointerEvents: 'none'
 }));

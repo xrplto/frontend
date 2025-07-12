@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { MD5 } from 'crypto-js';
 import Decimal from 'decimal.js';
+import { alpha } from '@mui/material/styles';
 import {
   Table,
   TableBody,
@@ -78,18 +79,14 @@ const LiveIndicator = styled('div')(({ theme }) => ({
   gap: theme.spacing(1),
   padding: theme.spacing(0.5, 1.5),
   borderRadius: '20px',
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? `${theme.palette.primary.main}30`
-      : `${theme.palette.primary.main}20`,
-  border:
-    theme.palette.mode === 'dark'
-      ? `1px solid ${theme.palette.primary.main}60`
-      : `1px solid ${theme.palette.primary.main}40`,
-  boxShadow:
-    theme.palette.mode === 'dark'
-      ? `0 2px 8px ${theme.palette.primary.main}30`
-      : `0 2px 4px ${theme.palette.primary.main}20`
+  backgroundColor: 'transparent',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+  boxShadow: `
+    0 4px 16px ${alpha(theme.palette.primary.main, 0.15)}, 
+    0 1px 2px ${alpha(theme.palette.primary.main, 0.05)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
 }));
 
 const LiveCircle = styled('div')(({ theme }) => ({
@@ -123,22 +120,25 @@ const TradeCard = styled(Card, {
 })(({ theme, isNew }) => ({
   marginBottom: theme.spacing(0.5),
   borderRadius: '8px',
-  backgroundColor:
-    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.9)',
-  border: `1px solid ${
-    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
-  }`,
+  backgroundColor: 'transparent',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+  boxShadow: `
+    0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+    0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
   transition: 'all 0.3s ease-in-out',
   position: 'relative',
   overflow: 'hidden',
   animation: isNew ? `${highlightAnimation(theme)} 1s ease-in-out` : 'none',
   '&:hover': {
     transform: 'translateY(-1px)',
-    boxShadow:
-      theme.palette.mode === 'dark'
-        ? '0 4px 12px rgba(0, 0, 0, 0.3)'
-        : '0 4px 12px rgba(0, 0, 0, 0.1)',
-    border: `1px solid ${theme.palette.primary.main}60`
+    boxShadow: `
+      0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+      0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
   }
 }));
 
@@ -147,19 +147,15 @@ const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
   height: '24px',
   fontWeight: 'bold',
   borderRadius: '12px',
-  backgroundColor:
-    tradetype === 'BUY'
-      ? theme.palette.mode === 'dark'
-        ? `${theme.palette.primary.main}40`
-        : `${theme.palette.primary.main}30`
-      : theme.palette.mode === 'dark'
-      ? 'rgba(244, 67, 54, 0.2)'
-      : 'rgba(244, 67, 54, 0.15)',
+  backgroundColor: 'transparent',
   color: tradetype === 'BUY' ? theme.palette.primary.main : '#F44336',
   border:
     tradetype === 'BUY'
-      ? `1px solid ${theme.palette.primary.main}80`
-      : `1px solid rgba(244, 67, 54, 0.4)`
+      ? `1px solid ${alpha(theme.palette.primary.main, 0.5)}`
+      : `1px solid ${alpha('#F44336', 0.4)}`,
+  boxShadow: `
+    0 2px 8px ${alpha(tradetype === 'BUY' ? theme.palette.primary.main : '#F44336', 0.15)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
 }));
 
 const VolumeIndicator = styled('div')(({ theme, volume }) => ({
@@ -734,10 +730,15 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
           sx={{
             textAlign: 'center',
             py: 6,
-            backgroundColor:
-              theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+            backgroundColor: 'transparent',
+            backdropFilter: 'none',
+            WebkitBackdropFilter: 'none',
             borderRadius: '12px',
-            border: `1px dashed ${theme.palette.divider}`
+            border: `1px dashed ${alpha(theme.palette.divider, 0.3)}`,
+            boxShadow: `
+              0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+              0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+              inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
           }}
         >
           <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -782,10 +783,16 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
           },
           gap: 2,
           p: 2,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-          backgroundColor:
-            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          backgroundColor: 'transparent',
+          backdropFilter: 'none',
+          WebkitBackdropFilter: 'none',
           borderRadius: '8px 8px 0 0',
+          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          boxShadow: `
+            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
           '& > *': {
             fontWeight: 'bold',
             color: theme.palette.text.secondary,
@@ -1062,7 +1069,19 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
           horizontal: 'center'
         }}
       >
-        <Box sx={{ p: 2, maxWidth: 320, border: `1px solid ${theme.palette.divider}` }}>
+        <Box sx={{ 
+          p: 2, 
+          maxWidth: 320, 
+          backgroundColor: 'transparent',
+          backdropFilter: 'none',
+          WebkitBackdropFilter: 'none',
+          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          borderRadius: '8px',
+          boxShadow: `
+            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+        }}>
           {selectedTrade && (
             <React.Fragment>
               {renderWashTradeDetails(
@@ -1086,10 +1105,15 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
         <Stack spacing={2} sx={{ position: 'relative', zIndex: 1 }}>
           <Box sx={{ 
             p: 2, 
-            backgroundColor: 'background.paper', 
+            backgroundColor: 'transparent',
+            backdropFilter: 'none',
+            WebkitBackdropFilter: 'none',
             borderRadius: 1, 
-            border: '1px solid', 
-            borderColor: 'divider',
+            border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+            boxShadow: `
+              0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+              0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+              inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
             position: 'relative',
             zIndex: 1000,
             '& .MuiSelect-root': {
@@ -1142,9 +1166,15 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
-                    border: '1px dashed',
-                    borderColor: 'divider',
-                    borderRadius: 1
+                    backgroundColor: 'transparent',
+                    backdropFilter: 'none',
+                    WebkitBackdropFilter: 'none',
+                    border: `1px dashed ${alpha(theme.palette.divider, 0.3)}`,
+                    borderRadius: 1,
+                    boxShadow: `
+                      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
                   }}>
                     <Typography color="text.secondary">
                       Waiting for order book data...

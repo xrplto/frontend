@@ -35,13 +35,15 @@ import NumberTooltip from 'src/components/NumberTooltip';
 
 // Styled Components
 const OrderBookContainer = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.3
-  )} 100%)`,
-  backdropFilter: 'blur(10px)',
+  background: 'transparent',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
   borderRadius: '12px',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+  boxShadow: `
+    0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+    0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
   overflow: 'hidden',
   position: 'relative',
   [theme.breakpoints.down('sm')]: {
@@ -55,8 +57,8 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'space-between',
   padding: theme.spacing(1.5, 2),
-  background: alpha(theme.palette.background.paper, 0.4),
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  background: 'transparent',
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(1, 1.5),
     '& .MuiTypography-root': {
@@ -77,11 +79,11 @@ const ModernTable = styled(Table)(({ theme }) => ({
     }
   },
   [`& .${tableCellClasses.head}`]: {
-    backgroundColor: alpha(theme.palette.background.paper, 0.6),
+    backgroundColor: 'transparent',
     fontWeight: 600,
     fontSize: '0.7rem',
     color: alpha(theme.palette.text.secondary, 0.8),
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
     padding: theme.spacing(1),
     [theme.breakpoints.down('sm')]: {
       fontSize: '0.65rem',
@@ -155,17 +157,25 @@ const OrderCountChip = styled(Chip)(({ theme }) => ({
 
 const CompactTooltip = styled(Tooltip)(({ theme }) => ({
   '& .MuiTooltip-tooltip': {
-    backgroundColor: alpha(theme.palette.background.paper, 0.95),
+    backgroundColor: theme.palette.mode === 'dark' 
+      ? alpha(theme.palette.background.paper, 0.95)
+      : alpha(theme.palette.background.paper, 0.98),
     color: theme.palette.text.primary,
     border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
     borderRadius: '8px',
     fontSize: '0.75rem',
     padding: theme.spacing(1.5),
-    backdropFilter: 'blur(10px)',
-    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.1)}`
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    boxShadow: `
+      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
   },
   '& .MuiTooltip-arrow': {
-    color: alpha(theme.palette.background.paper, 0.95)
+    color: theme.palette.mode === 'dark' 
+      ? alpha(theme.palette.background.paper, 0.95)
+      : alpha(theme.palette.background.paper, 0.98)
   }
 }));
 

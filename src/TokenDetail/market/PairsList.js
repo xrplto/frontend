@@ -14,7 +14,8 @@ import {
   Typography,
   Tooltip,
   useMediaQuery,
-  useTheme
+  useTheme,
+  alpha
 } from '@mui/material';
 
 // Iconify
@@ -58,11 +59,12 @@ const badge24hStyle = {
   fontSize: '9px',
   fontWeight: '600',
   lineHeight: '14px',
-  backgroundColor: 'rgba(99, 115, 129, 0.12)',
-  backdropFilter: 'blur(6px)',
+  backgroundColor: 'transparent',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
   borderRadius: '4px',
   padding: '1px 4px',
-  border: '1px solid rgba(145, 158, 171, 0.08)'
+  border: '1px solid rgba(145, 158, 171, 0.2)'
 };
 
 const badgeDEXStyle = {
@@ -73,11 +75,12 @@ const badgeDEXStyle = {
   fontSize: '9px',
   fontWeight: '600',
   lineHeight: '14px',
-  backgroundColor: 'rgba(183, 129, 3, 0.12)',
-  backdropFilter: 'blur(6px)',
+  backgroundColor: 'transparent',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
   borderRadius: '4px',
   padding: '1px 4px',
-  border: '1px solid rgba(183, 129, 3, 0.24)'
+  border: '1px solid rgba(183, 129, 3, 0.3)'
 };
 
 const StyledTableHead = styled(TableHead, {
@@ -86,9 +89,10 @@ const StyledTableHead = styled(TableHead, {
   position: 'sticky',
   zIndex: 999,
   top: 0,
-  background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-  backdropFilter: 'blur(20px)',
-  borderBottom: `1px solid ${darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'}`,
+  background: 'transparent',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
   '&::after': {
     content: '""',
     position: 'absolute',
@@ -97,7 +101,7 @@ const StyledTableHead = styled(TableHead, {
     right: 0,
     height: '1px',
     background: `linear-gradient(90deg, transparent, ${
-      darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
+      alpha(theme.palette.divider, 0.2)
     }, transparent)`
   }
 }));
@@ -105,16 +109,20 @@ const StyledTableHead = styled(TableHead, {
 const StyledTableRow = styled(TableRow, {
   shouldForwardProp: (prop) => prop !== 'darkMode' && prop !== 'isMobile'
 })(({ theme, darkMode, isMobile }) => ({
-  borderBottom: '1px solid rgba(145, 158, 171, 0.08)',
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  backgroundColor: 'transparent',
   '&:hover': {
     '& .MuiTableCell-root': {
-      backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(145, 158, 171, 0.04)',
-      backdropFilter: 'blur(6px)'
+      backgroundColor: alpha(theme.palette.primary.main, 0.04),
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none'
     },
     cursor: 'pointer',
     transform: 'translateY(-1px)',
-    boxShadow: darkMode ? '0 4px 16px rgba(0, 0, 0, 0.24)' : '0 4px 16px rgba(145, 158, 171, 0.16)'
+    boxShadow: `
+      0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 
+      0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`
   },
   '& .MuiTableCell-root': {
     padding: isMobile ? '8px 4px' : '16px 12px',
@@ -122,6 +130,7 @@ const StyledTableRow = styled(TableRow, {
     borderBottom: 'none',
     fontSize: isMobile ? '11px' : '14px',
     fontWeight: '500',
+    backgroundColor: 'transparent',
     '&:not(:first-of-type)': {
       paddingLeft: isMobile ? '2px' : '8px'
     }
@@ -157,7 +166,7 @@ const ChartCell = ({ darkMode, sparkline, id, isMobile }) => {
               border: `1px solid ${
                 darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
               }`,
-              backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.8)',
+              backgroundColor: 'transparent',
               position: 'relative',
               transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
@@ -192,7 +201,7 @@ const ChartCell = ({ darkMode, sparkline, id, isMobile }) => {
               border: `1px solid ${
                 darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
               }`,
-              backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.4)',
+              backgroundColor: 'transparent',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -217,7 +226,7 @@ const ChartCell = ({ darkMode, sparkline, id, isMobile }) => {
             width: '180px',
             height: '60px',
             borderRadius: '8px',
-            backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(145, 158, 171, 0.04)',
+            backgroundColor: 'transparent',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -262,8 +271,9 @@ export default function PairsList({ token, pairs }) {
       position: 'sticky',
       zIndex: 1001,
       left: 0,
-      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(20px)',
+      background: 'transparent',
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none',
       width: isMobile ? '40px' : '60px',
       minWidth: isMobile ? '40px' : '60px',
       padding: isMobile ? '8px 4px' : '16px 12px'
@@ -272,13 +282,14 @@ export default function PairsList({ token, pairs }) {
       position: 'sticky',
       zIndex: 1002,
       left: isMobile ? '40px' : '60px',
-      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(20px)',
+      background: 'transparent',
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none',
       padding: isMobile ? '8px 4px' : '16px 12px',
       '&:before': scrollLeft
         ? {
             content: "''",
-            boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
+            boxShadow: `inset 10px 0 8px -8px ${alpha(theme.palette.divider, 0.24)}`,
             position: 'absolute',
             top: '0',
             right: '0',
@@ -313,9 +324,8 @@ export default function PairsList({ token, pairs }) {
         sx={{
           px: isMobile ? 1 : 2,
           py: isMobile ? 1 : 2,
-          borderBottom: `1px solid ${
-            darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-          }`
+          backgroundColor: 'transparent',
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`
         }}
       >
         <Typography
@@ -341,6 +351,15 @@ export default function PairsList({ token, pairs }) {
           py: 1,
           overflow: 'auto',
           width: '100%',
+          backgroundColor: 'transparent',
+          backdropFilter: 'none',
+          WebkitBackdropFilter: 'none',
+          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          borderRadius: '12px',
+          boxShadow: `
+            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
           '& > *': {
             scrollSnapAlign: 'center'
           },
@@ -383,9 +402,18 @@ export default function PairsList({ token, pairs }) {
                   componentsProps={{
                     tooltip: {
                       sx: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                        backgroundColor: theme.palette.mode === 'dark' 
+                          ? alpha(theme.palette.background.paper, 0.95)
+                          : alpha(theme.palette.background.paper, 0.98),
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                         fontSize: '12px',
-                        fontWeight: '500'
+                        fontWeight: '500',
+                        boxShadow: `
+                          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
                       }
                     }
                   }}
@@ -406,9 +434,18 @@ export default function PairsList({ token, pairs }) {
                   componentsProps={{
                     tooltip: {
                       sx: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                        backgroundColor: theme.palette.mode === 'dark' 
+                          ? alpha(theme.palette.background.paper, 0.95)
+                          : alpha(theme.palette.background.paper, 0.98),
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                         fontSize: '12px',
-                        fontWeight: '500'
+                        fontWeight: '500',
+                        boxShadow: `
+                          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
                       }
                     }
                   }}
@@ -429,9 +466,18 @@ export default function PairsList({ token, pairs }) {
                   componentsProps={{
                     tooltip: {
                       sx: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                        backgroundColor: theme.palette.mode === 'dark' 
+                          ? alpha(theme.palette.background.paper, 0.95)
+                          : alpha(theme.palette.background.paper, 0.98),
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                         fontSize: '12px',
-                        fontWeight: '500'
+                        fontWeight: '500',
+                        boxShadow: `
+                          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
                       }
                     }
                   }}
@@ -453,9 +499,18 @@ export default function PairsList({ token, pairs }) {
                   componentsProps={{
                     tooltip: {
                       sx: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                        backgroundColor: theme.palette.mode === 'dark' 
+                          ? alpha(theme.palette.background.paper, 0.95)
+                          : alpha(theme.palette.background.paper, 0.98),
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                         fontSize: '12px',
-                        fontWeight: '500'
+                        fontWeight: '500',
+                        boxShadow: `
+                          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
                       }
                     }
                   }}

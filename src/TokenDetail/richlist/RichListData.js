@@ -150,15 +150,15 @@ const RichListRow = ({ row, index, token, metrics, activeFiatCurrency, theme }) 
     };
   }, [balance, row.balance24h]);
 
-  const bgColor = index % 2 === 0 ? alpha(theme.palette.action.hover, 0.03) : 'transparent';
+  const bgColor = 'transparent';
 
   return (
     <TableRow
       hover
       sx={{
-        backgroundColor: bgColor,
+        backgroundColor: 'transparent',
         '&:hover': {
-          backgroundColor: alpha(theme.palette.action.hover, 0.1)
+          backgroundColor: alpha(theme.palette.action.hover, 0.04)
         }
       }}
     >
@@ -254,12 +254,19 @@ const MobileRichListCard = ({ row, token, metrics, activeFiatCurrency, theme }) 
 
   return (
     <Paper
-      elevation={1}
+      elevation={0}
       sx={{
         p: 2,
         mb: 1,
         borderRadius: 2,
-        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+        backgroundColor: 'transparent',
+        backdropFilter: 'none',
+        WebkitBackdropFilter: 'none',
+        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+        boxShadow: `
+          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
       }}
     >
       <Stack spacing={1.5}>
@@ -498,7 +505,17 @@ const RichListData = ({ token }) => {
           ))}
         </Stack>
       ) : (
-        <TableContainer component={Paper} elevation={0} sx={{ border: `1px solid ${theme.palette.divider}` }}>
+        <TableContainer component={Paper} elevation={0} sx={{ 
+          backgroundColor: 'transparent',
+          backdropFilter: 'none',
+          WebkitBackdropFilter: 'none',
+          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          borderRadius: '12px',
+          boxShadow: `
+            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+        }}>
           <Table size="small">
             <TableHead>
               <TableRow>
