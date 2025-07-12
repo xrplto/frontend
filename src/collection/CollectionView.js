@@ -77,7 +77,7 @@ import { ClipLoader } from 'react-spinners';
 
 // Utils & Context
 import { AppContext } from 'src/AppContext';
-import AccountTransactions from 'src/explore/CollectionActivity/AccountTransactions';
+import AccountTransactions from 'src/explore/CollectionActivity';
 import Watch from 'src/components/Watch';
 import { getMinterName } from 'src/utils/constants';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatNumber';
