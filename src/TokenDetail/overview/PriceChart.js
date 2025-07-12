@@ -881,13 +881,38 @@ function PriceChart({ token }) {
           },
           height: isMobile ? '85%' : '80%',
           plotLines: [
-            {
-              width: 1,
-              value: mediumValue,
-              dashStyle: 'Dash',
-              color: alpha(theme.palette.warning.main, 0.7),
-              zIndex: 1
-            }
+            ...(mediumValue
+              ? [
+                  {
+                    width: 0.5,
+                    value: mediumValue,
+                    dashStyle: 'LongDash',
+                    color: alpha(theme.palette.divider, 0.3),
+                    zIndex: 1
+                  }
+                ]
+              : []),
+            ...(lastPrice
+              ? [
+                  {
+                    width: 0.5,
+                    value: lastPrice,
+                    dashStyle: 'Dot',
+                    color: alpha(theme.palette.primary.main, 0.4),
+                    label: {
+                      text: fCurrency5(lastPrice),
+                      align: 'right',
+                      style: {
+                        color: theme.palette.text.secondary,
+                        fontSize: '9px'
+                      },
+                      x: -2,
+                      y: -2
+                    },
+                    zIndex: 3
+                  }
+                ]
+              : [])
           ],
           crosshair: {
             width: 1,
@@ -1111,7 +1136,7 @@ function PriceChart({ token }) {
         ]
       }
     }),
-    [data, mediumValue, theme, range, user, name, priceSeriesData, volumeSeriesData, isMobile, activeFiatCurrency, priceChange]
+    [data, mediumValue, theme, range, user, name, priceSeriesData, volumeSeriesData, isMobile, activeFiatCurrency, priceChange, lastPrice]
   );
 
   const options2 = useMemo(
@@ -1298,16 +1323,40 @@ function PriceChart({ token }) {
             }
           },
           gridLineColor: alpha(theme.palette.divider, 0.05),
-          plotLines: mediumValue
-            ? [
-                {
-                  width: 1,
-                  value: mediumValue,
-                  dashStyle: 'Dash',
-                  color: alpha(theme.palette.warning.main, 0.7)
-                }
-              ]
-            : []
+          plotLines: [
+            ...(mediumValue
+              ? [
+                  {
+                    width: 0.5,
+                    value: mediumValue,
+                    dashStyle: 'LongDash',
+                    color: alpha(theme.palette.divider, 0.3),
+                    zIndex: 1
+                  }
+                ]
+              : []),
+            ...(dataOHLC?.length > 0
+              ? [
+                  {
+                    width: 0.5,
+                    value: dataOHLC[dataOHLC.length - 1]?.[4] || 0,
+                    dashStyle: 'Dot',
+                    color: alpha(theme.palette.primary.main, 0.4),
+                    label: {
+                      text: fCurrency5(dataOHLC[dataOHLC.length - 1]?.[4] || 0),
+                      align: 'right',
+                      style: {
+                        color: theme.palette.text.secondary,
+                        fontSize: '9px'
+                      },
+                      x: -2,
+                      y: -2
+                    },
+                    zIndex: 3
+                  }
+                ]
+              : [])
+          ]
         },
         {
           title: {
