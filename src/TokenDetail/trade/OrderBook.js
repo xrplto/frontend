@@ -251,19 +251,10 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
           key={`${orderType}-${price}-${amount}-${idx}`}
           disableHoverListener={isMobile}
           title={
-            <Box sx={{ fontSize: '0.7rem' }}>
-              <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'auto 1fr',
-                gap: '2px 8px'
-              }}>
-                <span>Avg:</span>
-                <span style={{ fontWeight: 600, textAlign: 'right' }}>{avgPrice}</span>
-                <span>Sum:</span>
-                <span style={{ fontWeight: 600, textAlign: 'right' }}>{sumAmount}</span>
-                <span>Total:</span>
-                <span style={{ fontWeight: 600, textAlign: 'right' }}>{sumValue}</span>
-              </Box>
+            <Box sx={{ fontSize: '0.6rem', whiteSpace: 'nowrap' }}>
+              <div>Avg: <b>{avgPrice}</b></div>
+              <div>Sum: <b>{sumAmount}</b></div>
+              <div>Val: <b>{sumValue}</b></div>
             </Box>
           }
           placement="right"
@@ -373,7 +364,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
             <TableHead>
               <TableRow>
                 <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Sum</TableCell>
-                <TableCell align="right">Amount</TableCell>
+                <TableCell align="right">Amt</TableCell>
                 <TableCell align="right">Bid</TableCell>
               </TableRow>
             </TableHead>
@@ -416,7 +407,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
             <TableHead>
               <TableRow>
                 <TableCell align="left">Ask</TableCell>
-                <TableCell align="left">Amount</TableCell>
+                <TableCell align="left">Amt</TableCell>
                 <TableCell align="left" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Sum</TableCell>
               </TableRow>
             </TableHead>
@@ -434,8 +425,8 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            height: 100,
-            fontSize: '0.75rem',
+            height: 50,
+            fontSize: '0.65rem',
             color: '#999'
           }}
         >

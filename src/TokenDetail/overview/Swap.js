@@ -247,6 +247,8 @@ const Swap = ({ token }) => {
 
   // Add slippage state
   const [slippage, setSlippage] = useState(5); // Default 5% slippage
+  const [orderType, setOrderType] = useState('market'); // 'market' or 'limit'
+  const [limitPrice, setLimitPrice] = useState('');
 
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
@@ -836,16 +838,73 @@ const Swap = ({ token }) => {
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
 
-      // Use Payment transaction instead of OfferCreate
-      const PaymentFlags = {
-        tfPartialPayment: 131072,
-        tfLimitQuality: 65536,
-        tfNoDirectRipple: 1048576
-      };
+      let transactionData;
 
-      const Flags = PaymentFlags.tfPartialPayment;
+      if (orderType === 'limit') {
+        // Use OfferCreate for limit orders
+        const OfferFlags = {
+          tfSell: 524288,
+          tfImmediateOrCancel: 262144,
+          tfFillOrKill: 131072,
+          tfPassive: 65536
+        };
 
-      let Amount, SendMax, DeliverMin;
+        let TakerGets, TakerPays;
+
+        if (revert) {
+          // Selling curr2 to get curr1
+          TakerGets = {
+            currency: curr1.currency,
+            issuer: curr1.issuer,
+            value: amount1.toString()
+          };
+          TakerPays = {
+            currency: curr2.currency,
+            issuer: curr2.issuer,
+            value: amount2.toString()
+          };
+        } else {
+          // Selling curr1 to get curr2
+          TakerGets = {
+            currency: curr2.currency,
+            issuer: curr2.issuer,
+            value: amount2.toString()
+          };
+          TakerPays = {
+            currency: curr1.currency,
+            issuer: curr1.issuer,
+            value: amount1.toString()
+          };
+        }
+
+        // Convert XRP amounts to drops
+        if (TakerGets.currency === 'XRP') {
+          TakerGets = new Decimal(TakerGets.value).mul(1000000).toString();
+        }
+        if (TakerPays.currency === 'XRP') {
+          TakerPays = new Decimal(TakerPays.value).mul(1000000).toString();
+        }
+
+        transactionData = {
+          TransactionType: 'OfferCreate',
+          Account,
+          TakerGets,
+          TakerPays,
+          Flags: 0,
+          Fee: '12',
+          SourceTag: 93339333
+        };
+      } else {
+        // Use Payment transaction for market orders
+        const PaymentFlags = {
+          tfPartialPayment: 131072,
+          tfLimitQuality: 65536,
+          tfNoDirectRipple: 1048576
+        };
+
+        const Flags = PaymentFlags.tfPartialPayment;
+
+        let Amount, SendMax, DeliverMin;
 
       SendMax = {
         currency: curr1.currency,
@@ -880,29 +939,33 @@ const Swap = ({ token }) => {
         DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toString();
       }
 
-      let memoData = `Swap via https://xrpl.to`;
+        transactionData = {
+          TransactionType: 'Payment',
+          Account,
+          Destination: Account,
+          Amount,
+          DeliverMin,
+          SendMax,
+          Flags,
+          Fee: '12',
+          SourceTag: 93339333
+        };
+      }
+
+      let memoData = `${orderType === 'limit' ? 'Limit' : 'Swap'} via https://xrpl.to`;
+      transactionData.Memos = configureMemos('', '', memoData);
 
       switch (wallet_type) {
         case 'xaman':
           setLoading(true);
-          setTransactionType('Payment'); // Set correct transaction type for swaps
+          setTransactionType(orderType === 'limit' ? 'OfferCreate' : 'Payment');
           const body = {
-            TransactionType: 'Payment',
-            Account,
-            Destination: Account,
-            Amount,
-            DeliverMin,
-            SendMax,
-            Flags,
-            user_token,
-            Fee: '12',
-            SourceTag: 93339333
+            ...transactionData,
+            user_token
           };
 
-          const res = await axios.post(`${BASE_URL}/offer/payment`, {
-            ...body,
-            Memos: configureMemos('', '', memoData)
-          });
+          const endpoint = orderType === 'limit' ? `${BASE_URL}/offer/create` : `${BASE_URL}/offer/payment`;
+          const res = await axios.post(endpoint, body);
 
           if (res.status === 200) {
             const uuid = res.data.data.uuid;
@@ -919,23 +982,10 @@ const Swap = ({ token }) => {
         case 'gem':
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
-              let paymentTxData = {
-                TransactionType: 'Payment',
-                Account,
-                Destination: Account,
-                Amount,
-                DeliverMin,
-                SendMax,
-                Flags,
-                Fee: '12',
-                SourceTag: 93339333,
-                Memos: configureMemos('', '', memoData)
-              };
-
               dispatch(updateProcess(1));
 
               await submitTransaction({
-                transaction: paymentTxData
+                transaction: transactionData
               }).then(({ type, result }) => {
                 if (type == 'response') {
                   dispatch(updateProcess(2));
@@ -958,21 +1008,8 @@ const Swap = ({ token }) => {
           });
           break;
         case 'crossmark':
-          let paymentTxData = {
-            TransactionType: 'Payment',
-            Account,
-            Destination: Account,
-            Amount,
-            DeliverMin,
-            SendMax,
-            Flags,
-            Fee: '12',
-            SourceTag: 93339333,
-            Memos: configureMemos('', '', memoData)
-          };
-
           dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(paymentTxData).then(({ response }) => {
+          await sdk.methods.signAndSubmitAndWait(transactionData).then(({ response }) => {
             if (response.data.meta.isSuccess) {
               dispatch(updateProcess(2));
               dispatch(updateTxHash(response.data.resp.result?.hash));
@@ -1190,8 +1227,13 @@ const Swap = ({ token }) => {
 
     const fAmount = Number(amount);
     const fValue = Number(value);
-    if (fAmount > 0 && fValue > 0) onOfferCreateXumm();
-    else {
+    if (fAmount > 0 && fValue > 0) {
+      if (orderType === 'limit' && !limitPrice) {
+        openSnackbar('Please enter a limit price!', 'error');
+        return;
+      }
+      onOfferCreateXumm();
+    } else {
       openSnackbar('Invalid values!', 'error');
     }
   };
@@ -1314,8 +1356,9 @@ const Swap = ({ token }) => {
     }
     
     if (!amount1 || !amount2) return 'Enter an Amount';
+    else if (orderType === 'limit' && !limitPrice) return 'Enter Limit Price';
     else if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
-    else return 'Exchange';
+    else return orderType === 'limit' ? 'Place Limit Order' : 'Exchange';
   };
 
   const onFillMax = () => {
@@ -1651,6 +1694,76 @@ const Swap = ({ token }) => {
               </Stack>
             </Stack>
           </Box>
+
+          {/* Order Type Toggle */}
+          <Box sx={{ px: 1.5, py: 1 }}>
+            <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+              <Button
+                size="small"
+                variant={orderType === 'market' ? 'contained' : 'outlined'}
+                onClick={() => setOrderType('market')}
+                sx={{
+                  minWidth: { xs: '80px', sm: '90px' },
+                  height: { xs: '28px', sm: '32px' },
+                  fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                  textTransform: 'none',
+                  borderRadius: '8px'
+                }}
+              >
+                Market
+              </Button>
+              <Button
+                size="small"
+                variant={orderType === 'limit' ? 'contained' : 'outlined'}
+                onClick={() => setOrderType('limit')}
+                sx={{
+                  minWidth: { xs: '80px', sm: '90px' },
+                  height: { xs: '28px', sm: '32px' },
+                  fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                  textTransform: 'none',
+                  borderRadius: '8px'
+                }}
+              >
+                Limit
+              </Button>
+            </Stack>
+          </Box>
+
+          {/* Limit Price Input */}
+          {orderType === 'limit' && (
+            <Box sx={{ px: 1.5, py: 1 }}>
+              <Stack spacing={1}>
+                <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                  Limit Price ({revert ? curr1.name : curr2.name} per {revert ? curr2.name : curr1.name})
+                </Typography>
+                <Input
+                  placeholder="0.00"
+                  fullWidth
+                  disableUnderline
+                  value={limitPrice}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '.') {
+                      setLimitPrice('0.');
+                      return;
+                    }
+                    if (!isNaN(Number(val)) || val === '') {
+                      setLimitPrice(val);
+                    }
+                  }}
+                  sx={{
+                    backgroundColor: alpha(theme.palette.background.paper, 0.05),
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    input: {
+                      fontSize: { xs: '14px', sm: '16px' },
+                      fontWeight: 600
+                    }
+                  }}
+                />
+              </Stack>
+            </Box>
+          )}
 
         </ConverterFrame>
       </OverviewWrapper>
