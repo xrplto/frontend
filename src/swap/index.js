@@ -578,12 +578,15 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
 
   const tokenPrice1 = (() => {
     try {
-      if (curr1IsXRP) {
-        // If curr1 is XRP, convert to selected fiat currency
+      const token1IsXRP = token1?.currency === 'XRP';
+      const token2IsXRP = token2?.currency === 'XRP';
+      
+      if (token1IsXRP) {
+        // If token1 is XRP, convert to selected fiat currency
         return new Decimal(amount1 || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
-      } else if (curr2IsXRP) {
-        // If curr1 is token and curr2 is XRP, first convert to XRP, then to fiat
-        const xrpValue = new Decimal(amount1 || 0).mul(tokenExch2 || 0);
+      } else if (token2IsXRP) {
+        // If token1 is RLUSD and token2 is XRP, first convert to XRP using rate1, then to fiat
+        const xrpValue = new Decimal(amount1 || 0).mul(tokenExch1 || 0);
         return xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
       } else {
         // For non-XRP pairs, show fiat value
@@ -598,12 +601,16 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   })();
   const tokenPrice2 = (() => {
     try {
-      if (curr2IsXRP) {
-        // If curr2 is XRP, convert to selected fiat currency
+      const token1IsXRP = token1?.currency === 'XRP';
+      const token2IsXRP = token2?.currency === 'XRP';
+      
+      if (token2IsXRP) {
+        // If token2 is XRP, convert to selected fiat currency
         return new Decimal(amount2 || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
-      } else if (curr1IsXRP) {
-        // If curr2 is token and curr1 is XRP, first convert to XRP, then to fiat
-        const xrpValue = new Decimal(amount2 || 0).mul(tokenExch2 || 0);
+      } else if (token1IsXRP) {
+        // If token2 is RLUSD and token1 is XRP, rate2 tells us XRP per RLUSD
+        // So we need to divide by rate2 to get XRP amount, then convert to fiat
+        const xrpValue = new Decimal(amount2 || 0).div(tokenExch2 || 1);
         return xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
       } else {
         // For non-XRP pairs, show fiat value
@@ -1000,12 +1007,13 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
       const md51 = token1.md5;
       const md52 = token2.md5;
 
-      // https://api.xrpl.to/api/pair_rates?md51=84e5efeb89c4eae8f68188982dc290d8&md52=c9ac9a6c44763c1bd9ccc6e47572fd26
+      // Get dynamic exchange rates from API
       axios
         .get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`)
         .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
           if (ret) {
+            // Use the rates as they come from the API
             setTokenExch1(Number(ret.rate1) || 0);
             setTokenExch2(Number(ret.rate2) || 0);
           }
@@ -1018,7 +1026,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
         });
     }
     getTokenPrice();
-  }, [token1, amount1, token2, amount2]);
+  }, [token1, token2]);
 
   useEffect(() => {
     // Calculate when token prices change
@@ -1353,80 +1361,45 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
       const rate1 = new Decimal(tokenExch1 || 0);
       const rate2 = new Decimal(tokenExch2 || 0);
 
-      // Check if either currency is XRP
-      const curr1IsXRP = curr1?.currency === 'XRP';
-      const curr2IsXRP = curr2?.currency === 'XRP';
 
-      // For XRP pairs, use special calculation
-      if (curr1IsXRP || curr2IsXRP) {
-        if (rate2.eq(0)) {
-          return '';
-        }
+      // Check if this is an XRP pair based on actual tokens (not curr1/curr2)
+      const token1IsXRP = token1?.currency === 'XRP';
+      const token2IsXRP = token2?.currency === 'XRP';
 
-        let result = 0;
-
-        if (curr1IsXRP && !curr2IsXRP) {
-          // curr1 = XRP, curr2 = Token
-          // tokenExch2 is the Token-to-XRP rate, so we need to invert it for XRP-to-Token
-          const tokenToXrpRate = rate2.toNumber();
-          const xrpToTokenRate = tokenToXrpRate > 0 ? 1 / tokenToXrpRate : 0;
-
-          if (active === 'AMOUNT') {
-            // User typed in top field = XRP, calculate Token
-            result = amt.mul(xrpToTokenRate).toNumber();
-          } else {
-            // User typed in bottom field = Token, calculate XRP
-            result = amt.div(xrpToTokenRate).toNumber();
-          }
-        } else if (!curr1IsXRP && curr2IsXRP) {
-          // curr1 = Token, curr2 = XRP
-          // tokenExch2 is the direct Token-to-XRP rate
-          const tokenToXrpRate = rate2.toNumber();
-
-          if (active === 'AMOUNT') {
-            // User typed in top field = Token, calculate XRP
-            result = amt.mul(tokenToXrpRate).toNumber();
-          } else {
-            // User typed in bottom field = XRP, calculate Token
-            result = amt.div(tokenToXrpRate).toNumber();
-          }
-        }
-
-        return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
-      }
-
-      // For non-XRP pairs, use the original calculation
-      if (rate1.eq(0) || rate2.eq(0)) {
-        return '';
-      }
-
+      // API rates depend on token order:
+      // XRP->RLUSD: rate1=1, rate2=XRP price (how many XRP per RLUSD)
+      // RLUSD->XRP: rate1=XRP price, rate2=1
+      
       let result = new Decimal(0);
-
-      if (active === 'AMOUNT') {
-        // Calculate value from amount
-        if (revert) {
-          // When reverted: amount is for token2, calculate token1 value
-          result = amt.mul(rate2).div(rate1);
+      
+      if (token1IsXRP && !token2IsXRP) {
+        // XRP -> Token: use rate2 as divisor
+        if (active === 'AMOUNT') {
+          result = !revert ? amt.div(rate2) : amt.mul(rate2);
         } else {
-          // Normal: amount is for token1, calculate token2 value
-          result = amt.mul(rate1).div(rate2);
+          result = !revert ? amt.mul(rate2) : amt.div(rate2);
+        }
+      } else if (!token1IsXRP && token2IsXRP) {
+        // Token -> XRP: use rate1 as multiplier
+        if (active === 'AMOUNT') {
+          result = !revert ? amt.mul(rate1) : amt.div(rate1);
+        } else {
+          result = !revert ? amt.div(rate1) : amt.mul(rate1);
         }
       } else {
-        // active === 'VALUE'
-        // Calculate amount from value
-        if (revert) {
-          // When reverted: value is for token1, calculate token2 amount
-          result = amt.mul(rate1).div(rate2);
+        // Non-XRP pairs
+        if (active === 'AMOUNT') {
+          result = !revert ? amt.mul(rate1).div(rate2) : amt.mul(rate2).div(rate1);
         } else {
-          // Normal: value is for token2, calculate token1 amount
-          result = amt.mul(rate2).div(rate1);
+          result = !revert ? amt.mul(rate2).div(rate1) : amt.mul(rate1).div(rate2);
         }
       }
-
+      
+      
       if (result.isNaN() || !result.isFinite()) {
         return '';
       }
-
+      
       return result.toFixed(6, Decimal.ROUND_DOWN);
     } catch (e) {
       return '';
@@ -1466,9 +1439,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
 
-
     setAmount1(value);
-    setActive(revert ? 'VALUE' : 'AMOUNT');
+    setActive('AMOUNT'); // Top field is always AMOUNT
 
     // Calculate using token prices
     const curr1IsXRP = curr1?.currency === 'XRP';
@@ -1498,9 +1470,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
 
-
     setAmount2(value);
-    setActive(revert ? 'AMOUNT' : 'VALUE');
+    setActive('VALUE'); // Bottom field is always VALUE
 
     // Calculate using token prices
     const curr1IsXRP = curr1?.currency === 'XRP';
@@ -2512,7 +2483,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 ) : (
                   <>
                     <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                      1 {curr1.name} = 
+                      1 {token1.name} = 
                     </Typography>
                     <Typography 
                       variant="body2" 
@@ -2522,7 +2493,22 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                         fontSize: { xs: '0.75rem', sm: '0.875rem' }
                       }}
                     >
-                      {Number(tokenExch2) > 0 ? (revert ? Number(tokenExch2).toFixed(6) : (1 / Number(tokenExch2)).toFixed(6)) : '0'} {curr2.name}
+                      {(() => {
+                        // Show conversion rate from token1 to token2
+                        const token1IsXRP = token1?.currency === 'XRP';
+                        const token2IsXRP = token2?.currency === 'XRP';
+                        
+                        if (token1IsXRP && !token2IsXRP) {
+                          // XRP -> Token: 1 XRP = 1/rate2 Token
+                          return tokenExch2 > 0 ? (1 / tokenExch2).toFixed(6) : '0';
+                        } else if (!token1IsXRP && token2IsXRP) {
+                          // Token -> XRP: 1 Token = rate1 XRP
+                          return tokenExch1 > 0 ? tokenExch1.toFixed(6) : '0';
+                        } else {
+                          // Non-XRP pairs
+                          return tokenExch1 > 0 && tokenExch2 > 0 ? (tokenExch1 / tokenExch2).toFixed(6) : '0';
+                        }
+                      })()} {token2.name}
                     </Typography>
                   </>
                 )}
