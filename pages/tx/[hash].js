@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import useWebSocket from 'react-use-websocket';
 import { update_metrics } from 'src/redux/statusSlice';
+import { LRUCache } from 'lru-cache';
 import {
   Container,
   Box,
@@ -42,6 +43,25 @@ import { formatDistanceToNow } from 'date-fns';
 import BigNumber from 'bignumber.js';
 import CryptoJS from 'crypto-js';
 import { getHashIcon } from 'src/utils/extra';
+
+// Create transaction cache with 1 hour TTL and max 100 entries
+const txCache = new LRUCache({
+  max: 100,
+  ttl: 1000 * 60 * 60, // 1 hour in milliseconds
+  updateAgeOnGet: true,
+  updateAgeOnHas: true,
+});
+
+// Utility function to clear cache (useful for debugging)
+export const clearTransactionCache = (hash) => {
+  if (hash) {
+    txCache.delete(hash);
+    console.log(`Cleared cache for transaction: ${hash}`);
+  } else {
+    txCache.clear();
+    console.log('Cleared entire transaction cache');
+  }
+};
 
 const ipfsToGateway = (uri) => {
   if (!uri || !uri.startsWith('ipfs://')) {
@@ -3354,16 +3374,58 @@ export async function getServerSideProps(context) {
     };
   }
 
+  // Check cache first
+  const cachedData = txCache.get(hash);
+  if (cachedData) {
+    console.log(`Cache hit for transaction: ${hash}`);
+    // Set cache headers for browser caching
+    context.res.setHeader(
+      'Cache-Control',
+      'public, s-maxage=3600, stale-while-revalidate=86400'
+    );
+    return {
+      props: {
+        txData: cachedData,
+        error: null
+      }
+    };
+  }
+
+  const xrplNodes = [
+    'https://xrplcluster.com/',
+    'https://s1.ripple.com:51234/',
+    'https://s2.ripple.com:51234/',
+    'https://xrpl.ws/'
+  ];
+  
+  let response;
+  let lastError;
+  
+  for (const node of xrplNodes) {
+    try {
+      response = await axios.post(node, {
+        method: 'tx',
+        params: [
+          {
+            transaction: hash,
+            binary: false,
+            ledger_index: "validated"
+          }
+        ]
+      });
+      break; // Success, exit loop
+    } catch (error) {
+      lastError = error;
+      console.error(`Failed to fetch from ${node}:`, error.message);
+      continue; // Try next node
+    }
+  }
+  
+  if (!response) {
+    throw lastError || new Error('All XRPL nodes failed');
+  }
+  
   try {
-    const response = await axios.post('https://xrplcluster.com/', {
-      method: 'tx',
-      params: [
-        {
-          transaction: hash,
-          binary: false
-        }
-      ]
-    });
 
     if (response.data.result.error === 'txnNotFound') {
       return {
@@ -3388,9 +3450,21 @@ export async function getServerSideProps(context) {
     //   }
     // }
 
+    const txData = { ...rest, meta };
+    
+    // Cache the successful response
+    txCache.set(hash, txData);
+    console.log(`Cached transaction: ${hash}`);
+    
+    // Set cache headers for browser caching
+    context.res.setHeader(
+      'Cache-Control',
+      'public, s-maxage=3600, stale-while-revalidate=86400'
+    );
+
     return {
       props: {
-        txData: { ...rest, meta },
+        txData,
         error: null
       }
     };
