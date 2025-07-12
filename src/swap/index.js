@@ -580,20 +580,49 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     try {
       const token1IsXRP = token1?.currency === 'XRP';
       const token2IsXRP = token2?.currency === 'XRP';
+      const token1IsRLUSD = token1?.currency === 'RLUSD' || token1?.name === 'RLUSD';
       
-      if (token1IsXRP) {
-        // If token1 is XRP, convert to selected fiat currency
-        return new Decimal(amount1 || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
-      } else if (token2IsXRP) {
-        // If token1 is RLUSD and token2 is XRP, first convert to XRP using rate1, then to fiat
-        const xrpValue = new Decimal(amount1 || 0).mul(tokenExch1 || 0);
-        return xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
+      if (activeFiatCurrency === 'XRP') {
+        // When display currency is XRP, show XRP value
+        if (token1IsXRP) {
+          // If token1 is already XRP, just return the amount
+          return new Decimal(amount1 || 0).toNumber();
+        } else if (token2IsXRP && tokenExch1 > 0) {
+          // For tokens paired with XRP, tokenExch1 tells us XRP per token
+          // So multiply amount1 by tokenExch1 to get XRP value
+          return new Decimal(amount1 || 0).mul(tokenExch1).toNumber();
+        } else {
+          // For non-XRP pairs when displaying in XRP
+          return 0;
+        }
       } else {
-        // For non-XRP pairs, show fiat value
-        return new Decimal(tokenExch1 || 0)
-          .mul(amount1 || 0)
-          .div(metrics[activeFiatCurrency] || 1)
-          .toNumber();
+        // For other fiat currencies (USD, EUR, etc.)
+        if (token1IsXRP) {
+          // If token1 is XRP, convert to selected fiat currency
+          return new Decimal(amount1 || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
+        } else if (token2IsXRP && token1IsRLUSD) {
+          // If token1 is RLUSD and token2 is XRP
+          // RLUSD is pegged to USD, so 1 RLUSD = 1 USD
+          if (activeFiatCurrency === 'USD') {
+            return new Decimal(amount1 || 0).toNumber();
+          } else {
+            // Convert USD to target currency
+            const usdValue = new Decimal(amount1 || 0);
+            const usdToXrp = new Decimal(metrics['USD'] || 1);
+            const targetToXrp = new Decimal(metrics[activeFiatCurrency] || 1);
+            return usdValue.mul(usdToXrp).div(targetToXrp).toNumber();
+          }
+        } else if (token2IsXRP) {
+          // If token1 is a token and token2 is XRP, first convert to XRP using rate1, then to fiat
+          const xrpValue = new Decimal(amount1 || 0).mul(tokenExch1 || 0);
+          return xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
+        } else {
+          // For non-XRP pairs, show fiat value
+          return new Decimal(tokenExch1 || 0)
+            .mul(amount1 || 0)
+            .div(metrics[activeFiatCurrency] || 1)
+            .toNumber();
+        }
       }
     } catch (e) {
       return 0;
@@ -603,21 +632,67 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     try {
       const token1IsXRP = token1?.currency === 'XRP';
       const token2IsXRP = token2?.currency === 'XRP';
+      const token2IsRLUSD = token2?.currency === 'RLUSD' || token2?.name === 'RLUSD';
       
-      if (token2IsXRP) {
-        // If token2 is XRP, convert to selected fiat currency
-        return new Decimal(amount2 || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
-      } else if (token1IsXRP) {
-        // If token2 is RLUSD and token1 is XRP, rate2 tells us XRP per RLUSD
-        // So we need to divide by rate2 to get XRP amount, then convert to fiat
-        const xrpValue = new Decimal(amount2 || 0).div(tokenExch2 || 1);
-        return xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
+      if (activeFiatCurrency === 'XRP') {
+        // When display currency is XRP, show XRP value
+        if (token2IsXRP) {
+          // If token2 is already XRP, just return the amount
+          return new Decimal(amount2 || 0).toNumber();
+        } else if (token1IsXRP && tokenExch2 > 0) {
+          // For tokens paired with XRP
+          // Based on the actual behavior: if we're getting 7.95 when dividing,
+          // then tokenExch2 must be ~0.354 (XRP per RLUSD)
+          // So we need to multiply: 2.82 RLUSD × 0.354 = ~1 XRP
+          const xrpValue = new Decimal(amount2 || 0).mul(tokenExch2).toNumber();
+          return xrpValue;
+        } else {
+          // For non-XRP pairs when displaying in XRP
+          return 0;
+        }
       } else {
-        // For non-XRP pairs, show fiat value
-        return new Decimal(tokenExch2 || 0)
-          .mul(amount2 || 0)
-          .div(metrics[activeFiatCurrency] || 1)
-          .toNumber();
+        // For other fiat currencies (USD, EUR, etc.)
+        if (token2IsXRP) {
+          // If token2 is XRP, convert to selected fiat currency
+          // metrics contains XRP price in each currency (e.g., 1 USD = 0.357 XRP)
+          // So to get fiat value: XRP amount / (Fiat/XRP rate)
+          return new Decimal(amount2 || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
+        } else if (token1IsXRP && token2IsRLUSD) {
+          // If token2 is RLUSD and token1 is XRP
+          // RLUSD is pegged to USD, so 1 RLUSD = 1 USD
+          if (activeFiatCurrency === 'USD') {
+            // If displaying in USD, just return the RLUSD amount as-is
+            return new Decimal(amount2 || 0).toNumber();
+          } else {
+            // For other currencies, RLUSD = USD, so we need to convert USD to target currency
+            // metrics contains XRP price in each currency (e.g., 1 USD = 0.357 XRP)
+            // To convert: RLUSD amount * (USD/XRP rate) / (TargetCurrency/XRP rate)
+            const usdValue = new Decimal(amount2 || 0); // RLUSD amount = USD value
+            const usdToXrp = new Decimal(metrics['USD'] || 1);
+            const targetToXrp = new Decimal(metrics[activeFiatCurrency] || 1);
+            // USD value * (USD/XRP) / (Target/XRP) = Target value
+            return usdValue.mul(usdToXrp).div(targetToXrp).toNumber();
+          }
+        } else if (token1IsXRP) {
+          // For other tokens when token1 is XRP
+          // Special handling for RLUSD when displaying in USD
+          if (token2IsRLUSD && activeFiatCurrency === 'USD') {
+            // RLUSD is pegged 1:1 with USD
+            return new Decimal(amount2 || 0).toNumber();
+          }
+          // For other cases, convert through XRP
+          // tokenExch2 tells us XRP per token, so multiply to get XRP value
+          const xrpValue = new Decimal(amount2 || 0).mul(tokenExch2 || 0);
+          // Then convert XRP to fiat. metrics[currency] contains Fiat/XRP rate
+          // So divide XRP by the rate to get fiat value
+          return xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
+        } else {
+          // For non-XRP pairs, show fiat value
+          return new Decimal(tokenExch2 || 0)
+            .mul(amount2 || 0)
+            .div(metrics[activeFiatCurrency] || 1)
+            .toNumber();
+        }
       }
     } catch (e) {
       return 0;
@@ -1361,26 +1436,27 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
       const rate1 = new Decimal(tokenExch1 || 0);
       const rate2 = new Decimal(tokenExch2 || 0);
 
-
       // Check if this is an XRP pair based on actual tokens (not curr1/curr2)
       const token1IsXRP = token1?.currency === 'XRP';
       const token2IsXRP = token2?.currency === 'XRP';
 
       // API rates depend on token order:
-      // XRP->RLUSD: rate1=1, rate2=XRP price (how many XRP per RLUSD)
-      // RLUSD->XRP: rate1=XRP price, rate2=1
+      // When token1=XRP, token2=RLUSD: rate1=1, rate2=XRP per RLUSD (e.g., 2.84)
+      // When token1=RLUSD, token2=XRP: rate1=XRP per RLUSD (e.g., 2.84), rate2=1
       
       let result = new Decimal(0);
       
       if (token1IsXRP && !token2IsXRP) {
-        // XRP -> Token: use rate2 as divisor
+        // XRP -> Token (e.g., XRP -> RLUSD)
+        // rate2 = XRP per RLUSD, so divide XRP by rate2 to get RLUSD
         if (active === 'AMOUNT') {
           result = !revert ? amt.div(rate2) : amt.mul(rate2);
         } else {
           result = !revert ? amt.mul(rate2) : amt.div(rate2);
         }
       } else if (!token1IsXRP && token2IsXRP) {
-        // Token -> XRP: use rate1 as multiplier
+        // Token -> XRP (e.g., RLUSD -> XRP)
+        // rate1 = XRP per RLUSD, so multiply RLUSD by rate1 to get XRP
         if (active === 'AMOUNT') {
           result = !revert ? amt.mul(rate1) : amt.div(rate1);
         } else {
@@ -1394,7 +1470,6 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           result = !revert ? amt.mul(rate2).div(rate1) : amt.mul(rate1).div(rate2);
         }
       }
-      
       
       if (result.isNaN() || !result.isFinite()) {
         return '';
