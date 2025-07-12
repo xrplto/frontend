@@ -235,7 +235,7 @@ function PriceChart({ token }) {
   const [lastPrice, setLastPrice] = useState(null);
   const [priceChange, setPriceChange] = useState(0);
   const [volumeChange, setVolumeChange] = useState(0);
-  const [isStreaming, setIsStreaming] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(true);
 
   const [minTime, setMinTime] = useState(0);
   const [maxTime, setMaxTime] = useState(0);
@@ -1142,6 +1142,43 @@ function PriceChart({ token }) {
       rangeSelector: {
         enabled: false
       },
+      navigator: {
+        enabled: true,
+        height: 25,
+        margin: 2,
+        maskFill: alpha(theme.palette.primary.main, 0.05),
+        outlineColor: alpha(theme.palette.divider, 0.2),
+        outlineWidth: 0.5,
+        series: {
+          type: 'candlestick',
+          color: theme.palette.error.main,
+          lineColor: theme.palette.error.main,
+          upColor: theme.palette.success.main,
+          upLineColor: theme.palette.success.main
+        },
+        xAxis: {
+          gridLineWidth: 0,
+          labels: {
+            enabled: false
+          }
+        }
+      },
+      scrollbar: {
+        enabled: true,
+        height: 8,
+        barBackgroundColor: alpha(theme.palette.primary.main, 0.2),
+        barBorderRadius: 4,
+        barBorderWidth: 0,
+        buttonBackgroundColor: alpha(theme.palette.primary.main, 0.3),
+        buttonBorderWidth: 0,
+        buttonBorderRadius: 4,
+        trackBackgroundColor: alpha(theme.palette.divider, 0.05),
+        trackBorderWidth: 0,
+        trackBorderRadius: 4,
+        trackBorderColor: 'transparent',
+        rifleColor: theme.palette.primary.main,
+        buttonArrowColor: theme.palette.primary.main
+      },
       title: {
         text: null
       },
@@ -1191,7 +1228,12 @@ function PriceChart({ token }) {
         boostThreshold: 500,
         plotBorderWidth: 0,
         reflow: true,
-        zoomType: 'xy',
+        zoomType: 'x',
+        panning: {
+          enabled: true,
+          type: 'x'
+        },
+        panKey: 'shift',
         marginLeft: 50,
         marginRight: 10,
         marginTop: 0
@@ -2015,6 +2057,7 @@ function PriceChart({ token }) {
                       highcharts={Highcharts}
                       options={options1}
                       allowChartUpdate={true}
+                      updateArgs={[true, true, true]}
                       constructorType={'chart'}
                       key={`line-chart-${range}-${activeFiatCurrency}`}
                     />
@@ -2062,6 +2105,7 @@ function PriceChart({ token }) {
                     highcharts={Highcharts}
                     options={options2}
                     allowChartUpdate={true}
+                    updateArgs={[true, true, true]}
                     constructorType={'chart'}
                     key={`candlestick-chart-${range}-${activeFiatCurrency}`}
                   />
