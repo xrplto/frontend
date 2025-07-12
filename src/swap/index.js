@@ -1636,21 +1636,6 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [revert, amount1, amount2]);
 
-  const onFillHalf = () => {
-    if (revert) {
-      if (accountPairBalance?.curr2.value > 0) setAmount1(accountPairBalance?.curr2.value / 2);
-    } else {
-      if (accountPairBalance?.curr1.value > 0) setAmount1(accountPairBalance?.curr1.value / 2);
-    }
-  };
-
-  const onFillMax = () => {
-    if (revert) {
-      if (accountPairBalance?.curr2.value > 0) setAmount1(accountPairBalance?.curr2.value);
-    } else {
-      if (accountPairBalance?.curr1.value > 0) setAmount1(accountPairBalance?.curr1.value);
-    }
-  };
 
   const handleMsg = () => {
     if (isProcessing == 1) return 'Pending Exchanging';
@@ -2119,17 +2104,9 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           >
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography variant="h6" fontWeight={600}>Swap</Typography>
-              <Stack direction="row" spacing={0.5}>
-                <IconButton size="small" onClick={handleShareUrl}>
-                  <Icon icon={shareIcon} width={18} height={18} />
-                </IconButton>
-                {isLoggedIn && (
-                  <>
-                    <Button size="small" variant="text" onClick={onFillHalf} sx={{ minWidth: '40px' }}>50%</Button>
-                    <Button size="small" variant="text" onClick={onFillMax} sx={{ minWidth: '40px' }}>Max</Button>
-                  </>
-                )}
-              </Stack>
+              <IconButton size="small" onClick={handleShareUrl}>
+                <Icon icon={shareIcon} width={18} height={18} />
+              </IconButton>
             </Stack>
           </Box>
 
@@ -2211,8 +2188,9 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                             size="small"
                             onClick={() => {
                               const balance = revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value;
-                              setAmount1((balance * percent / 100).toFixed(6));
-                              setActive('AMOUNT');
+                              const newAmount = (balance * percent / 100).toFixed(6);
+                              // Trigger the same logic as handleChangeAmount1
+                              handleChangeAmount1({ target: { value: newAmount } });
                             }}
                             sx={{
                               minWidth: 'auto',
