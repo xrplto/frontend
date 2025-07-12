@@ -208,6 +208,16 @@ const baseTheme: ThemeOptions = {
             backgroundColor: alpha('#0080ff', 0.08),
           },
         },
+        sizeSmall: {
+          padding: '8px 16px',
+          lineHeight: 1.5
+        },
+        sizeMedium: {
+          padding: '10px 20px'
+        },
+        sizeLarge: {
+          padding: '12px 24px'
+        }
       },
     },
     MuiTextField: {

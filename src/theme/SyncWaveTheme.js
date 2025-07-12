@@ -327,6 +327,16 @@ export const SyncWaveTheme = createTheme({
             backgroundColor: alpha(themeColors.primary, 0.1),
             boxShadow: '0px 0px 15px rgba(0, 255, 255, 0.3)'
           }
+        },
+        sizeSmall: {
+          padding: '8px 16px',
+          lineHeight: 1.5
+        },
+        sizeMedium: {
+          padding: '10px 20px'
+        },
+        sizeLarge: {
+          padding: '12px 24px'
         }
       }
     },

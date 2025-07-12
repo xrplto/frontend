@@ -711,14 +711,14 @@ export const XrplToLightTheme = createTheme({
           }
         },
         sizeSmall: {
-          padding: '6px 16px',
+          padding: '8px 16px',
           lineHeight: 1.5
         },
         sizeMedium: {
-          padding: '8px 20px'
+          padding: '10px 20px'
         },
         sizeLarge: {
-          padding: '11px 24px'
+          padding: '12px 24px'
         },
         textSizeSmall: {
           padding: '7px 12px'

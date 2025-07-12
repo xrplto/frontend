@@ -313,6 +313,16 @@ export const BoredApeTheme = createTheme({
           padding: '8px 16px',
           transition: 'all 0.3s ease'
         },
+        sizeSmall: {
+          padding: '8px 16px',
+          lineHeight: 1.5
+        },
+        sizeMedium: {
+          padding: '10px 20px'
+        },
+        sizeLarge: {
+          padding: '12px 24px'
+        },
         contained: {
           background: 'linear-gradient(135deg, #FFD700 0%, #FFF700 25%, #FFA500 75%, #FFD700 100%)',
           boxShadow: '0px 0px 20px rgba(255, 215, 0, 0.5), 0px 4px 16px rgba(255, 215, 0, 0.3), inset 0px 1px 1px rgba(255, 255, 255, 0.4)',

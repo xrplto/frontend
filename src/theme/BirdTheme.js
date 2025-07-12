@@ -296,8 +296,18 @@ export const BirdTheme = createTheme({
           textTransform: 'none',
           letterSpacing: '0.01em',
           borderRadius: '2px',
-          padding: '6px 14px',
+          padding: '8px 16px',
           transition: 'all 0.15s ease'
+        },
+        sizeSmall: {
+          padding: '8px 16px',
+          lineHeight: 1.5
+        },
+        sizeMedium: {
+          padding: '10px 20px'
+        },
+        sizeLarge: {
+          padding: '12px 24px'
         },
         contained: {
           backgroundColor: themeColors.primary,

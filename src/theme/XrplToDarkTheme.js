@@ -192,6 +192,16 @@ export const XrplToDarkTheme = createTheme({
             backgroundColor: alpha(themeColors.primary, 0.8),
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)'
           }
+        },
+        sizeSmall: {
+          padding: '8px 16px',
+          lineHeight: 1.5
+        },
+        sizeMedium: {
+          padding: '10px 20px'
+        },
+        sizeLarge: {
+          padding: '12px 24px'
         }
       }
     },

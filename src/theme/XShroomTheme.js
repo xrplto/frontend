@@ -300,6 +300,16 @@ export const XShroomTheme = createTheme({
           padding: '8px 16px',
           transition: 'all 0.3s ease'
         },
+        sizeSmall: {
+          padding: '8px 16px',
+          lineHeight: 1.5
+        },
+        sizeMedium: {
+          padding: '10px 20px'
+        },
+        sizeLarge: {
+          padding: '12px 24px'
+        },
         contained: {
           background: 'linear-gradient(135deg, #FFB84D 0%, #FF9F1A 100%)',
           boxShadow: '0px 4px 12px rgba(255, 184, 77, 0.3)',
