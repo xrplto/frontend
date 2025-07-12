@@ -2086,13 +2086,13 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
         width: '100%', 
         maxWidth: showOrderbook ? '1200px' : '800px', 
         margin: '0 auto', 
-        px: { xs: 1, sm: 2, md: 3 },
+        px: { xs: 0.5, sm: 2, md: 3 },
         transition: 'max-width 0.3s ease'
       }}
     >
       <Stack
         direction={{ xs: 'column', md: 'row' }}
-        spacing={{ xs: 2, md: 3 }}
+        spacing={{ xs: 1, md: 3 }}
         alignItems="flex-start"
         justifyContent="center"
         sx={{ width: '100%' }}
@@ -2190,7 +2190,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Box>
               
               {/* Token Content */}
-              <Box sx={{ p: 2.5, position: 'relative', zIndex: 1 }}>
+              <Box sx={{ p: { xs: 1.5, sm: 2.5 }, position: 'relative', zIndex: 1 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
                   <Stack direction="row" alignItems="center" spacing={1}>
                     <QueryToken token={token1} onChangeToken={onChangeToken1} />
@@ -2217,7 +2217,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                       width: '45%',
                       input: {
                         textAlign: 'right',
-                        fontSize: '24px',
+                        fontSize: { xs: '18px', sm: '24px' },
                         fontWeight: 700,
                         padding: 0,
                         background: 'transparent',
@@ -2290,7 +2290,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
                   {token1.name} Price Chart (24h)
                 </Typography>
-                <Box sx={{ height: '200px' }}>
+                <Box sx={{ height: { xs: '150px', sm: '200px' } }}>
                   <LoadChart
                     url={`${BASE_URL}/sparkline/${token1.md5}?period=24h&${token1.pro24h}`}
                     style={{ width: '100%', height: '100%' }}
@@ -2302,7 +2302,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
             )}
 
             {/* Minimalist Swap Button */}
-            <Box sx={{ position: 'relative', height: '24px', my: 2 }}>
+            <Box sx={{ position: 'relative', height: '24px', my: { xs: 1, sm: 2 } }}>
               <IconButton
                 onClick={onRevertExchange}
                 disabled={isSwitching}
@@ -2311,8 +2311,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                   left: '50%',
                   top: '50%',
                   transform: 'translate(-50%, -50%)',
-                  width: '40px',
-                  height: '40px',
+                  width: { xs: '36px', sm: '40px' },
+                  height: { xs: '36px', sm: '40px' },
                   backgroundColor: theme.palette.background.default,
                   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                   '&:hover': {
@@ -2369,7 +2369,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Box>
               
               {/* Token Content */}
-              <Box sx={{ p: 2.5, position: 'relative', zIndex: 1 }}>
+              <Box sx={{ p: { xs: 1.5, sm: 2.5 }, position: 'relative', zIndex: 1 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
                   <Stack direction="row" alignItems="center" spacing={1}>
                     <QueryToken token={token2} onChangeToken={onChangeToken2} />
@@ -2396,7 +2396,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                       width: '45%',
                       input: {
                         textAlign: 'right',
-                        fontSize: '24px',
+                        fontSize: { xs: '18px', sm: '24px' },
                         fontWeight: 700,
                         padding: 0,
                         background: 'transparent',
@@ -2435,7 +2435,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
                   {token2.name} Price Chart (24h)
                 </Typography>
-                <Box sx={{ height: '200px' }}>
+                <Box sx={{ height: { xs: '150px', sm: '200px' } }}>
                   <LoadChart
                     url={`${BASE_URL}/sparkline/${token2.md5}?period=24h&${token2.pro24h}`}
                     style={{ width: '100%', height: '100%' }}
