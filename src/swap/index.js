@@ -2334,8 +2334,9 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Box>
             )}
 
-            {/* Minimalist Settings */}
-            <Box
+            {/* Minimalist Settings - Only show for market orders */}
+            {orderType !== 'limit' && (
+              <Box
               sx={{
                 mt: 2,
                 p: 2,
@@ -2463,6 +2464,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 </Stack>
               </Stack>
             </Box>
+            )}
 
             {/* Conversion Rate Display */}
             <Box sx={{ mt: 2, mb: 1 }}>
