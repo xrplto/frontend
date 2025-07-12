@@ -172,7 +172,10 @@ export default function SearchModal({ open, onClose }) {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        pt: '10vh'
+        pt: '10vh',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        backgroundColor: alpha(theme.palette.common.black, 0.5)
       }}
     >
       <Paper
@@ -181,8 +184,15 @@ export default function SearchModal({ open, onClose }) {
           maxWidth: 600,
           maxHeight: '70vh',
           overflow: 'hidden',
-          borderRadius: 2,
-          boxShadow: theme.shadows[20]
+          borderRadius: { xs: '10px', sm: '16px' },
+          background: 'transparent',
+          backdropFilter: 'none',
+          WebkitBackdropFilter: 'none',
+          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          boxShadow: `
+            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
         }}
         onKeyDown={handleKeyDown}
       >
