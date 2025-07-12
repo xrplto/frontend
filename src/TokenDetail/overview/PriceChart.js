@@ -1010,9 +1010,11 @@ function PriceChart({ token }) {
           title: {
             text: null
           },
-          tickAmount: isMobile ? 4 : 6,
+          tickAmount: isMobile ? 3 : 5,
           tickWidth: 1,
           gridLineColor: alpha(theme.palette.divider, 0.05),
+          minPadding: 0.1,
+          maxPadding: 0.1,
           labels: {
             style: {
               color: theme.palette.text.primary,
@@ -1294,23 +1296,23 @@ function PriceChart({ token }) {
           lineColor: theme.palette.error.main,
           upColor: theme.palette.success.main,
           upLineColor: theme.palette.success.main,
-          lineWidth: 0.5,
+          lineWidth: 0.1,
           crisp: true,
           states: {
             hover: {
-              lineWidth: 1,
+              lineWidth: 0.2,
               brightness: 0.1
             }
           },
-          groupPadding: 0.001,
-          pointPadding: 0.001,
-          maxPointWidth: 3,
-          minPointLength: 1,
+          groupPadding: 0.1,
+          pointPadding: 0.05,
+          maxPointWidth: 0.4,
+          minPointLength: 0.2,
           dataGrouping: {
             enabled: false
           },
-          pointWidth: 2,
-          borderWidth: 0.5
+          pointWidth: 0.3,
+          borderWidth: 0.1
         }
       },
       rangeSelector: {
@@ -1472,6 +1474,8 @@ function PriceChart({ token }) {
             }
           },
           gridLineColor: alpha(theme.palette.divider, 0.05),
+          minPadding: 0.15,
+          maxPadding: 0.15,
           plotLines: [
             ...(mediumValue
               ? [
@@ -1534,10 +1538,10 @@ function PriceChart({ token }) {
           name: `${user} ${name}`,
           data: dataOHLC,
           animation: false,
-          groupPadding: 0.001,
-          pointPadding: 0.001,
-          maxPointWidth: 3,
-          pointWidth: 2,
+          groupPadding: 0.1,
+          pointPadding: 0.05,
+          maxPointWidth: 0.4,
+          pointWidth: 0.3,
           tooltip: {
             pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}<br/>' +
                         'Open: {point.open}<br/>' +
