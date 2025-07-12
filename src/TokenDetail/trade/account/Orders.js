@@ -1,6 +1,6 @@
 import axios from 'axios';
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Decimal from 'decimal.js';
 // Material
 import { styled, alpha, useTheme } from '@mui/material';
@@ -35,6 +35,7 @@ import { PuffLoader } from 'react-spinners';
 
 // Utils
 import { checkExpiration } from 'src/utils/extra';
+import { normalizeCurrencyCode } from 'src/utils/parse/utils';
 
 // Context
 import { useContext } from 'react';
@@ -221,29 +222,78 @@ export default function Orders({ pair }) {
 
   const curr1 = pair.curr1;
   const curr2 = pair.curr2;
+  
+  // Memoize currency names to prevent unnecessary recalculations
+  const curr1Name = useMemo(() => curr1?.name || normalizeCurrencyCode(curr1?.currency), [curr1?.name, curr1?.currency]);
+  const curr2Name = useMemo(() => curr2?.name || normalizeCurrencyCode(curr2?.currency), [curr2?.name, curr2?.currency]);
 
+  // Store all offers and filter them when needed
+  const [allOffers, setAllOffers] = useState([]);
+  
+  // Fetch offers only when account or sync changes
   useEffect(() => {
     function getOffers() {
       const accountAddress = accountProfile?.account;
       if (!accountAddress) return;
       setLoading(true);
       axios
-        .get(`${BASE_URL}/account/offers/${accountAddress}?pair=${pair.pair}`)
+        .get(`${BASE_URL}/account/offers/${accountAddress}`)
         .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            setOffers(ret.offers);
+          if (ret && ret.offers) {
+            setAllOffers(ret.offers);
+          } else {
+            setAllOffers([]);
           }
         })
         .catch((err) => {
-          console.log('Error on getting account orders!!!', err);
+          console.error('Error on getting account orders:', err);
+          setAllOffers([]);
         })
         .then(function () {
           setLoading(false);
         });
     }
     getOffers();
-  }, [accountProfile, pair, sync]);
+  }, [accountProfile?.account, sync, BASE_URL]);
+  
+  // Filter offers when pair changes or when all offers are updated
+  useEffect(() => {
+    if (!curr1 || !curr2) {
+      setOffers([]);
+      return;
+    }
+    
+    // Filter offers for the current trading pair
+    const filteredOffers = allOffers.filter(offer => {
+      // Normalize currency names for comparison
+      const offerPaysName = offer.pays.name;
+      const offerGetsName = offer.gets.name;
+      
+      // For XRP, issuer should be undefined or 'XRPL'
+      const compareIssuer = (issuer1, issuer2) => {
+        if (issuer1 === 'XRPL' || issuer2 === 'XRPL') {
+          return (issuer1 === 'XRPL' || !issuer1) && (issuer2 === 'XRPL' || !issuer2);
+        }
+        return issuer1 === issuer2;
+      };
+      
+      // Match either direction of the pair
+      const matchesPair = 
+        (offerPaysName === curr1Name && 
+         compareIssuer(offer.pays.issuer, curr1.issuer) &&
+         offerGetsName === curr2Name && 
+         compareIssuer(offer.gets.issuer, curr2.issuer)) ||
+        (offerPaysName === curr2Name && 
+         compareIssuer(offer.pays.issuer, curr2.issuer) &&
+         offerGetsName === curr1Name && 
+         compareIssuer(offer.gets.issuer, curr1.issuer));
+      
+      return matchesPair;
+    });
+    
+    setOffers(filteredOffers);
+  }, [allOffers, curr1Name, curr2Name, curr1?.issuer, curr2?.issuer]);
 
   const handleCancel = (event, seq) => {
     onOfferCancelXumm(seq);
@@ -451,7 +501,16 @@ export default function Orders({ pair }) {
                   let exch = 0;
                   let buy;
 
-                  if (pays.issuer === curr1.issuer && pays.currency === curr1.currency) {
+                  // Compare using normalized names instead of raw currency codes
+                  const paysName = pays.name;
+                  const compareIssuer = (issuer1, issuer2) => {
+                    if (issuer1 === 'XRPL' || issuer2 === 'XRPL') {
+                      return (issuer1 === 'XRPL' || !issuer1) && (issuer2 === 'XRPL' || !issuer2);
+                    }
+                    return issuer1 === issuer2;
+                  };
+                  
+                  if (paysName === curr1Name && compareIssuer(pays.issuer, curr1.issuer)) {
                     buy = true;
                     exch = new Decimal(gets.value).div(pays.value).toNumber();
                   } else {

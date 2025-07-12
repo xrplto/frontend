@@ -52,6 +52,7 @@ import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import OrderBook from 'src/TokenDetail/trade/OrderBook';
+import Orders from 'src/TokenDetail/trade/account/Orders';
 // import Dialog from 'src/components/Dialog'; // No longer needed - using side panel instead
 
 // Router
@@ -564,6 +565,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   
   // Add state for orderbook modal
   const [showOrderbook, setShowOrderbook] = useState(false);
+  // Add state for showing user orders
+  const [showOrders, setShowOrders] = useState(false);
   
   // Use orderbook data from props
   const bids = propsBids || [];
@@ -2603,6 +2606,77 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 </Stack>
               </Stack>
             </Box>
+            )}
+
+            {/* User's Open Orders - Show only for limit orders */}
+            {orderType === 'limit' && accountProfile?.account && (
+              <Box sx={{ mb: 2 }}>
+                <Stack 
+                  direction="row" 
+                  alignItems="center" 
+                  justifyContent="space-between" 
+                  sx={{ mb: 1 }}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    Your Open Orders
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="text"
+                    onClick={() => setShowOrders(!showOrders)}
+                    endIcon={
+                      <Icon 
+                        icon={showOrders ? "mdi:chevron-up" : "mdi:chevron-down"} 
+                        width={16} 
+                        height={16} 
+                      />
+                    }
+                    sx={{
+                      fontSize: '0.75rem',
+                      textTransform: 'none',
+                      color: theme.palette.text.secondary,
+                      px: 1,
+                      py: 0.5,
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.action.hover, 0.08)
+                      }
+                    }}
+                  >
+                    {showOrders ? 'Hide' : 'Show'}
+                  </Button>
+                </Stack>
+                
+                {showOrders && (
+                  <Box 
+                    sx={{ 
+                      borderRadius: '12px',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      overflow: 'hidden',
+                      backgroundColor: alpha(theme.palette.background.paper, 0.02)
+                    }}
+                  >
+                    <Orders 
+                      pair={{
+                        // For now, use a simple pair string format that the API might accept
+                        // The backend should handle both MD5 and string formats
+                        pair: `${curr1.currency}:${curr1.issuer || 'XRP'}/${curr2.currency}:${curr2.issuer || 'XRP'}`,
+                        curr1: { 
+                          ...curr1, 
+                          name: curr1.name || curr1.currency,
+                          issuer: curr1.issuer || (curr1.currency === 'XRP' ? undefined : ''),
+                          currency: curr1.currency
+                        },
+                        curr2: { 
+                          ...curr2, 
+                          name: curr2.name || curr2.currency,
+                          issuer: curr2.issuer || (curr2.currency === 'XRP' ? undefined : ''),
+                          currency: curr2.currency
+                        }
+                      }}
+                    />
+                  </Box>
+                )}
+              </Box>
             )}
 
             {/* Conversion Rate Display */}
