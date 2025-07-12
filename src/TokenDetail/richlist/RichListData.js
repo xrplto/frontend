@@ -21,13 +21,19 @@ import {
   Alert,
   Button,
   Skeleton,
-  alpha
+  alpha,
+  styled,
+  keyframes,
+  Card,
+  CardContent,
+  Pagination
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import LinkIcon from '@mui/icons-material/Link';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { useContext } from 'react';
@@ -105,6 +111,103 @@ const EXCHANGE_ADDRESSES = {
   rKwWsi1XWCevQmVL9VhPD8DuYF4dobFdoT: 'Unknown Exchange'
 };
 
+// Define highlight animation with softer colors
+const highlightAnimation = (theme) => keyframes`
+  0% {
+    background-color: ${theme.palette.primary.main}30;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px ${theme.palette.primary.main}40;
+  }
+  50% {
+    background-color: ${theme.palette.primary.main}15;
+    transform: translateY(0);
+    box-shadow: 0 2px 4px ${theme.palette.primary.main}20;
+  }
+  100% {
+    background-color: transparent;
+    transform: translateY(0);
+    box-shadow: none;
+  }
+`;
+
+// Styled components with improved design
+const HolderCard = styled(Card, {
+  shouldForwardProp: (prop) => prop !== 'isNew'
+})(({ theme, isNew }) => ({
+  marginBottom: theme.spacing(0.5),
+  borderRadius: '8px',
+  backgroundColor: 'transparent',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+  boxShadow: `
+    0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+    0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+  transition: 'all 0.3s ease-in-out',
+  position: 'relative',
+  overflow: 'hidden',
+  animation: isNew ? `${highlightAnimation(theme)} 1s ease-in-out` : 'none',
+  '&:hover': {
+    transform: 'translateY(-1px)',
+    boxShadow: `
+      0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+      0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+  }
+}));
+
+const BalanceIndicator = styled('div')(({ theme, balance }) => ({
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  height: '100%',
+  width: `${balance}%`,
+  background: `linear-gradient(90deg, 
+    ${theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.08)' : 'rgba(33, 150, 243, 0.05)'} 0%, 
+    ${
+      theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.02)' : 'rgba(33, 150, 243, 0.01)'
+    } 100%)`,
+  transition: 'width 0.3s ease-in-out',
+  borderRadius: '12px'
+}));
+
+const StyledPagination = styled(Pagination)(({ theme }) => ({
+  '& .MuiPaginationItem-root': {
+    color: theme.palette.text.primary,
+    borderRadius: '8px',
+    margin: '0 2px',
+    fontWeight: '500',
+    '&:hover': {
+      backgroundColor:
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+    }
+  },
+  '& .Mui-selected': {
+    backgroundColor: `${theme.palette.primary.main} !important`,
+    color: '#fff !important',
+    fontWeight: 'bold',
+    borderRadius: '8px',
+    '&:hover': {
+      backgroundColor: `${theme.palette.primary.dark} !important`
+    }
+  }
+}));
+
+const ExchangeChip = styled(Chip)(({ theme }) => ({
+  fontSize: '0.7rem',
+  height: '24px',
+  fontWeight: 'bold',
+  borderRadius: '12px',
+  backgroundColor: 'transparent',
+  color: theme.palette.primary.main,
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+  boxShadow: `
+    0 2px 8px ${alpha(theme.palette.primary.main, 0.15)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+}));
+
 const truncateAddress = (address, length = 8) => {
   if (!address) return '';
   return `${address.slice(0, length)}...${address.slice(-4)}`;
@@ -132,237 +235,7 @@ const CopyButton = ({ text }) => {
   );
 };
 
-const RichListRow = ({ row, index, token, metrics, activeFiatCurrency, theme }) => {
-  const { id, account, balance, holding, freeze } = row;
-  const value = useMemo(() => {
-    if (!token?.exch || !balance) return 0;
-    return (token.exch * balance) / metrics[activeFiatCurrency];
-  }, [token?.exch, balance, metrics, activeFiatCurrency]);
 
-  const change24h = useMemo(() => {
-    if (!row.balance24h) return null;
-    const change = balance - row.balance24h;
-    const percentChange = row.balance24h ? (change / row.balance24h) * 100 : 0;
-    return {
-      value: change,
-      percent: percentChange,
-      isPositive: change >= 0
-    };
-  }, [balance, row.balance24h]);
-
-  const bgColor = 'transparent';
-
-  return (
-    <TableRow
-      hover
-      sx={{
-        backgroundColor: 'transparent',
-        '&:hover': {
-          backgroundColor: alpha(theme.palette.action.hover, 0.04)
-        }
-      }}
-    >
-      <TableCell>{id}</TableCell>
-      <TableCell>
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <Link
-            href={`https://bithomp.com/explorer/${account}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            underline="hover"
-          >
-            <Typography variant="body2" color="primary">
-              {truncateAddress(account, 12)}
-            </Typography>
-          </Link>
-          {EXCHANGE_ADDRESSES[account] && (
-            <Chip
-              label={EXCHANGE_ADDRESSES[account]}
-              size="small"
-              color="primary"
-              sx={{ height: 20, fontSize: '0.7rem' }}
-            />
-          )}
-          <CopyButton text={account} />
-        </Stack>
-      </TableCell>
-      <TableCell align="right">
-        <Typography variant="body2">{fNumber(balance)}</Typography>
-      </TableCell>
-      <TableCell align="right">
-        {change24h && (
-          <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.5}>
-            {change24h.isPositive ? (
-              <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
-            ) : (
-              <TrendingDownIcon sx={{ fontSize: 16, color: 'error.main' }} />
-            )}
-            <Typography
-              variant="body2"
-              color={change24h.isPositive ? 'success.main' : 'error.main'}
-              fontWeight="medium"
-            >
-              {change24h.isPositive ? '+' : '-'}{fNumber(Math.abs(change24h.value))} ({fPercent(Math.abs(change24h.percent))})
-            </Typography>
-          </Stack>
-        )}
-      </TableCell>
-      <TableCell align="right">
-        <Typography variant="body2">{holding}%</Typography>
-      </TableCell>
-      <TableCell align="right">
-        <Typography variant="body2" fontWeight="medium">
-          {currencySymbols[activeFiatCurrency]} {fNumber(value)}
-        </Typography>
-      </TableCell>
-      <TableCell align="center">
-        <Stack direction="row" spacing={1} justifyContent="center">
-          <Tooltip title="View on Explorer">
-            <IconButton
-              size="small"
-              href={`https://bithomp.com/explorer/${account}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              component="a"
-            >
-              <LinkIcon sx={{ fontSize: 18 }} />
-            </IconButton>
-          </Tooltip>
-        </Stack>
-      </TableCell>
-    </TableRow>
-  );
-};
-
-const MobileRichListCard = ({ row, token, metrics, activeFiatCurrency, theme }) => {
-  const { id, account, balance, holding } = row;
-  const value = useMemo(() => {
-    if (!token?.exch || !balance) return 0;
-    return (token.exch * balance) / metrics[activeFiatCurrency];
-  }, [token?.exch, balance, metrics, activeFiatCurrency]);
-
-  const change24h = useMemo(() => {
-    if (!row.balance24h) return null;
-    const change = balance - row.balance24h;
-    const percentChange = row.balance24h ? (change / row.balance24h) * 100 : 0;
-    return {
-      value: change,
-      percent: percentChange,
-      isPositive: change >= 0
-    };
-  }, [balance, row.balance24h]);
-
-  return (
-    <Paper
-      elevation={0}
-      sx={{
-        p: 2,
-        mb: 1,
-        borderRadius: 2,
-        backgroundColor: 'transparent',
-        backdropFilter: 'none',
-        WebkitBackdropFilter: 'none',
-        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-        boxShadow: `
-          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-      }}
-    >
-      <Stack spacing={1.5}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography variant="caption" color="text.secondary">
-              #{id}
-            </Typography>
-            <Link
-              href={`https://bithomp.com/explorer/${account}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              underline="hover"
-            >
-              <Typography variant="body2" color="primary" fontWeight="medium">
-                {truncateAddress(account, 8)}
-              </Typography>
-            </Link>
-            {EXCHANGE_ADDRESSES[account] && (
-              <Chip
-                label={EXCHANGE_ADDRESSES[account]}
-                size="small"
-                color="primary"
-                sx={{ height: 18, fontSize: '0.65rem' }}
-              />
-            )}
-          </Stack>
-          <CopyButton text={account} />
-        </Stack>
-
-        <Stack direction="row" justifyContent="space-between">
-          <Stack>
-            <Typography variant="caption" color="text.secondary">
-              Balance
-            </Typography>
-            <Typography variant="body2" fontWeight="medium">
-              {fNumber(balance)}
-            </Typography>
-          </Stack>
-          {change24h && (
-            <Stack alignItems="center">
-              <Typography variant="caption" color="text.secondary">
-                24h Change
-              </Typography>
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                {change24h.isPositive ? (
-                  <TrendingUpIcon sx={{ fontSize: 14, color: 'success.main' }} />
-                ) : (
-                  <TrendingDownIcon sx={{ fontSize: 14, color: 'error.main' }} />
-                )}
-                <Typography
-                  variant="caption"
-                  color={change24h.isPositive ? 'success.main' : 'error.main'}
-                  fontWeight="medium"
-                  sx={{ whiteSpace: 'nowrap' }}
-                >
-                  {change24h.isPositive ? '+' : '-'}{fNumber(Math.abs(change24h.value))} ({fPercent(Math.abs(change24h.percent))})
-                </Typography>
-              </Stack>
-            </Stack>
-          )}
-          <Stack alignItems="flex-end">
-            <Typography variant="caption" color="text.secondary">
-              Holdings
-            </Typography>
-            <Typography variant="body2" fontWeight="medium">
-              {holding}%
-            </Typography>
-          </Stack>
-        </Stack>
-
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Stack>
-            <Typography variant="caption" color="text.secondary">
-              Value
-            </Typography>
-            <Typography variant="body1" fontWeight="bold" color="primary">
-              {currencySymbols[activeFiatCurrency]} {fNumber(value)}
-            </Typography>
-          </Stack>
-          <Tooltip title="View on Explorer">
-            <IconButton
-              size="small"
-              href={`https://bithomp.com/explorer/${account}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              component="a"
-            >
-              <LinkIcon sx={{ fontSize: 18 }} />
-            </IconButton>
-          </Tooltip>
-        </Stack>
-      </Stack>
-    </Paper>
-  );
-};
 
 const RichListData = ({ token }) => {
   const theme = useTheme();
@@ -436,13 +309,11 @@ const RichListData = ({ token }) => {
 
   if (loading && !refreshing) {
     return (
-      <Box sx={{ p: 3 }}>
-        <Stack spacing={2}>
-          {[...Array(5)].map((_, index) => (
-            <Skeleton key={index} variant="rectangular" height={60} />
-          ))}
-        </Stack>
-      </Box>
+      <Stack spacing={1}>
+        <Box display="flex" justifyContent="center" p={4}>
+          <CircularProgress size={40} thickness={4} />
+        </Box>
+      </Stack>
     );
   }
 
@@ -465,104 +336,309 @@ const RichListData = ({ token }) => {
 
   if (!richList.length) {
     return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="body2" color="text.secondary">
-          No rich list data available
-        </Typography>
-        <Button 
-          startIcon={<RefreshIcon />} 
-          onClick={handleRefresh}
-          sx={{ mt: 2 }}
+      <Stack spacing={1}>
+        <Box
+          sx={{
+            textAlign: 'center',
+            py: 6,
+            backgroundColor: 'transparent',
+            backdropFilter: 'none',
+            WebkitBackdropFilter: 'none',
+            borderRadius: '12px',
+            border: `1px dashed ${alpha(theme.palette.divider, 0.3)}`,
+            boxShadow: `
+              0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+              0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+              inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+          }}
         >
-          Refresh
-        </Button>
-      </Box>
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No Rich List Data
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Holder data will appear here when available
+          </Typography>
+          <Button 
+            startIcon={<RefreshIcon />} 
+            onClick={handleRefresh}
+            sx={{ mt: 2 }}
+            variant="outlined"
+            size="small"
+          >
+            Refresh
+          </Button>
+        </Box>
+      </Stack>
     );
   }
 
   return (
-    <Box>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-        <Typography variant="h6">
-          Top {token?.name || 'Token'} Holders
-        </Typography>
-        <IconButton onClick={handleRefresh} disabled={refreshing}>
-          <RefreshIcon sx={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
-        </IconButton>
-      </Stack>
-
-      {isMobile ? (
-        <Stack spacing={1}>
-          {richList.map((row) => (
-            <MobileRichListCard
-              key={row.id}
-              row={row}
-              token={token}
-              metrics={metrics}
-              activeFiatCurrency={activeFiatCurrency}
-              theme={theme}
-            />
-          ))}
-        </Stack>
-      ) : (
-        <TableContainer component={Paper} elevation={0} sx={{ 
+    <Stack spacing={1}>
+      {/* Table Headers with integrated title */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: '1fr 1fr',
+            md: '0.5fr 2.5fr 1.5fr 1.5fr 1fr 1.5fr 0.5fr'
+          },
+          gap: 2,
+          p: 2,
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
           backgroundColor: 'transparent',
           backdropFilter: 'none',
           WebkitBackdropFilter: 'none',
+          borderRadius: '8px 8px 0 0',
           border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-          borderRadius: '12px',
           boxShadow: `
             0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
             0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-        }}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 'bold' }}>Rank</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Address</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                  Balance ({token?.name})
-                </TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                  24h Change
-                </TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                  Holdings
-                </TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                  Value ({activeFiatCurrency})
-                </TableCell>
-                <TableCell align="center" sx={{ fontWeight: 'bold' }}>
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {richList.map((row, index) => (
-                <RichListRow
-                  key={row.id}
-                  row={row}
-                  index={index}
-                  token={token}
-                  metrics={metrics}
-                  activeFiatCurrency={activeFiatCurrency}
-                  theme={theme}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+          '& > *': {
+            fontWeight: 'bold',
+            color: theme.palette.text.secondary,
+            fontSize: '0.75rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }
+        }}
+      >
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>#</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Address</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Balance</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>24h Change</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Holdings</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Value ({activeFiatCurrency})</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}></Typography>
+      </Box>
 
-      <RichListToolbar
-        count={totalCount}
-        rows={rows}
-        setRows={handleRowsChange}
-        page={page}
-        setPage={handlePageChange}
-      />
-    </Box>
+      <Stack spacing={0.5}>
+        {richList.map((row, index) => {
+          // Calculate value directly without useMemo
+          const value = (!token?.exch || !row.balance) ? 0 : (token.exch * row.balance) / metrics[activeFiatCurrency];
+
+          // Calculate change24h directly without useMemo
+          const change24h = (() => {
+            if (!row.balance24h) return null;
+            const change = row.balance - row.balance24h;
+            const percentChange = row.balance24h ? (change / row.balance24h) * 100 : 0;
+            return {
+              value: change,
+              percent: percentChange,
+              isPositive: change >= 0
+            };
+          })();
+
+          const balancePercentage = Math.min(100, Math.max(5, (row.holding || 0) * 10));
+          
+          return (
+            <HolderCard key={row.id}>
+              <BalanceIndicator balance={balancePercentage} />
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      sm: '1fr 1fr',
+                      md: '0.5fr 2.5fr 1.5fr 1.5fr 1fr 1.5fr 0.5fr'
+                    },
+                    gap: 1.5,
+                    alignItems: 'center'
+                  }}
+                >
+                  {/* Rank */}
+                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Typography
+                      variant="body2"
+                      fontWeight="600"
+                      color="text.primary"
+                      sx={{ fontSize: '0.85rem' }}
+                    >
+                      {row.id}
+                    </Typography>
+                  </Box>
+
+                  {/* Address */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Link
+                      href={`/profile/${row.account}`}
+                      sx={{
+                        textDecoration: 'none',
+                        color: 'primary.main',
+                        fontWeight: '500',
+                        '&:hover': {
+                          textDecoration: 'underline',
+                          color: 'primary.dark'
+                        }
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        fontWeight="500"
+                        sx={{ fontSize: '0.8rem', color: 'primary.main' }}
+                      >
+                        {truncateAddress(row.account, 12)}
+                      </Typography>
+                    </Link>
+                    {EXCHANGE_ADDRESSES[row.account] && (
+                      <ExchangeChip
+                        label={EXCHANGE_ADDRESSES[row.account]}
+                        size="small"
+                      />
+                    )}
+                    <CopyButton text={row.account} />
+                  </Box>
+
+                  {/* Balance */}
+                  <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                    >
+                      Balance
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      fontWeight="600"
+                      color="text.primary"
+                      sx={{ fontSize: '0.85rem' }}
+                    >
+                      {fNumber(row.balance)}
+                    </Typography>
+                  </Box>
+
+                  {/* 24h Change */}
+                  <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                    >
+                      24h Change
+                    </Typography>
+                    {change24h && (
+                      <Stack direction="row" alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }} spacing={0.5}>
+                        {change24h.isPositive ? (
+                          <TrendingUpIcon sx={{ color: theme.palette.primary.main, fontSize: 14 }} />
+                        ) : (
+                          <TrendingDownIcon sx={{ color: '#F44336', fontSize: 14 }} />
+                        )}
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: change24h.isPositive ? theme.palette.primary.main : '#F44336',
+                            fontWeight: 600,
+                            fontSize: '0.85rem'
+                          }}
+                        >
+                          {change24h.isPositive ? '+' : '-'}{fNumber(Math.abs(change24h.value))}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: change24h.isPositive ? theme.palette.primary.main : '#F44336',
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          ({fPercent(Math.abs(change24h.percent))})
+                        </Typography>
+                      </Stack>
+                    )}
+                  </Box>
+
+                  {/* Holdings */}
+                  <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                    >
+                      Holdings
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      fontWeight="600"
+                      color="text.primary"
+                      sx={{ fontSize: '0.85rem' }}
+                    >
+                      {row.holding}%
+                    </Typography>
+                  </Box>
+
+                  {/* Value */}
+                  <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                    >
+                      Value
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      fontWeight="600"
+                      color="primary.main"
+                      sx={{ fontSize: '0.85rem' }}
+                    >
+                      {currencySymbols[activeFiatCurrency]} {fNumber(value)}
+                    </Typography>
+                  </Box>
+
+                  {/* Actions */}
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Tooltip title="View on Bithomp" arrow>
+                      <IconButton
+                        size="small"
+                        component={Link}
+                        href={`https://bithomp.com/explorer/${row.account}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          color: `${theme.palette.primary.main} !important`,
+                          padding: '4px',
+                          '&:hover': {
+                            color: `${theme.palette.primary.dark} !important`,
+                            backgroundColor:
+                              theme.palette.mode === 'dark'
+                                ? 'rgba(255, 255, 255, 0.08)'
+                                : 'rgba(0, 0, 0, 0.04)',
+                            transform: 'scale(1.1)'
+                          },
+                          '& .MuiSvgIcon-root': {
+                            color: `${theme.palette.primary.main} !important`
+                          },
+                          '&:hover .MuiSvgIcon-root': {
+                            color: `${theme.palette.primary.dark} !important`
+                          }
+                        }}
+                      >
+                        <OpenInNewIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
+              </CardContent>
+            </HolderCard>
+          );
+        })}
+      </Stack>
+
+      {totalCount > rows && (
+        <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
+          <StyledPagination
+            count={Math.ceil(totalCount / rows)}
+            page={page + 1}
+            onChange={(e, newPage) => handlePageChange(newPage - 1)}
+            size="large"
+            showFirstButton
+            showLastButton
+          />
+        </Stack>
+      )}
+    </Stack>
   );
 };
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import React from 'react';
 import { format } from 'date-fns';
+import { alpha } from '@mui/material/styles';
 
 // Material
 import {
@@ -24,7 +25,10 @@ import {
   useTheme,
   Card,
   CardContent,
-  Divider
+  Divider,
+  styled,
+  keyframes,
+  Pagination
 } from '@mui/material';
 
 // Icons
@@ -36,6 +40,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckIcon from '@mui/icons-material/Check';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -50,6 +55,106 @@ import dynamic from 'next/dynamic';
 const SankeyModal = dynamic(() => import('src/components/SankeyModal'), {
   loading: () => <CircularProgress />
 });
+
+// Define highlight animation with softer colors
+const highlightAnimation = (theme) => keyframes`
+  0% {
+    background-color: ${theme.palette.primary.main}30;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px ${theme.palette.primary.main}40;
+  }
+  50% {
+    background-color: ${theme.palette.primary.main}15;
+    transform: translateY(0);
+    box-shadow: 0 2px 4px ${theme.palette.primary.main}20;
+  }
+  100% {
+    background-color: transparent;
+    transform: translateY(0);
+    box-shadow: none;
+  }
+`;
+
+// Styled components with improved design
+const TraderCard = styled(Card, {
+  shouldForwardProp: (prop) => prop !== 'isNew'
+})(({ theme, isNew }) => ({
+  marginBottom: theme.spacing(0.5),
+  borderRadius: '8px',
+  backgroundColor: 'transparent',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+  boxShadow: `
+    0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+    0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+  transition: 'all 0.3s ease-in-out',
+  position: 'relative',
+  overflow: 'hidden',
+  animation: isNew ? `${highlightAnimation(theme)} 1s ease-in-out` : 'none',
+  '&:hover': {
+    transform: 'translateY(-1px)',
+    boxShadow: `
+      0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+      0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+  }
+}));
+
+const ProfitChip = styled(Chip)(({ theme, profittype }) => ({
+  fontSize: '0.7rem',
+  height: '24px',
+  fontWeight: 'bold',
+  borderRadius: '12px',
+  backgroundColor: 'transparent',
+  color: profittype === 'positive' ? theme.palette.primary.main : '#F44336',
+  border:
+    profittype === 'positive'
+      ? `1px solid ${alpha(theme.palette.primary.main, 0.5)}`
+      : `1px solid ${alpha('#F44336', 0.4)}`,
+  boxShadow: `
+    0 2px 8px ${alpha(profittype === 'positive' ? theme.palette.primary.main : '#F44336', 0.15)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+}));
+
+const VolumeIndicator = styled('div')(({ theme, volume }) => ({
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  height: '100%',
+  width: `${volume}%`,
+  background: `linear-gradient(90deg, 
+    ${theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.08)' : 'rgba(33, 150, 243, 0.05)'} 0%, 
+    ${
+      theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.02)' : 'rgba(33, 150, 243, 0.01)'
+    } 100%)`,
+  transition: 'width 0.3s ease-in-out',
+  borderRadius: '12px'
+}));
+
+const StyledPagination = styled(Pagination)(({ theme }) => ({
+  '& .MuiPaginationItem-root': {
+    color: theme.palette.text.primary,
+    borderRadius: '8px',
+    margin: '0 2px',
+    fontWeight: '500',
+    '&:hover': {
+      backgroundColor:
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+    }
+  },
+  '& .Mui-selected': {
+    backgroundColor: `${theme.palette.primary.main} !important`,
+    color: '#fff !important',
+    fontWeight: 'bold',
+    borderRadius: '8px',
+    '&:hover': {
+      backgroundColor: `${theme.palette.primary.dark} !important`
+    }
+  }
+}));
 
 function truncate(str, n) {
   if (!str) return '';
@@ -185,14 +290,22 @@ const headCells = [
 
 function ProfitCell({ value }) {
   const isPositive = value >= 0;
+  const theme = useTheme();
   return (
     <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="flex-end">
       {isPositive ? (
-        <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 14 }} />
+        <TrendingUpIcon sx={{ color: theme.palette.primary.main, fontSize: 14 }} />
       ) : (
-        <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 14 }} />
+        <TrendingDownIcon sx={{ color: '#F44336', fontSize: 14 }} />
       )}
-      <Typography variant="body2" sx={{ color: isPositive ? '#54D62C' : '#FF6C40' }}>
+      <Typography 
+        variant="body2" 
+        sx={{ 
+          color: isPositive ? theme.palette.primary.main : '#F44336',
+          fontWeight: 600,
+          fontSize: '0.85rem'
+        }}
+      >
         {fNumber(Math.abs(value))}
       </Typography>
     </Stack>
@@ -386,11 +499,11 @@ export default function TopTraders({ token }) {
 
   if (loading) {
     return (
-      <Box
-        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}
-      >
-        <CircularProgress />
-      </Box>
+      <Stack spacing={1}>
+        <Box display="flex" justifyContent="center" p={4}>
+          <CircularProgress size={40} thickness={4} />
+        </Box>
+      </Stack>
     );
   }
 
@@ -398,477 +511,346 @@ export default function TopTraders({ token }) {
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
-
-  const MobileTraderCard = ({ trader, rank }) => (
-    <Card 
-      sx={{ 
-        mb: 1.5, 
-        bgcolor: darkMode ? 'background.paper' : 'background.default',
-        boxShadow: 'none',
-        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
-        '&:active': {
-          transform: 'scale(0.98)',
-          transition: 'transform 0.1s'
-        }
-      }}
-    >
-      <CardContent sx={{ p: 2 }}>
-        <Stack spacing={1.5}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="subtitle2" color="text.secondary">#{rank}</Typography>
-              <Link
-                underline="none"
-                href={`/profile/${trader.address}`}
-                rel="noreferrer"
-              >
-                <Typography variant="body2" color="primary" sx={{ fontWeight: 600 }}>
-                  {truncate(trader.address, isSmallMobile ? 10 : 16)}
-                </Typography>
-              </Link>
-              {trader.AMM && (
-                <Chip
-                  label="AMM"
-                  size="small"
-                  color="secondary"
-                  sx={{ height: 18, fontSize: '0.65rem' }}
-                />
-              )}
-            </Stack>
-            <Stack direction="row" spacing={0.5}>
-              <IconButton
-                size="small"
-                onClick={() => handleOpenStats(trader)}
-                sx={{ p: 0.5 }}
-              >
-                <BarChartIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-              <IconButton
-                size="small"
-                onClick={() => handleOpenSankey(trader.address)}
-                sx={{ p: 0.5 }}
-              >
-                <AccountTreeIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Stack>
-          </Stack>
-          
-          <Divider sx={{ my: 0.5 }} />
-          
-          <Stack direction="row" justifyContent="space-between">
-            <Stack spacing={0.5}>
-              <Typography variant="caption" color="text.secondary">P&L (24h)</Typography>
-              <ProfitCell value={trader.profit24h} />
-            </Stack>
-            <Stack spacing={0.5} alignItems="flex-end">
-              <Typography variant="caption" color="text.secondary">Vol (24h)</Typography>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {fNumber(trader.volume24h)}
-              </Typography>
-            </Stack>
-            <Stack spacing={0.5} alignItems="flex-end">
-              <Typography variant="caption" color="text.secondary">ROI</Typography>
-              <Stack direction="row" spacing={0.25} alignItems="center">
-                {trader.roi >= 0 ? (
-                  <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 14 }} />
-                ) : (
-                  <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 14 }} />
-                )}
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: trader.roi >= 0 ? '#54D62C' : '#FF6C40',
-                    fontWeight: 500
-                  }}
-                >
-                  {fPercent(trader.roi)}
-                </Typography>
-              </Stack>
-            </Stack>
-          </Stack>
-          
-          <Stack direction="row" justifyContent="space-between" sx={{ pt: 0.5 }}>
-            <Stack spacing={0.5}>
-              <Typography variant="caption" color="text.secondary">Trades (24h)</Typography>
-              <Typography variant="body2">{fNumber(trader.trades24h)}</Typography>
-            </Stack>
-            <Stack spacing={0.5} alignItems="flex-end">
-              <Typography variant="caption" color="text.secondary">Last Trade</Typography>
-              <Typography variant="body2">{formatDate(trader.lastTradeDate)}</Typography>
-            </Stack>
-          </Stack>
-        </Stack>
-      </CardContent>
-    </Card>
-  );
+  
+  const totalPages = Math.ceil(sortedTraders.length / rowsPerPage);
 
   return (
-    <>
-      <Box sx={{ overflow: 'auto', width: '100%' }}>
-        {sortedTraders.length === 0 ? (
-          <Box sx={{ p: 3, textAlign: 'center' }}>
-            <Typography variant="body1" color="text.secondary">
-              No trader data available for this token.
-            </Typography>
+    <Stack spacing={1}>
+      {sortedTraders.length === 0 ? (
+        <Box
+          sx={{
+            textAlign: 'center',
+            py: 6,
+            backgroundColor: 'transparent',
+            backdropFilter: 'none',
+            WebkitBackdropFilter: 'none',
+            borderRadius: '12px',
+            border: `1px dashed ${alpha(theme.palette.divider, 0.3)}`,
+            boxShadow: `
+              0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+              0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+              inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+          }}
+        >
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No Top Traders Data
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Trading data will appear here when available
+          </Typography>
+        </Box>
+      ) : (
+        <>
+          {/* Table Headers with integrated title */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: '1fr 1fr',
+                md: '0.5fr 2fr 1.5fr 1.5fr 1.5fr 1.5fr 1fr 1fr 1.5fr 1fr'
+              },
+              gap: 2,
+              p: 2,
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+              backgroundColor: 'transparent',
+              backdropFilter: 'none',
+              WebkitBackdropFilter: 'none',
+              borderRadius: '8px 8px 0 0',
+              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+              boxShadow: `
+                0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+              '& > *': {
+                fontWeight: 'bold',
+                color: theme.palette.text.secondary,
+                fontSize: '0.75rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }
+            }}
+          >
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>#</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Trader</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>P&L (24h)</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>P&L (7d)</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Vol (24h)</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Total Vol</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Trades</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>ROI</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Last Trade</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}></Typography>
           </Box>
-        ) : isMobile ? (
-          <>
-            <Box sx={{ px: 0.5, py: 0.5 }}>
-              {paginatedTraders.map((trader, index) => (
-                <MobileTraderCard 
-                  key={trader.address + '-' + index}
-                  trader={trader}
-                  rank={page * rowsPerPage + index + 1}
-                />
-              ))}
-            </Box>
-            <TablePagination
-              component="div"
-              count={sortedTraders.length}
-              page={page}
-              onPageChange={handleChangePage}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              rowsPerPageOptions={[10, 20, 50]}
-              sx={{
-                borderTop: '1px solid rgba(145, 158, 171, 0.08)',
-                '& .MuiTablePagination-toolbar': {
-                  minHeight: '40px',
-                  px: 0.5
-                },
-                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                  fontSize: '0.7rem',
-                  color: 'text.secondary'
-                },
-                '& .MuiTablePagination-select': {
-                  fontSize: '0.7rem',
-                  py: 0
-                },
-                '& .MuiTablePagination-actions': {
-                  '& .MuiIconButton-root': {
-                    p: 0.5
-                  }
-                }
-              }}
-            />
-          </>
-        ) : (
-          <>
-            <Table
-              stickyHeader
-              size="small"
-              sx={{
-                '& .MuiTableCell-root': {
-                  py: 0.5,
-                  px: isMobile ? 0.25 : 0.75,
-                  fontSize: isMobile ? '0.7rem' : '0.75rem',
-                  whiteSpace: 'nowrap',
-                  borderBottom: 'none'
-                },
-                '& .MuiTableCell-head': {
-                  fontWeight: 600,
-                  fontSize: isMobile ? '0.65rem' : '0.7rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.01em',
-                  color: darkMode ? '#919EAB' : '#637381',
-                  bgcolor: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                  backdropFilter: 'blur(20px)',
-                  borderBottom: `1px solid ${
-                    darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-                  }`,
-                  position: 'sticky',
-                  top: 0,
-                  zIndex: 100
-                },
-                '& .MuiTableRow-root': {
-                  borderBottom: '1px solid rgba(145, 158, 171, 0.08)',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    '& .MuiTableCell-root': {
-                      backgroundColor: darkMode
-                        ? 'rgba(255, 255, 255, 0.04)'
-                        : 'rgba(145, 158, 171, 0.04)',
-                      backdropFilter: 'blur(6px)'
-                    },
-                    cursor: 'pointer',
-                    transform: 'translateY(-1px)',
-                    boxShadow: darkMode
-                      ? '0 4px 16px rgba(0, 0, 0, 0.24)'
-                      : '0 4px 16px rgba(145, 158, 171, 0.16)'
-                  }
-                },
-                '& .MuiTableSortLabel-root': {
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: 'inherit',
-                  '&:hover': {
-                    color: darkMode ? '#fff' : '#212B36'
-                  },
-                  '&.Mui-active': {
-                    color: darkMode ? '#fff' : '#212B36',
-                    '& .MuiTableSortLabel-icon': {
-                      color: 'inherit'
-                    }
-                  },
-                  '& .MuiTableSortLabel-icon': {
-                    fontSize: '16px'
-                  }
-                }
-              }}
-            >
-              <TableHead>
-                <TableRow>
-                  {headCells.filter(cell => !isMobile || !cell.mobileHide).map((headCell) => (
-                    <TableCell
-                      key={headCell.id}
-                      align={headCell.numeric ? 'right' : 'left'}
-                      sortDirection={orderBy === headCell.id ? order : false}
+
+          <Stack spacing={0.5}>
+            {paginatedTraders.map((trader, index) => {
+              const volumePercentage = Math.min(100, Math.max(5, (trader.totalVolume / 1000000) * 100));
+              
+              return (
+                <TraderCard key={trader.address + '-' + index}>
+                  <VolumeIndicator volume={volumePercentage} />
+                  <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                    <Box
                       sx={{
-                        fontWeight: 600,
-                        fontSize: isMobile ? '0.65rem' : '0.7rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.01em',
-                        color: darkMode ? '#919EAB' : '#637381'
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr',
+                          sm: '1fr 1fr',
+                          md: '0.5fr 2fr 1.5fr 1.5fr 1.5fr 1.5fr 1fr 1fr 1.5fr 1fr'
+                        },
+                        gap: 1.5,
+                        alignItems: 'center'
                       }}
                     >
-                      {headCell.sortable ? (
-                        <TableSortLabel
-                          active={orderBy === headCell.id}
-                          direction={orderBy === headCell.id ? order : 'asc'}
-                          onClick={() => handleRequestSort(headCell.id)}
-                          sx={{ fontSize: '0.75rem' }}
-                          IconComponent={orderBy === headCell.id ? undefined : () => null}
+                      {/* Rank */}
+                      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight="600"
+                          color="text.primary"
+                          sx={{ fontSize: '0.85rem' }}
                         >
-                          {headCell.label}
-                          {headCell.tooltip && (
-                            <Tooltip title={headCell.tooltip} placement="top">
-                              <InfoOutlinedIcon
-                                sx={{
-                                  fontSize: 12,
-                                  ml: 0.5,
-                                  verticalAlign: 'middle',
-                                  color: 'text.disabled'
-                                }}
-                              />
-                            </Tooltip>
-                          )}
-                        </TableSortLabel>
-                      ) : (
-                        <>
-                          {headCell.label}
-                          {headCell.tooltip && (
-                            <Tooltip title={headCell.tooltip} placement="top">
-                              <InfoOutlinedIcon
-                                sx={{
-                                  fontSize: 12,
-                                  ml: 0.5,
-                                  verticalAlign: 'middle',
-                                  color: 'text.disabled'
-                                }}
-                              />
-                            </Tooltip>
-                          )}
-                        </>
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {paginatedTraders.map((safeTrader, index) => {
-                  return (
-                    <TableRow
-                      key={safeTrader.address + '-' + index}
-                      sx={{
-                        '&:hover': {
-                          bgcolor: 'action.hover'
-                        }
-                      }}
-                    >
-                      <TableCell align="right">
-                        <Typography variant={isMobile ? "caption" : "body2"} sx={{ fontWeight: 600 }}>
                           {page * rowsPerPage + index + 1}
                         </Typography>
-                      </TableCell>
-                      <TableCell align="left">
-                        <Stack direction="row" alignItems="center" spacing={0.5}>
-                          <Link
-                            underline="none"
-                            color="inherit"
-                            href={`/profile/${safeTrader.address}`}
-                            rel="noreferrer"
-                          >
-                            <Typography variant={isMobile ? "caption" : "body2"} color="primary" sx={{ fontWeight: 600 }}>
-                              {truncate(safeTrader.address, isMobile ? 8 : 16)}
-                            </Typography>
-                          </Link>
-                          {safeTrader.AMM && (
-                            <Chip
-                              label="AMM"
-                              size="small"
-                              color="secondary"
-                              sx={{
-                                height: isMobile ? 16 : 18,
-                                fontSize: isMobile ? '0.6rem' : '0.65rem',
-                                '& .MuiChip-label': {
-                                  px: 0.5
-                                }
-                              }}
-                            />
-                          )}
-                        </Stack>
-                      </TableCell>
-                      <TableCell align="right">
-                        <ProfitCell value={safeTrader.profit24h} />
-                      </TableCell>
-                      <TableCell align="right">
-                        <ProfitCell value={safeTrader.profit7d} />
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant={isMobile ? "caption" : "body2"} sx={{ fontWeight: 500 }}>
-                          {fNumber(safeTrader.volume24h)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant={isMobile ? "caption" : "body2"} sx={{ fontWeight: 500 }}>
-                          {fNumber(safeTrader.totalVolume)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant={isMobile ? "caption" : "body2"} sx={{ fontWeight: 500 }}>
-                          {fNumber(safeTrader.trades24h)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant={isMobile ? "caption" : "body2"} sx={{ fontWeight: 500 }}>
-                          {fNumber(safeTrader.totalTrades)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Stack
-                          direction="row"
-                          spacing={0.5}
-                          alignItems="center"
-                          justifyContent="flex-end"
+                      </Box>
+
+                      {/* Trader Address */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Link
+                          href={`/profile/${trader.address}`}
+                          sx={{
+                            textDecoration: 'none',
+                            color: 'primary.main',
+                            fontWeight: '500',
+                            '&:hover': {
+                              textDecoration: 'underline',
+                              color: 'primary.dark'
+                            }
+                          }}
                         >
-                          {safeTrader.roi >= 0 ? (
-                            <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 14 }} />
-                          ) : (
-                            <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 14 }} />
-                          )}
                           <Typography
-                            variant={isMobile ? "caption" : "body2"}
+                            variant="body2"
+                            fontWeight="500"
+                            sx={{ fontSize: '0.8rem', color: 'primary.main' }}
+                          >
+                            {`${trader.address.slice(0, 4)}...${trader.address.slice(-4)}`}
+                          </Typography>
+                        </Link>
+                        {trader.AMM && (
+                          <Chip
+                            label="AMM"
+                            size="small"
+                            color="secondary"
                             sx={{
-                              color: safeTrader.roi >= 0 ? '#54D62C' : '#FF6C40',
-                              fontWeight: 600
+                              height: 18,
+                              fontSize: '0.65rem',
+                              '& .MuiChip-label': {
+                                px: 0.5
+                              }
+                            }}
+                          />
+                        )}
+                      </Box>
+
+                      {/* P&L 24h */}
+                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                        >
+                          P&L (24h)
+                        </Typography>
+                        <ProfitCell value={trader.profit24h} />
+                      </Box>
+
+                      {/* P&L 7d */}
+                      <Box sx={{ textAlign: { xs: 'left', md: 'right' }, display: { xs: 'none', md: 'block' } }}>
+                        <ProfitCell value={trader.profit7d} />
+                      </Box>
+
+                      {/* Volume 24h */}
+                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                        >
+                          Vol (24h)
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight="600"
+                          color="text.primary"
+                          sx={{ fontSize: '0.85rem' }}
+                        >
+                          {fNumber(trader.volume24h)}
+                        </Typography>
+                      </Box>
+
+                      {/* Total Volume */}
+                      <Box sx={{ textAlign: { xs: 'left', md: 'right' }, display: { xs: 'none', md: 'block' } }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight="600"
+                          color="text.primary"
+                          sx={{ fontSize: '0.85rem' }}
+                        >
+                          {fNumber(trader.totalVolume)}
+                        </Typography>
+                      </Box>
+
+                      {/* Trades */}
+                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                        >
+                          Trades
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight="600"
+                          color="text.primary"
+                          sx={{ fontSize: '0.85rem' }}
+                        >
+                          {fNumber(trader.totalTrades)}
+                        </Typography>
+                      </Box>
+
+                      {/* ROI */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
+                        {trader.roi >= 0 ? (
+                          <TrendingUpIcon sx={{ color: theme.palette.primary.main, fontSize: 14 }} />
+                        ) : (
+                          <TrendingDownIcon sx={{ color: '#F44336', fontSize: 14 }} />
+                        )}
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: trader.roi >= 0 ? theme.palette.primary.main : '#F44336',
+                            fontWeight: 600,
+                            fontSize: '0.85rem'
+                          }}
+                        >
+                          {fPercent(trader.roi)}
+                        </Typography>
+                      </Box>
+
+                      {/* Last Trade */}
+                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                        >
+                          Last Trade
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight="500"
+                          color="text.secondary"
+                          sx={{ fontSize: '0.8rem' }}
+                        >
+                          {formatDate(trader.lastTradeDate)}
+                        </Typography>
+                      </Box>
+
+                      {/* Actions */}
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                        <Tooltip title="View Trader Statistics" arrow>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenStats(trader)}
+                            sx={{
+                              color: `${theme.palette.primary.main} !important`,
+                              padding: '4px',
+                              '&:hover': {
+                                color: `${theme.palette.primary.dark} !important`,
+                                backgroundColor:
+                                  theme.palette.mode === 'dark'
+                                    ? 'rgba(255, 255, 255, 0.08)'
+                                    : 'rgba(0, 0, 0, 0.04)',
+                                transform: 'scale(1.1)'
+                              }
                             }}
                           >
-                            {fPercent(safeTrader.roi)}
-                          </Typography>
-                        </Stack>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant={isMobile ? "caption" : "body2"} sx={{ fontWeight: 500 }}>
-                          {formatDate(safeTrader.lastTradeDate)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          spacing={0.5}
-                          justifyContent="flex-end"
-                        >
-                          <Tooltip title="View Trader Statistics">
-                            <IconButton
-                              edge="end"
-                              aria-label="stats"
-                              onClick={() => handleOpenStats(safeTrader)}
-                              size="small"
-                              sx={{
-                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                '&:hover': {
-                                  backgroundColor: darkMode
+                            <BarChartIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="View Flow Analysis" arrow>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenSankey(trader.address)}
+                            sx={{
+                              color: `${theme.palette.primary.main} !important`,
+                              padding: '4px',
+                              '&:hover': {
+                                color: `${theme.palette.primary.dark} !important`,
+                                backgroundColor:
+                                  theme.palette.mode === 'dark'
                                     ? 'rgba(255, 255, 255, 0.08)'
-                                    : 'rgba(145, 158, 171, 0.08)',
-                                  transform: 'scale(1.1)'
-                                }
-                              }}
-                            >
-                              <BarChartIcon sx={{ fontSize: isMobile ? 14 : 16 }} />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="View Sankey Flow Analysis">
-                            <IconButton
-                              edge="end"
-                              aria-label="sankey"
-                              onClick={() => handleOpenSankey(safeTrader.address)}
-                              size="small"
-                              sx={{
-                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                '&:hover': {
-                                  backgroundColor: darkMode
+                                    : 'rgba(0, 0, 0, 0.04)',
+                                transform: 'scale(1.1)'
+                              }
+                            }}
+                          >
+                            <AccountTreeIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="View Profile" arrow>
+                          <IconButton
+                            size="small"
+                            component={Link}
+                            href={`/profile/${trader.address}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{
+                              color: `${theme.palette.primary.main} !important`,
+                              padding: '4px',
+                              '&:hover': {
+                                color: `${theme.palette.primary.dark} !important`,
+                                backgroundColor:
+                                  theme.palette.mode === 'dark'
                                     ? 'rgba(255, 255, 255, 0.08)'
-                                    : 'rgba(145, 158, 171, 0.08)',
-                                  transform: 'scale(1.1)'
-                                }
-                              }}
-                            >
-                              <AccountTreeIcon sx={{ fontSize: isMobile ? 14 : 16 }} />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Copy JSON Data">
-                            <IconButton
-                              edge="end"
-                              aria-label="copy-json"
-                              onClick={() => handleCopyJson(safeTrader)}
-                              size="small"
-                              sx={{
-                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                '&:hover': {
-                                  backgroundColor: darkMode
-                                    ? 'rgba(255, 255, 255, 0.08)'
-                                    : 'rgba(145, 158, 171, 0.08)',
-                                  transform: 'scale(1.1)'
-                                }
-                              }}
-                            >
-                              {copiedTrader === safeTrader.address ? (
-                                <CheckIcon sx={{ fontSize: isMobile ? 14 : 16, color: '#54D62C' }} />
-                              ) : (
-                                <ContentCopyIcon sx={{ fontSize: isMobile ? 14 : 16 }} />
-                              )}
-                            </IconButton>
-                          </Tooltip>
-                        </Stack>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-            <TablePagination
-              component="div"
-              count={sortedTraders.length}
-              page={page}
-              onPageChange={handleChangePage}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              rowsPerPageOptions={[5, 10, 20, 25, 50, 100]}
-              sx={{
-                borderTop: '1px solid rgba(145, 158, 171, 0.08)',
-                '& .MuiTablePagination-toolbar': {
-                  minHeight: '52px'
-                },
-                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                  fontSize: '0.875rem',
-                  color: 'text.secondary'
-                }
-              }}
-            />
-          </>
-        )}
-      </Box>
+                                    : 'rgba(0, 0, 0, 0.04)',
+                                transform: 'scale(1.1)'
+                              },
+                              '& .MuiSvgIcon-root': {
+                                color: `${theme.palette.primary.main} !important`
+                              },
+                              '&:hover .MuiSvgIcon-root': {
+                                color: `${theme.palette.primary.dark} !important`
+                              }
+                            }}
+                          >
+                            <OpenInNewIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </TraderCard>
+              );
+            })}
+          </Stack>
+
+          {totalPages > 1 && (
+            <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
+              <StyledPagination
+                count={totalPages}
+                page={page + 1}
+                onChange={(e, newPage) => setPage(newPage - 1)}
+                size="large"
+                showFirstButton
+                showLastButton
+              />
+            </Stack>
+          )}
+        </>
+      )}
 
       <StatsModal
         open={Boolean(selectedTrader)}
@@ -883,6 +865,6 @@ export default function TopTraders({ token }) {
         onClose={handleCloseSankey}
         account={selectedSankeyAccount}
       />
-    </>
+    </Stack>
   );
 }

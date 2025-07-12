@@ -15,13 +15,21 @@ import {
   Tooltip,
   useMediaQuery,
   useTheme,
-  alpha
+  alpha,
+  Card,
+  CardContent,
+  keyframes,
+  Pagination,
+  Chip
 } from '@mui/material';
 
 // Iconify
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import InfoIcon from '@mui/icons-material/Info';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
@@ -35,6 +43,103 @@ import StackStyle from 'src/components/StackStyle'; //Maybe need to disable?
 import LoadChart from 'src/components/LoadChart';
 
 // ----------------------------------------------------------------------
+
+// Define highlight animation with softer colors
+const highlightAnimation = (theme) => keyframes`
+  0% {
+    background-color: ${theme.palette.primary.main}30;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px ${theme.palette.primary.main}40;
+  }
+  50% {
+    background-color: ${theme.palette.primary.main}15;
+    transform: translateY(0);
+    box-shadow: 0 2px 4px ${theme.palette.primary.main}20;
+  }
+  100% {
+    background-color: transparent;
+    transform: translateY(0);
+    box-shadow: none;
+  }
+`;
+
+// Styled components with improved design
+const PairCard = styled(Card, {
+  shouldForwardProp: (prop) => prop !== 'isNew'
+})(({ theme, isNew }) => ({
+  marginBottom: theme.spacing(0.5),
+  borderRadius: '8px',
+  backgroundColor: 'transparent',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+  boxShadow: `
+    0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+    0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+  transition: 'all 0.3s ease-in-out',
+  position: 'relative',
+  overflow: 'hidden',
+  animation: isNew ? `${highlightAnimation(theme)} 1s ease-in-out` : 'none',
+  '&:hover': {
+    transform: 'translateY(-1px)',
+    boxShadow: `
+      0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+      0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+  }
+}));
+
+const VolumeIndicator = styled('div')(({ theme, volume }) => ({
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  height: '100%',
+  width: `${volume}%`,
+  background: `linear-gradient(90deg, 
+    ${theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.08)' : 'rgba(33, 150, 243, 0.05)'} 0%, 
+    ${
+      theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.02)' : 'rgba(33, 150, 243, 0.01)'
+    } 100%)`,
+  transition: 'width 0.3s ease-in-out',
+  borderRadius: '12px'
+}));
+
+const StyledPagination = styled(Pagination)(({ theme }) => ({
+  '& .MuiPaginationItem-root': {
+    color: theme.palette.text.primary,
+    borderRadius: '8px',
+    margin: '0 2px',
+    fontWeight: '500',
+    '&:hover': {
+      backgroundColor:
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+    }
+  },
+  '& .Mui-selected': {
+    backgroundColor: `${theme.palette.primary.main} !important`,
+    color: '#fff !important',
+    fontWeight: 'bold',
+    borderRadius: '8px',
+    '&:hover': {
+      backgroundColor: `${theme.palette.primary.dark} !important`
+    }
+  }
+}));
+
+const PairChip = styled(Chip)(({ theme }) => ({
+  fontSize: '0.7rem',
+  height: '24px',
+  fontWeight: 'bold',
+  borderRadius: '12px',
+  backgroundColor: 'transparent',
+  color: theme.palette.primary.main,
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+  boxShadow: `
+    0 2px 8px ${alpha(theme.palette.primary.main, 0.15)},
+    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+}));
 
 const SmallInfoIcon = ({ isMobile, ...props }) => (
   <InfoIcon
@@ -137,7 +242,7 @@ const StyledTableRow = styled(TableRow, {
   }
 }));
 
-const ChartCell = ({ darkMode, sparkline, id, isMobile }) => {
+const ChartBox = ({ darkMode, sparkline, id, isMobile }) => {
   const BASE_URL = process.env.API_URL;
   const { ref, inView } = useInView({
     triggerOnce: true,
@@ -145,16 +250,7 @@ const ChartCell = ({ darkMode, sparkline, id, isMobile }) => {
   });
 
   return (
-    <TableCell
-      align="left"
-      ref={ref}
-      sx={{
-        px: isMobile ? '4px' : '12px',
-        width: isMobile ? '100px' : '210px',
-        minWidth: isMobile ? '100px' : '210px',
-        py: isMobile ? '4px' : '12px'
-      }}
-    >
+    <Box ref={ref}>
       {inView ? (
         sparkline ? (
           <Box
@@ -163,9 +259,7 @@ const ChartCell = ({ darkMode, sparkline, id, isMobile }) => {
               height: isMobile ? '30px' : '60px',
               borderRadius: '8px',
               overflow: 'hidden',
-              border: `1px solid ${
-                darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-              }`,
+              border: `1px solid ${alpha(darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)', 0.5)}`,
               backgroundColor: 'transparent',
               position: 'relative',
               transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -187,7 +281,7 @@ const ChartCell = ({ darkMode, sparkline, id, isMobile }) => {
                 renderer: 'svg',
                 width: isMobile ? 80 : 180,
                 height: isMobile ? 30 : 60,
-                animation: false, // Disable animation for better performance in table
+                animation: false,
                 devicePixelRatio: window.devicePixelRatio || 1
               }}
             />
@@ -198,9 +292,7 @@ const ChartCell = ({ darkMode, sparkline, id, isMobile }) => {
               width: isMobile ? '80px' : '180px',
               height: isMobile ? '30px' : '60px',
               borderRadius: '8px',
-              border: `1px solid ${
-                darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
-              }`,
+              border: `1px solid ${alpha(darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)', 0.5)}`,
               backgroundColor: 'transparent',
               display: 'flex',
               alignItems: 'center',
@@ -223,8 +315,8 @@ const ChartCell = ({ darkMode, sparkline, id, isMobile }) => {
       ) : (
         <Box
           sx={{
-            width: '180px',
-            height: '60px',
+            width: isMobile ? '80px' : '180px',
+            height: isMobile ? '30px' : '60px',
             borderRadius: '8px',
             backgroundColor: 'transparent',
             display: 'flex',
@@ -233,7 +325,7 @@ const ChartCell = ({ darkMode, sparkline, id, isMobile }) => {
           }}
         />
       )}
-    </TableCell>
+    </Box>
   );
 };
 
@@ -318,597 +410,363 @@ export default function PairsList({ token, pairs }) {
     }
   };
 
-  return (
-    <Stack>
-      <Box
-        sx={{
-          px: isMobile ? 1 : 2,
-          py: isMobile ? 1 : 2,
-          backgroundColor: 'transparent',
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`
-        }}
-      >
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: '700',
-            fontSize: isMobile ? '18px' : '24px',
-            letterSpacing: '-0.02em',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1
-          }}
-        >
-          Trading Pairs
-          <span style={badge24hStyle}>24h</span>
-        </Typography>
-      </Box>
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(pairs.length / itemsPerPage);
+  const paginatedPairs = pairs.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
+  return (
+    <Stack spacing={1}>
+      {/* Table Headers with integrated title */}
       <Box
         sx={{
-          display: 'flex',
-          gap: 1,
-          py: 1,
-          overflow: 'auto',
-          width: '100%',
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: '1fr 1fr',
+            md: '0.5fr 2fr 1.5fr 1.5fr 1fr 1.5fr 1.5fr 0.5fr'
+          },
+          gap: 2,
+          p: 2,
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
           backgroundColor: 'transparent',
           backdropFilter: 'none',
           WebkitBackdropFilter: 'none',
+          borderRadius: '8px 8px 0 0',
           border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-          borderRadius: '12px',
           boxShadow: `
             0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
             0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
             inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
           '& > *': {
-            scrollSnapAlign: 'center'
-          },
-          '::-webkit-scrollbar': { display: 'none' }
+            fontWeight: 'bold',
+            color: theme.palette.text.secondary,
+            fontSize: '0.75rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }
         }}
-        ref={tableRef}
       >
-        <Table
-          stickyHeader
-          sx={{
-            '& .MuiTableCell-root': {
-              borderBottom: 'none'
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>#</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Pair</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>24h Chart</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Volume (24h)</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Trades</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Issuer</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Domain</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}></Typography>
+      </Box>
+
+      <Stack spacing={0.5}>
+        {paginatedPairs.map((row) => {
+          const { id, pair, curr1, curr2, count } = row;
+          const name1 = curr1.name;
+          const name2 = curr2.name;
+
+          let user1 = curr1.user;
+          let user2 = curr2.user;
+
+          if (!user1) user1 = curr1.issuer;
+          if (!user2) user2 = curr2.issuer;
+
+          user1 = truncate(user1, 12);
+          user2 = truncate(user2, 12);
+
+          // DEX URLs
+          let xrpltoDexURL = `/token/${slug}/trade`;
+
+          // Use the MD5 values provided by the API
+          let sparkline = '';
+          let sparklineToken = null;
+
+          if (id === 1) {
+            // For primary pair, show first token's chart
+            sparkline = curr1.md5;
+            sparklineToken = curr1;
+          } else {
+            // For all other pairs, show the second token's chart
+            if (curr2.currency !== 'XRP' && curr2.md5) {
+              sparkline = curr2.md5;
+              sparklineToken = curr2;
+            } else if (curr1.currency !== 'XRP' && curr1.md5) {
+              // Fallback to curr1 if curr2 is XRP
+              sparkline = curr1.md5;
+              sparklineToken = curr1;
             }
-          }}
-        >
-          <StyledTableHead darkMode={darkMode}>
-            <TableRow
-              sx={{
-                '& .MuiTableCell-root': headerCellStyles,
-                '& .MuiTableCell-root:nth-of-type(1)': {
-                  ...stickyCellStyles.first,
-                  ...headerCellStyles
-                },
-                '& .MuiTableCell-root:nth-of-type(2)': {
-                  ...stickyCellStyles.second,
-                  ...headerCellStyles
-                }
-              }}
-            >
-              <TableCell align="left">
-                <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-                  Rank
-                </Typography>
-              </TableCell>
+          }
 
-              <TableCell align="left">
-                <Tooltip
-                  title="Trading pair with exchange icons"
-                  placement="top"
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: theme.palette.mode === 'dark' 
-                          ? alpha(theme.palette.background.paper, 0.95)
-                          : alpha(theme.palette.background.paper, 0.98),
-                        backdropFilter: 'blur(20px)',
-                        WebkitBackdropFilter: 'blur(20px)',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        boxShadow: `
-                          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-                      }
-                    }
+          const volumePercentage = Math.min(100, Math.max(5, (Math.log10(count + 1) / 5) * 100));
+
+          return (
+            <PairCard key={pair}>
+              <VolumeIndicator volume={volumePercentage} />
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      sm: '1fr 1fr',
+                      md: '0.5fr 2fr 1.5fr 1.5fr 1fr 1.5fr 1.5fr 0.5fr'
+                    },
+                    gap: 1.5,
+                    alignItems: 'center'
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
-                    <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-                      Pair
-                    </Typography>
-                    <SmallInfoIcon isMobile={isMobile} />
-                  </Box>
-                </Tooltip>
-              </TableCell>
-
-              <TableCell align="left">
-                <Tooltip
-                  title="Price chart for the last 24 hours"
-                  placement="top"
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: theme.palette.mode === 'dark' 
-                          ? alpha(theme.palette.background.paper, 0.95)
-                          : alpha(theme.palette.background.paper, 0.98),
-                        backdropFilter: 'blur(20px)',
-                        WebkitBackdropFilter: 'blur(20px)',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        boxShadow: `
-                          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-                      }
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
-                    <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-                      Last 24h
-                    </Typography>
-                    <SmallInfoIcon isMobile={isMobile} />
-                  </Box>
-                </Tooltip>
-              </TableCell>
-
-              <TableCell align="left">
-                <Tooltip
-                  title="Trading volume in the last 24 hours"
-                  placement="top"
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: theme.palette.mode === 'dark' 
-                          ? alpha(theme.palette.background.paper, 0.95)
-                          : alpha(theme.palette.background.paper, 0.98),
-                        backdropFilter: 'blur(20px)',
-                        WebkitBackdropFilter: 'blur(20px)',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        boxShadow: `
-                          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-                      }
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
-                    <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-                      Volume
-                    </Typography>
-                    <span style={badge24hStyle}>24h</span>
-                    <SmallInfoIcon isMobile={isMobile} />
-                  </Box>
-                </Tooltip>
-              </TableCell>
-
-              <TableCell align="left">
-                <Tooltip
-                  title="Number of trades in the last 24 hours"
-                  placement="top"
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: theme.palette.mode === 'dark' 
-                          ? alpha(theme.palette.background.paper, 0.95)
-                          : alpha(theme.palette.background.paper, 0.98),
-                        backdropFilter: 'blur(20px)',
-                        WebkitBackdropFilter: 'blur(20px)',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        boxShadow: `
-                          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-                      }
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
-                    <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-                      Trades
-                    </Typography>
-                    <span style={badge24hStyle}>24h</span>
-                    <SmallInfoIcon isMobile={isMobile} />
-                  </Box>
-                </Tooltip>
-              </TableCell>
-
-              {!isMobile && (
-                <>
-                  <TableCell align="left">
-                    <Tooltip
-                      title="Token issuer addresses"
-                      placement="top"
-                      componentsProps={{
-                        tooltip: {
-                          sx: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                            fontSize: '12px',
-                            fontWeight: '500'
-                          }
-                        }
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
-                        <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-                          Issuer
-                        </Typography>
-                        <SmallInfoIcon isMobile={isMobile} />
-                      </Box>
-                    </Tooltip>
-                  </TableCell>
-
-                  <TableCell align="left">
-                    <Tooltip
-                      title="Token issuer domain"
-                      placement="top"
-                      componentsProps={{
-                        tooltip: {
-                          sx: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                            fontSize: '12px',
-                            fontWeight: '500'
-                          }
-                        }
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
-                        <Typography variant="inherit" sx={{ fontWeight: '600' }}>
-                          Domain
-                        </Typography>
-                        <SmallInfoIcon isMobile={isMobile} />
-                      </Box>
-                    </Tooltip>
-                  </TableCell>
-                </>
-              )}
-
-            </TableRow>
-          </StyledTableHead>
-
-          <TableBody>
-            {pairs.map((row) => {
-              const { id, pair, curr1, curr2, count } = row;
-              const name1 = curr1.name;
-              const name2 = curr2.name;
-
-              let user1 = curr1.user;
-              let user2 = curr2.user;
-
-              if (!user1) user1 = curr1.issuer;
-              if (!user2) user2 = curr2.issuer;
-
-              user1 = truncate(user1, 12);
-              user2 = truncate(user2, 12);
-
-              // DEX URLs
-              let soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}`;
-              if (curr2.currency !== 'XRP') soloDexURL += `%2B${curr2.issuer}`;
-
-              let gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}`;
-              if (curr2.currency !== 'XRP') gatehubDexURL += `+${curr2.issuer}`;
-
-              let xpmarketDexURL = `https://xpmarket.com/dex/${curr1.name}+${curr1.issuer}/${curr2.currency}`;
-              if (curr2.currency !== 'XRP') xpmarketDexURL += `+${curr2.issuer}`;
-
-              let magneticDexURL = `https://xmagnetic.org/dex/${curr1.name}+${curr1.issuer}_${curr2.currency}+${curr2.currency}`;
-              if (curr2.currency !== 'XRP') magneticDexURL += `+${curr2.issuer}`;
-
-              let xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
-
-              let unhostedDexURL = `https://unhosted.exchange/?base=${curr1.currency}_${curr1.issuer}&quote=XRP`;
-
-              let xrpltoDexURL = `/token/${slug}/trade`;
-
-              // Use the MD5 values provided by the API - they're already correct!
-              let sparkline = '';
-              let sparklineToken = null;
-
-              // Debug: Log the available MD5 values
-              /* console.log(
-                `Pair ${id}: curr1(${curr1.name})=${curr1.md5}, curr2(${curr2.name})=${curr2.md5}`
-              ); */
-
-              if (id === 1) {
-                // For primary pair (SOLO/XRP), show SOLO's chart
-                sparkline = curr1.md5;
-                sparklineToken = curr1;
-              } else {
-                // For all other pairs, show the second token's chart (not SOLO)
-                if (curr2.currency !== 'XRP' && curr2.md5) {
-                  sparkline = curr2.md5;
-                  sparklineToken = curr2;
-                } else if (curr1.currency !== 'XRP' && curr1.md5) {
-                  // Fallback to curr1 if curr2 is XRP
-                  sparkline = curr1.md5;
-                  sparklineToken = curr1;
-                }
-              }
-
-              /* console.log(
-                `Selected sparkline for pair ${id}: ${sparkline} (${sparklineToken?.name})`
-              ); */
-
-              return (
-                <StyledTableRow key={pair} darkMode={darkMode} isMobile={isMobile}>
-                  <TableCell align="left" sx={stickyCellStyles.first}>
+                  {/* Rank */}
+                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                     <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: '600',
-                        fontSize: isMobile ? '13px' : '16px',
-                        color: darkMode ? '#fff' : '#212B36'
-                      }}
+                      variant="body2"
+                      fontWeight="600"
+                      color="text.primary"
+                      sx={{ fontSize: '0.85rem' }}
                     >
-                      {fNumber(id)}
+                      {id}
                     </Typography>
-                  </TableCell>
+                  </Box>
 
-                  <TableCell align="left" sx={stickyCellStyles.second}>
-                    <Stack direction="row" alignItems="center" spacing={isMobile ? 0.25 : 1}>
-                      <Avatar
-                        src={curr1.md5 ? `https://s1.xrpl.to/token/${curr1.md5}` : curr1.currency === 'XRP' ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8` : undefined}
-                        sx={{ 
-                          width: isMobile ? 14 : 20, 
-                          height: isMobile ? 14 : 20,
-                          mr: isMobile ? 0.25 : 0.5
-                        }}
-                      />
-                      <Typography
-                        variant="subtitle1"
-                        sx={{
-                          color: '#B72136',
-                          fontWeight: '600',
-                          fontSize: isMobile ? '11px' : '15px'
-                        }}
-                      >
-                        {name1}
-                      </Typography>
-                      <Icon
-                        icon={arrowsExchange}
-                        width={isMobile ? "12" : "18"}
-                        height={isMobile ? "12" : "18"}
-                        style={{ color: darkMode ? '#919EAB' : '#637381' }}
-                      />
-                      <Avatar
-                        src={curr2.md5 ? `https://s1.xrpl.to/token/${curr2.md5}` : curr2.currency === 'XRP' ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8` : undefined}
-                        sx={{ 
-                          width: isMobile ? 14 : 20, 
-                          height: isMobile ? 14 : 20,
-                          mr: isMobile ? 0.25 : 0.5
-                        }}
-                      />
-                      <Typography
-                        variant="subtitle1"
-                        sx={{
-                          color: darkMode ? '#00AB55' : '#5569ff',
-                          fontWeight: '600',
-                          fontSize: isMobile ? '11px' : '15px'
-                        }}
-                      >
-                        {name2}
-                      </Typography>
-                    </Stack>
-                  </TableCell>
+                  {/* Pair */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Avatar
+                      src={curr1.md5 ? `https://s1.xrpl.to/token/${curr1.md5}` : curr1.currency === 'XRP' ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8` : undefined}
+                      sx={{ width: 20, height: 20 }}
+                    />
+                    <Typography
+                      variant="body2"
+                      fontWeight="600"
+                      color="primary.main"
+                      sx={{ fontSize: '0.85rem' }}
+                    >
+                      {name1}
+                    </Typography>
+                    <Icon
+                      icon={arrowsExchange}
+                      width="16"
+                      height="16"
+                      style={{ color: theme.palette.text.secondary }}
+                    />
+                    <Avatar
+                      src={curr2.md5 ? `https://s1.xrpl.to/token/${curr2.md5}` : curr2.currency === 'XRP' ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8` : undefined}
+                      sx={{ width: 20, height: 20 }}
+                    />
+                    <Typography
+                      variant="body2"
+                      fontWeight="600"
+                      color="primary.main"
+                      sx={{ fontSize: '0.85rem' }}
+                    >
+                      {name2}
+                    </Typography>
+                  </Box>
 
-                  <ChartCell darkMode={darkMode} sparkline={sparkline} id={id} isMobile={isMobile} />
+                  {/* Chart */}
+                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <ChartBox darkMode={darkMode} sparkline={sparkline} id={id} isMobile={isMobile} />
+                  </Box>
 
-                  <TableCell align="left" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
-                    <Stack spacing={1}>
-                      <Stack direction="row" spacing={1} alignItems="center">
+                  {/* Volume */}
+                  <Box>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                    >
+                      Volume (24h)
+                    </Typography>
+                    <Stack spacing={0.5}>
+                      <Stack direction="row" spacing={0.5} alignItems="center">
                         <Typography
-                          variant="subtitle1"
-                          sx={{
-                            color: '#B72136',
-                            fontWeight: '600',
-                            fontSize: isMobile ? '12px' : '15px'
-                          }}
+                          variant="body2"
+                          fontWeight="600"
+                          color="primary.main"
+                          sx={{ fontSize: '0.85rem' }}
                         >
                           {fNumber(curr1.value)}
                         </Typography>
                         <Typography
                           variant="caption"
-                          sx={{
-                            color: '#B72136',
-                            fontWeight: '500',
-                            fontSize: isMobile ? '10px' : '12px'
-                          }}
+                          color="primary.main"
+                          sx={{ fontSize: '0.75rem' }}
                         >
                           {name1}
                         </Typography>
                       </Stack>
-                      <Stack direction="row" spacing={1} alignItems="center">
+                      <Stack direction="row" spacing={0.5} alignItems="center">
                         <Typography
-                          variant="subtitle1"
-                          sx={{
-                            color: darkMode ? '#00AB55' : '#5569ff',
-                            fontWeight: '600',
-                            fontSize: isMobile ? '12px' : '15px'
-                          }}
+                          variant="body2"
+                          fontWeight="600"
+                          color="primary.main"
+                          sx={{ fontSize: '0.85rem' }}
                         >
                           {fNumber(curr2.value)}
                         </Typography>
                         <Typography
                           variant="caption"
-                          sx={{
-                            color: darkMode ? '#00AB55' : '#5569ff',
-                            fontWeight: '500',
-                            fontSize: isMobile ? '10px' : '12px'
-                          }}
+                          color="primary.main"
+                          sx={{ fontSize: '0.75rem' }}
                         >
                           {name2}
                         </Typography>
                       </Stack>
                     </Stack>
-                  </TableCell>
+                  </Box>
 
-                  <TableCell align="left" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
+                  {/* Trades */}
+                  <Box>
                     <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: '600',
-                        fontSize: isMobile ? '13px' : '16px',
-                        color: darkMode ? '#fff' : '#212B36'
-                      }}
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                    >
+                      Trades (24h)
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      fontWeight="600"
+                      color="text.primary"
+                      sx={{ fontSize: '0.85rem' }}
                     >
                       {fNumber(count)}
                     </Typography>
-                  </TableCell>
+                  </Box>
 
-                  {!isMobile && (
-                    <>
-                      <TableCell align="left" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
-                        <Stack spacing={0.5}>
-                          {id === 1 && (
-                            <Stack direction="row" alignItems="center">
-                              <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://bithomp.com/explorer/${curr1.issuer}`}
-                                rel="noreferrer noopener nofollow"
-                                sx={{
-                                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                  '&:hover': {
-                                    transform: 'translateX(2px)'
-                                  }
-                                }}
-                              >
-                                <Typography
-                                  variant="subtitle2"
-                                  sx={{
-                                    color: '#B72136',
-                                    fontWeight: '500',
-                                    fontSize: isMobile ? '11px' : '13px',
-                                    fontFamily: 'monospace',
-                                    '&:hover': {
-                                      color: '#8B1730'
-                                    }
-                                  }}
-                                >
-                                  {user1}
-                                </Typography>
-                              </Link>
-                            </Stack>
-                          )}
-                          {curr2.issuer && curr2.issuer !== 'XRPL' && (
-                            <Stack direction="row" alignItems="center">
-                              <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://bithomp.com/explorer/${curr2.issuer}`}
-                                rel="noreferrer noopener nofollow"
-                                sx={{
-                                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                  '&:hover': {
-                                    transform: 'translateX(2px)'
-                                  }
-                                }}
-                              >
-                                <Typography
-                                  variant="subtitle2"
-                                  sx={{
-                                    color: darkMode ? '#00AB55' : '#5569ff',
-                                    fontWeight: '500',
-                                    fontSize: isMobile ? '11px' : '13px',
-                                    fontFamily: 'monospace',
-                                    '&:hover': {
-                                      color: darkMode ? '#007B3C' : '#3A4FCC'
-                                    }
-                                  }}
-                                >
-                                  {user2}
-                                </Typography>
-                              </Link>
-                            </Stack>
-                          )}
-                        </Stack>
-                      </TableCell>
+                  {/* Issuer */}
+                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Stack spacing={0.5}>
+                      {id === 1 && (
+                        <Link
+                          href={`https://bithomp.com/explorer/${curr1.issuer}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{
+                            textDecoration: 'none',
+                            color: 'primary.main',
+                            fontWeight: '500',
+                            fontSize: '0.8rem',
+                            '&:hover': {
+                              textDecoration: 'underline',
+                              color: 'primary.dark'
+                            }
+                          }}
+                        >
+                          {user1}
+                        </Link>
+                      )}
+                      {curr2.issuer && curr2.issuer !== 'XRPL' && (
+                        <Link
+                          href={`https://bithomp.com/explorer/${curr2.issuer}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{
+                            textDecoration: 'none',
+                            color: 'primary.main',
+                            fontWeight: '500',
+                            fontSize: '0.8rem',
+                            '&:hover': {
+                              textDecoration: 'underline',
+                              color: 'primary.dark'
+                            }
+                          }}
+                        >
+                          {user2}
+                        </Link>
+                      )}
+                    </Stack>
+                  </Box>
 
-                      <TableCell align="left" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
-                        <Stack spacing={0.5}>
-                          {id === 1 && curr1.domain && (
-                            <Link
-                              underline="none"
-                              color="inherit"
-                              target="_blank"
-                              href={`https://${curr1.domain}`}
-                              rel="noreferrer noopener nofollow"
-                              sx={{
-                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                '&:hover': {
-                                  transform: 'translateX(2px)'
-                                }
-                              }}
-                            >
-                              <Typography
-                                variant="subtitle2"
-                                sx={{
-                                  color: '#B72136',
-                                  fontWeight: '500',
-                                  fontSize: isMobile ? '11px' : '14px',
-                                  '&:hover': {
-                                    color: '#8B1730'
-                                  }
-                                }}
-                              >
-                                {curr1.domain}
-                              </Typography>
-                            </Link>
-                          )}
-                          {curr2.domain && (
-                            <Link
-                              underline="none"
-                              color="inherit"
-                              target="_blank"
-                              href={`https://${curr2.domain}`}
-                              rel="noreferrer noopener nofollow"
-                              sx={{
-                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                '&:hover': {
-                                  transform: 'translateX(2px)'
-                                }
-                              }}
-                            >
-                              <Typography
-                                variant="subtitle2"
-                                sx={{
-                                  color: darkMode ? '#00AB55' : '#5569ff',
-                                  fontWeight: '500',
-                                  fontSize: isMobile ? '11px' : '14px',
-                                  '&:hover': {
-                                    color: darkMode ? '#007B3C' : '#3A4FCC'
-                                  }
-                                }}
-                              >
-                                {curr2.domain}
-                              </Typography>
-                            </Link>
-                          )}
-                        </Stack>
-                      </TableCell>
-                    </>
-                  )}
+                  {/* Domain */}
+                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Stack spacing={0.5}>
+                      {id === 1 && curr1.domain && (
+                        <Link
+                          href={`https://${curr1.domain}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{
+                            textDecoration: 'none',
+                            color: 'text.secondary',
+                            fontWeight: '500',
+                            fontSize: '0.8rem',
+                            '&:hover': {
+                              textDecoration: 'underline',
+                              color: 'text.primary'
+                            }
+                          }}
+                        >
+                          {curr1.domain}
+                        </Link>
+                      )}
+                      {curr2.domain && (
+                        <Link
+                          href={`https://${curr2.domain}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{
+                            textDecoration: 'none',
+                            color: 'text.secondary',
+                            fontWeight: '500',
+                            fontSize: '0.8rem',
+                            '&:hover': {
+                              textDecoration: 'underline',
+                              color: 'text.primary'
+                            }
+                          }}
+                        >
+                          {curr2.domain}
+                        </Link>
+                      )}
+                    </Stack>
+                  </Box>
 
-                </StyledTableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </Box>
+                  {/* Actions */}
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Tooltip title="Trade this pair" arrow>
+                      <IconButton
+                        size="small"
+                        component={Link}
+                        href={xrpltoDexURL}
+                        sx={{
+                          color: `${theme.palette.primary.main} !important`,
+                          padding: '4px',
+                          '&:hover': {
+                            color: `${theme.palette.primary.dark} !important`,
+                            backgroundColor:
+                              theme.palette.mode === 'dark'
+                                ? 'rgba(255, 255, 255, 0.08)'
+                                : 'rgba(0, 0, 0, 0.04)',
+                            transform: 'scale(1.1)'
+                          },
+                          '& .MuiSvgIcon-root': {
+                            color: `${theme.palette.primary.main} !important`
+                          },
+                          '&:hover .MuiSvgIcon-root': {
+                            color: `${theme.palette.primary.dark} !important`
+                          }
+                        }}
+                      >
+                        <OpenInNewIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
+              </CardContent>
+            </PairCard>
+          );
+        })}
+      </Stack>
+
+      {totalPages > 1 && (
+        <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
+          <StyledPagination
+            count={totalPages}
+            page={page}
+            onChange={(e, newPage) => setPage(newPage)}
+            size="large"
+            showFirstButton
+            showLastButton
+          />
+        </Stack>
+      )}
     </Stack>
   );
 }
