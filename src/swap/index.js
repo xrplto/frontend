@@ -1300,23 +1300,23 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
         
         // Build SendMax - handle XRP special case
         if (curr1.currency === 'XRP') {
-          SendMax = new Decimal(sendAmount).mul(1000000).toString(); // Convert to drops
+          SendMax = new Decimal(sendAmount).mul(1000000).toFixed(0, Decimal.ROUND_DOWN); // Convert to drops
         } else {
           SendMax = {
             currency: curr1.currency,
             issuer: curr1.issuer,
-            value: sendAmount.toString()
+            value: new Decimal(sendAmount).toFixed(6, Decimal.ROUND_DOWN)
           };
         }
         
         // Build Amount - handle XRP special case
         if (curr2.currency === 'XRP') {
-          Amount = new Decimal(receiveAmount).mul(1000000).toString(); // Convert to drops
+          Amount = new Decimal(receiveAmount).mul(1000000).toFixed(0, Decimal.ROUND_DOWN); // Convert to drops
         } else {
           Amount = {
             currency: curr2.currency,
             issuer: curr2.issuer,
-            value: receiveAmount.toString()
+            value: new Decimal(receiveAmount).toFixed(6, Decimal.ROUND_DOWN)
           };
         }
 
@@ -1330,11 +1330,11 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           DeliverMin = {
             currency: Amount.currency,
             issuer: Amount.issuer,
-            value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toString()
+            value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(6, Decimal.ROUND_DOWN)
           };
         } else {
           // For XRP amounts (strings) - Amount is already in drops
-          DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toString();
+          DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(0, Decimal.ROUND_DOWN);
         }
 
         transactionData = {
@@ -1348,6 +1348,32 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           Fee: '12',
           SourceTag: 20221212
         };
+        
+        // Debug logging for market orders
+        if (wallet_type === 'crossmark') {
+          console.log('=== CROSSMARK MARKET ORDER DEBUG ===');
+          console.log('Order Type:', orderType);
+          console.log('Revert State:', revert);
+          console.log('Raw Amounts:', {
+            amount1: amount1,
+            amount2: amount2,
+            sendAmount: sendAmount,
+            receiveAmount: receiveAmount
+          });
+          console.log('Currencies:', {
+            curr1: curr1,
+            curr2: curr2
+          });
+          console.log('Transaction Fields:', {
+            SendMax: SendMax,
+            Amount: Amount,
+            DeliverMin: DeliverMin,
+            Flags: Flags,
+            slippage: slippage + '%'
+          });
+          console.log('Full Transaction Data:', JSON.stringify(transactionData, null, 2));
+          console.log('=================================');
+        }
       }
 
       let memoData = `${orderType === 'limit' ? 'Limit' : 'Swap'} via https://xrpl.to`;
@@ -1406,9 +1432,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           });
           break;
         case 'crossmark':
-          console.log('Crossmark transaction data:', JSON.stringify(transactionData, null, 2));
-          console.log('curr1:', curr1);
-          console.log('curr2:', curr2);
+          console.log('=== SENDING TO CROSSMARK ===');
+          console.log('Final transaction being sent:', JSON.stringify(transactionData, null, 2));
           dispatch(updateProcess(1));
           await sdk.methods.signAndSubmitAndWait(transactionData).then(({ response }) => {
             if (response.data.meta.isSuccess) {
