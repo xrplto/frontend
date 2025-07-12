@@ -2437,29 +2437,67 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                       }
                     }}
                   />
-                  {/* Warning for immediate execution */}
+                  {/* Price difference from market and warnings */}
                   {limitPrice && parseFloat(limitPrice) > 0 && (() => {
                     const limit = parseFloat(limitPrice);
                     const bestAsk = asks[0]?.price || 0;
                     const bestBid = bids[0]?.price || 0;
-                    const willExecute = (!revert && limit >= bestAsk && bestAsk > 0) || 
-                                       (revert && limit <= bestBid && bestBid > 0);
                     
-                    if (willExecute) {
+                    // Determine the current market price based on order type
+                    const currentPrice = !revert ? bestAsk : bestBid;
+                    
+                    if (currentPrice > 0) {
+                      const priceDiff = ((limit - currentPrice) / currentPrice) * 100;
+                      const isAbove = priceDiff > 0;
+                      
+                      // Check if order will execute immediately
+                      const willExecute = (!revert && limit >= bestAsk && bestAsk > 0) || 
+                                         (revert && limit <= bestBid && bestBid > 0);
+                      
                       return (
-                        <Box 
-                          sx={{ 
-                            mt: 1,
-                            p: 1,
-                            borderRadius: '6px',
-                            backgroundColor: alpha(theme.palette.warning.main, 0.1),
-                            border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`
-                          }}
-                        >
-                          <Typography variant="caption" color="warning.main" sx={{ fontWeight: 600 }}>
-                            ⚠️ Order will execute immediately at market price
-                          </Typography>
-                        </Box>
+                        <Stack spacing={1} sx={{ mt: 1 }}>
+                          {/* Price difference indicator */}
+                          <Box 
+                            sx={{ 
+                              p: 1,
+                              borderRadius: '6px',
+                              backgroundColor: alpha(
+                                isAbove ? theme.palette.error.main : theme.palette.success.main, 
+                                0.1
+                              ),
+                              border: `1px solid ${alpha(
+                                isAbove ? theme.palette.error.main : theme.palette.success.main, 
+                                0.3
+                              )}`
+                            }}
+                          >
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                fontWeight: 600,
+                                color: isAbove ? theme.palette.error.main : theme.palette.success.main
+                              }}
+                            >
+                              {isAbove ? '▲' : '▼'} {Math.abs(priceDiff).toFixed(2)}% {isAbove ? 'above' : 'below'} current {!revert ? 'ask' : 'bid'} price ({currentPrice.toFixed(6)})
+                            </Typography>
+                          </Box>
+                          
+                          {/* Warning for immediate execution */}
+                          {willExecute && (
+                            <Box 
+                              sx={{ 
+                                p: 1,
+                                borderRadius: '6px',
+                                backgroundColor: alpha(theme.palette.warning.main, 0.1),
+                                border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`
+                              }}
+                            >
+                              <Typography variant="caption" color="warning.main" sx={{ fontWeight: 600 }}>
+                                ⚠️ Order will execute immediately at market price
+                              </Typography>
+                            </Box>
+                          )}
+                        </Stack>
                       );
                     }
                     return null;
