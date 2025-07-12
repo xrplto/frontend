@@ -7,6 +7,7 @@ import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
 import PeopleIcon from '@mui/icons-material/People';
+import useWebSocket from 'react-use-websocket';
 
 // Material
 import {
@@ -106,6 +107,17 @@ const INTERVAL_CONFIG = [
   ['12H', 5 * 1000] // 5 Secs difference / SPARK (more real-time)
 ];
 
+// Map range to WebSocket interval
+const RANGE_TO_INTERVAL = {
+  '12h': '1m',
+  '1D': '5m',
+  '7D': '15m',
+  '1M': '1h',
+  '3M': '4h',
+  '1Y': '1d',
+  'ALL': '1w'
+};
+
 const shimmer = keyframes`
   0% {
     background-position: -200px 0;
@@ -117,7 +129,7 @@ const shimmer = keyframes`
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   [`& .${toggleButtonGroupClasses.grouped}`]: {
-    margin: theme.spacing(0.25),
+    margin: theme.spacing(0.15),
     border: 0,
     borderRadius: theme.shape.borderRadius,
     [`&.${toggleButtonGroupClasses.disabled}`]: {
@@ -223,6 +235,7 @@ function PriceChart({ token }) {
   const [lastPrice, setLastPrice] = useState(null);
   const [priceChange, setPriceChange] = useState(0);
   const [volumeChange, setVolumeChange] = useState(0);
+  const [isStreaming, setIsStreaming] = useState(false);
 
   const [minTime, setMinTime] = useState(0);
   const [maxTime, setMaxTime] = useState(0);
@@ -380,28 +393,53 @@ function PriceChart({ token }) {
         }
 
         // Process OHLC chart data
-        if (ohlcRes.status === 200 && ohlcRes.data?.history?.length > 0) {
-          const items = ohlcRes.data.history;
+        if (ohlcRes.status === 200) {
+          // Check if the response has the expected structure
+          const responseData = ohlcRes.data;
+          let items = [];
+          
+          // Handle different response formats
+          if (responseData?.ohlc && Array.isArray(responseData.ohlc)) {
+            // API returns data in { ohlc: [...] } format
+            items = responseData.ohlc;
+          } else if (responseData?.history && Array.isArray(responseData.history)) {
+            // Legacy format with history array
+            items = responseData.history;
+          } else if (Array.isArray(responseData)) {
+            // Direct array response
+            items = responseData;
+          }
 
-          // 7D and 1M specific validation: ensure OHLC data integrity
-          let validatedItems = items;
-          if (range === '7D' || range === '1M') {
-            validatedItems = items.filter(
-              (item) =>
-                item &&
-                item.length === 6 && // Updated from 5 to 6 to include volume
+          if (items.length > 0) {
+            // Transform OHLC data to Highcharts format [timestamp, open, high, low, close]
+            // The API returns [timestamp, open, high, low, close, volume]
+            const highchartsOHLCData = items
+              .filter(item => 
+                item && 
+                item.length >= 5 && // At least 5 elements (volume is optional)
                 typeof item[0] === 'number' && // timestamp
                 typeof item[1] === 'number' && // open
                 typeof item[2] === 'number' && // high
                 typeof item[3] === 'number' && // low
-                typeof item[4] === 'number' && // close
-                typeof item[5] === 'number' // volume
-            );
-          }
+                typeof item[4] === 'number'    // close
+              )
+              .map(item => [
+                item[0], // timestamp
+                item[1], // open
+                item[2], // high
+                item[3], // low
+                item[4]  // close
+              ]);
 
-          // Apply OHLC outlier detection to all ranges
-          const filteredOHLCItems = detectAndFilterOHLCOutliers(validatedItems);
-          setDataOHLC(filteredOHLCItems);
+            // Apply OHLC outlier detection
+            const filteredOHLCItems = detectAndFilterOHLCOutliers(highchartsOHLCData);
+            setDataOHLC(filteredOHLCItems);
+            
+            // Store the original data with volume for the volume series
+            window._ohlcVolumeData = items;
+          } else {
+            setDataOHLC([]);
+          }
         } else {
           setDataOHLC([]);
         }
@@ -510,21 +548,25 @@ function PriceChart({ token }) {
       if (i > 0) {
         const prevPrice = data[i - 1][1];
         if (price > prevPrice) {
-          color = alpha(theme.palette.success.main, 0.6);
+          color = alpha(theme.palette.success.main, 0.15);
         } else if (price < prevPrice) {
-          color = alpha(theme.palette.error.main, 0.6);
+          color = alpha(theme.palette.error.main, 0.15);
         } else {
-          color = alpha(theme.palette.grey[500], 0.4);
+          color = alpha(theme.palette.grey[500], 0.1);
         }
       } else {
-        color = alpha(theme.palette.grey[500], 0.4);
+        color = alpha(theme.palette.grey[500], 0.1);
       }
       return { x: timestamp, y: volume, color };
     });
   }, [data, theme.palette]);
 
   const handleChange = useCallback((event, newRange) => {
-    if (newRange) setRange(newRange);
+    if (newRange) {
+      setRange(newRange);
+      // Stop streaming when changing range
+      setIsStreaming(false);
+    }
   }, []);
 
   const handleDownloadCSV = useCallback(
@@ -557,8 +599,116 @@ function PriceChart({ token }) {
     // Kept for backward compatibility with chart options
   }, []);
 
+  // WebSocket configuration
+  const socketUrl = isStreaming && token?.md5 ? `wss://api.xrpl.to/ws/ohlc` : null;
+  
+  const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl, {
+    onOpen: () => {
+      if (token?.md5 && isStreaming) {
+        const interval = RANGE_TO_INTERVAL[range] || '5m';
+        sendMessage(JSON.stringify({
+          action: 'subscribe',
+          tokenMd5: token.md5,
+          interval: interval,
+          vs_currency: fiatMapping[activeFiatCurrency] || 'USD'
+        }));
+      }
+    },
+    shouldReconnect: () => isStreaming,
+    reconnectInterval: 3000,
+    reconnectAttempts: 10
+  });
+
+  // Handle WebSocket messages
+  useEffect(() => {
+    if (!lastMessage || !isStreaming) return;
+    
+    try {
+      const message = JSON.parse(lastMessage.data);
+      
+      if (message.type === 'ohlc' && message.tokenMd5 === token.md5) {
+        const newCandle = message.data;
+        
+        // Update OHLC data
+        if (chartType === 1 && newCandle) {
+          setDataOHLC(prevData => {
+            if (!prevData || prevData.length === 0) return prevData;
+            
+            const lastCandle = prevData[prevData.length - 1];
+            const candleData = [
+              newCandle.timestamp,
+              newCandle.open,
+              newCandle.high,
+              newCandle.low,
+              newCandle.close
+            ];
+            
+            // Update existing candle or add new one
+            if (lastCandle[0] === newCandle.timestamp) {
+              return [...prevData.slice(0, -1), candleData];
+            } else if (newCandle.timestamp > lastCandle[0]) {
+              return [...prevData, candleData];
+            }
+            return prevData;
+          });
+          
+          // Store volume data
+          if (window._ohlcVolumeData) {
+            const volumeEntry = [
+              newCandle.timestamp,
+              newCandle.open,
+              newCandle.high,
+              newCandle.low,
+              newCandle.close,
+              newCandle.volume || 0
+            ];
+            
+            const lastVolume = window._ohlcVolumeData[window._ohlcVolumeData.length - 1];
+            if (lastVolume[0] === newCandle.timestamp) {
+              window._ohlcVolumeData[window._ohlcVolumeData.length - 1] = volumeEntry;
+            } else if (newCandle.timestamp > lastVolume[0]) {
+              window._ohlcVolumeData.push(volumeEntry);
+            }
+          }
+        }
+        
+        // Update line chart data
+        if (chartType === 0 && newCandle) {
+          setData(prevData => {
+            if (!prevData || prevData.length === 0) return prevData;
+            
+            const timestamp = newCandle.timestamp;
+            const price = newCandle.close;
+            const volume = newCandle.volume || 0;
+            
+            const lastPoint = prevData[prevData.length - 1];
+            
+            // Update or add new point
+            if (lastPoint[0] === timestamp) {
+              return [...prevData.slice(0, -1), [timestamp, price, volume]];
+            } else if (timestamp > lastPoint[0]) {
+              return [...prevData, [timestamp, price, volume]];
+            }
+            return prevData;
+          });
+        }
+        
+        // Update last price and calculate change
+        if (newCandle.close) {
+          setLastPrice(prev => {
+            const change = newCandle.close - (prev || newCandle.close);
+            setPriceChange(change);
+            return newCandle.close;
+          });
+        }
+      }
+    } catch (err) {
+      console.error('WebSocket message parse error:', err);
+    }
+  }, [lastMessage, isStreaming, chartType, token.md5]);
+
   const toggleStreaming = useCallback(() => {
-    // WebSocket removed
+    setIsStreaming(prev => !prev);
   }, []);
 
   // Development helper for 7D/1M data validation
@@ -626,7 +776,7 @@ function PriceChart({ token }) {
       chart: {
         backgroundColor: 'transparent',
         type: 'areaspline',
-        height: isMobile ? '280px' : '350px',
+        height: isMobile ? '340px' : '440px',
         events: {
           render: function () {
             const chart = this;
@@ -705,8 +855,8 @@ function PriceChart({ token }) {
         tickColor: alpha(theme.palette.divider, 0.6),
         minPadding: 0,
         maxPadding: 0,
-        gridLineWidth: 1,
-        gridLineColor: alpha(theme.palette.divider, 0.1)
+        gridLineWidth: 0,
+        gridLineColor: alpha(theme.palette.divider, 0.05)
       },
       yAxis: [
         {
@@ -715,7 +865,7 @@ function PriceChart({ token }) {
           },
           tickAmount: isMobile ? 4 : 6,
           tickWidth: 1,
-          gridLineColor: alpha(theme.palette.divider, 0.1),
+          gridLineColor: alpha(theme.palette.divider, 0.05),
           labels: {
             style: {
               color: theme.palette.text.primary,
@@ -729,7 +879,7 @@ function PriceChart({ token }) {
           events: {
             afterSetExtremes: handleAfterSetExtremes
           },
-          height: isMobile ? '70%' : '60%',
+          height: isMobile ? '85%' : '80%',
           plotLines: [
             {
               width: 1,
@@ -755,12 +905,12 @@ function PriceChart({ token }) {
           },
           type: 'logarithmic',
           min: 0.001,
-          top: isMobile ? '70%' : '60%',
-          height: isMobile ? '30%' : '40%',
-          offset: 0,
+          top: isMobile ? '85%' : '80%',
+          height: isMobile ? '15%' : '20%',
+          offset: -5,
           lineWidth: 0,
           gridLineWidth: 0,
-          gridLineColor: alpha(theme.palette.divider, 0.1)
+          gridLineColor: alpha(theme.palette.divider, 0.05)
         }
       ],
       plotOptions: {
@@ -839,8 +989,14 @@ function PriceChart({ token }) {
           ]
         },
         column: {
-          borderRadius: 2,
-          animation: false
+          borderRadius: 0,
+          animation: false,
+          borderWidth: 0,
+          states: {
+            hover: {
+              enabled: false
+            }
+          }
         }
       },
       series: [
@@ -857,7 +1013,14 @@ function PriceChart({ token }) {
           data: volumeSeriesData,
           yAxis: 1,
           showInLegend: false,
-          borderWidth: 0
+          borderWidth: 0,
+          zIndex: -1,
+          opacity: 0.7,
+          states: {
+            hover: {
+              enabled: false
+            }
+          }
         }
       ],
       tooltip: {
@@ -959,12 +1122,20 @@ function PriceChart({ token }) {
           lineColor: theme.palette.error.main,
           upColor: theme.palette.success.main,
           upLineColor: theme.palette.success.main,
-          lineWidth: 1.5,
+          lineWidth: 0,
+          crisp: true,
           states: {
             hover: {
-              lineWidth: 2.5,
+              lineWidth: 0.15,
               brightness: 0.1
             }
+          },
+          groupPadding: 0.001,
+          pointPadding: 0.001,
+          maxPointWidth: 0.3,
+          minPointLength: 0.1,
+          dataGrouping: {
+            enabled: false
           }
         }
       },
@@ -976,8 +1147,12 @@ function PriceChart({ token }) {
       },
       chart: {
         backgroundColor: 'transparent',
-        height: isMobile ? '280px' : '350px',
+        height: isMobile ? '340px' : '440px',
         alignTicks: false,
+        spacingTop: 0,
+        spacingBottom: 0,
+        spacingLeft: 0,
+        spacingRight: 0,
         events: {
           render: function () {
             const chart = this;
@@ -1016,7 +1191,10 @@ function PriceChart({ token }) {
         boostThreshold: 500,
         plotBorderWidth: 0,
         reflow: true,
-        zoomType: 'xy'
+        zoomType: 'xy',
+        marginLeft: 50,
+        marginRight: 10,
+        marginTop: 0
       },
       legend: { enabled: false },
       credits: {
@@ -1054,8 +1232,8 @@ function PriceChart({ token }) {
         tickColor: alpha(theme.palette.divider, 0.6),
         minPadding: 0,
         maxPadding: 0,
-        gridLineWidth: 1,
-        gridLineColor: alpha(theme.palette.divider, 0.1)
+        gridLineWidth: 0,
+        gridLineColor: alpha(theme.palette.divider, 0.05)
       },
       yAxis: [
         {
@@ -1077,7 +1255,7 @@ function PriceChart({ token }) {
               return fCurrency5(this.value);
             }
           },
-          gridLineColor: alpha(theme.palette.divider, 0.1),
+          gridLineColor: alpha(theme.palette.divider, 0.05),
           plotLines: mediumValue
             ? [
                 {
@@ -1101,13 +1279,13 @@ function PriceChart({ token }) {
           },
           type: 'logarithmic',
           min: 0.001,
-          tickPixelInterval: 50,
-          top: isMobile ? '70%' : '60%',
-          height: isMobile ? '30%' : '40%',
-          offset: 0,
+          tickPixelInterval: 25,
+          top: isMobile ? '85%' : '80%',
+          height: isMobile ? '15%' : '20%',
+          offset: -5,
           lineWidth: 0,
           gridLineWidth: 0,
-          gridLineColor: alpha(theme.palette.divider, 0.1)
+          gridLineColor: alpha(theme.palette.divider, 0.05)
         }
       ],
       series: [
@@ -1115,32 +1293,44 @@ function PriceChart({ token }) {
           type: 'candlestick',
           name: `${user} ${name}`,
           data: dataOHLC,
-          animation: false
+          animation: false,
+          groupPadding: 0.001,
+          pointPadding: 0.001,
+          maxPointWidth: 0.3,
+          tooltip: {
+            pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}<br/>' +
+                        'Open: {point.open}<br/>' +
+                        'High: {point.high}<br/>' +
+                        'Low: {point.low}<br/>' +
+                        'Close: {point.close}<br/>'
+          }
         },
         {
           type: 'column',
           name: 'Volume',
           data:
-            dataOHLC?.length > 0
+            dataOHLC?.length > 0 && window._ohlcVolumeData
               ? dataOHLC.map((item, i) => {
                   let color;
                   if (i > 0) {
                     const prevClose = dataOHLC[i - 1][4]; // Previous close price
                     const currentClose = item[4]; // Current close price
                     if (currentClose > prevClose) {
-                      color = alpha(theme.palette.success.main, 0.6); // Price up
+                      color = alpha(theme.palette.success.main, 0.15); // Price up - very faded
                     } else if (currentClose < prevClose) {
-                      color = alpha(theme.palette.error.main, 0.6); // Price down
+                      color = alpha(theme.palette.error.main, 0.15); // Price down - very faded
                     } else {
-                      color = alpha(theme.palette.grey[500], 0.4); // No change
+                      color = alpha(theme.palette.grey[500], 0.1); // No change - barely visible
                     }
                   } else {
-                    color = alpha(theme.palette.grey[500], 0.4); // First bar
+                    color = alpha(theme.palette.grey[500], 0.1); // First bar - barely visible
                   }
-                  const volumeValue = Math.max(item[5] || 0, 0.001);
+                  // Get volume from the original data that includes volume
+                  const volumeData = window._ohlcVolumeData.find(d => d[0] === item[0]);
+                  const volumeValue = volumeData && volumeData[5] ? Math.max(volumeData[5], 0.001) : 0.001;
                   return {
                     x: item[0], // Timestamp
-                    y: volumeValue, // Volume (index 5), ensure positive for log scale
+                    y: volumeValue, // Volume from original data
                     color
                   };
                 })
@@ -1148,10 +1338,17 @@ function PriceChart({ token }) {
           yAxis: 1,
           showInLegend: false,
           borderWidth: 0,
-          pointPadding: 0.1,
-          groupPadding: 0.2,
-          minPointLength: 3,
-          zIndex: 1
+          pointPadding: 0.001,
+          groupPadding: 0.001,
+          minPointLength: 0.1,
+          maxPointWidth: 0.2,
+          zIndex: -1,
+          opacity: 0.7,
+          states: {
+            hover: {
+              enabled: false
+            }
+          }
         }
       ],
       tooltip: {
@@ -1213,11 +1410,11 @@ function PriceChart({ token }) {
               <div style="display: flex; justify-content: space-between;">
                 <span style="color: ${theme.palette.text.secondary};">Volume:</span>
                 <strong>${fVolume(
-                  this.point.options &&
-                    Array.isArray(this.point.options) &&
-                    this.point.options.length > 5 &&
-                    typeof this.point.options[5] === 'number'
-                    ? this.point.options[5]
+                  window._ohlcVolumeData && this.x
+                    ? (() => {
+                        const volumeData = window._ohlcVolumeData.find(d => d[0] === this.x);
+                        return volumeData && volumeData[5] ? volumeData[5] : 0;
+                      })()
                     : 0
                 )}</strong>
               </div>
@@ -1532,7 +1729,15 @@ function PriceChart({ token }) {
                           height: '5px',
                           borderRadius: '50%',
                           bgcolor: getRangeColor(range),
-                          boxShadow: `0 0 8px ${alpha(getRangeColor(range), 0.5)}`
+                          boxShadow: `0 0 8px ${alpha(getRangeColor(range), 0.5)}`,
+                          ...(isStreaming && {
+                            animation: 'pulse 2s infinite',
+                            '@keyframes pulse': {
+                              '0%': { opacity: 1 },
+                              '50%': { opacity: 0.3 },
+                              '100%': { opacity: 1 }
+                            }
+                          })
                         }}
                       />
                     }
@@ -1555,6 +1760,26 @@ function PriceChart({ token }) {
                       '& .MuiChip-label': { px: 0.75 }
                     }}
                   />
+                )}
+
+                {chartType !== 2 && (
+                  <IconButton
+                    size="small"
+                    onClick={toggleStreaming}
+                    sx={{
+                      width: '28px',
+                      height: '28px',
+                      bgcolor: alpha(isStreaming ? theme.palette.success.main : theme.palette.grey[500], 0.1),
+                      color: isStreaming ? theme.palette.success.main : theme.palette.grey[500],
+                      transition: 'all 0.3s',
+                      '&:hover': {
+                        bgcolor: alpha(isStreaming ? theme.palette.success.main : theme.palette.grey[500], 0.15),
+                        transform: 'scale(1.05)'
+                      }
+                    }}
+                  >
+                    {isStreaming ? <StopIcon fontSize="small" /> : <PlayArrowIcon fontSize="small" />}
+                  </IconButton>
                 )}
               </Box>
 
@@ -1767,7 +1992,7 @@ function PriceChart({ token }) {
 
       <ChartContainer>
         {isLoading ? (
-          <Box sx={{ height: isMobile ? '280px' : '350px', p: isMobile ? 1 : 2 }}>
+          <Box sx={{ height: isMobile ? '300px' : '360px', p: isMobile ? 0.25 : 0.5 }}>
             <Fade in={isLoading}>
               <Box>
                 <LoadingSkeleton sx={{ height: isMobile ? '30px' : '40px', mb: isMobile ? 1 : 1.5 }} />
@@ -1798,7 +2023,7 @@ function PriceChart({ token }) {
               ) : (
                 <Box
                   sx={{
-                    height: isMobile ? '280px' : '350px',
+                    height: isMobile ? '300px' : '380px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
