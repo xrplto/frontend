@@ -64,20 +64,20 @@ const ContentTypography = styled(Typography)(({ theme }) => ({
 
 // Ultra-minimalist MetricBox
 const MetricBox = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(1.5),
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1)
+    padding: theme.spacing(0.75)
   },
   height: '100%',
   minHeight: '80px',
   [theme.breakpoints.down('sm')]: {
-    minHeight: '55px'
+    minHeight: '48px'
   },
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'flex-start',
-  borderRadius: '8px',
+  borderRadius: '6px',
   background: 'transparent',
   backdropFilter: 'none',
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
@@ -92,30 +92,30 @@ const MetricBox = styled(Paper)(({ theme }) => ({
 
 // Refined MetricTitle
 const MetricTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '0.7rem',
+  fontSize: '0.65rem',
   fontWeight: 400,
   color: alpha(theme.palette.text.secondary, 0.5),
-  marginBottom: theme.spacing(0.5),
+  marginBottom: theme.spacing(0.25),
   textTransform: 'none',
-  letterSpacing: '0.03em',
+  letterSpacing: '0.02em',
   lineHeight: 1,
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.6rem',
-    marginBottom: theme.spacing(0.125)
+    fontSize: '0.55rem',
+    marginBottom: 0
   }
 }));
 
 // Premium MetricValue
 const MetricValue = styled(Typography)(({ theme }) => ({
-  fontSize: '1.25rem',
+  fontSize: '1.125rem',
   fontWeight: 600,
   color: theme.palette.text.primary,
   lineHeight: 1,
-  marginBottom: theme.spacing(0.25),
+  marginBottom: theme.spacing(0.125),
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   letterSpacing: '-0.01em',
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.875rem',
+    fontSize: '0.75rem',
     marginBottom: 0
   }
 }));
@@ -124,30 +124,30 @@ const MetricValue = styled(Typography)(({ theme }) => ({
 const PercentageChange = styled('span', {
   shouldForwardProp: (prop) => prop !== 'isPositive'
 })(({ theme, isPositive }) => ({
-  fontSize: '0.75rem',
+  fontSize: '0.7rem',
   color: isPositive 
     ? theme.palette.mode === 'dark' ? '#4ade80' : '#16a34a'
     : theme.palette.mode === 'dark' ? '#f87171' : '#dc2626',
   display: 'inline-flex',
   alignItems: 'flex-start',
-  gap: '3px',
+  gap: '2px',
   fontWeight: 500,
   fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
   letterSpacing: '0',
   
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.6rem'
+    fontSize: '0.55rem'
   }
 }));
 
 // Subtle VolumePercentage
 const VolumePercentage = styled(Typography)(({ theme }) => ({
-  fontSize: '0.65rem',
+  fontSize: '0.6rem',
   color: alpha(theme.palette.text.secondary, 0.4),
   fontWeight: 400,
-  letterSpacing: '0.02em',
+  letterSpacing: '0.01em',
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.55rem'
+    fontSize: '0.5rem'
   }
 }));
 
@@ -471,30 +471,36 @@ export default function Summary() {
         position: 'relative',
         zIndex: 2,
         mt: { xs: 0, sm: 0, md: 2 },
-        mb: { xs: 2, sm: 2, md: 3 },
+        mb: { xs: 1, sm: 2, md: 3 },
         width: '100%',
         maxWidth: '100%',
         background: 'transparent',
         backdropFilter: 'none',
         WebkitBackdropFilter: 'none',
         border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-        borderRadius: { xs: '12px', sm: '16px' },
-        boxShadow: `
-          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-        padding: { xs: 2, sm: 3 },
+        borderRadius: { xs: '8px', sm: '16px' },
+        boxShadow: { 
+          xs: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
+          sm: `
+            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+        },
+        padding: { xs: 1, sm: 3 },
         overflow: 'hidden',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&::before': {
           display: 'none'
         },
         '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: `
-            0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-            0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+          transform: { xs: 'none', sm: 'translateY(-2px)' },
+          boxShadow: {
+            xs: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
+            sm: `
+              0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+              0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+              inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`
+          },
           border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
         },
         '& > *': {
@@ -524,38 +530,26 @@ export default function Summary() {
           >
             <Grid
               container
-              spacing={0} // Zero spacing on mobile
+              spacing={{ xs: 0.5, sm: 1, md: 2 }}
               sx={{
-                flexWrap: 'nowrap',
-                minWidth: { xs: 'unset', sm: '700px', md: '900px' },
-                width: '100%',
-                [(theme) => theme.breakpoints.down('sm')]: {
-                  flexWrap: 'nowrap',
-                  gap: '8px',
-                  minWidth: '600px' // Ensure minimum width for 6 items
-                }
+                flexWrap: 'wrap',
+                width: '100%'
               }}
             >
               {[...Array(6)].map((_, index) => (
                 <Grid
                   item
                   key={`summary-skeleton-${index}`}
-                  sx={{
-                    flex: '1 0 auto',
-                    [(theme) => theme.breakpoints.down('sm')]: {
-                      flex: '0 0 auto',
-                      width: '95px', // Fixed width for mobile
-                      padding: '0 !important'
-                    }
-                  }}
+                  xs={6}
+                  sm={2}
+                  md={2}
                 >
                   <Skeleton
                     variant="rectangular"
                     sx={{
                       borderRadius: '8px',
-                      height: { xs: 55, sm: 80, md: 80 },
-                      minWidth: { xs: 'unset', sm: '110px', md: '140px' },
-                      width: { xs: '100%' },
+                      height: { xs: 48, sm: 80, md: 80 },
+                      width: '100%',
                       background: (theme) =>
                         theme.palette.mode === 'dark'
                           ? alpha(theme.palette.background.paper, 0.3)
@@ -571,52 +565,30 @@ export default function Summary() {
             sx={{
               width: '100%',
               pb: 0,
-              mt: { xs: 0, sm: 0, md: 0 },
-              [(theme) => theme.breakpoints.up('md')]: {
-                pb: 2
-              },
-              [(theme) => theme.breakpoints.down('sm')]: {
-                overflowX: 'auto',
-                '&::-webkit-scrollbar': {
-                  height: 4
-                },
-                '&::-webkit-scrollbar-track': {
-                  backgroundColor: 'transparent'
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: alpha(theme.palette.divider, 0.2),
-                  borderRadius: 2
-                }
-              }
+              mt: { xs: 0, sm: 0, md: 0 }
             }}
           >
             <Grid
               container
-              spacing={1}
+              spacing={{ xs: 0.5, sm: 1 }}
               sx={{
-                flexWrap: 'wrap',
-                width: '100%',
-                [(theme) => theme.breakpoints.down('sm')]: {
-                  spacing: 0, // Remove spacing
-                  gap: '0px' // Remove gap
-                }
+                width: '100%'
               }}
             >
               {/* Main metrics taking full width */}
               <Grid item xs={12}>
                 <Grid
                   container
-                  spacing={{ xs: 1, sm: 1.5, md: 2 }}
+                  spacing={{ xs: 0.5, sm: 1.5, md: 2 }}
                   sx={{
                     [(theme) => theme.breakpoints.down('sm')]: {
-                      flexWrap: 'nowrap',
-                      minWidth: '600px', // Ensure minimum width for 6 items
-                      gap: '8px'
+                      flexWrap: 'wrap',
+                      gap: '4px'
                     }
                   }}
                 >
                   {/* Market Cap Box */}
-                  <Grid item xs={2} md={1.5} sx={{ [(theme) => theme.breakpoints.down('sm')]: { flex: '0 0 auto', width: '95px' } }}>
+                  <Grid item xs={6} sm={2} md={1.5}>
                     <MetricBox>
                       <MetricTitle>Market Cap</MetricTitle>
                       <MetricValue>
@@ -630,7 +602,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* DEX Volume Box */}
-                  <Grid item xs={2} md={1.5} sx={{ [(theme) => theme.breakpoints.down('sm')]: { flex: '0 0 auto', width: '95px' } }}>
+                  <Grid item xs={6} sm={2} md={1.5}>
                     <MetricBox>
                       <MetricTitle>24h Volume</MetricTitle>
                       <MetricValue>
@@ -644,7 +616,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* XRP Price Box */}
-                  <Grid item xs={2} md={1.5} sx={{ [(theme) => theme.breakpoints.down('sm')]: { flex: '0 0 auto', width: '95px' } }}>
+                  <Grid item xs={6} sm={2} md={1.5}>
                     <MetricBox>
                       <MetricTitle>XRP</MetricTitle>
                       <MetricValue>
@@ -658,7 +630,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* Stablecoins Box */}
-                  <Grid item xs={2} md={1.5} sx={{ [(theme) => theme.breakpoints.down('sm')]: { flex: '0 0 auto', width: '95px' } }}>
+                  <Grid item xs={6} sm={2} md={1.5}>
                     <MetricBox>
                       <MetricTitle>Stables</MetricTitle>
                       <MetricValue>
@@ -670,7 +642,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* Meme Tokens Box */}
-                  <Grid item xs={2} md={1.5} sx={{ [(theme) => theme.breakpoints.down('sm')]: { flex: '0 0 auto', width: '95px' } }}>
+                  <Grid item xs={6} sm={2} md={1.5}>
                     <MetricBox>
                       <MetricTitle>Memes</MetricTitle>
                       <MetricValue>
@@ -682,7 +654,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* Sentiment Score */}
-                  <Grid item xs={2} md={1.5} sx={{ [(theme) => theme.breakpoints.down('sm')]: { flex: '0 0 auto', width: '95px' } }}>
+                  <Grid item xs={6} sm={2} md={1.5}>
                     <MetricBox>
                       <MetricTitle
                         sx={{
@@ -697,14 +669,14 @@ export default function Summary() {
                         <Stack direction="row" alignItems="baseline" spacing={0.5}>
                           <Typography
                             sx={{ 
-                              fontSize: '1.25rem',
+                              fontSize: '1.125rem',
                               fontWeight: 600,
                               color: 'text.primary',
                               lineHeight: 1,
                               fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
                               letterSpacing: '-0.01em',
                               [theme.breakpoints.down('sm')]: {
-                                fontSize: '0.875rem'
+                                fontSize: '0.75rem'
                               }
                             }}
                           >
@@ -712,12 +684,12 @@ export default function Summary() {
                           </Typography>
                           <Typography
                             sx={{ 
-                              fontSize: '0.7rem',
+                              fontSize: '0.65rem',
                               fontWeight: 400,
                               color: alpha(theme.palette.text.secondary, 0.4),
                               lineHeight: 1,
                               [theme.breakpoints.down('sm')]: {
-                                fontSize: '0.55rem'
+                                fontSize: '0.5rem'
                               }
                             }}
                           >
