@@ -2196,9 +2196,42 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                   />
                 </Stack>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="caption" color="text.secondary">
-                    {isLoggedIn && `Balance: ${revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value}`}
-                  </Typography>
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <Typography variant="caption" color="text.secondary">
+                      {isLoggedIn && accountPairBalance && `Balance: ${fNumber(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value)}`}
+                    </Typography>
+                    {isLoggedIn && accountPairBalance && (revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value) > 0 && (
+                      <Stack direction="row" spacing={0.5}>
+                        {[25, 50, 100].map(percent => (
+                          <Button
+                            key={percent}
+                            size="small"
+                            onClick={() => {
+                              const balance = revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value;
+                              setAmount1((balance * percent / 100).toFixed(6));
+                              setActive('AMOUNT');
+                            }}
+                            sx={{
+                              minWidth: 'auto',
+                              padding: '2px 6px',
+                              fontSize: '0.65rem',
+                              fontWeight: 600,
+                              height: '18px',
+                              borderRadius: '4px',
+                              background: alpha(theme.palette.primary.main, 0.1),
+                              color: theme.palette.primary.main,
+                              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                              '&:hover': {
+                                background: alpha(theme.palette.primary.main, 0.2),
+                              }
+                            }}
+                          >
+                            {percent}%
+                          </Button>
+                        ))}
+                      </Stack>
+                    )}
+                  </Stack>
                   <Typography variant="caption" color="text.secondary">
                     {tokenPrice1 > 0 && `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}`}
                   </Typography>
@@ -2314,10 +2347,11 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
             {/* Order Type Toggle */}
             <Box sx={{ mt: 3, mb: 2 }}>
               <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
-                <Button
-                  size="small"
-                  variant={orderType === 'market' ? 'contained' : 'outlined'}
-                  onClick={() => setOrderType('market')}
+                <Tooltip title="Execute immediately at the best available price" arrow>
+                  <Button
+                    size="small"
+                    variant={orderType === 'market' ? 'contained' : 'outlined'}
+                    onClick={() => setOrderType('market')}
                   sx={{
                     minWidth: { xs: '80px', sm: '90px' },
                     height: { xs: '28px', sm: '32px' },
@@ -2325,13 +2359,15 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                     textTransform: 'none',
                     borderRadius: '8px'
                   }}
-                >
-                  Market
-                </Button>
-                <Button
-                  size="small"
-                  variant={orderType === 'limit' ? 'contained' : 'outlined'}
-                  onClick={() => setOrderType('limit')}
+                  >
+                    Market
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Set a specific price for your order" arrow>
+                  <Button
+                    size="small"
+                    variant={orderType === 'limit' ? 'contained' : 'outlined'}
+                    onClick={() => setOrderType('limit')}
                   sx={{
                     minWidth: { xs: '80px', sm: '90px' },
                     height: { xs: '28px', sm: '32px' },
@@ -2339,9 +2375,10 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                     textTransform: 'none',
                     borderRadius: '8px'
                   }}
-                >
-                  Limit
-                </Button>
+                  >
+                    Limit
+                  </Button>
+                </Tooltip>
               </Stack>
             </Box>
 
@@ -2743,6 +2780,38 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Box>
             )}
 
+            {/* Fee Estimation */}
+            {amount1 && amount2 && (
+              <Box 
+                sx={{ 
+                  mt: 2,
+                  p: 1.5,
+                  borderRadius: '8px',
+                  backgroundColor: alpha(theme.palette.background.paper, 0.02),
+                  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
+                }}
+              >
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <Typography variant="caption" color="text.secondary">
+                      Network Fee
+                    </Typography>
+                    <Tooltip title="XRP Ledger transaction fee" arrow>
+                      <Icon
+                        icon={infoFill}
+                        width={14}
+                        height={14}
+                        style={{ opacity: 0.5 }}
+                      />
+                    </Tooltip>
+                  </Stack>
+                  <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                    ~0.000012 XRP
+                  </Typography>
+                </Stack>
+              </Box>
+            )}
+
             {/* Action Button */}
             <Box sx={{ mt: 3 }}>
 
@@ -2874,7 +2943,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               }}
               asks={(asks && asks.length > 0) ? asks : (propsAsks || [])}
               bids={(bids && bids.length > 0) ? bids : (propsBids || [])}
-              limitPrice={orderType === 'limit' ? parseFloat(limitPrice) : null}
+              limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
               isBuyOrder={!revert} // true when buying curr2 with curr1
               onAskClick={(e, idx) => {
                 const orderbookAsks = (asks && asks.length > 0) ? asks : (propsAsks || []);

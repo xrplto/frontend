@@ -258,7 +258,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick, li
       );
       
       // Show insertion point for limit orders
-      const showInsertionPoint = limitPrice && (
+      const showInsertionPoint = limitPrice && limitPrice > 0 && (
         (isBuyOrder && isBid && 
           idx === 0 && level.price < limitPrice) || // Insert at top if limit > best bid
         (isBuyOrder && isBid && 
@@ -292,7 +292,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick, li
                   color: theme.palette.warning.main
                 }}
               >
-                → Your {isBuyOrder ? 'buy' : 'sell'} order @ {limitPrice}
+                → Your {isBuyOrder ? 'buy' : 'sell'} order @ {limitPrice || '0'}
               </TableCell>
             </TableRow>
           )}
