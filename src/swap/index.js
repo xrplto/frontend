@@ -565,6 +565,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   
   // Add state for orderbook modal
   const [showOrderbook, setShowOrderbook] = useState(false);
+  const [showChart1, setShowChart1] = useState(false);
+  const [showChart2, setShowChart2] = useState(false);
   // Add state for showing user orders
   const [showOrders, setShowOrders] = useState(false);
   
@@ -2190,7 +2192,22 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               {/* Token Content */}
               <Box sx={{ p: 2.5, position: 'relative', zIndex: 1 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
-                  <QueryToken token={token1} onChangeToken={onChangeToken1} />
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <QueryToken token={token1} onChangeToken={onChangeToken1} />
+                    <IconButton
+                      size="small"
+                      onClick={() => setShowChart1(!showChart1)}
+                      sx={{
+                        color: showChart1 ? theme.palette.primary.main : theme.palette.text.secondary,
+                        backgroundColor: showChart1 ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.2)
+                        }
+                      }}
+                    >
+                      <Icon icon="mdi:chart-line" width={18} height={18} />
+                    </IconButton>
+                  </Stack>
                   <Input
                     placeholder="0"
                     disableUnderline
@@ -2258,6 +2275,31 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 </Stack>
               </Box>
             </Box>
+
+            {/* Chart for Token 1 */}
+            {showChart1 && token1 && (
+              <Box
+                sx={{
+                  mt: 2,
+                  p: 2,
+                  borderRadius: '12px',
+                  backgroundColor: alpha(theme.palette.background.paper, 0.03),
+                  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
+                }}
+              >
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
+                  {token1.name} Price Chart (24h)
+                </Typography>
+                <Box sx={{ height: '200px' }}>
+                  <LoadChart
+                    url={`${BASE_URL}/sparkline/${token1.md5}?period=24h&${token1.pro24h}`}
+                    style={{ width: '100%', height: '100%' }}
+                    showGradient={true}
+                    lineWidth={2}
+                  />
+                </Box>
+              </Box>
+            )}
 
             {/* Minimalist Swap Button */}
             <Box sx={{ position: 'relative', height: '24px', my: 2 }}>
@@ -2329,7 +2371,22 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               {/* Token Content */}
               <Box sx={{ p: 2.5, position: 'relative', zIndex: 1 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
-                  <QueryToken token={token2} onChangeToken={onChangeToken2} />
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <QueryToken token={token2} onChangeToken={onChangeToken2} />
+                    <IconButton
+                      size="small"
+                      onClick={() => setShowChart2(!showChart2)}
+                      sx={{
+                        color: showChart2 ? theme.palette.primary.main : theme.palette.text.secondary,
+                        backgroundColor: showChart2 ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.2)
+                        }
+                      }}
+                    >
+                      <Icon icon="mdi:chart-line" width={18} height={18} />
+                    </IconButton>
+                  </Stack>
                   <Input
                     placeholder="0"
                     disableUnderline
@@ -2363,6 +2420,31 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 </Stack>
               </Box>
             </Box>
+
+            {/* Chart for Token 2 */}
+            {showChart2 && token2 && (
+              <Box
+                sx={{
+                  mt: 2,
+                  p: 2,
+                  borderRadius: '12px',
+                  backgroundColor: alpha(theme.palette.background.paper, 0.03),
+                  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
+                }}
+              >
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
+                  {token2.name} Price Chart (24h)
+                </Typography>
+                <Box sx={{ height: '200px' }}>
+                  <LoadChart
+                    url={`${BASE_URL}/sparkline/${token2.md5}?period=24h&${token2.pro24h}`}
+                    style={{ width: '100%', height: '100%' }}
+                    showGradient={true}
+                    lineWidth={2}
+                  />
+                </Box>
+              </Box>
+            )}
 
             {/* Order Type Toggle */}
             <Box sx={{ mt: 3, mb: 2 }}>
