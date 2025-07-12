@@ -277,7 +277,7 @@ const TrendingTokens = () => {
           const rank = index + 1;
 
           return (
-            <TrendingCard darkMode={darkMode} rank={rank} key={id}>
+            <TrendingCard darkMode={darkMode} rank={rank} key={`trending-${index}-${id}-${md5}`}>
               <CardContent sx={{ p: isMobile ? 0.75 : 1 }}>
                 <Link
                   underline="none"
