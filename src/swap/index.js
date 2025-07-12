@@ -555,7 +555,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   const [transactionType, setTransactionType] = useState('');
 
   // Add slippage state
-  const [slippage, setSlippage] = useState(5); // Default 5% slippage
+  const [slippage, setSlippage] = useState(3); // Default 3% slippage
   const [orderType, setOrderType] = useState('market'); // 'market' or 'limit'
   const [limitPrice, setLimitPrice] = useState('');
 
@@ -2730,6 +2730,53 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Stack>
             </Box>
 
+            {/* Min/Max Received Display - Only for market orders */}
+            {orderType === 'market' && amount1 && amount2 && (
+              <Box
+                sx={{
+                  mt: 2,
+                  p: 1.5,
+                  borderRadius: '12px',
+                  backgroundColor: alpha(theme.palette.background.paper, 0.03),
+                  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
+                }}
+              >
+                <Stack spacing={1}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ width: '100%' }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      Minimum received ({slippage}% slippage)
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {(() => {
+                        const minAmount = new Decimal(amount2)
+                          .mul(1 - slippage / 100)
+                          .toFixed(6);
+                        return `${minAmount} ${token2.name}`;
+                      })()}
+                    </Typography>
+                  </Stack>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ width: '100%' }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      Expected amount
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
+                      {amount2} {token2.name}
+                    </Typography>
+                  </Stack>
+                </Stack>
+              </Box>
+            )}
+
             {/* Price Impact Row - Only show for market orders or limit orders that will execute immediately */}
             {amount1 && amount2 && (() => {
               // For limit orders, only show price impact if the order will execute immediately
@@ -2881,23 +2928,56 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                   border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
                 }}
               >
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Stack direction="row" alignItems="center" spacing={0.5}>
-                    <Typography variant="caption" color="text.secondary">
-                      Network Fee
+                <Stack spacing={1}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                      <Typography variant="caption" color="text.secondary">
+                        Network Fee
+                      </Typography>
+                      <Tooltip title="XRP Ledger transaction fee" arrow>
+                        <Icon
+                          icon={infoFill}
+                          width={14}
+                          height={14}
+                          style={{ opacity: 0.5 }}
+                        />
+                      </Tooltip>
+                    </Stack>
+                    <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                      ~0.000012 XRP
                     </Typography>
-                    <Tooltip title="XRP Ledger transaction fee" arrow>
-                      <Icon
-                        icon={infoFill}
-                        width={14}
-                        height={14}
-                        style={{ opacity: 0.5 }}
-                      />
-                    </Tooltip>
                   </Stack>
-                  <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                    ~0.000012 XRP
-                  </Typography>
+                  
+                  {/* Xaman wallet additional fee notice */}
+                  {accountProfile?.wallet_type === 'xaman' && (
+                    <Box
+                      sx={{
+                        p: 1,
+                        borderRadius: '6px',
+                        backgroundColor: alpha(theme.palette.warning.main, 0.08),
+                        border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                      }}
+                    >
+                      <Stack direction="row" alignItems="center" spacing={0.5}>
+                        <Icon
+                          icon="mdi:information-outline"
+                          width={16}
+                          height={16}
+                          style={{ color: theme.palette.warning.main }}
+                        />
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            color: theme.palette.warning.dark,
+                            fontWeight: 500,
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          Additional Xaman fees may apply
+                        </Typography>
+                      </Stack>
+                    </Box>
+                  )}
                 </Stack>
               </Box>
             )}
