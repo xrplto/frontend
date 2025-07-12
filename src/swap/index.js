@@ -1293,23 +1293,34 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
 
         let Amount, SendMax, DeliverMin;
 
-        SendMax = {
-          currency: curr1.currency,
-          issuer: curr1.issuer,
-          value: amount.toString()
-        };
-        Amount = {
-          currency: curr2.currency,
-          issuer: curr2.issuer,
-          value: value.toString()
-        };
+        // Use the correct amounts based on revert state
+        // amount = what we're sending, value = what we want to receive
+        const sendAmount = revert ? amount2 : amount1;
+        const receiveAmount = revert ? amount1 : amount2;
+        
+        // Build SendMax - handle XRP special case
+        if (curr1.currency === 'XRP') {
+          SendMax = new Decimal(sendAmount).mul(1000000).toString(); // Convert to drops
+        } else {
+          SendMax = {
+            currency: curr1.currency,
+            issuer: curr1.issuer,
+            value: sendAmount.toString()
+          };
+        }
+        
+        // Build Amount - handle XRP special case
+        if (curr2.currency === 'XRP') {
+          Amount = new Decimal(receiveAmount).mul(1000000).toString(); // Convert to drops
+        } else {
+          Amount = {
+            currency: curr2.currency,
+            issuer: curr2.issuer,
+            value: receiveAmount.toString()
+          };
+        }
 
-        if (SendMax.currency === 'XRP') {
-          SendMax = new Decimal(SendMax.value).mul(1000000).toString();
-        }
-        if (Amount.currency === 'XRP') {
-          Amount = new Decimal(Amount.value).mul(1000000).toString();
-        }
+        // XRP conversion already handled above
 
         // Calculate slippage amounts
         const slippageDecimal = new Decimal(slippage).div(100);
@@ -1319,10 +1330,10 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           DeliverMin = {
             currency: Amount.currency,
             issuer: Amount.issuer,
-            value: new Decimal(Amount.value).mul(new Decimal(1).sub(slippageDecimal)).toString()
+            value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toString()
           };
         } else {
-          // For XRP amounts (strings)
+          // For XRP amounts (strings) - Amount is already in drops
           DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toString();
         }
 
@@ -1335,7 +1346,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           SendMax,
           Flags,
           Fee: '12',
-          SourceTag: 93339333
+          SourceTag: 20221212
         };
       }
 
@@ -1395,6 +1406,9 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           });
           break;
         case 'crossmark':
+          console.log('Crossmark transaction data:', JSON.stringify(transactionData, null, 2));
+          console.log('curr1:', curr1);
+          console.log('curr2:', curr2);
           dispatch(updateProcess(1));
           await sdk.methods.signAndSubmitAndWait(transactionData).then(({ response }) => {
             if (response.data.meta.isSuccess) {
