@@ -2730,24 +2730,39 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Stack>
             </Box>
 
-            {/* Price Impact Row */}
-            {amount1 && amount2 && (
-              <Box 
-                sx={{ 
-                  mt: 1,
-                  p: 1.5,
-                  borderRadius: '12px',
-                  backgroundColor: alpha(
-                    getPriceImpactColor(Math.abs(priceImpact)), 
-                    0.08
-                  ),
-                  border: `1px solid ${alpha(
-                    getPriceImpactColor(Math.abs(priceImpact)), 
-                    0.2
-                  )}`,
-                  transition: 'all 0.3s ease'
-                }}
-              >
+            {/* Price Impact Row - Only show for market orders or limit orders that will execute immediately */}
+            {amount1 && amount2 && (() => {
+              // For limit orders, only show price impact if the order will execute immediately
+              if (orderType === 'limit') {
+                const limit = parseFloat(limitPrice);
+                const bestAsk = asks[0]?.price || 0;
+                const bestBid = bids[0]?.price || 0;
+                const willExecute = (!revert && limit >= bestAsk && bestAsk > 0) || 
+                                   (revert && limit <= bestBid && bestBid > 0);
+                
+                // Don't show price impact for limit orders that won't execute immediately
+                if (!willExecute || !limit) {
+                  return null;
+                }
+              }
+              
+              return (
+                <Box 
+                  sx={{ 
+                    mt: 1,
+                    p: 1.5,
+                    borderRadius: '12px',
+                    backgroundColor: alpha(
+                      getPriceImpactColor(Math.abs(priceImpact)), 
+                      0.08
+                    ),
+                    border: `1px solid ${alpha(
+                      getPriceImpactColor(Math.abs(priceImpact)), 
+                      0.2
+                    )}`,
+                    transition: 'all 0.3s ease'
+                  }}
+                >
                 <Stack
                   direction="row"
                   alignItems="center"
@@ -2852,7 +2867,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                   </Typography>
                 )}
               </Box>
-            )}
+            );
+          })()}
 
             {/* Fee Estimation */}
             {amount1 && amount2 && (
