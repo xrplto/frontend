@@ -696,45 +696,8 @@ const Swap = ({ token }) => {
     getTokenPrice();
   }, [token1, token2]);
 
-  useEffect(() => {
-    // Calculate when token prices change
-    const curr1IsXRP = curr1?.currency === 'XRP';
-    const curr2IsXRP = curr2?.currency === 'XRP';
-
-    // For XRP pairs, we only need one rate. For non-XRP pairs, we need both rates.
-    const hasValidRates =
-      curr1IsXRP || curr2IsXRP
-        ? tokenExch1 > 0 || tokenExch2 > 0 // XRP pair: need at least one rate
-        : tokenExch1 > 0 && tokenExch2 > 0; // Non-XRP pair: need both rates
-
-    console.log('useEffect calculation trigger:', {
-      hasValidRates,
-      active,
-      amount1,
-      amount2,
-      tokenExch1,
-      tokenExch2,
-      revert
-    });
-
-    if (hasValidRates) {
-      if (active === 'AMOUNT' && amount1 && amount1 !== '') {
-        const newValue = calcQuantity(amount1, active);
-        console.log('Calculating from amount1:', { amount1, newValue, currentAmount2: amount2 });
-        if (newValue && newValue !== amount2 && newValue !== '0') {
-          console.log('Setting amount2 to:', newValue);
-          setAmount2(newValue);
-        }
-      } else if (active === 'VALUE' && amount2 && amount2 !== '') {
-        const newAmount = calcQuantity(amount2, active);
-        console.log('Calculating from amount2:', { amount2, newAmount, currentAmount1: amount1 });
-        if (newAmount && newAmount !== amount1 && newAmount !== '0') {
-          console.log('Setting amount1 to:', newAmount);
-          setAmount1(newAmount);
-        }
-      }
-    }
-  }, [tokenExch1, tokenExch2, revert, active, amount1, amount2]);
+  // Removed auto-calculation useEffect to prevent unwanted value changes
+  // Calculations now only happen when user types in the input handlers
 
   useEffect(() => {
     const pair = {
