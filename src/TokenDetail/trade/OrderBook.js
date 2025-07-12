@@ -86,13 +86,21 @@ const ModernTable = styled(Table)(({ theme }) => ({
   }
 }));
 
-const OrderRow = styled(TableRow)(({ theme, ordertype, isselected, isnew, depth }) => {
+const OrderRow = styled(TableRow)(({ theme, ordertype, isselected, isnew, islimitprice, depth }) => {
   const isBid = ordertype === 'bid';
   const baseColor = isBid ? theme.palette.success.main : theme.palette.error.main;
 
   let background = 'transparent';
+  let borderStyle = {};
 
-  if (isnew) {
+  if (islimitprice) {
+    // Highlight limit price match with a border and subtle background
+    background = alpha(theme.palette.warning.main, 0.1);
+    borderStyle = {
+      borderLeft: `3px solid ${theme.palette.warning.main}`,
+      borderRight: `3px solid ${theme.palette.warning.main}`,
+    };
+  } else if (isnew) {
     background = alpha(baseColor, 0.15);
   } else if (isselected) {
     background = alpha(baseColor, 0.1);
@@ -108,8 +116,11 @@ const OrderRow = styled(TableRow)(({ theme, ordertype, isselected, isnew, depth 
     transition: 'background 0.15s ease',
     margin: 0,
     position: 'relative',
+    ...borderStyle,
     '&:hover': {
-      background: `${alpha(baseColor, 0.15)} !important`
+      background: islimitprice 
+        ? `${alpha(theme.palette.warning.main, 0.15)} !important`
+        : `${alpha(baseColor, 0.15)} !important`
     },
     '& .MuiTableCell-root': {
       position: 'relative',
@@ -144,7 +155,7 @@ const CompactTooltip = styled(Tooltip)(({ theme }) => ({
 const ORDER_TYPE_BIDS = 1;
 const ORDER_TYPE_ASKS = 2;
 
-export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) {
+export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick, limitPrice, isBuyOrder }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isPageVisible, setIsPageVisible] = useState(true);
@@ -239,6 +250,22 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
       const currName2 = pair?.curr2.name;
 
       const isSelected = isBid ? idx < selected[0] : idx < selected[1];
+      
+      // Highlight where limit order will sit in the orderbook
+      const isLimitPricePosition = limitPrice && (
+        (isBuyOrder && isBid && Math.abs(level.price - limitPrice) < 0.0001) || // Buy order position in bids
+        (!isBuyOrder && !isBid && Math.abs(level.price - limitPrice) < 0.0001)  // Sell order position in asks
+      );
+      
+      // Show insertion point for limit orders
+      const showInsertionPoint = limitPrice && (
+        (isBuyOrder && isBid && 
+          ((idx === 0 && level.price < limitPrice) || // Insert at top if limit > best bid
+           (idx > 0 && levels[idx-1] && levels[idx-1].price >= limitPrice && level.price < limitPrice))) || // Insert between orders
+        (!isBuyOrder && !isBid && 
+          ((idx === 0 && level.price > limitPrice) || // Insert at top if limit < best ask  
+           (idx > 0 && levels[idx-1] && levels[idx-1].price <= limitPrice && level.price > limitPrice))) // Insert between orders
+      );
       const priceColor =
         isNew || isSelected
           ? isBid
@@ -247,8 +274,27 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
           : theme.palette.text.primary;
 
       return (
-        <CompactTooltip
-          key={`${orderType}-${price}-${amount}-${idx}`}
+        <React.Fragment key={`${orderType}-${price}-${amount}-${idx}`}>
+          {showInsertionPoint && (
+            <TableRow>
+              <TableCell 
+                colSpan={3} 
+                sx={{ 
+                  padding: '2px 8px',
+                  background: alpha(theme.palette.warning.main, 0.1),
+                  borderTop: `2px dashed ${theme.palette.warning.main}`,
+                  borderBottom: `2px dashed ${theme.palette.warning.main}`,
+                  textAlign: 'center',
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold',
+                  color: theme.palette.warning.main
+                }}
+              >
+                → Your {isBuyOrder ? 'buy' : 'sell'} order @ {limitPrice}
+              </TableCell>
+            </TableRow>
+          )}
+          <CompactTooltip
           disableHoverListener={isMobile}
           title={
             <Box sx={{ fontSize: '0.6rem', whiteSpace: 'nowrap' }}>
@@ -264,6 +310,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
             ordertype={isBid ? 'bid' : 'ask'}
             isselected={isSelected ? 1 : 0}
             isnew={isNew ? 1 : 0}
+            islimitprice={isLimitPricePosition ? 1 : 0}
             depth={depth}
             onMouseOver={(e) => (isBid ? onBidMouseOver(e, idx) : onAskMouseOver(e, idx))}
             onMouseLeave={(e) => onMouseLeave(e, idx)}
@@ -308,6 +355,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
             )}
           </OrderRow>
         </CompactTooltip>
+        </React.Fragment>
       );
     });
   };

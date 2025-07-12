@@ -2847,6 +2847,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               }}
               asks={(asks && asks.length > 0) ? asks : (propsAsks || [])}
               bids={(bids && bids.length > 0) ? bids : (propsBids || [])}
+              limitPrice={orderType === 'limit' ? parseFloat(limitPrice) : null}
+              isBuyOrder={!revert} // true when buying curr2 with curr1
               onAskClick={(e, idx) => {
                 const orderbookAsks = (asks && asks.length > 0) ? asks : (propsAsks || []);
                 if (orderbookAsks && orderbookAsks[idx]) {
