@@ -28,9 +28,11 @@ import useWebSocket from 'react-use-websocket';
 import { isInstalled, submitTransaction, setTrustline } from '@gemwallet/api';
 import sdk from '@crossmarkio/sdk';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
+import { processOrderbookOffers } from 'src/utils/orderbookService';
 import Image from 'next/image';
 import { PuffLoader } from 'react-spinners';
 import { enqueueSnackbar } from 'notistack';
+import OrderBook from 'src/TokenDetail/trade/OrderBook';
 
 const pulse = keyframes`
   0% {
@@ -249,6 +251,9 @@ const Swap = ({ token }) => {
   const [slippage, setSlippage] = useState(5); // Default 5% slippage
   const [orderType, setOrderType] = useState('market'); // 'market' or 'limit'
   const [limitPrice, setLimitPrice] = useState('');
+  
+  // Add state for orderbook visibility
+  const [showOrderbook, setShowOrderbook] = useState(false);
 
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
@@ -462,11 +467,11 @@ const Swap = ({ token }) => {
       const req = orderBook.id % 2;
       //console.log(`Received id ${orderBook.id}`)
       if (req === 1) {
-        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS);
+        const parsed = processOrderbookOffers(orderBook.result.offers, 'asks');
         setAsks(parsed);
       }
       if (req === 0) {
-        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS);
+        const parsed = processOrderbookOffers(orderBook.result.offers, 'bids');
         setBids(parsed);
       }
     }
@@ -1657,6 +1662,33 @@ const Swap = ({ token }) => {
               </Stack>
             </Stack>
           </Box>
+          
+          {/* Orderbook Toggle */}
+          <Box sx={{ px: 1.5, py: 0.5 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setShowOrderbook(!showOrderbook)}
+              sx={{
+                width: '100%',
+                fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                textTransform: 'none',
+                color: showOrderbook ? theme.palette.primary.main : theme.palette.text.secondary,
+                backgroundColor: showOrderbook ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                border: `1px solid ${showOrderbook ? theme.palette.primary.main : alpha(theme.palette.divider, 0.3)}`,
+                px: 1.5,
+                py: 0.5,
+                '&:hover': {
+                  backgroundColor: showOrderbook 
+                    ? alpha(theme.palette.primary.main, 0.2) 
+                    : alpha(theme.palette.primary.main, 0.05),
+                  borderColor: theme.palette.primary.main
+                }
+              }}
+            >
+              {showOrderbook ? 'Hide' : 'View'} Orderbook
+            </Button>
+          </Box>
 
           {/* Order Type Toggle */}
           <Box sx={{ px: 1.5, py: 1 }}>
@@ -1775,6 +1807,83 @@ const Swap = ({ token }) => {
         qrUrl={qrUrl}
         nextUrl={nextUrl}
       />
+      
+      {/* Orderbook Display */}
+      {showOrderbook && (
+        <Box
+          sx={{
+            mt: 2,
+            width: '100%',
+            backgroundColor: theme.palette.background.paper,
+            borderRadius: '16px',
+            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+            overflow: 'hidden',
+            boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 2,
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+              background: alpha(theme.palette.background.paper, 0.02)
+            }}
+          >
+            <Typography variant="h6" sx={{ fontSize: '0.95rem', fontWeight: 600, color: theme.palette.text.primary }}>
+              Orderbook
+            </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.75rem' }}>
+                {curr1.name}/{curr2.name}
+              </Typography>
+              <IconButton
+                size="small"
+                onClick={() => setShowOrderbook(false)}
+                sx={{ 
+                  color: theme.palette.text.secondary,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.action.active, 0.08)
+                  }
+                }}
+              >
+                <Icon icon="mdi:close" width={18} height={18} />
+              </IconButton>
+            </Stack>
+          </Box>
+          
+          <Box sx={{ 
+            height: { xs: '300px', md: '400px' }, 
+            maxHeight: '500px',
+            overflow: 'auto',
+            backgroundColor: alpha(theme.palette.background.default, 0.01)
+          }}>
+            <OrderBook
+              pair={{
+                curr1: { ...curr1, name: curr1.name || curr1.currency },
+                curr2: { ...curr2, name: curr2.name || curr2.currency }
+              }}
+              asks={asks}
+              bids={bids}
+              limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
+              isBuyOrder={!revert}
+              onAskClick={(e, idx) => {
+                if (asks && asks[idx]) {
+                  setLimitPrice(asks[idx].price.toString());
+                  setOrderType('limit');
+                }
+              }}
+              onBidClick={(e, idx) => {
+                if (bids && bids[idx]) {
+                  setLimitPrice(bids[idx].price.toString());
+                  setOrderType('limit');
+                }
+              }}
+            />
+          </Box>
+        </Box>
+      )}
     </Stack>
   );
 };
@@ -1871,88 +1980,3 @@ const App = ({ token }) => {
 };
 
 export default App;
-
-const ORDER_TYPE_BIDS = 1;
-const ORDER_TYPE_ASKS = 2;
-
-const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
-  if (offers.length < 1) return [];
-
-  const getCurrency = offers[0].TakerGets?.currency || 'XRP';
-  const payCurrency = offers[0].TakerPays?.currency || 'XRP';
-
-  let multiplier = 1;
-  const isBID = orderType === ORDER_TYPE_BIDS;
-
-  // It's the same on each condition?
-  if (isBID) {
-    if (getCurrency === 'XRP') multiplier = 1_000_000;
-    else if (payCurrency === 'XRP') multiplier = 0.000_001;
-  } else {
-    if (getCurrency === 'XRP') multiplier = 1_000_000;
-    else if (payCurrency === 'XRP') multiplier = 0.000_001;
-  }
-
-  // let precision = maxDecimals(isBID ? Math.pow(offers[0].quality * multiplier, -1) : offers[0].quality * multiplier)
-
-  // let index = 0
-  const array = [];
-  let sumAmount = 0;
-  let sumValue = 0;
-
-  for (let i = 0; i < offers.length; i++) {
-    const offer = offers[i];
-    const obj = {
-      id: '',
-      price: 0,
-      amount: 0,
-      value: 0,
-      sumAmount: 0, // SOLO
-      sumValue: 0, // XRP
-      avgPrice: 0,
-      sumGets: 0,
-      sumPays: 0,
-      isNew: false
-    };
-
-    const id = `${offer.Account}:${offer.Sequence}`;
-    const gets = offer.taker_gets_funded || offer.TakerGets;
-    const pays = offer.taker_pays_funded || offer.TakerPays;
-    // const partial = (offer.taker_gets_funded || offer.taker_pays_funded) ? true: false;
-
-    const takerPays = pays.value || pays;
-    const takerGets = gets.value || gets;
-
-    const amount = Number(isBID ? takerPays : takerGets);
-    const price = isBID ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier;
-    const value = amount * price;
-
-    sumAmount += amount;
-    sumValue += value;
-    obj.id = id;
-    obj.price = price;
-    obj.amount = amount; // SOLO
-    obj.value = value; // XRP
-    obj.sumAmount = sumAmount;
-    obj.sumValue = sumValue;
-
-    if (sumAmount > 0) obj.avgPrice = sumValue / sumAmount;
-    else obj.avgPrice = 0;
-
-    //obj.partial = partial
-
-    if (amount > 0) array.push(obj);
-  }
-
-  const sortedArrayByPrice = [...array].sort((a, b) => {
-    let result = 0;
-    if (orderType === ORDER_TYPE_BIDS) {
-      result = b.price - a.price;
-    } else {
-      result = a.price - b.price;
-    }
-    return result;
-  });
-
-  return sortedArrayByPrice;
-};
