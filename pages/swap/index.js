@@ -13,6 +13,7 @@ import { AppContext } from 'src/AppContext';
 
 // Utils
 import { XRP_TOKEN, USD_TOKEN, RLUSD_TOKEN } from 'src/utils/constants';
+import { processOrderbookOffers } from 'src/utils/orderbookService';
 
 // Components
 import Logo from 'src/components/Logo';
@@ -123,60 +124,16 @@ function Overview({ data }) {
     if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
       const req = orderBook.id % 2;
       if (req === 1) {
-        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS);
+        const parsed = processOrderbookOffers(orderBook.result.offers, 'asks');
         setAsks(parsed);
       }
       if (req === 0) {
-        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS);
+        const parsed = processOrderbookOffers(orderBook.result.offers, 'bids');
         setBids(parsed);
       }
     }
   };
 
-  const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
-    const data = [];
-    if (offers && offers.length > 0)
-      offers.forEach((offer) => {
-        const direction = offer.Direction === 'sell' ? 'sell' : 'buy';
-        let price = parseFloat(offer.quality) || 1;
-        let quantity = parseFloat(offer.TakerGets) || 1;
-        let total = parseFloat(offer.TakerPays) || 1;
-
-        if (orderType === ORDER_TYPE_ASKS) {
-          if (direction === 'sell') {
-            if (typeof offer.TakerGets === 'object') {
-              quantity = parseFloat(offer.TakerGets.value) || 0;
-            }
-
-            if (typeof offer.TakerPays === 'object') {
-              total = parseFloat(offer.TakerPays.value) || 0;
-            }
-
-            price = total / quantity;
-          }
-        } else {
-          if (direction === 'buy') {
-            if (typeof offer.TakerGets === 'object') {
-              total = parseFloat(offer.TakerGets.value) || 0;
-            }
-
-            if (typeof offer.TakerPays === 'object') {
-              quantity = parseFloat(offer.TakerPays.value) || 0;
-            }
-
-            price = total / quantity;
-          }
-        }
-
-        data.push({
-          price: isNaN(price) ? 0 : price,
-          quantity: isNaN(quantity) ? 0 : quantity,
-          total: isNaN(total) ? 0 : total
-        });
-      });
-
-    return data;
-  };
 
   return (
     <Root>
@@ -210,20 +167,10 @@ function Overview({ data }) {
           <Box 
             sx={(theme) => ({ 
               width: '100%', 
-              maxWidth: '800px',
-              backgroundColor: 'transparent',
-              borderRadius: '16px',
-              backdropFilter: 'blur(20px)',
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.04)}`,
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: `0 12px 48px ${alpha(theme.palette.common.black, 0.08)}`
-              }
+              maxWidth: '1200px'
             })}
           >
-            <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
+            <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} bids={bids} asks={asks} />
           </Box>
         </Box>
       </Container>
@@ -266,7 +213,6 @@ export async function getStaticProps() {
       }
     }
   } catch (error) {
-    console.log('Error fetching data:', error);
   }
 
   const duration = Math.round(performance.now() - startTime);

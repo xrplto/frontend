@@ -51,6 +51,8 @@ import { currencySymbols } from 'src/utils/constants';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
+import OrderBook from 'src/TokenDetail/trade/OrderBook';
+// import Dialog from 'src/components/Dialog'; // No longer needed - using side panel instead
 
 // Router
 import { useRouter } from 'next/router';
@@ -506,7 +508,7 @@ const ShareButton = styled(Button)(
 `
 );
 
-export default function Swap({ pair, setPair, revert, setRevert }) {
+export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAsks }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
   const QR_BLUR = '/static/blurqr.webp';
@@ -553,49 +555,63 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
   // Add slippage state
   const [slippage, setSlippage] = useState(5); // Default 5% slippage
+  const [orderType, setOrderType] = useState('market'); // 'market' or 'limit'
+  const [limitPrice, setLimitPrice] = useState('');
 
   // Add state for latest sparkline prices
   const [latestPrice1, setLatestPrice1] = useState(null);
   const [latestPrice2, setLatestPrice2] = useState(null);
+  
+  // Add state for orderbook modal
+  const [showOrderbook, setShowOrderbook] = useState(false);
+  
+  // Use orderbook data from props
+  const bids = propsBids || [];
+  const asks = propsAsks || [];
 
   const amount = revert ? amount2 : amount1;
   let value = revert ? amount1 : amount2;
   const setAmount = revert ? setAmount2 : setAmount1;
   const setValue = revert ? setAmount1 : setAmount2;
+  const curr1IsXRP = curr1?.currency === 'XRP';
+  const curr2IsXRP = curr2?.currency === 'XRP';
+
   const tokenPrice1 = (() => {
     try {
-      // If token1 is XRP, use the same conversion logic as Summary.js
-      if (token1?.currency === 'XRP') {
-        if (activeFiatCurrency === 'XRP') {
-          // When currency switcher is XRP, show USD equivalent
-          return new Decimal(amount1 || 0).div(metrics.USD || 1).toNumber();
-        }
-        // For other currencies, use metrics conversion
+      if (curr1IsXRP) {
+        // If curr1 is XRP, convert to selected fiat currency
         return new Decimal(amount1 || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
+      } else if (curr2IsXRP) {
+        // If curr1 is token and curr2 is XRP, first convert to XRP, then to fiat
+        const xrpValue = new Decimal(amount1 || 0).mul(tokenExch2 || 0);
+        return xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
+      } else {
+        // For non-XRP pairs, show fiat value
+        return new Decimal(tokenExch1 || 0)
+          .mul(amount1 || 0)
+          .div(metrics[activeFiatCurrency] || 1)
+          .toNumber();
       }
-      return new Decimal(tokenExch1 || 0)
-        .mul(amount1 || 0)
-        .div(metrics[activeFiatCurrency] || 1)
-        .toNumber();
     } catch (e) {
       return 0;
     }
   })();
   const tokenPrice2 = (() => {
     try {
-      // If token2 is XRP, use the same conversion logic as Summary.js
-      if (token2?.currency === 'XRP') {
-        if (activeFiatCurrency === 'XRP') {
-          // When currency switcher is XRP, show USD equivalent
-          return new Decimal(amount2 || 0).div(metrics.USD || 1).toNumber();
-        }
-        // For other currencies, use metrics conversion
+      if (curr2IsXRP) {
+        // If curr2 is XRP, convert to selected fiat currency
         return new Decimal(amount2 || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
+      } else if (curr1IsXRP) {
+        // If curr2 is token and curr1 is XRP, first convert to XRP, then to fiat
+        const xrpValue = new Decimal(amount2 || 0).mul(tokenExch2 || 0);
+        return xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
+      } else {
+        // For non-XRP pairs, show fiat value
+        return new Decimal(tokenExch2 || 0)
+          .mul(amount2 || 0)
+          .div(metrics[activeFiatCurrency] || 1)
+          .toNumber();
       }
-      return new Decimal(tokenExch2 || 0)
-        .mul(amount2 || 0)
-        .div(metrics[activeFiatCurrency] || 1)
-        .toNumber();
     } catch (e) {
       return 0;
     }
@@ -676,20 +692,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
             const spendingAmount = revert ? parseFloat(amount2 || 0) : parseFloat(amount1 || 0);
             const availableBalance = revert ? accountValue : accountAmount;
 
-            // Debug logging for balance check
-            console.log('Balance check debug:', {
-              revert,
-              amount1,
-              amount2,
-              spendingAmount,
-              availableBalance,
-              accountAmount: accountAmount,
-              accountValue: accountValue,
-              curr1Currency: curr1?.currency,
-              curr2Currency: curr2?.currency,
-              spendingCurrency: revert ? curr2?.currency : curr1?.currency,
-              sufficientBalance: availableBalance >= spendingAmount
-            });
 
             if (availableBalance >= spendingAmount) {
               isSufficientBalance = true;
@@ -730,7 +732,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           }
         })
         .catch((err) => {
-          console.log('Error on getting details!!!', err);
         });
 
       // Check trustlines - implement pagination to fetch all trustlines
@@ -749,9 +750,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
             allTrustlines = firstResponse.data.lines || [];
             totalTrustlines = firstResponse.data.total || 0;
 
-            console.log(
-              `Found ${totalTrustlines} total trustlines, fetched ${allTrustlines.length} on page ${currentPage}`
-            );
 
             // If total is more than 50, fetch additional pages starting from page 1
             if (totalTrustlines > 50) {
@@ -772,15 +770,9 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               additionalResponses.forEach((response, index) => {
                 if (response.status === 200 && response.data.lines) {
                   allTrustlines = allTrustlines.concat(response.data.lines);
-                  console.log(
-                    `Fetched ${response.data.lines.length} trustlines from page ${index + 1}`
-                  );
                 }
               });
 
-              console.log(
-                `Total trustlines fetched: ${allTrustlines.length} out of ${totalTrustlines}`
-              );
             }
 
             return allTrustlines;
@@ -788,7 +780,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
           return [];
         } catch (error) {
-          console.log('Error fetching trustlines:', error);
           return [];
         }
       };
@@ -799,22 +790,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
           // Debug: Log the first trustline to understand the structure
           if (allTrustlines.length > 0) {
-            console.log('Trustline structure:', allTrustlines[0]);
           }
 
-          // Debug: Log what we're looking for
-          console.log('Looking for trustlines:', {
-            curr1: {
-              currency: curr1.currency,
-              issuer: curr1.issuer,
-              tokenName: token1?.name
-            },
-            curr2: {
-              currency: curr2.currency,
-              issuer: curr2.issuer,
-              tokenName: token2?.name
-            }
-          });
 
           // Helper function to normalize currency codes for comparison
           const normalizeCurrency = (currency) => {
@@ -904,16 +881,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency);
 
               // Debug specific currency matches
-              console.log(`Currency match for ${curr1.currency}:`, {
-                expectedCurrency: curr1.currency,
-                expectedIssuer: curr1.issuer,
-                lineCurrencies,
-                lineIssuers: [line._token1, line._token2, line.Balance?.issuer],
-                issuerMatch,
-                currencyMatch,
-                isStandardCurrency,
-                hasValidTrustline: currencyMatch && (issuerMatch || isStandardCurrency)
-              });
 
               return currencyMatch && (issuerMatch || isStandardCurrency);
             });
@@ -939,30 +906,10 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               const issuerMatch = issuersMatch(line, curr2.issuer);
               const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr2.currency);
 
-              // Debug specific currency matches
-              console.log(`Currency match for ${curr2.currency}:`, {
-                expectedCurrency: curr2.currency,
-                expectedIssuer: curr2.issuer,
-                lineCurrencies,
-                lineIssuers: [line._token1, line._token2, line.Balance?.issuer],
-                issuerMatch,
-                currencyMatch,
-                isStandardCurrency,
-                hasValidTrustline: currencyMatch && (issuerMatch || isStandardCurrency)
-              });
 
               return currencyMatch && (issuerMatch || isStandardCurrency);
             });
 
-          console.log('Trustline check results:', {
-            curr1: curr1.currency,
-            curr1Issuer: curr1.issuer,
-            hasCurr1Trustline,
-            curr2: curr2.currency,
-            curr2Issuer: curr2.issuer,
-            hasCurr2Trustline,
-            totalLines: allTrustlines.length
-          });
 
           setHasTrustline1(hasCurr1Trustline);
           setHasTrustline2(hasCurr2Trustline);
@@ -976,7 +923,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
             lowLimit: line.LowLimit?.currency,
             issuer: line._token1 || line._token2
           }));
-          console.log('Available currencies in trustlines:', availableCurrencies);
 
           // Debug: Check if we can find any SCRAP-like currencies
           const scrapLikeCurrencies = allTrustlines.filter((line) => {
@@ -1009,13 +955,10 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           });
 
           if (scrapLikeCurrencies.length > 0) {
-            console.log('Found SCRAP-like currencies:', scrapLikeCurrencies);
           } else {
-            console.log('No SCRAP-like currencies found in trustlines');
           }
         })
         .catch((err) => {
-          console.log('Error getting trustlines:', err);
         });
     }
 
@@ -1038,7 +981,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
         }
       }
     } catch (error) {
-      console.log('Error fetching sparkline data:', error);
     }
   };
 
@@ -1058,30 +1000,17 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
       const md51 = token1.md5;
       const md52 = token2.md5;
 
-      console.log('Fetching token prices:', {
-        token1: { name: token1.name, currency: token1.currency, md5: md51 },
-        token2: { name: token2.name, currency: token2.currency, md5: md52 }
-      });
-
       // https://api.xrpl.to/api/pair_rates?md51=84e5efeb89c4eae8f68188982dc290d8&md52=c9ac9a6c44763c1bd9ccc6e47572fd26
       axios
         .get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`)
         .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
-          console.log('Token price API response:', ret);
           if (ret) {
-            console.log('Setting token exchange rates:', {
-              rate1: ret.rate1,
-              rate2: ret.rate2,
-              previousRate1: tokenExch1,
-              previousRate2: tokenExch2
-            });
-            setTokenExch1(ret.rate1 || 0);
-            setTokenExch2(ret.rate2 || 0);
+            setTokenExch1(Number(ret.rate1) || 0);
+            setTokenExch2(Number(ret.rate2) || 0);
           }
         })
         .catch((err) => {
-          console.log('Error on getting token info!', err);
         })
         .then(function () {
           // always executed
@@ -1174,7 +1103,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
     };
 
     async function getPayload() {
-      // console.log(counter + " " + isRunning, uuid);
       if (isRunning) return;
       isRunning = true;
       try {
@@ -1205,75 +1133,140 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
   const onSwap = async () => {
     try {
-      // const curr1 = revert?pair.curr2:pair.curr1;
-      // const curr2 = revert?pair.curr1:pair.curr2;
       const curr1 = pair.curr1;
       const curr2 = pair.curr2;
       const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
 
-      const Flags = 131072; // tfPartialPayment
+      let transactionData;
 
-      let Amount, SendMax;
+      if (orderType === 'limit') {
+        // Use OfferCreate for limit orders
+        const OfferFlags = {
+          tfSell: 524288,
+          tfImmediateOrCancel: 262144,
+          tfFillOrKill: 131072,
+          tfPassive: 65536
+        };
 
-      SendMax = {
-        currency: curr1.currency,
-        issuer: curr1.issuer,
-        value: amount.toString()
-      };
-      Amount = {
-        currency: curr2.currency,
-        issuer: curr2.issuer,
-        value: value.toString()
-      };
+        let TakerGets, TakerPays;
 
-      if (SendMax.currency === 'XRP') {
-        SendMax = new Decimal(SendMax.value).mul(1000000).toString();
-      }
-      if (Amount.currency === 'XRP') {
-        Amount = new Decimal(Amount.value).mul(1000000).toString();
-      }
+        if (revert) {
+          // Selling curr2 to get curr1
+          TakerGets = {
+            currency: curr1.currency,
+            issuer: curr1.issuer,
+            value: amount1.toString()
+          };
+          TakerPays = {
+            currency: curr2.currency,
+            issuer: curr2.issuer,
+            value: amount2.toString()
+          };
+        } else {
+          // Selling curr1 to get curr2
+          TakerGets = {
+            currency: curr2.currency,
+            issuer: curr2.issuer,
+            value: amount2.toString()
+          };
+          TakerPays = {
+            currency: curr1.currency,
+            issuer: curr1.issuer,
+            value: amount1.toString()
+          };
+        }
 
-      // Calculate slippage amounts
-      const slippageDecimal = new Decimal(slippage).div(100);
-      let DeliverMin;
+        // Convert XRP amounts to drops
+        if (TakerGets.currency === 'XRP') {
+          TakerGets = new Decimal(TakerGets.value).mul(1000000).toString();
+        }
+        if (TakerPays.currency === 'XRP') {
+          TakerPays = new Decimal(TakerPays.value).mul(1000000).toString();
+        }
 
-      // DeliverMin is Amount minus slippage tolerance
-      if (typeof Amount === 'object') {
-        DeliverMin = {
-          currency: Amount.currency,
-          issuer: Amount.issuer,
-          value: new Decimal(Amount.value).mul(new Decimal(1).sub(slippageDecimal)).toString()
+        transactionData = {
+          TransactionType: 'OfferCreate',
+          Account,
+          TakerGets,
+          TakerPays,
+          Flags: 0,
+          Fee: '12',
+          SourceTag: 93339333
         };
       } else {
-        // For XRP amounts (strings)
-        DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toString();
+        // Use Payment transaction for market orders
+        const PaymentFlags = {
+          tfPartialPayment: 131072,
+          tfLimitQuality: 65536,
+          tfNoDirectRipple: 1048576
+        };
+
+        const Flags = PaymentFlags.tfPartialPayment;
+
+        let Amount, SendMax, DeliverMin;
+
+        SendMax = {
+          currency: curr1.currency,
+          issuer: curr1.issuer,
+          value: amount.toString()
+        };
+        Amount = {
+          currency: curr2.currency,
+          issuer: curr2.issuer,
+          value: value.toString()
+        };
+
+        if (SendMax.currency === 'XRP') {
+          SendMax = new Decimal(SendMax.value).mul(1000000).toString();
+        }
+        if (Amount.currency === 'XRP') {
+          Amount = new Decimal(Amount.value).mul(1000000).toString();
+        }
+
+        // Calculate slippage amounts
+        const slippageDecimal = new Decimal(slippage).div(100);
+
+        // DeliverMin is Amount minus slippage tolerance
+        if (typeof Amount === 'object') {
+          DeliverMin = {
+            currency: Amount.currency,
+            issuer: Amount.issuer,
+            value: new Decimal(Amount.value).mul(new Decimal(1).sub(slippageDecimal)).toString()
+          };
+        } else {
+          // For XRP amounts (strings)
+          DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toString();
+        }
+
+        transactionData = {
+          TransactionType: 'Payment',
+          Account,
+          Destination: Account,
+          Amount,
+          DeliverMin,
+          SendMax,
+          Flags,
+          Fee: '12',
+          SourceTag: 93339333
+        };
       }
 
-      const body = {
-        TransactionType: 'Payment',
-        Account,
-        Destination: Account,
-        Amount,
-        DeliverMin,
-        SendMax,
-        Flags,
-        user_token,
-        Fee: '12',
-        SourceTag: 93339333
-      };
-
-      let memoData = `Swap via https://xrpl.to`;
+      let memoData = `${orderType === 'limit' ? 'Limit' : 'Swap'} via https://xrpl.to`;
+      transactionData.Memos = configureMemos('', '', memoData);
 
       switch (wallet_type) {
         case 'xaman':
           setLoading(true);
-          setTransactionType('Payment'); // Set correct transaction type for swaps
-          const res = await axios.post(`${BASE_URL}/offer/payment`, {
-            ...body,
-            Memos: configureMemos('', '', memoData)
-          });
+          setTransactionType(orderType === 'limit' ? 'OfferCreate' : 'Payment');
+          const body = {
+            ...transactionData,
+            user_token
+          };
+
+          const endpoint = orderType === 'limit' ? `${BASE_URL}/offer/create` : `${BASE_URL}/offer/payment`;
+          const res = await axios.post(endpoint, body);
 
           if (res.status === 200) {
             const uuid = res.data.data.uuid;
@@ -1290,23 +1283,10 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
         case 'gem':
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
-              let paymentTxData = {
-                TransactionType: 'Payment',
-                Account,
-                Destination: Account,
-                Amount,
-                DeliverMin,
-                SendMax,
-                Flags,
-                Fee: '12',
-                SourceTag: 93339333,
-                Memos: configureMemos('', '', memoData)
-              };
-
               dispatch(updateProcess(1));
 
               await submitTransaction({
-                transaction: paymentTxData
+                transaction: transactionData
               }).then(({ type, result }) => {
                 if (type == 'response') {
                   dispatch(updateProcess(2));
@@ -1329,21 +1309,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           });
           break;
         case 'crossmark':
-          let paymentTxData = {
-            TransactionType: 'Payment',
-            Account,
-            Destination: Account,
-            Amount,
-            DeliverMin,
-            SendMax,
-            Flags,
-            Fee: '12',
-            SourceTag: 93339333,
-            Memos: configureMemos('', '', memoData)
-          };
-
           dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(paymentTxData).then(({ response }) => {
+          await sdk.methods.signAndSubmitAndWait(transactionData).then(({ response }) => {
             if (response.data.meta.isSuccess) {
               dispatch(updateProcess(2));
               dispatch(updateTxHash(response.data.resp.result?.hash));
@@ -1362,7 +1329,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           break;
       }
     } catch (err) {
-      console.log('err', err);
       dispatch(updateProcess(0));
     }
     setLoading(false);
@@ -1387,8 +1353,50 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
       const rate1 = new Decimal(tokenExch1 || 0);
       const rate2 = new Decimal(tokenExch2 || 0);
 
+      // Check if either currency is XRP
+      const curr1IsXRP = curr1?.currency === 'XRP';
+      const curr2IsXRP = curr2?.currency === 'XRP';
+
+      // For XRP pairs, use special calculation
+      if (curr1IsXRP || curr2IsXRP) {
+        if (rate2.eq(0)) {
+          return '';
+        }
+
+        let result = 0;
+
+        if (curr1IsXRP && !curr2IsXRP) {
+          // curr1 = XRP, curr2 = Token
+          // tokenExch2 is the Token-to-XRP rate, so we need to invert it for XRP-to-Token
+          const tokenToXrpRate = rate2.toNumber();
+          const xrpToTokenRate = tokenToXrpRate > 0 ? 1 / tokenToXrpRate : 0;
+
+          if (active === 'AMOUNT') {
+            // User typed in top field = XRP, calculate Token
+            result = amt.mul(xrpToTokenRate).toNumber();
+          } else {
+            // User typed in bottom field = Token, calculate XRP
+            result = amt.div(xrpToTokenRate).toNumber();
+          }
+        } else if (!curr1IsXRP && curr2IsXRP) {
+          // curr1 = Token, curr2 = XRP
+          // tokenExch2 is the direct Token-to-XRP rate
+          const tokenToXrpRate = rate2.toNumber();
+
+          if (active === 'AMOUNT') {
+            // User typed in top field = Token, calculate XRP
+            result = amt.mul(tokenToXrpRate).toNumber();
+          } else {
+            // User typed in bottom field = XRP, calculate Token
+            result = amt.div(tokenToXrpRate).toNumber();
+          }
+        }
+
+        return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
+      }
+
+      // For non-XRP pairs, use the original calculation
       if (rate1.eq(0) || rate2.eq(0)) {
-        console.log('Exchange rates not available');
         return '';
       }
 
@@ -1421,7 +1429,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
       return result.toFixed(6, Decimal.ROUND_DOWN);
     } catch (e) {
-      console.log('Error in price calculation:', e);
       return '';
     }
   };
@@ -1441,18 +1448,12 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
     const fAmount1 = Number(amount1);
     const fAmount2 = Number(amount2);
-    console.log('handlePlaceOrder debug:', {
-      amount1,
-      amount2,
-      fAmount1,
-      fAmount2,
-      canPlaceOrder,
-      isLoggedIn,
-      isSufficientBalance,
-      errMsg
-    });
 
     if (fAmount1 > 0 && fAmount2 > 0) {
+      if (orderType === 'limit' && !limitPrice) {
+        openSnackbar('Please enter a limit price!', 'error');
+        return;
+      }
       onSwap();
     } else {
       openSnackbar('Invalid values! Please enter amounts for both currencies.', 'error');
@@ -1465,12 +1466,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
     if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
 
-    console.log('handleChangeAmount1 called:', {
-      value,
-      revert,
-      curr1: curr1?.currency,
-      curr2: curr2?.currency
-    });
 
     setAmount1(value);
     setActive(revert ? 'VALUE' : 'AMOUNT');
@@ -1487,19 +1482,9 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
     if (value && value !== '' && hasValidRates) {
       const activeType = revert ? 'VALUE' : 'AMOUNT';
-      console.log('About to call calcQuantity with:', {
-        value,
-        activeType,
-        revert,
-        curr1IsXRP,
-        curr2IsXRP
-      });
-
       const calculatedValue = calcQuantity(value, activeType);
-      console.log('calcQuantity returned:', calculatedValue);
 
       if (calculatedValue && calculatedValue !== '0') {
-        console.log('Setting amount2 to:', calculatedValue);
         setAmount2(calculatedValue);
       }
     } else if (!value || value === '') {
@@ -1513,12 +1498,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
     if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
 
-    console.log('handleChangeAmount2 called:', {
-      value,
-      revert,
-      curr1: curr1?.currency,
-      curr2: curr2?.currency
-    });
 
     setAmount2(value);
     setActive(revert ? 'AMOUNT' : 'VALUE');
@@ -1535,19 +1514,10 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
     if (value && value !== '' && hasValidRates) {
       const activeType = revert ? 'AMOUNT' : 'VALUE';
-      console.log('About to call calcQuantity with:', {
-        value,
-        activeType,
-        revert,
-        curr1IsXRP,
-        curr2IsXRP
-      });
 
       const calculatedValue = calcQuantity(value, activeType);
-      console.log('calcQuantity returned:', calculatedValue);
 
       if (calculatedValue && calculatedValue !== '0') {
-        console.log('Setting amount1 to:', calculatedValue);
         setAmount1(calculatedValue);
       }
     } else if (!value || value === '') {
@@ -1645,8 +1615,9 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
     }
     
     if (!amount1 || !amount2) return 'Enter an Amount';
+    else if (orderType === 'limit' && !limitPrice) return 'Enter Limit Price';
     else if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
-    else return 'Exchange';
+    else return orderType === 'limit' ? 'Place Limit Order' : 'Exchange';
   };
 
   const formatAddress = (address) => {
@@ -1753,7 +1724,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           break;
       }
     } catch (err) {
-      console.log('Trustline creation error:', err);
       dispatch(updateProcess(0));
       enqueueSnackbar(
         `Failed to create trustline: ${
@@ -1857,12 +1827,10 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           );
 
           if (foundToken) {
-            console.log('Found token via /tokens endpoint:', foundToken);
             return foundToken;
           }
         }
       } catch (e) {
-        console.log('Main tokens search failed:', e.message);
       }
 
       // 2. Try xrpnft tokens endpoint (used by CurrencySearchModal)
@@ -1879,12 +1847,10 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           );
 
           if (foundToken) {
-            console.log('Found token via /xrpnft/tokens endpoint:', foundToken);
             return foundToken;
           }
         }
       } catch (e) {
-        console.log('NFT tokens search failed:', e.message);
       }
 
       // 3. Try direct token lookup by issuer_currency format
@@ -1892,15 +1858,12 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
         const directResponse = await axios.get(`${BASE_URL}/token/${issuer}_${currency}`);
 
         if (directResponse.data && directResponse.data.token) {
-          console.log('Found token via direct lookup:', directResponse.data.token);
           return directResponse.data.token;
         }
       } catch (e) {
-        console.log('Direct token lookup failed:', e.message);
       }
 
       // 4. Fallback - create basic token object
-      console.log(`Creating fallback token for ${currency}:${issuer}`);
       return {
         currency,
         issuer,
@@ -1909,7 +1872,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
         pro24h: 'pro24h'
       };
     } catch (error) {
-      console.log('Error finding token:', error);
       // Return a basic token object as final fallback
       return {
         currency,
@@ -1956,7 +1918,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           token1Data.currency === token2Data.currency &&
           token1Data.issuer === token2Data.issuer
         ) {
-          console.log('Cannot set same token for both currencies');
           setUrlParsed(true);
           setIsLoadingFromUrl(false);
           return;
@@ -1971,13 +1932,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           curr2: token2Data
         });
 
-        console.log('Loaded tokens from URL:', {
-          token1: token1Data.name,
-          token2: token2Data.name
-        });
       }
     } catch (error) {
-      console.log('Error loading tokens from URL:', error);
     }
 
     setUrlParsed(true);
@@ -2048,12 +2004,30 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
     }
   };
 
+
   return (
-    <Stack
-      alignItems="center"
-      sx={{ width: '100%', maxWidth: '800px', margin: '0 auto', px: { xs: 1, sm: 2, md: 3 } }}
+    <Box
+      sx={{ 
+        width: '100%', 
+        maxWidth: showOrderbook ? '1200px' : '800px', 
+        margin: '0 auto', 
+        px: { xs: 1, sm: 2, md: 3 },
+        transition: 'max-width 0.3s ease'
+      }}
     >
-      <Stack sx={{ width: '100%' }}>
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={{ xs: 2, md: 3 }}
+        alignItems="flex-start"
+        justifyContent="center"
+        sx={{ width: '100%' }}
+      >
+        <Stack sx={{ 
+          width: '100%', 
+          flex: showOrderbook ? '0 0 auto' : '1',
+          maxWidth: showOrderbook ? '480px' : '100%',
+          transition: 'all 0.3s ease' 
+        }}>
         {accountProfile && accountProfile.account && (
           <WalletDisplay>
             <WalletInfo>
@@ -2073,8 +2047,6 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
         <Box 
           sx={{ 
             width: '100%',
-            maxWidth: '480px',
-            margin: '0 auto',
             backgroundColor: 'transparent',
             backdropFilter: 'blur(24px)',
             border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
@@ -2293,10 +2265,108 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               </Box>
             </Box>
 
+            {/* Order Type Toggle */}
+            <Box sx={{ mt: 3, mb: 2 }}>
+              <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+                <Button
+                  size="small"
+                  variant={orderType === 'market' ? 'contained' : 'outlined'}
+                  onClick={() => setOrderType('market')}
+                  sx={{
+                    minWidth: { xs: '80px', sm: '90px' },
+                    height: { xs: '28px', sm: '32px' },
+                    fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                    textTransform: 'none',
+                    borderRadius: '8px'
+                  }}
+                >
+                  Market
+                </Button>
+                <Button
+                  size="small"
+                  variant={orderType === 'limit' ? 'contained' : 'outlined'}
+                  onClick={() => setOrderType('limit')}
+                  sx={{
+                    minWidth: { xs: '80px', sm: '90px' },
+                    height: { xs: '28px', sm: '32px' },
+                    fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                    textTransform: 'none',
+                    borderRadius: '8px'
+                  }}
+                >
+                  Limit
+                </Button>
+              </Stack>
+            </Box>
+
+            {/* Limit Price Input */}
+            {orderType === 'limit' && (
+              <Box sx={{ mb: 2 }}>
+                <Stack spacing={1}>
+                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <Typography variant="caption" color="text.secondary">
+                      Limit Price ({revert ? curr1.name : curr2.name} per {revert ? curr2.name : curr1.name})
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={() => {
+                        setShowOrderbook(!showOrderbook);
+                      }}
+                      sx={{
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                        textTransform: 'none',
+                        color: showOrderbook ? theme.palette.primary.main : theme.palette.text.secondary,
+                        backgroundColor: showOrderbook ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                        border: `1px solid ${showOrderbook ? theme.palette.primary.main : alpha(theme.palette.divider, 0.3)}`,
+                        px: 1.5,
+                        py: 0.5,
+                        minWidth: 'auto',
+                        '&:hover': {
+                          backgroundColor: showOrderbook 
+                            ? alpha(theme.palette.primary.main, 0.2) 
+                            : alpha(theme.palette.primary.main, 0.05),
+                          borderColor: theme.palette.primary.main,
+                          color: theme.palette.primary.main
+                        }
+                      }}
+                    >
+                      {showOrderbook ? 'Hide' : 'View'} Orderbook
+                    </Button>
+                  </Stack>
+                  <Input
+                    placeholder="0.00"
+                    fullWidth
+                    disableUnderline
+                    value={limitPrice}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '.') {
+                        setLimitPrice('0.');
+                        return;
+                      }
+                      if (!isNaN(Number(val)) || val === '') {
+                        setLimitPrice(val);
+                      }
+                    }}
+                    sx={{
+                      backgroundColor: alpha(theme.palette.background.paper, 0.05),
+                      borderRadius: '8px',
+                      padding: '8px 12px',
+                      input: {
+                        fontSize: { xs: '14px', sm: '16px' },
+                        fontWeight: 600
+                      }
+                    }}
+                  />
+                </Stack>
+              </Box>
+            )}
+
             {/* Minimalist Settings */}
             <Box
               sx={{
-                mt: 3,
+                mt: 2,
                 p: 2,
                 borderRadius: '12px',
                 backgroundColor: alpha(theme.palette.background.paper, 0.03),
@@ -2423,51 +2493,165 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               </Stack>
             </Box>
 
-            {/* Price Impact Row */}
-            <Box sx={{ mt: 2 }}>
+            {/* Conversion Rate Display */}
+            <Box sx={{ mt: 2, mb: 1 }}>
               <Stack
                 direction="row"
                 alignItems="center"
-                justifyContent="space-between"
+                justifyContent="center"
+                spacing={1}
                 sx={{
-                  width: '100%',
-                  position: 'relative'
+                  p: 1.5,
+                  borderRadius: '12px',
+                  backgroundColor: alpha(theme.palette.background.paper, 0.03),
+                  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
                 }}
               >
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="body2" color="text.secondary">
-                    Price impact
-                  </Typography>
+                {loadingPrice ? (
+                  <ClipLoader color={theme.palette.primary.main} size={16} />
+                ) : (
+                  <>
+                    <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                      1 {curr1.name} = 
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        fontWeight: 700,
+                        color: theme.palette.primary.main,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                      }}
+                    >
+                      {Number(tokenExch2) > 0 ? (revert ? Number(tokenExch2).toFixed(6) : (1 / Number(tokenExch2)).toFixed(6)) : '0'} {curr2.name}
+                    </Typography>
+                  </>
+                )}
+              </Stack>
+            </Box>
+
+            {/* Price Impact Row */}
+            {amount1 && amount2 && (
+              <Box 
+                sx={{ 
+                  mt: 1,
+                  p: 1.5,
+                  borderRadius: '12px',
+                  backgroundColor: alpha(
+                    getPriceImpactColor(Math.abs(priceImpact)), 
+                    0.08
+                  ),
+                  border: `1px solid ${alpha(
+                    getPriceImpactColor(Math.abs(priceImpact)), 
+                    0.2
+                  )}`,
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ width: '100%' }}
+                >
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: getPriceImpactColor(Math.abs(priceImpact)),
+                        animation: Math.abs(priceImpact) > 3 ? 'pulse 2s infinite' : 'none',
+                        '@keyframes pulse': {
+                          '0%': {
+                            opacity: 1,
+                            transform: 'scale(1)'
+                          },
+                          '50%': {
+                            opacity: 0.5,
+                            transform: 'scale(1.2)'
+                          },
+                          '100%': {
+                            opacity: 1,
+                            transform: 'scale(1)'
+                          }
+                        }
+                      }}
+                    />
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        fontWeight: 500,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                      }}
+                    >
+                      Price Impact
+                    </Typography>
+                  </Stack>
+                  
                   {loadingPrice ? (
-                    <ClipLoader color="#FF6C40" size={15} />
+                    <ClipLoader color={getPriceImpactColor(0)} size={14} />
                   ) : (
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Typography
-                        variant="s2"
                         sx={{
-                          color: getPriceImpactColor(priceImpact),
-                          fontWeight: 600,
+                          color: getPriceImpactColor(Math.abs(priceImpact)),
+                          fontWeight: 700,
                           fontSize: { xs: '0.875rem', sm: '1rem' }
                         }}
                       >
-                        {priceImpact}%
+                        {priceImpact > 0 ? '+' : ''}{priceImpact}%
                       </Typography>
-                      <Typography
-                        variant="caption"
+                      <Box
                         sx={{
-                          color: getPriceImpactColor(priceImpact),
-                          opacity: 0.8,
-                          fontWeight: 500,
-                          fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                          px: 1,
+                          py: 0.25,
+                          borderRadius: '6px',
+                          backgroundColor: alpha(
+                            getPriceImpactColor(Math.abs(priceImpact)), 
+                            0.15
+                          ),
+                          border: `1px solid ${alpha(
+                            getPriceImpactColor(Math.abs(priceImpact)), 
+                            0.3
+                          )}`
                         }}
                       >
-                        ({getPriceImpactSeverity(priceImpact)})
-                      </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: getPriceImpactColor(Math.abs(priceImpact)),
+                            fontWeight: 600,
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
+                          }}
+                        >
+                          {getPriceImpactSeverity(Math.abs(priceImpact))}
+                        </Typography>
+                      </Box>
                     </Stack>
                   )}
                 </Stack>
-              </Stack>
-            </Box>
+
+                {/* Warning message for high impact */}
+                {Math.abs(priceImpact) > 5 && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      display: 'block',
+                      mt: 1,
+                      color: getPriceImpactColor(Math.abs(priceImpact)),
+                      fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                      lineHeight: 1.4
+                    }}
+                  >
+                    {Math.abs(priceImpact) > 10 
+                      ? '⚠️ Very high price impact! Consider reducing your trade size.'
+                      : 'High price impact. You may receive less than expected.'}
+                  </Typography>
+                )}
+              </Box>
+            )}
 
             {/* Action Button */}
             <Box sx={{ mt: 3 }}>
@@ -2526,7 +2710,97 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           qrUrl={qrUrl}
           nextUrl={nextUrl}
         />
+
       </Stack>
-    </Stack>
+
+      {/* Orderbook Side Panel */}
+      {showOrderbook && (
+        <Box
+          sx={{
+            width: { xs: '100%', md: '400px' },
+            flex: { md: '0 0 400px' },
+            backgroundColor: 'transparent',
+            backdropFilter: 'blur(24px)',
+            borderRadius: '20px',
+            border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+            boxShadow: `0 20px 40px ${alpha(theme.palette.common.black, 0.04)}`,
+            overflow: 'hidden',
+            animation: 'slideIn 0.3s ease-out',
+            '@keyframes slideIn': {
+              from: {
+                opacity: 0,
+                transform: 'translateX(20px)'
+              },
+              to: {
+                opacity: 1,
+                transform: 'translateX(0)'
+              }
+            }
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 2,
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+              background: alpha(theme.palette.background.paper, 0.02)
+            }}
+          >
+            <Typography variant="h6" sx={{ fontSize: '0.95rem', fontWeight: 600, color: theme.palette.text.primary }}>
+              Orderbook
+            </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.75rem' }}>
+                {curr1.name}/{curr2.name}
+              </Typography>
+              <IconButton
+                size="small"
+                onClick={() => setShowOrderbook(false)}
+                sx={{ 
+                  color: theme.palette.text.secondary,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.action.active, 0.08)
+                  }
+                }}
+              >
+                <Icon icon="mdi:close" width={18} height={18} />
+              </IconButton>
+            </Stack>
+          </Box>
+          
+          <Box sx={{ 
+            height: { xs: '400px', md: 'calc(100vh - 300px)' }, 
+            maxHeight: '700px',
+            overflow: 'auto',
+            backgroundColor: alpha(theme.palette.background.default, 0.01)
+          }}>
+            {/* Use props data directly if local state is empty */}
+            <OrderBook
+              pair={{
+                curr1: { ...curr1, name: curr1.name || curr1.currency },
+                curr2: { ...curr2, name: curr2.name || curr2.currency }
+              }}
+              asks={(asks && asks.length > 0) ? asks : (propsAsks || [])}
+              bids={(bids && bids.length > 0) ? bids : (propsBids || [])}
+              onAskClick={(e, idx) => {
+                const orderbookAsks = (asks && asks.length > 0) ? asks : (propsAsks || []);
+                if (orderbookAsks && orderbookAsks[idx]) {
+                  setLimitPrice(orderbookAsks[idx].price.toString());
+                }
+              }}
+              onBidClick={(e, idx) => {
+                const orderbookBids = (bids && bids.length > 0) ? bids : (propsBids || []);
+                if (orderbookBids && orderbookBids[idx]) {
+                  setLimitPrice(orderbookBids[idx].price.toString());
+                }
+              }}
+            />
+          </Box>
+        </Box>
+      )}
+      </Stack>
+    </Box>
   );
 }

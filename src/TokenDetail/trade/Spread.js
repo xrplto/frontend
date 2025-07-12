@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 // Material UI components
 import { Box, Chip, Tooltip, Typography, IconButton } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -8,6 +8,9 @@ import { styled } from '@mui/material/styles';
 import InfoIcon from '@mui/icons-material/Info';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+
+// Utils
+import { calculateSpread } from 'src/utils/orderbookService';
 
 // Styled Components
 const SpreadContainer = styled(Box)(({ theme }) => ({
@@ -69,22 +72,41 @@ const formatNumber = (number) =>
 
 const Spread = ({ bids, asks, sx }) => {
   const theme = useTheme();
+  const [displayValues, setDisplayValues] = useState({
+    spreadAmount: '0',
+    spreadPercentage: '0.00',
+    direction: 'up'
+  });
 
-  const { spreadAmount, spreadPercentage, direction } = useMemo(() => {
-    const getHighestBid = (bids) => Math.max(...bids.map((bid) => bid.price));
-    const getLowestAsk = (asks) => Math.min(...asks.map((ask) => ask.price));
-    const highestBid = getHighestBid(bids);
-    const lowestAsk = getLowestAsk(asks);
-    const spreadAmount = Math.abs(lowestAsk - highestBid);
-    const spreadPercentage = ((spreadAmount / highestBid) * 100).toFixed(2);
-    const direction = lowestAsk > highestBid ? 'up' : 'down';
+  // Calculate spread values
+  const calculatedValues = useMemo(() => {
+    const spread = calculateSpread(bids, asks);
+    
+    if (spread.spreadAmount === 0) {
+      return {
+        spreadAmount: '0',
+        spreadPercentage: '0.00',
+        direction: 'up'
+      };
+    }
 
     return {
-      spreadAmount: formatNumber(spreadAmount),
-      spreadPercentage,
-      direction
+      spreadAmount: formatNumber(spread.spreadAmount),
+      spreadPercentage: spread.spreadPercentage.toFixed(2),
+      direction: spread.lowestAsk > spread.highestBid ? 'up' : 'down'
     };
   }, [bids, asks]);
+
+  // Update display values with a small delay to prevent flickering
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDisplayValues(calculatedValues);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [calculatedValues]);
+
+  const { spreadAmount, spreadPercentage, direction } = displayValues;
 
   const getSpreadColor = () => {
     const percentage = parseFloat(spreadPercentage);
@@ -126,7 +148,9 @@ const Spread = ({ bids, asks, sx }) => {
         sx={{
           fontWeight: 600,
           color: theme.palette.text.primary,
-          fontSize: '0.875rem'
+          fontSize: '0.875rem',
+          minWidth: '60px',
+          textAlign: 'right'
         }}
       >
         {spreadAmount}
@@ -139,7 +163,8 @@ const Spread = ({ bids, asks, sx }) => {
           backgroundColor: alpha(getSpreadColor(), 0.1),
           color: getSpreadColor(),
           border: `1px solid ${alpha(getSpreadColor(), 0.3)}`,
-          fontWeight: 600
+          fontWeight: 600,
+          minWidth: '60px'
         }}
       />
 
