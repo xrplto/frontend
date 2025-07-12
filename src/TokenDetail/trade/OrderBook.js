@@ -36,19 +36,13 @@ import NumberTooltip from 'src/components/NumberTooltip';
 // Styled Components
 const OrderBookContainer = styled(Box)(({ theme }) => ({
   background: 'transparent',
-  backdropFilter: 'none',
-  WebkitBackdropFilter: 'none',
-  borderRadius: '12px',
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  boxShadow: `
-    0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-    0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+  borderRadius: '8px',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   overflow: 'hidden',
   position: 'relative',
   [theme.breakpoints.down('sm')]: {
-    borderRadius: '8px',
-    margin: theme.spacing(0, -1)
+    borderRadius: '6px',
+    margin: 0
   }
 }));
 
@@ -56,13 +50,13 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: theme.spacing(1.5, 2),
+  padding: theme.spacing(0.75, 1),
   background: 'transparent',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1, 1.5),
+    padding: theme.spacing(0.5, 0.75),
     '& .MuiTypography-root': {
-      fontSize: '0.75rem'
+      fontSize: '0.7rem'
     }
   }
 }));
@@ -70,42 +64,40 @@ const SectionHeader = styled(Box)(({ theme }) => ({
 const ModernTable = styled(Table)(({ theme }) => ({
   [`& .${tableCellClasses.root}`]: {
     borderBottom: 'none',
-    padding: theme.spacing(0.5, 1),
-    fontSize: '0.75rem',
-    lineHeight: 1.2,
+    padding: theme.spacing(0.25, 0.5),
+    fontSize: '0.7rem',
+    lineHeight: 1.1,
     [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing(0.4, 0.5),
-      fontSize: '0.7rem'
+      padding: theme.spacing(0.2, 0.4),
+      fontSize: '0.65rem'
     }
   },
   [`& .${tableCellClasses.head}`]: {
     backgroundColor: 'transparent',
     fontWeight: 600,
-    fontSize: '0.7rem',
-    color: alpha(theme.palette.text.secondary, 0.8),
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-    padding: theme.spacing(1),
+    fontSize: '0.65rem',
+    color: alpha(theme.palette.text.secondary, 0.7),
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    padding: theme.spacing(0.5, 0.5),
     [theme.breakpoints.down('sm')]: {
-      fontSize: '0.65rem',
-      padding: theme.spacing(0.75, 0.5)
+      fontSize: '0.6rem',
+      padding: theme.spacing(0.4, 0.4)
     }
   }
 }));
 
-const OrderRow = styled(TableRow)(({ theme, ordertype, isselected, isnew, depth, depthbg }) => {
+const OrderRow = styled(TableRow)(({ theme, ordertype, isselected, isnew, depth }) => {
   const isBid = ordertype === 'bid';
   const baseColor = isBid ? theme.palette.success.main : theme.palette.error.main;
 
   let background = 'transparent';
 
-  // Priority: new orders first, then selected, then depth gradient
   if (isnew) {
-    background = alpha(baseColor, 0.25);
+    background = alpha(baseColor, 0.15);
   } else if (isselected) {
-    background = alpha(baseColor, 0.2);
+    background = alpha(baseColor, 0.1);
   } else if (depth && depth > 0) {
-    // Create gradient based on depth percentage and order type
-    const gradientColor = alpha(baseColor, 0.15);
+    const gradientColor = alpha(baseColor, 0.08);
     const direction = isBid ? 'to right' : 'to left';
     background = `linear-gradient(${direction}, ${gradientColor} 0%, ${gradientColor} ${depth}%, transparent ${depth}%, transparent 100%)`;
   }
@@ -113,69 +105,38 @@ const OrderRow = styled(TableRow)(({ theme, ordertype, isselected, isnew, depth,
   return {
     cursor: 'pointer',
     background,
-    transition: 'all 0.2s ease',
-    borderRadius: theme.spacing(0.5),
-    margin: theme.spacing(0, 0.5),
+    transition: 'background 0.15s ease',
+    margin: 0,
     position: 'relative',
-    [theme.breakpoints.down('sm')]: {
-      margin: theme.spacing(0, 0.25),
-      borderRadius: theme.spacing(0.25)
-    },
     '&:hover': {
-      background: `${alpha(baseColor, 0.25)} !important`,
-      transform: 'translateX(2px)',
-      zIndex: 1,
-      [theme.breakpoints.down('sm')]: {
-        transform: 'none'
-      }
+      background: `${alpha(baseColor, 0.15)} !important`
     },
     '& .MuiTableCell-root': {
-      borderRadius: theme.spacing(0.5),
       position: 'relative',
-      zIndex: 2,
-      '&:first-of-type': {
-        borderTopLeftRadius: theme.spacing(0.5),
-        borderBottomLeftRadius: theme.spacing(0.5)
-      },
-      '&:last-of-type': {
-        borderTopRightRadius: theme.spacing(0.5),
-        borderBottomRightRadius: theme.spacing(0.5)
-      }
+      zIndex: 2
     }
   };
 });
 
 const OrderCountChip = styled(Chip)(({ theme }) => ({
-  height: '20px',
-  fontSize: '0.65rem',
+  height: '16px',
+  fontSize: '0.6rem',
   fontWeight: 600,
-  borderRadius: '10px',
+  borderRadius: '8px',
   '& .MuiChip-label': {
-    padding: theme.spacing(0, 0.5)
+    padding: theme.spacing(0, 0.4)
   }
 }));
 
 const CompactTooltip = styled(Tooltip)(({ theme }) => ({
   '& .MuiTooltip-tooltip': {
-    backgroundColor: theme.palette.mode === 'dark' 
-      ? alpha(theme.palette.background.paper, 0.95)
-      : alpha(theme.palette.background.paper, 0.98),
+    backgroundColor: theme.palette.background.paper,
     color: theme.palette.text.primary,
     border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-    borderRadius: '8px',
-    fontSize: '0.75rem',
-    padding: theme.spacing(1.5),
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    boxShadow: `
-      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-  },
-  '& .MuiTooltip-arrow': {
-    color: theme.palette.mode === 'dark' 
-      ? alpha(theme.palette.background.paper, 0.95)
-      : alpha(theme.palette.background.paper, 0.98)
+    borderRadius: '4px',
+    fontSize: '0.7rem',
+    padding: theme.spacing(1),
+    boxShadow: theme.shadows[2]
   }
 }));
 
@@ -264,8 +225,8 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
   };
 
   const buildPriceLevels = (levels, orderType = ORDER_TYPE_BIDS) => {
-    const maxRows = isMobile ? 15 : 25;
-    return levels.slice(0, maxRows).map((level, idx) => {
+    // Display all offers without limiting
+    return levels.map((level, idx) => {
       const price = fNumber(level.price);
       const avgPrice = fNumber(level.avgPrice);
       const amount = fNumber(level.amount);
@@ -290,34 +251,20 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
           key={`${orderType}-${price}-${amount}-${idx}`}
           disableHoverListener={isMobile}
           title={
-            <>
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                Order Details
-              </Typography>
+            <Box sx={{ fontSize: '0.7rem' }}>
               <Box sx={{ 
                 display: 'grid', 
                 gridTemplateColumns: 'auto 1fr',
-                gap: '4px 12px',
-                fontSize: '0.75rem' 
+                gap: '2px 8px'
               }}>
-                <span>Avg Price:</span>
-                <span style={{ fontWeight: 600, textAlign: 'right' }}>≈ {avgPrice}</span>
-                <span>Sum {currName1}:</span>
+                <span>Avg:</span>
+                <span style={{ fontWeight: 600, textAlign: 'right' }}>{avgPrice}</span>
+                <span>Sum:</span>
                 <span style={{ fontWeight: 600, textAlign: 'right' }}>{sumAmount}</span>
-                <span>Sum {currName2}:</span>
+                <span>Total:</span>
                 <span style={{ fontWeight: 600, textAlign: 'right' }}>{sumValue}</span>
-                <span>Depth:</span>
-                <span
-                  style={{
-                    fontWeight: 600,
-                    textAlign: 'right',
-                    color: isBid ? theme.palette.success.main : theme.palette.error.main
-                  }}
-                >
-                  {depth}%
-                </span>
               </Box>
-            </>
+            </Box>
           }
           placement="right"
           arrow
@@ -333,16 +280,16 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
           >
             {isBid ? (
               <>
-                <TableCell align="right" sx={{ fontWeight: 500, display: { xs: 'none', sm: 'table-cell' } }}>
+                <TableCell align="right" sx={{ fontWeight: 400, display: { xs: 'none', sm: 'table-cell' } }}>
                   {sumAmount}
                 </TableCell>
-                <TableCell align="right" sx={{ fontWeight: 600 }}>
+                <TableCell align="right" sx={{ fontWeight: 500 }}>
                   {amount}
                 </TableCell>
                 <TableCell
                   align="right"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 500,
                     color: priceColor
                   }}
                 >
@@ -354,16 +301,16 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
                 <TableCell
                   align="left"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 500,
                     color: priceColor
                   }}
                 >
                   <NumberTooltip number={price} pos="bottom" />
                 </TableCell>
-                <TableCell align="left" sx={{ fontWeight: 600 }}>
+                <TableCell align="left" sx={{ fontWeight: 500 }}>
                   {amount}
                 </TableCell>
-                <TableCell align="left" sx={{ fontWeight: 500, display: { xs: 'none', sm: 'table-cell' } }}>
+                <TableCell align="left" sx={{ fontWeight: 400, display: { xs: 'none', sm: 'table-cell' } }}>
                   {sumAmount}
                 </TableCell>
               </>
@@ -385,7 +332,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
   return (
     <OrderBookContainer>
       {/* Spread Component */}
-      <Spread bids={bids} asks={asks} sx={{ p: { xs: 1.5, sm: 2 }, pb: 0 }} />
+      <Spread bids={bids} asks={asks} sx={{ p: { xs: 1, sm: 1.5 }, pb: 0 }} />
 
       <Grid container spacing={0}>
         {/* Buy Orders */}
@@ -394,10 +341,10 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
           borderBottom: { xs: `1px solid ${alpha(theme.palette.divider, 0.1)}`, md: 'none' }
         }}>
           <SectionHeader>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <TrendingUpIcon
                 sx={{
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  fontSize: '0.75rem',
                   color: theme.palette.success.main
                 }}
               />
@@ -406,7 +353,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
                 sx={{
                   color: theme.palette.success.main,
                   fontWeight: 600,
-                  fontSize: '0.875rem'
+                  fontSize: '0.75rem'
                 }}
               >
                 Buy Orders
@@ -416,8 +363,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
                 size="small"
                 sx={{
                   backgroundColor: alpha(theme.palette.success.main, 0.1),
-                  color: theme.palette.success.main,
-                  border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`
+                  color: theme.palette.success.main
                 }}
               />
             </Box>
@@ -438,10 +384,10 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
         {/* Sell Orders */}
         <Grid item xs={12} md={6}>
           <SectionHeader>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <TrendingDownIcon
                 sx={{
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  fontSize: '0.75rem',
                   color: theme.palette.error.main
                 }}
               />
@@ -450,7 +396,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
                 sx={{
                   color: theme.palette.error.main,
                   fontWeight: 600,
-                  fontSize: '0.875rem'
+                  fontSize: '0.75rem'
                 }}
               >
                 Sell Orders
@@ -460,8 +406,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
                 size="small"
                 sx={{
                   backgroundColor: alpha(theme.palette.error.main, 0.1),
-                  color: theme.palette.error.main,
-                  border: `1px solid ${alpha(theme.palette.error.main, 0.3)}`
+                  color: theme.palette.error.main
                 }}
               />
             </Box>
@@ -489,7 +434,8 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            height: 200,
+            height: 100,
+            fontSize: '0.75rem',
             color: '#999'
           }}
         >
