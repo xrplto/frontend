@@ -8,7 +8,6 @@ import {
   Container,
   Box,
   Typography,
-  Paper,
   Grid,
   useTheme,
   alpha,
@@ -1212,7 +1211,7 @@ const TransactionSummaryCard = ({ txData, theme }) => {
         {(Amount || deliveredAmount) && (
           <Box
             p={2}
-            sx={{ backgroundColor: alpha(theme.palette.background.paper, 0.7), borderRadius: 2 }}
+            sx={{ background: 'transparent', border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 2 }}
           >
             <Typography variant="caption" color="text.secondary">
               Amount
@@ -1796,13 +1795,27 @@ const TransactionDetails = ({ txData, theme }) => {
     <Box>
       <TransactionSummaryCard txData={txData} theme={theme} />
 
-      <Paper
-        elevation={0}
+      <Box
         sx={{
           p: { xs: 2, sm: 3, md: 4 },
           borderRadius: 3,
           background: 'transparent',
-          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+          backdropFilter: 'none',
+          WebkitBackdropFilter: 'none',
+          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          boxShadow: `
+            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: { xs: 'none', sm: 'translateY(-2px)' },
+            boxShadow: `
+              0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
+              0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
+              inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
+          }
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
@@ -1819,9 +1832,15 @@ const TransactionDetails = ({ txData, theme }) => {
         <Grid container spacing={3}>
           {/* Main Transaction Details */}
           <Grid item xs={12}>
-            <Paper
-              elevation={0}
-              sx={{ p: 3, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}
+            <Box
+              sx={{ 
+                p: 3, 
+                background: 'transparent',
+                backdropFilter: 'none',
+                WebkitBackdropFilter: 'none',
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                borderRadius: 2
+              }}
             >
               <Typography variant="h6" gutterBottom>
                 Key Information
@@ -2065,18 +2084,19 @@ const TransactionDetails = ({ txData, theme }) => {
                           CryptoJS.enc.Hex.parse(memo.Memo.MemoData).toString(CryptoJS.enc.Utf8);
                         const memoKey = `${memo.Memo.MemoType || ''}-${memo.Memo.MemoData || ''}`;
                         return (
-                          <Paper
+                          <Box
                             key={memoKey}
-                            elevation={0}
                             sx={{
                               p: 1,
-                              backgroundColor: alpha(theme.palette.background.paper, 0.5)
+                              background: 'transparent',
+                              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                              borderRadius: 1
                             }}
                           >
                             <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
                               {[memoType, memoData].filter(Boolean).join(' ')}
                             </Typography>
-                          </Paper>
+                          </Box>
                         );
                       })}
                     </Stack>
@@ -2246,7 +2266,7 @@ const TransactionDetails = ({ txData, theme }) => {
                             </Grid>
                           );
                           return (
-                            <Paper key={offer.offerId} sx={{ p: 2, width: '100%', mb: 2 }}>
+                            <Box key={offer.offerId} sx={{ p: 2, width: '100%', mb: 2, background: 'transparent', border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 2 }}>
                               <Grid container spacing={2}>
                                 {isLoading ? (
                                   <Grid item xs={12}>
@@ -2282,7 +2302,7 @@ const TransactionDetails = ({ txData, theme }) => {
                                   </Grid>
                                 )}
                               </Grid>
-                            </Paper>
+                            </Box>
                           );
                         })}
                       </DetailRow>
@@ -2606,7 +2626,7 @@ const TransactionDetails = ({ txData, theme }) => {
                     )}
 
                     <DetailRow label="NFT Offer Details">
-                      <Paper sx={{ p: 2, width: '100%' }}>
+                      <Box sx={{ p: 2, width: '100%', background: 'transparent', border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 2 }}>
                         <Grid container spacing={1}>
                           {meta.offer_id && (
                             <DetailRow label="Offer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
@@ -2642,7 +2662,7 @@ const TransactionDetails = ({ txData, theme }) => {
                             </DetailRow>
                           )}
                         </Grid>
-                      </Paper>
+                      </Box>
                     </DetailRow>
                   </>
                 )}
@@ -2747,7 +2767,7 @@ const TransactionDetails = ({ txData, theme }) => {
                 {TransactionType === 'OracleSet' && (
                   <>
                     <DetailRow label="Oracle Data">
-                      <Paper sx={{ p: 2, width: '100%' }}>
+                      <Box sx={{ p: 2, width: '100%', background: 'transparent', border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 2 }}>
                         <Grid container spacing={1}>
                           {typeof OracleDocumentID !== 'undefined' && (
                             <DetailRow
@@ -2799,7 +2819,7 @@ const TransactionDetails = ({ txData, theme }) => {
                             </DetailRow>
                           )}
                         </Grid>
-                      </Paper>
+                      </Box>
                     </DetailRow>
 
                     {PriceDataSeries && PriceDataSeries.length > 0 && (
@@ -2958,15 +2978,21 @@ const TransactionDetails = ({ txData, theme }) => {
                   </DetailRow>
                 )}
               </Stack>
-            </Paper>
+            </Box>
           </Grid>
 
           {/* Affected Accounts */}
           {balanceChanges.length > 0 && isSuccess && (
             <Grid item xs={12}>
-              <Paper
-                elevation={0}
-                sx={{ p: 3, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}
+              <Box
+                sx={{ 
+                  p: 3, 
+                  background: 'transparent',
+                  backdropFilter: 'none',
+                  WebkitBackdropFilter: 'none',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  borderRadius: 2
+                }}
               >
                 <Typography variant="h6" gutterBottom>
                   Affected Accounts ({balanceChanges.length})
@@ -2976,7 +3002,7 @@ const TransactionDetails = ({ txData, theme }) => {
                     <Card
                       key={account}
                       elevation={0}
-                      sx={{ p: 2, backgroundColor: alpha(theme.palette.background.paper, 0.7) }}
+                      sx={{ p: 2, background: 'transparent', border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}
                     >
                       <Stack
                         direction={{ xs: 'column', sm: 'row' }}
@@ -3042,16 +3068,22 @@ const TransactionDetails = ({ txData, theme }) => {
                     </Card>
                   ))}
                 </Stack>
-              </Paper>
+              </Box>
             </Grid>
           )}
 
           {/* Exchange Information */}
           {displayExchange && isSuccess && (
             <Grid item xs={12}>
-              <Paper
-                elevation={0}
-                sx={{ p: 3, backgroundColor: alpha(theme.palette.info.main, 0.1) }}
+              <Box
+                sx={{ 
+                  p: 3, 
+                  background: 'transparent',
+                  backdropFilter: 'none',
+                  WebkitBackdropFilter: 'none',
+                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                  borderRadius: 2
+                }}
               >
                 <Typography variant="h6" gutterBottom>
                   Exchange Details
@@ -3131,15 +3163,21 @@ const TransactionDetails = ({ txData, theme }) => {
                     </Stack>
                   </Box>
                 </Stack>
-              </Paper>
+              </Box>
             </Grid>
           )}
 
           {/* Transaction Link */}
           <Grid item xs={12}>
-            <Paper
-              elevation={0}
-              sx={{ p: 2, backgroundColor: alpha(theme.palette.background.paper, 0.3) }}
+            <Box
+              sx={{ 
+                p: 2, 
+                background: 'transparent',
+                backdropFilter: 'none',
+                WebkitBackdropFilter: 'none',
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                borderRadius: 2
+              }}
             >
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Typography variant="body2" color="text.secondary">
@@ -3166,7 +3204,7 @@ const TransactionDetails = ({ txData, theme }) => {
                   </IconButton>
                 </Tooltip>
               </Stack>
-            </Paper>
+            </Box>
           </Grid>
         </Grid>
 
@@ -3184,10 +3222,11 @@ const TransactionDetails = ({ txData, theme }) => {
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
             sx={{
-              backgroundColor: alpha(theme.palette.background.paper, 0.3),
+              backgroundColor: 'transparent',
+              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
               borderRadius: 2,
               '&:hover': {
-                backgroundColor: alpha(theme.palette.background.paper, 0.5)
+                backgroundColor: 'transparent'
               }
             }}
           >
@@ -3229,30 +3268,32 @@ const TransactionDetails = ({ txData, theme }) => {
               </Stack>
             </TabPanel>
             <TabPanel value={selectedTab} index={1}>
-              <Paper
+              <Box
                 sx={{
                   p: 2,
-                  backgroundColor: alpha(theme.palette.common.black, 0.05),
+                  background: 'transparent',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                   borderRadius: 2
                 }}
               >
                 <JsonViewer data={rawData} />
-              </Paper>
+              </Box>
             </TabPanel>
             <TabPanel value={selectedTab} index={2}>
-              <Paper
+              <Box
                 sx={{
                   p: 2,
-                  backgroundColor: alpha(theme.palette.common.black, 0.05),
+                  background: 'transparent',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                   borderRadius: 2
                 }}
               >
                 <JsonViewer data={meta} />
-              </Paper>
+              </Box>
             </TabPanel>
           </AccordionDetails>
         </Accordion>
-      </Paper>
+      </Box>
     </Box>
   );
 };

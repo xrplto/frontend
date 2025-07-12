@@ -32,8 +32,9 @@ import {
   Pagination,
   Select
 } from '@mui/material';
-import { styled, alpha } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { tableCellClasses } from '@mui/material/TableCell';
+import { alpha } from '@mui/material/styles';
 import PaymentIcon from '@mui/icons-material/Payment';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
@@ -47,99 +48,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { formatDateTime } from 'src/utils/formatTime';
 import { AppContext } from 'src/AppContext';
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.head}`]: {
-    backgroundColor: alpha(theme.palette.background.paper, 0.05),
-    color: theme.palette.text.primary,
-    fontWeight: 700,
-    fontSize: '0.9rem',
-    padding: '20px 24px',
-    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-    backdropFilter: 'blur(20px) saturate(180%)',
-    position: 'sticky',
-    top: 0,
-    zIndex: 10,
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase'
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: '0.875rem',
-    padding: '16px 24px',
-    lineHeight: 1.6,
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.03)}`,
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    backgroundColor: 'transparent'
-  }
-}));
-
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  position: 'relative',
-  '&:nth-of-type(even)': {
-    backgroundColor: alpha(theme.palette.background.paper, 0.02)
-  },
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.03)
-  },
-  '&:last-child td, &:last-child th': {
-    border: 0
-  }
-}));
-
-const CompactChip = styled(Chip)(({ theme }) => ({
-  height: '32px',
-  fontSize: '0.8rem',
-  fontWeight: 600,
-  borderRadius: '16px',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  letterSpacing: '0.3px',
-  '& .MuiChip-icon': {
-    fontSize: '1.1rem'
-  },
-  '&:hover': {
-    transform: 'scale(1.08) translateY(-1px)',
-    boxShadow: `0 6px 16px ${alpha(theme.palette.common.black, 0.2)}`
-  }
-}));
-
-const CompactAccordion = styled(Accordion)(({ theme }) => ({
-  '&.MuiAccordion-root': {
-    marginBottom: '8px',
-    borderRadius: '12px',
-    background: alpha(theme.palette.background.paper, 0.05),
-    backdropFilter: 'blur(20px)',
-    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-    boxShadow: 'none',
-    '&:before': {
-      display: 'none'
-    },
-    '&:hover': {
-      transform: 'translateY(-2px)',
-      backgroundColor: alpha(theme.palette.background.paper, 0.08)
-    }
-  },
-  '& .MuiAccordionSummary-root': {
-    minHeight: '48px',
-    padding: '0 20px',
-    borderRadius: '12px',
-    backgroundColor: 'transparent',
-    '&.Mui-expanded': {
-      minHeight: '48px'
-    }
-  },
-  '& .MuiAccordionSummary-content': {
-    margin: '12px 0',
-    '&.Mui-expanded': {
-      margin: '12px 0'
-    }
-  },
-  '& .MuiAccordionDetails-root': {
-    padding: '16px 20px 20px',
-    borderTop: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-    backgroundColor: 'transparent'
-  }
-}));
-
-// ListToolbar styled components
+// Styled components for ListToolbar
 const CustomSelect = styled(Select)(({ theme }) => ({
   '& .MuiOutlinedInput-notchedOutline': {
     border: 'none'
@@ -161,7 +70,6 @@ const StyledBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1, 1.5),
   borderRadius: theme.shape.borderRadius,
   backgroundColor: 'transparent',
-  backdropFilter: 'blur(10px)',
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   boxShadow: 'none'
 }));
@@ -184,33 +92,89 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
   }
 }));
 
-// Add helper function to render XRP address as a link
-const renderAddressLink = (address, displayText = null) => {
-  if (!address) return null;
+// Styled components for AccountTransactions
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: 'transparent',
+    color: theme.palette.text.primary,
+    fontWeight: 700,
+    fontSize: '0.9rem',
+    padding: '20px 24px',
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    backdropFilter: 'blur(10px)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase'
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: '0.875rem',
+    padding: '16px 24px',
+    lineHeight: 1.6,
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+    backgroundColor: 'transparent'
+  }
+}));
 
-  const text = displayText || `${address.slice(0, 6)}...`;
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  position: 'relative',
+  backgroundColor: 'transparent',
+  '&:nth-of-type(even)': {
+    backgroundColor: alpha(theme.palette.action.hover, 0.02)
+  },
+  '&:last-child td, &:last-child th': {
+    border: 0
+  }
+}));
 
-  return (
-    <Link
-      href={`/profile/${address}`}
-      color="primary"
-      underline="hover"
-      sx={{
-        fontSize: 'inherit',
-        fontWeight: 600,
-        transition: 'all 0.2s ease',
-        '&:hover': {
-          color: 'primary.dark'
-        }
-      }}
-    >
-      {text}
-    </Link>
-  );
-};
+const CompactChip = styled(Chip)(({ theme }) => ({
+  height: '32px',
+  fontSize: '0.8rem',
+  fontWeight: 600,
+  borderRadius: '16px',
+  letterSpacing: '0.3px',
+  '& .MuiChip-icon': {
+    fontSize: '1.1rem'
+  }
+}));
 
-// NftListToolbar component
-export function NftListToolbar({ count, rows, setRows, page, setPage }) {
+const CompactAccordion = styled(Accordion)(({ theme }) => ({
+  '&.MuiAccordion-root': {
+    marginBottom: '8px',
+    borderRadius: '12px',
+    background: 'transparent',
+    backdropFilter: 'blur(10px)',
+    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    boxShadow: 'none',
+    '&:before': {
+      display: 'none'
+    }
+  },
+  '& .MuiAccordionSummary-root': {
+    minHeight: '48px',
+    padding: '0 20px',
+    borderRadius: '12px',
+    backgroundColor: 'transparent',
+    '&.Mui-expanded': {
+      minHeight: '48px'
+    }
+  },
+  '& .MuiAccordionSummary-content': {
+    margin: '12px 0',
+    '&.Mui-expanded': {
+      margin: '12px 0'
+    }
+  },
+  '& .MuiAccordionDetails-root': {
+    padding: '16px 20px 20px',
+    borderTop: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+    backgroundColor: 'transparent'
+  }
+}));
+
+// ListToolbar Component
+function NftListToolbar({ count, rows, setRows, page, setPage }) {
   const theme = useTheme();
   const num = count / rows;
   let page_count = Math.floor(num);
@@ -284,7 +248,28 @@ export function NftListToolbar({ count, rows, setRows, page, setPage }) {
   );
 }
 
-// Main AccountTransactions component (default export)
+// Helper function to render XRP address as a link
+const renderAddressLink = (address, displayText = null) => {
+  if (!address) return null;
+
+  const text = displayText || `${address.slice(0, 6)}...`;
+
+  return (
+    <Link
+      href={`/profile/${address}`}
+      color="primary"
+      underline="hover"
+      sx={{
+        fontSize: 'inherit',
+        fontWeight: 600,
+      }}
+    >
+      {text}
+    </Link>
+  );
+};
+
+// Main AccountTransactions Component
 export default function AccountTransactions({ creatorAccount }) {
   const theme = useTheme();
   const { openSnackbar } = useContext(AppContext);
@@ -835,20 +820,15 @@ export default function AccountTransactions({ creatorAccount }) {
       pl: { xs: 2, sm: 0 }, 
       pr: { xs: 2, sm: 0 }, 
       maxWidth: '2000px',
-      animation: 'fadeInUp 0.6s ease-out',
-      '@keyframes fadeInUp': {
-        from: { opacity: 0, transform: 'translateY(20px)' },
-        to: { opacity: 1, transform: 'translateY(0)' }
-      }
     }}>
         <Card
           sx={{
             p: 4,
             mb: 3,
             borderRadius: '24px',
-            background: alpha(theme.palette.background.paper, 0.05),
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+            background: 'transparent',
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
             boxShadow: 'none',
             textAlign: 'center'
           }}
@@ -866,23 +846,17 @@ export default function AccountTransactions({ creatorAccount }) {
       pl: { xs: 2, sm: 0 }, 
       pr: { xs: 2, sm: 0 }, 
       maxWidth: '2000px',
-      animation: 'fadeInUp 0.6s ease-out',
-      '@keyframes fadeInUp': {
-        from: { opacity: 0, transform: 'translateY(20px)' },
-        to: { opacity: 1, transform: 'translateY(0)' }
-      }
     }}>
       <Card
         sx={{
           mb: 3,
           borderRadius: { xs: '16px', sm: '24px' },
-          background: alpha(theme.palette.background.paper, 0.03),
-          backdropFilter: 'blur(24px) saturate(180%)',
-          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+          background: 'transparent',
+          backdropFilter: 'blur(10px)',
+          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
           boxShadow: 'none',
           overflow: 'hidden',
           position: 'relative',
-          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -892,11 +866,6 @@ export default function AccountTransactions({ creatorAccount }) {
             height: '2px',
             background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.5)}, ${alpha(theme.palette.secondary.main, 0.5)}, ${alpha(theme.palette.primary.main, 0.5)})`,
             backgroundSize: '200% 100%',
-            animation: 'shimmer 3s ease-in-out infinite',
-            '@keyframes shimmer': {
-              '0%': { backgroundPosition: '-200% center' },
-              '100%': { backgroundPosition: '200% center' }
-            }
           }
         }}
       >
@@ -906,9 +875,9 @@ export default function AccountTransactions({ creatorAccount }) {
             sx={{
               px: { xs: 3, sm: 4 },
               py: { xs: 3, sm: 4 },
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
-              background: alpha(theme.palette.background.paper, 0.02),
-              backdropFilter: 'blur(20px) saturate(180%)',
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              background: 'transparent',
+              backdropFilter: 'blur(10px)',
               position: 'relative',
               overflow: 'hidden',
               '&::after': {
@@ -918,7 +887,7 @@ export default function AccountTransactions({ creatorAccount }) {
                 right: 0,
                 width: '300px',
                 height: '300px',
-                background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.05)} 0%, transparent 70%)`,
+                background: 'transparent',
                 borderRadius: '50%',
                 transform: 'translate(100px, -150px)'
               }
@@ -931,7 +900,6 @@ export default function AccountTransactions({ creatorAccount }) {
                   borderRadius: '20px',
                   background: alpha(theme.palette.primary.main, 0.1),
                   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                  backdropFilter: 'blur(10px)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -991,7 +959,7 @@ export default function AccountTransactions({ creatorAccount }) {
                       sx={{
                         p: 2,
                         borderRadius: '12px',
-                        background: alpha(theme.palette.background.paper, 0.02),
+                        background: 'transparent',
                         border: `1px solid ${alpha(theme.palette.divider, 0.06)}`
                       }}
                     >
@@ -1005,7 +973,7 @@ export default function AccountTransactions({ creatorAccount }) {
                 sx={{
                   p: 6,
                   textAlign: 'center',
-                  background: alpha(theme.palette.error.main, 0.02)
+                  background: 'transparent'
                 }}
               >
                 <Typography variant="h6" color="error.main" sx={{ fontWeight: 600, mb: 1 }}>
@@ -1020,7 +988,7 @@ export default function AccountTransactions({ creatorAccount }) {
                 sx={{
                   p: 6,
                   textAlign: 'center',
-                  background: alpha(theme.palette.info.main, 0.02)
+                  background: 'transparent'
                 }}
               >
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
@@ -1040,15 +1008,12 @@ export default function AccountTransactions({ creatorAccount }) {
                     height: '8px'
                   },
                   '&::-webkit-scrollbar-track': {
-                    backgroundColor: alpha(theme.palette.background.paper, 0.02),
+                    backgroundColor: 'transparent',
                     borderRadius: '4px'
                   },
                   '&::-webkit-scrollbar-thumb': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.2),
-                    borderRadius: '4px',
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.3)
-                    }
+                    backgroundColor: alpha(theme.palette.primary.main, 0.3),
+                    borderRadius: '4px'
                   }
                 }}>
                   <Table stickyHeader size="medium" sx={{
@@ -1106,14 +1071,6 @@ export default function AccountTransactions({ creatorAccount }) {
                                                 theme.palette.primary.main,
                                                 0.2
                                               )}`,
-                                              transition: 'all 0.2s ease',
-                                              '&:hover': {
-                                                transform: 'scale(1.1)',
-                                                boxShadow: `0 6px 20px ${alpha(
-                                                  theme.palette.common.black,
-                                                  0.25
-                                                )}`
-                                              }
                                             }}
                                           >
                                             <CardMedia
@@ -1157,10 +1114,6 @@ export default function AccountTransactions({ creatorAccount }) {
                                                 sx={{
                                                   fontSize: '0.85rem',
                                                   fontWeight: 600,
-                                                  transition: 'all 0.2s ease',
-                                                  '&:hover': {
-                                                    color: theme.palette.primary.dark
-                                                  }
                                                 }}
                                               >
                                                 {detail.text}
@@ -1234,7 +1187,7 @@ export default function AccountTransactions({ creatorAccount }) {
                                     padding: '8px',
                                     borderRadius: '10px',
                                     color: theme.palette.primary.main,
-                                    bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                    bgcolor: 'transparent',
                                     border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
                                   }}
                                   onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
@@ -1257,9 +1210,9 @@ export default function AccountTransactions({ creatorAccount }) {
                       display: 'flex',
                       justifyContent: 'center',
                       p: 4,
-                      borderTop: `1px solid ${alpha(theme.palette.divider, 0.03)}`,
-                      background: alpha(theme.palette.background.paper, 0.02),
-                      backdropFilter: 'blur(10px)'
+                      borderTop: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                      background: 'transparent',
+                      backdropFilter: 'blur(5px)'
                     }}
                   >
                     <Button
@@ -1274,19 +1227,11 @@ export default function AccountTransactions({ creatorAccount }) {
                         fontWeight: 600,
                         fontSize: '0.9rem',
                         textTransform: 'none',
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                        border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                         color: theme.palette.primary.main,
-                        background: alpha(theme.palette.primary.main, 0.02),
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        '&:hover': {
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                          background: alpha(theme.palette.primary.main, 0.05),
-                          transform: 'translateY(-2px)',
-                          boxShadow: 'none'
-                        },
+                        background: 'transparent',
                         '&:disabled': {
-                          opacity: 0.6,
-                          transform: 'none'
+                          opacity: 0.6
                         }
                       }}
                     >
@@ -1301,8 +1246,8 @@ export default function AccountTransactions({ creatorAccount }) {
                       display: 'flex',
                       justifyContent: 'center',
                       p: 3,
-                      borderTop: `1px solid ${alpha(theme.palette.divider, 0.03)}`,
-                      background: alpha(theme.palette.background.paper, 0.02)
+                      borderTop: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                      background: 'transparent'
                     }}
                   >
                     <Typography
@@ -1326,3 +1271,6 @@ export default function AccountTransactions({ creatorAccount }) {
     </Container>
   );
 }
+
+// Export the toolbar component as well
+export { NftListToolbar };
