@@ -1662,33 +1662,6 @@ const Swap = ({ token }) => {
               </Stack>
             </Stack>
           </Box>
-          
-          {/* Orderbook Toggle */}
-          <Box sx={{ px: 1.5, py: 0.5 }}>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setShowOrderbook(!showOrderbook)}
-              sx={{
-                width: '100%',
-                fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                textTransform: 'none',
-                color: showOrderbook ? theme.palette.primary.main : theme.palette.text.secondary,
-                backgroundColor: showOrderbook ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
-                border: `1px solid ${showOrderbook ? theme.palette.primary.main : alpha(theme.palette.divider, 0.3)}`,
-                px: 1.5,
-                py: 0.5,
-                '&:hover': {
-                  backgroundColor: showOrderbook 
-                    ? alpha(theme.palette.primary.main, 0.2) 
-                    : alpha(theme.palette.primary.main, 0.05),
-                  borderColor: theme.palette.primary.main
-                }
-              }}
-            >
-              {showOrderbook ? 'Hide' : 'View'} Orderbook
-            </Button>
-          </Box>
 
           {/* Order Type Toggle */}
           <Box sx={{ px: 1.5, py: 1 }}>
@@ -1696,7 +1669,10 @@ const Swap = ({ token }) => {
               <Button
                 size="small"
                 variant={orderType === 'market' ? 'contained' : 'outlined'}
-                onClick={() => setOrderType('market')}
+                onClick={() => {
+                  setOrderType('market');
+                  setShowOrderbook(false); // Hide orderbook when switching to market
+                }}
                 sx={{
                   minWidth: { xs: '80px', sm: '90px' },
                   height: { xs: '28px', sm: '32px' },
@@ -1728,9 +1704,29 @@ const Swap = ({ token }) => {
           {orderType === 'limit' && (
             <Box sx={{ px: 1.5, py: 1 }}>
               <Stack spacing={1}>
-                <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                  Limit Price ({revert ? curr1.name : curr2.name} per {revert ? curr2.name : curr1.name})
-                </Typography>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                    Limit Price ({revert ? curr1.name : curr2.name} per {revert ? curr2.name : curr1.name})
+                  </Typography>
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={() => setShowOrderbook(!showOrderbook)}
+                    sx={{
+                      fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                      textTransform: 'none',
+                      color: showOrderbook ? theme.palette.primary.main : theme.palette.text.secondary,
+                      minWidth: 'auto',
+                      px: 1,
+                      py: 0.25,
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.05)
+                      }
+                    }}
+                  >
+                    {showOrderbook ? 'Hide' : 'View'} Orderbook
+                  </Button>
+                </Stack>
                 <Input
                   placeholder="0.00"
                   fullWidth
