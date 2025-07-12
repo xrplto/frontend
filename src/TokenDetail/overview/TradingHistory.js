@@ -1104,7 +1104,10 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
       {tabValue === 1 && token && (
         <Stack spacing={2} sx={{ position: 'relative', zIndex: 1 }}>
           <Box sx={{ 
-            p: 2, 
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            p: 1.5, 
             backgroundColor: 'transparent',
             backdropFilter: 'none',
             WebkitBackdropFilter: 'none',
@@ -1123,8 +1126,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
               zIndex: 1002
             }
           }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>Select Trading Pair</Typography>
-            <Box sx={{ minWidth: 250 }}>
+            <Typography variant="body1" fontWeight="600" sx={{ minWidth: 'fit-content' }}>Trading Pair:</Typography>
+            <Box sx={{ minWidth: 200, maxWidth: 300 }}>
               <PairsSelect 
                 token={token}
                 pair={selectedPair}
