@@ -2405,6 +2405,33 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                       }
                     }}
                   />
+                  {/* Warning for immediate execution */}
+                  {limitPrice && parseFloat(limitPrice) > 0 && (() => {
+                    const limit = parseFloat(limitPrice);
+                    const bestAsk = asks[0]?.price || 0;
+                    const bestBid = bids[0]?.price || 0;
+                    const willExecute = (!revert && limit >= bestAsk && bestAsk > 0) || 
+                                       (revert && limit <= bestBid && bestBid > 0);
+                    
+                    if (willExecute) {
+                      return (
+                        <Box 
+                          sx={{ 
+                            mt: 1,
+                            p: 1,
+                            borderRadius: '6px',
+                            backgroundColor: alpha(theme.palette.warning.main, 0.1),
+                            border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`
+                          }}
+                        >
+                          <Typography variant="caption" color="warning.main" sx={{ fontWeight: 600 }}>
+                            ⚠️ Order will execute immediately at market price
+                          </Typography>
+                        </Box>
+                      );
+                    }
+                    return null;
+                  })()}
                 </Stack>
               </Box>
             )}

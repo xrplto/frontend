@@ -251,20 +251,22 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick, li
 
       const isSelected = isBid ? idx < selected[0] : idx < selected[1];
       
-      // Highlight where limit order will sit in the orderbook
-      const isLimitPricePosition = limitPrice && (
-        (isBuyOrder && isBid && Math.abs(level.price - limitPrice) < 0.0001) || // Buy order position in bids
-        (!isBuyOrder && !isBid && Math.abs(level.price - limitPrice) < 0.0001)  // Sell order position in asks
+      // Highlight orders in the price range
+      const isInPriceRange = limitPrice && (
+        (isBuyOrder && isBid && level.price >= limitPrice) || // Buy orders: highlight bids >= limit price
+        (!isBuyOrder && !isBid && level.price <= limitPrice)   // Sell orders: highlight asks <= limit price
       );
       
       // Show insertion point for limit orders
       const showInsertionPoint = limitPrice && (
         (isBuyOrder && isBid && 
-          ((idx === 0 && level.price < limitPrice) || // Insert at top if limit > best bid
-           (idx > 0 && levels[idx-1] && levels[idx-1].price >= limitPrice && level.price < limitPrice))) || // Insert between orders
+          idx === 0 && level.price < limitPrice) || // Insert at top if limit > best bid
+        (isBuyOrder && isBid && 
+          idx > 0 && levels[idx-1] && levels[idx-1].price >= limitPrice && level.price < limitPrice) || // Insert between orders
         (!isBuyOrder && !isBid && 
-          ((idx === 0 && level.price > limitPrice) || // Insert at top if limit < best ask  
-           (idx > 0 && levels[idx-1] && levels[idx-1].price <= limitPrice && level.price > limitPrice))) // Insert between orders
+          idx === 0 && level.price > limitPrice) || // Insert at top if limit < best ask  
+        (!isBuyOrder && !isBid && 
+          idx > 0 && levels[idx-1] && levels[idx-1].price <= limitPrice && level.price > limitPrice) // Insert between orders
       );
       const priceColor =
         isNew || isSelected
@@ -310,7 +312,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick, li
             ordertype={isBid ? 'bid' : 'ask'}
             isselected={isSelected ? 1 : 0}
             isnew={isNew ? 1 : 0}
-            islimitprice={isLimitPricePosition ? 1 : 0}
+            islimitprice={isInPriceRange ? 1 : 0}
             depth={depth}
             onMouseOver={(e) => (isBid ? onBidMouseOver(e, idx) : onAskMouseOver(e, idx))}
             onMouseLeave={(e) => onMouseLeave(e, idx)}
