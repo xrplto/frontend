@@ -236,6 +236,7 @@ function PriceChart({ token }) {
   const [priceChange, setPriceChange] = useState(0);
   const [volumeChange, setVolumeChange] = useState(0);
   const [isStreaming, setIsStreaming] = useState(true);
+  const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
 
   const [minTime, setMinTime] = useState(0);
   const [maxTime, setMaxTime] = useState(0);
@@ -564,8 +565,7 @@ function PriceChart({ token }) {
   const handleChange = useCallback((event, newRange) => {
     if (newRange) {
       setRange(newRange);
-      // Stop streaming when changing range
-      setIsStreaming(false);
+      // Don't stop streaming when changing range, just update the subscription
     }
   }, []);
 
@@ -601,72 +601,103 @@ function PriceChart({ token }) {
 
   // WebSocket configuration
   const socketUrl = isStreaming && token?.md5 ? `wss://api.xrpl.to/ws/ohlc` : null;
+  console.log('[WebSocket] Socket URL:', socketUrl, 'Streaming:', isStreaming, 'Token MD5:', token?.md5);
   
   const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl, {
-    onOpen: () => {
-      if (token?.md5 && isStreaming) {
-        const interval = RANGE_TO_INTERVAL[range] || '5m';
-        sendMessage(JSON.stringify({
-          action: 'subscribe',
-          tokenMd5: token.md5,
-          interval: interval,
-          vs_currency: fiatMapping[activeFiatCurrency] || 'USD'
-        }));
-      }
+    onOpen: (event) => {
+      console.log('[WebSocket] Connected, event:', event);
+      // Wait a bit for connection to stabilize before subscribing
+      setTimeout(() => {
+        if (token?.md5 && isStreaming) {
+          const interval = RANGE_TO_INTERVAL[range] || '5m';
+          const subscribeMsg = {
+            type: 'subscribe',
+            tokenMd5: token.md5,
+            intervals: [interval]
+          };
+          console.log('[WebSocket] Sending subscribe after delay:', subscribeMsg);
+          sendMessage(JSON.stringify(subscribeMsg));
+        }
+      }, 100);
+    },
+    onMessage: (event) => {
+      console.log('[WebSocket] Raw message received:', event.data);
+    },
+    onError: (event) => {
+      console.error('[WebSocket] Error:', event);
+    },
+    onClose: (event) => {
+      console.log('[WebSocket] Closed:', event.code, event.reason);
     },
     shouldReconnect: () => isStreaming,
     reconnectInterval: 3000,
-    reconnectAttempts: 10
+    reconnectAttempts: 10,
+    share: false,
+    retryOnError: true
   });
 
-  // Handle WebSocket messages
-  useEffect(() => {
-    if (!lastMessage || !isStreaming) return;
+  // Handle candle updates
+  const handleCandleUpdate = useCallback((data) => {
+    const currentInterval = RANGE_TO_INTERVAL[range] || '5m';
+    if (data.interval !== currentInterval) {
+      console.log('[WebSocket] Ignoring update for different interval:', data.interval, 'current:', currentInterval);
+      return;
+    }
     
-    try {
-      const message = JSON.parse(lastMessage.data);
-      
-      if (message.type === 'ohlc' && message.tokenMd5 === token.md5) {
-        const newCandle = message.data;
-        
-        // Update OHLC data
-        if (chartType === 1 && newCandle) {
-          setDataOHLC(prevData => {
+    const newCandle = data.candle;
+    console.log('[WebSocket] Processing candle update for chart type:', chartType);
+    
+    // Update OHLC data
+    if (chartType === 1 && newCandle) {
+      console.log('[WebSocket] Updating OHLC data');
+      setDataOHLC(prevData => {
             if (!prevData || prevData.length === 0) return prevData;
             
             const lastCandle = prevData[prevData.length - 1];
+            // Candle format from API: [timestamp, open, high, low, close, volume]
             const candleData = [
-              newCandle.timestamp,
-              newCandle.open,
-              newCandle.high,
-              newCandle.low,
-              newCandle.close
+              newCandle[0], // timestamp
+              newCandle[1], // open
+              newCandle[2], // high
+              newCandle[3], // low
+              newCandle[4]  // close
             ];
             
+            // Log the update for debugging
+            console.log('[WebSocket] Candle data:', {
+              timestamp: new Date(newCandle[0]).toLocaleTimeString(),
+              open: newCandle[1],
+              high: newCandle[2],
+              low: newCandle[3],
+              close: newCandle[4],
+              volume: newCandle[5]
+            });
+            
             // Update existing candle or add new one
-            if (lastCandle[0] === newCandle.timestamp) {
-              return [...prevData.slice(0, -1), candleData];
-            } else if (newCandle.timestamp > lastCandle[0]) {
-              return [...prevData, candleData];
+            if (lastCandle[0] === newCandle[0]) {
+              console.log('[WebSocket] Updating existing candle at timestamp:', newCandle[0]);
+              const updated = [...prevData.slice(0, -1), candleData];
+              console.log('[WebSocket] Updated OHLC data length:', updated.length);
+              setLastUpdateTime(Date.now()); // Force re-render
+              return updated;
+            } else if (newCandle[0] > lastCandle[0]) {
+              console.log('[WebSocket] Adding new candle at timestamp:', newCandle[0]);
+              const updated = [...prevData, candleData];
+              console.log('[WebSocket] Updated OHLC data length:', updated.length);
+              return updated;
             }
+            console.log('[WebSocket] Timestamp not newer, skipping update');
             return prevData;
           });
           
           // Store volume data
-          if (window._ohlcVolumeData) {
-            const volumeEntry = [
-              newCandle.timestamp,
-              newCandle.open,
-              newCandle.high,
-              newCandle.low,
-              newCandle.close,
-              newCandle.volume || 0
-            ];
+          if (window._ohlcVolumeData && newCandle[5] !== undefined) {
+            const volumeEntry = [...newCandle];
             
             const lastVolume = window._ohlcVolumeData[window._ohlcVolumeData.length - 1];
-            if (lastVolume[0] === newCandle.timestamp) {
+            if (lastVolume && lastVolume[0] === newCandle[0]) {
               window._ohlcVolumeData[window._ohlcVolumeData.length - 1] = volumeEntry;
-            } else if (newCandle.timestamp > lastVolume[0]) {
+            } else if (!lastVolume || newCandle[0] > lastVolume[0]) {
               window._ohlcVolumeData.push(volumeEntry);
             }
           }
@@ -677,9 +708,9 @@ function PriceChart({ token }) {
           setData(prevData => {
             if (!prevData || prevData.length === 0) return prevData;
             
-            const timestamp = newCandle.timestamp;
-            const price = newCandle.close;
-            const volume = newCandle.volume || 0;
+            const timestamp = newCandle[0];
+            const price = newCandle[4]; // close price
+            const volume = newCandle[5] || 0;
             
             const lastPoint = prevData[prevData.length - 1];
             
@@ -694,18 +725,134 @@ function PriceChart({ token }) {
         }
         
         // Update last price and calculate change
-        if (newCandle.close) {
+        if (newCandle[4]) {
           setLastPrice(prev => {
-            const change = newCandle.close - (prev || newCandle.close);
+            const change = newCandle[4] - (prev || newCandle[4]);
             setPriceChange(change);
-            return newCandle.close;
+            return newCandle[4];
           });
         }
+  }, [chartType, range]);
+
+  // Handle completed candles
+  const handleCandleComplete = useCallback((data) => {
+    const currentInterval = RANGE_TO_INTERVAL[range] || '5m';
+    if (data.interval !== currentInterval) return;
+    
+    console.log('[WebSocket] Candle completed, fetching fresh data');
+    // Trigger a data refresh to ensure consistency
+    // This reuses the existing data fetching logic
+    const controller = new AbortController();
+    
+    async function refreshData() {
+      try {
+        const apiRange = range === '12h' ? 'SPARK' : range;
+        const [lineRes, ohlcRes] = await Promise.all([
+          axios.get(
+            `${BASE_URL}/graph-with-metrics/${token.md5}?range=${apiRange}&vs_currency=${fiatMapping[activeFiatCurrency]}${fromSearch}`,
+            { signal: controller.signal }
+          ),
+          axios.get(
+            `${BASE_URL}/graph-ohlc-with-metrics/${token.md5}?range=${apiRange}&vs_currency=${fiatMapping[activeFiatCurrency]}${fromSearch}`,
+            { signal: controller.signal }
+          )
+        ]);
+
+        // Process the fresh data
+        if (lineRes.status === 200 && lineRes.data?.history?.length > 0) {
+          const filteredItems = detectAndFilterOutliers(lineRes.data.history);
+          if (filteredItems.length > 0) {
+            setData(filteredItems);
+            setLastPrice(filteredItems[filteredItems.length - 1][1]);
+          }
+        }
+
+        if (ohlcRes.status === 200) {
+          const responseData = ohlcRes.data;
+          let items = responseData?.ohlc || responseData?.history || responseData || [];
+          
+          if (items.length > 0) {
+            const highchartsOHLCData = items
+              .filter(item => item && item.length >= 5)
+              .map(item => [item[0], item[1], item[2], item[3], item[4]]);
+            
+            const filteredOHLCItems = detectAndFilterOHLCOutliers(highchartsOHLCData);
+            setDataOHLC(filteredOHLCItems);
+            window._ohlcVolumeData = items;
+          }
+        }
+      } catch (err) {
+        console.error('[WebSocket] Error refreshing data on candle complete:', err);
+      }
+    }
+    
+    refreshData();
+    
+    return () => controller.abort();
+  }, [range, token.md5, BASE_URL, activeFiatCurrency, fromSearch, detectAndFilterOutliers, detectAndFilterOHLCOutliers]);
+
+  // Re-subscribe when range changes
+  useEffect(() => {
+    if (readyState === 1 && isStreaming && token?.md5) {
+      const interval = RANGE_TO_INTERVAL[range] || '5m';
+      const subscribeMsg = {
+        type: 'subscribe',
+        tokenMd5: token.md5,
+        intervals: [interval]
+      };
+      console.log('[WebSocket] Re-subscribing due to range change:', subscribeMsg);
+      sendMessage(JSON.stringify(subscribeMsg));
+    }
+  }, [range, readyState, isStreaming, token?.md5, activeFiatCurrency, sendMessage]);
+
+  // Handle WebSocket messages
+  useEffect(() => {
+    if (!lastMessage || !isStreaming) {
+      console.log('[WebSocket] No message or streaming disabled:', { lastMessage: !!lastMessage, isStreaming });
+      return;
+    }
+    
+    try {
+      const message = JSON.parse(lastMessage.data);
+      console.log('[WebSocket] Parsed message:', message);
+      
+      // Handle different message types according to the guide
+      switch (message.type) {
+        case 'welcome':
+          console.log('[WebSocket] Welcome message received');
+          break;
+          
+        case 'subscribed':
+          console.log('[WebSocket] Subscribed to intervals:', message.intervals);
+          break;
+          
+        case 'candleUpdate':
+          if (message.tokenMd5 === token.md5) {
+            const newCandle = message.candle;
+            console.log('[WebSocket] Candle update:', newCandle, 'Interval:', message.interval);
+            handleCandleUpdate(message);
+          }
+          break;
+          
+        case 'candleComplete':
+          if (message.tokenMd5 === token.md5) {
+            console.log('[WebSocket] Candle completed:', message);
+            // Fetch fresh data when a candle completes
+            handleCandleComplete(message);
+          }
+          break;
+          
+        case 'error':
+          console.error('[WebSocket] Error from server:', message.message);
+          break;
+          
+        default:
+          console.log('[WebSocket] Unknown message type:', message.type);
       }
     } catch (err) {
       console.error('WebSocket message parse error:', err);
     }
-  }, [lastMessage, isStreaming, chartType, token.md5]);
+  }, [lastMessage, isStreaming, token.md5, handleCandleUpdate, handleCandleComplete]);
 
   const toggleStreaming = useCallback(() => {
     setIsStreaming(prev => !prev);
@@ -1147,21 +1294,23 @@ function PriceChart({ token }) {
           lineColor: theme.palette.error.main,
           upColor: theme.palette.success.main,
           upLineColor: theme.palette.success.main,
-          lineWidth: 0,
+          lineWidth: 0.5,
           crisp: true,
           states: {
             hover: {
-              lineWidth: 0.15,
+              lineWidth: 1,
               brightness: 0.1
             }
           },
           groupPadding: 0.001,
           pointPadding: 0.001,
-          maxPointWidth: 0.3,
-          minPointLength: 0.1,
+          maxPointWidth: 3,
+          minPointLength: 1,
           dataGrouping: {
             enabled: false
-          }
+          },
+          pointWidth: 2,
+          borderWidth: 0.5
         }
       },
       rangeSelector: {
@@ -1387,7 +1536,8 @@ function PriceChart({ token }) {
           animation: false,
           groupPadding: 0.001,
           pointPadding: 0.001,
-          maxPointWidth: 0.3,
+          maxPointWidth: 3,
+          pointWidth: 2,
           tooltip: {
             pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}<br/>' +
                         'Open: {point.open}<br/>' +
@@ -1544,7 +1694,7 @@ function PriceChart({ token }) {
         ]
       }
     }),
-    [dataOHLC, mediumValue, theme, range, user, name, isMobile]
+    [dataOHLC, mediumValue, theme, range, user, name, isMobile, lastPrice, lastUpdateTime]
   );
 
   const rangeConfig = useMemo(
@@ -1854,23 +2004,37 @@ function PriceChart({ token }) {
                 )}
 
                 {chartType !== 2 && (
-                  <IconButton
-                    size="small"
-                    onClick={toggleStreaming}
-                    sx={{
-                      width: '28px',
-                      height: '28px',
-                      bgcolor: alpha(isStreaming ? theme.palette.success.main : theme.palette.grey[500], 0.1),
-                      color: isStreaming ? theme.palette.success.main : theme.palette.grey[500],
-                      transition: 'all 0.3s',
-                      '&:hover': {
-                        bgcolor: alpha(isStreaming ? theme.palette.success.main : theme.palette.grey[500], 0.15),
-                        transform: 'scale(1.05)'
-                      }
-                    }}
-                  >
-                    {isStreaming ? <StopIcon fontSize="small" /> : <PlayArrowIcon fontSize="small" />}
-                  </IconButton>
+                  <Tooltip title={`WebSocket: ${readyState === 1 ? 'Connected' : readyState === 0 ? 'Connecting' : 'Disconnected'} | Streaming: ${isStreaming ? 'ON' : 'OFF'}`}>
+                    <IconButton
+                      size="small"
+                      onClick={toggleStreaming}
+                      sx={{
+                        width: '28px',
+                        height: '28px',
+                        bgcolor: alpha(isStreaming ? theme.palette.success.main : theme.palette.grey[500], 0.1),
+                        color: isStreaming ? theme.palette.success.main : theme.palette.grey[500],
+                        transition: 'all 0.3s',
+                        position: 'relative',
+                        '&:hover': {
+                          bgcolor: alpha(isStreaming ? theme.palette.success.main : theme.palette.grey[500], 0.15),
+                          transform: 'scale(1.05)'
+                        },
+                        '&::after': readyState === 1 && isStreaming ? {
+                          content: '""',
+                          position: 'absolute',
+                          top: 4,
+                          right: 4,
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          bgcolor: theme.palette.success.main,
+                          animation: 'pulse 2s infinite'
+                        } : {}
+                      }}
+                    >
+                      {isStreaming ? <StopIcon fontSize="small" /> : <PlayArrowIcon fontSize="small" />}
+                    </IconButton>
+                  </Tooltip>
                 )}
               </Box>
 
@@ -2155,8 +2319,9 @@ function PriceChart({ token }) {
                     options={options2}
                     allowChartUpdate={true}
                     updateArgs={[true, true, true]}
+                    immutable={false}
                     constructorType={'chart'}
-                    key={`candlestick-chart-${range}-${activeFiatCurrency}`}
+                    key={`candlestick-chart-${range}-${activeFiatCurrency}-${dataOHLC?.length || 0}`}
                   />
                 </Stack>
               </Fade>

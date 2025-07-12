@@ -92,6 +92,7 @@
     "swr": "^2.3.2",
     "use-sound": "^4.0.3",
     "verify-xrpl-signature": "^4.1.5",
+    "ws": "^8.18.3",
     "xrpl": "^3.1.0"
   },
   "scripts": {
