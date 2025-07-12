@@ -776,7 +776,7 @@ function PriceChart({ token }) {
       chart: {
         backgroundColor: 'transparent',
         type: 'areaspline',
-        height: isMobile ? '340px' : '440px',
+        height: isMobile ? '400px' : '550px',
         events: {
           render: function () {
             const chart = this;
@@ -1209,7 +1209,7 @@ function PriceChart({ token }) {
       },
       chart: {
         backgroundColor: 'transparent',
-        height: isMobile ? '340px' : '440px',
+        height: isMobile ? '400px' : '550px',
         alignTicks: false,
         spacingTop: 0,
         spacingBottom: 0,
@@ -2083,7 +2083,7 @@ function PriceChart({ token }) {
 
       <ChartContainer>
         {isLoading ? (
-          <Box sx={{ height: isMobile ? '300px' : '360px', p: isMobile ? 0.25 : 0.5 }}>
+          <Box sx={{ height: isMobile ? '360px' : '450px', p: isMobile ? 0.25 : 0.5 }}>
             <Fade in={isLoading}>
               <Box>
                 <LoadingSkeleton sx={{ height: isMobile ? '30px' : '40px', mb: isMobile ? 1 : 1.5 }} />
@@ -2115,7 +2115,7 @@ function PriceChart({ token }) {
               ) : (
                 <Box
                   sx={{
-                    height: isMobile ? '300px' : '380px',
+                    height: isMobile ? '360px' : '450px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
