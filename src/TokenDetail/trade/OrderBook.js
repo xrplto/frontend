@@ -50,13 +50,13 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: theme.spacing(0.75, 1),
+  padding: theme.spacing(0.25, 0.5),
   background: 'transparent',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.5, 0.75),
+    padding: theme.spacing(0.25, 0.4),
     '& .MuiTypography-root': {
-      fontSize: '0.7rem'
+      fontSize: '0.65rem'
     }
   }
 }));
@@ -64,24 +64,24 @@ const SectionHeader = styled(Box)(({ theme }) => ({
 const ModernTable = styled(Table)(({ theme }) => ({
   [`& .${tableCellClasses.root}`]: {
     borderBottom: 'none',
-    padding: theme.spacing(0.25, 0.5),
-    fontSize: '0.7rem',
-    lineHeight: 1.1,
+    padding: '2px 4px',
+    fontSize: '0.65rem',
+    lineHeight: 1,
     [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing(0.2, 0.4),
-      fontSize: '0.65rem'
+      padding: '1px 3px',
+      fontSize: '0.6rem'
     }
   },
   [`& .${tableCellClasses.head}`]: {
     backgroundColor: 'transparent',
     fontWeight: 600,
-    fontSize: '0.65rem',
-    color: alpha(theme.palette.text.secondary, 0.7),
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    padding: theme.spacing(0.5, 0.5),
+    fontSize: '0.6rem',
+    color: alpha(theme.palette.text.secondary, 0.6),
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+    padding: '3px 4px',
     [theme.breakpoints.down('sm')]: {
-      fontSize: '0.6rem',
-      padding: theme.spacing(0.4, 0.4)
+      fontSize: '0.55rem',
+      padding: '2px 3px'
     }
   }
 }));
@@ -119,12 +119,12 @@ const OrderRow = styled(TableRow)(({ theme, ordertype, isselected, isnew, depth 
 });
 
 const OrderCountChip = styled(Chip)(({ theme }) => ({
-  height: '16px',
-  fontSize: '0.6rem',
+  height: '14px',
+  fontSize: '0.55rem',
   fontWeight: 600,
-  borderRadius: '8px',
+  borderRadius: '6px',
   '& .MuiChip-label': {
-    padding: theme.spacing(0, 0.4)
+    padding: '0 3px'
   }
 }));
 
@@ -134,9 +134,9 @@ const CompactTooltip = styled(Tooltip)(({ theme }) => ({
     color: theme.palette.text.primary,
     border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
     borderRadius: '4px',
-    fontSize: '0.7rem',
-    padding: theme.spacing(1),
-    boxShadow: theme.shadows[2]
+    fontSize: '0.6rem',
+    padding: '4px 6px',
+    boxShadow: theme.shadows[1]
   }
 }));
 
@@ -332,7 +332,7 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
   return (
     <OrderBookContainer>
       {/* Spread Component */}
-      <Spread bids={bids} asks={asks} sx={{ p: { xs: 1, sm: 1.5 }, pb: 0 }} />
+      <Spread bids={bids} asks={asks} sx={{ p: { xs: 0.5, sm: 0.75 }, pb: 0 }} />
 
       <Grid container spacing={0}>
         {/* Buy Orders */}
@@ -341,10 +341,10 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
           borderBottom: { xs: `1px solid ${alpha(theme.palette.divider, 0.1)}`, md: 'none' }
         }}>
           <SectionHeader>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
               <TrendingUpIcon
                 sx={{
-                  fontSize: '0.75rem',
+                  fontSize: '0.65rem',
                   color: theme.palette.success.main
                 }}
               />
@@ -353,16 +353,16 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
                 sx={{
                   color: theme.palette.success.main,
                   fontWeight: 600,
-                  fontSize: '0.75rem'
+                  fontSize: '0.65rem'
                 }}
               >
-                Buy Orders
+                Buy
               </Typography>
               <OrderCountChip
                 label={bids.length}
                 size="small"
                 sx={{
-                  backgroundColor: alpha(theme.palette.success.main, 0.1),
+                  backgroundColor: alpha(theme.palette.success.main, 0.08),
                   color: theme.palette.success.main
                 }}
               />
@@ -384,10 +384,10 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
         {/* Sell Orders */}
         <Grid item xs={12} md={6}>
           <SectionHeader>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
               <TrendingDownIcon
                 sx={{
-                  fontSize: '0.75rem',
+                  fontSize: '0.65rem',
                   color: theme.palette.error.main
                 }}
               />
@@ -396,16 +396,16 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick }) 
                 sx={{
                   color: theme.palette.error.main,
                   fontWeight: 600,
-                  fontSize: '0.75rem'
+                  fontSize: '0.65rem'
                 }}
               >
-                Sell Orders
+                Sell
               </Typography>
               <OrderCountChip
                 label={asks.length}
                 size="small"
                 sx={{
-                  backgroundColor: alpha(theme.palette.error.main, 0.1),
+                  backgroundColor: alpha(theme.palette.error.main, 0.08),
                   color: theme.palette.error.main
                 }}
               />
