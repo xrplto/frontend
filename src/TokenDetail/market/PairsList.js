@@ -718,36 +718,8 @@ export default function PairsList({ token, pairs }) {
                     </Stack>
                   </Box>
 
-                  {/* Actions */}
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Tooltip title="Trade this pair" arrow>
-                      <IconButton
-                        size="small"
-                        component={Link}
-                        href={xrpltoDexURL}
-                        sx={{
-                          color: `${theme.palette.primary.main} !important`,
-                          padding: '4px',
-                          '&:hover': {
-                            color: `${theme.palette.primary.dark} !important`,
-                            backgroundColor:
-                              theme.palette.mode === 'dark'
-                                ? 'rgba(255, 255, 255, 0.08)'
-                                : 'rgba(0, 0, 0, 0.04)',
-                            transform: 'scale(1.1)'
-                          },
-                          '& .MuiSvgIcon-root': {
-                            color: `${theme.palette.primary.main} !important`
-                          },
-                          '&:hover .MuiSvgIcon-root': {
-                            color: `${theme.palette.primary.dark} !important`
-                          }
-                        }}
-                      >
-                        <OpenInNewIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
+                  {/* Actions - Empty for now */}
+                  <Box sx={{ display: { xs: 'none', md: 'block' } }} />
                 </Box>
               </CardContent>
             </PairCard>
