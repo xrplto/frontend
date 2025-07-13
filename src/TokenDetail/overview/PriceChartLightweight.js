@@ -12,6 +12,7 @@ const PriceChartLightweight = memo(({ token }) => {
   const [loading, setLoading] = useState(true);
   const [hasInitialData, setHasInitialData] = useState(false);
   const [mousePos, setMousePos] = useState(null);
+  const [isLive, setIsLive] = useState(false);
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
   
@@ -53,7 +54,16 @@ const PriceChartLightweight = memo(({ token }) => {
           setHasInitialData(true);
           setLoading(false);
         } else if (chartType === 1 && response.data?.ohlc && response.data.ohlc.length > 0) {
-          setData(response.data.ohlc.slice(-200)); // Limit to 200 points
+          // Normalize OHLC data to ensure all values are numbers
+          const normalizedOhlc = response.data.ohlc.map(candle => [
+            candle[0], // timestamp
+            parseFloat(candle[1]), // open
+            parseFloat(candle[2]), // high
+            parseFloat(candle[3]), // low
+            parseFloat(candle[4]), // close
+            parseFloat(candle[5]) || 0 // volume
+          ]);
+          setData(normalizedOhlc.slice(-200)); // Limit to 200 points
           setHasInitialData(true);
           setLoading(false);
         } else if (response.data?.history && response.data.history.length > 0) {
@@ -100,13 +110,14 @@ const PriceChartLightweight = memo(({ token }) => {
           tokenMd5: token.md5,
           intervals
         }));
+        setIsLive(true);
       };
       
       ws.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
           if (message.type === 'candleUpdate' && data && data.length > 0) {
-            const { candle } = message;
+            const { candle, interval } = message;
             
             setData(prevData => {
               if (!prevData || prevData.length === 0) return prevData;
@@ -116,25 +127,45 @@ const PriceChartLightweight = memo(({ token }) => {
               
               // For candlestick chart
               if (chartType === 1) {
-                if (lastItem[0] === candle[0]) {
+                // Ensure all candle values are numbers
+                const normalizedCandle = [
+                  candle[0], // timestamp
+                  parseFloat(candle[1]), // open
+                  parseFloat(candle[2]), // high
+                  parseFloat(candle[3]), // low
+                  parseFloat(candle[4]), // close
+                  parseFloat(candle[5]) || 0 // volume
+                ];
+                
+                // Find if we need to update an existing candle or add a new one
+                const existingIndex = newData.findIndex(item => item[0] === normalizedCandle[0]);
+                
+                if (existingIndex !== -1) {
                   // Update existing candle
-                  newData[newData.length - 1] = candle;
-                } else if (candle[0] > lastItem[0]) {
+                  newData[existingIndex] = normalizedCandle;
+                } else if (normalizedCandle[0] > lastItem[0]) {
                   // Add new candle
-                  newData.push(candle);
+                  newData.push(normalizedCandle);
                   if (newData.length > 200) newData.shift();
                 }
               } 
               // For line chart
               else if (chartType === 0) {
                 // Convert OHLC to line format [timestamp, price, volume]
-                const linePoint = [candle[0], candle[4], candle[5]];
+                const linePoint = [candle[0], candle[4], parseFloat(candle[5]) || 0];
                 
-                if (lastItem[0] === linePoint[0]) {
-                  // Update existing point
-                  newData[newData.length - 1] = linePoint;
+                // For line charts, we might need to handle timestamp alignment
+                // Find the closest existing timestamp within a reasonable range (e.g., 1 minute)
+                const timestampTolerance = 60000; // 1 minute in milliseconds
+                const existingIndex = newData.findIndex(item => 
+                  Math.abs(item[0] - linePoint[0]) < timestampTolerance
+                );
+                
+                if (existingIndex !== -1) {
+                  // Update existing point with the latest price
+                  newData[existingIndex] = [newData[existingIndex][0], linePoint[1], linePoint[2]];
                 } else if (linePoint[0] > lastItem[0]) {
-                  // Add new point
+                  // Add new point only if it's genuinely newer
                   newData.push(linePoint);
                   if (newData.length > 200) newData.shift();
                 }
@@ -153,6 +184,7 @@ const PriceChartLightweight = memo(({ token }) => {
       };
       
       ws.onclose = () => {
+        setIsLive(false);
         // Reconnect after 5 seconds
         reconnectTimeoutRef.current = setTimeout(connectWS, 5000);
       };
@@ -495,9 +527,37 @@ const PriceChartLightweight = memo(({ token }) => {
     <Paper elevation={0} sx={{ p: 2 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
-        <Typography variant="h6" sx={{ fontSize: '1rem' }}>
-          {token.name} {chartType === 2 ? 'Holders' : 'Price'}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="h6" sx={{ fontSize: '1rem' }}>
+            {token.name} {chartType === 2 ? 'Holders' : 'Price'}
+          </Typography>
+          {isLive && chartType !== 2 && (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                px: 1,
+                py: 0.25,
+                bgcolor: 'success.main',
+                borderRadius: 1,
+                fontSize: '0.7rem',
+                color: 'white'
+              }}
+            >
+              <Box
+                sx={{
+                  width: 6,
+                  height: 6,
+                  bgcolor: 'white',
+                  borderRadius: '50%',
+                  animation: 'pulse 2s ease-in-out infinite'
+                }}
+              />
+              LIVE
+            </Box>
+          )}
+        </Box>
         
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           <ButtonGroup size="small">

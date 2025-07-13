@@ -1,14 +1,10 @@
 import dynamic from 'next/dynamic';
 import { Paper, Box, useTheme, Typography } from '@mui/material';
 
-// Lightweight chart with SSR disabled
-const PriceChartLightweight = dynamic(
-  () => import('./PriceChartLightweight'),
-  { 
-    ssr: false,
-    loading: () => {
-      const theme = useTheme();
-      return (
+// Loading component - must be a proper React component
+const LoadingComponent = () => {
+  const theme = useTheme();
+  return (
         <Paper elevation={0} sx={{ p: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ width: 120, height: 24, bgcolor: 'action.hover', borderRadius: 1 }} />
@@ -36,7 +32,7 @@ const PriceChartLightweight = dynamic(
               }}>
                 {[0.3, 0.6, 0.4, 0.8, 0.5, 0.9, 0.7, 0.4, 0.6, 0.5].map((height, i) => (
                   <Box
-                    key={i}
+                    key={`bar-${i}`}
                     sx={{
                       width: 6,
                       height: `${height * 100}%`,
@@ -72,8 +68,15 @@ const PriceChartLightweight = dynamic(
             </Box>
           </Box>
         </Paper>
-      );
-    }
+  );
+};
+
+// Lightweight chart with SSR disabled
+const PriceChartLightweight = dynamic(
+  () => import('./PriceChartLightweight'),
+  { 
+    ssr: false,
+    loading: LoadingComponent
   }
 );
 
