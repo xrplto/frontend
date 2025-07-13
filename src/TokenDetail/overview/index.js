@@ -19,7 +19,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Components
-import PriceChart from './PriceChart';
+import PriceChart from './PriceChartLightweightSSR';
 import PriceStatistics from './PriceStatistics';
 import Description from './Description';
 import TrendingTokens from './TrendingTokens';

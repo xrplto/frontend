@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect, useContext, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useContext, useMemo, useCallback, useRef, memo } from 'react';
 import csvDownload from 'json-to-csv-export';
 import createMedianFilter from 'moving-median';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -24,7 +24,6 @@ import {
   Box,
   CircularProgress,
   Skeleton,
-  Fade,
   Chip,
   Tooltip,
   useMediaQuery
@@ -38,21 +37,21 @@ import { AppContext } from 'src/AppContext';
 import { useRouter } from 'next/router';
 import { currencySymbols } from 'src/utils/constants';
 
-// import Highcharts from 'highcharts'
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
-import accessibility from 'highcharts/modules/accessibility';
 import { format } from 'date-fns';
 import { fCurrency5, fVolume } from 'src/utils/formatNumber';
+// Cache removed per user request
 
 // Components
 import RichListChart from '../richlist/RichListChart';
 // ----------------------------------------------------------------------
 
-// Initialize the accessibility module
-if (typeof Highcharts === 'object') {
-  accessibility(Highcharts);
-}
+// Accessibility module can be enabled if needed
+// import accessibility from 'highcharts/modules/accessibility';
+// if (typeof Highcharts === 'object') {
+//   accessibility(Highcharts);
+// }
 
 // API Response Structure:
 // Line Chart: [timestamp, price, volume]
@@ -118,14 +117,7 @@ const RANGE_TO_INTERVAL = {
   'ALL': '1w'
 };
 
-const shimmer = keyframes`
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: calc(200px + 100%) 0;
-  }
-`;
+// Shimmer animation removed for performance
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   [`& .${toggleButtonGroupClasses.grouped}`]: {
@@ -144,81 +136,30 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
 
 const EnhancedToggleButton = styled(ToggleButton)(({ theme }) => ({
   position: 'relative',
-  overflow: 'hidden',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   background: theme.palette.mode === 'dark' 
-    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.default, 0.9)} 100%)`
-    : `linear-gradient(135deg, ${alpha(theme.palette.grey[100], 0.8)} 0%, ${alpha(theme.palette.grey[200], 0.9)} 100%)`,
+    ? alpha(theme.palette.background.paper, 0.8)
+    : alpha(theme.palette.grey[100], 0.8),
   color: theme.palette.text.primary,
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: '-100%',
-    width: '100%',
-    height: '100%',
-    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.3)}, transparent)`,
-    transition: 'left 0.6s'
-  },
-  '&:hover::before': {
-    left: '100%'
+  transition: 'none',
+  '&.Mui-selected': {
+    background: alpha(theme.palette.primary.main, 0.2),
+    color: theme.palette.primary.main,
+    fontWeight: 700
   },
   '&:hover': {
-    transform: 'translateY(-1px) scale(1.02)',
-    boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-    filter: 'brightness(1.1)'
-  },
-  '&.Mui-selected': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.info.main, 0.1)} 100%)`,
-    color: theme.palette.primary.main,
-    fontWeight: 700,
-    boxShadow: `0 0 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-    textShadow: theme.palette.mode === 'dark' ? `0 0 10px ${alpha(theme.palette.primary.main, 0.6)}` : 'none',
-    '&:hover': {
-      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.3)} 0%, ${alpha(theme.palette.info.main, 0.15)} 100%)`
-    }
+    background: theme.palette.mode === 'dark' 
+      ? alpha(theme.palette.background.paper, 0.9)
+      : alpha(theme.palette.grey[200], 0.9)
   }
 }));
 
-const ChartContainer = styled(Box)(({ theme }) => ({
+const ChartContainer = styled(Box)(() => ({
   position: 'relative',
-  borderRadius: '16px',
-  overflow: 'hidden',
-  background: 'transparent',
-  backdropFilter: 'none',
-  boxShadow: theme.palette.mode === 'dark'
-    ? `0 0 40px ${alpha(theme.palette.primary.main, 0.15)}, 0 0 80px ${alpha(theme.palette.info.main, 0.1)}`
-    : `0 4px 24px ${alpha(theme.palette.grey[400], 0.2)}, 0 0 40px ${alpha(theme.palette.primary.light, 0.1)}`,
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '2px',
-    background: theme.palette.mode === 'dark'
-      ? `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.8)}, ${alpha(theme.palette.info.main, 0.6)}, transparent)`
-      : `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.6)}, transparent)`
-  },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '1px',
-    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.divider, 0.4)}, transparent)`
-  }
+  overflow: 'hidden'
 }));
 
 const LoadingSkeleton = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(90deg, ${alpha(theme.palette.divider, 0.1)} 25%, ${alpha(
-    theme.palette.divider,
-    0.2
-  )} 50%, ${alpha(theme.palette.divider, 0.1)} 75%)`,
-  backgroundSize: '200px 100%',
-  animation: `${shimmer} 1.5s infinite linear`,
+  background: alpha(theme.palette.divider, 0.1),
   borderRadius: theme.shape.borderRadius
 }));
 
@@ -229,7 +170,7 @@ function PriceChart({ token }) {
 
   const [data, setData] = useState([]);
   const [dataOHLC, setDataOHLC] = useState([]);
-  const [chartType, setChartType] = useState(0);
+  const [chartType, setChartType] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [range, setRange] = useState('12h');
   const [lastPrice, setLastPrice] = useState(null);
@@ -342,7 +283,11 @@ function PriceChart({ token }) {
     const controller = new AbortController();
 
     async function getGraph() {
-      setIsLoading(true);
+      // Skip loading state if switching between similar ranges
+      const skipLoadingState = data.length > 0 || dataOHLC.length > 0;
+      if (!skipLoadingState) {
+        setIsLoading(true);
+      }
 
       try {
         const apiRange = range === '12h' ? 'SPARK' : range;
@@ -482,7 +427,7 @@ function PriceChart({ token }) {
     
     lastExchRef.current = token.exch;
     
-    // Throttle updates to once per second to reduce CPU usage
+    // Reduce throttle delay for more responsive updates
     if (throttleRef.current) clearTimeout(throttleRef.current);
     
     throttleRef.current = setTimeout(() => {
@@ -494,7 +439,7 @@ function PriceChart({ token }) {
         setPriceChange(change);
         return newPrice;
       });
-    }, 1000);
+    }, 100);
     
     return () => {
       if (throttleRef.current) clearTimeout(throttleRef.current);
@@ -601,11 +546,10 @@ function PriceChart({ token }) {
 
   // WebSocket configuration
   const socketUrl = isStreaming && token?.md5 ? `wss://api.xrpl.to/ws/ohlc` : null;
-  console.log('[WebSocket] Socket URL:', socketUrl, 'Streaming:', isStreaming, 'Token MD5:', token?.md5);
+  // WebSocket URL configuration
   
   const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl, {
     onOpen: (event) => {
-      console.log('[WebSocket] Connected, event:', event);
       // Wait a bit for connection to stabilize before subscribing
       setTimeout(() => {
         if (token?.md5 && isStreaming) {
@@ -615,20 +559,13 @@ function PriceChart({ token }) {
             tokenMd5: token.md5,
             intervals: [interval]
           };
-          console.log('[WebSocket] Sending subscribe after delay:', subscribeMsg);
           sendMessage(JSON.stringify(subscribeMsg));
         }
       }, 100);
     },
-    onMessage: (event) => {
-      console.log('[WebSocket] Raw message received:', event.data);
-    },
-    onError: (event) => {
-      console.error('[WebSocket] Error:', event);
-    },
-    onClose: (event) => {
-      console.log('[WebSocket] Closed:', event.code, event.reason);
-    },
+    onMessage: () => {},
+    onError: () => {},
+    onClose: () => {},
     shouldReconnect: () => isStreaming,
     reconnectInterval: 3000,
     reconnectAttempts: 10,
@@ -639,56 +576,41 @@ function PriceChart({ token }) {
   // Handle candle updates
   const handleCandleUpdate = useCallback((data) => {
     const currentInterval = RANGE_TO_INTERVAL[range] || '5m';
-    if (data.interval !== currentInterval) {
-      console.log('[WebSocket] Ignoring update for different interval:', data.interval, 'current:', currentInterval);
-      return;
-    }
+    if (data.interval !== currentInterval) return;
     
     const newCandle = data.candle;
-    console.log('[WebSocket] Processing candle update for chart type:', chartType);
+    if (!newCandle) return;
     
-    // Update OHLC data
-    if (chartType === 1 && newCandle) {
-      console.log('[WebSocket] Updating OHLC data');
+    // Update OHLC data more efficiently
+    if (chartType === 1) {
       setDataOHLC(prevData => {
-            if (!prevData || prevData.length === 0) return prevData;
-            
-            const lastCandle = prevData[prevData.length - 1];
-            // Candle format from API: [timestamp, open, high, low, close, volume]
-            const candleData = [
-              newCandle[0], // timestamp
-              newCandle[1], // open
-              newCandle[2], // high
-              newCandle[3], // low
-              newCandle[4]  // close
-            ];
-            
-            // Log the update for debugging
-            console.log('[WebSocket] Candle data:', {
-              timestamp: new Date(newCandle[0]).toLocaleTimeString(),
-              open: newCandle[1],
-              high: newCandle[2],
-              low: newCandle[3],
-              close: newCandle[4],
-              volume: newCandle[5]
-            });
-            
-            // Update existing candle or add new one
-            if (lastCandle[0] === newCandle[0]) {
-              console.log('[WebSocket] Updating existing candle at timestamp:', newCandle[0]);
-              const updated = [...prevData.slice(0, -1), candleData];
-              console.log('[WebSocket] Updated OHLC data length:', updated.length);
-              setLastUpdateTime(Date.now()); // Force re-render
-              return updated;
-            } else if (newCandle[0] > lastCandle[0]) {
-              console.log('[WebSocket] Adding new candle at timestamp:', newCandle[0]);
-              const updated = [...prevData, candleData];
-              console.log('[WebSocket] Updated OHLC data length:', updated.length);
-              return updated;
-            }
-            console.log('[WebSocket] Timestamp not newer, skipping update');
-            return prevData;
-          });
+        if (!prevData || prevData.length === 0) return prevData;
+        
+        const lastIndex = prevData.length - 1;
+        const lastCandle = prevData[lastIndex];
+        const candleData = [
+          newCandle[0], // timestamp
+          newCandle[1], // open
+          newCandle[2], // high
+          newCandle[3], // low
+          newCandle[4]  // close
+        ];
+        
+        // Update existing candle or add new one
+        if (lastCandle[0] === newCandle[0]) {
+          // Use slice to avoid mutation and improve performance
+          const updated = prevData.slice();
+          updated[lastIndex] = candleData;
+          return updated;
+        } else if (newCandle[0] > lastCandle[0]) {
+          // Limit data points to prevent memory issues
+          if (prevData.length > 5000) {
+            return [...prevData.slice(-4999), candleData];
+          }
+          return [...prevData, candleData];
+        }
+        return prevData;
+      });
           
           // Store volume data
           if (window._ohlcVolumeData && newCandle[5] !== undefined) {
@@ -808,46 +730,24 @@ function PriceChart({ token }) {
   // Handle WebSocket messages
   useEffect(() => {
     if (!lastMessage || !isStreaming) {
-      console.log('[WebSocket] No message or streaming disabled:', { lastMessage: !!lastMessage, isStreaming });
       return;
     }
     
     try {
       const message = JSON.parse(lastMessage.data);
-      console.log('[WebSocket] Parsed message:', message);
-      
-      // Handle different message types according to the guide
+      // Handle different message types
       switch (message.type) {
-        case 'welcome':
-          console.log('[WebSocket] Welcome message received');
-          break;
-          
-        case 'subscribed':
-          console.log('[WebSocket] Subscribed to intervals:', message.intervals);
-          break;
-          
         case 'candleUpdate':
           if (message.tokenMd5 === token.md5) {
-            const newCandle = message.candle;
-            console.log('[WebSocket] Candle update:', newCandle, 'Interval:', message.interval);
             handleCandleUpdate(message);
           }
           break;
           
         case 'candleComplete':
           if (message.tokenMd5 === token.md5) {
-            console.log('[WebSocket] Candle completed:', message);
-            // Fetch fresh data when a candle completes
             handleCandleComplete(message);
           }
           break;
-          
-        case 'error':
-          console.error('[WebSocket] Error from server:', message.message);
-          break;
-          
-        default:
-          console.log('[WebSocket] Unknown message type:', message.type);
       }
     } catch (err) {
       console.error('WebSocket message parse error:', err);
@@ -952,18 +852,18 @@ function PriceChart({ token }) {
         },
         zoomType: 'xy',
         marginBottom: isMobile ? 30 : 40,
-        animation: {
-          duration: 1200,
+        animation: isStreaming ? false : {
+          duration: 600,
           easing: 'easeOutCubic'
         },
         style: {
           fontFamily: theme.typography.fontFamily
         },
         // Performance optimizations
-        turboThreshold: 1000,
-        boostThreshold: 500,
+        turboThreshold: 5000,
+        boostThreshold: 1,
         plotBorderWidth: 0,
-        reflow: true
+        reflow: false
       },
       legend: { enabled: false },
       credits: {
@@ -1218,43 +1118,16 @@ function PriceChart({ token }) {
           fontWeight: 500
         },
         formatter: function () {
-          const formatString =
-            range === '12h'
-              ? 'MMM dd, yyyy HH:mm:ss'
-              : range === '7D'
-                ? 'MMM dd, yyyy HH:mm'
-                : range === '1M'
-                  ? 'MMM dd, yyyy HH:mm'
-                  : 'MMM dd, yyyy HH:mm';
-          const volumeData = data.find((d) => d[0] === this.x)?.[2] || 0;
-
-          return `<div style="padding: 8px;">
-            <div style="font-weight: 600; color: ${
-              theme.palette.primary.main
-            }; margin-bottom: 4px;">
-              ${format(this.x, formatString)}
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
-              <div style="width: 8px; height: 8px; border-radius: 50%; background: ${
-                theme.palette.success.main
-              };"></div>
-              <span>Price: <strong>${fCurrency5(this.y)}</strong></span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 10px; color: ${theme.palette.text.secondary};">
-              <span>Volume: <strong>${fVolume(volumeData)}</strong></span>
-            </div>
-            ${
-              priceChange !== 0
-                ? `<div style="font-size: 10px; color: ${priceChange > 0 ? theme.palette.success.main : theme.palette.error.main};">
-              Change: <strong>${priceChange > 0 ? '+' : ''}${fCurrency5(priceChange)}</strong>
-            </div>`
-                : ''
-            }
-          </div>`;
+          const formatString = range === '12h' ? 'HH:mm:ss' : 'MMM dd HH:mm';
+          return `<b>${format(this.x, formatString)}</b><br/>
+            Price: <b>${fCurrency5(this.y)}</b><br/>
+            ${priceChange !== 0 ? `Change: <b style="color: ${priceChange > 0 ? theme.palette.success.main : theme.palette.error.main}">${priceChange > 0 ? '+' : ''}${fCurrency5(priceChange)}</b>` : ''}`;
         },
         shared: false,
         useHTML: true,
-        hideDelay: 100
+        hideDelay: 100,
+        animation: false,
+        outside: true
       },
       responsive: {
         rules: [
@@ -1285,7 +1158,7 @@ function PriceChart({ token }) {
         ]
       }
     }),
-    [data, mediumValue, theme, range, user, name, priceSeriesData, volumeSeriesData, isMobile, activeFiatCurrency, priceChange, lastPrice]
+    [data, mediumValue, theme, range, user, name, priceSeriesData, volumeSeriesData, isMobile, activeFiatCurrency, priceChange, lastPrice, isStreaming]
   );
 
   const options2 = useMemo(
@@ -1311,6 +1184,8 @@ function PriceChart({ token }) {
           dataGrouping: {
             enabled: false
           },
+          turboThreshold: 10000,
+          boostThreshold: 1,
           pointWidth: 0.3,
           borderWidth: 0.1
         }
@@ -1392,18 +1267,18 @@ function PriceChart({ token }) {
               .add();
           }
         },
-        animation: {
-          duration: 1200,
+        animation: isStreaming ? false : {
+          duration: 600,
           easing: 'easeOutCubic'
         },
         style: {
           fontFamily: theme.typography.fontFamily
         },
         // Performance optimizations
-        turboThreshold: 1000,
-        boostThreshold: 500,
+        turboThreshold: 5000,
+        boostThreshold: 1,
         plotBorderWidth: 0,
-        reflow: true,
+        reflow: false,
         zoomType: 'x',
         panning: {
           enabled: true,
@@ -1538,6 +1413,8 @@ function PriceChart({ token }) {
           name: `${user} ${name}`,
           data: dataOHLC,
           animation: false,
+          turboThreshold: 10000,
+          boostThreshold: 1,
           groupPadding: 0.1,
           pointPadding: 0.05,
           maxPointWidth: 0.4,
@@ -1667,7 +1544,9 @@ function PriceChart({ token }) {
           </div>`;
         },
         useHTML: true,
-        hideDelay: 100
+        hideDelay: 100,
+        animation: false,
+        outside: true
       },
       responsive: {
         rules: [
@@ -1698,7 +1577,7 @@ function PriceChart({ token }) {
         ]
       }
     }),
-    [dataOHLC, mediumValue, theme, range, user, name, isMobile, lastPrice, lastUpdateTime]
+    [dataOHLC, mediumValue, theme, range, user, name, isMobile, lastPrice, lastUpdateTime, isStreaming]
   );
 
   const rangeConfig = useMemo(
@@ -1799,18 +1678,6 @@ function PriceChart({ token }) {
                       sx={{ m: 0 }}
                     >
                       <EnhancedToggleButton
-                        value={0}
-                        sx={{
-                          p: 0.25,
-                          minWidth: '24px',
-                          height: '24px',
-                          borderRadius: 0.75
-                        }}
-                        aria-label="line chart"
-                      >
-                        <ShowChartIcon sx={{ fontSize: '16px' }} />
-                      </EnhancedToggleButton>
-                      <EnhancedToggleButton
                         value={1}
                         sx={{
                           p: 0.25,
@@ -1821,6 +1688,18 @@ function PriceChart({ token }) {
                         aria-label="candlestick chart"
                       >
                         <CandlestickChartIcon sx={{ fontSize: '16px' }} />
+                      </EnhancedToggleButton>
+                      <EnhancedToggleButton
+                        value={0}
+                        sx={{
+                          p: 0.25,
+                          minWidth: '24px',
+                          height: '24px',
+                          borderRadius: 0.75
+                        }}
+                        aria-label="line chart"
+                      >
+                        <ShowChartIcon sx={{ fontSize: '16px' }} />
                       </EnhancedToggleButton>
                       <EnhancedToggleButton
                         value={2}
@@ -2085,18 +1964,6 @@ function PriceChart({ token }) {
                     sx={{ m: 0 }}
                   >
                     <EnhancedToggleButton
-                      value={0}
-                      sx={{
-                        p: 0.5,
-                        minWidth: '28px',
-                        height: '28px',
-                        borderRadius: 1
-                      }}
-                      aria-label="line chart"
-                    >
-                      <ShowChartIcon fontSize="small" />
-                    </EnhancedToggleButton>
-                    <EnhancedToggleButton
                       value={1}
                       sx={{
                         p: 0.5,
@@ -2107,6 +1974,18 @@ function PriceChart({ token }) {
                       aria-label="candlestick chart"
                     >
                       <CandlestickChartIcon fontSize="small" />
+                    </EnhancedToggleButton>
+                    <EnhancedToggleButton
+                      value={0}
+                      sx={{
+                        p: 0.5,
+                        minWidth: '28px',
+                        height: '28px',
+                        borderRadius: 1
+                      }}
+                      aria-label="line chart"
+                    >
+                      <ShowChartIcon fontSize="small" />
                     </EnhancedToggleButton>
                     <EnhancedToggleButton
                       value={2}
@@ -2252,8 +2131,7 @@ function PriceChart({ token }) {
       <ChartContainer>
         {isLoading ? (
           <Box sx={{ height: isMobile ? '360px' : '450px', p: isMobile ? 0.25 : 0.5 }}>
-            <Fade in={isLoading}>
-              <Box>
+            <Box>
                 <LoadingSkeleton sx={{ height: isMobile ? '30px' : '40px', mb: isMobile ? 1 : 1.5 }} />
                 <LoadingSkeleton sx={{ height: isMobile ? '200px' : '240px', mb: isMobile ? 1 : 1.5 }} />
                 <Box sx={{ display: 'flex', gap: 1 }}>
@@ -2262,24 +2140,22 @@ function PriceChart({ token }) {
                   <LoadingSkeleton sx={{ height: isMobile ? '24px' : '30px', flex: 1 }} />
                 </Box>
               </Box>
-            </Fade>
           </Box>
         ) : (
           <>
             {chartType === 0 ? (
               data?.length > 0 ? (
-                <Fade in={!isLoading}>
-                  <Stack>
+                <Stack>
                     <HighchartsReact
                       highcharts={Highcharts}
                       options={options1}
                       allowChartUpdate={true}
-                      updateArgs={[true, true, true]}
+                      updateArgs={[true, true, false]}
                       constructorType={'chart'}
                       key={`line-chart-${range}-${activeFiatCurrency}`}
+                      immutable={false}
                     />
                   </Stack>
-                </Fade>
               ) : (
                 <Box
                   sx={{
@@ -2316,19 +2192,17 @@ function PriceChart({ token }) {
               )
             ) : chartType === 1 ? (
               dataOHLC?.length > 0 ? (
-              <Fade in={!isLoading}>
-                <Stack>
+              <Stack>
                   <HighchartsReact
                     highcharts={Highcharts}
                     options={options2}
                     allowChartUpdate={true}
-                    updateArgs={[true, true, true]}
+                    updateArgs={[true, true, false]}
                     immutable={false}
                     constructorType={'chart'}
                     key={`candlestick-chart-${range}-${activeFiatCurrency}-${dataOHLC?.length || 0}`}
                   />
                 </Stack>
-              </Fade>
             ) : (
               <Box
                 sx={{
@@ -2367,11 +2241,9 @@ function PriceChart({ token }) {
             )
             ) : (
               // chartType === 2 - RichListChart
-              <Fade in={!isLoading}>
-                <Box sx={{ p: 0 }}>
+              <Box sx={{ p: 0 }}>
                   <RichListChart token={token} />
                 </Box>
-              </Fade>
             )}
           </>
         )}
@@ -2380,4 +2252,13 @@ function PriceChart({ token }) {
   );
 }
 
-export default PriceChart;
+export default memo(PriceChart, (prevProps, nextProps) => {
+  // Custom comparison to prevent unnecessary re-renders
+  return (
+    prevProps.token.md5 === nextProps.token.md5 &&
+    prevProps.token.exch === nextProps.token.exch &&
+    prevProps.range === nextProps.range &&
+    prevProps.fromSearch === nextProps.fromSearch &&
+    prevProps.activeFiatCurrency === nextProps.activeFiatCurrency
+  );
+});

@@ -119,7 +119,15 @@ export function fNumberWithSuffix(number) {
 }
 
 export function fVolume(vol) {
-  let volume = new Decimal(vol).toNumber();
+  // Handle malformed volume strings that have been concatenated
+  let cleanVol = vol;
+  if (typeof vol === 'string') {
+    // Extract the first valid number from a potentially concatenated string
+    const match = vol.match(/^-?\d+\.?\d*/);
+    cleanVol = match ? match[0] : '0';
+  }
+  
+  let volume = new Decimal(cleanVol).toNumber();
   if (volume > 1) {
     if (volume >= 1e9) {
       // Billion
