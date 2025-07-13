@@ -261,12 +261,14 @@ const PriceChartLightweight = memo(({ token }) => {
       
       ctx.stroke();
     } else {
-      // Candlestick chart
+      // Candlestick chart with improved rendering
       const candleWidth = Math.max(1, chartWidth / data.length - 1);
+      const candleSpacing = Math.min(2, candleWidth * 0.2);
+      const actualCandleWidth = candleWidth - candleSpacing;
       
       data.forEach((item, index) => {
         const x = leftPadding + (index / data.length) * chartWidth + candleWidth / 2;
-        const [time, open, high, low, close] = item;
+        const [time, open, high, low, close, volume] = item;
         
         const yHigh = topPadding + ((maxPrice - high) / priceRange) * priceChartHeight;
         const yLow = topPadding + ((maxPrice - low) / priceRange) * priceChartHeight;
@@ -274,33 +276,77 @@ const PriceChartLightweight = memo(({ token }) => {
         const yClose = topPadding + ((maxPrice - close) / priceRange) * priceChartHeight;
         
         const isUp = close >= open;
-        ctx.strokeStyle = isUp ? '#4caf50' : '#f44336';
-        ctx.fillStyle = isUp ? '#4caf50' : '#f44336';
         
-        // Draw wick
-        ctx.lineWidth = 1;
+        // Enhanced colors with gradients
+        if (isUp) {
+          const gradient = ctx.createLinearGradient(0, yClose, 0, yOpen);
+          gradient.addColorStop(0, '#4caf50');
+          gradient.addColorStop(1, '#66bb6a');
+          ctx.fillStyle = gradient;
+          ctx.strokeStyle = '#4caf50';
+        } else {
+          const gradient = ctx.createLinearGradient(0, yOpen, 0, yClose);
+          gradient.addColorStop(0, '#ef5350');
+          gradient.addColorStop(1, '#f44336');
+          ctx.fillStyle = gradient;
+          ctx.strokeStyle = '#f44336';
+        }
+        
+        // Draw wick with shadow effect
+        ctx.lineWidth = Math.max(1, actualCandleWidth * 0.15);
+        ctx.lineCap = 'round';
+        
+        // Shadow for wick
+        ctx.shadowColor = isUp ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)';
+        ctx.shadowBlur = 2;
+        
         ctx.beginPath();
         ctx.moveTo(x, yHigh);
         ctx.lineTo(x, yLow);
         ctx.stroke();
         
-        // Draw body
+        // Reset shadow
+        ctx.shadowBlur = 0;
+        
+        // Draw body with rounded corners
         const bodyHeight = Math.abs(yClose - yOpen);
         const bodyY = Math.min(yOpen, yClose);
+        const cornerRadius = Math.min(2, actualCandleWidth * 0.1);
         
         if (bodyHeight > 1) {
-          ctx.fillRect(x - candleWidth / 2, bodyY, candleWidth, bodyHeight);
+          // Rounded rectangle for body
+          ctx.beginPath();
+          ctx.moveTo(x - actualCandleWidth / 2 + cornerRadius, bodyY);
+          ctx.lineTo(x + actualCandleWidth / 2 - cornerRadius, bodyY);
+          ctx.quadraticCurveTo(x + actualCandleWidth / 2, bodyY, x + actualCandleWidth / 2, bodyY + cornerRadius);
+          ctx.lineTo(x + actualCandleWidth / 2, bodyY + bodyHeight - cornerRadius);
+          ctx.quadraticCurveTo(x + actualCandleWidth / 2, bodyY + bodyHeight, x + actualCandleWidth / 2 - cornerRadius, bodyY + bodyHeight);
+          ctx.lineTo(x - actualCandleWidth / 2 + cornerRadius, bodyY + bodyHeight);
+          ctx.quadraticCurveTo(x - actualCandleWidth / 2, bodyY + bodyHeight, x - actualCandleWidth / 2, bodyY + bodyHeight - cornerRadius);
+          ctx.lineTo(x - actualCandleWidth / 2, bodyY + cornerRadius);
+          ctx.quadraticCurveTo(x - actualCandleWidth / 2, bodyY, x - actualCandleWidth / 2 + cornerRadius, bodyY);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Outline for definition
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
         } else {
-          ctx.fillRect(x - candleWidth / 2, bodyY - 0.5, candleWidth, 1);
+          // Thin line for doji candles
+          ctx.fillRect(x - actualCandleWidth / 2, bodyY - 0.5, actualCandleWidth, 1);
         }
       });
     }
 
-    // Draw price labels
-    ctx.fillStyle = theme.palette.text.secondary;
-    ctx.font = '12px sans-serif';
+    // Draw price labels with improved styling
+    ctx.fillStyle = theme.palette.text.primary;
+    ctx.font = '11px Inter, sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
+    
+    // Background for price axis
+    ctx.fillStyle = isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.8)';
+    ctx.fillRect(0, topPadding, leftPadding - 5, priceChartHeight);
     
     for (let i = 0; i <= 4; i++) {
       const value = maxPrice - (priceRange / 4) * i;
@@ -323,7 +369,14 @@ const PriceChartLightweight = memo(({ token }) => {
         }
       }
       
-      ctx.fillText(label, leftPadding - 10, y);
+      // Price label background
+      const metrics = ctx.measureText(label);
+      ctx.fillStyle = isDark ? 'rgba(30,30,30,0.8)' : 'rgba(245,245,245,0.9)';
+      ctx.fillRect(leftPadding - metrics.width - 15, y - 8, metrics.width + 10, 16);
+      
+      // Price label text
+      ctx.fillStyle = theme.palette.text.primary;
+      ctx.fillText(label, leftPadding - 8, y);
     }
 
     // Draw volume bars if applicable
@@ -363,22 +416,39 @@ const PriceChartLightweight = memo(({ token }) => {
         ctx.fillRect(x, y, barWidth * 0.8, barHeight);
       });
       
-      // Draw volume label
-      ctx.fillStyle = theme.palette.text.secondary;
-      ctx.font = '11px sans-serif';
+      // Draw volume section background
+      ctx.fillStyle = isDark ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.5)';
+      ctx.fillRect(leftPadding, volumeY, chartWidth, volumeChartHeight);
+      
+      // Draw volume label with better styling
+      ctx.fillStyle = theme.palette.text.primary;
+      ctx.font = 'bold 10px Inter, sans-serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
-      ctx.fillText('Volume', leftPadding, volumeY + 5);
       
-      // Draw max volume value
+      // Volume label background
+      const volLabelMetrics = ctx.measureText('Volume');
+      ctx.fillStyle = isDark ? 'rgba(30,30,30,0.9)' : 'rgba(245,245,245,0.95)';
+      ctx.fillRect(leftPadding, volumeY + 2, volLabelMetrics.width + 12, 16);
+      
+      ctx.fillStyle = theme.palette.text.primary;
+      ctx.fillText('Volume', leftPadding + 6, volumeY + 5);
+      
+      // Draw max volume value with background
       ctx.textAlign = 'right';
-      ctx.textBaseline = 'bottom';
+      ctx.textBaseline = 'middle';
       const volumeLabel = maxVolume > 1000000 
         ? (maxVolume / 1000000).toFixed(1) + 'M'
         : maxVolume > 1000 
         ? (maxVolume / 1000).toFixed(1) + 'K'
         : maxVolume.toFixed(0);
-      ctx.fillText(volumeLabel, leftPadding - 10, volumeY);
+      
+      const volMetrics = ctx.measureText(volumeLabel);
+      ctx.fillStyle = isDark ? 'rgba(30,30,30,0.8)' : 'rgba(245,245,245,0.9)';
+      ctx.fillRect(leftPadding - volMetrics.width - 15, volumeY + volumeChartHeight/2 - 8, volMetrics.width + 10, 16);
+      
+      ctx.fillStyle = theme.palette.text.primary;
+      ctx.fillText(volumeLabel, leftPadding - 8, volumeY + volumeChartHeight/2);
     }
 
     // Draw time labels
