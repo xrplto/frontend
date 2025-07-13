@@ -10,6 +10,7 @@ const PriceChartLightweight = memo(({ token }) => {
   const [range, setRange] = useState('12h');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [mousePos, setMousePos] = useState(null);
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
@@ -296,7 +297,91 @@ const PriceChartLightweight = memo(({ token }) => {
       ctx.fillText(volumeLabel, leftPadding - 10, volumeY);
     }
 
-  }, [data, chartType, isDark, theme]);
+    // Draw time labels
+    const timeY = showVolume ? topPadding + priceChartHeight + volumeChartGap + volumeChartHeight + 10 : topPadding + priceChartHeight + 10;
+    ctx.fillStyle = theme.palette.text.secondary;
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    
+    const labelCount = Math.min(5, data.length);
+    const step = Math.floor(data.length / labelCount);
+    
+    for (let i = 0; i < labelCount; i++) {
+      const index = i * step;
+      if (index < data.length) {
+        const x = leftPadding + (index / (data.length - 1)) * chartWidth;
+        const date = new Date(data[index][0]);
+        const label = range === '12h' || range === '1D' 
+          ? date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+          : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        ctx.fillText(label, x, timeY);
+      }
+    }
+
+    // Draw crosshair if mouse is over chart
+    if (mousePos) {
+      const { x, y } = mousePos;
+      const chartBounds = {
+        left: leftPadding,
+        right: leftPadding + chartWidth,
+        top: topPadding,
+        bottom: topPadding + priceChartHeight
+      };
+
+      if (x >= chartBounds.left && x <= chartBounds.right && y >= chartBounds.top && y <= chartBounds.bottom) {
+        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+        ctx.lineWidth = 0.5;
+        
+        // Vertical line
+        ctx.beginPath();
+        ctx.moveTo(x, topPadding);
+        ctx.lineTo(x, topPadding + priceChartHeight);
+        ctx.stroke();
+        
+        // Horizontal line
+        ctx.beginPath();
+        ctx.moveTo(leftPadding, y);
+        ctx.lineTo(leftPadding + chartWidth, y);
+        ctx.stroke();
+        
+        // Price label
+        const price = maxPrice - ((y - topPadding) / priceChartHeight) * priceRange;
+        const priceLabel = chartType === 2 
+          ? Math.round(price).toLocaleString()
+          : price < 0.01 ? price.toFixed(8) : price.toFixed(6);
+        
+        ctx.fillStyle = theme.palette.background.paper;
+        ctx.fillRect(leftPadding - 78, y - 10, 76, 20);
+        ctx.fillStyle = theme.palette.text.primary;
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(priceLabel, leftPadding - 12, y);
+        
+        // Time label
+        const dataIndex = Math.round(((x - leftPadding) / chartWidth) * (data.length - 1));
+        if (dataIndex >= 0 && dataIndex < data.length) {
+          const date = new Date(data[dataIndex][0]);
+          const timeLabel = date.toLocaleString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            hour: 'numeric', 
+            minute: '2-digit' 
+          });
+          
+          const labelWidth = ctx.measureText(timeLabel).width;
+          ctx.fillStyle = theme.palette.background.paper;
+          ctx.fillRect(x - labelWidth/2 - 5, timeY - 2, labelWidth + 10, 16);
+          ctx.fillStyle = theme.palette.text.primary;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText(timeLabel, x, timeY);
+        }
+      }
+    }
+
+  }, [data, chartType, isDark, theme, mousePos]);
 
   return (
     <Paper elevation={0} sx={{ p: 2 }}>
@@ -371,7 +456,12 @@ const PriceChartLightweight = memo(({ token }) => {
         ) : (
           <canvas
             ref={canvasRef}
-            style={{ width: '100%', height: '100%' }}
+            style={{ width: '100%', height: '100%', cursor: 'crosshair' }}
+            onMouseMove={(e) => {
+              const rect = canvasRef.current.getBoundingClientRect();
+              setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+            }}
+            onMouseLeave={() => setMousePos(null)}
           />
         )}
       </Box>
