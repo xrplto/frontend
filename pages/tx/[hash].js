@@ -971,7 +971,10 @@ const getTransactionDescription = (txData) => {
           `Order type: ${isSellOrder ? 'Sell' : 'Buy'} order`,
           `Offering: ${takerGets}`,
           `Requesting: ${takerPays}`,
-          `Exchange rate: 1 ${getCurrency(TakerPays)} = ${new BigNumber(TakerGets.value || dropsToXrp(TakerGets)).div(TakerPays.value || dropsToXrp(TakerPays)).toFormat()} ${getCurrency(TakerGets)}`,
+          `Exchange rate: 1 ${getCurrency(TakerPays)} = ${(() => {
+            const rate = new BigNumber(TakerGets.value || dropsToXrp(TakerGets)).div(TakerPays.value || dropsToXrp(TakerPays));
+            return rate.toFormat(rate.lt(0.000001) ? 15 : 8);
+          })()} ${getCurrency(TakerGets)}`,
           OfferSequence > 0 ? `Replaces order #${OfferSequence}` : 'New order',
           `Network fee: ${dropsToXrp(Fee)} XRP`,
           isSuccess ? 'Order placed successfully' : 'Order placement failed'
@@ -2948,12 +2951,12 @@ const TransactionDetails = ({ txData, theme }) => {
                             <>
                               <Typography variant="body2">
                                 1 {displayExchange.got.currency} ={' '}
-                                {paidValue.div(gotValue).toFormat(6)}{' '}
+                                {paidValue.div(gotValue).toFormat(paidValue.div(gotValue).lt(0.000001) ? 15 : 10)}{' '}
                                 {displayExchange.paid.currency}
                               </Typography>
                               <Typography variant="body2">
                                 1 {displayExchange.paid.currency} ={' '}
-                                {gotValue.div(paidValue).toFormat(6)} {displayExchange.got.currency}
+                                {gotValue.div(paidValue).toFormat(gotValue.div(paidValue).lt(0.000001) ? 15 : 10)} {displayExchange.got.currency}
                               </Typography>
                             </>
                           );
@@ -3171,11 +3174,11 @@ const TransactionDetails = ({ txData, theme }) => {
                           <>
                             <Typography variant="body2">
                               1 {displayExchange.got.currency} ={' '}
-                              {paidValue.div(gotValue).toFormat(6)} {displayExchange.paid.currency}
+                              {paidValue.div(gotValue).toFormat(paidValue.div(gotValue).lt(0.000001) ? 15 : 10)} {displayExchange.paid.currency}
                             </Typography>
                             <Typography variant="body2">
                               1 {displayExchange.paid.currency} ={' '}
-                              {gotValue.div(paidValue).toFormat(6)} {displayExchange.got.currency}
+                              {gotValue.div(paidValue).toFormat(gotValue.div(paidValue).lt(0.000001) ? 15 : 10)} {displayExchange.got.currency}
                             </Typography>
                           </>
                         );
