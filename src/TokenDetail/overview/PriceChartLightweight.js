@@ -49,7 +49,7 @@ const PriceChartLightweight = memo(({ token }) => {
             item.time,
             item.length // graphrich returns 'length' for number of addresses
           ]);
-          setData(holdersData.slice(-200));
+          setData(holdersData);
           setHasInitialData(true);
           setLoading(false);
         } else if (chartType === 1 && response.data?.ohlc && response.data.ohlc.length > 0) {
@@ -62,12 +62,12 @@ const PriceChartLightweight = memo(({ token }) => {
             parseFloat(candle[4]), // close
             parseFloat(candle[5]) || 0 // volume
           ]);
-          setData(normalizedOhlc.slice(-200)); // Limit to 200 points
+          setData(normalizedOhlc);
           setHasInitialData(true);
           setLoading(false);
         } else if (response.data?.history && response.data.history.length > 0) {
           // For line chart, history data is already in correct format [timestamp, price, volume]
-          setData(response.data.history.slice(-200));
+          setData(response.data.history);
           setHasInitialData(true);
           setLoading(false);
         } else {
@@ -119,7 +119,7 @@ const PriceChartLightweight = memo(({ token }) => {
             item.time,
             item.length
           ]);
-          setData(holdersData.slice(-200));
+          setData(holdersData);
         } else if (chartType === 1 && response.data?.ohlc && response.data.ohlc.length > 0) {
           const normalizedOhlc = response.data.ohlc.map(candle => [
             candle[0],
@@ -129,9 +129,9 @@ const PriceChartLightweight = memo(({ token }) => {
             parseFloat(candle[4]),
             parseFloat(candle[5]) || 0
           ]);
-          setData(normalizedOhlc.slice(-200));
+          setData(normalizedOhlc);
         } else if (response.data?.history && response.data.history.length > 0) {
-          setData(response.data.history.slice(-200));
+          setData(response.data.history);
         }
         
         setLastUpdate(new Date());
