@@ -611,6 +611,22 @@ export default function Header(props) {
                   </Box>
                 </StyledMenuItem>
 
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  theme={theme}
+                  onClick={() => handleTokenOptionSelect('/view/aigentrun')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AutoAwesomeIcon sx={{ fontSize: '16px', color: '#9C27B0' }} />
+                    <span>aigent.run</span>
+                  </Box>
+                </StyledMenuItem>
+
                 <Divider sx={{ my: 1 }} />
 
                 <Typography
