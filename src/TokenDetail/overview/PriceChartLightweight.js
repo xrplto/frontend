@@ -277,10 +277,20 @@ const PriceChartLightweight = memo(({ token }) => {
         const x = leftPadding + (index / data.length) * chartWidth + candleWidth / 2 + panX;
         const [time, open, high, low, close, volume] = item;
         
+        // Ensure all OHLC values are finite numbers
+        if (!isFinite(open) || !isFinite(high) || !isFinite(low) || !isFinite(close)) {
+          return; // Skip this candle if any value is invalid
+        }
+        
         const yHigh = topPadding + ((maxPrice - high) / priceRange) * priceChartHeight + panY;
         const yLow = topPadding + ((maxPrice - low) / priceRange) * priceChartHeight + panY;
         const yOpen = topPadding + ((maxPrice - open) / priceRange) * priceChartHeight + panY;
         const yClose = topPadding + ((maxPrice - close) / priceRange) * priceChartHeight + panY;
+        
+        // Additional check for calculated y values
+        if (!isFinite(yOpen) || !isFinite(yClose) || !isFinite(yHigh) || !isFinite(yLow)) {
+          return; // Skip this candle if calculated positions are invalid
+        }
         
         const isUp = close >= open;
         
