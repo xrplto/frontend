@@ -16,6 +16,7 @@ import baselinePalette from '@iconify/icons-ic/baseline-palette';
 import baselineWaves from '@iconify/icons-ic/baseline-waves';
 import baselineLocalFlorist from '@iconify/icons-ic/baseline-local-florist';
 import baselinePets from '@iconify/icons-ic/baseline-pets';
+import baselineWaterDrop from '@iconify/icons-ic/baseline-water-drop';
 import { AppContext } from 'src/AppContext';
 
 const themes = [
@@ -42,6 +43,12 @@ const themes = [
     name: 'Ripple Blue',
     icon: baselineWaves,
     color: '#0080ff'
+  },
+  {
+    id: 'LiquidLedgerTheme',
+    name: 'Liquid Ledger',
+    icon: baselineWaterDrop,
+    color: '#00D4E6'
   },
   {
     id: 'XShroomTheme',
@@ -140,7 +147,7 @@ export default function ThemeSwitcher() {
                   borderRadius: '6px',
                   backgroundColor: theme.color,
                   border: theme.id === 'XrplToLightTheme' ? '1px solid #e0e0e0' : theme.id === 'BirdTheme' ? '1px solid #1A1A1A' : 'none',
-                  boxShadow: theme.id === 'SyncWaveTheme' || theme.id === 'RippleBlueTheme' || theme.id === 'XShroomTheme' || theme.id === 'BoredApeTheme'
+                  boxShadow: theme.id === 'SyncWaveTheme' || theme.id === 'RippleBlueTheme' || theme.id === 'LiquidLedgerTheme' || theme.id === 'XShroomTheme' || theme.id === 'BoredApeTheme'
                     ? `0 0 10px ${theme.color}` 
                     : 'none'
                 }}

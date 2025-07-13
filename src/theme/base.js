@@ -2,6 +2,7 @@ import { XrplToDarkTheme } from './XrplToDarkTheme';
 import { XrplToLightTheme } from './XrplToLightTheme';
 import { SyncWaveTheme } from './SyncWaveTheme';
 import { rippleBlueTheme } from './rippleBlueTheme';
+import { LiquidLedgerTheme } from './LiquidLedgerTheme';
 import { XShroomTheme } from './XShroomTheme';
 import { BoredApeTheme } from './BoredApeTheme';
 import { BirdTheme } from './BirdTheme';
@@ -11,6 +12,7 @@ const themeMap = {
   XrplToLightTheme,
   SyncWaveTheme,
   RippleBlueTheme: rippleBlueTheme,
+  LiquidLedgerTheme,
   XShroomTheme,
   BoredApeTheme,
   BirdTheme
