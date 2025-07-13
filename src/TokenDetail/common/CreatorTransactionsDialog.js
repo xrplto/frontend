@@ -30,40 +30,76 @@ import { normalizeCurrencyCode } from 'src/utils/parse/utils';
 
 const XRPL_WEBSOCKET_URL = 'wss://s1.ripple.com';
 
-const TransactionRow = memo(({ transaction, isNew }) => {
+const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
   const theme = useTheme();
   const { tx, meta, validated, ledger_index } = transaction;
   
   const txType = tx.TransactionType;
-  const isIncoming = tx.Destination === tx.Account;
+  const isIncoming = tx.Destination === creatorAddress;
   
   const formatTxAmount = () => {
-    if (tx.Amount && txType === 'Payment') {
-      const amount = parseAmount(tx.Amount);
-      if (amount.currency === 'XRP') {
-        return `${fNumber(amount.value)} XRP`;
+    try {
+      if (tx.Amount && txType === 'Payment') {
+        const amount = parseAmount(tx.Amount);
+        if (!amount || typeof amount !== 'object') return 'N/A';
+        
+        if (amount.currency === 'XRP') {
+          return `${fNumber(amount.value)} XRP`;
+        }
+        
+        // Convert scientific notation to regular number if needed
+        let value = amount.value;
+        if (typeof value === 'string' && value.includes('e')) {
+          value = new Decimal(value).toString();
+        }
+        
+        const readableCurrency = normalizeCurrencyCode(amount.currency);
+        return `${fNumber(value)} ${readableCurrency}`;
       }
-      const readableCurrency = normalizeCurrencyCode(amount.currency);
-      return `${fNumber(amount.value)} ${readableCurrency}`;
-    }
-    
-    if (txType === 'OfferCreate' && tx.TakerGets && tx.TakerPays) {
-      const takerGets = parseAmount(tx.TakerGets);
-      const takerPays = parseAmount(tx.TakerPays);
       
-      const getsCurrency = takerGets.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(takerGets.currency);
-      const paysCurrency = takerPays.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(takerPays.currency);
+      if (txType === 'OfferCreate' && tx.TakerGets && tx.TakerPays) {
+        const takerGets = parseAmount(tx.TakerGets);
+        const takerPays = parseAmount(tx.TakerPays);
+        
+        if (!takerGets || !takerPays || typeof takerGets !== 'object' || typeof takerPays !== 'object') {
+          return 'N/A';
+        }
+        
+        // Convert scientific notation to regular number if needed
+        let getsValue = takerGets.value;
+        let paysValue = takerPays.value;
+        if (typeof getsValue === 'string' && getsValue.includes('e')) {
+          getsValue = new Decimal(getsValue).toString();
+        }
+        if (typeof paysValue === 'string' && paysValue.includes('e')) {
+          paysValue = new Decimal(paysValue).toString();
+        }
+        
+        const getsCurrency = takerGets.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(takerGets.currency);
+        const paysCurrency = takerPays.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(takerPays.currency);
+        
+        return `${fNumber(getsValue)} ${getsCurrency} → ${fNumber(paysValue)} ${paysCurrency}`;
+      }
       
-      return `${fNumber(takerGets.value)} ${getsCurrency} → ${fNumber(takerPays.value)} ${paysCurrency}`;
+      if (txType === 'TrustSet' && tx.LimitAmount) {
+        const limit = parseAmount(tx.LimitAmount);
+        if (!limit || typeof limit !== 'object') return 'N/A';
+        
+        // Convert scientific notation to regular number if needed
+        let value = limit.value;
+        if (typeof value === 'string' && value.includes('e')) {
+          value = new Decimal(value).toString();
+        }
+        
+        const limitCurrency = normalizeCurrencyCode(limit.currency);
+        return `${fNumber(value)} ${limitCurrency}`;
+      }
+      
+      return 'N/A';
+    } catch (error) {
+      console.error('Error formatting transaction amount:', error);
+      return 'N/A';
     }
-    
-    if (txType === 'TrustSet' && tx.LimitAmount) {
-      const limit = parseAmount(tx.LimitAmount);
-      const limitCurrency = normalizeCurrencyCode(limit.currency);
-      return `${fNumber(limit.value)} ${limitCurrency}`;
-    }
-    
-    return 'N/A';
   };
 
   const formatTime = () => {
@@ -205,10 +241,10 @@ const TransactionRow = memo(({ transaction, isNew }) => {
             {formatTxAmount()}
           </Typography>
 
-          <Tooltip title="View on Explorer">
+          <Tooltip title="View Transaction">
             <IconButton
               size="small"
-              onClick={() => window.open(`https://livenet.xrpl.org/transactions/${tx.hash}`, '_blank')}
+              onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
               sx={{
                 width: 24,
                 height: 24,
@@ -569,6 +605,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
                 key={tx.tx?.hash || index} 
                 transaction={tx} 
                 isNew={index < newTxCount}
+                creatorAddress={creatorAddress}
               />
             ))}
           </Stack>
