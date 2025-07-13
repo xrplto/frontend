@@ -699,27 +699,6 @@ const TokenSummary = memo(({ token }) => {
               {/* Left side: Name, user, origin */}
               <Stack spacing={{ xs: 0.3, sm: 0.5 }} justifyContent="center" sx={{ minWidth: 0, flex: { xs: 'none', md: 1 } }}>
                 <Stack direction="row" alignItems="center" spacing={0.5} sx={{ flexWrap: 'wrap' }}>
-                {/* Mobile Price - Balanced size */}
-                <Typography
-                  variant="body2"
-                  sx={{
-                    display: { xs: 'block', md: 'none' },
-                    fontSize: { xs: '0.9rem', sm: '1rem' },
-                    fontWeight: 700,
-                    color: priceColor || theme.palette.text.primary,
-                    lineHeight: 1,
-                    letterSpacing: '-0.01em',
-                    transition: 'color 0.3s ease',
-                    animation: priceColor ? 'priceFlash 0.5s ease' : 'none',
-                    mr: 0.4,
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  <NumberTooltip
-                    prepend={currencySymbols[activeFiatCurrency]}
-                    number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
-                  />
-                </Typography>
                 <Typography
                   variant="h4"
                   sx={{
@@ -943,6 +922,26 @@ const TokenSummary = memo(({ token }) => {
                     </Box>
                   </Stack>
                 </Stack>
+                {/* Mobile Price - Below name and origin */}
+                <Typography
+                  variant="body1"
+                  sx={{
+                    display: { xs: 'block', md: 'none' },
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                    fontWeight: 700,
+                    color: priceColor || theme.palette.text.primary,
+                    lineHeight: 1,
+                    letterSpacing: '-0.01em',
+                    transition: 'color 0.3s ease',
+                    animation: priceColor ? 'priceFlash 0.5s ease' : 'none',
+                    mt: 0.5
+                  }}
+                >
+                  <NumberTooltip
+                    prepend={currencySymbols[activeFiatCurrency]}
+                    number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+                  />
+                </Typography>
               </Stack>
               
               {/* Desktop Price and Percentages - Moved left */}
