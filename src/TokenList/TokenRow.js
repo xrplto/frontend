@@ -387,7 +387,7 @@ function FTokenRow({
 
   const percentageCellStyle = useMemo(
     () => ({
-      minWidth: isMobile ? '40px' : '80px',
+      minWidth: isMobile ? '35px' : '80px',
       padding: isMobile ? '1px 2px' : '12px 8px',
       '& .MuiTypography-root': {
         textAlign: 'right',
@@ -447,26 +447,26 @@ function FTokenRow({
         zIndex: 1001,
         left: 0,
         background: theme.palette.background.default,
-        width: isMobile ? '16px' : '40px',
-        minWidth: isMobile ? '16px' : '40px',
+        width: isMobile ? '12px' : '40px',
+        minWidth: isMobile ? '12px' : '40px',
         padding: isMobile ? '0px' : '12px 4px'
       },
       second: {
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '16px' : '40px',
+        left: isMobile ? '12px' : '40px',
         background: theme.palette.background.default,
-        width: isMobile ? '20px' : '50px',
-        minWidth: isMobile ? '20px' : '50px',
+        width: isMobile ? '16px' : '50px',
+        minWidth: isMobile ? '16px' : '50px',
         padding: isMobile ? '1px 1px' : '12px 8px'
       },
       third: {
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '36px' : '90px',
+        left: isMobile ? '28px' : '90px',
         background: theme.palette.background.default,
-        minWidth: isMobile ? '100px' : '250px',
-        maxWidth: isMobile ? '120px' : 'none',
+        minWidth: isMobile ? '90px' : '250px',
+        maxWidth: isMobile ? '110px' : 'none',
         padding: isMobile ? '1px 4px' : '12px 8px',
         '&:before': scrollLeft
           ? {
@@ -783,7 +783,7 @@ function FTokenRow({
         align="right"
         sx={{
           color: priceColor,
-          minWidth: isMobile ? '45px' : '100px',
+          minWidth: isMobile ? '38px' : '100px',
           padding: isMobile ? '1px 2px' : '12px 8px'
         }}
       >
@@ -817,7 +817,7 @@ function FTokenRow({
         {renderPercentageWithIcon(pro24h || 0, "h4", theme, isMobile)}
       </TableCell>
       {isMobile && (
-        <TableCell align="right" sx={{ minWidth: '45px', padding: '1px 2px' }}>
+        <TableCell align="right" sx={{ minWidth: '40px', padding: '1px 1px' }}>
           <Typography variant="h4" sx={{ fontSize: '9px', fontWeight: '600' }}>
             {currencySymbols[activeFiatCurrency]}
             {convertedValues.marketCap >= 1000000
