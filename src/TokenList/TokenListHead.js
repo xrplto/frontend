@@ -233,7 +233,7 @@ export default function TokenListHead({
     const stickyPositions = {
       'star': 0,
       'rank': isMobile ? 0 : 40,
-      'token': isMobile ? 28 : 90
+      'token': isMobile ? 24 : 90
     };
     
     return stickyPositions[id] || 'unset';
