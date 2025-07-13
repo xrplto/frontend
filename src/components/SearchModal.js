@@ -137,25 +137,31 @@ export default function SearchModal({ open, onClose }) {
   }, [onClose]);
 
   const handleResultClick = useCallback((item, type) => {
-    // Add to recent searches
+    // Add to recent searches with all necessary data
     const newRecent = {
       ...item,
       type,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      // Ensure we have all required properties for display
+      slug: item.slug,
+      md5: item.md5,
+      user: item.user,
+      name: item.name,
+      logoImage: item.logoImage // for collections
     };
     
-    const updated = [newRecent, ...recentSearches.filter(r => r.slug !== item.slug)].slice(0, 5);
+    const updated = [newRecent, ...recentSearches.filter(r => 
+      r.slug !== item.slug || r.type !== type
+    )].slice(0, 5);
     setRecentSearches(updated);
     localStorage.setItem('recentSearches', JSON.stringify(updated));
     
     // Navigate to result
     if (type === 'token') {
-      router.push(`/token/${item.slug}`);
+      window.location.href = `/token/${item.slug}`;
     } else if (type === 'collection') {
-      router.push(`/collection/${item.slug}`);
+      window.location.href = `/collection/${item.slug}`;
     }
-    
-    handleClose();
   }, [recentSearches, router, handleClose]);
 
   const handleKeyDown = useCallback((e) => {
@@ -244,13 +250,25 @@ export default function SearchModal({ open, onClose }) {
                   <List disablePadding dense>
                     {recentSearches.slice(0, 3).map((item, index) => (
                       <ListItem key={index} disablePadding>
-                        <ListItemButton onClick={() => handleResultClick(item, item.type)} sx={{ py: 0.5 }}>
+                        <ListItemButton 
+                          onClick={() => {
+                            // Navigate directly for recent searches since we already have the data
+                            if (item.type === 'token') {
+                              window.location.href = `/token/${item.slug}`;
+                            } else if (item.type === 'collection') {
+                              window.location.href = `/collection/${item.slug}`;
+                            }
+                          }} 
+                          sx={{ py: 0.5 }}
+                        >
                           <ListItemAvatar>
                             <Avatar
-                              src={`https://s1.xrpl.to/token/${item.md5}`}
+                              src={item.type === 'collection' 
+                                ? `https://s1.xrpnft.com/collection/${item.logoImage}` 
+                                : `https://s1.xrpl.to/token/${item.md5}`}
                               sx={{ width: 28, height: 28 }}
                             >
-                              {item.user?.[0]}
+                              {item.user?.[0] || item.name?.[0]}
                             </Avatar>
                           </ListItemAvatar>
                           <ListItemText
@@ -285,7 +303,7 @@ export default function SearchModal({ open, onClose }) {
                   <List disablePadding dense>
                     {trendingTokens.map((token, index) => (
                       <ListItem key={index} disablePadding>
-                        <ListItemButton onClick={() => handleResultClick(token, 'token')} sx={{ py: 0.5, px: 2 }}>
+                        <ListItemButton onClick={() => window.location.href = `/token/${token.slug}`} sx={{ py: 0.5, px: 2 }}>
                           <ListItemAvatar sx={{ minWidth: 36 }}>
                             <Avatar
                               src={`https://s1.xrpl.to/token/${token.md5}`}
@@ -348,7 +366,7 @@ export default function SearchModal({ open, onClose }) {
                   <List disablePadding dense>
                     {trendingCollections.map((collection, index) => (
                       <ListItem key={index} disablePadding>
-                        <ListItemButton onClick={() => handleResultClick(collection, 'collection')} sx={{ py: 0.5, px: 2 }}>
+                        <ListItemButton onClick={() => window.location.href = `/collection/${collection.slug}`} sx={{ py: 0.5, px: 2 }}>
                           <ListItemAvatar sx={{ minWidth: 36 }}>
                             <Avatar
                               src={`https://s1.xrpnft.com/collection/${collection.logoImage}`}
@@ -402,7 +420,7 @@ export default function SearchModal({ open, onClose }) {
               <List disablePadding dense>
                 {searchResults.tokens.map((token, index) => (
                   <ListItem key={index} disablePadding>
-                    <ListItemButton onClick={() => handleResultClick(token, 'token')} sx={{ py: 0.5, px: 2 }}>
+                    <ListItemButton onClick={() => window.location.href = `/token/${token.slug}`} sx={{ py: 0.5, px: 2 }}>
                       <ListItemAvatar sx={{ minWidth: 36 }}>
                         <Avatar
                           src={`https://s1.xrpl.to/token/${token.md5}`}
