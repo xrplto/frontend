@@ -1304,14 +1304,14 @@ const TokenSummary = memo(({ token }) => {
               sx={{
                 flex: { xs: 'none', sm: 1 },
                 width: { xs: 'auto', sm: 'auto' },
-                minWidth: { xs: '85px', sm: 'auto' },
-                p: { xs: 0.75, sm: 1 },
+                minWidth: { xs: '82px', sm: 'auto' },
+                p: { xs: 0.7, sm: 1 },
                 borderRadius: '8px',
                 background: `linear-gradient(135deg, ${alpha(metric.color, 0.08)} 0%, ${alpha(metric.color, 0.05)} 100%)`,
                 border: `1px solid ${alpha(metric.color, 0.15)}`,
                 textAlign: 'center',
                 transition: 'all 0.2s ease',
-                mr: { xs: 0.5, sm: 2 },
+                mr: { xs: 0.45, sm: 2 },
                 '&:last-child': { mr: 0 },
                 '&:hover': {
                   transform: 'translateY(-1px)',
@@ -1325,7 +1325,7 @@ const TokenSummary = memo(({ token }) => {
                   fontSize: { xs: '0.65rem', sm: '0.75rem' },
                   color: alpha(theme.palette.text.secondary, 0.8),
                   display: 'block',
-                  mb: 0.25,
+                  mb: { xs: 0.175, sm: 0.25 },
                   fontWeight: 500
                 }}
               >
@@ -1334,7 +1334,7 @@ const TokenSummary = memo(({ token }) => {
               <Typography
                 variant="subtitle2"
                 sx={{
-                  fontSize: { xs: '0.85rem', sm: '1rem' },
+                  fontSize: { xs: '0.825rem', sm: '1rem' },
                   fontWeight: 700,
                   color: metric.color,
                   lineHeight: 1
