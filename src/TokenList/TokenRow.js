@@ -26,8 +26,6 @@ import LockIcon from '@mui/icons-material/Lock';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import EditIcon from '@mui/icons-material/Edit';
 
 import { AppContext } from 'src/AppContext';
 import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
@@ -369,7 +367,6 @@ function FTokenRow({
   time,
   token,
   setEditToken,
-  setTrustToken,
   watchList,
   onChangeWatchList,
   scrollLeft,
@@ -389,9 +386,7 @@ function FTokenRow({
 
   const percentageCellStyle = useMemo(
     () => ({
-      width: isMobile ? '40px' : '90px',
-      minWidth: isMobile ? '40px' : '90px',
-      padding: isMobile ? '2px 0px' : '12px 8px',
+      minWidth: isMobile ? '50px' : '80px',
       '& .MuiTypography-root': {
         textAlign: 'right',
         width: '100%'
@@ -406,14 +401,15 @@ function FTokenRow({
       position: 'relative',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       backgroundColor: 'transparent',
+      width: '100%',
       '&:after': {
         content: '""',
         position: 'absolute',
         bottom: 0,
-        left: '16px',
-        right: '16px',
+        left: 0,
+        right: 0,
         height: '1px',
-        background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.divider, 0.1)}, transparent)`
+        background: alpha(theme.palette.divider, 0.08)
       },
       '&:hover': {
         backgroundColor: alpha(theme.palette.primary.main, 0.04),
@@ -430,13 +426,10 @@ function FTokenRow({
         letterSpacing: '-0.01em'
       },
       '& .MuiTableCell-root': {
-        padding: isMobile ? '4px 2px' : '12px 8px',
+        padding: isMobile ? '4px' : '12px',
         whiteSpace: 'nowrap',
         borderBottom: 'none',
-        backgroundColor: 'transparent',
-        '&:not(:first-of-type)': {
-          paddingLeft: isMobile ? '2px' : '8px'
-        }
+        backgroundColor: 'transparent'
       }
     }),
     [isMobile, theme]
@@ -448,49 +441,24 @@ function FTokenRow({
         position: 'sticky',
         zIndex: 1001,
         left: 0,
-        background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
-          ? alpha('#030310', 0.85)
-          : alpha(theme.palette.background.default, 0.95),
-        backdropFilter: 'blur(10px)',
-        width: isMobile ? '20px' : '20px',
-        minWidth: isMobile ? '20px' : '20px',
-        padding: isMobile ? '4px 2px' : '12px 4px'
+        background: theme.palette.background.default,
+        width: '40px',
+        minWidth: '40px'
       },
       second: {
-        p: isMobile ? '4px 2px' : '12px 8px',
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '20px' : '20px',
-        background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
-          ? alpha('#030310', 0.85)
-          : alpha(theme.palette.background.default, 0.95),
-        backdropFilter: 'blur(10px)',
-        width: isMobile ? '20px' : '40px',
-        minWidth: isMobile ? '20px' : '40px'
+        left: '40px',
+        background: theme.palette.background.default,
+        width: isMobile ? '30px' : '50px',
+        minWidth: isMobile ? '30px' : '50px'
       },
       third: {
-        p: isMobile ? '4px 2px' : '12px 8px',
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '40px' : '60px',
-        background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
-          ? alpha('#030310', 0.85)
-          : alpha(theme.palette.background.default, 0.95),
-        backdropFilter: 'blur(10px)',
-        width: isMobile ? '70px' : '100px',
-        minWidth: isMobile ? '70px' : '100px'
-      },
-      fourth: {
-        p: isMobile ? '4px 2px' : '12px 8px',
-        position: 'sticky',
-        zIndex: 1001,
-        left: isMobile ? '110px' : '160px',
-        background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff' 
-          ? alpha('#030310', 0.85)
-          : alpha(theme.palette.background.default, 0.95),
-        backdropFilter: 'blur(10px)',
-        width: isMobile ? '70px' : '140px',
-        minWidth: isMobile ? '70px' : '140px',
+        left: isMobile ? '70px' : '90px',
+        background: theme.palette.background.default,
+        minWidth: isMobile ? '150px' : '250px',
         '&:before': scrollLeft
           ? {
               content: "''",
@@ -568,13 +536,6 @@ function FTokenRow({
     setEditToken(memoizedToken);
   }, [setEditToken, memoizedToken]);
 
-  const handleSetTrustline = useCallback(
-    (e) => {
-      e.stopPropagation();
-      setTrustToken(memoizedToken);
-    },
-    [setTrustToken, memoizedToken]
-  );
 
   const convertedValues = useMemo(
     () => ({
@@ -682,7 +643,7 @@ function FTokenRow({
         </TableCell>
       )}
       <TableCell align="left" sx={stickyCellStyles.third}>
-        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.3 : 0.5}>
+        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
           {isMobile && (
             <Typography
               variant="h4"
@@ -704,7 +665,8 @@ function FTokenRow({
               height: isMobile ? 20 : 32,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              flexShrink: 0
             }}
           >
             {isAdmin ? (
@@ -741,7 +703,7 @@ function FTokenRow({
               </TokenImageWrapper>
             )}
           </Box>
-          <Stack direction="column" spacing={0}>
+          <Stack direction="column" spacing={0} sx={{ overflow: 'hidden', flexGrow: 1 }}>
             <Typography
               variant="p2"
               sx={{
@@ -757,64 +719,62 @@ function FTokenRow({
             >
               {truncate(user, isMobile ? 10 : 18)}
             </Typography>
-          </Stack>
-        </Stack>
-      </TableCell>
-      <TableCell align="left" sx={stickyCellStyles.fourth}>
-        <Stack direction="row" spacing={isMobile ? 0.2 : 0.5} alignItems="center">
-          <Typography
-            variant="token"
-            sx={{
-              fontWeight: '600',
-              fontSize: isMobile ? '11px' : '14px',
-              lineHeight: 1.2,
-              letterSpacing: '-0.01em',
-              cursor: 'pointer',
-              color: theme.palette.text.primary,
-              position: 'relative',
-              '&:after': isOMCF === 'yes' ? {
-                content: '""',
-                position: 'absolute',
-                left: 0,
-                bottom: -2,
-                width: '100%',
-                height: '2px',
-                background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.success.light})`,
-                borderRadius: '2px'
-              } : {}
-            }}
-            noWrap
-          >
-            {truncate(name, isMobile ? 12 : 20)}
-          </Typography>
-          <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin, isMobile)}</Tooltip>
-          {origin && !isMobile && (
-            <>
-              <Tooltip title="Blackholed Issuer">
-                <LockIcon sx={{ fontSize: '12px', color: '#00AB55' }} />
-              </Tooltip>
-              {origin === 'xrp.fun' ? (
-                <Tooltip title="Liquidity Pool Not Burned">
-                  <ElectricBoltIcon
-                    sx={{ fontSize: '12px', color: '#FF5630' }}
-                  />
-                </Tooltip>
-              ) : (
-                <Tooltip title="Burned Liquidity Pool">
-                  <LocalFireDepartmentIcon
-                    sx={{ fontSize: '12px', color: '#1890FF' }}
-                  />
-                </Tooltip>
+            <Stack direction="row" spacing={isMobile ? 0.2 : 0.5} alignItems="center" sx={{ marginTop: '2px' }}>
+              <Typography
+                variant="token"
+                sx={{
+                  fontWeight: '600',
+                  fontSize: isMobile ? '11px' : '14px',
+                  lineHeight: 1.2,
+                  letterSpacing: '-0.01em',
+                  cursor: 'pointer',
+                  color: theme.palette.text.primary,
+                  position: 'relative',
+                  '&:after': isOMCF === 'yes' ? {
+                    content: '""',
+                    position: 'absolute',
+                    left: 0,
+                    bottom: -2,
+                    width: '100%',
+                    height: '2px',
+                    background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.success.light})`,
+                    borderRadius: '2px'
+                  } : {}
+                }}
+                noWrap
+              >
+                {truncate(name, isMobile ? 12 : 20)}
+              </Typography>
+              <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin, isMobile)}</Tooltip>
+              {origin && !isMobile && (
+                <>
+                  <Tooltip title="Blackholed Issuer">
+                    <LockIcon sx={{ fontSize: '12px', color: '#00AB55' }} />
+                  </Tooltip>
+                  {origin === 'xrp.fun' ? (
+                    <Tooltip title="Liquidity Pool Not Burned">
+                      <ElectricBoltIcon
+                        sx={{ fontSize: '12px', color: '#FF5630' }}
+                      />
+                    </Tooltip>
+                  ) : (
+                    <Tooltip title="Burned Liquidity Pool">
+                      <LocalFireDepartmentIcon
+                        sx={{ fontSize: '12px', color: '#1890FF' }}
+                      />
+                    </Tooltip>
+                  )}
+                </>
               )}
-            </>
-          )}
+            </Stack>
+          </Stack>
         </Stack>
       </TableCell>
       <TableCell
         align="right"
         sx={{
           color: priceColor,
-          padding: isMobile ? '4px 2px' : '12px 8px'
+          minWidth: isMobile ? '60px' : '100px'
         }}
       >
         <TransitionTypo
@@ -863,12 +823,7 @@ function FTokenRow({
           </Stack>
         </TableCell>
       )}
-      <TableCell
-        align="right"
-        sx={{
-          padding: isMobile ? '4px 2px' : '12px 8px'
-        }}
-      >
+      <TableCell align="right">
         <Typography
           variant="caption"
           sx={{
@@ -1034,12 +989,7 @@ function FTokenRow({
         <TableCell
           align="right"
           sx={{
-            width: '240px',
-            minWidth: '240px',
-            maxWidth: '240px',
-            pr: '8px !important',
-            pl: '8px !important',
-            py: '10px !important',
+            minWidth: '200px',
             overflow: 'visible'
           }}
         >
@@ -1060,122 +1010,6 @@ function FTokenRow({
               opts={chartOpts}
             />
           </Box>
-        </TableCell>
-      )}
-      {!isMobile ? (
-        <TableCell
-          align="right"
-          sx={{
-            width: '80px',
-            minWidth: '80px',
-            pl: '24px !important',
-            pr: '16px !important',
-            py: '12px !important'
-          }}
-        >
-          <Stack
-            direction="row"
-            spacing={1}
-            alignItems="center"
-            justifyContent="flex-end"
-          >
-            <Tooltip
-              title="Set Trustline"
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    zIndex: 9998
-                  }
-                }
-              }}
-            >
-              <Box
-                sx={{
-                  p: 1,
-                  borderRadius: '8px',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: darkMode
-                      ? 'rgba(255, 255, 255, 0.12)'
-                      : 'rgba(145, 158, 171, 0.12)'
-                  }
-                }}
-              >
-                <AddCircleOutlineIcon
-                  onClick={handleSetTrustline}
-                  sx={{
-                    cursor: 'pointer',
-                    fontSize: '22px',
-                    color: alpha(theme.palette.text.secondary, 0.5),
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      color: theme.palette.primary.main,
-                      transform: 'scale(1.15)'
-                    }
-                  }}
-                />
-              </Box>
-            </Tooltip>
-            {isAdmin && (
-              <Tooltip
-                title="Edit Token"
-                componentsProps={{
-                  tooltip: {
-                    sx: {
-                      zIndex: 9998
-                    }
-                  }
-                }}
-              >
-                <Box
-                  sx={{
-                    p: 1,
-                    borderRadius: '8px',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      backgroundColor: darkMode
-                        ? 'rgba(255, 255, 255, 0.08)'
-                        : 'rgba(145, 158, 171, 0.08)',
-                      transform: 'scale(1.1)'
-                    }
-                  }}
-                >
-                  <EditIcon
-                    onClick={handleEditToken}
-                    sx={{
-                      cursor: 'pointer',
-                      fontSize: '22px',
-                      color: alpha(theme.palette.text.secondary, 0.5),
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        color: theme.palette.warning.main,
-                        transform: 'scale(1.15)'
-                      }
-                    }}
-                  />
-                </Box>
-              </Tooltip>
-            )}
-          </Stack>
-        </TableCell>
-      ) : (
-        <TableCell
-          align="right"
-          sx={{
-            width: '32px',
-            minWidth: '32px',
-            pr: '4px !important',
-            pl: '2px !important'
-          }}
-        >
-          <AddCircleOutlineIcon
-            onClick={handleSetTrustline}
-            sx={{
-              cursor: 'pointer',
-              fontSize: '16px',
-              color: theme.palette.primary.main
-            }}
-          />
         </TableCell>
       )}
     </TableRow>

@@ -584,7 +584,8 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         ref={tableContainerRef}
       >
         <Table ref={tableRef} size="small" sx={{ 
-          tableLayout: isMobile ? 'auto' : 'fixed',
+          tableLayout: 'auto',
+          width: '100%',
           opacity: isDeferring ? 0.95 : 1,
           transition: 'opacity 0.1s ease'
         }}>

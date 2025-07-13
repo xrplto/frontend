@@ -21,15 +21,9 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   letterSpacing: '0.5px',
   textTransform: 'uppercase',
   color: theme.palette.text.secondary,
-  padding: '16px 8px',
+  padding: '16px 12px',
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  whiteSpace: 'nowrap',
-  '&:first-of-type': {
-    paddingLeft: 16
-  },
-  '&:last-of-type': {
-    paddingRight: 16
-  }
+  whiteSpace: 'nowrap'
 }));
 
 const StyledTableSortLabel = styled(TableSortLabel)(({ theme }) => ({
@@ -67,19 +61,10 @@ const TABLE_HEAD = [
     mobileHide: true
   },
   {
-    id: 'user',
-    label: 'ISSUER',
+    id: 'token',
+    label: 'TOKEN',
     align: 'left',
-    width: '8%',
-    order: true,
-    sticky: true,
-    mobileHide: false
-  },
-  {
-    id: 'name',
-    label: 'NAME',
-    align: 'left',
-    width: '10%',
+    width: '18%',
     order: true,
     sticky: true,
     mobileHide: false
@@ -212,7 +197,6 @@ const TABLE_HEAD = [
     sticky: false,
     mobileHide: true
   },
-  { id: '', width: '' }
 ];
 
 export default function TokenListHead({
@@ -237,9 +221,8 @@ export default function TokenListHead({
     // Fixed positions for sticky columns
     const stickyPositions = {
       'star': 0,
-      'rank': isMobile ? 0 : 20,
-      'user': isMobile ? 20 : 60,
-      'name': isMobile ? 110 : 160
+      'rank': isMobile ? 0 : 40,
+      'token': isMobile ? 40 : 90
     };
     
     return stickyPositions[id] || 'unset';
@@ -276,10 +259,15 @@ export default function TokenListHead({
                 width: headCell.width,
                 ...(isSticky && {
                   position: 'sticky',
-                  left: getStickyLeft(headCell.id),
+                  ...(headCell.stickyRight ? {
+                    right: 0,
+                    background: theme.palette.background.default
+                  } : {
+                    left: getStickyLeft(headCell.id)
+                  }),
                   zIndex: 11,
-                  background: 'transparent',
-                  '&::after': scrollLeft && headCell.id === 'name' ? {
+                  background: headCell.stickyRight ? theme.palette.background.default : 'transparent',
+                  '&::after': scrollLeft && headCell.id === 'token' ? {
                     content: '""',
                     position: 'absolute',
                     right: -1,
