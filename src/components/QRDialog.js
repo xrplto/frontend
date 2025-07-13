@@ -380,8 +380,7 @@ export default function CustomQRDialog({ open, type, qrUrl, nextUrl, onClose }) 
 
         {!notificationClicked && (
           <NotificationPrompt onClick={handleQRButtonClick}>
-            <Typography
-              variant="body2"
+            <Box
               sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -402,7 +401,7 @@ export default function CustomQRDialog({ open, type, qrUrl, nextUrl, onClose }) 
                 }}
               />
               Didn't receive a notification? Click here to scan QR!
-            </Typography>
+            </Box>
           </NotificationPrompt>
         )}
 
