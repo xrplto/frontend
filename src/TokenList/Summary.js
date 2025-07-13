@@ -66,12 +66,12 @@ const ContentTypography = styled(Typography)(({ theme }) => ({
 const MetricBox = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(1.5),
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.75)
+    padding: theme.spacing(0.5)
   },
   height: '100%',
   minHeight: '80px',
   [theme.breakpoints.down('sm')]: {
-    minHeight: '48px'
+    minHeight: '44px'
   },
   display: 'flex',
   flexDirection: 'column',
@@ -570,7 +570,7 @@ export default function Summary() {
           >
             <Grid
               container
-              spacing={{ xs: 0.5, sm: 1 }}
+              spacing={{ xs: 0.25, sm: 1 }}
               sx={{
                 width: '100%'
               }}
@@ -579,16 +579,17 @@ export default function Summary() {
               <Grid item xs={12}>
                 <Grid
                   container
-                  spacing={{ xs: 0.5, sm: 1.5, md: 2 }}
+                  spacing={{ xs: 0.25, sm: 1.5, md: 2 }}
                   sx={{
                     [(theme) => theme.breakpoints.down('sm')]: {
                       flexWrap: 'wrap',
-                      gap: '4px'
+                      gap: '2px'
                     }
                   }}
                 >
+                  {/* First Row on Mobile */}
                   {/* Market Cap Box */}
-                  <Grid item xs={6} sm={2} md={1.5}>
+                  <Grid item xs={4} sm={2} md={1.5}>
                     <MetricBox>
                       <MetricTitle>Market Cap</MetricTitle>
                       <MetricValue>
@@ -602,7 +603,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* DEX Volume Box */}
-                  <Grid item xs={6} sm={2} md={1.5}>
+                  <Grid item xs={4} sm={2} md={1.5}>
                     <MetricBox>
                       <MetricTitle>24h Volume</MetricTitle>
                       <MetricValue>
@@ -616,7 +617,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* XRP Price Box */}
-                  <Grid item xs={6} sm={2} md={1.5}>
+                  <Grid item xs={4} sm={2} md={1.5}>
                     <MetricBox>
                       <MetricTitle>XRP</MetricTitle>
                       <MetricValue>
@@ -629,8 +630,9 @@ export default function Summary() {
                     </MetricBox>
                   </Grid>
 
+                  {/* Second Row on Mobile */}
                   {/* Stablecoins Box */}
-                  <Grid item xs={6} sm={2} md={1.5}>
+                  <Grid item xs={4} sm={2} md={1.5}>
                     <MetricBox>
                       <MetricTitle>Stables</MetricTitle>
                       <MetricValue>
@@ -642,7 +644,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* Meme Tokens Box */}
-                  <Grid item xs={6} sm={2} md={1.5}>
+                  <Grid item xs={4} sm={2} md={1.5}>
                     <MetricBox>
                       <MetricTitle>Memes</MetricTitle>
                       <MetricValue>
@@ -654,7 +656,7 @@ export default function Summary() {
                   </Grid>
 
                   {/* Sentiment Score */}
-                  <Grid item xs={6} sm={2} md={1.5}>
+                  <Grid item xs={4} sm={2} md={1.5}>
                     <MetricBox>
                       <MetricTitle
                         sx={{
