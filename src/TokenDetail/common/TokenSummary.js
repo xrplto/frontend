@@ -1216,7 +1216,7 @@ const TokenSummary = memo(({ token }) => {
         <Box
           sx={{
             mx: { xs: -0.75, sm: 0 },
-            mt: { xs: 0.5, sm: 0 },
+            mt: { xs: 0.75, sm: 0 },
             px: { xs: 0.75, sm: 0 },
             display: { xs: 'block', md: 'none' }
           }}
