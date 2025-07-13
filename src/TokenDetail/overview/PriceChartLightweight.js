@@ -10,6 +10,7 @@ const PriceChartLightweight = memo(({ token }) => {
   const [range, setRange] = useState('12h');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [hasInitialData, setHasInitialData] = useState(false);
   const [mousePos, setMousePos] = useState(null);
   
   const BASE_URL = process.env.API_URL;
@@ -40,25 +41,40 @@ const PriceChartLightweight = memo(({ token }) => {
         
         const response = await axios.get(endpoint, { signal: controller.signal });
         
-        if (chartType === 2 && response.data?.history) {
+        if (chartType === 2 && response.data?.history && response.data.history.length > 0) {
           // Convert holders data to [time, value] format
           const holdersData = response.data.history.map(item => [
             item.time,
             item.length // graphrich returns 'length' for number of addresses
           ]);
           setData(holdersData.slice(-200));
-        } else if (chartType === 1 && response.data?.ohlc) {
+          setHasInitialData(true);
+          setLoading(false);
+        } else if (chartType === 1 && response.data?.ohlc && response.data.ohlc.length > 0) {
           setData(response.data.ohlc.slice(-200)); // Limit to 200 points
-        } else if (response.data?.history) {
+          setHasInitialData(true);
+          setLoading(false);
+        } else if (response.data?.history && response.data.history.length > 0) {
           // For line chart, history data is already in correct format [timestamp, price, volume]
           setData(response.data.history.slice(-200));
+          setHasInitialData(true);
+          setLoading(false);
+        } else {
+          // No valid data received - only set loading false if we've never had data
+          if (hasInitialData) {
+            setLoading(false);
+          }
+          setData([]);
         }
       } catch (error) {
         if (!axios.isCancel(error)) {
           console.error('Chart error:', error);
         }
-      } finally {
-        setLoading(false);
+        // Only set loading false if we've had initial data before
+        if (hasInitialData) {
+          setLoading(false);
+        }
+        setData([]);
       }
     };
 
@@ -433,15 +449,58 @@ const PriceChartLightweight = memo(({ token }) => {
 
       {/* Canvas Chart */}
       <Box sx={{ position: 'relative', height: 300 }}>
-        {loading ? (
+        {loading || (!hasInitialData && (!data || data.length === 0)) ? (
           <Box sx={{ 
             position: 'absolute', 
             inset: 0, 
             display: 'flex', 
+            flexDirection: 'column',
             alignItems: 'center', 
-            justifyContent: 'center' 
+            justifyContent: 'center',
+            gap: 2
           }}>
-            <Typography color="text.secondary">Loading...</Typography>
+            {/* Animated chart bars */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'flex-end', 
+              gap: 0.5,
+              height: 40
+            }}>
+              {[0.3, 0.6, 0.4, 0.8, 0.5, 0.9, 0.7, 0.4, 0.6, 0.5].map((height, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    width: 6,
+                    height: `${height * 100}%`,
+                    bgcolor: theme.palette.primary.main,
+                    opacity: 0.7,
+                    borderRadius: 1,
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                    animationDelay: `${i * 0.1}s`,
+                    '@keyframes pulse': {
+                      '0%, 100%': {
+                        transform: 'scaleY(0.5)',
+                        opacity: 0.5,
+                      },
+                      '50%': {
+                        transform: 'scaleY(1)',
+                        opacity: 0.8,
+                      },
+                    },
+                  }}
+                />
+              ))}
+            </Box>
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                color: 'text.secondary',
+                fontWeight: 500,
+                letterSpacing: 0.5
+              }}
+            >
+              Loading chart data
+            </Typography>
           </Box>
         ) : !data || data.length === 0 ? (
           <Box sx={{ 
