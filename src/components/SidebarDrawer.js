@@ -97,36 +97,30 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
           <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>Tokens</Typography>
         </AccordionSummary>
         <AccordionDetails style={{ padding: '0', margin: '0' }}>
-          {/* Removed "All Tokens" as per user request */}
-          {/*
-          <MenuItem sx={{ py: 0.5, px: 1.5 }} component={Link} href="/">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <AutoAwesomeIcon sx={{ fontSize: '16px', color: '#637381' }} />
-              <span>All Tokens</span>
-            </Box>
+          <MenuItem sx={{ py: 1, px: 2 }} component={Link} href="/">
+            <Typography sx={{ fontSize: '0.9rem' }}>All Tokens</Typography>
           </MenuItem>
-          */}
+          
+          <Divider sx={{ my: 0.5 }} />
+          
           <Typography
             variant="caption"
             sx={{
               px: 2,
-              pt: 1.5,
-              pb: 1,
-              fontWeight: 700,
+              py: 0.5,
+              fontWeight: 600,
               color: 'text.secondary',
               display: 'block',
-              fontSize: '0.75rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em'
+              fontSize: '0.7rem',
+              textTransform: 'uppercase'
             }}
           >
             Launchpads
           </Typography>
           <MenuItem 
             sx={{ 
-              py: 1, 
-              px: 2, 
-              minHeight: '44px',
+              py: 0.75, 
+              px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
@@ -134,16 +128,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             component={Link} 
             href="/view/firstledger"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <OpenInNewIcon sx={{ fontSize: '20px', color: '#0C53B7' }} />
-              <Typography sx={{ fontSize: '0.9rem' }}>FirstLedger</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <OpenInNewIcon sx={{ fontSize: 16, color: '#013CFE' }} />
+              <Typography sx={{ fontSize: '0.875rem' }}>FirstLedger</Typography>
             </Box>
           </MenuItem>
           <MenuItem 
             sx={{ 
-              py: 1, 
-              px: 2, 
-              minHeight: '44px',
+              py: 0.75, 
+              px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
@@ -151,16 +144,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             component={Link} 
             href="/view/magnetic-x"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <img src="/magneticx-logo.webp" alt="MagneticX" style={{ width: 20, height: 20 }} />
-              <Typography sx={{ fontSize: '0.9rem' }}>MagneticX</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <img src="/magneticx-logo.webp" alt="Magnetic X" style={{ width: 16, height: 16 }} />
+              <Typography sx={{ fontSize: '0.875rem' }}>Magnetic X</Typography>
             </Box>
           </MenuItem>
           <MenuItem 
             sx={{ 
-              py: 1, 
-              px: 2, 
-              minHeight: '44px',
+              py: 0.75, 
+              px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
@@ -168,16 +160,31 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             component={Link} 
             href="/view/xpmarket"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <img src="/static/xpmarket.webp" alt="XPMarket" style={{ width: 20, height: 20 }} />
-              <Typography sx={{ fontSize: '0.9rem' }}>XPMarket</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <img src="/static/xpmarket.webp" alt="XPmarket" style={{ width: 16, height: 16 }} />
+              <Typography sx={{ fontSize: '0.875rem' }}>XPmarket</Typography>
             </Box>
           </MenuItem>
           <MenuItem 
             sx={{ 
-              py: 1, 
-              px: 2, 
-              minHeight: '44px',
+              py: 0.75, 
+              px: 2,
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/view/aigentrun"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <img src="/static/aigentrun.gif" alt="aigent.run" style={{ width: 16, height: 16 }} />
+              <Typography sx={{ fontSize: '0.875rem' }}>aigent.run</Typography>
+            </Box>
+          </MenuItem>
+          <MenuItem 
+            sx={{ 
+              py: 0.75, 
+              px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
@@ -185,10 +192,23 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             component={Link} 
             href="/view/ledgermeme"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <LedgerMemeIcon sx={{ fontSize: '20px', color: '#cfff04' }} />
-              <Typography sx={{ fontSize: '0.9rem' }}>LedgerMeme</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <LedgerMemeIcon sx={{ fontSize: 16 }} />
+              <Typography sx={{ fontSize: '0.875rem' }}>LedgerMeme</Typography>
             </Box>
+          </MenuItem>
+          <MenuItem 
+            sx={{ 
+              py: 0.75, 
+              px: 2,
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }} 
+            component={Link} 
+            href="/view/horizon"
+          >
+            <Typography sx={{ fontSize: '0.875rem' }}>Horizon</Typography>
           </MenuItem>
           <Divider sx={{ my: 1 }} />
 
@@ -196,21 +216,21 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             variant="caption"
             sx={{
               px: 2,
-              pt: 1,
-              pb: 0,
-              fontWeight: 'bold',
+              py: 0.5,
+              fontWeight: 600,
               color: 'text.secondary',
-              display: 'block'
+              display: 'block',
+              fontSize: '0.7rem',
+              textTransform: 'uppercase'
             }}
           >
-            Token Discovery
+            Discover
           </Typography>
 
           <MenuItem 
             sx={{ 
-              py: 1, 
-              px: 2, 
-              minHeight: '44px',
+              py: 0.75, 
+              px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
@@ -218,17 +238,16 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             component={Link} 
             href="/trending"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <LocalFireDepartmentIcon sx={{ fontSize: '20px', color: '#B71D18' }} />
-              <Typography sx={{ fontSize: '0.9rem' }}>Trending</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography sx={{ fontSize: '0.875rem' }}>🔥</Typography>
+              <Typography sx={{ fontSize: '0.875rem' }}>Trending</Typography>
             </Box>
           </MenuItem>
 
           <MenuItem 
             sx={{ 
-              py: 1, 
-              px: 2, 
-              minHeight: '44px',
+              py: 0.75, 
+              px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
@@ -236,17 +255,16 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             component={Link} 
             href="/spotlight"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <SearchIcon sx={{ fontSize: '20px', color: '#0C53B7' }} />
-              <Typography sx={{ fontSize: '0.9rem' }}>Spotlight</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography sx={{ fontSize: '0.875rem' }}>🔍</Typography>
+              <Typography sx={{ fontSize: '0.875rem' }}>Spotlight</Typography>
             </Box>
           </MenuItem>
 
           <MenuItem 
             sx={{ 
-              py: 1, 
-              px: 2, 
-              minHeight: '44px',
+              py: 0.75, 
+              px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
@@ -254,17 +272,16 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             component={Link} 
             href="/most-viewed"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <VisibilityIcon sx={{ fontSize: '20px', color: '#7635DC' }} />
-              <Typography sx={{ fontSize: '0.9rem' }}>Most Viewed</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography sx={{ fontSize: '0.875rem' }}>👁</Typography>
+              <Typography sx={{ fontSize: '0.875rem' }}>Most Viewed</Typography>
             </Box>
           </MenuItem>
 
           <MenuItem 
             sx={{ 
-              py: 1, 
-              px: 2, 
-              minHeight: '44px',
+              py: 0.75, 
+              px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
@@ -272,17 +289,16 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             component={Link} 
             href="/gainers/24h"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <TrendingUpIcon sx={{ fontSize: '20px', color: '#007B55' }} />
-              <Typography sx={{ fontSize: '0.9rem' }}>Gainers</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography sx={{ fontSize: '0.875rem' }}>📈</Typography>
+              <Typography sx={{ fontSize: '0.875rem' }}>Gainers</Typography>
             </Box>
           </MenuItem>
 
           <MenuItem 
             sx={{ 
-              py: 1, 
-              px: 2, 
-              minHeight: '44px',
+              py: 0.75, 
+              px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
@@ -290,9 +306,9 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             component={Link} 
             href="/new"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <FiberNewIcon sx={{ fontSize: '20px', color: '#B76E00' }} />
-              <Typography sx={{ fontSize: '0.9rem' }}>New</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography sx={{ fontSize: '0.875rem' }}>✨</Typography>
+              <Typography sx={{ fontSize: '0.875rem' }}>New</Typography>
             </Box>
           </MenuItem>
 
@@ -302,21 +318,21 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             variant="caption"
             sx={{
               px: 2,
-              pt: 1,
-              pb: 0,
-              fontWeight: 'bold',
+              py: 0.5,
+              fontWeight: 600,
               color: 'text.secondary',
-              display: 'block'
+              display: 'block',
+              fontSize: '0.7rem',
+              textTransform: 'uppercase'
             }}
           >
-            Market Analysis
+            Analytics
           </Typography>
 
           <MenuItem 
             sx={{ 
-              py: 1, 
-              px: 2, 
-              minHeight: '44px',
+              py: 0.75, 
+              px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
@@ -324,17 +340,13 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             component={Link} 
             href="/market-metrics"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <TroubleshootIcon sx={{ fontSize: '20px', color: '#0C53B7' }} />
-              <Typography sx={{ fontSize: '0.9rem' }}>Market Metrics</Typography>
-            </Box>
+            <Typography sx={{ fontSize: '0.875rem' }}>Market Metrics</Typography>
           </MenuItem>
 
           <MenuItem 
             sx={{ 
-              py: 1, 
-              px: 2, 
-              minHeight: '44px',
+              py: 0.75, 
+              px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
@@ -342,10 +354,7 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             component={Link} 
             href="/top-traders"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <EmojiEventsIcon sx={{ fontSize: '20px', color: '#B78100' }} />
-              <Typography sx={{ fontSize: '0.9rem' }}>Top Traders</Typography>
-            </Box>
+            <Typography sx={{ fontSize: '0.875rem' }}>Top Traders</Typography>
           </MenuItem>
         </AccordionDetails>
       </Accordion>

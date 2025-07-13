@@ -430,123 +430,101 @@ export default function Header(props) {
                 alignItems: 'center'
               }}
             >
-              <StyledLink
-                underline="none"
-                darkMode={darkMode}
-                theme={theme}
+              <Box
                 onClick={handleTokensClick}
-                style={{ cursor: 'pointer' }}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  px: 2,
+                  py: 1,
+                  borderRadius: 1,
+                  cursor: 'pointer',
+                  color: theme.palette.text.primary,
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    bgcolor: alpha(theme.palette.primary.main, 0.08),
+                    color: theme.palette.primary.main
+                  }
+                }}
               >
-                {t('Tokens')}
-                <KeyboardArrowDownIcon />
-              </StyledLink>
+                <Typography variant="body2" fontWeight={500}>
+                  {t('Tokens')}
+                </Typography>
+                <KeyboardArrowDownIcon
+                  sx={{
+                    fontSize: 20,
+                    transition: 'transform 0.2s',
+                    transform: openTokensMenu ? 'rotate(180deg)' : 'rotate(0deg)'
+                  }}
+                />
+              </Box>
 
               <Menu
                 anchorEl={tokensAnchorEl}
                 open={openTokensMenu}
                 onClose={handleTokensClose}
-                MenuListProps={{
-                  'aria-labelledby': 'tokens-button'
-                }}
                 PaperProps={{
                   sx: {
                     mt: 1,
-                    background: 'transparent',
-                    backdropFilter: 'blur(40px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-                    borderRadius: '16px',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    boxShadow: `
-                      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-                    overflow: 'hidden',
-                    position: 'relative',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: `linear-gradient(
-                        135deg,
-                        ${alpha(theme.palette.primary.main, 0.05)} 0%,
-                        transparent 50%,
-                        ${alpha(theme.palette.secondary.main, 0.05)} 100%
-                      )`,
-                      pointerEvents: 'none'
-                    },
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '2px',
-                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-                      opacity: 0.8
+                    minWidth: 200,
+                    maxWidth: 280,
+                    borderRadius: 2,
+                    border: `1px solid ${theme.palette.divider}`,
+                    boxShadow: theme.shadows[3],
+                    bgcolor: theme.palette.background.paper,
+                    '& .MuiList-root': {
+                      py: 1
                     }
                   }
                 }}
+                transformOrigin={{ horizontal: 'left', vertical: 'top' }}
+                anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
               >
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
+                <MenuItem
                   onClick={() => handleTokenOptionSelect('/')}
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AutoAwesomeIcon sx={{ fontSize: '16px', color: '#637381' }} />
-                    <span>{t('All Tokens')}</span>
-                  </Box>
-                </StyledMenuItem>
-
-                <Divider sx={{ my: 1 }} />
-
-                <Typography
-                  variant="caption"
-                  sx={{
+                    py: 1,
                     px: 2,
-                    pt: 1,
-                    pb: 0,
-                    fontWeight: 'bold',
-                    color: 'text.secondary',
-                    display: 'block'
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.primary.main, 0.08)
+                    }
                   }}
                 >
-                  {t('Launchpads')}
-                </Typography>
+                  <Typography variant="body2">{t('All Tokens')}</Typography>
+                </MenuItem>
 
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
+                <Divider sx={{ my: 0.5 }} />
+
+                <Box sx={{ px: 2, py: 0.5 }}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                    {t('LAUNCHPADS')}
+                  </Typography>
+                </Box>
+
+                <MenuItem
                   onClick={() => handleTokenOptionSelect('/view/firstledger')}
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
+                    py: 0.75,
+                    px: 2,
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.primary.main, 0.08)
+                    }
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <OpenInNewIcon sx={{ fontSize: '16px', color: '#013CFE' }} />
-                    <span>FirstLedger</span>
+                    <OpenInNewIcon sx={{ fontSize: 16, color: '#013CFE' }} />
+                    <Typography variant="body2" fontSize={14}>FirstLedger</Typography>
                   </Box>
-                </StyledMenuItem>
-
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
+                </MenuItem>
+                <MenuItem
                   onClick={() => handleTokenOptionSelect('/view/magnetic-x')}
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
+                    py: 0.75,
+                    px: 2,
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.primary.main, 0.08)
+                    }
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -554,40 +532,34 @@ export default function Header(props) {
                       component="img"
                       src="/magneticx-logo.webp"
                       alt="Magnetic X"
-                      sx={{
-                        width: '16px',
-                        height: '16px',
-                        objectFit: 'contain'
-                      }}
+                      sx={{ width: 16, height: 16, objectFit: 'contain' }}
                     />
-                    <span>Magnetic X</span>
+                    <Typography variant="body2" fontSize={14}>Magnetic X</Typography>
                   </Box>
-                </StyledMenuItem>
-
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
+                </MenuItem>
+                <MenuItem
                   onClick={() => handleTokenOptionSelect('/view/xpmarket')}
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
+                    py: 0.75,
+                    px: 2,
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.primary.main, 0.08)
+                    }
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <XPMarketIcon sx={{ fontSize: '16px', color: '#6D1FEE' }} />
-                    <span>XPmarket</span>
+                    <XPMarketIcon sx={{ fontSize: 16, color: '#6D1FEE' }} />
+                    <Typography variant="body2" fontSize={14}>XPmarket</Typography>
                   </Box>
-                </StyledMenuItem>
-
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
+                </MenuItem>
+                <MenuItem
                   onClick={() => handleTokenOptionSelect('/view/aigentrun')}
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
+                    py: 0.75,
+                    px: 2,
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.primary.main, 0.08)
+                    }
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -598,203 +570,107 @@ export default function Header(props) {
                       height={16}
                       sizes="16px"
                       quality={85}
-                      style={{
-                        objectFit: 'contain'
-                      }}
+                      style={{ objectFit: 'contain' }}
                     />
-                    <span>aigent.run</span>
+                    <Typography variant="body2" fontSize={14}>aigent.run</Typography>
                   </Box>
-                </StyledMenuItem>
-
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
+                </MenuItem>
+                <MenuItem
                   onClick={() => handleTokenOptionSelect('/view/ledgermeme')}
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
+                    py: 0.75,
+                    px: 2,
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.primary.main, 0.08)
+                    }
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <LedgerMemeIcon sx={{ fontSize: '16px', color: '#cfff04' }} />
-                    <span>LedgerMeme</span>
+                    <LedgerMemeIcon sx={{ fontSize: 16 }} />
+                    <Typography variant="body2" fontSize={14}>LedgerMeme</Typography>
                   </Box>
-                </StyledMenuItem>
-
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
+                </MenuItem>
+                <MenuItem
                   onClick={() => handleTokenOptionSelect('/view/horizon')}
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <HorizonIcon sx={{ fontSize: '16px', color: '#f97316' }} />
-                    <span>Horizon</span>
-                  </Box>
-                </StyledMenuItem>
-
-                <Divider sx={{ my: 1 }} />
-
-                <Typography
-                  variant="caption"
-                  sx={{
+                    py: 0.75,
                     px: 2,
-                    pt: 1,
-                    pb: 0,
-                    fontWeight: 'bold',
-                    color: 'text.secondary',
-                    display: 'block'
-                  }}
-                >
-                  {t('Token Discovery')}
-                </Typography>
-
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
-                  onClick={() => handleTokenOptionSelect('/trending')}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.primary.main, 0.08)
+                    }
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <LocalFireDepartmentIcon
-                      sx={{ fontSize: '16px', color: darkMode ? '#FF5630' : '#B71D18' }}
-                    />
-                    <span>Trending</span>
+                    <HorizonIcon sx={{ fontSize: 16 }} />
+                    <Typography variant="body2" fontSize={14}>Horizon</Typography>
                   </Box>
-                </StyledMenuItem>
+                </MenuItem>
 
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
-                  onClick={() => handleTokenOptionSelect('/spotlight')}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <SearchIcon
-                      sx={{ fontSize: '16px', color: darkMode ? '#2499EF' : '#0C53B7' }}
-                    />
-                    <span>Spotlight</span>
-                  </Box>
-                </StyledMenuItem>
+                <Divider sx={{ my: 0.5 }} />
 
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
-                  onClick={() => handleTokenOptionSelect('/most-viewed')}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <VisibilityIcon
-                      sx={{ fontSize: '16px', color: darkMode ? '#9155FD' : '#7635DC' }}
-                    />
-                    <span>Most Viewed</span>
-                  </Box>
-                </StyledMenuItem>
+                <Box sx={{ px: 2, py: 0.5 }}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                    {t('DISCOVER')}
+                  </Typography>
+                </Box>
 
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
-                  onClick={() => handleTokenOptionSelect('/gainers/24h')}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <TrendingUpIcon
-                      sx={{ fontSize: '16px', color: darkMode ? '#00AB55' : '#007B55' }}
-                    />
-                    <span>Gainers</span>
-                  </Box>
-                </StyledMenuItem>
+                {[
+                  { path: '/trending', name: 'Trending', icon: '🔥' },
+                  { path: '/spotlight', name: 'Spotlight', icon: '🔍' },
+                  { path: '/most-viewed', name: 'Most Viewed', icon: '👁' },
+                  { path: '/gainers/24h', name: 'Gainers', icon: '📈' },
+                  { path: '/new', name: 'New', icon: '✨' }
+                ].map((item) => (
+                  <MenuItem
+                    key={item.path}
+                    onClick={() => handleTokenOptionSelect(item.path)}
+                    sx={{
+                      py: 0.75,
+                      px: 2,
+                      '&:hover': {
+                        bgcolor: alpha(theme.palette.primary.main, 0.08)
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body2" fontSize={14}>
+                        {item.icon}
+                      </Typography>
+                      <Typography variant="body2" fontSize={14}>
+                        {item.name}
+                      </Typography>
+                    </Box>
+                  </MenuItem>
+                ))}
 
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
-                  onClick={() => handleTokenOptionSelect('/new')}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <FiberNewIcon
-                      sx={{ fontSize: '16px', color: darkMode ? '#FFA000' : '#B76E00' }}
-                    />
-                    <span>New</span>
-                  </Box>
-                </StyledMenuItem>
+                <Divider sx={{ my: 0.5 }} />
 
-                <Divider sx={{ my: 1 }} />
+                <Box sx={{ px: 2, py: 0.5 }}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                    {t('ANALYTICS')}
+                  </Typography>
+                </Box>
 
-                <Typography
-                  variant="caption"
-                  sx={{
-                    px: 2,
-                    pt: 1,
-                    pb: 0,
-                    fontWeight: 'bold',
-                    color: 'text.secondary',
-                    display: 'block'
-                  }}
-                >
-                  {t('Market Analysis')}
-                </Typography>
-
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
-                  onClick={() => handleTokenOptionSelect('/market-metrics')}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <TroubleshootIcon
-                      sx={{ fontSize: '16px', color: darkMode ? '#2499EF' : '#0C53B7' }}
-                    />
-                    <span>{t('Market Metrics')}</span>
-                  </Box>
-                </StyledMenuItem>
-
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
-                  onClick={() => handleTokenOptionSelect('/top-traders')}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <EmojiEventsIcon
-                      sx={{ fontSize: '16px', color: darkMode ? '#FFC107' : '#B78100' }}
-                    />
-                    <span>{t('Top Traders')}</span>
-                  </Box>
-                </StyledMenuItem>
+                {[
+                  { path: '/market-metrics', name: t('Market Metrics') },
+                  { path: '/top-traders', name: t('Top Traders') }
+                ].map((item) => (
+                  <MenuItem
+                    key={item.path}
+                    onClick={() => handleTokenOptionSelect(item.path)}
+                    sx={{
+                      py: 0.75,
+                      px: 2,
+                      '&:hover': {
+                        bgcolor: alpha(theme.palette.primary.main, 0.08)
+                      }
+                    }}
+                  >
+                    <Typography variant="body2" fontSize={14}>
+                      {item.name}
+                    </Typography>
+                  </MenuItem>
+                ))}
               </Menu>
 
               <StyledLink
