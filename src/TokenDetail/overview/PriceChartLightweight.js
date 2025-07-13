@@ -12,6 +12,8 @@ const PriceChartLightweight = memo(({ token }) => {
   const [loading, setLoading] = useState(true);
   const [hasInitialData, setHasInitialData] = useState(false);
   const [mousePos, setMousePos] = useState(null);
+  const wsRef = useRef(null);
+  const reconnectTimeoutRef = useRef(null);
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
@@ -82,6 +84,96 @@ const PriceChartLightweight = memo(({ token }) => {
     
     return () => controller.abort();
   }, [token.md5, range, chartType, BASE_URL]);
+
+  // WebSocket connection for live updates
+  useEffect(() => {
+    if (!token?.md5 || chartType === 2) return; // No WebSocket for holders chart
+    
+    const connectWS = () => {
+      const ws = new WebSocket('wss://api.xrpl.to/ws/ohlc');
+      wsRef.current = ws;
+      
+      ws.onopen = () => {
+        const intervals = range === '12h' || range === '1D' ? ['1m', '5m'] : ['15m', '1h'];
+        ws.send(JSON.stringify({
+          type: 'subscribe',
+          tokenMd5: token.md5,
+          intervals
+        }));
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          if (message.type === 'candleUpdate' && data && data.length > 0) {
+            const { candle } = message;
+            
+            setData(prevData => {
+              if (!prevData || prevData.length === 0) return prevData;
+              
+              const newData = [...prevData];
+              const lastItem = newData[newData.length - 1];
+              
+              // For candlestick chart
+              if (chartType === 1) {
+                if (lastItem[0] === candle[0]) {
+                  // Update existing candle
+                  newData[newData.length - 1] = candle;
+                } else if (candle[0] > lastItem[0]) {
+                  // Add new candle
+                  newData.push(candle);
+                  if (newData.length > 200) newData.shift();
+                }
+              } 
+              // For line chart
+              else if (chartType === 0) {
+                // Convert OHLC to line format [timestamp, price, volume]
+                const linePoint = [candle[0], candle[4], candle[5]];
+                
+                if (lastItem[0] === linePoint[0]) {
+                  // Update existing point
+                  newData[newData.length - 1] = linePoint;
+                } else if (linePoint[0] > lastItem[0]) {
+                  // Add new point
+                  newData.push(linePoint);
+                  if (newData.length > 200) newData.shift();
+                }
+              }
+              
+              return newData;
+            });
+          }
+        } catch (err) {
+          console.error('WebSocket message error:', err);
+        }
+      };
+      
+      ws.onerror = (err) => {
+        console.error('WebSocket error:', err);
+      };
+      
+      ws.onclose = () => {
+        // Reconnect after 5 seconds
+        reconnectTimeoutRef.current = setTimeout(connectWS, 5000);
+      };
+    };
+    
+    // Only connect if we have initial data
+    if (hasInitialData) {
+      connectWS();
+    }
+    
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+    };
+  }, [token.md5, range, chartType, hasInitialData, data]);
 
   // Draw chart using Canvas
   useEffect(() => {
