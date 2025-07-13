@@ -109,6 +109,17 @@ const TABLE_HEAD = [
     tooltip: '24 hour change'
   },
   {
+    id: 'marketcapMobile',
+    label: 'MCAP',
+    align: 'right',
+    width: '8%',
+    order: true,
+    sticky: false,
+    mobileHide: false,
+    mobileOnly: true,
+    tooltip: 'Market cap'
+  },
+  {
     id: 'pro7d',
     label: '7D %',
     align: 'right',
@@ -222,7 +233,7 @@ export default function TokenListHead({
     const stickyPositions = {
       'star': 0,
       'rank': isMobile ? 0 : 40,
-      'token': isMobile ? 55 : 90
+      'token': isMobile ? 40 : 90
     };
     
     return stickyPositions[id] || 'unset';
@@ -247,7 +258,14 @@ export default function TokenListHead({
       }}
     >
       <TableRow>
-        {TABLE_HEAD.filter(column => !column.id || !isMobile || !column.mobileHide).map((headCell) => {
+        {TABLE_HEAD.filter(column => {
+          if (!column.id) return true;
+          if (isMobile) {
+            return !column.mobileHide;
+          } else {
+            return !column.mobileOnly;
+          }
+        }).map((headCell) => {
           const isSticky = headCell.sticky && (!isMobile || !headCell.mobileHide);
           
           return (

@@ -387,8 +387,8 @@ function FTokenRow({
 
   const percentageCellStyle = useMemo(
     () => ({
-      minWidth: isMobile ? '60px' : '80px',
-      padding: isMobile ? '4px 8px' : '12px 8px',
+      minWidth: isMobile ? '40px' : '80px',
+      padding: isMobile ? '1px 2px' : '12px 8px',
       '& .MuiTypography-root': {
         textAlign: 'right',
         width: '100%',
@@ -405,8 +405,8 @@ function FTokenRow({
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       backgroundColor: 'transparent',
       width: '100%',
-      height: isMobile ? '48px' : 'auto',
-      '&:after': {
+      height: isMobile ? '32px' : 'auto',
+      '&:after': isMobile ? {} : {
         content: '""',
         position: 'absolute',
         bottom: 0,
@@ -434,7 +434,7 @@ function FTokenRow({
         whiteSpace: 'nowrap',
         borderBottom: 'none',
         backgroundColor: 'transparent',
-        height: isMobile ? '48px' : 'auto'
+        height: isMobile ? '32px' : 'auto'
       }
     }),
     [isMobile, theme]
@@ -447,27 +447,27 @@ function FTokenRow({
         zIndex: 1001,
         left: 0,
         background: theme.palette.background.default,
-        width: isMobile ? '30px' : '40px',
-        minWidth: isMobile ? '30px' : '40px',
-        padding: isMobile ? '4px 2px' : '12px 4px'
+        width: isMobile ? '20px' : '40px',
+        minWidth: isMobile ? '20px' : '40px',
+        padding: isMobile ? '1px 0px' : '12px 4px'
       },
       second: {
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '30px' : '40px',
+        left: isMobile ? '20px' : '40px',
         background: theme.palette.background.default,
-        width: isMobile ? '25px' : '50px',
-        minWidth: isMobile ? '25px' : '50px',
-        padding: isMobile ? '4px 2px' : '12px 8px'
+        width: isMobile ? '20px' : '50px',
+        minWidth: isMobile ? '20px' : '50px',
+        padding: isMobile ? '1px 1px' : '12px 8px'
       },
       third: {
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '55px' : '90px',
+        left: isMobile ? '40px' : '90px',
         background: theme.palette.background.default,
-        minWidth: isMobile ? '140px' : '250px',
-        maxWidth: isMobile ? '160px' : 'none',
-        padding: isMobile ? '4px 8px' : '12px 8px',
+        minWidth: isMobile ? '100px' : '250px',
+        maxWidth: isMobile ? '120px' : 'none',
+        padding: isMobile ? '1px 4px' : '12px 8px',
         '&:before': scrollLeft
           ? {
               content: "''",
@@ -783,8 +783,8 @@ function FTokenRow({
         align="right"
         sx={{
           color: priceColor,
-          minWidth: isMobile ? '70px' : '100px',
-          padding: isMobile ? '4px 8px' : '12px 8px'
+          minWidth: isMobile ? '45px' : '100px',
+          padding: isMobile ? '1px 2px' : '12px 8px'
         }}
       >
         <TransitionTypo
@@ -816,6 +816,18 @@ function FTokenRow({
       <TableCell align="right" sx={percentageCellStyle}>
         {renderPercentageWithIcon(pro24h || 0, "h4", theme, isMobile)}
       </TableCell>
+      {isMobile && (
+        <TableCell align="right" sx={{ minWidth: '45px', padding: '1px 2px' }}>
+          <Typography variant="h4" sx={{ fontSize: '9px', fontWeight: '600' }}>
+            {currencySymbols[activeFiatCurrency]}
+            {convertedValues.marketCap >= 1000000
+              ? `${(convertedValues.marketCap / 1000000).toFixed(1)}M`
+              : convertedValues.marketCap >= 1000
+                ? `${(convertedValues.marketCap / 1000).toFixed(1)}K`
+                : fNumber(convertedValues.marketCap)}
+          </Typography>
+        </TableCell>
+      )}
       {!isMobile && (
         <TableCell align="right" sx={percentageCellStyle}>
           {renderPercentageWithIcon(pro7d || 0, "h4", theme, isMobile)}
