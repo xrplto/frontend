@@ -14,6 +14,9 @@ const PriceChartLightweight = memo(({ token }) => {
   const [mousePos, setMousePos] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
   const pollingIntervalRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [dragStart, setDragStart] = useState(null);
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
@@ -195,18 +198,22 @@ const PriceChartLightweight = memo(({ token }) => {
     const chartWidth = rect.width - leftPadding - rightPadding;
     const totalHeight = rect.height - topPadding - bottomPadding;
     
+    // Apply pan offset to chart positioning
+    const panX = panOffset.x;
+    const panY = panOffset.y;
+    
     // Split height: 70% for price chart, 30% for volume
     const showVolume = chartType !== 2; // Don't show volume for holders chart
     const priceChartHeight = showVolume ? totalHeight * 0.7 : totalHeight;
     const volumeChartHeight = showVolume ? totalHeight * 0.25 : 0;
     const volumeChartGap = showVolume ? totalHeight * 0.05 : 0;
 
-    // Draw grid
+    // Draw grid with pan offset
     ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
     ctx.lineWidth = 1;
     
     for (let i = 0; i <= 4; i++) {
-      const y = topPadding + (priceChartHeight / 4) * i;
+      const y = topPadding + (priceChartHeight / 4) * i + panY;
       ctx.beginPath();
       ctx.moveTo(leftPadding, y);
       ctx.lineTo(rect.width - rightPadding, y);
@@ -227,8 +234,8 @@ const PriceChartLightweight = memo(({ token }) => {
         ctx.moveTo(leftPadding, topPadding + priceChartHeight);
         
         data.forEach((item, index) => {
-          const x = leftPadding + (index / (data.length - 1)) * chartWidth;
-          const y = topPadding + ((maxPrice - item[1]) / priceRange) * priceChartHeight;
+          const x = leftPadding + (index / (data.length - 1)) * chartWidth + panX;
+          const y = topPadding + ((maxPrice - item[1]) / priceRange) * priceChartHeight + panY;
           
           if (index === 0) {
             ctx.moveTo(x, y);
@@ -249,8 +256,8 @@ const PriceChartLightweight = memo(({ token }) => {
       ctx.beginPath();
       
       data.forEach((item, index) => {
-        const x = leftPadding + (index / (data.length - 1)) * chartWidth;
-        const y = topPadding + ((maxPrice - item[1]) / priceRange) * priceChartHeight;
+        const x = leftPadding + (index / (data.length - 1)) * chartWidth + panX;
+        const y = topPadding + ((maxPrice - item[1]) / priceRange) * priceChartHeight + panY;
         
         if (index === 0) {
           ctx.moveTo(x, y);
@@ -267,13 +274,13 @@ const PriceChartLightweight = memo(({ token }) => {
       const actualCandleWidth = candleWidth - candleSpacing;
       
       data.forEach((item, index) => {
-        const x = leftPadding + (index / data.length) * chartWidth + candleWidth / 2;
+        const x = leftPadding + (index / data.length) * chartWidth + candleWidth / 2 + panX;
         const [time, open, high, low, close, volume] = item;
         
-        const yHigh = topPadding + ((maxPrice - high) / priceRange) * priceChartHeight;
-        const yLow = topPadding + ((maxPrice - low) / priceRange) * priceChartHeight;
-        const yOpen = topPadding + ((maxPrice - open) / priceRange) * priceChartHeight;
-        const yClose = topPadding + ((maxPrice - close) / priceRange) * priceChartHeight;
+        const yHigh = topPadding + ((maxPrice - high) / priceRange) * priceChartHeight + panY;
+        const yLow = topPadding + ((maxPrice - low) / priceRange) * priceChartHeight + panY;
+        const yOpen = topPadding + ((maxPrice - open) / priceRange) * priceChartHeight + panY;
+        const yClose = topPadding + ((maxPrice - close) / priceRange) * priceChartHeight + panY;
         
         const isUp = close >= open;
         
@@ -535,7 +542,7 @@ const PriceChartLightweight = memo(({ token }) => {
       }
     }
 
-  }, [data, chartType, isDark, theme, mousePos]);
+  }, [data, chartType, isDark, theme, mousePos, panOffset]);
 
   return (
     <Paper elevation={0} sx={{ p: 2 }}>
@@ -660,12 +667,34 @@ const PriceChartLightweight = memo(({ token }) => {
         ) : (
           <canvas
             ref={canvasRef}
-            style={{ width: '100%', height: '100%', cursor: 'crosshair' }}
+            style={{ width: '100%', height: '100%', cursor: isDragging ? 'grabbing' : 'grab' }}
+            onMouseDown={(e) => {
+              const rect = canvasRef.current.getBoundingClientRect();
+              setIsDragging(true);
+              setDragStart({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+              setMousePos(null);
+            }}
             onMouseMove={(e) => {
               const rect = canvasRef.current.getBoundingClientRect();
-              setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+              const currentPos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+              
+              if (isDragging && dragStart) {
+                const deltaX = currentPos.x - dragStart.x;
+                const deltaY = currentPos.y - dragStart.y;
+                setPanOffset({ x: deltaX, y: deltaY });
+              } else {
+                setMousePos(currentPos);
+              }
             }}
-            onMouseLeave={() => setMousePos(null)}
+            onMouseUp={() => {
+              setIsDragging(false);
+              setDragStart(null);
+            }}
+            onMouseLeave={() => {
+              setMousePos(null);
+              setIsDragging(false);
+              setDragStart(null);
+            }}
           />
         )}
       </Box>
