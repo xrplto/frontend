@@ -12,11 +12,8 @@ const PriceChartLightweight = memo(({ token }) => {
   const [loading, setLoading] = useState(true);
   const [hasInitialData, setHasInitialData] = useState(false);
   const [mousePos, setMousePos] = useState(null);
-  const [isLive, setIsLive] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const wsRef = useRef(null);
-  const reconnectTimeoutRef = useRef(null);
-  const reconnectAttemptsRef = useRef(0);
+  const pollingIntervalRef = useRef(null);
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
@@ -97,168 +94,62 @@ const PriceChartLightweight = memo(({ token }) => {
     return () => controller.abort();
   }, [token.md5, range, chartType, BASE_URL]);
 
-  // WebSocket connection for live updates
+  // Polling for live updates
   useEffect(() => {
-    if (!token?.md5 || chartType === 2) return; // No WebSocket for holders chart
+    if (!token?.md5 || !hasInitialData) return;
     
-    const connectWS = () => {
-      const ws = new WebSocket('wss://api.xrpl.to/ws/ohlc');
-      wsRef.current = ws;
-      
-      ws.onopen = () => {
-        // Select appropriate intervals based on chart range
-        let intervals;
-        switch(range) {
-          case '12h':
-            intervals = ['1m', '5m'];
-            break;
-          case '1D':
-            intervals = ['5m', '15m'];
-            break;
-          case '7D':
-            intervals = ['15m', '1h'];
-            break;
-          case '1M':
-            intervals = ['1h', '4h'];
-            break;
-          default:
-            intervals = ['5m', '15m'];
+    // Poll every 3 seconds
+    const pollData = async () => {
+      try {
+        const apiRange = range === '12h' ? 'SPARK' : range;
+        let endpoint;
+        
+        if (chartType === 2) {
+          endpoint = `${BASE_URL}/graphrich/${token.md5}?range=${apiRange}`;
+        } else if (chartType === 1) {
+          endpoint = `${BASE_URL}/graph-ohlc-with-metrics/${token.md5}?range=${apiRange}&vs_currency=XRP`;
+        } else {
+          endpoint = `${BASE_URL}/graph-with-metrics/${token.md5}?range=${apiRange}&vs_currency=XRP`;
         }
         
-        console.log(`WebSocket connected. Subscribing to ${token.name} (${token.md5}) with intervals:`, intervals);
+        const response = await axios.get(endpoint);
         
-        ws.send(JSON.stringify({
-          type: 'subscribe',
-          tokenMd5: token.md5,
-          intervals
-        }));
-        setIsLive(true);
-        // Reset reconnection attempts on successful connection
-        reconnectAttemptsRef.current = 0;
-      };
-      
-      ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          if (message.type === 'candleUpdate' && data && data.length > 0) {
-            const { candle, interval } = message;
-            
-            setData(prevData => {
-              if (!prevData || prevData.length === 0) return prevData;
-              
-              const newData = [...prevData];
-              const lastItem = newData[newData.length - 1];
-              
-              // Parse volume - handle the concatenated string issue
-              const parseVolume = (volumeStr) => {
-                if (typeof volumeStr === 'number') return volumeStr;
-                if (typeof volumeStr === 'string') {
-                  // Take only the first valid number from the string
-                  const match = volumeStr.match(/^[\d.]+/);
-                  return match ? parseFloat(match[0]) : 0;
-                }
-                return 0;
-              };
-              
-              // For candlestick chart
-              if (chartType === 1) {
-                // Ensure all candle values are numbers
-                const normalizedCandle = [
-                  candle[0], // timestamp
-                  parseFloat(candle[1]), // open
-                  parseFloat(candle[2]), // high
-                  parseFloat(candle[3]), // low
-                  parseFloat(candle[4]), // close
-                  parseVolume(candle[5]) // volume - handle string concatenation
-                ];
-                
-                // Find if we need to update an existing candle or add a new one
-                const existingIndex = newData.findIndex(item => item[0] === normalizedCandle[0]);
-                
-                if (existingIndex !== -1) {
-                  // Update existing candle
-                  // Preserve original volume if WebSocket provides invalid volume
-                  const originalVolume = newData[existingIndex][5] || 0;
-                  if (normalizedCandle[5] === 0 && originalVolume > 0) {
-                    normalizedCandle[5] = originalVolume;
-                  }
-                  newData[existingIndex] = normalizedCandle;
-                } else if (normalizedCandle[0] > lastItem[0]) {
-                  // Add new candle
-                  newData.push(normalizedCandle);
-                  if (newData.length > 200) newData.shift();
-                }
-              } 
-              // For line chart
-              else if (chartType === 0) {
-                // Convert OHLC to line format [timestamp, price, volume]
-                const linePoint = [
-                  candle[0], 
-                  parseFloat(candle[4]), 
-                  parseVolume(candle[5])
-                ];
-                
-                // For line charts, we might need to handle timestamp alignment
-                // Find the closest existing timestamp within a reasonable range (e.g., 1 minute)
-                const timestampTolerance = 60000; // 1 minute in milliseconds
-                const existingIndex = newData.findIndex(item => 
-                  Math.abs(item[0] - linePoint[0]) < timestampTolerance
-                );
-                
-                if (existingIndex !== -1) {
-                  // Update existing point with the latest price
-                  // Preserve original volume if WebSocket doesn't provide valid volume
-                  const originalVolume = newData[existingIndex][2] || 0;
-                  const newVolume = linePoint[2] || originalVolume;
-                  newData[existingIndex] = [newData[existingIndex][0], linePoint[1], newVolume];
-                } else if (linePoint[0] > lastItem[0]) {
-                  // Add new point only if it's genuinely newer
-                  newData.push(linePoint);
-                  if (newData.length > 200) newData.shift();
-                }
-              }
-              
-              return newData;
-            });
-            
-            // Update last update time when we receive data
-            setLastUpdate(new Date());
-          }
-        } catch (err) {
-          console.error('WebSocket message error:', err);
+        if (chartType === 2 && response.data?.history && response.data.history.length > 0) {
+          const holdersData = response.data.history.map(item => [
+            item.time,
+            item.length
+          ]);
+          setData(holdersData.slice(-200));
+        } else if (chartType === 1 && response.data?.ohlc && response.data.ohlc.length > 0) {
+          const normalizedOhlc = response.data.ohlc.map(candle => [
+            candle[0],
+            parseFloat(candle[1]),
+            parseFloat(candle[2]),
+            parseFloat(candle[3]),
+            parseFloat(candle[4]),
+            parseFloat(candle[5]) || 0
+          ]);
+          setData(normalizedOhlc.slice(-200));
+        } else if (response.data?.history && response.data.history.length > 0) {
+          setData(response.data.history.slice(-200));
         }
-      };
-      
-      ws.onerror = (err) => {
-        console.error('WebSocket error:', err);
-      };
-      
-      ws.onclose = () => {
-        setIsLive(false);
-        // Exponential backoff for reconnection
-        reconnectAttemptsRef.current++;
-        const delay = Math.min(5000 * Math.pow(2, reconnectAttemptsRef.current - 1), 30000);
-        console.log(`WebSocket disconnected. Reconnecting in ${delay/1000}s...`);
-        reconnectTimeoutRef.current = setTimeout(connectWS, delay);
-      };
+        
+        setLastUpdate(new Date());
+      } catch (error) {
+        console.error('Polling error:', error);
+      }
     };
     
-    // Only connect if we have initial data
-    if (hasInitialData) {
-      connectWS();
-    }
+    // Start polling
+    pollingIntervalRef.current = setInterval(pollData, 3000);
     
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
       }
     };
-  }, [token.md5, range, chartType, hasInitialData, data]);
+  }, [token.md5, range, chartType, hasInitialData, BASE_URL]);
 
   // Draw chart using Canvas
   useEffect(() => {
@@ -584,41 +475,10 @@ const PriceChartLightweight = memo(({ token }) => {
           <Typography variant="h6" sx={{ fontSize: '1rem' }}>
             {token.name} {chartType === 2 ? 'Holders' : 'Price'}
           </Typography>
-          {isLive && chartType !== 2 && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                px: 1,
-                py: 0.25,
-                bgcolor: 'success.main',
-                borderRadius: 1,
-                fontSize: '0.7rem',
-                color: 'white'
-              }}
-              title={lastUpdate ? `Last update: ${lastUpdate.toLocaleTimeString()}` : 'Connected'}
-            >
-              <Box
-                sx={{
-                  width: 6,
-                  height: 6,
-                  bgcolor: 'white',
-                  borderRadius: '50%',
-                  animation: lastUpdate && (new Date() - lastUpdate < 5000) ? 'flash 0.5s' : 'pulse 2s ease-in-out infinite',
-                  '@keyframes flash': {
-                    '0%': { opacity: 1, transform: 'scale(1.5)' },
-                    '100%': { opacity: 0.8, transform: 'scale(1)' }
-                  },
-                  '@keyframes pulse': {
-                    '0%': { opacity: 0.5 },
-                    '50%': { opacity: 1 },
-                    '100%': { opacity: 0.5 }
-                  }
-                }}
-              />
-              LIVE
-            </Box>
+          {lastUpdate && (
+            <Typography variant="caption" color="text.secondary">
+              Updated: {lastUpdate.toLocaleTimeString()}
+            </Typography>
           )}
         </Box>
         
