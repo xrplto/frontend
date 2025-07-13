@@ -13,8 +13,10 @@ const PriceChartLightweight = memo(({ token }) => {
   const [hasInitialData, setHasInitialData] = useState(false);
   const [mousePos, setMousePos] = useState(null);
   const [isLive, setIsLive] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(null);
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
+  const reconnectAttemptsRef = useRef(0);
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
@@ -104,13 +106,35 @@ const PriceChartLightweight = memo(({ token }) => {
       wsRef.current = ws;
       
       ws.onopen = () => {
-        const intervals = range === '12h' || range === '1D' ? ['1m', '5m'] : ['15m', '1h'];
+        // Select appropriate intervals based on chart range
+        let intervals;
+        switch(range) {
+          case '12h':
+            intervals = ['1m', '5m'];
+            break;
+          case '1D':
+            intervals = ['5m', '15m'];
+            break;
+          case '7D':
+            intervals = ['15m', '1h'];
+            break;
+          case '1M':
+            intervals = ['1h', '4h'];
+            break;
+          default:
+            intervals = ['5m', '15m'];
+        }
+        
+        console.log(`WebSocket connected. Subscribing to ${token.name} (${token.md5}) with intervals:`, intervals);
+        
         ws.send(JSON.stringify({
           type: 'subscribe',
           tokenMd5: token.md5,
           intervals
         }));
         setIsLive(true);
+        // Reset reconnection attempts on successful connection
+        reconnectAttemptsRef.current = 0;
       };
       
       ws.onmessage = (event) => {
@@ -125,6 +149,17 @@ const PriceChartLightweight = memo(({ token }) => {
               const newData = [...prevData];
               const lastItem = newData[newData.length - 1];
               
+              // Parse volume - handle the concatenated string issue
+              const parseVolume = (volumeStr) => {
+                if (typeof volumeStr === 'number') return volumeStr;
+                if (typeof volumeStr === 'string') {
+                  // Take only the first valid number from the string
+                  const match = volumeStr.match(/^[\d.]+/);
+                  return match ? parseFloat(match[0]) : 0;
+                }
+                return 0;
+              };
+              
               // For candlestick chart
               if (chartType === 1) {
                 // Ensure all candle values are numbers
@@ -134,7 +169,7 @@ const PriceChartLightweight = memo(({ token }) => {
                   parseFloat(candle[2]), // high
                   parseFloat(candle[3]), // low
                   parseFloat(candle[4]), // close
-                  parseFloat(candle[5]) || 0 // volume
+                  parseVolume(candle[5]) // volume - handle string concatenation
                 ];
                 
                 // Find if we need to update an existing candle or add a new one
@@ -152,7 +187,11 @@ const PriceChartLightweight = memo(({ token }) => {
               // For line chart
               else if (chartType === 0) {
                 // Convert OHLC to line format [timestamp, price, volume]
-                const linePoint = [candle[0], candle[4], parseFloat(candle[5]) || 0];
+                const linePoint = [
+                  candle[0], 
+                  parseFloat(candle[4]), 
+                  parseVolume(candle[5])
+                ];
                 
                 // For line charts, we might need to handle timestamp alignment
                 // Find the closest existing timestamp within a reasonable range (e.g., 1 minute)
@@ -173,6 +212,9 @@ const PriceChartLightweight = memo(({ token }) => {
               
               return newData;
             });
+            
+            // Update last update time when we receive data
+            setLastUpdate(new Date());
           }
         } catch (err) {
           console.error('WebSocket message error:', err);
@@ -185,8 +227,11 @@ const PriceChartLightweight = memo(({ token }) => {
       
       ws.onclose = () => {
         setIsLive(false);
-        // Reconnect after 5 seconds
-        reconnectTimeoutRef.current = setTimeout(connectWS, 5000);
+        // Exponential backoff for reconnection
+        reconnectAttemptsRef.current++;
+        const delay = Math.min(5000 * Math.pow(2, reconnectAttemptsRef.current - 1), 30000);
+        console.log(`WebSocket disconnected. Reconnecting in ${delay/1000}s...`);
+        reconnectTimeoutRef.current = setTimeout(connectWS, delay);
       };
     };
     
@@ -544,6 +589,7 @@ const PriceChartLightweight = memo(({ token }) => {
                 fontSize: '0.7rem',
                 color: 'white'
               }}
+              title={lastUpdate ? `Last update: ${lastUpdate.toLocaleTimeString()}` : 'Connected'}
             >
               <Box
                 sx={{
@@ -551,7 +597,16 @@ const PriceChartLightweight = memo(({ token }) => {
                   height: 6,
                   bgcolor: 'white',
                   borderRadius: '50%',
-                  animation: 'pulse 2s ease-in-out infinite'
+                  animation: lastUpdate && (new Date() - lastUpdate < 5000) ? 'flash 0.5s' : 'pulse 2s ease-in-out infinite',
+                  '@keyframes flash': {
+                    '0%': { opacity: 1, transform: 'scale(1.5)' },
+                    '100%': { opacity: 0.8, transform: 'scale(1)' }
+                  },
+                  '@keyframes pulse': {
+                    '0%': { opacity: 0.5 },
+                    '50%': { opacity: 1 },
+                    '100%': { opacity: 0.5 }
+                  }
                 }}
               />
               LIVE
