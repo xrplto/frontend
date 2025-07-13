@@ -16,6 +16,7 @@ import {
   Typography
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import Image from 'next/image';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
@@ -533,7 +534,7 @@ export default function Header(props) {
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <OpenInNewIcon sx={{ fontSize: '16px', color: '#0C53B7' }} />
+                    <OpenInNewIcon sx={{ fontSize: '16px', color: '#013CFE' }} />
                     <span>FirstLedger</span>
                   </Box>
                 </StyledMenuItem>
@@ -582,6 +583,32 @@ export default function Header(props) {
                 <StyledMenuItem
                   darkMode={darkMode}
                   theme={theme}
+                  onClick={() => handleTokenOptionSelect('/view/aigentrun')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Image
+                      src="/static/aigentrun.gif"
+                      alt="Aigent.Run"
+                      width={16}
+                      height={16}
+                      sizes="16px"
+                      quality={85}
+                      style={{
+                        objectFit: 'contain'
+                      }}
+                    />
+                    <span>aigent.run</span>
+                  </Box>
+                </StyledMenuItem>
+
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/view/ledgermeme')}
                   sx={{
                     display: 'flex',
@@ -608,22 +635,6 @@ export default function Header(props) {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <HorizonIcon sx={{ fontSize: '16px', color: '#f97316' }} />
                     <span>Horizon</span>
-                  </Box>
-                </StyledMenuItem>
-
-                <StyledMenuItem
-                  darkMode={darkMode}
-                  theme={theme}
-                  onClick={() => handleTokenOptionSelect('/view/aigentrun')}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AutoAwesomeIcon sx={{ fontSize: '16px', color: '#9C27B0' }} />
-                    <span>aigent.run</span>
                   </Box>
                 </StyledMenuItem>
 
