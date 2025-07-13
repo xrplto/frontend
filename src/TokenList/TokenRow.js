@@ -447,14 +447,14 @@ function FTokenRow({
         zIndex: 1001,
         left: 0,
         background: theme.palette.background.default,
-        width: isMobile ? '20px' : '40px',
-        minWidth: isMobile ? '20px' : '40px',
-        padding: isMobile ? '1px 0px' : '12px 4px'
+        width: isMobile ? '16px' : '40px',
+        minWidth: isMobile ? '16px' : '40px',
+        padding: isMobile ? '0px' : '12px 4px'
       },
       second: {
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '20px' : '40px',
+        left: isMobile ? '16px' : '40px',
         background: theme.palette.background.default,
         width: isMobile ? '20px' : '50px',
         minWidth: isMobile ? '20px' : '50px',
@@ -463,7 +463,7 @@ function FTokenRow({
       third: {
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '40px' : '90px',
+        left: isMobile ? '36px' : '90px',
         background: theme.palette.background.default,
         minWidth: isMobile ? '100px' : '250px',
         maxWidth: isMobile ? '120px' : 'none',
