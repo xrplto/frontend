@@ -177,6 +177,11 @@ const PriceChartLightweight = memo(({ token }) => {
                 
                 if (existingIndex !== -1) {
                   // Update existing candle
+                  // Preserve original volume if WebSocket provides invalid volume
+                  const originalVolume = newData[existingIndex][5] || 0;
+                  if (normalizedCandle[5] === 0 && originalVolume > 0) {
+                    normalizedCandle[5] = originalVolume;
+                  }
                   newData[existingIndex] = normalizedCandle;
                 } else if (normalizedCandle[0] > lastItem[0]) {
                   // Add new candle
@@ -202,7 +207,10 @@ const PriceChartLightweight = memo(({ token }) => {
                 
                 if (existingIndex !== -1) {
                   // Update existing point with the latest price
-                  newData[existingIndex] = [newData[existingIndex][0], linePoint[1], linePoint[2]];
+                  // Preserve original volume if WebSocket doesn't provide valid volume
+                  const originalVolume = newData[existingIndex][2] || 0;
+                  const newVolume = linePoint[2] || originalVolume;
+                  newData[existingIndex] = [newData[existingIndex][0], linePoint[1], newVolume];
                 } else if (linePoint[0] > lastItem[0]) {
                   // Add new point only if it's genuinely newer
                   newData.push(linePoint);
