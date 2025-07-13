@@ -165,7 +165,7 @@ const TABLE_HEAD = [
     width: '10%',
     order: true,
     sticky: false,
-    mobileHide: false,
+    mobileHide: true,
     tooltip: 'Market capitalization'
   },
   {
