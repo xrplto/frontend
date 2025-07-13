@@ -59,6 +59,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
       const priceCoordinates = [];
       const originalPrices = [];
       let isPositiveTrend = false;
+      let isFlatLine = false;
 
       if (displayPrices?.length) {
         // Find min and max to normalize values
@@ -74,6 +75,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
 
         // Calculate range for normalization
         const range = maxPrice.minus(minPrice);
+        isFlatLine = range.isZero() || range.lt(new Decimal('0.0000001'));
 
         // Determine trend direction
         const firstPrice = new Decimal(displayPrices[0]);
@@ -86,8 +88,9 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
             typeof price === 'string' ? new Decimal(price) : new Decimal(price.toString());
           // Store original price for tooltip
           originalPrices[index] = price;
-          // Normalize to values between 0 and 100 for better display
-          const normalizedValue = range.isZero()
+          // For flat lines, use a consistent middle value
+          // For other lines, normalize to values between 0 and 100 for better display
+          const normalizedValue = isFlatLine
             ? 50
             : decPrice.minus(minPrice).div(range).times(100).toNumber();
           const timestamp = displayTimestamps[index];
@@ -96,11 +99,18 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
       }
 
       // Futuristic color scheme based on trend
-      const baseColor = chartColor || (isPositiveTrend ? '#00ff88' : '#ff3366');
-      const glowColor = isPositiveTrend ? '#00ff88' : '#ff3366';
-      const gradientColor = isPositiveTrend
-        ? ['#00ff88', '#00cc66', '#004422']
-        : ['#ff3366', '#cc2255', '#440011'];
+      // For flat lines, use the provided chartColor or a neutral color
+      const baseColor = isFlatLine 
+        ? (chartColor || theme.palette.divider)
+        : (chartColor || (isPositiveTrend ? '#00ff88' : '#ff3366'));
+      const glowColor = isFlatLine
+        ? (chartColor || theme.palette.divider) 
+        : (isPositiveTrend ? '#00ff88' : '#ff3366');
+      const gradientColor = isFlatLine
+        ? [baseColor, baseColor, baseColor]
+        : (isPositiveTrend
+            ? ['#00ff88', '#00cc66', '#004422']
+            : ['#ff3366', '#cc2255', '#440011']);
 
       return {
         grid: {
@@ -196,7 +206,12 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         yAxis: {
           type: 'value',
           show: false,
-          scale: true
+          scale: !isFlatLine,
+          // For flat lines, ensure proper bounds
+          ...(isFlatLine && {
+            min: 40,
+            max: 60
+          })
         },
         series: [
           {
@@ -207,14 +222,14 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
             showSymbol: false,
             symbolSize: 0,
             lineStyle: {
-              width: lineWidth + 1,
+              width: isFlatLine ? lineWidth : lineWidth + 1,
               shadowColor: glowColor,
-              shadowBlur: 15,
+              shadowBlur: isFlatLine ? 0 : 15,
               shadowOffsetY: 0,
               cap: 'round',
               join: 'round'
             },
-            smooth: 0.3,
+            smooth: isFlatLine ? false : 0.3,
             animation: animation,
             animationDuration: 1500,
             animationEasing: 'elasticOut',
