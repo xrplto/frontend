@@ -746,7 +746,7 @@ const Swap = ({ token }) => {
         if (dispatched_result && dispatched_result === 'tesSUCCESS') {
           setSync(sync + 1);
           openSnackbar('Successfully submitted the swap!', 'success');
-          stopInterval();
+          stopInterval(true); // Clear amounts on successful transaction
           return;
         }
 
@@ -754,18 +754,20 @@ const Swap = ({ token }) => {
 
         if (times >= 10) {
           openSnackbar('Transaction signing rejected!', 'error');
-          stopInterval();
+          stopInterval(false); // Don't clear amounts on rejection
           return;
         }
       }, 1000);
     };
 
     // Stop the interval
-    const stopInterval = () => {
+    const stopInterval = (clearAmounts = false) => {
       clearInterval(dispatchTimer);
       setOpenScanQR(false);
-      setAmount1('');
-      setAmount2('');
+      if (clearAmounts) {
+        setAmount1('');
+        setAmount2('');
+      }
     };
 
     async function getPayload() {
@@ -1252,8 +1254,8 @@ const Swap = ({ token }) => {
         setAmount2(calculatedValue);
       }
     } else if (!value || value === '') {
-      console.log('Clearing amount2 because value is empty');
-      setAmount2('');
+      console.log('amount1 is empty, not clearing amount2');
+      // Don't clear amount2 when amount1 is empty - let user control both fields independently
     }
   };
 
@@ -1301,7 +1303,7 @@ const Swap = ({ token }) => {
         setAmount1(calculatedValue);
       }
     } else if (!value || value === '') {
-      setAmount1('');
+      // Don't clear amount1 when amount2 is empty - let user control both fields independently
     }
   };
 
