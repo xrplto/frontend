@@ -1042,6 +1042,15 @@ const Topbar = () => {
                   Live Trades
                 </Typography>
               </APILabel>
+              <APILabel
+                component="a"
+                href="/api-docs"
+                sx={{ ml: 1 }}
+              >
+                <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
+                  API
+                </Typography>
+              </APILabel>
             </Box>
           )}
         </ContentWrapper>
