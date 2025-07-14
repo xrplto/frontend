@@ -19,7 +19,10 @@ import {
   Chip,
   Link,
   useMediaQuery,
-  Box
+  Box,
+  Dialog,
+  DialogContent,
+  Button
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -32,6 +35,7 @@ import blackholeIcon from '@iconify/icons-arcticons/blackhole';
 // Components
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import IssuerInfoDialog from '../common/IssuerInfoDialog';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 // Redux
 import { useSelector /*, useDispatch*/ } from 'react-redux';
@@ -108,6 +112,7 @@ export default function PriceStatistics({ token }) {
   const [openIssuerInfo, setOpenIssuerInfo] = useState(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [creations, setCreations] = useState(0);
+  const [openScamWarning, setOpenScamWarning] = useState(false);
 
   const {
     id,
@@ -203,6 +208,14 @@ export default function PriceStatistics({ token }) {
     return baseTags;
   })();
 
+  const hasScamTag = enhancedTags.some(tag => tag.toLowerCase() === 'scam');
+
+  useEffect(() => {
+    if (hasScamTag) {
+      setOpenScamWarning(true);
+    }
+  }, [hasScamTag]);
+
   return (
     <Box
       sx={{
@@ -233,6 +246,69 @@ export default function PriceStatistics({ token }) {
       }}
     >
       <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
+
+      {/* Scam Warning Dialog */}
+      <Dialog
+        open={openScamWarning}
+        onClose={() => setOpenScamWarning(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            background: theme.palette.background.paper,
+            border: `2px solid ${theme.palette.error.main}`,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.error.main, 0.2)}`,
+          }
+        }}
+      >
+        <DialogContent sx={{ textAlign: 'center', py: 4, px: 3 }}>
+          <WarningAmberIcon 
+            sx={{ 
+              fontSize: '3rem',
+              color: theme.palette.error.main,
+              mb: 2
+            }} 
+          />
+          <Typography
+            variant="h6"
+            sx={{
+              color: theme.palette.error.main,
+              fontWeight: 700,
+              mb: 1,
+              letterSpacing: '-0.02em'
+            }}
+          >
+            Scam Warning
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: alpha(theme.palette.text.primary, 0.7),
+              mb: 3
+            }}
+          >
+            This token has been flagged as a potential scam. Please exercise extreme caution.
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => setOpenScamWarning(false)}
+            sx={{
+              backgroundColor: theme.palette.error.main,
+              color: theme.palette.common.white,
+              px: 4,
+              py: 1,
+              borderRadius: '12px',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: theme.palette.error.dark,
+              }
+            }}
+          >
+            I Understand
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       {/* Enhanced Header */}
       <Box
