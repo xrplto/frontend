@@ -1,16 +1,36 @@
 import axios from 'axios';
-import { useEffect, useState, useMemo, memo } from 'react';
+import { useEffect, useState, useMemo, memo, useRef } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { useTheme, alpha } from '@mui/material/styles';
 import { Box, Skeleton } from '@mui/material';
 import Decimal from 'decimal.js';
 import { useInView } from 'react-intersection-observer';
 
+// Simple in-memory cache with TTL
+const chartDataCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+const getCachedData = (url) => {
+  const cached = chartDataCache.get(url);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+  return null;
+};
+
+const setCachedData = (url, data) => {
+  chartDataCache.set(url, {
+    data,
+    timestamp: Date.now()
+  });
+};
+
 const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, ...props }) => {
   const theme = useTheme();
   const [chartOption, setChartOption] = useState(null);
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const previousUrlRef = useRef(url);
 
   const { ref, inView } = useInView({
     triggerOnce: true, // Only trigger once
@@ -27,7 +47,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         return null;
       }
 
-      const isLightweight = url?.includes('lightweight=true');
+      const isLightweight = data.isLightweight || false;
 
       let displayPrices = chartData.prices;
       let displayTimestamps = chartData.timestamps;
@@ -309,10 +329,20 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         ]
       };
     },
-    [theme, showGradient, lineWidth, animation, url]
+    [theme, showGradient, lineWidth, animation]
   );
 
+  // Store fetched data to prevent refetching when dependencies change
+  const [fetchedData, setFetchedData] = useState(null);
+  
+  // Fetch data only when URL changes or component comes into view
   useEffect(() => {
+    // Skip if URL hasn't changed
+    if (previousUrlRef.current === url && fetchedData) {
+      return;
+    }
+    previousUrlRef.current = url;
+
     const controller = new AbortController();
 
     const fetchChartData = async () => {
@@ -320,6 +350,15 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         setIsLoading(false);
         return;
       }
+      
+      // Check cache first
+      const cachedData = getCachedData(url);
+      if (cachedData) {
+        setFetchedData(cachedData);
+        setIsLoading(false);
+        return;
+      }
+      
       setIsLoading(true);
       setIsError(false);
       try {
@@ -329,7 +368,13 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
             'Cache-Control': 'max-age=300' // Cache for 5 minutes
           }
         });
-        setChartOption(createChartOptions(response.data));
+        // Add isLightweight flag to the data based on URL
+        const dataWithFlag = {
+          ...response.data,
+          isLightweight: url?.includes('lightweight=true')
+        };
+        setFetchedData(dataWithFlag);
+        setCachedData(url, dataWithFlag); // Cache the data
       } catch (err) {
         if (!axios.isCancel(err)) {
           console.error('Error fetching chart data:', err);
@@ -347,7 +392,14 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
     return () => {
       controller.abort();
     };
-  }, [url, createChartOptions, inView]);
+  }, [url, inView, fetchedData]); // Only fetch when URL or visibility changes
+
+  // Update chart options when data or visual properties change
+  useEffect(() => {
+    if (fetchedData) {
+      setChartOption(createChartOptions(fetchedData));
+    }
+  }, [fetchedData, createChartOptions]);
 
   // Loading state with skeleton
   if (isLoading) {
