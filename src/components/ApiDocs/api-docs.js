@@ -69,6 +69,21 @@ const sections = [
   { id: 'get-rich-list-of-a-token', title: 'Get Rich List of a Token' },
   { id: 'get-exchange-history-of-a-token', title: 'Get Exchange history of a Token' },
   { id: 'get-the-current-status', title: 'Get the current status' },
+  { id: 'get-pairs', title: 'Get Trading Pairs' },
+  { id: 'search-tokens', title: 'Search Tokens' },
+  { id: 'watchlist', title: 'Watchlist' },
+  { id: 'team-wallet', title: 'Team Wallet' },
+  { id: 'token-description', title: 'Token Description' },
+  { id: 'user-profile', title: 'User Profile' },
+  { id: 'user-activities', title: 'User Activities' },
+  { id: 'account-lines', title: 'Account Trust Lines' },
+  { id: 'account-offers', title: 'Account Offers' },
+  { id: 'account-balance', title: 'Account Balance' },
+  { id: 'spark-24h', title: '24h Spark Data' },
+  { id: 'tags', title: 'Tags' },
+  { id: 'token-creation', title: 'Token Creation' },
+  { id: 'trader-stats', title: 'Trader Statistics' },
+  { id: 'wash-trading', title: 'Wash Trading Detection' },
   { id: 'errors', title: 'Errors' }
 ];
 
@@ -685,6 +700,11 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                       <TableCell>Set to "yes" to include tag information in response</TableCell>
                     </TableRow>
                     <TableRow>
+                      <TableCell>queryTags</TableCell>
+                      <TableCell>no</TableCell>
+                      <TableCell>Set to "yes" to return tags list instead of tokens</TableCell>
+                    </TableRow>
+                    <TableRow>
                       <TableCell>skipMetrics</TableCell>
                       <TableCell>false</TableCell>
                       <TableCell>
@@ -803,7 +823,8 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
                 Retrieve detailed information about a specific token, including its issuer,
-                description, and other relevant details.
+                description, and other relevant details. You can query by issuer_currency format,
+                MD5 hash, or slug identifier.
               </Typography>
             </Card>
 
@@ -828,13 +849,22 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
               </Box>
               <CardContent>
                 <CodeBlock language="http">
-                  GET https://api.xrpl.to/api/token/&lt;issuer&gt;_&lt;currency&gt;
+                  GET https://api.xrpl.to/api/token/&lt;identifier&gt;
                 </CodeBlock>
                 <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
-                  Example usage:
+                  You can query using different identifiers:
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1, mb: 1, color: theme.palette.text.secondary }}>
+                  • Issuer_Currency format:
                 </Typography>
                 <CodeBlock language="http">
                   GET https://api.xrpl.to/api/token/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD
+                </CodeBlock>
+                <Typography variant="body2" sx={{ mt: 1, mb: 1, color: theme.palette.text.secondary }}>
+                  • MD5 hash format:
+                </Typography>
+                <CodeBlock language="http">
+                  GET https://api.xrpl.to/api/token/c9ac9a6c44763c1bd9ccc6e47572fd26
                 </CodeBlock>
               </CardContent>
             </Card>
@@ -895,16 +925,16 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                   </TableHead>
                   <TableBody>
                     <TableRow>
-                      <TableCell>issuer</TableCell>
-                      <TableCell>Query</TableCell>
+                      <TableCell>identifier</TableCell>
+                      <TableCell>Path</TableCell>
                       <TableCell>Required</TableCell>
-                      <TableCell>Issuer address of the token</TableCell>
+                      <TableCell>Token identifier - can be issuer_currency format, MD5 hash, or slug</TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell>currency</TableCell>
+                      <TableCell>desc</TableCell>
                       <TableCell>Query</TableCell>
-                      <TableCell>Required</TableCell>
-                      <TableCell>Currency code of the token</TableCell>
+                      <TableCell>no</TableCell>
+                      <TableCell>Set to "no" to exclude description from response</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -1019,8 +1049,8 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                 sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
               >
                 Retrieve the image associated with a specific token using its MD5 hash. This
-                endpoint provides high-quality images for tokens, including PNG, JPEG, WebP, and SVG
-                formats.
+                endpoint returns optimized images in WebP format for efficient loading and
+                optimal performance.
               </Typography>
             </Card>
 
@@ -1051,6 +1081,40 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                 <CodeBlock language="http">
                   GET https://s1.xrpl.to/token/f34b16a00980d21c80e4b8b3dbf2424b
                 </CodeBlock>
+              </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.warning.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                <Typography variant="h6" sx={{ color: theme.palette.warning.main, fontWeight: 600 }}>
+                  Response Format
+                </Typography>
+              </Box>
+              <CardContent>
+                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  This endpoint returns binary image data in optimized WebP format:
+                </Typography>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Content-Type:</strong> image/webp
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Format:</strong> Optimized WebP for smaller file sizes and faster loading
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>Caching:</strong> Images are cached for performance
+                  </Typography>
+                </Box>
               </CardContent>
             </Card>
 
@@ -1331,7 +1395,7 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                       <TableCell>Query</TableCell>
                       <TableCell>1D</TableCell>
                       <TableCell>
-                        Time range for historical data: 1D, 7D, 1M, 3M, 1Y, or ALL
+                        Time range for historical data: SPARK, 1D, 7D, 1M, 3M, 1Y, or ALL
                       </TableCell>
                     </TableRow>
                   </TableBody>
@@ -1452,6 +1516,9 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                   Data resolution varies by time range for optimal performance:
                 </Typography>
                 <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>SPARK:</strong> 4-second intervals for 12 hours (10,800 data points)
+                  </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
                     • <strong>1D:</strong> 5-minute intervals (288 data points)
                   </Typography>
@@ -1660,7 +1727,7 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                       <TableCell>Query</TableCell>
                       <TableCell>1D</TableCell>
                       <TableCell>
-                        Time range for historical data: 1D, 7D, 1M, 3M, 1Y, or ALL
+                        Time range for historical data: SPARK, 1D, 7D, 1M, 3M, 1Y, or ALL
                       </TableCell>
                     </TableRow>
                   </TableBody>
@@ -1858,6 +1925,9 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                   Data resolution varies by time range for optimal performance:
                 </Typography>
                 <Box sx={{ ml: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
+                    • <strong>SPARK:</strong> 4-second intervals for 12 hours (10,800 data points)
+                  </Typography>
                   <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.secondary }}>
                     • <strong>1D:</strong> 5-minute intervals (288 data points)
                   </Typography>
@@ -2069,6 +2139,24 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                       <TableCell>Query</TableCell>
                       <TableCell>20</TableCell>
                       <TableCell>Limit count value for pagination (1-100, default: 20)</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>freeze</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>false</TableCell>
+                      <TableCell>Filter frozen accounts when set to true</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>sortBy</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>balance</TableCell>
+                      <TableCell>Sort field (e.g., balance, balance24h)</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>sortType</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>desc</TableCell>
+                      <TableCell>Sort order: asc or desc</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -2333,6 +2421,14 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                       <TableCell>false</TableCell>
                       <TableCell>
                         Filter results to show only XRP transactions (boolean: true/false)
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>xrpAmount</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>
+                        Filter trades above specified XRP amount
                       </TableCell>
                     </TableRow>
                   </TableBody>
@@ -2933,6 +3029,296 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
                   </TableBody>
                 </Table>
               </TableContainer>
+            </Card>
+          </Box>
+        );
+
+      case 'get-pairs':
+        return (
+          <Box id="get-pairs">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.success.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <TrendingUpIcon sx={{ color: theme.palette.success.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Get Trading Pairs
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve available trading pairs for a specific token.
+              </Typography>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">GET https://api.xrpl.to/api/pairs?token=&lt;tokenId&gt;</CodeBlock>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      case 'search-tokens':
+        return (
+          <Box id="search-tokens">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.info.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.info.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <SearchIcon sx={{ color: theme.palette.info.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.info.main, fontWeight: 600 }}
+                >
+                  Search Tokens
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Search for tokens by name, symbol, or other criteria.
+              </Typography>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.info.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">GET https://api.xrpl.to/api/search?q=&lt;query&gt;</CodeBlock>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      case 'tags':
+        return (
+          <Box id="tags">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <DataUsageIcon sx={{ color: theme.palette.primary.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  Get All Tags
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve all available token category tags.
+              </Typography>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">GET https://api.xrpl.to/api/tags</CodeBlock>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      case 'account-lines':
+        return (
+          <Box id="account-lines">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.success.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <AccountBalanceWalletIcon sx={{ color: theme.palette.success.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  Get Account Trust Lines
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve all trust lines for a specific XRPL account.
+              </Typography>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">GET https://api.xrpl.to/api/account/lines/&lt;account&gt;</CodeBlock>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+
+      case 'account-balance':
+        return (
+          <Box id="account-balance">
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.info.main,
+                  0.05
+                )} 0%, ${alpha(theme.palette.info.main, 0.02)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
+                borderRadius: '16px',
+                p: 3,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <AccountBalanceWalletIcon sx={{ color: theme.palette.info.main, mr: 2, fontSize: 32 }} />
+                <Typography
+                  variant="h2"
+                  sx={{ color: theme.palette.info.main, fontWeight: 600 }}
+                >
+                  Get Account XRP Balance
+                </Typography>
+              </Box>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.8, color: theme.palette.text.secondary }}
+              >
+                Retrieve the XRP balance for a specific account.
+              </Typography>
+            </Card>
+
+            <Card sx={{ mb: 3, borderRadius: '12px' }}>
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  p: 2,
+                  borderRadius: '12px 12px 0 0',
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.info.main, fontWeight: 600 }}
+                >
+                  HTTP Request
+                </Typography>
+              </Box>
+              <CardContent>
+                <CodeBlock language="http">GET https://api.xrpl.to/api/account/balance/&lt;account&gt;</CodeBlock>
+              </CardContent>
             </Card>
           </Box>
         );
