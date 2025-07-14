@@ -716,10 +716,11 @@ export default function Summary() {
                               height: '100%',
                               width: `${sentimentScore}%`,
                               bgcolor: (() => {
-                                if (sentimentScore > 80) return theme.palette.success.main;
-                                if (sentimentScore > 60) return theme.palette.primary.main;
-                                if (sentimentScore > 40) return theme.palette.warning.main;
-                                return theme.palette.error.main;
+                                if (sentimentScore >= 80) return '#22c55e'; // green (80-100)
+                                if (sentimentScore >= 60) return '#84cc16'; // lime green (60-80)
+                                if (sentimentScore >= 40) return '#eab308'; // yellow (40-60)
+                                if (sentimentScore >= 20) return '#f97316'; // orange (20-40)
+                                return '#ef4444'; // red (1-20)
                               })(),
                               borderRadius: 1.5,
                               transition: 'width 0.8s ease'
