@@ -694,18 +694,18 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
       await client.disconnect();
 
       if (accountTxResponse.result.transactions) {
-        // Filter out small XRP payments (less than 1 XRP)
+        // Filter out large XRP payments (greater than 1 XRP)
         const filteredTransactions = accountTxResponse.result.transactions.filter(txData => {
           const tx = txData.tx;
           
           // Keep all non-payment transactions
           if (tx.TransactionType !== 'Payment') return true;
           
-          // For payments, check if amount is XRP and >= 1 XRP
+          // For payments, check if amount is XRP and <= 1 XRP
           if (typeof tx.Amount === 'string') {
             // XRP amount (in drops)
             const xrpAmount = parseInt(tx.Amount) / 1000000; // Convert drops to XRP
-            return xrpAmount >= 1;
+            return xrpAmount <= 1;
           }
           
           // Keep issued currency payments
@@ -767,12 +767,12 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
               (tx.transaction.Account === creatorAddress || 
                tx.transaction.Destination === creatorAddress)) {
             
-            // Filter out small XRP payments (less than 1 XRP)
+            // Filter out large XRP payments (greater than 1 XRP)
             const transaction = tx.transaction;
             if (transaction.TransactionType === 'Payment' && typeof transaction.Amount === 'string') {
               const xrpAmount = parseInt(transaction.Amount) / 1000000; // Convert drops to XRP
-              if (xrpAmount < 1) {
-                return; // Skip small XRP payments
+              if (xrpAmount > 1) {
+                return; // Skip large XRP payments
               }
             }
             
@@ -977,7 +977,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
             mt: 0.5
           }}
         >
-          Monitoring transactions from {creatorAddress?.slice(0, 6)}...{creatorAddress?.slice(-4)} (XRP payments ≥ 1 XRP)
+          Monitoring transactions from {creatorAddress}
         </Typography>
       </DialogTitle>
       
