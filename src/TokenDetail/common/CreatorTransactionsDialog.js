@@ -30,6 +30,25 @@ import { normalizeCurrencyCode } from 'src/utils/parse/utils';
 
 const XRPL_WEBSOCKET_URL = 'wss://s1.ripple.com';
 
+const getFailureDescription = (code) => {
+  const failureCodes = {
+    'tecPATH_PARTIAL': 'Insufficient liquidity in the provided paths',
+    'tecUNFUNDED_PAYMENT': 'Insufficient balance to fund payment',
+    'tecNO_DST': 'Destination account does not exist',
+    'tecNO_DST_INSUF_XRP': 'Destination account needs more XRP for reserve',
+    'tecDST_TAG_NEEDED': 'Destination requires a tag',
+    'tecPATH_DRY': 'Path had no liquidity',
+    'tecINSUF_RESERVE_LINE': 'Insufficient reserve to create trust line',
+    'tecFAILED_PROCESSING': 'Failed to process transaction',
+    'tecDIR_FULL': 'Account directory is full',
+    'tecINSUFF_FEE': 'Insufficient XRP to pay fee',
+    'tecNO_LINE': 'No trust line exists',
+    'tecEXPIRED': 'Offer expired',
+    'tecOVERSIZE': 'Transaction too large'
+  };
+  return failureCodes[code] || `Transaction failed with code: ${code}`;
+};
+
 const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
   const theme = useTheme();
   const { tx, meta, validated, ledger_index } = transaction;
@@ -351,7 +370,11 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
               : isNew 
                 ? alpha(theme.palette.primary.main, 0.08)
                 : alpha(theme.palette.background.default, 0.5),
-          border: `1px solid ${alpha(theme.palette.divider, isNew ? 0.2 : 0.1)}`,
+          border: `1px solid ${
+            meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' 
+              ? alpha(theme.palette.error.main, 0.3)
+              : alpha(theme.palette.divider, isNew ? 0.2 : 0.1)
+          }`,
           transition: 'all 0.2s ease',
           '&:hover': {
             background: isTokenToXrpConversion
@@ -584,15 +607,18 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                 />
               )}
               {validated && meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' && (
-                <Chip
-                  label="FAILED"
-                  size="small"
-                  color="error"
-                  sx={{
-                    height: '16px',
-                    fontSize: '0.65rem'
-                  }}
-                />
+                <Tooltip title={getFailureDescription(meta.TransactionResult)}>
+                  <Chip
+                    label={`FAILED: ${meta.TransactionResult}`}
+                    size="small"
+                    color="error"
+                    sx={{
+                      height: '16px',
+                      fontSize: '0.65rem',
+                      cursor: 'help'
+                    }}
+                  />
+                </Tooltip>
               )}
             </Stack>
             
