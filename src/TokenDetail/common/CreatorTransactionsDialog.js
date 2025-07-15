@@ -37,17 +37,71 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
   const txType = tx.TransactionType;
   const isIncoming = tx.Destination === creatorAddress;
   
+  // Check if this is a currency conversion (self-payment with different currencies)
+  const isCurrencyConversion = txType === 'Payment' && 
+    tx.Account === tx.Destination && 
+    (tx.SendMax || (tx.Paths && tx.Paths.length > 0));
+  
+  // Check if this is a token-to-XRP conversion
+  const isTokenToXrpConversion = isCurrencyConversion && (() => {
+    const deliveredAmount = meta?.delivered_amount || meta?.DeliveredAmount;
+    const sentAmount = tx.SendMax || tx.Amount;
+    
+    if (!deliveredAmount || !sentAmount) return false;
+    
+    // Check if received XRP and sent token
+    const isReceivedXRP = typeof deliveredAmount === 'string'; // XRP amounts are strings
+    const isSentToken = typeof sentAmount === 'object' && sentAmount.currency && sentAmount.currency !== 'XRP';
+    
+    return isReceivedXRP && isSentToken;
+  })();
+  
   const formatTxAmount = () => {
     try {
-      if (tx.Amount && txType === 'Payment') {
-        const amount = parseAmount(tx.Amount);
+      // Payment transactions
+      if (txType === 'Payment') {
+        // Currency conversion - show both sides
+        if (isCurrencyConversion) {
+          const deliveredAmount = meta?.delivered_amount || meta?.DeliveredAmount;
+          const sentAmount = tx.SendMax || tx.Amount;
+          
+          if (!deliveredAmount || !sentAmount) return 'N/A';
+          
+          const delivered = parseAmount(deliveredAmount);
+          const sent = parseAmount(sentAmount);
+          
+          if (!delivered || !sent || typeof delivered !== 'object' || typeof sent !== 'object') return 'N/A';
+          
+          // Format sent amount
+          let sentValue = sent.value;
+          if (typeof sentValue === 'string' && sentValue.includes('e')) {
+            sentValue = new Decimal(sentValue).toString();
+          }
+          const sentCurrency = sent.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(sent.currency);
+          
+          // Format received amount
+          let deliveredValue = delivered.value;
+          if (typeof deliveredValue === 'string' && deliveredValue.includes('e')) {
+            deliveredValue = new Decimal(deliveredValue).toString();
+          }
+          const deliveredCurrency = delivered.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(delivered.currency);
+          
+          return `${fNumber(sentValue)} ${sentCurrency} → ${fNumber(deliveredValue)} ${deliveredCurrency}`;
+        }
+        
+        // Regular payment
+        const deliveredAmount = meta?.delivered_amount || meta?.DeliveredAmount;
+        const amountToFormat = deliveredAmount || tx.Amount;
+        
+        if (!amountToFormat) return 'N/A';
+        
+        const amount = parseAmount(amountToFormat);
         if (!amount || typeof amount !== 'object') return 'N/A';
         
         if (amount.currency === 'XRP') {
           return `${fNumber(amount.value)} XRP`;
         }
         
-        // Convert scientific notation to regular number if needed
         let value = amount.value;
         if (typeof value === 'string' && value.includes('e')) {
           value = new Decimal(value).toString();
@@ -57,6 +111,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
         return `${fNumber(value)} ${readableCurrency}`;
       }
       
+      // Offer transactions
       if (txType === 'OfferCreate' && tx.TakerGets && tx.TakerPays) {
         const takerGets = parseAmount(tx.TakerGets);
         const takerPays = parseAmount(tx.TakerPays);
@@ -65,7 +120,6 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
           return 'N/A';
         }
         
-        // Convert scientific notation to regular number if needed
         let getsValue = takerGets.value;
         let paysValue = takerPays.value;
         if (typeof getsValue === 'string' && getsValue.includes('e')) {
@@ -78,21 +132,97 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
         const getsCurrency = takerGets.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(takerGets.currency);
         const paysCurrency = takerPays.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(takerPays.currency);
         
-        return `${fNumber(getsValue)} ${getsCurrency} → ${fNumber(paysValue)} ${paysCurrency}`;
+        const isSellOrder = tx.Flags & 0x00080000;
+        return `${isSellOrder ? 'Sell' : 'Buy'} ${fNumber(getsValue)} ${getsCurrency} for ${fNumber(paysValue)} ${paysCurrency}`;
       }
       
+      // Trust line transactions
       if (txType === 'TrustSet' && tx.LimitAmount) {
         const limit = parseAmount(tx.LimitAmount);
         if (!limit || typeof limit !== 'object') return 'N/A';
         
-        // Convert scientific notation to regular number if needed
         let value = limit.value;
         if (typeof value === 'string' && value.includes('e')) {
           value = new Decimal(value).toString();
         }
         
         const limitCurrency = normalizeCurrencyCode(limit.currency);
-        return `${fNumber(value)} ${limitCurrency}`;
+        const isRemoval = new Decimal(value).isZero();
+        return isRemoval ? `Remove ${limitCurrency}` : `${fNumber(value)} ${limitCurrency}`;
+      }
+      
+      // NFT transactions
+      if (txType === 'NFTokenMint') {
+        return `Mint NFT${tx.NFTokenTaxon ? ` (Taxon: ${tx.NFTokenTaxon})` : ''}`;
+      }
+      
+      if (txType === 'NFTokenCreateOffer' && tx.Amount) {
+        const amount = parseAmount(tx.Amount);
+        if (!amount || typeof amount !== 'object') return 'NFT Offer';
+        
+        const isBuyOffer = !(tx.Flags & 1);
+        const currency = amount.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(amount.currency);
+        return `${isBuyOffer ? 'Buy' : 'Sell'} NFT for ${fNumber(amount.value)} ${currency}`;
+      }
+      
+      if (txType === 'NFTokenAcceptOffer') {
+        return 'Accept NFT Offer';
+      }
+      
+      if (txType === 'NFTokenCancelOffer') {
+        return 'Cancel NFT Offer';
+      }
+      
+      // AMM transactions
+      if (txType === 'AMMDeposit') {
+        if (tx.Amount) {
+          const amount = parseAmount(tx.Amount);
+          if (amount && typeof amount === 'object') {
+            const currency = amount.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(amount.currency);
+            return `Deposit ${fNumber(amount.value)} ${currency}`;
+          }
+        }
+        return 'AMM Deposit';
+      }
+      
+      if (txType === 'AMMWithdraw') {
+        return 'AMM Withdraw';
+      }
+      
+      // Offer cancel
+      if (txType === 'OfferCancel') {
+        return `Cancel Offer #${tx.OfferSequence || 'N/A'}`;
+      }
+      
+      // Check transactions
+      if (txType === 'CheckCash' && tx.Amount) {
+        const amount = parseAmount(tx.Amount);
+        if (!amount || typeof amount !== 'object') return 'Claim Check';
+        
+        let value = amount.value;
+        if (typeof value === 'string' && value.includes('e')) {
+          value = new Decimal(value).toString();
+        }
+        
+        const currency = amount.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(amount.currency);
+        return `${fNumber(value)} ${currency}`;
+      }
+      
+      if (txType === 'CheckCreate' && tx.SendMax) {
+        const amount = parseAmount(tx.SendMax);
+        if (!amount || typeof amount !== 'object') return 'Create Check';
+        
+        let value = amount.value;
+        if (typeof value === 'string' && value.includes('e')) {
+          value = new Decimal(value).toString();
+        }
+        
+        const currency = amount.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(amount.currency);
+        return `${fNumber(value)} ${currency}`;
+      }
+      
+      if (txType === 'CheckCancel') {
+        return 'Cancel Check';
       }
       
       return 'N/A';
@@ -111,16 +241,41 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
   };
 
   const getTxIcon = () => {
+    if (isCurrencyConversion) {
+      return 'mdi:currency-exchange';
+    }
+    
     switch (txType) {
       case 'Payment':
         return isIncoming ? 'mdi:arrow-down-circle' : 'mdi:arrow-up-circle';
       case 'OfferCreate':
         return 'mdi:swap-horizontal';
+      case 'OfferCancel':
+        return 'mdi:close-circle-outline';
       case 'TrustSet':
         return 'mdi:link-variant';
+      case 'NFTokenMint':
+        return 'mdi:creation';
       case 'NFTokenCreateOffer':
+        return 'mdi:tag-outline';
       case 'NFTokenAcceptOffer':
-        return 'mdi:image-outline';
+        return 'mdi:check-circle-outline';
+      case 'NFTokenCancelOffer':
+        return 'mdi:cancel';
+      case 'NFTokenBurn':
+        return 'mdi:fire';
+      case 'AMMDeposit':
+        return 'mdi:bank-plus';
+      case 'AMMWithdraw':
+        return 'mdi:bank-minus';
+      case 'OracleSet':
+        return 'mdi:database-sync';
+      case 'CheckCash':
+        return 'mdi:cash-check';
+      case 'CheckCreate':
+        return 'mdi:checkbook';
+      case 'CheckCancel':
+        return 'mdi:check-bold';
       default:
         return 'mdi:transfer';
     }
@@ -128,13 +283,40 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
 
   const getTxColor = () => {
     if (!validated) return theme.palette.warning.main;
+    
+    // Check if transaction failed
+    if (meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS') {
+      return theme.palette.error.main;
+    }
+    
+    if (isCurrencyConversion) {
+      return theme.palette.info.main;
+    }
+    
     switch (txType) {
       case 'Payment':
         return isIncoming ? theme.palette.success.main : theme.palette.error.main;
       case 'OfferCreate':
         return theme.palette.info.main;
+      case 'OfferCancel':
+        return theme.palette.warning.main;
       case 'TrustSet':
         return theme.palette.primary.main;
+      case 'NFTokenMint':
+      case 'NFTokenCreateOffer':
+      case 'NFTokenAcceptOffer':
+      case 'NFTokenCancelOffer':
+      case 'NFTokenBurn':
+        return theme.palette.secondary.main;
+      case 'AMMDeposit':
+      case 'AMMWithdraw':
+        return theme.palette.info.main;
+      case 'OracleSet':
+        return theme.palette.primary.main;
+      case 'CheckCash':
+      case 'CheckCreate':
+      case 'CheckCancel':
+        return theme.palette.success.main;
       default:
         return theme.palette.text.secondary;
     }
@@ -146,15 +328,71 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
         sx={{
           p: 1.5,
           borderRadius: '8px',
-          background: isNew 
-            ? alpha(theme.palette.primary.main, 0.08)
-            : alpha(theme.palette.background.default, 0.5),
+          position: 'relative',
+          overflow: 'hidden',
+          background: isTokenToXrpConversion
+            ? 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)'
+            : isNew 
+              ? alpha(theme.palette.primary.main, 0.08)
+              : alpha(theme.palette.background.default, 0.5),
           border: `1px solid ${alpha(theme.palette.divider, isNew ? 0.2 : 0.1)}`,
           transition: 'all 0.2s ease',
           '&:hover': {
-            background: alpha(theme.palette.background.paper, 0.8),
+            background: isTokenToXrpConversion
+              ? 'linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%)'
+              : alpha(theme.palette.background.paper, 0.8),
             borderColor: alpha(getTxColor(), 0.3)
-          }
+          },
+          // Lava flow holographic effect for token-to-XRP conversions
+          ...(isTokenToXrpConversion && {
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: '-200%',
+              width: '200%',
+              height: '100%',
+              background: `linear-gradient(
+                105deg,
+                transparent 40%,
+                ${alpha('#ff4500', 0.3)} 45%,
+                ${alpha('#ff6347', 0.4)} 50%,
+                ${alpha('#ff8c00', 0.3)} 55%,
+                transparent 60%
+              )`,
+              animation: 'lavaFlow 3s linear infinite',
+              pointerEvents: 'none'
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `linear-gradient(
+                45deg,
+                ${alpha('#ff4500', 0.1)} 0%,
+                ${alpha('#ff6347', 0.15)} 25%,
+                ${alpha('#ffa500', 0.1)} 50%,
+                ${alpha('#ff8c00', 0.15)} 75%,
+                ${alpha('#ff4500', 0.1)} 100%
+              )`,
+              backgroundSize: '400% 400%',
+              animation: 'holographic 8s ease infinite',
+              pointerEvents: 'none',
+              mixBlendMode: 'overlay'
+            },
+            '@keyframes lavaFlow': {
+              '0%': { transform: 'translateX(0) skewX(-20deg)' },
+              '100%': { transform: 'translateX(200%) skewX(-20deg)' }
+            },
+            '@keyframes holographic': {
+              '0%': { backgroundPosition: '0% 50%' },
+              '50%': { backgroundPosition: '100% 50%' },
+              '100%': { backgroundPosition: '0% 50%' }
+            }
+          })
         }}
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
@@ -166,15 +404,28 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: alpha(getTxColor(), 0.1),
-              border: `1px solid ${alpha(getTxColor(), 0.2)}`
+              background: isTokenToXrpConversion
+                ? `linear-gradient(135deg, ${alpha('#ff4500', 0.2)}, ${alpha('#ffa500', 0.2)})`
+                : alpha(getTxColor(), 0.1),
+              border: `1px solid ${isTokenToXrpConversion ? alpha('#ff6347', 0.4) : alpha(getTxColor(), 0.2)}`,
+              position: 'relative',
+              zIndex: 1,
+              ...(isTokenToXrpConversion && {
+                boxShadow: `0 0 20px ${alpha('#ff4500', 0.4)}`,
+                animation: 'pulse 2s ease-in-out infinite',
+                '@keyframes pulse': {
+                  '0%, 100%': { boxShadow: `0 0 20px ${alpha('#ff4500', 0.4)}` },
+                  '50%': { boxShadow: `0 0 30px ${alpha('#ffa500', 0.6)}` }
+                }
+              })
             }}
           >
             <Icon 
               icon={getTxIcon()} 
               style={{ 
                 fontSize: '18px', 
-                color: getTxColor()
+                color: isTokenToXrpConversion ? '#ff6347' : getTxColor(),
+                filter: isTokenToXrpConversion ? 'drop-shadow(0 0 3px rgba(255, 99, 71, 0.6))' : 'none'
               }} 
             />
           </Box>
@@ -188,8 +439,28 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                   fontSize: '0.875rem'
                 }}
               >
-                {txType}
+                {isCurrencyConversion ? 'Currency Conversion' : txType}
               </Typography>
+              {isTokenToXrpConversion && (
+                <Chip
+                  label="🔥 Sold"
+                  size="small"
+                  sx={{
+                    height: '16px',
+                    fontSize: '0.65rem',
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #ff4500, #ffa500)',
+                    color: 'white',
+                    border: 'none',
+                    animation: 'shimmer 2s linear infinite',
+                    '@keyframes shimmer': {
+                      '0%': { backgroundPosition: '0% 50%' },
+                      '100%': { backgroundPosition: '200% 50%' }
+                    },
+                    backgroundSize: '200% 100%'
+                  }}
+                />
+              )}
               {isNew && (
                 <Chip
                   label="NEW"
@@ -214,6 +485,17 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                   }}
                 />
               )}
+              {validated && meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' && (
+                <Chip
+                  label="FAILED"
+                  size="small"
+                  color="error"
+                  sx={{
+                    height: '16px',
+                    fontSize: '0.65rem'
+                  }}
+                />
+              )}
             </Stack>
             
             <Typography 
@@ -227,19 +509,36 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
             </Typography>
           </Box>
 
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: 600,
-              color: getTxColor(),
-              fontSize: '0.875rem',
-              minWidth: '100px',
-              textAlign: 'right'
-            }}
-          >
-            {txType === 'Payment' && !isIncoming && '-'}
-            {formatTxAmount()}
-          </Typography>
+          <Box sx={{ minWidth: '100px', textAlign: 'right' }}>
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 600,
+                color: getTxColor(),
+                fontSize: '0.875rem'
+              }}
+            >
+              {txType === 'Payment' && !isIncoming && !isCurrencyConversion && '-'}
+              {formatTxAmount()}
+            </Typography>
+            {txType === 'Payment' && tx.SendMax && tx.SendMax !== tx.Amount && !isCurrencyConversion && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color: alpha(theme.palette.text.secondary, 0.7),
+                  fontSize: '0.7rem',
+                  display: 'block'
+                }}
+              >
+                Max: {(() => {
+                  const sendMax = parseAmount(tx.SendMax);
+                  if (!sendMax || typeof sendMax !== 'object') return 'N/A';
+                  const currency = sendMax.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(sendMax.currency);
+                  return `${fNumber(sendMax.value)} ${currency}`;
+                })()}
+              </Typography>
+            )}
+          </Box>
 
           <Tooltip title="View Transaction">
             <IconButton
@@ -290,7 +589,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
         account: creatorAddress,
         ledger_index_min: -1,
         ledger_index_max: -1,
-        limit: 20,
+        limit: 50,
         forward: false
       });
 
@@ -315,7 +614,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
           return true;
         });
         
-        setTransactions(filteredTransactions);
+        setTransactions(filteredTransactions.slice(0, 20));
       }
     } catch (err) {
       console.error('Error fetching transaction history:', err);
@@ -567,7 +866,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
         </Typography>
       </DialogTitle>
       
-      <DialogContent sx={{ p: 2, maxHeight: '60vh', overflowY: 'auto' }}>
+      <DialogContent sx={{ p: 2, maxHeight: '70vh', overflowY: 'auto' }}>
         {loading && transactions.length === 0 ? (
           <Box sx={{ py: 4, textAlign: 'center' }}>
             <CircularProgress size={32} />
