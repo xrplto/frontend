@@ -743,14 +743,20 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
     if (open && creatorAddress) {
       fetchTransactionHistory();
       subscribeToTransactions();
+      
+      // Auto-refresh every 5 seconds
+      const refreshInterval = setInterval(() => {
+        fetchTransactionHistory();
+      }, 5000);
+      
+      return () => {
+        clearInterval(refreshInterval);
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+        }
+        unsubscribe();
+      };
     }
-
-    return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      unsubscribe();
-    };
   }, [creatorAddress, open]);
 
   // Reset new transaction count after delay
