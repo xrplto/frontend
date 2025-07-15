@@ -56,7 +56,8 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
       // show the full sparkline without trimming
       const is24hOrLess = data.period === '24h' || chartData.prices.length < 300;
 
-      if (!isLightweight && !is24hOrLess) {
+      // Always trim the leading flat line for non-lightweight charts
+      if (!isLightweight) {
         // Find the index of the first significant price change to trim the leading flat line
         let firstChangeIndex = 0;
         if (chartData.prices.length > 1) {
@@ -89,12 +90,18 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         // Find min and max to normalize values
         let minPrice = new Decimal(displayPrices[0]);
         let maxPrice = new Decimal(displayPrices[0]);
+        
+        // Track unique price values to detect truly flat lines
+        const uniquePrices = new Set();
 
         displayPrices.forEach((price) => {
           const decPrice =
             typeof price === 'string' ? new Decimal(price) : new Decimal(price.toString());
           if (decPrice.lt(minPrice)) minPrice = decPrice;
           if (decPrice.gt(maxPrice)) maxPrice = decPrice;
+          
+          // Track unique prices
+          uniquePrices.add(price.toString());
         });
 
         // Calculate range for normalization
@@ -102,7 +109,10 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         // Dynamic threshold: consider flat if variation is less than 0.0001% of the average price
         const avgPrice = maxPrice.plus(minPrice).div(2);
         const relativeVariation = avgPrice.isZero() ? new Decimal(0) : range.div(avgPrice);
-        isFlatLine = range.isZero() || relativeVariation.lt('0.000001'); // < 0.0001% variation
+        
+        // Check if we have any price variation
+        // Since we've already trimmed the leading flat line, we should show actual variations
+        isFlatLine = uniquePrices.size === 1 || range.isZero();
 
         // Determine trend direction
         const firstPrice = new Decimal(displayPrices[0]);
@@ -120,8 +130,15 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
             const waveAmplitude = 5; // Small amplitude for subtle effect
             const waveFrequency = 0.02; // Frequency of the wave
             normalizedValue = 50 + waveAmplitude * Math.sin(index * waveFrequency);
+          } else if (range.isZero()) {
+            // If range is exactly zero but we're not treating it as flat (e.g., for 24h tokens)
+            // Show a horizontal line at 50
+            normalizedValue = 50;
           } else {
-            normalizedValue = decPrice.minus(minPrice).div(range).times(100).toNumber();
+            // Enhanced normalization for very small variations
+            // Scale to 20-80 range to make variations more visible
+            const scaledValue = decPrice.minus(minPrice).div(range);
+            normalizedValue = 20 + scaledValue.times(60).toNumber();
           }
           priceCoordinates.push([displayTimestamps[index], normalizedValue]);
         });
@@ -235,12 +252,10 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         yAxis: {
           type: 'value',
           show: false,
-          scale: !isFlatLine,
-          // For flat lines, ensure proper bounds
-          ...(isFlatLine && {
-            min: 40,
-            max: 60
-          })
+          scale: false,
+          // Set appropriate bounds based on the data
+          min: isFlatLine ? 40 : 0,
+          max: isFlatLine ? 60 : 100
         },
         series: [
           {
