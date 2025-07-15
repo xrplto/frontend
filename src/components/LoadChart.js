@@ -95,8 +95,10 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
 
         // Calculate range for normalization
         const range = maxPrice.minus(minPrice);
-        // Consider it flat if range is less than 0.01% of max value OR if absolute range is tiny
-        isFlatLine = range.isZero() || (range.div(maxPrice).lt('0.0001') && range.lt('0.000000001'));
+        // Dynamic threshold: consider flat if variation is less than 0.0001% of the average price
+        const avgPrice = maxPrice.plus(minPrice).div(2);
+        const relativeVariation = avgPrice.isZero() ? new Decimal(0) : range.div(avgPrice);
+        isFlatLine = range.isZero() || relativeVariation.lt('0.000001'); // < 0.0001% variation
 
         // Determine trend direction
         const firstPrice = new Decimal(displayPrices[0]);
