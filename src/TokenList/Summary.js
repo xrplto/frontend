@@ -227,10 +227,10 @@ export default function Summary() {
               : `0 2px 8px ${alpha('#000', 0.08)}`,
             border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
             minWidth: 240,
-            position: 'absolute',
+            position: 'relative',
             zIndex: 999999999,
-            pointerEvents: 'auto',
-            overflow: 'hidden',
+            pointerEvents: 'none',
+            overflow: 'visible',
           }}
         >
           <Typography
@@ -487,7 +487,7 @@ export default function Summary() {
             inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
         },
         padding: { xs: 1, sm: 3 },
-        overflow: 'hidden',
+        overflow: 'visible',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&::before': {
           display: 'none'
@@ -732,19 +732,25 @@ export default function Summary() {
                   </Grid>
 
                   {/* Combined Platform Chart */}
-                  <Grid item xs={12} md={3} sx={{ [(theme) => theme.breakpoints.down('sm')]: { display: 'none' } }}>
+                  <Grid item xs={12} md={3} sx={{ 
+                    [(theme) => theme.breakpoints.down('sm')]: { display: 'none' },
+                    position: 'relative',
+                    overflow: 'visible'
+                  }}>
                     <MetricBox sx={{ 
                       p: { xs: 1, sm: 2 }, 
                       background: theme => alpha(theme.palette.background.paper, 0.3),
                       border: theme => `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      overflow: 'visible',
+                      position: 'relative'
                     }}>
                       <MetricTitle sx={{ mb: 1, textAlign: 'center' }}>New Tokens • 30d</MetricTitle>
-                      <ResponsiveContainer width="100%" height={45}>
+                      <ResponsiveContainer width="100%" height={60}>
                         <AreaChart
                           key={`combined-${chartData.length}`}
                           data={chartData}
-                          margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                          margin={{ top: 20, right: 0, left: 0, bottom: 0 }}
                         >
                           <defs>
                             <linearGradient id="tokensGradient" x1="0" y1="0" x2="0" y2="1">
@@ -762,12 +768,11 @@ export default function Summary() {
                             content={<CustomTooltip />} 
                             wrapperStyle={{ 
                               zIndex: 99999999,
-                              position: 'relative'
+                              pointerEvents: 'none'
                             }} 
-                            contentStyle={{
-                              zIndex: 99999999,
-                              position: 'relative'
-                            }}
+                            position={{ y: -10 }}
+                            allowEscapeViewBox={{ x: false, y: true }}
+                            offset={-120}
                           />
 
                           {/* New Tokens Area - left Y-axis */}
