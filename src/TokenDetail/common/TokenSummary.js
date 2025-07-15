@@ -33,6 +33,7 @@ import { checkExpiration, getHashIcon } from 'src/utils/extra';
 import Decimal from 'decimal.js';
 import Image from 'next/image';
 import axios from 'axios';
+import { formatDistanceToNow } from 'date-fns';
 import Share from './Share';
 import Watch from './Watch';
 import TrustSetDialog from 'src/components/TrustSetDialog';
@@ -286,6 +287,65 @@ const TokenSummary = memo(({ token }) => {
     setTrustToken(token);
   };
 
+  // Get latest transaction from creator dialog
+  const [latestCreatorTx, setLatestCreatorTx] = useState(null);
+  
+  // Fetch latest creator transaction on mount using XRPL
+  useEffect(() => {
+    if (!creator) return;
+    
+    const fetchLatestTx = async () => {
+      try {
+        const { Client } = await import('xrpl');
+        const client = new Client('wss://s1.ripple.com');
+        await client.connect();
+        
+        const response = await client.request({
+          command: 'account_tx',
+          account: creator,
+          ledger_index_min: -1,
+          ledger_index_max: -1,
+          limit: 10,
+          forward: false
+        });
+        
+        await client.disconnect();
+        
+        if (response.result.transactions) {
+          // Filter out small XRP payments (less than 1 XRP) like the dialog does
+          const filteredTx = response.result.transactions.find(txData => {
+            const tx = txData.tx;
+            
+            // Keep all non-payment transactions
+            if (tx.TransactionType !== 'Payment') return true;
+            
+            // For payments, check if amount is XRP and >= 1 XRP
+            if (typeof tx.Amount === 'string') {
+              // XRP amount (in drops)
+              const xrpAmount = parseInt(tx.Amount) / 1000000; // Convert drops to XRP
+              return xrpAmount >= 1;
+            }
+            
+            // Keep issued currency payments
+            return true;
+          });
+          
+          if (filteredTx) {
+            setLatestCreatorTx(filteredTx);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching latest creator transaction:', error);
+      }
+    };
+    
+    fetchLatestTx();
+    // Refresh every 5 seconds
+    const interval = setInterval(fetchLatestTx, 5000);
+    
+    return () => clearInterval(interval);
+  }, [creator]);
+
   // Origin icon components
   const XPMarketIcon = React.forwardRef((props, ref) => {
     const { ...otherProps } = props;
@@ -503,34 +563,6 @@ const TokenSummary = memo(({ token }) => {
                 {isRemove ? <LinkOffIcon /> : <LinkIcon />}
               </IconButton>
             </Tooltip>
-            {creator && (
-              <Tooltip title="View Creator Activity">
-                <IconButton
-                  size="small"
-                  onClick={() => setCreatorTxOpen(true)}
-                  sx={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: '6px',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    background: alpha(theme.palette.background.paper, 0.8),
-                    transition: 'all 0.2s ease',
-                    padding: '4px',
-                    '&:hover': {
-                      transform: 'translateY(-1px)',
-                      background: alpha(theme.palette.info.main, 0.08),
-                      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
-                    },
-                    '& .MuiSvgIcon-root': {
-                      fontSize: '14px',
-                      color: alpha(theme.palette.text.primary, 0.7)
-                    }
-                  }}
-                >
-                  <TimelineIcon />
-                </IconButton>
-              </Tooltip>
-            )}
             <Box sx={{ 
               '& .MuiIconButton-root': { 
                 width: '24px !important', 
@@ -571,6 +603,160 @@ const TokenSummary = memo(({ token }) => {
             }}>
               <Watch token={token} />
             </Box>
+            {creator && (
+              <Tooltip title="View Creator Activity">
+                <IconButton
+                  size="small"
+                  onClick={() => setCreatorTxOpen(true)}
+                  sx={{
+                    width: 'auto',
+                    minWidth: 24,
+                    height: 24,
+                    borderRadius: '6px',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    background: (() => {
+                      if (!latestCreatorTx) return alpha(theme.palette.background.paper, 0.8);
+                      const tx = latestCreatorTx.tx;
+                      const isTokenToXrp = tx.TransactionType === 'Payment' && 
+                        tx.Account === tx.Destination && 
+                        (tx.SendMax || (tx.Paths && tx.Paths.length > 0));
+                      return isTokenToXrp 
+                        ? 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)' 
+                        : alpha(theme.palette.background.paper, 0.8);
+                    })(),
+                    transition: 'all 0.2s ease',
+                    padding: '4px',
+                    paddingRight: latestCreatorTx ? '8px' : '4px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&:hover': {
+                      transform: 'translateY(-1px)',
+                      background: alpha(theme.palette.info.main, 0.08),
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                    },
+                    '& .MuiSvgIcon-root': {
+                      fontSize: '14px',
+                      color: alpha(theme.palette.text.primary, 0.7)
+                    },
+                    // Lava holographic effect for sold transactions
+                    ...(latestCreatorTx && (() => {
+                      const tx = latestCreatorTx.tx;
+                      const isTokenToXrp = tx.TransactionType === 'Payment' && 
+                        tx.Account === tx.Destination && 
+                        (tx.SendMax || (tx.Paths && tx.Paths.length > 0));
+                      return isTokenToXrp ? {
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: '-200%',
+                          width: '200%',
+                          height: '100%',
+                          background: `linear-gradient(
+                            105deg,
+                            transparent 40%,
+                            ${alpha('#ff4500', 0.3)} 45%,
+                            ${alpha('#ff6347', 0.4)} 50%,
+                            ${alpha('#ff8c00', 0.3)} 55%,
+                            transparent 60%
+                          )`,
+                          animation: 'lavaFlow 3s linear infinite',
+                          pointerEvents: 'none'
+                        },
+                        '@keyframes lavaFlow': {
+                          '0%': { transform: 'translateX(0) skewX(-20deg)' },
+                          '100%': { transform: 'translateX(200%) skewX(-20deg)' }
+                        }
+                      } : {};
+                    })())
+                  }}
+                >
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <TimelineIcon />
+                    {latestCreatorTx && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.65rem',
+                          color: theme.palette.text.primary,
+                          fontWeight: 600,
+                          display: { xs: 'none', sm: 'block' }
+                        }}
+                      >
+                        {(() => {
+                          const tx = latestCreatorTx.tx;
+                          const deliveredAmount = latestCreatorTx.meta?.delivered_amount || latestCreatorTx.meta?.DeliveredAmount;
+                          const sentAmount = tx.SendMax || tx.Amount;
+                          
+                          const isTokenToXrp = tx.TransactionType === 'Payment' && 
+                            tx.Account === tx.Destination && 
+                            (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                            (() => {
+                              if (!deliveredAmount || !sentAmount) return false;
+                              const isReceivedXRP = typeof deliveredAmount === 'string';
+                              const isSentToken = typeof sentAmount === 'object' && sentAmount.currency && sentAmount.currency !== 'XRP';
+                              return isReceivedXRP && isSentToken;
+                            })();
+                            
+                          if (isTokenToXrp) {
+                            const xrpAmount = parseInt(deliveredAmount) / 1000000;
+                            return `🔥 ${fNumber(xrpAmount)}`;
+                          }
+                          
+                          const isXrpToToken = tx.TransactionType === 'Payment' && 
+                            tx.Account === tx.Destination && 
+                            (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                            (() => {
+                              if (!deliveredAmount || !sentAmount) return false;
+                              const isSentXRP = typeof sentAmount === 'string';
+                              const isReceivedToken = typeof deliveredAmount === 'object' && deliveredAmount.currency && deliveredAmount.currency !== 'XRP';
+                              return isSentXRP && isReceivedToken;
+                            })();
+                            
+                          if (isXrpToToken) {
+                            const xrpAmount = parseInt(sentAmount) / 1000000;
+                            return `💎 ${fNumber(xrpAmount)}`;
+                          }
+                          
+                          return '📊';
+                        })()}
+                      </Typography>
+                    )}
+                  </Stack>
+                  {latestCreatorTx && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: -2,
+                        right: -2,
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        backgroundColor: (() => {
+                          if (!latestCreatorTx.tx.date) return theme.palette.success.main;
+                          const date = new Date((latestCreatorTx.tx.date + 946684800) * 1000);
+                          const minutesAgo = (Date.now() - date) / 1000 / 60;
+                          if (minutesAgo < 5) return theme.palette.success.main;
+                          if (minutesAgo < 30) return theme.palette.warning.main;
+                          return theme.palette.grey[500];
+                        })(),
+                        border: `1.5px solid ${theme.palette.background.paper}`,
+                        animation: (() => {
+                          if (!latestCreatorTx.tx.date) return 'pulse 2s ease-in-out infinite';
+                          const date = new Date((latestCreatorTx.tx.date + 946684800) * 1000);
+                          const minutesAgo = (Date.now() - date) / 1000 / 60;
+                          return minutesAgo < 5 ? 'pulse 2s ease-in-out infinite' : 'none';
+                        })(),
+                        '@keyframes pulse': {
+                          '0%, 100%': { opacity: 0.4 },
+                          '50%': { opacity: 1 }
+                        }
+                      }}
+                    />
+                  )}
+                </IconButton>
+              </Tooltip>
+            )}
           </Stack>
           {/* Token Image and Mobile Actions */}
           <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flexShrink: 0 }}>
@@ -854,34 +1040,6 @@ const TokenSummary = memo(({ token }) => {
                         {isRemove ? <LinkOffIcon /> : <LinkIcon />}
                       </IconButton>
                     </Tooltip>
-                    {creator && (
-                      <Tooltip title="View Creator Activity">
-                        <IconButton
-                          size="small"
-                          onClick={() => setCreatorTxOpen(true)}
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: '8px',
-                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                            background: alpha(theme.palette.background.paper, 0.8),
-                            transition: 'all 0.2s ease',
-                            padding: '6px',
-                            '&:hover': {
-                              transform: 'translateY(-1px)',
-                              background: alpha(theme.palette.info.main, 0.08),
-                              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
-                            },
-                            '& .MuiSvgIcon-root': {
-                              fontSize: '18px',
-                              color: alpha(theme.palette.text.primary, 0.7)
-                            }
-                          }}
-                        >
-                          <TimelineIcon />
-                        </IconButton>
-                      </Tooltip>
-                    )}
                     <Box sx={{ 
                       '& .MuiIconButton-root': { 
                         width: '32px !important', 
@@ -920,6 +1078,193 @@ const TokenSummary = memo(({ token }) => {
                     }}>
                       <Watch token={token} />
                     </Box>
+                    {creator && (
+                      <Tooltip title="View Creator Activity">
+                        <IconButton
+                          size="small"
+                          onClick={() => setCreatorTxOpen(true)}
+                          sx={{
+                            width: 'auto',
+                            minWidth: 32,
+                            height: 32,
+                            borderRadius: '8px',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                            background: (() => {
+                              if (!latestCreatorTx) return alpha(theme.palette.background.paper, 0.8);
+                              const tx = latestCreatorTx.tx;
+                              const isTokenToXrp = tx.TransactionType === 'Payment' && 
+                                tx.Account === tx.Destination && 
+                                (tx.SendMax || (tx.Paths && tx.Paths.length > 0));
+                              return isTokenToXrp 
+                                ? 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)' 
+                                : alpha(theme.palette.background.paper, 0.8);
+                            })(),
+                            transition: 'all 0.2s ease',
+                            padding: '6px',
+                            paddingRight: latestCreatorTx ? '10px' : '6px',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            '&:hover': {
+                              transform: 'translateY(-1px)',
+                              background: alpha(theme.palette.info.main, 0.08),
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                            },
+                            '& .MuiSvgIcon-root': {
+                              fontSize: '18px',
+                              color: alpha(theme.palette.text.primary, 0.7)
+                            },
+                            // Lava holographic effect for sold transactions
+                            ...(latestCreatorTx && (() => {
+                              const tx = latestCreatorTx.tx;
+                              const isTokenToXrp = tx.TransactionType === 'Payment' && 
+                                tx.Account === tx.Destination && 
+                                (tx.SendMax || (tx.Paths && tx.Paths.length > 0));
+                              return isTokenToXrp ? {
+                                '&::before': {
+                                  content: '""',
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: '-200%',
+                                  width: '200%',
+                                  height: '100%',
+                                  background: `linear-gradient(
+                                    105deg,
+                                    transparent 40%,
+                                    ${alpha('#ff4500', 0.3)} 45%,
+                                    ${alpha('#ff6347', 0.4)} 50%,
+                                    ${alpha('#ff8c00', 0.3)} 55%,
+                                    transparent 60%
+                                  )`,
+                                  animation: 'lavaFlow 3s linear infinite',
+                                  pointerEvents: 'none'
+                                },
+                                '&::after': {
+                                  content: '""',
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  background: `linear-gradient(
+                                    45deg,
+                                    ${alpha('#ff4500', 0.1)} 0%,
+                                    ${alpha('#ff6347', 0.15)} 25%,
+                                    ${alpha('#ffa500', 0.1)} 50%,
+                                    ${alpha('#ff8c00', 0.15)} 75%,
+                                    ${alpha('#ff4500', 0.1)} 100%
+                                  )`,
+                                  backgroundSize: '400% 400%',
+                                  animation: 'holographic 8s ease infinite',
+                                  pointerEvents: 'none',
+                                  mixBlendMode: 'overlay'
+                                },
+                                '@keyframes lavaFlow': {
+                                  '0%': { transform: 'translateX(0) skewX(-20deg)' },
+                                  '100%': { transform: 'translateX(200%) skewX(-20deg)' }
+                                },
+                                '@keyframes holographic': {
+                                  '0%': { backgroundPosition: '0% 50%' },
+                                  '50%': { backgroundPosition: '100% 50%' },
+                                  '100%': { backgroundPosition: '0% 50%' }
+                                }
+                              } : {};
+                            })())
+                          }}
+                        >
+                          <Stack direction="row" alignItems="center" spacing={0.5}>
+                            <TimelineIcon />
+                            {latestCreatorTx && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  fontSize: '0.7rem',
+                                  color: theme.palette.text.primary,
+                                  fontWeight: 600
+                                }}
+                              >
+                                {(() => {
+                                  const tx = latestCreatorTx.tx;
+                                  const deliveredAmount = latestCreatorTx.meta?.delivered_amount || latestCreatorTx.meta?.DeliveredAmount;
+                                  const sentAmount = tx.SendMax || tx.Amount;
+                                  
+                                  const isTokenToXrp = tx.TransactionType === 'Payment' && 
+                                    tx.Account === tx.Destination && 
+                                    (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                                    (() => {
+                                      if (!deliveredAmount || !sentAmount) return false;
+                                      const isReceivedXRP = typeof deliveredAmount === 'string';
+                                      const isSentToken = typeof sentAmount === 'object' && sentAmount.currency && sentAmount.currency !== 'XRP';
+                                      return isReceivedXRP && isSentToken;
+                                    })();
+                                    
+                                  if (isTokenToXrp) {
+                                    const xrpAmount = parseInt(deliveredAmount) / 1000000;
+                                    return `🔥 Sold ${fNumber(xrpAmount)} XRP`;
+                                  }
+                                  
+                                  const isXrpToToken = tx.TransactionType === 'Payment' && 
+                                    tx.Account === tx.Destination && 
+                                    (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                                    (() => {
+                                      if (!deliveredAmount || !sentAmount) return false;
+                                      const isSentXRP = typeof sentAmount === 'string';
+                                      const isReceivedToken = typeof deliveredAmount === 'object' && deliveredAmount.currency && deliveredAmount.currency !== 'XRP';
+                                      return isSentXRP && isReceivedToken;
+                                    })();
+                                    
+                                  if (isXrpToToken) {
+                                    const xrpAmount = parseInt(sentAmount) / 1000000;
+                                    return `💎 Bought ${fNumber(xrpAmount)} XRP`;
+                                  }
+                                  
+                                  // Regular payment
+                                  if (tx.TransactionType === 'Payment') {
+                                    const amount = tx.Amount;
+                                    if (typeof amount === 'string') {
+                                      const xrpAmount = parseInt(amount) / 1000000;
+                                      return `Payment ${fNumber(xrpAmount)} XRP`;
+                                    }
+                                  }
+                                  
+                                  return tx.TransactionType;
+                                })()}
+                              </Typography>
+                            )}
+                          </Stack>
+                          {latestCreatorTx && (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: -2,
+                                right: -2,
+                                width: 6,
+                                height: 6,
+                                borderRadius: '50%',
+                                backgroundColor: (() => {
+                                  if (!latestCreatorTx.tx.date) return theme.palette.success.main;
+                                  const date = new Date((latestCreatorTx.tx.date + 946684800) * 1000);
+                                  const minutesAgo = (Date.now() - date) / 1000 / 60;
+                                  if (minutesAgo < 5) return theme.palette.success.main;
+                                  if (minutesAgo < 30) return theme.palette.warning.main;
+                                  return theme.palette.grey[500];
+                                })(),
+                                border: `1.5px solid ${theme.palette.background.paper}`,
+                                animation: (() => {
+                                  if (!latestCreatorTx.tx.date) return 'pulse 2s ease-in-out infinite';
+                                  const date = new Date((latestCreatorTx.tx.date + 946684800) * 1000);
+                                  const minutesAgo = (Date.now() - date) / 1000 / 60;
+                                  return minutesAgo < 5 ? 'pulse 2s ease-in-out infinite' : 'none';
+                                })(),
+                                '@keyframes pulse': {
+                                  '0%, 100%': { opacity: 0.4 },
+                                  '50%': { opacity: 1 }
+                                }
+                              }}
+                            />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </Stack>
                 </Stack>
                 {/* Mobile Price - Below name and origin */}
@@ -1287,6 +1632,7 @@ const TokenSummary = memo(({ token }) => {
             ))}
           </Stack>
         </Box>
+        
       </Stack>
 
       {/* Metrics section - Full width on mobile */}
@@ -1386,6 +1732,7 @@ const TokenSummary = memo(({ token }) => {
         onClose={() => setCreatorTxOpen(false)}
         creatorAddress={creator}
         tokenName={name}
+        onLatestTransaction={setLatestCreatorTx}
       />
     </Box>
   );

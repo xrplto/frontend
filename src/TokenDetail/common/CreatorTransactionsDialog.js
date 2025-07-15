@@ -659,7 +659,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
   );
 });
 
-const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenName }) => {
+const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenName, onLatestTransaction }) => {
   const theme = useTheme();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -713,6 +713,10 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
         });
         
         setTransactions(filteredTransactions.slice(0, 20));
+        // Pass latest transaction to parent
+        if (filteredTransactions.length > 0 && onLatestTransaction) {
+          onLatestTransaction(filteredTransactions[0]);
+        }
       }
     } catch (err) {
       console.error('Error fetching transaction history:', err);
@@ -784,7 +788,14 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
               setNewTxCount(prevCount => prevCount + 1);
               
               // Keep only the most recent transactions up to limit
-              return [newTx, ...prev].slice(0, 20);
+              const updatedTxs = [newTx, ...prev].slice(0, 20);
+              
+              // Pass latest transaction to parent
+              if (onLatestTransaction) {
+                onLatestTransaction(newTx);
+              }
+              
+              return updatedTxs;
             });
           }
         });
