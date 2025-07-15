@@ -290,17 +290,25 @@ const TokenSummary = memo(({ token }) => {
   // Get latest transaction from creator dialog
   const [latestCreatorTx, setLatestCreatorTx] = useState(null);
   
-  // Fetch latest creator transaction on mount using XRPL
+  // Subscribe to creator transactions using WebSocket
   useEffect(() => {
     if (!creator) return;
     
-    const fetchLatestTx = async () => {
+    let client = null;
+    
+    const subscribeToCreator = async () => {
       try {
         const { Client } = await import('xrpl');
-        const client = new Client('wss://s1.ripple.com');
+        client = new Client('wss://s1.ripple.com');
+        
+        client.on('error', (error) => {
+          console.error('WebSocket error:', error);
+        });
+        
         await client.connect();
         
-        const response = await client.request({
+        // First fetch recent transactions
+        const history = await client.request({
           command: 'account_tx',
           account: creator,
           ledger_index_min: -1,
@@ -309,24 +317,14 @@ const TokenSummary = memo(({ token }) => {
           forward: false
         });
         
-        await client.disconnect();
-        
-        if (response.result.transactions) {
-          // Filter out small XRP payments (less than 1 XRP) like the dialog does
-          const filteredTx = response.result.transactions.find(txData => {
+        if (history.result.transactions) {
+          const filteredTx = history.result.transactions.find(txData => {
             const tx = txData.tx;
-            
-            // Keep all non-payment transactions
             if (tx.TransactionType !== 'Payment') return true;
-            
-            // For payments, check if amount is XRP and >= 1 XRP
             if (typeof tx.Amount === 'string') {
-              // XRP amount (in drops)
-              const xrpAmount = parseInt(tx.Amount) / 1000000; // Convert drops to XRP
+              const xrpAmount = parseInt(tx.Amount) / 1000000;
               return xrpAmount >= 1;
             }
-            
-            // Keep issued currency payments
             return true;
           });
           
@@ -334,16 +332,49 @@ const TokenSummary = memo(({ token }) => {
             setLatestCreatorTx(filteredTx);
           }
         }
+        
+        // Subscribe to account transactions
+        await client.request({
+          command: 'subscribe',
+          accounts: [creator]
+        });
+        
+        // Listen for real-time transactions
+        client.on('transaction', (data) => {
+          if (data.transaction && 
+              (data.transaction.Account === creator || 
+               data.transaction.Destination === creator)) {
+            
+            const tx = data.transaction;
+            if (tx.TransactionType === 'Payment' && typeof tx.Amount === 'string') {
+              const xrpAmount = parseInt(tx.Amount) / 1000000;
+              if (xrpAmount < 1) return;
+            }
+            
+            setLatestCreatorTx({
+              tx: data.transaction,
+              meta: data.meta,
+              validated: data.validated
+            });
+          }
+        });
+        
       } catch (error) {
-        console.error('Error fetching latest creator transaction:', error);
+        console.error('Error subscribing to creator:', error);
       }
     };
     
-    fetchLatestTx();
-    // Refresh every 5 seconds
-    const interval = setInterval(fetchLatestTx, 5000);
+    subscribeToCreator();
     
-    return () => clearInterval(interval);
+    return () => {
+      if (client && client.isConnected()) {
+        client.request({
+          command: 'unsubscribe',
+          accounts: [creator]
+        }).catch(() => {});
+        client.disconnect();
+      }
+    };
   }, [creator]);
 
   // Origin icon components
