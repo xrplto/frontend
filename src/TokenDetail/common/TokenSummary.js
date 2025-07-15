@@ -320,11 +320,31 @@ const TokenSummary = memo(({ token }) => {
         if (history.result.transactions) {
           const filteredTx = history.result.transactions.find(txData => {
             const tx = txData.tx;
-            if (tx.TransactionType !== 'Payment') return true;
-            if (typeof tx.Amount === 'string') {
-              const xrpAmount = parseInt(tx.Amount) / 1000000;
-              return xrpAmount >= 1;
+            const meta = txData.meta;
+            
+            // For payments, check all XRP amounts involved
+            if (tx.TransactionType === 'Payment') {
+              // Check direct XRP payment amount
+              if (typeof tx.Amount === 'string') {
+                const xrpAmount = parseInt(tx.Amount) / 1000000;
+                if (xrpAmount < 1) return false;
+              }
+              
+              // Check delivered amount for DEX trades
+              const deliveredAmount = meta?.delivered_amount || meta?.DeliveredAmount;
+              if (deliveredAmount && typeof deliveredAmount === 'string') {
+                const xrpAmount = parseInt(deliveredAmount) / 1000000;
+                if (xrpAmount < 1) return false;
+              }
+              
+              // Check sent amount for DEX trades
+              const sentAmount = tx.SendMax || tx.Amount;
+              if (sentAmount && typeof sentAmount === 'string') {
+                const xrpAmount = parseInt(sentAmount) / 1000000;
+                if (xrpAmount < 1) return false;
+              }
             }
+            
             return true;
           });
           
@@ -346,9 +366,29 @@ const TokenSummary = memo(({ token }) => {
                data.transaction.Destination === creator)) {
             
             const tx = data.transaction;
-            if (tx.TransactionType === 'Payment' && typeof tx.Amount === 'string') {
-              const xrpAmount = parseInt(tx.Amount) / 1000000;
-              if (xrpAmount < 1) return;
+            const meta = data.meta;
+            
+            // For payments, check all XRP amounts involved
+            if (tx.TransactionType === 'Payment') {
+              // Check direct XRP payment amount
+              if (typeof tx.Amount === 'string') {
+                const xrpAmount = parseInt(tx.Amount) / 1000000;
+                if (xrpAmount < 1) return;
+              }
+              
+              // Check delivered amount for DEX trades
+              const deliveredAmount = meta?.delivered_amount || meta?.DeliveredAmount;
+              if (deliveredAmount && typeof deliveredAmount === 'string') {
+                const xrpAmount = parseInt(deliveredAmount) / 1000000;
+                if (xrpAmount < 1) return;
+              }
+              
+              // Check sent amount for DEX trades
+              const sentAmount = tx.SendMax || tx.Amount;
+              if (sentAmount && typeof sentAmount === 'string') {
+                const xrpAmount = parseInt(sentAmount) / 1000000;
+                if (xrpAmount < 1) return;
+              }
             }
             
             setLatestCreatorTx({
