@@ -56,6 +56,20 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
     return isReceivedXRP && isSentToken;
   })();
   
+  // Check if this is an XRP-to-token conversion (creator buying)
+  const isXrpToTokenConversion = isCurrencyConversion && (() => {
+    const deliveredAmount = meta?.delivered_amount || meta?.DeliveredAmount;
+    const sentAmount = tx.SendMax || tx.Amount;
+    
+    if (!deliveredAmount || !sentAmount) return false;
+    
+    // Check if sent XRP and received token
+    const isSentXRP = typeof sentAmount === 'string'; // XRP amounts are strings
+    const isReceivedToken = typeof deliveredAmount === 'object' && deliveredAmount.currency && deliveredAmount.currency !== 'XRP';
+    
+    return isSentXRP && isReceivedToken;
+  })();
+  
   const formatTxAmount = () => {
     try {
       // Payment transactions
@@ -332,15 +346,19 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
           overflow: 'hidden',
           background: isTokenToXrpConversion
             ? 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)'
-            : isNew 
-              ? alpha(theme.palette.primary.main, 0.08)
-              : alpha(theme.palette.background.default, 0.5),
+            : isXrpToTokenConversion
+              ? 'linear-gradient(135deg, #0a0a2a 0%, #1a1a3a 100%)'
+              : isNew 
+                ? alpha(theme.palette.primary.main, 0.08)
+                : alpha(theme.palette.background.default, 0.5),
           border: `1px solid ${alpha(theme.palette.divider, isNew ? 0.2 : 0.1)}`,
           transition: 'all 0.2s ease',
           '&:hover': {
             background: isTokenToXrpConversion
               ? 'linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%)'
-              : alpha(theme.palette.background.paper, 0.8),
+              : isXrpToTokenConversion
+                ? 'linear-gradient(135deg, #1a1a3a 0%, #2a2a4a 100%)'
+                : alpha(theme.palette.background.paper, 0.8),
             borderColor: alpha(getTxColor(), 0.3)
           },
           // Lava flow holographic effect for token-to-XRP conversions
@@ -392,6 +410,56 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
               '50%': { backgroundPosition: '100% 50%' },
               '100%': { backgroundPosition: '0% 50%' }
             }
+          }),
+          // Aurora holographic effect for XRP-to-token conversions
+          ...(isXrpToTokenConversion && {
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: '-200%',
+              width: '200%',
+              height: '100%',
+              background: `linear-gradient(
+                105deg,
+                transparent 40%,
+                ${alpha('#00bfff', 0.3)} 45%,
+                ${alpha('#4169e1', 0.4)} 50%,
+                ${alpha('#9370db', 0.3)} 55%,
+                transparent 60%
+              )`,
+              animation: 'auroraFlow 3s linear infinite',
+              pointerEvents: 'none'
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `linear-gradient(
+                45deg,
+                ${alpha('#00bfff', 0.1)} 0%,
+                ${alpha('#4169e1', 0.15)} 25%,
+                ${alpha('#9370db', 0.1)} 50%,
+                ${alpha('#00ffff', 0.15)} 75%,
+                ${alpha('#00bfff', 0.1)} 100%
+              )`,
+              backgroundSize: '400% 400%',
+              animation: 'auroraShimmer 8s ease infinite',
+              pointerEvents: 'none',
+              mixBlendMode: 'overlay'
+            },
+            '@keyframes auroraFlow': {
+              '0%': { transform: 'translateX(0) skewX(-20deg)' },
+              '100%': { transform: 'translateX(200%) skewX(-20deg)' }
+            },
+            '@keyframes auroraShimmer': {
+              '0%': { backgroundPosition: '0% 50%' },
+              '50%': { backgroundPosition: '100% 50%' },
+              '100%': { backgroundPosition: '0% 50%' }
+            }
           })
         }}
       >
@@ -406,8 +474,10 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
               justifyContent: 'center',
               background: isTokenToXrpConversion
                 ? `linear-gradient(135deg, ${alpha('#ff4500', 0.2)}, ${alpha('#ffa500', 0.2)})`
-                : alpha(getTxColor(), 0.1),
-              border: `1px solid ${isTokenToXrpConversion ? alpha('#ff6347', 0.4) : alpha(getTxColor(), 0.2)}`,
+                : isXrpToTokenConversion
+                  ? `linear-gradient(135deg, ${alpha('#00bfff', 0.2)}, ${alpha('#9370db', 0.2)})`
+                  : alpha(getTxColor(), 0.1),
+              border: `1px solid ${isTokenToXrpConversion ? alpha('#ff6347', 0.4) : isXrpToTokenConversion ? alpha('#4169e1', 0.4) : alpha(getTxColor(), 0.2)}`,
               position: 'relative',
               zIndex: 1,
               ...(isTokenToXrpConversion && {
@@ -417,6 +487,14 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                   '0%, 100%': { boxShadow: `0 0 20px ${alpha('#ff4500', 0.4)}` },
                   '50%': { boxShadow: `0 0 30px ${alpha('#ffa500', 0.6)}` }
                 }
+              }),
+              ...(isXrpToTokenConversion && {
+                boxShadow: `0 0 20px ${alpha('#00bfff', 0.4)}`,
+                animation: 'auraPulse 2s ease-in-out infinite',
+                '@keyframes auraPulse': {
+                  '0%, 100%': { boxShadow: `0 0 20px ${alpha('#00bfff', 0.4)}` },
+                  '50%': { boxShadow: `0 0 30px ${alpha('#9370db', 0.6)}` }
+                }
               })
             }}
           >
@@ -424,8 +502,8 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
               icon={getTxIcon()} 
               style={{ 
                 fontSize: '18px', 
-                color: isTokenToXrpConversion ? '#ff6347' : getTxColor(),
-                filter: isTokenToXrpConversion ? 'drop-shadow(0 0 3px rgba(255, 99, 71, 0.6))' : 'none'
+                color: isTokenToXrpConversion ? '#ff6347' : isXrpToTokenConversion ? '#4169e1' : getTxColor(),
+                filter: isTokenToXrpConversion ? 'drop-shadow(0 0 3px rgba(255, 99, 71, 0.6))' : isXrpToTokenConversion ? 'drop-shadow(0 0 3px rgba(65, 105, 225, 0.6))' : 'none'
               }} 
             />
           </Box>
@@ -450,6 +528,26 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                     fontSize: '0.65rem',
                     fontWeight: 700,
                     background: 'linear-gradient(135deg, #ff4500, #ffa500)',
+                    color: 'white',
+                    border: 'none',
+                    animation: 'shimmer 2s linear infinite',
+                    '@keyframes shimmer': {
+                      '0%': { backgroundPosition: '0% 50%' },
+                      '100%': { backgroundPosition: '200% 50%' }
+                    },
+                    backgroundSize: '200% 100%'
+                  }}
+                />
+              )}
+              {isXrpToTokenConversion && (
+                <Chip
+                  label="💎 Bought"
+                  size="small"
+                  sx={{
+                    height: '16px',
+                    fontSize: '0.65rem',
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #00bfff, #9370db)',
                     color: 'white',
                     border: 'none',
                     animation: 'shimmer 2s linear infinite',
