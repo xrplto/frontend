@@ -95,7 +95,8 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
 
         // Calculate range for normalization
         const range = maxPrice.minus(minPrice);
-        isFlatLine = range.isZero() || range.lt(new Decimal('0.0000001'));
+        // Consider it flat if range is less than 0.01% of max value OR if absolute range is tiny
+        isFlatLine = range.isZero() || (range.div(maxPrice).lt('0.0001') && range.lt('0.000000001'));
 
         // Determine trend direction
         const firstPrice = new Decimal(displayPrices[0]);
@@ -106,15 +107,11 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
         displayPrices.forEach((price, index) => {
           const decPrice =
             typeof price === 'string' ? new Decimal(price) : new Decimal(price.toString());
-          // Store original price for tooltip
           originalPrices[index] = price;
-          // For flat lines, use a consistent middle value
-          // For other lines, normalize to values between 0 and 100 for better display
-          const normalizedValue = isFlatLine
-            ? 50
-            : decPrice.minus(minPrice).div(range).times(100).toNumber();
-          const timestamp = displayTimestamps[index];
-          priceCoordinates.push([timestamp, normalizedValue]);
+          // Normalize values: flat lines get 50, others get 0-100 based on position in range
+          const normalizedValue = isFlatLine ? 50 : 
+            decPrice.minus(minPrice).div(range).times(100).toNumber();
+          priceCoordinates.push([displayTimestamps[index], normalizedValue]);
         });
       }
 
