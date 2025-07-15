@@ -52,7 +52,11 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
       let displayPrices = chartData.prices;
       let displayTimestamps = chartData.timestamps;
 
-      if (!isLightweight) {
+      // For tokens with less than 24h of data (less than ~288 data points for 5-min intervals),
+      // show the full sparkline without trimming
+      const is24hOrLess = data.period === '24h' || chartData.prices.length < 300;
+
+      if (!isLightweight && !is24hOrLess) {
         // Find the index of the first significant price change to trim the leading flat line
         let firstChangeIndex = 0;
         if (chartData.prices.length > 1) {
@@ -110,9 +114,15 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
           const decPrice =
             typeof price === 'string' ? new Decimal(price) : new Decimal(price.toString());
           originalPrices[index] = price;
-          // Normalize values: flat lines get 50, others get 0-100 based on position in range
-          const normalizedValue = isFlatLine ? 50 : 
-            decPrice.minus(minPrice).div(range).times(100).toNumber();
+          let normalizedValue;
+          if (isFlatLine) {
+            // For flat lines, create a subtle wave pattern for visual feedback
+            const waveAmplitude = 5; // Small amplitude for subtle effect
+            const waveFrequency = 0.02; // Frequency of the wave
+            normalizedValue = 50 + waveAmplitude * Math.sin(index * waveFrequency);
+          } else {
+            normalizedValue = decPrice.minus(minPrice).div(range).times(100).toNumber();
+          }
           priceCoordinates.push([displayTimestamps[index], normalizedValue]);
         });
       }
@@ -236,7 +246,9 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
           {
             data: priceCoordinates,
             type: 'line',
-            sampling: 'lttb',
+            // sampling: 'lttb', // Disabled to show all data points
+            large: true, // Enable large data optimization
+            largeThreshold: 5000, // Threshold for large data mode
             color: baseColor,
             showSymbol: false,
             symbolSize: 0,
