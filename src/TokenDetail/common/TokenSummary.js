@@ -1438,7 +1438,7 @@ const TokenSummary = memo(({ token }) => {
               <Stack 
                 direction="row" 
                 alignItems="center" 
-                spacing={2}
+                spacing={3}
                 sx={{ 
                   display: { xs: 'none', md: 'flex' },
                   flex: 1,
@@ -1447,12 +1447,12 @@ const TokenSummary = memo(({ token }) => {
                 }}
               >
                 {/* Center: Price with integrated 24h range */}
-                <Stack alignItems="center" spacing={0.25}>
-                  <Stack direction="row" alignItems="center" spacing={1.5}>
+                <Stack alignItems="center" spacing={0.5}>
+                  <Stack direction="row" alignItems="center" spacing={2}>
                     <Typography
                       variant="body1"
                       sx={{
-                        fontSize: '1.4rem',
+                        fontSize: '1.5rem',
                         fontWeight: 700,
                         color: priceColor || theme.palette.text.primary,
                         lineHeight: 1,
@@ -1551,34 +1551,34 @@ const TokenSummary = memo(({ token }) => {
                   </Stack>
                 </Stack>
                 
-                {/* Right: Percentage changes - Smaller */}
-                <Stack direction="row" spacing={0.75} alignItems="center" sx={{ ml: 2 }}>
+                {/* Right: Percentage changes - Bigger */}
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ ml: 3 }}>
                   {priceChanges.map((item, index) => (
                     <Box
                       key={item.label}
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 0.5,
-                        px: 1.25,
-                        py: 0.5,
-                        borderRadius: '8px',
-                        background: alpha(item.color, 0.08),
-                        border: `1px solid ${alpha(item.color, 0.15)}`,
+                        gap: 0.75,
+                        px: 1.5,
+                        py: 0.75,
+                        borderRadius: '10px',
+                        background: alpha(item.color, 0.1),
+                        border: `1.5px solid ${alpha(item.color, 0.2)}`,
                         transition: 'all 0.2s ease',
                         '&:hover': {
-                          background: alpha(item.color, 0.12),
-                          transform: 'translateY(-1px)',
-                          boxShadow: `0 3px 8px ${alpha(item.color, 0.15)}`
+                          background: alpha(item.color, 0.15),
+                          transform: 'translateY(-2px)',
+                          boxShadow: `0 4px 12px ${alpha(item.color, 0.2)}`
                         }
                       }}
                     >
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          color: alpha(theme.palette.text.secondary, 0.7)
+                          fontSize: '0.9rem',
+                          fontWeight: 700,
+                          color: alpha(theme.palette.text.secondary, 0.8)
                         }}
                       >
                         {item.label}
@@ -1586,18 +1586,18 @@ const TokenSummary = memo(({ token }) => {
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.8rem',
-                          fontWeight: 700,
+                          fontSize: '1.1rem',
+                          fontWeight: 800,
                           color: item.color,
                           display: 'flex',
                           alignItems: 'center',
-                          gap: 0.25
+                          gap: 0.3
                         }}
                       >
                         {formatPercentage(item.value)}
                         <Icon 
                           icon={item.value >= 0 ? 'mdi:arrow-up' : 'mdi:arrow-down'} 
-                          style={{ fontSize: '0.8rem' }}
+                          style={{ fontSize: '1rem' }}
                         />
                       </Typography>
                     </Box>
