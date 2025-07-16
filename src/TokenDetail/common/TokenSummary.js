@@ -1424,7 +1424,8 @@ const TokenSummary = memo(({ token }) => {
                     letterSpacing: '-0.01em',
                     transition: 'color 0.3s ease',
                     animation: priceColor ? 'priceFlash 0.5s ease' : 'none',
-                    mt: 0.5
+                    mt: 0.5,
+                    whiteSpace: 'nowrap'
                   }}
                 >
                   <NumberTooltip
@@ -1458,7 +1459,8 @@ const TokenSummary = memo(({ token }) => {
                         lineHeight: 1,
                         letterSpacing: '-0.01em',
                         transition: 'color 0.3s ease',
-                        animation: priceColor ? 'priceFlash 0.5s ease' : 'none'
+                        animation: priceColor ? 'priceFlash 0.5s ease' : 'none',
+                        whiteSpace: 'nowrap'
                       }}
                     >
                       <NumberTooltip
@@ -1476,7 +1478,8 @@ const TokenSummary = memo(({ token }) => {
                             fontSize: '0.7rem', 
                             fontWeight: 500, 
                             color: theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C',
-                            opacity: 0.9
+                            opacity: 0.9,
+                            whiteSpace: 'nowrap'
                           }}
                         >
                           {currencySymbols[activeFiatCurrency]}{formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
@@ -1541,7 +1544,8 @@ const TokenSummary = memo(({ token }) => {
                             fontSize: '0.7rem', 
                             fontWeight: 500, 
                             color: theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F',
-                            opacity: 0.9
+                            opacity: 0.9,
+                            whiteSpace: 'nowrap'
                           }}
                         >
                           {currencySymbols[activeFiatCurrency]}{formatValue(range24h.max * (metrics.USD / metrics[activeFiatCurrency]))}
@@ -1626,7 +1630,8 @@ const TokenSummary = memo(({ token }) => {
                   fontWeight: 600, 
                   color: theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C',
                   opacity: 1,
-                  textShadow: theme.palette.mode === 'dark' ? '0 0 4px rgba(102, 187, 106, 0.3)' : 'none'
+                  textShadow: theme.palette.mode === 'dark' ? '0 0 4px rgba(102, 187, 106, 0.3)' : 'none',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
@@ -1693,7 +1698,8 @@ const TokenSummary = memo(({ token }) => {
                   fontWeight: 600, 
                   color: theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F',
                   opacity: 1,
-                  textShadow: theme.palette.mode === 'dark' ? '0 0 4px rgba(255, 82, 82, 0.3)' : 'none'
+                  textShadow: theme.palette.mode === 'dark' ? '0 0 4px rgba(255, 82, 82, 0.3)' : 'none',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{formatValue(range24h.max * (metrics.USD / metrics[activeFiatCurrency]))}
