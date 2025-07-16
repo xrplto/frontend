@@ -40,6 +40,7 @@ import TrustSetDialog from 'src/components/TrustSetDialog';
 import CreatorTransactionsDialog from './CreatorTransactionsDialog';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import EditIcon from '@mui/icons-material/Edit';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 
 const LowhighBarSlider = styled(Slider)(({ theme }) => ({
@@ -75,6 +76,20 @@ const TokenSummary = memo(({ token }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency, accountProfile, sync } = useContext(AppContext);
+  
+  // Debug logging for admin status
+  useEffect(() => {
+    if (accountProfile) {
+      console.log('TokenSummary - Account Profile:', {
+        account: accountProfile.account,
+        isAdmin: accountProfile.isAdmin,
+        admin: accountProfile.admin,
+        fullProfile: accountProfile
+      });
+    } else {
+      console.log('TokenSummary - No account profile found');
+    }
+  }, [accountProfile]);
   const [prevPrice, setPrevPrice] = useState(null);
   const [priceColor, setPriceColor] = useState(null);
   const [trustToken, setTrustToken] = useState(null);
@@ -677,8 +692,8 @@ const TokenSummary = memo(({ token }) => {
             }}>
               <Watch token={token} />
             </Box>
-            {accountProfile?.isAdmin && (
-              <Tooltip title="Edit Token">
+            {accountProfile?.admin && (
+              <Tooltip title="Admin Edit Token">
                 <IconButton
                   size="small"
                   onClick={() => setEditToken(token)}
@@ -686,22 +701,22 @@ const TokenSummary = memo(({ token }) => {
                     width: 24,
                     height: 24,
                     borderRadius: '6px',
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    background: alpha(theme.palette.primary.main, 0.08),
+                    border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.dark, 0.15)} 100%)`,
                     transition: 'all 0.2s ease',
                     padding: '4px',
                     '&:hover': {
                       transform: 'translateY(-1px)',
-                      background: alpha(theme.palette.primary.main, 0.15),
-                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                      background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.2)} 0%, ${alpha(theme.palette.warning.dark, 0.25)} 100%)`,
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.warning.main, 0.3)}`
                     },
                     '& .MuiSvgIcon-root': {
                       fontSize: '14px',
-                      color: theme.palette.primary.main
+                      color: theme.palette.warning.main
                     }
                   }}
                 >
-                  <EditIcon />
+                  <AdminPanelSettingsIcon />
                 </IconButton>
               </Tooltip>
             )}
@@ -1180,8 +1195,8 @@ const TokenSummary = memo(({ token }) => {
                     }}>
                       <Watch token={token} />
                     </Box>
-                    {accountProfile?.isAdmin && (
-                      <Tooltip title="Edit Token">
+                    {accountProfile?.admin && (
+                      <Tooltip title="Admin Edit Token">
                         <IconButton
                           size="small"
                           onClick={() => setEditToken(token)}
@@ -1189,22 +1204,22 @@ const TokenSummary = memo(({ token }) => {
                             width: 32,
                             height: 32,
                             borderRadius: '8px',
-                            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                            background: alpha(theme.palette.primary.main, 0.08),
+                            border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+                            background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.dark, 0.15)} 100%)`,
                             transition: 'all 0.2s ease',
                             padding: '6px',
                             '&:hover': {
                               transform: 'translateY(-1px)',
-                              background: alpha(theme.palette.primary.main, 0.15),
-                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                              background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.2)} 0%, ${alpha(theme.palette.warning.dark, 0.25)} 100%)`,
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.warning.main, 0.3)}`
                             },
                             '& .MuiSvgIcon-root': {
                               fontSize: '18px',
-                              color: theme.palette.primary.main
+                              color: theme.palette.warning.main
                             }
                           }}
                         >
-                          <EditIcon />
+                          <AdminPanelSettingsIcon />
                         </IconButton>
                       </Tooltip>
                     )}

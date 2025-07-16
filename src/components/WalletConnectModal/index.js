@@ -197,7 +197,9 @@ const WalletConnectModal = () => {
                       opts
                     )
                     .then((res) => {
+                      console.log('WalletConnectModal - GemWallet login response:', res.data);
                       const { profile } = res.data;
+                      console.log('WalletConnectModal - GemWallet profile received:', profile);
                       doLogIn({ ...profile, wallet_type: 'gem' });
                       setOpenWalletModal(false);
                     });
@@ -241,7 +243,9 @@ const WalletConnectModal = () => {
           }
         )
         .then((res) => {
+          console.log('WalletConnectModal - Crossmark login response:', res.data);
           const { profile } = res.data;
+          console.log('WalletConnectModal - Crossmark profile received:', profile);
           doLogIn({ ...profile, wallet_type: 'crossmark' });
           setOpenWalletModal(false);
         })

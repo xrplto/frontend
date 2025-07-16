@@ -80,7 +80,9 @@ export function ContextProvider({ children, data, openSnackbar }) {
     const profile = window.localStorage.getItem(KEY_ACCOUNT_PROFILE);
     //const profile = '{"account":"rDsRQWRTRrtzAgK8HH7rcCAZnWeCsJm28K","uuid":"4a3eb58c-aa97-4d48-9ab2-92d90df9a75f"}';
     if (profile) {
-      setAccountProfile(JSON.parse(profile));
+      const parsedProfile = JSON.parse(profile);
+      console.log('AppContext - Loading profile from localStorage:', parsedProfile);
+      setAccountProfile(parsedProfile);
     }
 
     const profiles = window.localStorage.getItem(KEY_ACCOUNT_PROFILES);
@@ -97,6 +99,14 @@ export function ContextProvider({ children, data, openSnackbar }) {
   };
 
   const doLogIn = (profile) => {
+    // Debug logging for admin login
+    console.log('AppContext - doLogIn called with profile:', {
+      account: profile.account,
+      admin: profile.admin,
+      wallet_type: profile.wallet_type,
+      fullProfile: profile
+    });
+    
     setAccountProfile(profile);
     window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
 
@@ -145,8 +155,10 @@ export function ContextProvider({ children, data, openSnackbar }) {
         try {
           const res = await axios.get(`${BASE_URL}/account/login/${uuid}`);
           const ret = res?.data;
+          console.log('AppContext - Xaman login response:', ret);
           if (ret?.profile) {
             const profile = ret.profile;
+            console.log('AppContext - Xaman profile received:', profile);
             // setOpen(true);
             setOpenLogin(false);
             setOpenWalletModal(false);
