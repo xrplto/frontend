@@ -39,6 +39,8 @@ import Watch from './Watch';
 import TrustSetDialog from 'src/components/TrustSetDialog';
 import CreatorTransactionsDialog from './CreatorTransactionsDialog';
 import TimelineIcon from '@mui/icons-material/Timeline';
+import EditIcon from '@mui/icons-material/Edit';
+import EditTokenDialog from 'src/components/EditTokenDialog';
 
 const LowhighBarSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-track': {
@@ -80,6 +82,7 @@ const TokenSummary = memo(({ token }) => {
   const [balance, setBalance] = useState(0);
   const [limit, setLimit] = useState(0);
   const [creatorTxOpen, setCreatorTxOpen] = useState(false);
+  const [editToken, setEditToken] = useState(null);
 
   const {
     id,
@@ -674,6 +677,34 @@ const TokenSummary = memo(({ token }) => {
             }}>
               <Watch token={token} />
             </Box>
+            {accountProfile?.isAdmin && (
+              <Tooltip title="Edit Token">
+                <IconButton
+                  size="small"
+                  onClick={() => setEditToken(token)}
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: '6px',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.08),
+                    transition: 'all 0.2s ease',
+                    padding: '4px',
+                    '&:hover': {
+                      transform: 'translateY(-1px)',
+                      background: alpha(theme.palette.primary.main, 0.15),
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                    },
+                    '& .MuiSvgIcon-root': {
+                      fontSize: '14px',
+                      color: theme.palette.primary.main
+                    }
+                  }}
+                >
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
+            )}
             {creator && (
               <Tooltip title="View Creator Activity">
                 <IconButton
@@ -1149,6 +1180,34 @@ const TokenSummary = memo(({ token }) => {
                     }}>
                       <Watch token={token} />
                     </Box>
+                    {accountProfile?.isAdmin && (
+                      <Tooltip title="Edit Token">
+                        <IconButton
+                          size="small"
+                          onClick={() => setEditToken(token)}
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '8px',
+                            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                            background: alpha(theme.palette.primary.main, 0.08),
+                            transition: 'all 0.2s ease',
+                            padding: '6px',
+                            '&:hover': {
+                              transform: 'translateY(-1px)',
+                              background: alpha(theme.palette.primary.main, 0.15),
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                            },
+                            '& .MuiSvgIcon-root': {
+                              fontSize: '18px',
+                              color: theme.palette.primary.main
+                            }
+                          }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     {creator && (
                       <Tooltip title="View Creator Activity">
                         <IconButton
@@ -1805,6 +1864,14 @@ const TokenSummary = memo(({ token }) => {
         tokenName={name}
         onLatestTransaction={setLatestCreatorTx}
       />
+      
+      {/* Edit Token Dialog */}
+      {editToken && (
+        <EditTokenDialog
+          token={editToken}
+          setToken={setEditToken}
+        />
+      )}
     </Box>
   );
 });

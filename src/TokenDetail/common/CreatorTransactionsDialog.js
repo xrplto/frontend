@@ -95,6 +95,35 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
       if (txType === 'Payment') {
         // Currency conversion - show both sides
         if (isCurrencyConversion) {
+          // Check if transaction failed
+          if (meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS') {
+            // For failed transactions, show what was attempted
+            const attemptedAmount = tx.Amount;
+            const attemptedSend = tx.SendMax;
+            
+            if (!attemptedAmount || !attemptedSend) return 'Failed';
+            
+            const attempted = parseAmount(attemptedAmount);
+            const send = parseAmount(attemptedSend);
+            
+            if (!attempted || !send || typeof attempted !== 'object' || typeof send !== 'object') return 'Failed';
+            
+            let sendValue = send.value;
+            if (typeof sendValue === 'string' && sendValue.includes('e')) {
+              sendValue = new Decimal(sendValue).toString();
+            }
+            const sendCurrency = send.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(send.currency);
+            
+            let attemptedValue = attempted.value;
+            if (typeof attemptedValue === 'string' && attemptedValue.includes('e')) {
+              attemptedValue = new Decimal(attemptedValue).toString();
+            }
+            const attemptedCurrency = attempted.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(attempted.currency);
+            
+            return `${fNumber(sendValue)} ${sendCurrency} ⇸ ${fNumber(attemptedValue)} ${attemptedCurrency}`;
+          }
+          
+          // For successful transactions
           const deliveredAmount = meta?.delivered_amount || meta?.DeliveredAmount;
           const sentAmount = tx.SendMax || tx.Amount;
           
@@ -274,8 +303,14 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
   };
 
   const getTxIcon = () => {
+    if (isTokenToXrpConversion) {
+      return 'mdi:fire';
+    }
+    if (isXrpToTokenConversion) {
+      return 'mdi:diamond-stone';
+    }
     if (isCurrencyConversion) {
-      return 'mdi:currency-exchange';
+      return 'mdi:swap-horizontal-circle';
     }
     
     switch (txType) {
@@ -537,10 +572,12 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                 variant="body2" 
                 sx={{ 
                   fontWeight: 600,
-                  fontSize: '0.875rem'
+                  fontSize: '0.875rem',
+                  color: meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' ? theme.palette.error.main : 'inherit'
                 }}
               >
-                {isCurrencyConversion ? 'Currency Conversion' : txType}
+                {isTokenToXrpConversion ? 'Token → XRP' : isXrpToTokenConversion ? 'XRP → Token' : isCurrencyConversion ? 'Currency Swap' : txType}
+                {meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' && ' (Failed)'}
               </Typography>
               {isTokenToXrpConversion && (
                 <Chip
@@ -607,7 +644,59 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                 />
               )}
               {validated && meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' && (
-                <Tooltip title={getFailureDescription(meta.TransactionResult)}>
+                <Tooltip 
+                  title={
+                    <Box sx={{ p: 1 }}>
+                      <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
+                        {getFailureDescription(meta.TransactionResult)}
+                      </Typography>
+                      {isCurrencyConversion && (
+                        <>
+                          <Typography variant="caption" sx={{ display: 'block', mt: 1, mb: 0.5 }}>
+                            Transaction Details:
+                          </Typography>
+                          {tx.SendMax && (
+                            <Typography variant="caption" sx={{ display: 'block', color: 'error.light' }}>
+                              • Tried to spend: {(() => {
+                                const sendMax = parseAmount(tx.SendMax);
+                                if (!sendMax || typeof sendMax !== 'object') return 'N/A';
+                                const currency = sendMax.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(sendMax.currency);
+                                return `${fNumber(sendMax.value)} ${currency}`;
+                              })()}
+                            </Typography>
+                          )}
+                          {tx.Amount && (
+                            <Typography variant="caption" sx={{ display: 'block', color: 'warning.light' }}>
+                              • Expected to receive: {(() => {
+                                const amount = parseAmount(tx.Amount);
+                                if (!amount || typeof amount !== 'object') return 'N/A';
+                                const currency = amount.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(amount.currency);
+                                return `${fNumber(amount.value)} ${currency}`;
+                              })()}
+                            </Typography>
+                          )}
+                          {tx.DeliverMin && (
+                            <Typography variant="caption" sx={{ display: 'block', color: 'info.light' }}>
+                              • Minimum acceptable: {(() => {
+                                const deliverMin = parseAmount(tx.DeliverMin);
+                                if (!deliverMin || typeof deliverMin !== 'object') return 'N/A';
+                                const currency = deliverMin.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(deliverMin.currency);
+                                return `${fNumber(deliverMin.value)} ${currency}`;
+                              })()}
+                            </Typography>
+                          )}
+                          {meta.TransactionResult === 'tecPATH_PARTIAL' && (
+                            <Typography variant="caption" sx={{ display: 'block', mt: 1, fontStyle: 'italic' }}>
+                              The exchange rate or liquidity was insufficient to complete this swap.
+                            </Typography>
+                          )}
+                        </>
+                      )}
+                    </Box>
+                  }
+                  arrow
+                  placement="left"
+                >
                   <Chip
                     label={`FAILED: ${meta.TransactionResult}`}
                     size="small"
@@ -645,6 +734,45 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
               {txType === 'Payment' && !isIncoming && !isCurrencyConversion && '-'}
               {formatTxAmount()}
             </Typography>
+            {/* Show additional details for failed currency conversions */}
+            {isCurrencyConversion && meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' && (
+              <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                {tx.SendMax && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: alpha(theme.palette.error.main, 0.8),
+                      fontSize: '0.7rem',
+                      display: 'block'
+                    }}
+                  >
+                    Attempted: {(() => {
+                      const sendMax = parseAmount(tx.SendMax);
+                      if (!sendMax || typeof sendMax !== 'object') return 'N/A';
+                      const currency = sendMax.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(sendMax.currency);
+                      return `${fNumber(sendMax.value)} ${currency}`;
+                    })()}
+                  </Typography>
+                )}
+                {tx.DeliverMin && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: alpha(theme.palette.warning.main, 0.8),
+                      fontSize: '0.7rem',
+                      display: 'block'
+                    }}
+                  >
+                    Min Required: {(() => {
+                      const deliverMin = parseAmount(tx.DeliverMin);
+                      if (!deliverMin || typeof deliverMin !== 'object') return 'N/A';
+                      const currency = deliverMin.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(deliverMin.currency);
+                      return `${fNumber(deliverMin.value)} ${currency}`;
+                    })()}
+                  </Typography>
+                )}
+              </Stack>
+            )}
             {txType === 'Payment' && tx.SendMax && tx.SendMax !== tx.Amount && !isCurrencyConversion && (
               <Typography
                 variant="caption"
