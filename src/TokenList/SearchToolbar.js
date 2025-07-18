@@ -114,8 +114,8 @@ export default function SearchToolbar({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        p: 0.5,
-        gap: 1,
+        p: { xs: 0.25, sm: 0.5 },
+        gap: { xs: 0.5, sm: 1 },
         borderRadius: 2,
         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         background: darkMode 
@@ -124,11 +124,17 @@ export default function SearchToolbar({
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)}`,
-        flexWrap: 'wrap'
+        flexWrap: 'wrap',
+        flexDirection: { xs: 'column', sm: 'row' }
       }}
     >
       {/* Left Section - View Selector */}
-      <Stack direction="row" spacing={1} alignItems="center">
+      <Stack 
+        direction="row" 
+        spacing={{ xs: 0.5, sm: 1 }} 
+        alignItems="center"
+        sx={{ width: { xs: '100%', sm: 'auto' } }}
+      >
         <Button
           variant="contained"
           size="small"
@@ -141,7 +147,8 @@ export default function SearchToolbar({
             boxShadow: 'none',
             textTransform: 'none',
             fontWeight: 600,
-            px: 2,
+            px: { xs: 1.5, sm: 2 },
+            fontSize: { xs: '0.8rem', sm: '0.875rem' },
             '&:hover': {
               boxShadow: 2
             }
@@ -157,7 +164,11 @@ export default function SearchToolbar({
         <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
 
         {/* View Type Toggle */}
-        <ButtonGroup size="small" variant="outlined">
+        <ButtonGroup 
+          size="small" 
+          variant="outlined"
+          sx={{ ml: { xs: 'auto', sm: 0 } }}
+        >
           <Tooltip title="List View">
             <Button
               onClick={() => setViewType('row')}
@@ -186,8 +197,11 @@ export default function SearchToolbar({
         sx={{ 
           flex: 1,
           overflowX: 'auto',
-          px: 1,
+          px: { xs: 0.5, sm: 1 },
+          py: { xs: 0.5, sm: 0 },
           alignItems: 'center',
+          width: { xs: '100%', sm: 'auto' },
+          justifyContent: { xs: 'flex-start', sm: 'center' },
           '&::-webkit-scrollbar': { display: 'none' },
           scrollbarWidth: 'none'
         }}
@@ -200,10 +214,10 @@ export default function SearchToolbar({
               variant="outlined"
               sx={{
                 '& .MuiButton-root': {
-                  minWidth: 32,
-                  px: 0.75,
-                  py: 0.25,
-                  fontSize: '0.7rem',
+                  minWidth: { xs: 28, sm: 32 },
+                  px: { xs: 0.5, sm: 0.75 },
+                  py: { xs: 0.15, sm: 0.25 },
+                  fontSize: { xs: '0.65rem', sm: '0.7rem' },
                   fontWeight: 500,
                   borderColor: alpha(theme.palette.divider, 0.2),
                   '&:hover': {
@@ -283,9 +297,21 @@ export default function SearchToolbar({
           onClick={() => handleViewChange('/trending')}
           sx={{
             cursor: 'pointer',
-            background: currentView === 'trending' ? alpha('#ff5722', 0.2) : 'transparent',
-            border: `1px solid ${alpha('#ff5722', 0.3)}`,
-            '&:hover': { background: alpha('#ff5722', 0.3) }
+            background: currentView === 'trending' 
+              ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
+              : alpha('#ff5722', 0.1),
+            border: 'none',
+            color: currentView === 'trending' ? '#fff' : '#ff5722',
+            fontWeight: 600,
+            '&:hover': { 
+              background: currentView === 'trending'
+                ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
+                : alpha('#ff5722', 0.25),
+              transform: 'scale(1.05)'
+            },
+            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+            height: { xs: 26, sm: 30 },
+            transition: 'all 0.2s ease'
           }}
         />
         <Chip
@@ -294,9 +320,21 @@ export default function SearchToolbar({
           onClick={() => handleViewChange('/spotlight')}
           sx={{
             cursor: 'pointer',
-            background: currentView === 'spotlight' ? alpha('#2196f3', 0.2) : 'transparent',
-            border: `1px solid ${alpha('#2196f3', 0.3)}`,
-            '&:hover': { background: alpha('#2196f3', 0.3) }
+            background: currentView === 'spotlight' 
+              ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
+              : alpha('#2196f3', 0.1),
+            border: 'none',
+            color: currentView === 'spotlight' ? '#fff' : '#2196f3',
+            fontWeight: 600,
+            '&:hover': { 
+              background: currentView === 'spotlight'
+                ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
+                : alpha('#2196f3', 0.25),
+              transform: 'scale(1.05)'
+            },
+            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+            height: { xs: 26, sm: 30 },
+            transition: 'all 0.2s ease'
           }}
         />
         <Chip
@@ -305,9 +343,22 @@ export default function SearchToolbar({
           onClick={() => handleViewChange('/gainers/24h')}
           sx={{
             cursor: 'pointer',
-            background: currentView === 'gainers' ? alpha('#4caf50', 0.2) : 'transparent',
-            border: `1px solid ${alpha('#4caf50', 0.3)}`,
-            '&:hover': { background: alpha('#4caf50', 0.3) }
+            background: currentView === 'gainers' 
+              ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
+              : alpha('#4caf50', 0.1),
+            border: 'none',
+            color: currentView === 'gainers' ? '#fff' : '#4caf50',
+            fontWeight: 600,
+            '&:hover': { 
+              background: currentView === 'gainers'
+                ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
+                : alpha('#4caf50', 0.25),
+              transform: 'scale(1.05)'
+            },
+            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+            height: { xs: 26, sm: 30 },
+            display: { xs: 'none', sm: 'flex' },
+            transition: 'all 0.2s ease'
           }}
         />
         <Chip
@@ -316,9 +367,21 @@ export default function SearchToolbar({
           onClick={() => handleViewChange('/new')}
           sx={{
             cursor: 'pointer',
-            background: currentView === 'new' ? alpha('#ff9800', 0.2) : 'transparent',
-            border: `1px solid ${alpha('#ff9800', 0.3)}`,
-            '&:hover': { background: alpha('#ff9800', 0.3) }
+            background: currentView === 'new' 
+              ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
+              : alpha('#ff9800', 0.1),
+            border: 'none',
+            color: currentView === 'new' ? '#fff' : '#ff9800',
+            fontWeight: 600,
+            '&:hover': { 
+              background: currentView === 'new'
+                ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
+                : alpha('#ff9800', 0.25),
+              transform: 'scale(1.05)'
+            },
+            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+            height: { xs: 26, sm: 30 },
+            transition: 'all 0.2s ease'
           }}
         />
         <Chip
@@ -327,9 +390,22 @@ export default function SearchToolbar({
           onClick={() => handleViewChange('/most-viewed')}
           sx={{
             cursor: 'pointer',
-            background: currentView === 'most-viewed' ? alpha('#9c27b0', 0.2) : 'transparent',
-            border: `1px solid ${alpha('#9c27b0', 0.3)}`,
-            '&:hover': { background: alpha('#9c27b0', 0.3) }
+            background: currentView === 'most-viewed' 
+              ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
+              : alpha('#9c27b0', 0.1),
+            border: 'none',
+            color: currentView === 'most-viewed' ? '#fff' : '#9c27b0',
+            fontWeight: 600,
+            '&:hover': { 
+              background: currentView === 'most-viewed'
+                ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
+                : alpha('#9c27b0', 0.25),
+              transform: 'scale(1.05)'
+            },
+            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+            height: { xs: 26, sm: 30 },
+            display: { xs: 'none', sm: 'flex' },
+            transition: 'all 0.2s ease'
           }}
         />
         
@@ -339,10 +415,10 @@ export default function SearchToolbar({
             <Divider orientation="vertical" flexItem sx={{ mx: 0.5, height: 20 }} />
             
             {/* Display first 5 categories from tags array */}
-            {tags.slice(0, 5).map((tag, index) => {
+            {tags.slice(0, 10).map((tag, index) => {
               const normalizedTag = tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
-              const colors = ['#e91e63', '#00bcd4', '#4caf50', '#673ab7', '#ff9800'];
-              const emojis = ['🏷️', '📍', '⭐', '💫', '🎯'];
+              const colors = ['#e91e63', '#00bcd4', '#4caf50', '#673ab7', '#ff9800', '#795548', '#607d8b', '#ff5722', '#3f51b5', '#009688'];
+              const emojis = ['🏷️', '📍', '⭐', '💫', '🎯', '🔖', '🎨', '🌟', '🏆', '💡'];
               
               return (
                 <Chip
@@ -354,7 +430,10 @@ export default function SearchToolbar({
                     cursor: 'pointer',
                     background: tagName === tag ? alpha(colors[index], 0.2) : 'transparent',
                     border: `1px solid ${alpha(colors[index], 0.3)}`,
-                    '&:hover': { background: alpha(colors[index], 0.3) }
+                    '&:hover': { background: alpha(colors[index], 0.3) },
+                    fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                    height: { xs: 24, sm: 28 },
+                    display: { xs: index < 3 ? 'flex' : 'none', sm: index < 8 ? 'flex' : 'none', md: 'flex' }
                   }}
                 />
               );
@@ -364,7 +443,16 @@ export default function SearchToolbar({
       </Stack>
 
       {/* Right Section - Categories & Rows */}
-      <Stack direction="row" spacing={1} alignItems="center">
+      <Stack 
+        direction="row" 
+        spacing={{ xs: 0.5, sm: 1 }} 
+        alignItems="center"
+        sx={{ 
+          width: { xs: '100%', sm: 'auto' },
+          justifyContent: { xs: 'flex-end', sm: 'flex-start' },
+          mt: { xs: 0.5, sm: 0 }
+        }}
+      >
         <Tooltip title="Categories">
           <IconButton 
             size="small"
