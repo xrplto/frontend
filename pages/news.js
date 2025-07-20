@@ -189,7 +189,7 @@ export default function News() {
     const fetchNews = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:7000/api/news');
+        const response = await fetch('https://api.xrpl.to/api/news');
         if (!response.ok) {
           throw new Error('Failed to fetch news');
         }
