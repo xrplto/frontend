@@ -192,7 +192,8 @@ export async function getStaticProps() {
     'https://s1.xrpl.to/ogp/5m.webp',
     'https://s1.xrpl.to/ogp/1h.webp',
     'https://s1.xrpl.to/ogp/24h.webp',
-    'https://s1.xrpl.to/ogp/7d.webp'
+    'https://s1.xrpl.to/ogp/7d.webp',
+    'https://s1.xrpl.to/ogp/news.webp'
   ];
   
   const ogp = {
