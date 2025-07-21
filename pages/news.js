@@ -119,7 +119,7 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
   );
 };
 
-export default function News() {
+function NewsPage() {
   const dispatch = useDispatch();
   const theme = useTheme();
   const [news, setNews] = useState([]);
@@ -739,4 +739,27 @@ export default function News() {
       <Footer />
     </Box>
   );
+}
+
+export default NewsPage;
+
+export async function getStaticProps() {
+  const ogp = {
+    canonical: 'https://xrpl.to/news',
+    title: 'XRPL News - Latest Crypto & XRP Ledger Updates',
+    url: 'https://xrpl.to/news',
+    imgUrl: 'https://s1.xrpl.to/ogp/news.webp',
+    imgType: 'image/webp',
+    imgWidth: '1200',
+    imgHeight: '630',
+    imgAlt: 'XRPL.to News - Latest cryptocurrency and XRP Ledger news',
+    desc: 'Stay updated with the latest XRPL news, market sentiment analysis, and cryptocurrency updates from trusted sources'
+  };
+
+  return {
+    props: {
+      ogp
+    },
+    revalidate: 300 // Revalidate every 5 minutes
+  };
 }
