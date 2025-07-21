@@ -5,7 +5,7 @@ import '@mui/lab/themeAugmentation';
 const themeColors = {
   primary: '#FFD700',      // Pure Gold from banana hair and jersey
   secondary: '#40E0D0',    // Diamond Turquoise from ape face
-  success: '#00D4FF',      // Electric Sky Blue from diamond earring
+  success: '#00FF87',      // Neon Spring Green for bullish sentiment
   warning: '#F4A460',      // Satin Sandy Brown from skin
   error: '#FF6B6B',        // Soft Red
   info: '#1E90FF',         // Royal Dodger Blue from background
@@ -23,7 +23,7 @@ const colors = {
     blue2: 'linear-gradient(135deg, #1E90FF 0%, #00BFFF 25%, #0080FF 50%, #1E90FF 100%)',
     blue3: 'linear-gradient(127.55deg, #008B8B 3.73%, #40E0D0 50%, #00E5E5 92.26%)',
     blue4: 'linear-gradient(-20deg, #40E0D0 0%, #FFD700 33%, #FFF700 66%, #40E0D0 100%)',
-    blue5: 'linear-gradient(135deg, #1E90FF 0%, #00D4FF 25%, #00BFFF 75%, #40E0D0 100%)',
+    blue5: 'linear-gradient(135deg, #1E90FF 0%, #00FF87 25%, #00BFFF 75%, #40E0D0 100%)',
     orange1: 'linear-gradient(135deg, #FFD700 0%, #FFF700 25%, #FFA500 75%, #FFD700 100%)',
     orange2: 'linear-gradient(135deg, #F4A460 0%, #FFB6C1 50%, #DDA0DD 100%)',
     orange3: 'linear-gradient(120deg, #FFD700 0%, #FFF700 25%, #40E0D0 75%, #00E5E5 100%)',
@@ -39,7 +39,7 @@ const colors = {
     diamond1: 'linear-gradient(135deg, #40E0D0 0%, #E0FFFF 25%, #40E0D0 50%, #00D4FF 75%, #40E0D0 100%)'
   },
   shadows: {
-    success: '0px 0px 20px rgba(0, 212, 255, 0.6), 0px 4px 16px rgba(0, 212, 255, 0.4), 0px 8px 32px rgba(0, 212, 255, 0.3)',
+    success: '0px 0px 20px rgba(0, 255, 135, 0.6), 0px 4px 16px rgba(0, 255, 135, 0.4), 0px 8px 32px rgba(0, 255, 135, 0.3)',
     error: '0px 0px 20px rgba(255, 107, 107, 0.6), 0px 4px 16px rgba(255, 107, 107, 0.4), 0px 8px 32px rgba(255, 107, 107, 0.3)',
     info: '0px 0px 20px rgba(30, 144, 255, 0.6), 0px 4px 16px rgba(30, 144, 255, 0.4), 0px 8px 32px rgba(30, 144, 255, 0.3)',
     primary: '0px 0px 30px rgba(255, 215, 0, 0.8), 0px 4px 20px rgba(255, 215, 0, 0.6), 0px 12px 40px rgba(255, 215, 0, 0.4)',
@@ -223,9 +223,9 @@ export const BoredApeTheme = createTheme({
       contrastText: themeColors.black
     },
     text: {
-      primary: '#FAFAFA',
-      secondary: alpha('#FAFAFA', 0.7),
-      disabled: alpha('#FAFAFA', 0.5)
+      primary: '#FFFFFF',
+      secondary: alpha('#FFD700', 0.85),
+      disabled: alpha('#40E0D0', 0.5)
     },
     background: {
       paper: 'rgba(0, 139, 139, 0.01)', // Very transparent to avoid alpha() errors
@@ -311,7 +311,8 @@ export const BoredApeTheme = createTheme({
           letterSpacing: '0.02em',
           borderRadius: '8px',
           padding: '8px 16px',
-          transition: 'all 0.3s ease'
+          transition: 'all 0.3s ease',
+          color: themeColors.black
         },
         sizeSmall: {
           padding: '8px 16px',
@@ -368,11 +369,37 @@ export const BoredApeTheme = createTheme({
         },
         h1: {
           fontWeight: 700,
-          letterSpacing: '-0.02em'
+          letterSpacing: '-0.02em',
+          color: themeColors.primary,
+          textShadow: '0 0 20px rgba(255, 215, 0, 0.5)'
         },
         h2: {
           fontWeight: 600,
-          letterSpacing: '-0.01em'
+          letterSpacing: '-0.01em',
+          color: themeColors.primary,
+          textShadow: '0 0 15px rgba(255, 215, 0, 0.4)'
+        },
+        h3: {
+          fontWeight: 600,
+          color: themeColors.secondary,
+          textShadow: '0 0 10px rgba(64, 224, 208, 0.4)'
+        },
+        h4: {
+          fontWeight: 600,
+          color: themeColors.secondary,
+          textShadow: '0 0 8px rgba(64, 224, 208, 0.3)'
+        },
+        h5: {
+          color: '#FFFFFF'
+        },
+        h6: {
+          color: '#FFFFFF'
+        },
+        body1: {
+          color: '#FFFFFF'
+        },
+        body2: {
+          color: alpha('#FFFFFF', 0.85)
         }
       }
     },
@@ -384,10 +411,12 @@ export const BoredApeTheme = createTheme({
           background: 'transparent',
           fontWeight: 500,
           boxShadow: 'none',
+          color: themeColors.secondary,
           '&:hover': {
             background: alpha('#40E0D0', 0.05),
             borderColor: alpha('#FFD700', 0.5),
-            boxShadow: '0px 0px 20px rgba(255, 215, 0, 0.3)'
+            boxShadow: '0px 0px 20px rgba(255, 215, 0, 0.3)',
+            color: themeColors.primary
           }
         }
       }
@@ -430,11 +459,11 @@ export const BoredApeTheme = createTheme({
       styleOverrides: {
         root: {
           borderBottomColor: alpha('#40E0D0', 0.1),
-          color: alpha('#FAFAFA', 0.9)
+          color: '#FFFFFF'
         },
         head: {
           fontWeight: 600,
-          color: themeColors.secondary,
+          color: themeColors.primary,
           borderBottomColor: alpha('#40E0D0', 0.2)
         }
       }

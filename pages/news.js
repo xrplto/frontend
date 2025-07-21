@@ -278,10 +278,15 @@ export default function News() {
             label={`Bullish ${getPercentage(stats.bullish)}%`}
             size="small"
             sx={{
-              background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)',
+              background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#FFD700' 
+                ? 'linear-gradient(90deg, #00FF87 0%, #00E673 100%)' 
+                : 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)',
               color: 'white',
               height: '22px',
-              fontWeight: 500
+              fontWeight: 500,
+              boxShadow: theme.palette.mode === 'dark' && theme.palette.primary.main === '#FFD700' 
+                ? '0px 0px 10px rgba(0, 255, 135, 0.5)' 
+                : 'none'
             }}
           />
           <Chip
