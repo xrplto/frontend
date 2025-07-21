@@ -23,6 +23,7 @@ import PriceChart from './PriceChartLightweightSSR';
 import PriceStatistics from './PriceStatistics';
 import Description from './Description';
 import TrendingTokens from './TrendingTokens';
+import AdBanner from 'src/components/AdBanner';
 
 import Swap from './Swap'; // Import Swap component
 import TradingHistory from './TradingHistory';
@@ -127,6 +128,9 @@ export default function Overview({ token }) {
       </Grid>
       <Grid item xs={12} md={12} lg={4}>
         <Swap token={token} />
+        <Paper sx={{ mt: 3, p: 0, overflow: 'hidden' }}>
+          <AdBanner onPurchase={(adData) => console.log('Ad purchased:', adData)} />
+        </Paper>
         <PriceStatistics token={token} sx={{ mt: 3 }} />
         <Description
           token={token}
