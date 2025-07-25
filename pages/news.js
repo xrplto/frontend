@@ -508,34 +508,69 @@ function NewsPage() {
                     <Box
                       sx={{
                         display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
+                        gap: 2,
                         mb: 1.5
                       }}
                     >
-                      <Typography
-                        variant="h6"
-                        component="h2"
-                        sx={{
-                          flex: 1,
-                          color: theme.palette.mode === 'dark' ? '#fff' : '#000',
-                          fontWeight: 500,
-                          fontSize: '1.1rem'
-                        }}
-                      >
-                        {extractTitle(article.title)}
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                        <Chip
-                          label={article.sentiment || 'Unknown'}
-                          size="small"
+                      {article.articleImage && (
+                        <Box
                           sx={{
-                            backgroundColor: getSentimentColor(article.sentiment),
-                            color: '#fff',
-                            height: '22px',
-                            fontWeight: 500
+                            flexShrink: 0,
+                            width: 80,
+                            height: 80,
+                            borderRadius: 1,
+                            overflow: 'hidden',
+                            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
                           }}
-                        />
+                        >
+                          <img
+                            src={article.articleImage}
+                            alt={extractTitle(article.title)}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }}
+                            onError={(e) => {
+                              e.target.parentElement.style.display = 'none';
+                            }}
+                          />
+                        </Box>
+                      )}
+                      <Box sx={{ flex: 1 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            mb: 1
+                          }}
+                        >
+                          <Typography
+                            variant="h6"
+                            component="h2"
+                            sx={{
+                              flex: 1,
+                              color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+                              fontWeight: 500,
+                              fontSize: '1.1rem'
+                            }}
+                          >
+                            {extractTitle(article.title)}
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', ml: 2 }}>
+                            <Chip
+                              label={article.sentiment || 'Unknown'}
+                              size="small"
+                              sx={{
+                                backgroundColor: getSentimentColor(article.sentiment),
+                                color: '#fff',
+                                height: '22px',
+                                fontWeight: 500
+                              }}
+                            />
+                          </Box>
+                        </Box>
                       </Box>
                     </Box>
                     <Typography
