@@ -122,6 +122,7 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
 function NewsPage() {
   const dispatch = useDispatch();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -269,8 +270,8 @@ function NewsPage() {
     const getPercentage = (value) => ((value / total) * 100).toFixed(1);
 
     return (
-      <Box sx={{ flex: 1, py: 0.5, px: 1 }}>
-        <Typography variant="subtitle2" sx={{ mb: 0.8, color: 'rgba(255,255,255,0.7)' }}>
+      <Box sx={{ flex: 1, py: 0.5, px: isMobile ? 0.5 : 1 }}>
+        <Typography variant="subtitle2" sx={{ mb: 0.8, color: 'rgba(255,255,255,0.7)', fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
           {period}
         </Typography>
         <Box sx={{ display: 'flex', gap: 0.8, flexWrap: 'wrap' }}>
@@ -453,7 +454,7 @@ function NewsPage() {
                 </Typography>
               )}
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: isMobile ? 1 : 2 }}>
               <SentimentSummary period="Last 24h" stats={sentimentStats.last24h} />
               <Divider
                 orientation="vertical"
@@ -508,7 +509,7 @@ function NewsPage() {
                     <Box
                       sx={{
                         display: 'flex',
-                        gap: 2,
+                        gap: isMobile ? 1.5 : 2,
                         mb: 1.5
                       }}
                     >
@@ -516,8 +517,8 @@ function NewsPage() {
                         <Box
                           sx={{
                             flexShrink: 0,
-                            width: 80,
-                            height: 80,
+                            width: isMobile ? 60 : 80,
+                            height: isMobile ? 60 : 80,
                             borderRadius: 1,
                             overflow: 'hidden',
                             backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
@@ -553,7 +554,8 @@ function NewsPage() {
                               flex: 1,
                               color: theme.palette.mode === 'dark' ? '#fff' : '#000',
                               fontWeight: 500,
-                              fontSize: '1.1rem'
+                              fontSize: isMobile ? '1rem' : '1.1rem',
+                              lineHeight: isMobile ? 1.3 : 1.4
                             }}
                           >
                             {extractTitle(article.title)}
@@ -624,12 +626,14 @@ function NewsPage() {
                     <Box
                       sx={{
                         display: 'flex',
+                        flexDirection: isMobile ? 'column' : 'row',
                         justifyContent: 'space-between',
-                        alignItems: 'center',
+                        alignItems: isMobile ? 'flex-start' : 'center',
+                        gap: isMobile ? 1 : 0,
                         mt: 1
                       }}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
                         <Typography
                           variant="caption"
                           sx={{
