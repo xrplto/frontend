@@ -1,10 +1,13 @@
-import { useState, useEffect, useRef, memo } from 'react';
+import { useState, useEffect, useRef, memo, useContext } from 'react';
 import { Box, ButtonGroup, Button, Typography, useTheme, Paper } from '@mui/material';
 import axios from 'axios';
+import { AppContext } from 'src/AppContext';
+import { currencySymbols } from 'src/utils/constants';
 
 // Lightweight chart using Canvas API for ultimate performance
 const PriceChartLightweight = memo(({ token }) => {
   const theme = useTheme();
+  const { activeFiatCurrency } = useContext(AppContext);
   const canvasRef = useRef(null);
   const [chartType, setChartType] = useState(1); // 0: line, 1: candles, 2: holders
   const [range, setRange] = useState('12h');
@@ -30,18 +33,19 @@ const PriceChartLightweight = memo(({ token }) => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const apiRange = range === '12h' ? 'SPARK' : range;
+        // OHLC v2 doesn't support SPARK or ALL, use appropriate mappings
+        const apiRange = range === '12h' ? '1D' : range === 'ALL' ? '1Y' : range;
         let endpoint;
         
         if (chartType === 2) {
           // Holders chart - use graphrich endpoint
           endpoint = `${BASE_URL}/graphrich/${token.md5}?range=${apiRange}`;
         } else if (chartType === 1) {
-          // Candlestick chart
-          endpoint = `${BASE_URL}/graph-ohlc-with-metrics/${token.md5}?range=${apiRange}&vs_currency=XRP`;
+          // Candlestick chart - use OHLC v2 endpoint with active currency
+          endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?range=${apiRange}&vs_currency=${activeFiatCurrency}`;
         } else {
-          // Line chart
-          endpoint = `${BASE_URL}/graph-with-metrics/${token.md5}?range=${apiRange}&vs_currency=XRP`;
+          // Line chart - also use OHLC v2 endpoint but extract close prices with active currency
+          endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?range=${apiRange}&vs_currency=${activeFiatCurrency}`;
         }
         
         const response = await axios.get(endpoint, { signal: controller.signal });
@@ -55,22 +59,27 @@ const PriceChartLightweight = memo(({ token }) => {
           setData(holdersData);
           setHasInitialData(true);
           setLoading(false);
-        } else if (chartType === 1 && response.data?.ohlc && response.data.ohlc.length > 0) {
-          // Normalize OHLC data to ensure all values are numbers
-          const normalizedOhlc = response.data.ohlc.map(candle => [
-            candle[0], // timestamp
-            parseFloat(candle[1]), // open
-            parseFloat(candle[2]), // high
-            parseFloat(candle[3]), // low
-            parseFloat(candle[4]), // close
-            parseFloat(candle[5]) || 0 // volume
-          ]);
-          setData(normalizedOhlc);
-          setHasInitialData(true);
-          setLoading(false);
-        } else if (response.data?.history && response.data.history.length > 0) {
-          // For line chart, history data is already in correct format [timestamp, price, volume]
-          setData(response.data.history);
+        } else if (response.data?.ohlc && response.data.ohlc.length > 0) {
+          if (chartType === 1) {
+            // Candlestick chart - use full OHLC data
+            const normalizedOhlc = response.data.ohlc.map(candle => [
+              candle[0], // timestamp
+              parseFloat(candle[1]), // open
+              parseFloat(candle[2]), // high
+              parseFloat(candle[3]), // low
+              parseFloat(candle[4]), // close
+              parseFloat(candle[5]) || 0 // volume
+            ]);
+            setData(normalizedOhlc);
+          } else {
+            // Line chart - extract close prices from OHLC data
+            const lineData = response.data.ohlc.map(candle => [
+              candle[0], // timestamp
+              parseFloat(candle[4]), // close price
+              parseFloat(candle[5]) || 0 // volume
+            ]);
+            setData(lineData);
+          }
           setHasInitialData(true);
           setLoading(false);
         } else {
@@ -95,7 +104,7 @@ const PriceChartLightweight = memo(({ token }) => {
     fetchData();
     
     return () => controller.abort();
-  }, [token.md5, range, chartType, BASE_URL]);
+  }, [token.md5, range, chartType, BASE_URL, activeFiatCurrency]);
 
   // Polling for live updates
   useEffect(() => {
@@ -104,15 +113,15 @@ const PriceChartLightweight = memo(({ token }) => {
     // Poll every 3 seconds
     const pollData = async () => {
       try {
-        const apiRange = range === '12h' ? 'SPARK' : range;
+        // OHLC v2 doesn't support SPARK or ALL, use appropriate mappings
+        const apiRange = range === '12h' ? '1D' : range === 'ALL' ? '1Y' : range;
         let endpoint;
         
         if (chartType === 2) {
           endpoint = `${BASE_URL}/graphrich/${token.md5}?range=${apiRange}`;
-        } else if (chartType === 1) {
-          endpoint = `${BASE_URL}/graph-ohlc-with-metrics/${token.md5}?range=${apiRange}&vs_currency=XRP`;
         } else {
-          endpoint = `${BASE_URL}/graph-with-metrics/${token.md5}?range=${apiRange}&vs_currency=XRP`;
+          // Both line and candlestick charts use OHLC v2 endpoint with active currency
+          endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?range=${apiRange}&vs_currency=${activeFiatCurrency}`;
         }
         
         const response = await axios.get(endpoint);
@@ -123,18 +132,27 @@ const PriceChartLightweight = memo(({ token }) => {
             item.length
           ]);
           setData(holdersData);
-        } else if (chartType === 1 && response.data?.ohlc && response.data.ohlc.length > 0) {
-          const normalizedOhlc = response.data.ohlc.map(candle => [
-            candle[0],
-            parseFloat(candle[1]),
-            parseFloat(candle[2]),
-            parseFloat(candle[3]),
-            parseFloat(candle[4]),
-            parseFloat(candle[5]) || 0
-          ]);
-          setData(normalizedOhlc);
-        } else if (response.data?.history && response.data.history.length > 0) {
-          setData(response.data.history);
+        } else if (response.data?.ohlc && response.data.ohlc.length > 0) {
+          if (chartType === 1) {
+            // Candlestick chart - use full OHLC data
+            const normalizedOhlc = response.data.ohlc.map(candle => [
+              candle[0],
+              parseFloat(candle[1]),
+              parseFloat(candle[2]),
+              parseFloat(candle[3]),
+              parseFloat(candle[4]),
+              parseFloat(candle[5]) || 0
+            ]);
+            setData(normalizedOhlc);
+          } else {
+            // Line chart - extract close prices from OHLC data
+            const lineData = response.data.ohlc.map(candle => [
+              candle[0],
+              parseFloat(candle[4]), // close price
+              parseFloat(candle[5]) || 0 // volume
+            ]);
+            setData(lineData);
+          }
         }
         
         setLastUpdate(new Date());
@@ -152,7 +170,7 @@ const PriceChartLightweight = memo(({ token }) => {
         pollingIntervalRef.current = null;
       }
     };
-  }, [token.md5, range, chartType, hasInitialData, BASE_URL]);
+  }, [token.md5, range, chartType, hasInitialData, BASE_URL, activeFiatCurrency]);
 
   // Draw chart using Canvas
   useEffect(() => {
@@ -374,15 +392,16 @@ const PriceChartLightweight = memo(({ token }) => {
         // Format holders count
         label = Math.round(value).toLocaleString();
       } else {
-        // Format price with appropriate decimal places
+        // Format price with appropriate decimal places and currency symbol
+        const symbol = currencySymbols[activeFiatCurrency] || '';
         if (value < 0.00001) {
-          label = value.toExponential(2);
+          label = symbol + value.toExponential(2);
         } else if (value < 0.01) {
-          label = value.toFixed(8);
+          label = symbol + value.toFixed(8);
         } else if (value < 1) {
-          label = value.toFixed(6);
+          label = symbol + value.toFixed(6);
         } else {
-          label = value.toFixed(4);
+          label = symbol + value.toFixed(4);
         }
       }
       
@@ -518,9 +537,10 @@ const PriceChartLightweight = memo(({ token }) => {
         
         // Price label
         const price = maxPrice - ((y - topPadding) / priceChartHeight) * priceRange;
+        const symbol = currencySymbols[activeFiatCurrency] || '';
         const priceLabel = chartType === 2 
           ? Math.round(price).toLocaleString()
-          : price < 0.01 ? price.toFixed(8) : price.toFixed(6);
+          : symbol + (price < 0.01 ? price.toFixed(8) : price.toFixed(6));
         
         ctx.fillStyle = theme.palette.background.paper;
         ctx.fillRect(leftPadding - 78, y - 10, 76, 20);
@@ -552,7 +572,7 @@ const PriceChartLightweight = memo(({ token }) => {
       }
     }
 
-  }, [data, chartType, isDark, theme, mousePos, panOffset]);
+  }, [data, chartType, isDark, theme, mousePos, panOffset, activeFiatCurrency]);
 
   return (
     <Paper elevation={0} sx={{ p: 2 }}>
@@ -560,7 +580,7 @@ const PriceChartLightweight = memo(({ token }) => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="h6" sx={{ fontSize: '1rem' }}>
-            {token.name} {chartType === 2 ? 'Holders' : 'Price'}
+            {token.name} {chartType === 2 ? 'Holders' : `Price (${activeFiatCurrency})`}
           </Typography>
           {lastUpdate && (
             <Typography variant="caption" color="text.secondary">
@@ -595,7 +615,7 @@ const PriceChartLightweight = memo(({ token }) => {
           </ButtonGroup>
 
           <ButtonGroup size="small">
-            {['12h', '1D', '7D', '1M'].map(r => (
+            {['12h', '1D', '7D', '1M', '3M', '1Y', 'ALL'].map(r => (
               <Button
                 key={r}
                 onClick={() => setRange(r)}
