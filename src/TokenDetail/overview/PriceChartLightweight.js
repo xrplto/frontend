@@ -286,13 +286,25 @@ const PriceChartLightweight = memo(({ token }) => {
       
       ctx.stroke();
     } else {
-      // Candlestick chart with improved rendering
-      const candleWidth = Math.max(1, chartWidth / data.length - 1);
-      const candleSpacing = Math.min(2, candleWidth * 0.2);
+      // Candlestick chart with improved rendering for low-liquidity tokens
+      const totalCandles = data.length;
+      const maxCandleWidth = 40; // Maximum width for very few candles
+      const minCandleWidth = 3;  // Minimum width for many candles
+      
+      // Calculate optimal candle width based on data density
+      let candleWidth;
+      if (totalCandles <= 10) {
+        // Very few candles - make them wider and more visible
+        candleWidth = Math.min(maxCandleWidth, chartWidth / (totalCandles * 2));
+      } else {
+        candleWidth = Math.max(minCandleWidth, chartWidth / totalCandles - 1);
+      }
+      
+      const candleSpacing = Math.max(1, candleWidth * 0.3);
       const actualCandleWidth = candleWidth - candleSpacing;
       
       data.forEach((item, index) => {
-        const x = leftPadding + (index / data.length) * chartWidth + candleWidth / 2 + panX;
+        const x = leftPadding + ((index + 0.5) / totalCandles) * chartWidth + panX;
         const [time, open, high, low, close, volume] = item;
         
         // Ensure all OHLC values are finite numbers
@@ -311,6 +323,7 @@ const PriceChartLightweight = memo(({ token }) => {
         }
         
         const isUp = close >= open;
+        const isDoji = Math.abs(close - open) < (priceRange * 0.001); // Doji detection
         
         // Enhanced colors with gradients
         if (isUp) {
@@ -327,48 +340,84 @@ const PriceChartLightweight = memo(({ token }) => {
           ctx.strokeStyle = '#f44336';
         }
         
-        // Draw wick with shadow effect
-        ctx.lineWidth = Math.max(1, actualCandleWidth * 0.15);
-        ctx.lineCap = 'round';
-        
-        // Shadow for wick
-        ctx.shadowColor = isUp ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)';
-        ctx.shadowBlur = 2;
-        
-        ctx.beginPath();
-        ctx.moveTo(x, yHigh);
-        ctx.lineTo(x, yLow);
-        ctx.stroke();
-        
-        // Reset shadow
-        ctx.shadowBlur = 0;
-        
-        // Draw body with rounded corners
-        const bodyHeight = Math.abs(yClose - yOpen);
-        const bodyY = Math.min(yOpen, yClose);
-        const cornerRadius = Math.min(2, actualCandleWidth * 0.1);
-        
-        if (bodyHeight > 1) {
-          // Rounded rectangle for body
-          ctx.beginPath();
-          ctx.moveTo(x - actualCandleWidth / 2 + cornerRadius, bodyY);
-          ctx.lineTo(x + actualCandleWidth / 2 - cornerRadius, bodyY);
-          ctx.quadraticCurveTo(x + actualCandleWidth / 2, bodyY, x + actualCandleWidth / 2, bodyY + cornerRadius);
-          ctx.lineTo(x + actualCandleWidth / 2, bodyY + bodyHeight - cornerRadius);
-          ctx.quadraticCurveTo(x + actualCandleWidth / 2, bodyY + bodyHeight, x + actualCandleWidth / 2 - cornerRadius, bodyY + bodyHeight);
-          ctx.lineTo(x - actualCandleWidth / 2 + cornerRadius, bodyY + bodyHeight);
-          ctx.quadraticCurveTo(x - actualCandleWidth / 2, bodyY + bodyHeight, x - actualCandleWidth / 2, bodyY + bodyHeight - cornerRadius);
-          ctx.lineTo(x - actualCandleWidth / 2, bodyY + cornerRadius);
-          ctx.quadraticCurveTo(x - actualCandleWidth / 2, bodyY, x - actualCandleWidth / 2 + cornerRadius, bodyY);
-          ctx.closePath();
-          ctx.fill();
+        // For low-liquidity tokens with no price movement (doji candles)
+        if (isDoji && high === low) {
+          // Draw a special indicator for no-movement candles
+          const dojiSize = Math.max(8, actualCandleWidth * 0.8);
           
-          // Outline for definition
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
+          // Draw a circle/diamond shape to indicate no movement
+          ctx.save();
+          ctx.translate(x, yOpen);
+          ctx.rotate(Math.PI / 4);
+          
+          // Diamond shape
+          ctx.fillStyle = isUp ? '#4caf50' : '#f44336';
+          ctx.fillRect(-dojiSize/2, -dojiSize/2, dojiSize, dojiSize);
+          
+          // Border
+          ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(-dojiSize/2, -dojiSize/2, dojiSize, dojiSize);
+          
+          ctx.restore();
+          
+          // Add volume indicator if present
+          if (volume > 0) {
+            ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+            ctx.font = '9px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(volume.toFixed(2), x, yOpen + dojiSize/2 + 5);
+          }
         } else {
-          // Thin line for doji candles
-          ctx.fillRect(x - actualCandleWidth / 2, bodyY - 0.5, actualCandleWidth, 1);
+          // Normal candle rendering
+          // Draw wick with shadow effect
+          ctx.lineWidth = Math.max(1, actualCandleWidth * 0.15);
+          ctx.lineCap = 'round';
+          
+          // Shadow for wick
+          ctx.shadowColor = isUp ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)';
+          ctx.shadowBlur = 2;
+          
+          ctx.beginPath();
+          ctx.moveTo(x, yHigh);
+          ctx.lineTo(x, yLow);
+          ctx.stroke();
+          
+          // Reset shadow
+          ctx.shadowBlur = 0;
+          
+          // Draw body with rounded corners
+          const bodyHeight = Math.abs(yClose - yOpen);
+          const bodyY = Math.min(yOpen, yClose);
+          const cornerRadius = Math.min(2, actualCandleWidth * 0.1);
+          
+          if (bodyHeight > 1 || isDoji) {
+            // For doji candles, ensure minimum visible height
+            const minBodyHeight = isDoji ? 3 : bodyHeight;
+            const adjustedBodyY = isDoji ? bodyY - 1.5 : bodyY;
+            
+            // Rounded rectangle for body
+            ctx.beginPath();
+            ctx.moveTo(x - actualCandleWidth / 2 + cornerRadius, adjustedBodyY);
+            ctx.lineTo(x + actualCandleWidth / 2 - cornerRadius, adjustedBodyY);
+            ctx.quadraticCurveTo(x + actualCandleWidth / 2, adjustedBodyY, x + actualCandleWidth / 2, adjustedBodyY + cornerRadius);
+            ctx.lineTo(x + actualCandleWidth / 2, adjustedBodyY + minBodyHeight - cornerRadius);
+            ctx.quadraticCurveTo(x + actualCandleWidth / 2, adjustedBodyY + minBodyHeight, x + actualCandleWidth / 2 - cornerRadius, adjustedBodyY + minBodyHeight);
+            ctx.lineTo(x - actualCandleWidth / 2 + cornerRadius, adjustedBodyY + minBodyHeight);
+            ctx.quadraticCurveTo(x - actualCandleWidth / 2, adjustedBodyY + minBodyHeight, x - actualCandleWidth / 2, adjustedBodyY + minBodyHeight - cornerRadius);
+            ctx.lineTo(x - actualCandleWidth / 2, adjustedBodyY + cornerRadius);
+            ctx.quadraticCurveTo(x - actualCandleWidth / 2, adjustedBodyY, x - actualCandleWidth / 2 + cornerRadius, adjustedBodyY);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Outline for definition
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          } else {
+            // Thin line for very small movements
+            ctx.fillRect(x - actualCandleWidth / 2, bodyY - 0.5, actualCandleWidth, 1);
+          }
         }
       });
     }
@@ -550,7 +599,7 @@ const PriceChartLightweight = memo(({ token }) => {
         ctx.textBaseline = 'middle';
         ctx.fillText(priceLabel, leftPadding - 12, y);
         
-        // Time label
+        // Time label with debug info
         const dataIndex = Math.round(((x - leftPadding) / chartWidth) * (data.length - 1));
         if (dataIndex >= 0 && dataIndex < data.length) {
           const date = new Date(data[dataIndex][0]);
@@ -561,6 +610,10 @@ const PriceChartLightweight = memo(({ token }) => {
             minute: '2-digit' 
           });
           
+          // Add detailed timestamp for debugging
+          const debugTimestamp = date.toISOString();
+          const unixTimestamp = data[dataIndex][0];
+          
           const labelWidth = ctx.measureText(timeLabel).width;
           ctx.fillStyle = theme.palette.background.paper;
           ctx.fillRect(x - labelWidth/2 - 5, timeY - 2, labelWidth + 10, 16);
@@ -568,6 +621,15 @@ const PriceChartLightweight = memo(({ token }) => {
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
           ctx.fillText(timeLabel, x, timeY);
+          
+          // Draw debug timestamp info above the crosshair
+          const debugInfo = `${debugTimestamp} (Unix: ${unixTimestamp})`;
+          const debugWidth = ctx.measureText(debugInfo).width;
+          ctx.fillStyle = isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)';
+          ctx.fillRect(x - debugWidth/2 - 8, topPadding - 20, debugWidth + 16, 18);
+          ctx.fillStyle = theme.palette.primary.main;
+          ctx.font = '10px monospace';
+          ctx.fillText(debugInfo, x, topPadding - 10);
         }
       }
     }
