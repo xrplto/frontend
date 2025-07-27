@@ -148,6 +148,19 @@ export default function EditTokenDialog({ token, setToken }) {
       const accountAdmin = accountProfile.account;
       const accountToken = accountProfile.token;
 
+      // Debug logging
+      console.log('Auth Debug:', {
+        accountAdmin,
+        accountToken: accountToken ? 'exists' : 'missing',
+        accountProfile
+      });
+
+      if (!accountAdmin || !accountToken) {
+        openSnackbar('Authentication required. Please connect your wallet.', 'error');
+        setLoading(false);
+        return;
+      }
+
       const formdata = new FormData();
       formdata.append('avatar', file);
       formdata.append('account', accountAdmin);
@@ -161,13 +174,41 @@ export default function EditTokenDialog({ token, setToken }) {
 
             res = await axios.post(`${BASE_URL}/admin/update_token`, body);*/
 
-      res = await axios.post(`${BASE_URL}/admin/update_token`, formdata, {
+      // Log headers for debugging
+      console.log('Sending request with headers:', {
+        'x-access-account': accountAdmin,
+        'x-access-token': accountToken ? `${accountToken.substring(0, 20)}...` : 'missing'
+      });
+
+      // Try using fetch API as an alternative to axios
+      if (!accountToken) {
+        console.error('No auth token available!');
+        openSnackbar('No authentication token. Please log in again.', 'error');
+        setLoading(false);
+        return;
+      }
+
+      console.log('Using fetch with headers:', {
+        'x-access-account': accountAdmin,
+        'x-access-token': 'token exists'
+      });
+
+      res = await fetch(`${BASE_URL}/admin/update_token`, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'multipart/form-data',
           'x-access-account': accountAdmin,
           'x-access-token': accountToken
-        }
+        },
+        body: formdata
       });
+
+      const responseData = await res.json();
+      
+      // Convert fetch response to axios-like format
+      res = {
+        status: res.status,
+        data: responseData
+      };
 
       if (res.status === 200) {
         const ret = res.data;
@@ -188,7 +229,21 @@ export default function EditTokenDialog({ token, setToken }) {
         }
       }
     } catch (err) {
-      console.log(err);
+      console.error('EditTokenDialog Error:', err);
+      if (err.response) {
+        console.error('Response status:', err.response.status);
+        console.error('Response data:', err.response.data);
+        
+        if (err.response.status === 401) {
+          openSnackbar('Authentication failed. Please ensure you are logged in with an admin account.', 'error');
+        } else {
+          openSnackbar(`Server error: ${err.response.status}`, 'error');
+        }
+      } else if (err.request) {
+        openSnackbar('Network error. Please check your connection.', 'error');
+      } else {
+        openSnackbar('An unexpected error occurred.', 'error');
+      }
     }
     setLoading(false);
     if (finish) setToken(null);
