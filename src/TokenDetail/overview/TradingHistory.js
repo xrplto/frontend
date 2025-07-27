@@ -200,7 +200,9 @@ const formatRelativeTime = (timestamp) => {
   const now = Date.now();
   const diffInSeconds = Math.floor((now - timestamp) / 1000);
 
-  if (diffInSeconds < 60) {
+  if (diffInSeconds < 0) {
+    return 'just now';
+  } else if (diffInSeconds < 60) {
     return `${diffInSeconds}s ago`;
   } else if (diffInSeconds < 3600) {
     const minutes = Math.floor(diffInSeconds / 60);
