@@ -10,7 +10,7 @@ const PriceChartLightweight = memo(({ token }) => {
   const { activeFiatCurrency } = useContext(AppContext);
   const canvasRef = useRef(null);
   const [chartType, setChartType] = useState(1); // 0: line, 1: candles, 2: holders
-  const [range, setRange] = useState('12h');
+  const [range, setRange] = useState('1D');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hasInitialData, setHasInitialData] = useState(false);
@@ -33,8 +33,8 @@ const PriceChartLightweight = memo(({ token }) => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // OHLC v2 doesn't support SPARK or ALL, use appropriate mappings
-        const apiRange = range === '12h' ? '1D' : range === 'ALL' ? '1Y' : range;
+        // OHLC v2 doesn't support ALL, use appropriate mappings
+        const apiRange = range === 'ALL' ? '1Y' : range;
         let endpoint;
         
         if (chartType === 2) {
@@ -113,8 +113,8 @@ const PriceChartLightweight = memo(({ token }) => {
     // Poll every 3 seconds
     const pollData = async () => {
       try {
-        // OHLC v2 doesn't support SPARK or ALL, use appropriate mappings
-        const apiRange = range === '12h' ? '1D' : range === 'ALL' ? '1Y' : range;
+        // OHLC v2 doesn't support ALL, use appropriate mappings
+        const apiRange = range === 'ALL' ? '1Y' : range;
         let endpoint;
         
         if (chartType === 2) {
@@ -286,25 +286,13 @@ const PriceChartLightweight = memo(({ token }) => {
       
       ctx.stroke();
     } else {
-      // Candlestick chart with improved rendering for low-liquidity tokens
-      const totalCandles = data.length;
-      const maxCandleWidth = 40; // Maximum width for very few candles
-      const minCandleWidth = 3;  // Minimum width for many candles
-      
-      // Calculate optimal candle width based on data density
-      let candleWidth;
-      if (totalCandles <= 10) {
-        // Very few candles - make them wider and more visible
-        candleWidth = Math.min(maxCandleWidth, chartWidth / (totalCandles * 2));
-      } else {
-        candleWidth = Math.max(minCandleWidth, chartWidth / totalCandles - 1);
-      }
-      
-      const candleSpacing = Math.max(1, candleWidth * 0.3);
+      // Candlestick chart with improved rendering
+      const candleWidth = Math.max(1, chartWidth / data.length - 1);
+      const candleSpacing = Math.min(2, candleWidth * 0.2);
       const actualCandleWidth = candleWidth - candleSpacing;
       
       data.forEach((item, index) => {
-        const x = leftPadding + ((index + 0.5) / totalCandles) * chartWidth + panX;
+        const x = leftPadding + (index / data.length) * chartWidth + candleWidth / 2 + panX;
         const [time, open, high, low, close, volume] = item;
         
         // Ensure all OHLC values are finite numbers
@@ -323,7 +311,6 @@ const PriceChartLightweight = memo(({ token }) => {
         }
         
         const isUp = close >= open;
-        const isDoji = Math.abs(close - open) < (priceRange * 0.001); // Doji detection
         
         // Enhanced colors with gradients
         if (isUp) {
@@ -340,84 +327,48 @@ const PriceChartLightweight = memo(({ token }) => {
           ctx.strokeStyle = '#f44336';
         }
         
-        // For low-liquidity tokens with no price movement (doji candles)
-        if (isDoji && high === low) {
-          // Draw a special indicator for no-movement candles
-          const dojiSize = Math.max(8, actualCandleWidth * 0.8);
-          
-          // Draw a circle/diamond shape to indicate no movement
-          ctx.save();
-          ctx.translate(x, yOpen);
-          ctx.rotate(Math.PI / 4);
-          
-          // Diamond shape
-          ctx.fillStyle = isUp ? '#4caf50' : '#f44336';
-          ctx.fillRect(-dojiSize/2, -dojiSize/2, dojiSize, dojiSize);
-          
-          // Border
-          ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(-dojiSize/2, -dojiSize/2, dojiSize, dojiSize);
-          
-          ctx.restore();
-          
-          // Add volume indicator if present
-          if (volume > 0) {
-            ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
-            ctx.font = '9px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.fillText(volume.toFixed(2), x, yOpen + dojiSize/2 + 5);
-          }
-        } else {
-          // Normal candle rendering
-          // Draw wick with shadow effect
-          ctx.lineWidth = Math.max(1, actualCandleWidth * 0.15);
-          ctx.lineCap = 'round';
-          
-          // Shadow for wick
-          ctx.shadowColor = isUp ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)';
-          ctx.shadowBlur = 2;
-          
+        // Draw wick with shadow effect
+        ctx.lineWidth = Math.max(1, actualCandleWidth * 0.15);
+        ctx.lineCap = 'round';
+        
+        // Shadow for wick
+        ctx.shadowColor = isUp ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)';
+        ctx.shadowBlur = 2;
+        
+        ctx.beginPath();
+        ctx.moveTo(x, yHigh);
+        ctx.lineTo(x, yLow);
+        ctx.stroke();
+        
+        // Reset shadow
+        ctx.shadowBlur = 0;
+        
+        // Draw body with rounded corners
+        const bodyHeight = Math.abs(yClose - yOpen);
+        const bodyY = Math.min(yOpen, yClose);
+        const cornerRadius = Math.min(2, actualCandleWidth * 0.1);
+        
+        if (bodyHeight > 1) {
+          // Rounded rectangle for body
           ctx.beginPath();
-          ctx.moveTo(x, yHigh);
-          ctx.lineTo(x, yLow);
+          ctx.moveTo(x - actualCandleWidth / 2 + cornerRadius, bodyY);
+          ctx.lineTo(x + actualCandleWidth / 2 - cornerRadius, bodyY);
+          ctx.quadraticCurveTo(x + actualCandleWidth / 2, bodyY, x + actualCandleWidth / 2, bodyY + cornerRadius);
+          ctx.lineTo(x + actualCandleWidth / 2, bodyY + bodyHeight - cornerRadius);
+          ctx.quadraticCurveTo(x + actualCandleWidth / 2, bodyY + bodyHeight, x + actualCandleWidth / 2 - cornerRadius, bodyY + bodyHeight);
+          ctx.lineTo(x - actualCandleWidth / 2 + cornerRadius, bodyY + bodyHeight);
+          ctx.quadraticCurveTo(x - actualCandleWidth / 2, bodyY + bodyHeight, x - actualCandleWidth / 2, bodyY + bodyHeight - cornerRadius);
+          ctx.lineTo(x - actualCandleWidth / 2, bodyY + cornerRadius);
+          ctx.quadraticCurveTo(x - actualCandleWidth / 2, bodyY, x - actualCandleWidth / 2 + cornerRadius, bodyY);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Outline for definition
+          ctx.lineWidth = 0.5;
           ctx.stroke();
-          
-          // Reset shadow
-          ctx.shadowBlur = 0;
-          
-          // Draw body with rounded corners
-          const bodyHeight = Math.abs(yClose - yOpen);
-          const bodyY = Math.min(yOpen, yClose);
-          const cornerRadius = Math.min(2, actualCandleWidth * 0.1);
-          
-          if (bodyHeight > 1 || isDoji) {
-            // For doji candles, ensure minimum visible height
-            const minBodyHeight = isDoji ? 3 : bodyHeight;
-            const adjustedBodyY = isDoji ? bodyY - 1.5 : bodyY;
-            
-            // Rounded rectangle for body
-            ctx.beginPath();
-            ctx.moveTo(x - actualCandleWidth / 2 + cornerRadius, adjustedBodyY);
-            ctx.lineTo(x + actualCandleWidth / 2 - cornerRadius, adjustedBodyY);
-            ctx.quadraticCurveTo(x + actualCandleWidth / 2, adjustedBodyY, x + actualCandleWidth / 2, adjustedBodyY + cornerRadius);
-            ctx.lineTo(x + actualCandleWidth / 2, adjustedBodyY + minBodyHeight - cornerRadius);
-            ctx.quadraticCurveTo(x + actualCandleWidth / 2, adjustedBodyY + minBodyHeight, x + actualCandleWidth / 2 - cornerRadius, adjustedBodyY + minBodyHeight);
-            ctx.lineTo(x - actualCandleWidth / 2 + cornerRadius, adjustedBodyY + minBodyHeight);
-            ctx.quadraticCurveTo(x - actualCandleWidth / 2, adjustedBodyY + minBodyHeight, x - actualCandleWidth / 2, adjustedBodyY + minBodyHeight - cornerRadius);
-            ctx.lineTo(x - actualCandleWidth / 2, adjustedBodyY + cornerRadius);
-            ctx.quadraticCurveTo(x - actualCandleWidth / 2, adjustedBodyY, x - actualCandleWidth / 2 + cornerRadius, adjustedBodyY);
-            ctx.closePath();
-            ctx.fill();
-            
-            // Outline for definition
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          } else {
-            // Thin line for very small movements
-            ctx.fillRect(x - actualCandleWidth / 2, bodyY - 0.5, actualCandleWidth, 1);
-          }
+        } else {
+          // Thin line for doji candles
+          ctx.fillRect(x - actualCandleWidth / 2, bodyY - 0.5, actualCandleWidth, 1);
         }
       });
     }
@@ -551,7 +502,7 @@ const PriceChartLightweight = memo(({ token }) => {
       if (index < data.length) {
         const x = leftPadding + (index / (data.length - 1)) * chartWidth;
         const date = new Date(data[index][0]);
-        const label = range === '12h' || range === '1D' 
+        const label = range === '1D' 
           ? date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
           : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         ctx.fillText(label, x, timeY);
@@ -677,7 +628,7 @@ const PriceChartLightweight = memo(({ token }) => {
           </ButtonGroup>
 
           <ButtonGroup size="small">
-            {['12h', '1D', '7D', '1M', '3M', '1Y', 'ALL'].map(r => (
+            {['1D', '7D', '1M', '3M', '1Y', 'ALL'].map(r => (
               <Button
                 key={r}
                 onClick={() => setRange(r)}
