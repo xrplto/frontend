@@ -297,13 +297,19 @@ const PriceChartLightweight = memo(({ token }) => {
       ctx.stroke();
     } else {
       // Candlestick chart with improved rendering
+      const minCandles = 10; // Minimum number of candle slots to show
+      const effectiveLength = Math.max(data.length, minCandles);
       const maxCandleWidth = 20; // Maximum candle width
-      const candleWidth = Math.min(maxCandleWidth, Math.max(1, chartWidth / data.length - 1));
+      const candleWidth = Math.min(maxCandleWidth, Math.max(1, chartWidth / effectiveLength - 1));
       const candleSpacing = Math.min(2, candleWidth * 0.2);
       const actualCandleWidth = candleWidth - candleSpacing;
       
+      // Center the candles if there are very few
+      const totalCandlesWidth = data.length * (candleWidth + candleSpacing);
+      const offsetX = data.length < minCandles ? (chartWidth - totalCandlesWidth) / 2 : 0;
+      
       data.forEach((item, index) => {
-        const x = leftPadding + (index / data.length) * chartWidth + candleWidth / 2 + panX;
+        const x = leftPadding + offsetX + (index * (candleWidth + candleSpacing)) + candleWidth / 2 + panX;
         const [time, open, high, low, close, volume] = item;
         
         // Ensure all OHLC values are finite numbers
@@ -442,30 +448,58 @@ const PriceChartLightweight = memo(({ token }) => {
       ctx.lineTo(rect.width - rightPadding, volumeY + volumeChartHeight);
       ctx.stroke();
       
-      // Draw volume bars
-      const barWidth = Math.max(1, chartWidth / data.length - 1);
+      // Draw volume bars with same spacing as candles
+      let volumeBarWidth, volumeOffsetX;
       
-      data.forEach((item, index) => {
-        const volume = chartType === 1 ? (item[5] || 0) : (item[2] || 0);
-        const x = leftPadding + (index / data.length) * chartWidth;
-        const barHeight = (volume / maxVolume) * volumeChartHeight;
-        const y = volumeY + volumeChartHeight - barHeight;
+      if (chartType === 1) {
+        // Match candlestick spacing for volume bars
+        const minCandles = 10;
+        const effectiveLength = Math.max(data.length, minCandles);
+        const maxBarWidth = 16; // Slightly smaller than candle width
+        volumeBarWidth = Math.min(maxBarWidth, Math.max(1, chartWidth / effectiveLength - 1));
+        const barSpacing = Math.min(2, volumeBarWidth * 0.2);
+        const actualBarWidth = volumeBarWidth - barSpacing;
         
-        // Color based on price movement
-        let barColor;
-        if (chartType === 1) {
-          // For candlestick, use open/close comparison
-          barColor = item[4] >= item[1] ? '#4caf5088' : '#f4433688';
-        } else if (index > 0) {
-          // For line chart, compare with previous price
-          barColor = item[1] >= data[index - 1][1] ? '#4caf5088' : '#f4433688';
-        } else {
-          barColor = '#4caf5088';
-        }
+        // Center volume bars if there are very few
+        const totalBarsWidth = data.length * (volumeBarWidth + barSpacing);
+        volumeOffsetX = data.length < minCandles ? (chartWidth - totalBarsWidth) / 2 : 0;
         
-        ctx.fillStyle = barColor;
-        ctx.fillRect(x, y, barWidth * 0.8, barHeight);
-      });
+        data.forEach((item, index) => {
+          const volume = item[5] || 0;
+          const x = leftPadding + volumeOffsetX + (index * (volumeBarWidth + barSpacing)) + panX;
+          const barHeight = (volume / maxVolume) * volumeChartHeight;
+          const y = volumeY + volumeChartHeight - barHeight;
+          
+          // Color based on open/close comparison
+          const barColor = item[4] >= item[1] ? '#4caf5088' : '#f4433688';
+          
+          ctx.fillStyle = barColor;
+          ctx.fillRect(x, y, actualBarWidth, barHeight);
+        });
+      } else {
+        // Line chart - use thinner bars
+        const barWidth = Math.max(1, chartWidth / data.length - 1);
+        const maxBarWidth = 8; // Maximum width for line chart volume bars
+        const actualBarWidth = Math.min(maxBarWidth, barWidth * 0.6);
+        
+        data.forEach((item, index) => {
+          const volume = item[2] || 0;
+          const x = leftPadding + (index / (data.length - 1)) * chartWidth + panX - actualBarWidth / 2;
+          const barHeight = (volume / maxVolume) * volumeChartHeight;
+          const y = volumeY + volumeChartHeight - barHeight;
+          
+          // Color based on price movement
+          let barColor;
+          if (index > 0) {
+            barColor = item[1] >= data[index - 1][1] ? '#4caf5088' : '#f4433688';
+          } else {
+            barColor = '#4caf5088';
+          }
+          
+          ctx.fillStyle = barColor;
+          ctx.fillRect(x, y, actualBarWidth, barHeight);
+        });
+      }
       
       // Draw volume section background
       ctx.fillStyle = isDark ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.5)';
@@ -733,10 +767,27 @@ const PriceChartLightweight = memo(({ token }) => {
             <Typography color="text.secondary">No data available</Typography>
           </Box>
         ) : (
-          <canvas
-            ref={canvasRef}
-            style={{ width: '100%', height: '100%', cursor: isDragging ? 'grabbing' : 'grab' }}
-            onMouseDown={(e) => {
+          <>
+            {data && data.length < 5 && chartType === 1 && (
+              <Box sx={{ 
+                position: 'absolute', 
+                top: 8,
+                right: 8,
+                bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                borderRadius: 1,
+                px: 1.5,
+                py: 0.5,
+                zIndex: 10
+              }}>
+                <Typography variant="caption" color="text.secondary">
+                  Limited data: {data.length} candle{data.length !== 1 ? 's' : ''} available
+                </Typography>
+              </Box>
+            )}
+            <canvas
+              ref={canvasRef}
+              style={{ width: '100%', height: '100%', cursor: isDragging ? 'grabbing' : 'grab' }}
+              onMouseDown={(e) => {
               const rect = canvasRef.current.getBoundingClientRect();
               setIsDragging(true);
               setDragStart({ x: e.clientX - rect.left, y: e.clientY - rect.top });
@@ -764,6 +815,7 @@ const PriceChartLightweight = memo(({ token }) => {
               setDragStart(null);
             }}
           />
+          </>
         )}
       </Box>
     </Paper>
