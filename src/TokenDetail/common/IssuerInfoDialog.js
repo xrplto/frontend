@@ -46,17 +46,25 @@ import { fNumber } from 'src/utils/formatNumber';
 
 // ----------------------------------------------------------------------
 const IssuerDialog = styled(Dialog)(({ theme }) => ({
-  backdropFilter: 'blur(1px)',
-  WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+  '& .MuiBackdrop-root': {
+    backgroundColor: alpha(theme.palette.background.default, 0.85)
+  },
   '& .MuiDialogContent-root': {
     padding: theme.spacing(3),
-    minWidth: { xs: '100%', sm: 400 } // Add minimum width
+    minWidth: { xs: '100%', sm: 400 },
+    backgroundColor: theme.palette.background.default
   },
   '& .MuiDialogActions-root': {
-    padding: theme.spacing(1)
+    padding: theme.spacing(1),
+    backgroundColor: theme.palette.background.default
   },
   '& .MuiPaper-root': {
-    borderRadius: theme.spacing(2) // More rounded corners
+    borderRadius: theme.spacing(2),
+    backgroundColor: theme.palette.background.paper,
+    backgroundImage: 'none',
+    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`
   }
 }));
 
@@ -64,7 +72,7 @@ const IssuerInfoDialogTitle = (props) => {
   const { children, onClose, ...other } = props;
 
   return (
-    <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
+    <DialogTitle sx={{ m: 0, p: 2, backgroundColor: theme => theme.palette.background.paper }} {...other}>
       {children}
       {onClose ? (
         <IconButton
@@ -139,7 +147,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
                   sx={{
                     flex: 1,
                     fontFamily: 'monospace',
-                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                    bgcolor: (theme) => alpha(theme.palette.action.selected, 0.08),
                     p: 0.5,
                     borderRadius: 0.5,
                     color: 'text.secondary',
@@ -176,7 +184,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
                   sx={{
                     fontWeight: 600,
                     color: 'primary.main',
-                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                    bgcolor: (theme) => alpha(theme.palette.action.selected, 0.08),
                     p: 0.5,
                     borderRadius: 0.5
                   }}
@@ -202,7 +210,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
                 spacing={1}
                 alignItems="center"
                 sx={{
-                  bgcolor: (theme) => alpha(theme.palette.error.main, 0.08),
+                  bgcolor: (theme) => alpha(theme.palette.error.main, 0.1),
                   p: 1.5,
                   borderRadius: 1
                 }}
