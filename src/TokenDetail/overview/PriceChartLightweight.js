@@ -218,8 +218,9 @@ const PriceChartLightweight = memo(({ token }) => {
     });
 
     const priceRange = maxPrice - minPrice || 1; // Avoid division by zero
-    const leftPadding = 120; // Dynamic space for price labels
-    const rightPadding = 20;
+    const isMobile = rect.width < 600;
+    const leftPadding = isMobile ? 60 : 120; // Reduced padding on mobile
+    const rightPadding = isMobile ? 10 : 20;
     const topPadding = 20;
     const bottomPadding = 20;
     const chartWidth = rect.width - leftPadding - rightPadding;
@@ -385,7 +386,7 @@ const PriceChartLightweight = memo(({ token }) => {
 
     // Draw price labels with improved styling
     ctx.fillStyle = theme.palette.text.primary;
-    ctx.font = '8px Inter, sans-serif';
+    ctx.font = isMobile ? '7px Inter, sans-serif' : '8px Inter, sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     
@@ -419,7 +420,7 @@ const PriceChartLightweight = memo(({ token }) => {
       
       // Price label background - dynamically sized
       const metrics = ctx.measureText(label);
-      const labelPadding = 8;
+      const labelPadding = isMobile ? 4 : 8;
       const labelWidth = metrics.width + labelPadding;
       ctx.fillStyle = isDark ? 'rgba(30,30,30,0.8)' : 'rgba(245,245,245,0.9)';
       ctx.fillRect(leftPadding - labelWidth - 2, y - 6, labelWidth, 12);
