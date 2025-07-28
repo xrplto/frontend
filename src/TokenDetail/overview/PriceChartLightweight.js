@@ -4,6 +4,15 @@ import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
 
+// Helper function to convert scientific notation to regular number
+const convertScientificToRegular = (value) => {
+  if (typeof value === 'string') {
+    value = parseFloat(value);
+  }
+  // Convert scientific notation to regular number
+  return Number(value);
+};
+
 // Lightweight chart using Canvas API for ultimate performance
 const PriceChartLightweight = memo(({ token }) => {
   const theme = useTheme();
@@ -64,19 +73,19 @@ const PriceChartLightweight = memo(({ token }) => {
             // Candlestick chart - use full OHLC data
             const normalizedOhlc = response.data.ohlc.map(candle => [
               candle[0], // timestamp
-              parseFloat(candle[1]), // open
-              parseFloat(candle[2]), // high
-              parseFloat(candle[3]), // low
-              parseFloat(candle[4]), // close
-              parseFloat(candle[5]) || 0 // volume
+              convertScientificToRegular(candle[1]), // open
+              convertScientificToRegular(candle[2]), // high
+              convertScientificToRegular(candle[3]), // low
+              convertScientificToRegular(candle[4]), // close
+              convertScientificToRegular(candle[5]) || 0 // volume
             ]);
             setData(normalizedOhlc);
           } else {
             // Line chart - extract close prices from OHLC data
             const lineData = response.data.ohlc.map(candle => [
               candle[0], // timestamp
-              parseFloat(candle[4]), // close price
-              parseFloat(candle[5]) || 0 // volume
+              convertScientificToRegular(candle[4]), // close price
+              convertScientificToRegular(candle[5]) || 0 // volume
             ]);
             setData(lineData);
           }
@@ -137,19 +146,19 @@ const PriceChartLightweight = memo(({ token }) => {
             // Candlestick chart - use full OHLC data
             const normalizedOhlc = response.data.ohlc.map(candle => [
               candle[0],
-              parseFloat(candle[1]),
-              parseFloat(candle[2]),
-              parseFloat(candle[3]),
-              parseFloat(candle[4]),
-              parseFloat(candle[5]) || 0
+              convertScientificToRegular(candle[1]),
+              convertScientificToRegular(candle[2]),
+              convertScientificToRegular(candle[3]),
+              convertScientificToRegular(candle[4]),
+              convertScientificToRegular(candle[5]) || 0
             ]);
             setData(normalizedOhlc);
           } else {
             // Line chart - extract close prices from OHLC data
             const lineData = response.data.ohlc.map(candle => [
               candle[0],
-              parseFloat(candle[4]), // close price
-              parseFloat(candle[5]) || 0 // volume
+              convertScientificToRegular(candle[4]), // close price
+              convertScientificToRegular(candle[5]) || 0 // volume
             ]);
             setData(lineData);
           }
@@ -209,7 +218,7 @@ const PriceChartLightweight = memo(({ token }) => {
     });
 
     const priceRange = maxPrice - minPrice || 1; // Avoid division by zero
-    const leftPadding = 80; // More space for price labels
+    const leftPadding = 120; // Dynamic space for price labels
     const rightPadding = 20;
     const topPadding = 20;
     const bottomPadding = 20;
@@ -287,7 +296,8 @@ const PriceChartLightweight = memo(({ token }) => {
       ctx.stroke();
     } else {
       // Candlestick chart with improved rendering
-      const candleWidth = Math.max(1, chartWidth / data.length - 1);
+      const maxCandleWidth = 20; // Maximum candle width
+      const candleWidth = Math.min(maxCandleWidth, Math.max(1, chartWidth / data.length - 1));
       const candleSpacing = Math.min(2, candleWidth * 0.2);
       const actualCandleWidth = candleWidth - candleSpacing;
       
@@ -375,7 +385,7 @@ const PriceChartLightweight = memo(({ token }) => {
 
     // Draw price labels with improved styling
     ctx.fillStyle = theme.palette.text.primary;
-    ctx.font = '11px Inter, sans-serif';
+    ctx.font = '8px Inter, sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     
@@ -394,8 +404,10 @@ const PriceChartLightweight = memo(({ token }) => {
       } else {
         // Format price with appropriate decimal places and currency symbol
         const symbol = currencySymbols[activeFiatCurrency] || '';
-        if (value < 0.00001) {
-          label = symbol + value.toExponential(2);
+        if (value < 0.000000001) {
+          label = symbol + value.toFixed(12).replace(/\.?0+$/, '');
+        } else if (value < 0.00001) {
+          label = symbol + value.toFixed(10).replace(/\.?0+$/, '');
         } else if (value < 0.01) {
           label = symbol + value.toFixed(8);
         } else if (value < 1) {
@@ -405,14 +417,16 @@ const PriceChartLightweight = memo(({ token }) => {
         }
       }
       
-      // Price label background
+      // Price label background - dynamically sized
       const metrics = ctx.measureText(label);
+      const labelPadding = 8;
+      const labelWidth = metrics.width + labelPadding;
       ctx.fillStyle = isDark ? 'rgba(30,30,30,0.8)' : 'rgba(245,245,245,0.9)';
-      ctx.fillRect(leftPadding - metrics.width - 15, y - 8, metrics.width + 10, 16);
+      ctx.fillRect(leftPadding - labelWidth - 2, y - 6, labelWidth, 12);
       
       // Price label text
       ctx.fillStyle = theme.palette.text.primary;
-      ctx.fillText(label, leftPadding - 8, y);
+      ctx.fillText(label, leftPadding - labelPadding/2 - 2, y);
     }
 
     // Draw volume bars if applicable
@@ -538,12 +552,22 @@ const PriceChartLightweight = memo(({ token }) => {
         // Price label
         const price = maxPrice - ((y - topPadding) / priceChartHeight) * priceRange;
         const symbol = currencySymbols[activeFiatCurrency] || '';
-        const priceLabel = chartType === 2 
-          ? Math.round(price).toLocaleString()
-          : symbol + (price < 0.01 ? price.toFixed(8) : price.toFixed(6));
+        let priceLabel;
+        if (chartType === 2) {
+          priceLabel = Math.round(price).toLocaleString();
+        } else if (price < 0.000000001) {
+          priceLabel = symbol + price.toFixed(12).replace(/\.?0+$/, '');
+        } else if (price < 0.00001) {
+          priceLabel = symbol + price.toFixed(10).replace(/\.?0+$/, '');
+        } else if (price < 0.01) {
+          priceLabel = symbol + price.toFixed(8);
+        } else {
+          priceLabel = symbol + price.toFixed(6);
+        }
         
         ctx.fillStyle = theme.palette.background.paper;
-        ctx.fillRect(leftPadding - 78, y - 10, 76, 20);
+        const labelMetrics = ctx.measureText(priceLabel);
+        ctx.fillRect(leftPadding - labelMetrics.width - 10, y - 8, labelMetrics.width + 8, 16);
         ctx.fillStyle = theme.palette.text.primary;
         ctx.font = '11px sans-serif';
         ctx.textAlign = 'right';
