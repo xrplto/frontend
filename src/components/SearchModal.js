@@ -181,7 +181,7 @@ export default function SearchModal({ open, onClose }) {
         pt: '10vh',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
-        backgroundColor: alpha(theme.palette.common.black, 0.5)
+        backgroundColor: alpha(theme.palette.background.default, 0.85)
       }}
     >
       <Paper
@@ -191,14 +191,11 @@ export default function SearchModal({ open, onClose }) {
           maxHeight: '70vh',
           overflow: 'hidden',
           borderRadius: { xs: '10px', sm: '16px' },
-          background: 'transparent',
-          backdropFilter: 'none',
-          WebkitBackdropFilter: 'none',
-          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-          boxShadow: `
-            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+          background: theme.palette.background.paper,
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+          boxShadow: theme.shadows[24]
         }}
         onKeyDown={handleKeyDown}
       >
@@ -206,7 +203,8 @@ export default function SearchModal({ open, onClose }) {
         <Box
           sx={{
             p: 2,
-            borderBottom: `1px solid ${theme.palette.divider}`
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.default
           }}
         >
           <Stack direction="row" alignItems="center" spacing={1}>
@@ -235,7 +233,8 @@ export default function SearchModal({ open, onClose }) {
         <Box
           sx={{
             maxHeight: 'calc(70vh - 80px)',
-            overflowY: 'auto'
+            overflowY: 'auto',
+            backgroundColor: theme.palette.background.default
           }}
         >
           {/* Show trending when no search query */}
