@@ -399,20 +399,17 @@ const Swap = ({ token }) => {
     } else {
       // Check balance if trustlines exist
       try {
-        const fAmount = new Decimal(amount || 0).toNumber();
-        const fValue = new Decimal(value || 0).toNumber();
         const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
         const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
 
         if (amount1 && amount2) {
-          if (fAmount > 0 && fValue > 0) {
-            // Check balance against the correct currency based on revert state
-            const spendingAmount = revert
-              ? new Decimal(amount2 || 0).toNumber()
-              : new Decimal(amount1 || 0).toNumber();
-            const availableBalance = revert ? accountValue : accountAmount;
-
-            if (availableBalance >= spendingAmount) {
+          const fAmount1 = new Decimal(amount1 || 0).toNumber();
+          const fAmount2 = new Decimal(amount2 || 0).toNumber();
+          
+          if (fAmount1 > 0 && fAmount2 > 0) {
+            // Always check against amount1 for curr1 balance (top field)
+            // The user is always selling what's in the top field (amount1)
+            if (accountAmount >= fAmount1) {
               isSufficientBalance = true;
             } else {
               errMsg = 'Insufficient wallet balance';
