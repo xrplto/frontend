@@ -80,7 +80,7 @@ export default function EditTokenDialog({ token, setToken }) {
   const fileRef = useRef();
 
   const BASE_URL = process.env.API_URL;
-  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const { accountProfile, openSnackbar, setOpenWalletModal } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
 
   const { issuer, name, currency, md5, dateon } = token;
@@ -158,6 +158,19 @@ export default function EditTokenDialog({ token, setToken }) {
       if (!accountAdmin || !accountToken) {
         openSnackbar('Authentication required. Please connect your wallet.', 'error');
         setLoading(false);
+        return;
+      }
+      
+      // Check if token might be expired (simple client-side check)
+      // If the profile was loaded from localStorage on page refresh, the token might be old
+      const tokenAge = accountProfile.tokenCreatedAt ? Date.now() - accountProfile.tokenCreatedAt : null;
+      if (!tokenAge || tokenAge > 23 * 60 * 60 * 1000) {
+        openSnackbar('Your session has expired. Please reconnect your wallet.', 'info');
+        setLoading(false);
+        // Open wallet modal to re-authenticate
+        if (window.confirm('Your authentication has expired. Would you like to reconnect your wallet?')) {
+          setOpenWalletModal(true);
+        }
         return;
       }
 

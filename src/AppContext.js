@@ -107,21 +107,27 @@ export function ContextProvider({ children, data, openSnackbar }) {
       fullProfile: profile
     });
     
-    setAccountProfile(profile);
-    window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
+    // Add token creation timestamp
+    const profileWithTimestamp = {
+      ...profile,
+      tokenCreatedAt: Date.now()
+    };
+    
+    setAccountProfile(profileWithTimestamp);
+    window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profileWithTimestamp));
 
     // const old = profiles.find(x => x.account === profile.account);
     let exist = false;
     const newProfiles = [];
     for (const p of profiles) {
-      if (p.account === profile.account) {
-        newProfiles.push(profile);
+      if (p.account === profileWithTimestamp.account) {
+        newProfiles.push(profileWithTimestamp);
         exist = true;
       } else newProfiles.push(p);
     }
 
     if (!exist) {
-      newProfiles.push(profile);
+      newProfiles.push(profileWithTimestamp);
     }
 
     window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(newProfiles));
