@@ -118,7 +118,7 @@ const LiveCircle = styled('div')(({ theme }) => ({
 const TradeCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'isNew'
 })(({ theme, isNew }) => ({
-  marginBottom: theme.spacing(0.5),
+  marginBottom: theme.spacing(0.3),
   borderRadius: '8px',
   backgroundColor: 'transparent',
   backdropFilter: 'none',
@@ -143,10 +143,10 @@ const TradeCard = styled(Card, {
 }));
 
 const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
-  fontSize: '0.7rem',
-  height: '24px',
+  fontSize: '0.65rem',
+  height: '20px',
   fontWeight: 'bold',
-  borderRadius: '12px',
+  borderRadius: '10px',
   backgroundColor: 'transparent',
   color: tradetype === 'BUY' ? theme.palette.primary.main : '#F44336',
   border:
@@ -785,10 +785,10 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
           gridTemplateColumns: {
             xs: '1fr',
             sm: '1fr 1fr',
-            md: '2fr 1fr 2fr 2fr 1.5fr 0.5fr'
+            md: '1.2fr 1.2fr 1.8fr 1.8fr 1.2fr 0.4fr'
           },
-          gap: 2,
-          p: 2,
+          gap: 1.5,
+          p: 1.5,
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
           backgroundColor: 'transparent',
           backdropFilter: 'none',
@@ -802,7 +802,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
           '& > *': {
             fontWeight: 'bold',
             color: theme.palette.text.secondary,
-            fontSize: '0.75rem',
+            fontSize: '0.7rem',
             textTransform: 'uppercase',
             letterSpacing: '0.5px'
           }
@@ -821,14 +821,14 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
             </Typography>
           </LiveIndicator>
         </Box>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Price</Typography>
+        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Price (XRP)</Typography>
         <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Amount</Typography>
         <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Total</Typography>
         <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Maker/Taker</Typography>
         <Typography sx={{ display: { xs: 'none', md: 'block' } }}></Typography>
       </Box>
 
-      <Stack spacing={0.5}>
+      <Stack spacing={0.3}>
         {trades.map((trade, index) => {
           const isBuy = trade.paid.currency === 'XRP';
           const xrpAmount = getXRPAmount(trade);
@@ -864,16 +864,16 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
           return (
             <TradeCard key={trade._id} isNew={newTradeIds.has(trade._id)}>
               <VolumeIndicator volume={volumePercentage} />
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+              <CardContent sx={{ p: 1.2, '&:last-child': { pb: 1.2 } }}>
                 <Box
                   sx={{
                     display: 'grid',
                     gridTemplateColumns: {
-                      xs: '1fr',
-                      sm: '1fr 1fr',
-                      md: '2fr 1fr 2fr 2fr 1.5fr 0.5fr'
+                      xs: '1fr 1fr',
+                      sm: '1.2fr 1.2fr 1.8fr',
+                      md: '1.2fr 1.2fr 1.8fr 1.8fr 1.2fr 0.4fr'
                     },
-                    gap: 1.5,
+                    gap: 1,
                     alignItems: 'center'
                   }}
                 >
@@ -883,7 +883,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
                       variant="body2"
                       color="text.secondary"
                       fontWeight="500"
-                      sx={{ minWidth: 'fit-content', fontSize: '0.8rem' }}
+                      sx={{ minWidth: 'fit-content', fontSize: '0.75rem' }}
                     >
                       {formatRelativeTime(trade.time)}
                     </Typography>
@@ -901,15 +901,15 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
                       color="text.secondary"
                       sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
                     >
-                      Price
+                      Price (XRP)
                     </Typography>
                     <Typography
                       variant="body2"
                       fontWeight="600"
                       color="text.primary"
-                      sx={{ fontSize: '0.85rem' }}
+                      sx={{ fontSize: '0.8rem' }}
                     >
-                      {formatPrice(price)} XRP
+                      {formatPrice(price)}
                     </Typography>
                   </Box>
 
@@ -932,7 +932,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
                         variant="body2"
                         fontWeight="600"
                         color="text.primary"
-                        sx={{ fontSize: '0.85rem' }}
+                        sx={{ fontSize: '0.8rem' }}
                       >
                         {formatTradeValue(amountData.value)} {decodeCurrency(amountData.currency)}
                       </Typography>
@@ -958,7 +958,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
                         variant="body2"
                         fontWeight="600"
                         color="text.primary"
-                        sx={{ fontSize: '0.85rem' }}
+                        sx={{ fontSize: '0.8rem' }}
                       >
                         {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
                       </Typography>
@@ -983,7 +983,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
                         <Typography
                           variant="body2"
                           fontWeight="500"
-                          sx={{ fontSize: '0.8rem', color: 'primary.main' }}
+                          sx={{ fontSize: '0.75rem', color: 'primary.main' }}
                         >
                           {addressToShow
                             ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}`
