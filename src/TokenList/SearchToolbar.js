@@ -115,8 +115,8 @@ export default function SearchToolbar({
         alignItems: 'center',
         justifyContent: 'space-between',
         p: { xs: 0.25, sm: 0.5 },
-        gap: { xs: 0.5, sm: 1 },
-        borderRadius: 2,
+        gap: { xs: 0.25, sm: 1 },
+        borderRadius: 1,
         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         background: darkMode 
           ? alpha(theme.palette.background.paper, 0.15)
@@ -131,7 +131,7 @@ export default function SearchToolbar({
       {/* Left Section - View Selector */}
       <Stack 
         direction="row" 
-        spacing={{ xs: 0.5, sm: 1 }} 
+        spacing={{ xs: 0.25, sm: 1 }} 
         alignItems="center"
         sx={{ width: { xs: '100%', sm: 'auto' } }}
       >
@@ -147,21 +147,23 @@ export default function SearchToolbar({
             boxShadow: 'none',
             textTransform: 'none',
             fontWeight: 600,
-            px: { xs: 1.5, sm: 2 },
-            fontSize: { xs: '0.8rem', sm: '0.875rem' },
+            px: { xs: 0.75, sm: 2 },
+            py: { xs: 0.25, sm: 0.5 },
+            fontSize: { xs: '0.7rem', sm: '0.875rem' },
+            minHeight: { xs: 28, sm: 36 },
             '&:hover': {
               boxShadow: 2
             }
           }}
         >
-          {currentView === 'tokens' && <><AppsIcon sx={{ fontSize: 18, mr: 0.5 }} /> Tokens</>}
-          {currentView === 'nfts' && <><CollectionsIcon sx={{ fontSize: 18, mr: 0.5 }} /> NFTs</>}
-          {currentView === 'trending' && <><LocalFireDepartmentIcon sx={{ fontSize: 18, mr: 0.5 }} /> Trending</>}
-          {currentView === 'gainers' && <><TrendingUpIcon sx={{ fontSize: 18, mr: 0.5 }} /> Gainers</>}
-          {currentView === 'new' && <><NewReleasesIcon sx={{ fontSize: 18, mr: 0.5 }} /> New</>}
+          {currentView === 'tokens' && <><AppsIcon sx={{ fontSize: { xs: 16, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> Tokens</>}
+          {currentView === 'nfts' && <><CollectionsIcon sx={{ fontSize: { xs: 16, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> NFTs</>}
+          {currentView === 'trending' && <><LocalFireDepartmentIcon sx={{ fontSize: { xs: 16, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> Trending</>}
+          {currentView === 'gainers' && <><TrendingUpIcon sx={{ fontSize: { xs: 16, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> Gainers</>}
+          {currentView === 'new' && <><NewReleasesIcon sx={{ fontSize: { xs: 16, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> New</>}
         </Button>
 
-        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+        <Divider orientation="vertical" flexItem sx={{ mx: 0.25, display: { xs: 'none', sm: 'block' } }} />
 
         {/* View Type Toggle */}
         <ButtonGroup 
@@ -173,18 +175,18 @@ export default function SearchToolbar({
             <Button
               onClick={() => setViewType('row')}
               variant={viewType === 'row' ? 'contained' : 'outlined'}
-              sx={{ minWidth: 36, px: 1 }}
+              sx={{ minWidth: { xs: 28, sm: 36 }, px: { xs: 0.5, sm: 1 }, py: { xs: 0.25, sm: 0.5 } }}
             >
-              <TableRowsIcon fontSize="small" />
+              <TableRowsIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
             </Button>
           </Tooltip>
           <Tooltip title="Grid View">
             <Button
               onClick={() => window.location.href = '/tokens-heatmap'}
               variant={viewType === 'heatmap' ? 'contained' : 'outlined'}
-              sx={{ minWidth: 36, px: 1 }}
+              sx={{ minWidth: { xs: 28, sm: 36 }, px: { xs: 0.5, sm: 1 }, py: { xs: 0.25, sm: 0.5 } }}
             >
-              <GridViewIcon fontSize="small" />
+              <GridViewIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
             </Button>
           </Tooltip>
         </ButtonGroup>
@@ -193,12 +195,12 @@ export default function SearchToolbar({
       {/* Center Section - Quick Filters */}
       <Stack 
         direction="row" 
-        spacing={0.5} 
+        spacing={{ xs: 0.25, sm: 0.5 }} 
         sx={{ 
           flex: 1,
           overflowX: 'auto',
-          px: { xs: 0.5, sm: 1 },
-          py: { xs: 0.5, sm: 0 },
+          px: { xs: 0.25, sm: 1 },
+          py: { xs: 0.25, sm: 0 },
           alignItems: 'center',
           width: { xs: '100%', sm: 'auto' },
           justifyContent: { xs: 'flex-start', sm: 'center' },
@@ -214,10 +216,10 @@ export default function SearchToolbar({
               variant="outlined"
               sx={{
                 '& .MuiButton-root': {
-                  minWidth: { xs: 28, sm: 32 },
-                  px: { xs: 0.5, sm: 0.75 },
-                  py: { xs: 0.15, sm: 0.25 },
-                  fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                  minWidth: { xs: 24, sm: 32 },
+                  px: { xs: 0.25, sm: 0.75 },
+                  py: { xs: 0.1, sm: 0.25 },
+                  fontSize: { xs: '0.6rem', sm: '0.7rem' },
                   fontWeight: 500,
                   borderColor: alpha(theme.palette.divider, 0.2),
                   '&:hover': {
@@ -288,7 +290,7 @@ export default function SearchToolbar({
                 7d
               </Button>
             </ButtonGroup>
-            <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+            <Divider orientation="vertical" flexItem sx={{ mx: { xs: 0.25, sm: 0.5 }, display: { xs: 'none', sm: 'block' } }} />
           </>
         )}
         <Chip
@@ -309,8 +311,8 @@ export default function SearchToolbar({
                 : alpha('#ff5722', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-            height: { xs: 26, sm: 30 },
+            fontSize: { xs: '0.6rem', sm: '0.75rem' },
+            height: { xs: 20, sm: 28 },
             transition: 'all 0.2s ease'
           }}
         />
@@ -332,8 +334,8 @@ export default function SearchToolbar({
                 : alpha('#2196f3', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-            height: { xs: 26, sm: 30 },
+            fontSize: { xs: '0.6rem', sm: '0.75rem' },
+            height: { xs: 20, sm: 28 },
             transition: 'all 0.2s ease'
           }}
         />
@@ -355,8 +357,8 @@ export default function SearchToolbar({
                 : alpha('#4caf50', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-            height: { xs: 26, sm: 30 },
+            fontSize: { xs: '0.6rem', sm: '0.75rem' },
+            height: { xs: 20, sm: 28 },
             display: { xs: 'none', sm: 'flex' },
             transition: 'all 0.2s ease'
           }}
@@ -379,8 +381,8 @@ export default function SearchToolbar({
                 : alpha('#ff9800', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-            height: { xs: 26, sm: 30 },
+            fontSize: { xs: '0.6rem', sm: '0.75rem' },
+            height: { xs: 20, sm: 28 },
             transition: 'all 0.2s ease'
           }}
         />
@@ -402,8 +404,8 @@ export default function SearchToolbar({
                 : alpha('#9c27b0', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-            height: { xs: 26, sm: 30 },
+            fontSize: { xs: '0.6rem', sm: '0.75rem' },
+            height: { xs: 20, sm: 28 },
             display: { xs: 'none', sm: 'flex' },
             transition: 'all 0.2s ease'
           }}
@@ -412,7 +414,7 @@ export default function SearchToolbar({
         {/* Top Categories */}
         {tags && tags.length > 0 && (
           <>
-            <Divider orientation="vertical" flexItem sx={{ mx: 0.5, height: 20 }} />
+            <Divider orientation="vertical" flexItem sx={{ mx: { xs: 0.25, sm: 0.5 }, height: 20, display: { xs: 'none', sm: 'block' } }} />
             
             {/* Display first 5 categories from tags array */}
             {tags.slice(0, 10).map((tag, index) => {
@@ -431,61 +433,41 @@ export default function SearchToolbar({
                     background: tagName === tag ? alpha(colors[index], 0.2) : 'transparent',
                     border: `1px solid ${alpha(colors[index], 0.3)}`,
                     '&:hover': { background: alpha(colors[index], 0.3) },
-                    fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                    height: { xs: 24, sm: 28 },
-                    display: { xs: index < 3 ? 'flex' : 'none', sm: index < 8 ? 'flex' : 'none', md: 'flex' }
+                    fontSize: { xs: '0.55rem', sm: '0.75rem' },
+                    height: { xs: 20, sm: 28 },
+                    px: { xs: 0.5, sm: 1 },
+                    display: { xs: index < 2 ? 'flex' : 'none', sm: index < 6 ? 'flex' : 'none', md: 'flex' }
                   }}
                 />
               );
             })}
+            
+            {/* Categories Button */}
+            <Tooltip title="More Categories">
+              <IconButton 
+                size="small"
+                onClick={() => setCategoriesOpen(true)}
+                sx={{
+                  ml: 0.5,
+                  width: { xs: 24, sm: 32 },
+                  height: { xs: 20, sm: 28 },
+                  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+                  borderRadius: 0.5,
+                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.15),
+                    transform: 'scale(1.05)'
+                  },
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <CategoryIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+              </IconButton>
+            </Tooltip>
           </>
         )}
       </Stack>
 
-      {/* Right Section - Categories & Rows */}
-      <Stack 
-        direction="row" 
-        spacing={{ xs: 0.5, sm: 1 }} 
-        alignItems="center"
-        sx={{ 
-          width: { xs: '100%', sm: 'auto' },
-          justifyContent: { xs: 'flex-end', sm: 'flex-start' },
-          mt: { xs: 0.5, sm: 0 }
-        }}
-      >
-        <Tooltip title="Categories">
-          <IconButton 
-            size="small"
-            onClick={() => setCategoriesOpen(true)}
-            sx={{
-              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-              borderRadius: 1
-            }}
-          >
-            <CategoryIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-
-        <Tooltip title="Rows per page">
-          <Stack 
-            direction="row" 
-            spacing={0.5} 
-            alignItems="center"
-            sx={{
-              px: 1,
-              py: 0.5,
-              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-              borderRadius: 1,
-              display: { xs: 'none', md: 'flex' }
-            }}
-          >
-            <ViewListIcon fontSize="small" sx={{ color: 'text.secondary' }} />
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              {rows}
-            </Typography>
-          </Stack>
-        </Tooltip>
-      </Stack>
 
       {/* Main Menu */}
       <Menu
@@ -495,7 +477,7 @@ export default function SearchToolbar({
         PaperProps={{
           sx: {
             minWidth: 200,
-            borderRadius: 2,
+            borderRadius: 1,
             mt: 0.5
           }
         }}
