@@ -899,7 +899,8 @@ const Swap = ({ token }) => {
           TakerPays,
           Flags: 0,
           Fee: '12',
-          SourceTag: 93339333
+          SourceTag: 20221212,
+          Memos: configureMemos('', '', 'Limit Order via XPmarket.com')
         };
       } else {
         // Use Payment transaction for market orders
@@ -911,24 +912,29 @@ const Swap = ({ token }) => {
 
         const Flags = PaymentFlags.tfPartialPayment;
 
-        let Amount, SendMax, DeliverMin;
+        let Amount, SendMax, DeliverMin, DeliverMax;
 
+      // SendMax is what we're willing to send (curr1)
       SendMax = {
         currency: curr1.currency,
         issuer: curr1.issuer,
-        value: amount.toString()
+        value: amount1.toString()
       };
+      
+      // Amount is what we want to receive (curr2)
       Amount = {
         currency: curr2.currency,
         issuer: curr2.issuer,
-        value: value.toString()
+        value: amount2.toString()
       };
 
+      // Convert XRP amounts to drops
       if (SendMax.currency === 'XRP') {
         SendMax = new Decimal(SendMax.value).mul(1000000).toString();
       }
       if (Amount.currency === 'XRP') {
         Amount = new Decimal(Amount.value).mul(1000000).toString();
+        DeliverMax = Amount; // For XRP, DeliverMax equals Amount
       }
 
       // Calculate slippage amounts
@@ -943,24 +949,23 @@ const Swap = ({ token }) => {
         };
       } else {
         // For XRP amounts (strings)
-        DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toString();
+        DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(0);
       }
 
         transactionData = {
-          TransactionType: 'Payment',
+          Fee: '12',
+          SourceTag: 20221212,
+          Memos: configureMemos('', '', 'SWAP Transaction initiated via XPmarket.com'),
           Account,
           Destination: Account,
           Amount,
+          DeliverMax: DeliverMax || Amount,
           DeliverMin,
           SendMax,
-          Flags,
-          Fee: '12',
-          SourceTag: 93339333
+          TransactionType: 'Payment',
+          Flags
         };
       }
-
-      let memoData = `${orderType === 'limit' ? 'Limit' : 'Swap'} via https://xrpl.to`;
-      transactionData.Memos = configureMemos('', '', memoData);
 
       switch (wallet_type) {
         case 'xaman':
@@ -1203,8 +1208,8 @@ const Swap = ({ token }) => {
       return;
     }
 
-    const fAmount = Number(amount);
-    const fValue = Number(value);
+    const fAmount = Number(amount1);
+    const fValue = Number(amount2);
     if (fAmount > 0 && fValue > 0) {
       if (orderType === 'limit' && !limitPrice) {
         openSnackbar('Please enter a limit price!', 'error');
