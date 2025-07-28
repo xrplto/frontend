@@ -219,7 +219,34 @@ const PriceChartLightweight = memo(({ token }) => {
 
     const priceRange = maxPrice - minPrice || 1; // Avoid division by zero
     const isMobile = rect.width < 600;
-    const leftPadding = isMobile ? 60 : 120; // Reduced padding on mobile
+    
+    // Dynamic left padding based on price label width
+    ctx.font = isMobile ? '7px Inter, sans-serif' : '8px Inter, sans-serif';
+    let maxLabelWidth = 0;
+    for (let i = 0; i <= 4; i++) {
+      const value = maxPrice - (priceRange / 4) * i;
+      let label;
+      if (chartType === 2) {
+        label = Math.round(value).toLocaleString();
+      } else {
+        const symbol = currencySymbols[activeFiatCurrency] || '';
+        if (value < 0.000000001) {
+          label = symbol + value.toFixed(12).replace(/\.?0+$/, '');
+        } else if (value < 0.00001) {
+          label = symbol + value.toFixed(10).replace(/\.?0+$/, '');
+        } else if (value < 0.01) {
+          label = symbol + value.toFixed(8);
+        } else if (value < 1) {
+          label = symbol + value.toFixed(6);
+        } else {
+          label = symbol + value.toFixed(4);
+        }
+      }
+      const metrics = ctx.measureText(label);
+      maxLabelWidth = Math.max(maxLabelWidth, metrics.width);
+    }
+    
+    const leftPadding = Math.min(120, maxLabelWidth + (isMobile ? 20 : 30));
     const rightPadding = isMobile ? 10 : 20;
     const topPadding = 20;
     const bottomPadding = 20;
@@ -424,16 +451,9 @@ const PriceChartLightweight = memo(({ token }) => {
         }
       }
       
-      // Price label background - dynamically sized
-      const metrics = ctx.measureText(label);
-      const labelPadding = isMobile ? 4 : 8;
-      const labelWidth = metrics.width + labelPadding;
-      ctx.fillStyle = isDark ? 'rgba(30,30,30,0.8)' : 'rgba(245,245,245,0.9)';
-      ctx.fillRect(leftPadding - labelWidth - 2, y - 6, labelWidth, 12);
-      
-      // Price label text
+      // Price label text - no background needed since we have axis background
       ctx.fillStyle = theme.palette.text.primary;
-      ctx.fillText(label, leftPadding - labelPadding/2 - 2, y);
+      ctx.fillText(label, leftPadding - 8, y);
     }
 
     // Draw volume bars if applicable
