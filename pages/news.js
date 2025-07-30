@@ -191,6 +191,7 @@ function NewsPage() {
   const [error, setError] = useState(null);
   const [selectedSource, setSelectedSource] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
@@ -217,24 +218,16 @@ function NewsPage() {
     }
   });
 
-  // Filter news based on search query only (source filtering is done server-side)
-  const filteredNews = Array.isArray(news) ? news.filter((article) => {
-    const searchLower = searchQuery.toLowerCase();
-    const matchesSearch =
-      searchQuery === '' ||
-      article.title.toLowerCase().includes(searchLower) ||
-      article.summary?.toLowerCase().includes(searchLower) ||
-      article.articleBody?.toLowerCase().includes(searchLower);
-    return matchesSearch;
-  }) : [];
+  // No client-side filtering needed - all filtering is done server-side
+  const filteredNews = Array.isArray(news) ? news : [];
 
-  // Calculate pagination - use totalCount from API when searching by source
-  const totalPages = selectedSource 
+  // Calculate pagination - use totalCount from API for paginated queries
+  const totalPages = (selectedSource || searchQuery)
     ? Math.ceil(totalCount / itemsPerPage)
     : Math.ceil(filteredNews.length / itemsPerPage);
   
-  // For source queries, news is already paginated by API
-  const currentItems = selectedSource ? filteredNews : filteredNews.slice(
+  // For source or search queries, news is already paginated by API
+  const currentItems = (selectedSource || searchQuery) ? filteredNews : filteredNews.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -244,6 +237,7 @@ function NewsPage() {
     const query = { page: value };
     if (itemsPerPage !== 10) query.limit = itemsPerPage;
     if (selectedSource) query.source = selectedSource;
+    if (searchQuery) query.q = searchQuery;
     router.push({ pathname: '/news', query }, undefined, { shallow: true });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -254,6 +248,18 @@ function NewsPage() {
     const query = { page: 1 };
     if (itemsPerPage !== 10) query.limit = itemsPerPage;
     if (source) query.source = source;
+    if (searchQuery) query.q = searchQuery;
+    router.push({ pathname: '/news', query }, undefined, { shallow: true });
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearchQuery(searchInput);
+    setCurrentPage(1);
+    const query = { page: 1 };
+    if (itemsPerPage !== 10) query.limit = itemsPerPage;
+    if (selectedSource) query.source = selectedSource;
+    if (searchInput) query.q = searchInput;
     router.push({ pathname: '/news', query }, undefined, { shallow: true });
   };
 
@@ -266,7 +272,7 @@ function NewsPage() {
 
   // Parse URL parameters on mount and router changes
   useEffect(() => {
-    const { page, limit, source } = router.query;
+    const { page, limit, source, q } = router.query;
     if (page) {
       const pageNum = parseInt(page);
       if (!isNaN(pageNum) && pageNum > 0) {
@@ -284,6 +290,13 @@ function NewsPage() {
     } else {
       setSelectedSource(null);
     }
+    if (q) {
+      setSearchQuery(q);
+      setSearchInput(q);
+    } else {
+      setSearchQuery('');
+      setSearchInput('');
+    }
   }, [router.query]);
 
   useEffect(() => {
@@ -297,31 +310,41 @@ function NewsPage() {
         params.append('limit', itemsPerPage);
         if (selectedSource) params.append('source', selectedSource);
         
-        const response = await fetch(`https://api.xrpl.to/api/news?${params.toString()}`);
+        // Use search endpoint if there's a search query
+        const endpoint = searchQuery 
+          ? `https://api.xrpl.to/api/news/search?q=${encodeURIComponent(searchQuery)}&${params.toString()}`
+          : `https://api.xrpl.to/api/news?${params.toString()}`;
+        
+        console.log('Fetching from endpoint:', endpoint);
+        const response = await fetch(endpoint);
         if (!response.ok) {
           throw new Error('Failed to fetch news');
         }
         const data = await response.json();
+        console.log('API Response:', data);
         
-        // Check if response has separate data and sources
-        if (data.data && data.sources) {
+        // Check if response has data array (both regular and search endpoints have this)
+        if (data.data && Array.isArray(data.data)) {
           setNews(data.data);
           // Set total count from pagination info
           if (data.pagination && data.pagination.total) {
             setTotalCount(data.pagination.total);
           }
-          // Convert sources array to object format expected by SourcesMenu
-          console.log('Sources data:', data.sources); // Debug log
-          const sourcesObj = data.sources.reduce((acc, source) => {
-            acc[source.name] = {
-              count: source.count,
-              sentiment: source.sentiment
-            };
-            return acc;
-          }, {});
-          setSourcesStats(sourcesObj);
           
-          // Use sentiment data from API if available
+          // Only process sources if they exist (not present in search endpoint)
+          if (data.sources) {
+            console.log('Sources data:', data.sources); // Debug log
+            const sourcesObj = data.sources.reduce((acc, source) => {
+              acc[source.name] = {
+                count: source.count,
+                sentiment: source.sentiment
+              };
+              return acc;
+            }, {});
+            setSourcesStats(sourcesObj);
+          }
+          
+          // Use sentiment data from API if available (not present in search endpoint)
           if (data.sentiment) {
             setSentimentStats({
               last24h: {
@@ -401,7 +424,7 @@ function NewsPage() {
     };
 
     fetchNews();
-  }, [currentPage, itemsPerPage, selectedSource]);
+  }, [currentPage, itemsPerPage, selectedSource, searchQuery]);
 
   const getSentimentColor = (sentiment) => {
     switch (sentiment?.toLowerCase()) {
@@ -429,6 +452,8 @@ function NewsPage() {
   };
 
   const SentimentSummary = ({ period, stats }) => {
+    if (!stats) return null;
+    
     return (
       <Box sx={{ flex: 1, py: 0.5, px: isMobile ? 0.5 : 1 }}>
         <Typography variant="subtitle2" sx={{ mb: 0.8, color: 'rgba(255,255,255,0.7)', fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
@@ -436,7 +461,7 @@ function NewsPage() {
         </Typography>
         <Box sx={{ display: 'flex', gap: 0.8, flexWrap: 'wrap' }}>
           <Chip
-            label={`Bullish ${stats.bullish}%`}
+            label={`Bullish ${stats.bullish || 0}%`}
             size="small"
             sx={{
               background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#FFD700' 
@@ -451,7 +476,7 @@ function NewsPage() {
             }}
           />
           <Chip
-            label={`Bearish ${stats.bearish}%`}
+            label={`Bearish ${stats.bearish || 0}%`}
             size="small"
             sx={{
               background: 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)',
@@ -461,7 +486,7 @@ function NewsPage() {
             }}
           />
           <Chip
-            label={`Neutral ${stats.neutral}%`}
+            label={`Neutral ${stats.neutral || 0}%`}
             size="small"
             sx={{
               background: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)',
@@ -514,41 +539,80 @@ function NewsPage() {
       <Header />
       <Box sx={{ flex: 1 }}>
         <Container maxWidth="xl" sx={{ py: 3 }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{
-              mb: 3,
-              color: theme.palette.primary.main,
-              fontWeight: 600
-            }}
-          >
-            Latest XRPL News
-          </Typography>
+          <Box sx={{ mb: 3 }}>
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                color: theme.palette.primary.main,
+                fontWeight: 600
+              }}
+            >
+              Latest XRPL News
+            </Typography>
+            {totalCount > 0 && (
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  mt: 0.5
+                }}
+              >
+                {totalCount.toLocaleString()} articles indexed
+              </Typography>
+            )}
+          </Box>
 
           <Box sx={{ mb: 3 }}>
-            <TextField
-              fullWidth
-              size="medium"
-              variant="outlined"
-              placeholder="Search news by title, summary, or content..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon
-                      sx={{
-                        color:
-                          theme.palette.mode === 'dark'
-                            ? 'rgba(255,255,255,0.5)'
-                            : 'rgba(0,0,0,0.5)'
-                      }}
-                    />
-                  </InputAdornment>
-                )
-              }}
-              sx={{
+            <form onSubmit={handleSearch}>
+              <TextField
+                fullWidth
+                size="medium"
+                variant="outlined"
+                placeholder="Search news by title, summary, or content..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon
+                        sx={{
+                          color:
+                            theme.palette.mode === 'dark'
+                              ? 'rgba(255,255,255,0.5)'
+                              : 'rgba(0,0,0,0.5)'
+                        }}
+                      />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchInput && (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setSearchInput('');
+                          setSearchQuery('');
+                          setCurrentPage(1);
+                          const query = { page: 1 };
+                          if (itemsPerPage !== 10) query.limit = itemsPerPage;
+                          if (selectedSource) query.source = selectedSource;
+                          router.push({ pathname: '/news', query }, undefined, { shallow: true });
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{ 
+                            fontSize: '1.2rem',
+                            color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
+                          }}
+                        >
+                          ×
+                        </Box>
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+                sx={{
                 '& .MuiOutlinedInput-root': {
                   backgroundColor:
                     theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
@@ -569,7 +633,8 @@ function NewsPage() {
                   color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
                 }
               }}
-            />
+              />
+            </form>
           </Box>
 
           <SourcesMenu
@@ -864,6 +929,11 @@ function NewsPage() {
 
           {totalPages > 1 && (
             <Stack spacing={2} alignItems="center" sx={{ mt: 4, mb: 2 }}>
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 1 }}>
+                {searchQuery && `Found ${totalCount} articles for "${searchQuery}"`}
+                {selectedSource && !searchQuery && `Showing ${totalCount} articles from ${selectedSource}`}
+                {!searchQuery && !selectedSource && `Total ${totalCount} articles`}
+              </Typography>
               <Box
                 sx={{
                   display: 'flex',
@@ -944,6 +1014,16 @@ function NewsPage() {
                 />
               </Box>
             </Stack>
+          )}
+          
+          {totalPages <= 1 && totalCount > 0 && (
+            <Box sx={{ textAlign: 'center', mt: 3, mb: 2 }}>
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                {searchQuery && `Found ${totalCount} articles for "${searchQuery}"`}
+                {selectedSource && !searchQuery && `Showing ${totalCount} articles from ${selectedSource}`}
+                {!searchQuery && !selectedSource && `Total ${totalCount} articles`}
+              </Typography>
+            </Box>
           )}
         </Container>
       </Box>
