@@ -132,6 +132,7 @@ function NewsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
   const [sentimentStats, setSentimentStats] = useState({
     last24h: { bullish: 0, bearish: 0, neutral: 0 },
     last7d: { bullish: 0, bearish: 0, neutral: 0 },
@@ -154,34 +155,44 @@ function NewsPage() {
     }
   });
 
-  // Filter news based on selected source and search query
+  // Filter news based on search query only (source filtering is done server-side)
   const filteredNews = Array.isArray(news) ? news.filter((article) => {
-    const matchesSource = selectedSource ? article.sourceName === selectedSource : true;
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch =
       searchQuery === '' ||
       article.title.toLowerCase().includes(searchLower) ||
       article.summary?.toLowerCase().includes(searchLower) ||
       article.articleBody?.toLowerCase().includes(searchLower);
-    return matchesSource && matchesSearch;
+    return matchesSearch;
   }) : [];
 
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredNews.slice(indexOfFirstItem, indexOfLastItem);
+  // Calculate pagination - use totalCount from API when searching by source
+  const totalPages = selectedSource 
+    ? Math.ceil(totalCount / itemsPerPage)
+    : Math.ceil(filteredNews.length / itemsPerPage);
+  
+  // For source queries, news is already paginated by API
+  const currentItems = selectedSource ? filteredNews : filteredNews.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
     const query = { page: value };
     if (itemsPerPage !== 10) query.limit = itemsPerPage;
+    if (selectedSource) query.source = selectedSource;
     router.push({ pathname: '/news', query }, undefined, { shallow: true });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSourceSelect = (source) => {
     setSelectedSource(source);
+    setCurrentPage(1);
+    const query = { page: 1 };
+    if (itemsPerPage !== 10) query.limit = itemsPerPage;
+    if (source) query.source = source;
+    router.push({ pathname: '/news', query }, undefined, { shallow: true });
   };
 
   const toggleArticleExpansion = (articleId) => {
@@ -193,7 +204,7 @@ function NewsPage() {
 
   // Parse URL parameters on mount and router changes
   useEffect(() => {
-    const { page, limit } = router.query;
+    const { page, limit, source } = router.query;
     if (page) {
       const pageNum = parseInt(page);
       if (!isNaN(pageNum) && pageNum > 0) {
@@ -206,13 +217,25 @@ function NewsPage() {
         setItemsPerPage(limitNum);
       }
     }
+    if (source) {
+      setSelectedSource(source);
+    } else {
+      setSelectedSource(null);
+    }
   }, [router.query]);
 
   useEffect(() => {
     const fetchNews = async () => {
       try {
         setLoading(true);
-        const response = await fetch('https://api.xrpl.to/api/news');
+        
+        // Build query string from state
+        const params = new URLSearchParams();
+        params.append('page', currentPage);
+        params.append('limit', itemsPerPage);
+        if (selectedSource) params.append('source', selectedSource);
+        
+        const response = await fetch(`https://api.xrpl.to/api/news?${params.toString()}`);
         if (!response.ok) {
           throw new Error('Failed to fetch news');
         }
@@ -221,6 +244,10 @@ function NewsPage() {
         // Check if response has separate data and sources
         if (data.data && data.sources) {
           setNews(data.data);
+          // Set total count from pagination info
+          if (data.pagination && data.pagination.total) {
+            setTotalCount(data.pagination.total);
+          }
           // Convert sources array to object format expected by SourcesMenu
           const sourcesObj = data.sources.reduce((acc, source) => {
             acc[source.name] = source.count;
@@ -230,6 +257,7 @@ function NewsPage() {
         } else if (Array.isArray(data)) {
           // Fallback for old API format (array of articles)
           setNews(data);
+          setTotalCount(data.length);
           const sourceCount = data.reduce((acc, article) => {
             const source = article.sourceName || 'Unknown';
             acc[source] = (acc[source] || 0) + 1;
@@ -240,6 +268,7 @@ function NewsPage() {
           // Handle unexpected format
           setNews([]);
           setSourcesStats({});
+          setTotalCount(0);
         }
 
         // Calculate sentiment statistics
@@ -278,7 +307,7 @@ function NewsPage() {
     };
 
     fetchNews();
-  }, []);
+  }, [currentPage, itemsPerPage, selectedSource]);
 
   const getSentimentColor = (sentiment) => {
     switch (sentiment?.toLowerCase()) {
