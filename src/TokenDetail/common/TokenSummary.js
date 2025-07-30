@@ -580,6 +580,7 @@ const TokenSummary = memo(({ token }) => {
     <Box
       sx={{
         p: { xs: 0.75, sm: 1.5 },
+        pt: { xs: 2, sm: 1.5 },
         borderRadius: { xs: '10px', sm: '16px' },
         background: 'transparent',
         backdropFilter: 'none',
@@ -590,6 +591,7 @@ const TokenSummary = memo(({ token }) => {
           0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
           inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
         mb: { xs: 0.75, sm: 2 },
+        mt: { xs: 1, sm: 0 },
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         position: 'relative',
         overflow: 'hidden',
