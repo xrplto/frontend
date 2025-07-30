@@ -136,7 +136,8 @@ function NewsPage() {
   const [sentimentStats, setSentimentStats] = useState({
     last24h: { bullish: 0, bearish: 0, neutral: 0 },
     last7d: { bullish: 0, bearish: 0, neutral: 0 },
-    last30d: { bullish: 0, bearish: 0, neutral: 0 }
+    last30d: { bullish: 0, bearish: 0, neutral: 0 },
+    all: { bullish: 0, bearish: 0, neutral: 0 }
   });
   const [sourcesStats, setSourcesStats] = useState({});
   const [expandedArticles, setExpandedArticles] = useState({});
@@ -254,6 +255,32 @@ function NewsPage() {
             return acc;
           }, {});
           setSourcesStats(sourcesObj);
+          
+          // Use sentiment data from API if available
+          if (data.sentiment) {
+            setSentimentStats({
+              last24h: {
+                bullish: parseFloat(data.sentiment['24h']?.Bullish || 0),
+                bearish: parseFloat(data.sentiment['24h']?.Bearish || 0),
+                neutral: parseFloat(data.sentiment['24h']?.Neutral || 0)
+              },
+              last7d: {
+                bullish: parseFloat(data.sentiment['7d']?.Bullish || 0),
+                bearish: parseFloat(data.sentiment['7d']?.Bearish || 0),
+                neutral: parseFloat(data.sentiment['7d']?.Neutral || 0)
+              },
+              last30d: {
+                bullish: parseFloat(data.sentiment['30d']?.Bullish || 0),
+                bearish: parseFloat(data.sentiment['30d']?.Bearish || 0),
+                neutral: parseFloat(data.sentiment['30d']?.Neutral || 0)
+              },
+              all: {
+                bullish: parseFloat(data.sentiment['all']?.Bullish || 0),
+                bearish: parseFloat(data.sentiment['all']?.Bearish || 0),
+                neutral: parseFloat(data.sentiment['all']?.Neutral || 0)
+              }
+            });
+          }
         } else if (Array.isArray(data)) {
           // Fallback for old API format (array of articles)
           setNews(data);
@@ -271,33 +298,35 @@ function NewsPage() {
           setTotalCount(0);
         }
 
-        // Calculate sentiment statistics
-        const now = new Date();
-        const stats = {
-          last24h: { bullish: 0, bearish: 0, neutral: 0 },
-          last7d: { bullish: 0, bearish: 0, neutral: 0 },
-          last30d: { bullish: 0, bearish: 0, neutral: 0 }
-        };
+        // Only calculate sentiment if not provided by API
+        if (!data.sentiment) {
+          const now = new Date();
+          const stats = {
+            last24h: { bullish: 0, bearish: 0, neutral: 0 },
+            last7d: { bullish: 0, bearish: 0, neutral: 0 },
+            last30d: { bullish: 0, bearish: 0, neutral: 0 }
+          };
 
-        const newsData = data.data || (Array.isArray(data) ? data : []);
-        if (Array.isArray(newsData)) {
-          newsData.forEach((article) => {
-            const pubDate = new Date(article.pubDate);
-            const sentiment = article.sentiment?.toLowerCase() || 'neutral';
+          const newsData = data.data || (Array.isArray(data) ? data : []);
+          if (Array.isArray(newsData)) {
+            newsData.forEach((article) => {
+              const pubDate = new Date(article.pubDate);
+              const sentiment = article.sentiment?.toLowerCase() || 'neutral';
 
-            if (differenceInHours(now, pubDate) <= 24) {
-              stats.last24h[sentiment]++;
-            }
-            if (differenceInDays(now, pubDate) <= 7) {
-              stats.last7d[sentiment]++;
-            }
-            if (differenceInDays(now, pubDate) <= 30) {
-              stats.last30d[sentiment]++;
-            }
-          });
+              if (differenceInHours(now, pubDate) <= 24) {
+                stats.last24h[sentiment]++;
+              }
+              if (differenceInDays(now, pubDate) <= 7) {
+                stats.last7d[sentiment]++;
+              }
+              if (differenceInDays(now, pubDate) <= 30) {
+                stats.last30d[sentiment]++;
+              }
+            });
+          }
+
+          setSentimentStats(stats);
         }
-
-        setSentimentStats(stats);
       } catch (error) {
         console.error('Error fetching news:', error);
         setError(error.message);
@@ -335,9 +364,6 @@ function NewsPage() {
   };
 
   const SentimentSummary = ({ period, stats }) => {
-    const total = stats.bullish + stats.bearish + stats.neutral;
-    const getPercentage = (value) => ((value / total) * 100).toFixed(1);
-
     return (
       <Box sx={{ flex: 1, py: 0.5, px: isMobile ? 0.5 : 1 }}>
         <Typography variant="subtitle2" sx={{ mb: 0.8, color: 'rgba(255,255,255,0.7)', fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
@@ -345,7 +371,7 @@ function NewsPage() {
         </Typography>
         <Box sx={{ display: 'flex', gap: 0.8, flexWrap: 'wrap' }}>
           <Chip
-            label={`Bullish ${getPercentage(stats.bullish)}%`}
+            label={`Bullish ${stats.bullish}%`}
             size="small"
             sx={{
               background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#FFD700' 
@@ -360,7 +386,7 @@ function NewsPage() {
             }}
           />
           <Chip
-            label={`Bearish ${getPercentage(stats.bearish)}%`}
+            label={`Bearish ${stats.bearish}%`}
             size="small"
             sx={{
               background: 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)',
@@ -370,7 +396,7 @@ function NewsPage() {
             }}
           />
           <Chip
-            label={`Neutral ${getPercentage(stats.neutral)}%`}
+            label={`Neutral ${stats.neutral}%`}
             size="small"
             sx={{
               background: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)',
@@ -530,7 +556,8 @@ function NewsPage() {
                 flexItem
                 sx={{
                   borderColor:
-                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                  display: isMobile ? 'none' : 'block'
                 }}
               />
               <SentimentSummary period="7d" stats={sentimentStats.last7d} />
@@ -539,10 +566,21 @@ function NewsPage() {
                 flexItem
                 sx={{
                   borderColor:
-                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                  display: isMobile ? 'none' : 'block'
                 }}
               />
               <SentimentSummary period="30d" stats={sentimentStats.last30d} />
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{
+                  borderColor:
+                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                  display: isMobile ? 'none' : 'block'
+                }}
+              />
+              <SentimentSummary period="All Time" stats={sentimentStats.all} />
             </Box>
           </Paper>
 
