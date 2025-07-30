@@ -851,8 +851,8 @@ function NewsPage() {
                             float: 'left',
                             mr: 2,
                             mb: 1,
-                            width: isMobile ? 60 : 80,
-                            height: isMobile ? 60 : 80,
+                            width: isMobile ? 40 : 60,
+                            height: isMobile ? 40 : 60,
                             borderRadius: 1,
                             overflow: 'hidden',
                             backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
