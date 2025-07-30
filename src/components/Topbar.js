@@ -117,12 +117,12 @@ const MobileMetric = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   gap: theme.spacing(0.5),
   width: '100%',
-  padding: theme.spacing(0.5, 1),
-  borderRadius: theme.spacing(1),
+  padding: theme.spacing(0.5, 0),
+  borderRadius: 0,
   background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
     ? alpha('#030310', 0.5)
     : 'transparent',
-  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+  border: 'none',
   minHeight: theme.spacing(4)
 }));
 
@@ -152,8 +152,8 @@ const StyledContainer = styled(Container)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   [theme.breakpoints.down('md')]: {
-    paddingLeft: theme.spacing(0.5),
-    paddingRight: theme.spacing(0.5)
+    paddingLeft: 0,
+    paddingRight: 0
   }
 }));
 
@@ -809,7 +809,7 @@ const Topbar = () => {
 
   return (
     <TopWrapper>
-      <StyledContainer maxWidth={false}>
+      <StyledContainer maxWidth={false} disableGutters={isMobile}>
         <ContentWrapper>
           {isMobile ? (
             <MobileMetric>
