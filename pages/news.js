@@ -31,7 +31,7 @@ import { update_metrics } from 'src/redux/statusSlice';
 const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
   const theme = useTheme();
   const [showAll, setShowAll] = useState(false);
-  const sortedSources = Object.entries(sources).sort(([, a], [, b]) => b - a);
+  const sortedSources = Object.entries(sources).sort(([, a], [, b]) => b.count - a.count);
   const displayedSources = showAll ? sortedSources : sortedSources.slice(0, 12);
   const totalSources = sortedSources.length;
   const hiddenCount = totalSources - 12;
@@ -94,27 +94,35 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
             }
           }}
         />
-        {displayedSources.map(([source, count]) => (
-          <Chip
-            key={source}
-            label={`${source} (${count})`}
-            size="small"
-            onClick={() => onSourceSelect(source)}
-            sx={{
-              background: selectedSource === source ? theme.palette.primary.main : 'transparent',
-              color: selectedSource === source ? '#fff' : theme.palette.primary.main,
-              border: `1px solid ${theme.palette.primary.main}`,
-              height: '26px',
-              '&:hover': {
-                background:
-                  selectedSource === source
-                    ? theme.palette.primary.dark
-                    : theme.palette.primary.main,
-                color: '#fff'
-              }
-            }}
-          />
-        ))}
+        {displayedSources.map(([source, data]) => {
+          const sentiment = data.sentiment;
+          const hasSentiment = sentiment && (sentiment.Bullish || sentiment.Bearish || sentiment.Neutral);
+          const sentimentText = hasSentiment ? 
+            ` • ${sentiment.Bullish}%🟢 ${sentiment.Bearish}%🔴 ${sentiment.Neutral}%🟡` : '';
+          
+          return (
+            <Chip
+              key={source}
+              label={`${source} (${data.count})${sentimentText}`}
+              size="small"
+              onClick={() => onSourceSelect(source)}
+              sx={{
+                background: selectedSource === source ? theme.palette.primary.main : 'transparent',
+                color: selectedSource === source ? '#fff' : theme.palette.primary.main,
+                border: `1px solid ${theme.palette.primary.main}`,
+                height: 'auto',
+                py: 0.25,
+                '&:hover': {
+                  background:
+                    selectedSource === source
+                      ? theme.palette.primary.dark
+                      : theme.palette.primary.main,
+                  color: '#fff'
+                }
+              }}
+            />
+          );
+        })}
       </Box>
     </Paper>
   );
@@ -250,8 +258,12 @@ function NewsPage() {
             setTotalCount(data.pagination.total);
           }
           // Convert sources array to object format expected by SourcesMenu
+          console.log('Sources data:', data.sources); // Debug log
           const sourcesObj = data.sources.reduce((acc, source) => {
-            acc[source.name] = source.count;
+            acc[source.name] = {
+              count: source.count,
+              sentiment: source.sentiment
+            };
             return acc;
           }, {});
           setSourcesStats(sourcesObj);
