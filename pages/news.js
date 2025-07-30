@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import {
   Box,
   Container,
@@ -121,6 +122,7 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
 
 function NewsPage() {
   const dispatch = useDispatch();
+  const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [news, setNews] = useState([]);
@@ -129,7 +131,7 @@ function NewsPage() {
   const [selectedSource, setSelectedSource] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sentimentStats, setSentimentStats] = useState({
     last24h: { bullish: 0, bearish: 0, neutral: 0 },
     last7d: { bullish: 0, bearish: 0, neutral: 0 },
@@ -172,6 +174,9 @@ function NewsPage() {
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
+    const query = { page: value };
+    if (itemsPerPage !== 10) query.limit = itemsPerPage;
+    router.push({ pathname: '/news', query }, undefined, { shallow: true });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -185,6 +190,23 @@ function NewsPage() {
       [articleId]: !prev[articleId]
     }));
   };
+
+  // Parse URL parameters on mount and router changes
+  useEffect(() => {
+    const { page, limit } = router.query;
+    if (page) {
+      const pageNum = parseInt(page);
+      if (!isNaN(pageNum) && pageNum > 0) {
+        setCurrentPage(pageNum);
+      }
+    }
+    if (limit) {
+      const limitNum = parseInt(limit);
+      if (!isNaN(limitNum) && limitNum > 0 && limitNum <= 100) {
+        setItemsPerPage(limitNum);
+      }
+    }
+  }, [router.query]);
 
   useEffect(() => {
     const fetchNews = async () => {
