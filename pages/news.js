@@ -39,9 +39,9 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
   return (
     <Paper
       sx={{
-        mb: 3,
-        py: 1.5,
-        px: 2,
+        mb: 2,
+        py: 1,
+        px: 1.5,
         background:
           theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.9)',
         backdropFilter: 'blur(10px)',
@@ -51,15 +51,16 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
         borderRadius: 2
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
         <Typography
-          variant="subtitle1"
+          variant="subtitle2"
           sx={{
             fontWeight: 600,
-            color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'
+            color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
+            fontSize: '0.875rem'
           }}
         >
-          News Sources ({totalSources} sources)
+          News Sources ({totalSources})
         </Typography>
         {totalSources > 12 && (
           <Chip
@@ -77,7 +78,7 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
           />
         )}
       </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
         <Chip
           key="all"
           label="All Sources"
@@ -87,7 +88,12 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
             background: !selectedSource ? theme.palette.primary.main : 'transparent',
             color: !selectedSource ? '#fff' : theme.palette.primary.main,
             border: `1px solid ${theme.palette.primary.main}`,
-            height: '26px',
+            height: '22px',
+            fontSize: '0.75rem',
+            '& .MuiChip-label': {
+              px: 0.75,
+              py: 0
+            },
             '&:hover': {
               background: !selectedSource ? theme.palette.primary.dark : theme.palette.primary.main,
               color: '#fff'
@@ -97,21 +103,68 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
         {displayedSources.map(([source, data]) => {
           const sentiment = data.sentiment;
           const hasSentiment = sentiment && (sentiment.Bullish || sentiment.Bearish || sentiment.Neutral);
-          const sentimentText = hasSentiment ? 
-            ` • ${sentiment.Bullish}%🟢 ${sentiment.Bearish}%🔴 ${sentiment.Neutral}%🟡` : '';
           
           return (
             <Chip
               key={source}
-              label={`${source} (${data.count})${sentimentText}`}
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <span>{source}</span>
+                  <span style={{ opacity: 0.7, fontSize: '0.85em' }}>({data.count})</span>
+                  {hasSentiment && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, ml: 0.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box sx={{ 
+                          width: 6, 
+                          height: 6, 
+                          borderRadius: '50%', 
+                          bgcolor: 'success.main',
+                          mr: 0.25
+                        }} />
+                        <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
+                          {sentiment.Bullish}%
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box sx={{ 
+                          width: 6, 
+                          height: 6, 
+                          borderRadius: '50%', 
+                          bgcolor: 'error.main',
+                          mr: 0.25
+                        }} />
+                        <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
+                          {sentiment.Bearish}%
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box sx={{ 
+                          width: 6, 
+                          height: 6, 
+                          borderRadius: '50%', 
+                          bgcolor: 'warning.main',
+                          mr: 0.25
+                        }} />
+                        <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
+                          {sentiment.Neutral}%
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
+              }
               size="small"
               onClick={() => onSourceSelect(source)}
               sx={{
                 background: selectedSource === source ? theme.palette.primary.main : 'transparent',
                 color: selectedSource === source ? '#fff' : theme.palette.primary.main,
                 border: `1px solid ${theme.palette.primary.main}`,
-                height: 'auto',
-                py: 0.25,
+                height: '22px',
+                fontSize: '0.75rem',
+                '& .MuiChip-label': {
+                  px: 0.75,
+                  py: 0
+                },
                 '&:hover': {
                   background:
                     selectedSource === source
@@ -527,8 +580,8 @@ function NewsPage() {
 
           <Paper
             sx={{
-              mb: 3,
-              p: 2,
+              mb: 2,
+              p: 1.5,
               background:
                 theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.9)',
               backdropFilter: 'blur(10px)',
