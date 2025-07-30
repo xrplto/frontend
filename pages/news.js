@@ -810,16 +810,46 @@ function NewsPage() {
                     <Box
                       sx={{
                         display: 'flex',
-                        gap: isMobile ? 1.5 : 2,
-                        mb: 1.5
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        mb: 1
                       }}
                     >
+                      <Typography
+                        variant="h6"
+                        component="h2"
+                        sx={{
+                          flex: 1,
+                          color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+                          fontWeight: 500,
+                          fontSize: isMobile ? '1rem' : '1.1rem',
+                          lineHeight: isMobile ? 1.3 : 1.4
+                        }}
+                      >
+                        {extractTitle(article.title)}
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', ml: 2 }}>
+                        <Chip
+                          label={article.sentiment || 'Unknown'}
+                          size="small"
+                          sx={{
+                            backgroundColor: getSentimentColor(article.sentiment),
+                            color: '#fff',
+                            height: '22px',
+                            fontWeight: 500
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                    <Box>
                       {article.articleImage && (
                         <Box
                           sx={{
-                            flexShrink: 0,
-                            width: isMobile ? 60 : 80,
-                            height: isMobile ? 60 : 80,
+                            float: 'left',
+                            mr: 2,
+                            mb: 1,
+                            width: isMobile ? 80 : 120,
+                            height: isMobile ? 80 : 120,
                             borderRadius: 1,
                             overflow: 'hidden',
                             backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
@@ -839,56 +869,20 @@ function NewsPage() {
                           />
                         </Box>
                       )}
-                      <Box sx={{ flex: 1 }}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                            mb: 1
-                          }}
-                        >
-                          <Typography
-                            variant="h6"
-                            component="h2"
-                            sx={{
-                              flex: 1,
-                              color: theme.palette.mode === 'dark' ? '#fff' : '#000',
-                              fontWeight: 500,
-                              fontSize: isMobile ? '1rem' : '1.1rem',
-                              lineHeight: isMobile ? 1.3 : 1.4
-                            }}
-                          >
-                            {extractTitle(article.title)}
-                          </Typography>
-                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', ml: 2 }}>
-                            <Chip
-                              label={article.sentiment || 'Unknown'}
-                              size="small"
-                              sx={{
-                                backgroundColor: getSentimentColor(article.sentiment),
-                                color: '#fff',
-                                height: '22px',
-                                fontWeight: 500
-                              }}
-                            />
-                          </Box>
-                        </Box>
-                      </Box>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mb: 1.5,
+                          color:
+                            theme.palette.mode === 'dark'
+                              ? 'rgba(255,255,255,0.7)'
+                              : 'rgba(0,0,0,0.7)',
+                          lineHeight: 1.6
+                        }}
+                      >
+                        {article.summary}
+                      </Typography>
                     </Box>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        mb: 1.5,
-                        color:
-                          theme.palette.mode === 'dark'
-                            ? 'rgba(255,255,255,0.7)'
-                            : 'rgba(0,0,0,0.7)',
-                        lineHeight: 1.6
-                      }}
-                    >
-                      {article.summary}
-                    </Typography>
                     <Divider
                       sx={{
                         my: 1.5,
