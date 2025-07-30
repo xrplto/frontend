@@ -203,6 +203,7 @@ function NewsPage() {
   });
   const [sourcesStats, setSourcesStats] = useState({});
   const [expandedArticles, setExpandedArticles] = useState({});
+  const [searchSentimentScore, setSearchSentimentScore] = useState(null);
 
   // Add WebSocket connection
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
@@ -328,6 +329,13 @@ function NewsPage() {
             setTotalCount(data.pagination.total);
           }
           
+          // Set search sentiment score if available (from search endpoint)
+          if (searchQuery && data.sentiment_score !== undefined) {
+            setSearchSentimentScore(data.sentiment_score);
+          } else {
+            setSearchSentimentScore(null);
+          }
+          
           // Only process sources if they exist (not present in search endpoint)
           if (data.sources) {
             console.log('Sources data:', data.sources); // Debug log
@@ -370,6 +378,7 @@ function NewsPage() {
           // Fallback for old API format (array of articles)
           setNews(data);
           setTotalCount(data.length);
+          setSearchSentimentScore(null);
           const sourceCount = data.reduce((acc, article) => {
             const source = article.sourceName || 'Unknown';
             acc[source] = (acc[source] || 0) + 1;
@@ -381,6 +390,7 @@ function NewsPage() {
           setNews([]);
           setSourcesStats({});
           setTotalCount(0);
+          setSearchSentimentScore(null);
         }
 
         // Only calculate sentiment if not provided by API
@@ -615,6 +625,7 @@ function NewsPage() {
                         onClick={() => {
                           setSearchInput('');
                           setSearchQuery('');
+                          setSearchSentimentScore(null);
                           setCurrentPage(1);
                           const query = { page: 1 };
                           if (itemsPerPage !== 10) query.limit = itemsPerPage;
@@ -707,6 +718,18 @@ function NewsPage() {
               }}
             >
               Sentiment Analysis
+              {searchQuery && searchSentimentScore !== null && (
+                <Typography
+                  component="span"
+                  sx={{
+                    ml: 1,
+                    color: theme.palette.primary.main,
+                    fontWeight: 700
+                  }}
+                >
+                  (Score: {searchSentimentScore})
+                </Typography>
+              )}
               {selectedSource && (
                 <Typography
                   component="span"
