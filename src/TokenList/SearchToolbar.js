@@ -148,9 +148,10 @@ export default function SearchToolbar({
             textTransform: 'none',
             fontWeight: 600,
             px: { xs: 0.75, sm: 2 },
-            py: { xs: 0.25, sm: 0.5 },
+            py: { xs: 0.25, sm: 0.25 },
             fontSize: { xs: '0.7rem', sm: '0.875rem' },
-            minHeight: { xs: 28, sm: 36 },
+            minHeight: { xs: 20, sm: 28 },
+            height: { xs: 20, sm: 28 },
             '&:hover': {
               boxShadow: 2
             }
