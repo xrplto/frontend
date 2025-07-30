@@ -92,20 +92,16 @@ const PriceChartLightweight = memo(({ token }) => {
           setHasInitialData(true);
           setLoading(false);
         } else {
-          // No valid data received - only set loading false if we've never had data
-          if (hasInitialData) {
-            setLoading(false);
-          }
+          // No valid data received - always set loading false
+          setLoading(false);
           setData([]);
         }
       } catch (error) {
         if (!axios.isCancel(error)) {
           console.error('Chart error:', error);
         }
-        // Only set loading false if we've had initial data before
-        if (hasInitialData) {
-          setLoading(false);
-        }
+        // Always set loading false on error
+        setLoading(false);
         setData([]);
       }
     };
@@ -723,7 +719,7 @@ const PriceChartLightweight = memo(({ token }) => {
 
       {/* Canvas Chart */}
       <Box sx={{ position: 'relative', height: 300 }}>
-        {loading || (!hasInitialData && (!data || data.length === 0)) ? (
+        {loading ? (
           <Box sx={{ 
             position: 'absolute', 
             inset: 0, 
@@ -781,10 +777,35 @@ const PriceChartLightweight = memo(({ token }) => {
             position: 'absolute', 
             inset: 0, 
             display: 'flex', 
+            flexDirection: 'column',
             alignItems: 'center', 
-            justifyContent: 'center' 
+            justifyContent: 'center',
+            bgcolor: theme.palette.mode === 'dark' ? '#0a0a0a' : '#fafafa',
+            gap: 1.5
           }}>
-            <Typography color="text.secondary">No data available</Typography>
+            <Box
+              component="svg"
+              viewBox="0 0 100 60"
+              sx={{
+                width: 40,
+                height: 24,
+                fill: theme.palette.mode === 'dark' ? '#303030' : '#e0e0e0',
+              }}
+            >
+              {/* Simple whale shape */}
+              <path d="M 10 30 Q 10 20 20 15 Q 40 10 60 15 Q 80 20 85 30 Q 80 40 60 42 Q 40 43 20 40 Q 10 38 10 30 Z M 85 25 L 90 20 L 95 25 L 92 27 L 88 25 Z M 25 25 A 2 2 0 1 1 25.01 25 Z" />
+            </Box>
+            <Typography 
+              sx={{ 
+                color: theme.palette.mode === 'dark' ? '#404040' : '#d0d0d0',
+                fontSize: '0.875rem',
+                fontFamily: 'monospace',
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase'
+              }}
+            >
+              NO DATA
+            </Typography>
           </Box>
         ) : (
           <>
