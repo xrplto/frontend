@@ -221,16 +221,13 @@ function NewsPage() {
   // No client-side filtering needed - all filtering is done server-side
   const filteredNews = Array.isArray(news) ? news : [];
 
-  // Calculate pagination - use totalCount from API for paginated queries
-  const totalPages = (selectedSource || searchQuery)
-    ? Math.ceil(totalCount / itemsPerPage)
-    : Math.ceil(filteredNews.length / itemsPerPage);
+  // Calculate pagination - always use totalCount from API when available
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
   
-  // For source or search queries, news is already paginated by API
-  const currentItems = (selectedSource || searchQuery) ? filteredNews : filteredNews.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  console.log('Pagination debug:', { totalCount, itemsPerPage, totalPages, filteredNewsLength: filteredNews.length });
+  
+  // News is always paginated by API now
+  const currentItems = filteredNews;
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
@@ -565,28 +562,54 @@ function NewsPage() {
 
           <Box sx={{ mb: 3 }}>
             <form onSubmit={handleSearch}>
-              <TextField
-                fullWidth
-                size="medium"
-                variant="outlined"
-                placeholder="Search news by title, summary, or content..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon
-                        sx={{
-                          color:
-                            theme.palette.mode === 'dark'
-                              ? 'rgba(255,255,255,0.5)'
-                              : 'rgba(0,0,0,0.5)'
-                        }}
-                      />
-                    </InputAdornment>
-                  ),
-                  endAdornment: searchInput && (
-                    <InputAdornment position="end">
+              <Paper
+                elevation={0}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  px: 2,
+                  py: 1,
+                  background: theme.palette.mode === 'dark' 
+                    ? 'rgba(255,255,255,0.05)' 
+                    : 'rgba(0,0,0,0.03)',
+                  border: `1px solid ${
+                    theme.palette.mode === 'dark' 
+                      ? 'rgba(255,255,255,0.1)' 
+                      : 'rgba(0,0,0,0.1)'
+                  }`,
+                  borderRadius: 3,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    borderColor: theme.palette.primary.main,
+                    background: theme.palette.mode === 'dark' 
+                      ? 'rgba(255,255,255,0.08)' 
+                      : 'rgba(0,0,0,0.05)',
+                  },
+                  '&:focus-within': {
+                    borderColor: theme.palette.primary.main,
+                    boxShadow: `0 0 0 2px ${theme.palette.primary.main}20`,
+                  }
+                }}
+              >
+                <SearchIcon
+                  sx={{
+                    color: theme.palette.mode === 'dark'
+                      ? 'rgba(255,255,255,0.5)'
+                      : 'rgba(0,0,0,0.5)',
+                    mr: 1.5
+                  }}
+                />
+                <TextField
+                  fullWidth
+                  size="small"
+                  variant="standard"
+                  placeholder="Search news..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  InputProps={{
+                    disableUnderline: true,
+                    style: { fontSize: '0.95rem' },
+                    endAdornment: searchInput && (
                       <IconButton
                         size="small"
                         onClick={() => {
@@ -598,42 +621,60 @@ function NewsPage() {
                           if (selectedSource) query.source = selectedSource;
                           router.push({ pathname: '/news', query }, undefined, { shallow: true });
                         }}
+                        sx={{
+                          ml: 1,
+                          p: 0.5,
+                          '&:hover': {
+                            bgcolor: theme.palette.mode === 'dark'
+                              ? 'rgba(255,255,255,0.1)'
+                              : 'rgba(0,0,0,0.1)'
+                          }
+                        }}
                       >
                         <Box
                           component="span"
                           sx={{ 
                             fontSize: '1.2rem',
-                            color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
+                            color: theme.palette.mode === 'dark' 
+                              ? 'rgba(255,255,255,0.5)' 
+                              : 'rgba(0,0,0,0.5)'
                           }}
                         >
                           ×
                         </Box>
                       </IconButton>
-                    </InputAdornment>
-                  )
-                }}
-                sx={{
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor:
-                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                  borderRadius: 2,
-                  color: theme.palette.mode === 'dark' ? '#fff' : '#000',
-                  '& fieldset': {
-                    borderColor:
-                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-                  },
-                  '&:hover fieldset': {
-                    borderColor: theme.palette.primary.main
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: theme.palette.primary.main
-                  }
-                },
-                '& .MuiOutlinedInput-input::placeholder': {
-                  color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                }
-              }}
-              />
+                    )
+                  }}
+                  sx={{
+                    '& .MuiInput-root': {
+                      color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+                    },
+                    '& .MuiInputBase-input::placeholder': {
+                      color: theme.palette.mode === 'dark' 
+                        ? 'rgba(255,255,255,0.5)' 
+                        : 'rgba(0,0,0,0.5)',
+                      opacity: 1
+                    }
+                  }}
+                />
+                {searchInput && (
+                  <Chip
+                    label="Search"
+                    size="small"
+                    onClick={handleSearch}
+                    sx={{
+                      ml: 1,
+                      height: 28,
+                      bgcolor: theme.palette.primary.main,
+                      color: '#fff',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        bgcolor: theme.palette.primary.dark
+                      }
+                    }}
+                  />
+                )}
+              </Paper>
             </form>
           </Box>
 
@@ -927,14 +968,15 @@ function NewsPage() {
             ))}
           </Grid>
 
-          {totalPages > 1 && (
+          {totalCount > 0 && (
             <Stack spacing={2} alignItems="center" sx={{ mt: 4, mb: 2 }}>
               <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 1 }}>
                 {searchQuery && `Found ${totalCount} articles for "${searchQuery}"`}
                 {selectedSource && !searchQuery && `Showing ${totalCount} articles from ${selectedSource}`}
-                {!searchQuery && !selectedSource && `Total ${totalCount} articles`}
+                {!searchQuery && !selectedSource && `Showing ${currentItems.length} of ${totalCount} articles`}
               </Typography>
-              <Box
+              {totalPages > 1 && (
+                <Box
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1013,17 +1055,8 @@ function NewsPage() {
                   }}
                 />
               </Box>
+              )}
             </Stack>
-          )}
-          
-          {totalPages <= 1 && totalCount > 0 && (
-            <Box sx={{ textAlign: 'center', mt: 3, mb: 2 }}>
-              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                {searchQuery && `Found ${totalCount} articles for "${searchQuery}"`}
-                {selectedSource && !searchQuery && `Showing ${totalCount} articles from ${selectedSource}`}
-                {!searchQuery && !selectedSource && `Total ${totalCount} articles`}
-              </Typography>
-            </Box>
           )}
         </Container>
       </Box>
