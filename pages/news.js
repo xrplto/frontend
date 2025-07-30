@@ -155,7 +155,7 @@ function NewsPage() {
   });
 
   // Filter news based on selected source and search query
-  const filteredNews = news.filter((article) => {
+  const filteredNews = Array.isArray(news) ? news.filter((article) => {
     const matchesSource = selectedSource ? article.sourceName === selectedSource : true;
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch =
@@ -164,7 +164,7 @@ function NewsPage() {
       article.summary?.toLowerCase().includes(searchLower) ||
       article.articleBody?.toLowerCase().includes(searchLower);
     return matchesSource && matchesSearch;
-  });
+  }) : [];
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
@@ -217,15 +217,30 @@ function NewsPage() {
           throw new Error('Failed to fetch news');
         }
         const data = await response.json();
-        setNews(data);
-
-        // Calculate sources statistics
-        const sourceCount = data.reduce((acc, article) => {
-          const source = article.sourceName || 'Unknown';
-          acc[source] = (acc[source] || 0) + 1;
-          return acc;
-        }, {});
-        setSourcesStats(sourceCount);
+        
+        // Check if response has separate data and sources
+        if (data.data && data.sources) {
+          setNews(data.data);
+          // Convert sources array to object format expected by SourcesMenu
+          const sourcesObj = data.sources.reduce((acc, source) => {
+            acc[source.name] = source.count;
+            return acc;
+          }, {});
+          setSourcesStats(sourcesObj);
+        } else if (Array.isArray(data)) {
+          // Fallback for old API format (array of articles)
+          setNews(data);
+          const sourceCount = data.reduce((acc, article) => {
+            const source = article.sourceName || 'Unknown';
+            acc[source] = (acc[source] || 0) + 1;
+            return acc;
+          }, {});
+          setSourcesStats(sourceCount);
+        } else {
+          // Handle unexpected format
+          setNews([]);
+          setSourcesStats({});
+        }
 
         // Calculate sentiment statistics
         const now = new Date();
@@ -235,20 +250,23 @@ function NewsPage() {
           last30d: { bullish: 0, bearish: 0, neutral: 0 }
         };
 
-        data.forEach((article) => {
-          const pubDate = new Date(article.pubDate);
-          const sentiment = article.sentiment?.toLowerCase() || 'neutral';
+        const newsData = data.data || (Array.isArray(data) ? data : []);
+        if (Array.isArray(newsData)) {
+          newsData.forEach((article) => {
+            const pubDate = new Date(article.pubDate);
+            const sentiment = article.sentiment?.toLowerCase() || 'neutral';
 
-          if (differenceInHours(now, pubDate) <= 24) {
-            stats.last24h[sentiment]++;
-          }
-          if (differenceInDays(now, pubDate) <= 7) {
-            stats.last7d[sentiment]++;
-          }
-          if (differenceInDays(now, pubDate) <= 30) {
-            stats.last30d[sentiment]++;
-          }
-        });
+            if (differenceInHours(now, pubDate) <= 24) {
+              stats.last24h[sentiment]++;
+            }
+            if (differenceInDays(now, pubDate) <= 7) {
+              stats.last7d[sentiment]++;
+            }
+            if (differenceInDays(now, pubDate) <= 30) {
+              stats.last30d[sentiment]++;
+            }
+          });
+        }
 
         setSentimentStats(stats);
       } catch (error) {
