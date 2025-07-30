@@ -328,10 +328,10 @@ const DocumentationContent = ({ activeSection, searchTerm, handleOpenModal }) =>
               {/* Quick Stats - More Compact */}
               <Grid container spacing={1.5} sx={{ mt: 1 }}>
                 {[
-                  { label: '16000+', desc: 'Tokens', color: 'primary', id: 'stat-tokens' },
+                  { label: '18000+', desc: 'Tokens', color: 'primary', id: 'stat-tokens' },
+                  { label: '1M+', desc: 'Daily Requests', color: 'secondary', id: 'stat-requests' },
                   { label: '99.9%', desc: 'Uptime', color: 'success', id: 'stat-uptime' },
-                  { label: 'Real-time', desc: 'Data', color: 'info', id: 'stat-realtime' },
-                  { label: '5', desc: 'Languages', color: 'warning', id: 'stat-languages' }
+                  { label: 'Real-time', desc: 'Data', color: 'info', id: 'stat-realtime' }
                 ].map((stat) => (
                   <Grid item xs={6} sm={3} key={stat.id}>
                     <Card
