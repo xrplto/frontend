@@ -39,16 +39,16 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
   return (
     <Paper
       sx={{
-        mb: 2,
-        py: 1,
-        px: 1.5,
+        mb: 1,
+        py: 0.5,
+        px: 1,
         background:
           theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.9)',
         backdropFilter: 'blur(10px)',
         border: `1px solid ${
           theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
         }`,
-        borderRadius: 2
+        borderRadius: 1
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
@@ -57,7 +57,7 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
           sx={{
             fontWeight: 600,
             color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
-            fontSize: '0.875rem'
+            fontSize: '0.75rem'
           }}
         >
           News Sources ({totalSources})
@@ -89,9 +89,9 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
             color: !selectedSource ? '#fff' : theme.palette.primary.main,
             border: `1px solid ${theme.palette.primary.main}`,
             height: '22px',
-            fontSize: '0.75rem',
+            fontSize: '0.7rem',
             '& .MuiChip-label': {
-              px: 0.75,
+              px: 0.5,
               py: 0
             },
             '&:hover': {
@@ -159,10 +159,10 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
                 background: selectedSource === source ? theme.palette.primary.main : 'transparent',
                 color: selectedSource === source ? '#fff' : theme.palette.primary.main,
                 border: `1px solid ${theme.palette.primary.main}`,
-                height: '22px',
-                fontSize: '0.75rem',
+                height: '20px',
+                fontSize: '0.7rem',
                 '& .MuiChip-label': {
-                  px: 0.75,
+                  px: 0.5,
                   py: 0
                 },
                 '&:hover': {
@@ -462,11 +462,11 @@ function NewsPage() {
     if (!stats) return null;
     
     return (
-      <Box sx={{ flex: 1, py: 0.5, px: isMobile ? 0.5 : 1 }}>
-        <Typography variant="subtitle2" sx={{ mb: 0.8, color: 'rgba(255,255,255,0.7)', fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
+      <Box sx={{ flex: 1, py: 0.25, px: isMobile ? 0.5 : 1 }}>
+        <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'rgba(255,255,255,0.7)', fontSize: isMobile ? '0.7rem' : '0.75rem' }}>
           {period}
         </Typography>
-        <Box sx={{ display: 'flex', gap: 0.8, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
           <Chip
             label={`Bullish ${stats.bullish || 0}%`}
             size="small"
@@ -475,7 +475,7 @@ function NewsPage() {
                 ? 'linear-gradient(90deg, #00FF87 0%, #00E673 100%)' 
                 : 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)',
               color: 'white',
-              height: '22px',
+              height: '20px',
               fontWeight: 500,
               boxShadow: theme.palette.mode === 'dark' && theme.palette.primary.main === '#FFD700' 
                 ? '0px 0px 10px rgba(0, 255, 135, 0.5)' 
@@ -488,7 +488,7 @@ function NewsPage() {
             sx={{
               background: 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)',
               color: 'white',
-              height: '22px',
+              height: '20px',
               fontWeight: 500
             }}
           />
@@ -498,7 +498,7 @@ function NewsPage() {
             sx={{
               background: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)',
               color: 'white',
-              height: '22px',
+              height: '20px',
               fontWeight: 500
             }}
           />
@@ -545,10 +545,10 @@ function NewsPage() {
       <Topbar />
       <Header />
       <Box sx={{ flex: 1 }}>
-        <Container maxWidth="xl" sx={{ py: 3 }}>
-          <Box sx={{ mb: 3 }}>
+        <Container maxWidth="xl" sx={{ py: 2 }}>
+          <Box sx={{ mb: 2 }}>
             <Typography
-              variant="h4"
+              variant="h5"
               component="h1"
               sx={{
                 color: theme.palette.primary.main,
@@ -556,29 +556,31 @@ function NewsPage() {
               }}
             >
               Latest XRP Ledger News
+              {totalCount > 0 && (
+                <Typography
+                  component="span"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    ml: 1,
+                    fontSize: '0.875rem',
+                    fontWeight: 400
+                  }}
+                >
+                  ({totalCount.toLocaleString()} articles)
+                </Typography>
+              )}
             </Typography>
-            {totalCount > 0 && (
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  color: theme.palette.text.secondary,
-                  mt: 0.5
-                }}
-              >
-                {totalCount.toLocaleString()} articles indexed
-              </Typography>
-            )}
           </Box>
 
-          <Box sx={{ mb: 3 }}>
+          <Box sx={{ mb: 2 }}>
             <form onSubmit={handleSearch}>
               <Paper
                 elevation={0}
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  px: 2,
-                  py: 1,
+                  px: 1.5,
+                  py: 0.5,
                   background: theme.palette.mode === 'dark' 
                     ? 'rgba(255,255,255,0.05)' 
                     : 'rgba(0,0,0,0.03)',
@@ -587,7 +589,7 @@ function NewsPage() {
                       ? 'rgba(255,255,255,0.1)' 
                       : 'rgba(0,0,0,0.1)'
                   }`,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     borderColor: theme.palette.primary.main,
@@ -675,7 +677,7 @@ function NewsPage() {
                     onClick={handleSearch}
                     sx={{
                       ml: 1,
-                      height: 28,
+                      height: 24,
                       bgcolor: theme.palette.primary.main,
                       color: '#fff',
                       cursor: 'pointer',
@@ -697,24 +699,25 @@ function NewsPage() {
 
           <Paper
             sx={{
-              mb: 2,
-              p: 1.5,
+              mb: 1.5,
+              p: 1,
               background:
                 theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.9)',
               backdropFilter: 'blur(10px)',
               border: `1px solid ${
                 theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
               }`,
-              borderRadius: 2
+              borderRadius: 1
             }}
           >
             <Typography
               variant="h6"
               gutterBottom
               sx={{
-                mb: 2,
+                mb: 1,
                 color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
-                fontWeight: 600
+                fontWeight: 600,
+                fontSize: '1rem'
               }}
             >
               Sentiment Analysis
@@ -743,7 +746,7 @@ function NewsPage() {
                 </Typography>
               )}
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: isMobile ? 1 : 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: isMobile ? 0.5 : 1 }}>
               <SentimentSummary period="Last 24h" stats={sentimentStats.last24h} />
               <Divider
                 orientation="vertical"
@@ -778,7 +781,7 @@ function NewsPage() {
             </Box>
           </Paper>
 
-          <Grid container spacing={2}>
+          <Grid container spacing={1}>
             {currentItems.map((article) => (
               <Grid item xs={12} key={article._id}>
                 <Card
@@ -794,7 +797,7 @@ function NewsPage() {
                     border: `1px solid ${
                       theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
                     }`,
-                    borderRadius: 2,
+                    borderRadius: 1,
                     transition: 'all 0.3s ease',
                     '&:hover': {
                       transform: 'translateY(-2px)',
@@ -806,7 +809,7 @@ function NewsPage() {
                     }
                   }}
                 >
-                  <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+                  <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                     <Box
                       sx={{
                         display: 'flex',
@@ -822,8 +825,8 @@ function NewsPage() {
                           flex: 1,
                           color: theme.palette.mode === 'dark' ? '#fff' : '#000',
                           fontWeight: 500,
-                          fontSize: isMobile ? '1rem' : '1.1rem',
-                          lineHeight: isMobile ? 1.3 : 1.4
+                          fontSize: isMobile ? '0.875rem' : '0.95rem',
+                          lineHeight: 1.3
                         }}
                       >
                         {extractTitle(article.title)}
@@ -835,7 +838,7 @@ function NewsPage() {
                           sx={{
                             backgroundColor: getSentimentColor(article.sentiment),
                             color: '#fff',
-                            height: '22px',
+                            height: '20px',
                             fontWeight: 500
                           }}
                         />
@@ -848,8 +851,8 @@ function NewsPage() {
                             float: 'left',
                             mr: 2,
                             mb: 1,
-                            width: isMobile ? 80 : 120,
-                            height: isMobile ? 80 : 120,
+                            width: isMobile ? 60 : 80,
+                            height: isMobile ? 60 : 80,
                             borderRadius: 1,
                             overflow: 'hidden',
                             backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
@@ -872,12 +875,13 @@ function NewsPage() {
                       <Typography
                         variant="body2"
                         sx={{
-                          mb: 1.5,
+                          mb: 1,
                           color:
                             theme.palette.mode === 'dark'
                               ? 'rgba(255,255,255,0.7)'
                               : 'rgba(0,0,0,0.7)',
-                          lineHeight: 1.6
+                          lineHeight: 1.4,
+                          fontSize: '0.813rem'
                         }}
                       >
                         {article.summary}
@@ -885,7 +889,7 @@ function NewsPage() {
                     </Box>
                     <Divider
                       sx={{
-                        my: 1.5,
+                        my: 1,
                         borderColor:
                           theme.palette.mode === 'dark'
                             ? 'rgba(255,255,255,0.1)'
@@ -896,12 +900,13 @@ function NewsPage() {
                       <Typography
                         variant="body2"
                         sx={{
-                          mb: 1.5,
+                          mb: 1,
                           color:
                             theme.palette.mode === 'dark'
                               ? 'rgba(255,255,255,0.8)'
                               : 'rgba(0,0,0,0.8)',
-                          lineHeight: 1.6
+                          lineHeight: 1.4,
+                          fontSize: '0.813rem'
                         }}
                       >
                         {article.articleBody?.split('\n').map(
@@ -986,7 +991,7 @@ function NewsPage() {
           </Grid>
 
           {totalCount > 0 && (
-            <Stack spacing={2} alignItems="center" sx={{ mt: 4, mb: 2 }}>
+            <Stack spacing={1} alignItems="center" sx={{ mt: 2, mb: 1 }}>
               <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 1 }}>
                 {searchQuery && `Found ${totalCount} articles for "${searchQuery}"`}
                 {selectedSource && !searchQuery && `Showing ${totalCount} articles from ${selectedSource}`}
@@ -998,8 +1003,8 @@ function NewsPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 2,
-                  p: 2,
-                  borderRadius: 2,
+                  p: 1,
+                  borderRadius: 1,
                   background:
                     theme.palette.mode === 'dark'
                       ? 'rgba(0, 0, 0, 0.6)'
