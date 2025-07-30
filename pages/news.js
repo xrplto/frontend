@@ -545,7 +545,7 @@ function NewsPage() {
                 fontWeight: 600
               }}
             >
-              Latest XRPL News
+              Latest XRP Ledger News
             </Typography>
             {totalCount > 0 && (
               <Typography
@@ -603,7 +603,7 @@ function NewsPage() {
                   fullWidth
                   size="small"
                   variant="standard"
-                  placeholder="Search news..."
+                  placeholder="Search XRPL News"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   InputProps={{
