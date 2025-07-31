@@ -95,8 +95,25 @@ const getNftImageUrl = (nftInfo) => {
 };
 
 const KNOWN_SOURCE_TAGS = {
+  74920348: { name: 'First Ledger', url: 'https://firstledger.net' },
+  10011010: { name: 'Magnetic', url: 'https://magnetic.com' },
   101102979: { name: 'xrp.cafe', url: 'https://xrp.cafe' },
-  20221212: { name: 'XPMarket', url: 'https://xpmarket.com' }
+  20221212: { name: 'XPMarket', url: 'https://xpmarket.com' },
+  69420589: { name: 'Bidds', url: 'https://bidds.com' },
+  110100111: { name: 'Sologenic', url: 'https://sologenic.com' },
+  19089388: { name: 'N/A', url: null },
+  20102305: { name: 'Opulence', url: 'https://opulence.com' },
+  13888813: { name: 'Zerpmon', url: 'https://zerpmon.com' },
+  11782013: { name: 'ANODEX', url: 'https://anodex.com' },
+  100010010: { name: 'Xrpl Daddy', url: 'https://xrpldaddy.com' },
+  123321: { name: 'BearBull Scalper', url: 'https://bearbull.com' },
+  494456745: { name: 'N/A', url: null },
+  42697468: { name: 'Bithomp', url: 'https://bithomp.com' },
+  4152544945: { name: 'ArtDept.fun', url: 'https://artdept.fun' },
+  411555: { name: 'N/A', url: null },
+  80085: { name: 'Zerpaay', url: 'https://zerpaay.com' },
+  510162502: { name: 'Sonar Muse', url: 'https://sonarmuse.com' },
+  80008000: { name: 'Orchestra', url: 'https://orchestra.com' }
 };
 
 // Helper to render key-value pairs and make certain values clickable
@@ -2060,21 +2077,25 @@ const TransactionDetails = ({ txData, theme }) => {
                 )}
 
                 {/* Client Information */}
-                {clientInfo && (
-                  <DetailRow label="Client">
-                    <Link href={clientInfo.url} target="_blank" rel="noopener noreferrer" passHref>
-                      <Typography
-                        component="a"
-                        variant="body1"
-                        sx={{
-                          color: 'primary.main',
-                          textDecoration: 'none',
-                          '&:hover': { textDecoration: 'underline' }
-                        }}
-                      >
-                        {clientInfo.name}
-                      </Typography>
-                    </Link>
+                {clientInfo && clientInfo.name !== 'N/A' && (
+                  <DetailRow label="Platform">
+                    {clientInfo.url ? (
+                      <Link href={clientInfo.url} target="_blank" rel="noopener noreferrer" passHref>
+                        <Typography
+                          component="a"
+                          variant="body1"
+                          sx={{
+                            color: 'primary.main',
+                            textDecoration: 'none',
+                            '&:hover': { textDecoration: 'underline' }
+                          }}
+                        >
+                          {clientInfo.name}
+                        </Typography>
+                      </Link>
+                    ) : (
+                      <Typography variant="body1">{clientInfo.name}</Typography>
+                    )}
                   </DetailRow>
                 )}
 
