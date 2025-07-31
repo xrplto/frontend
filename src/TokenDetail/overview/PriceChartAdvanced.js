@@ -502,8 +502,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         
         if (nearbyTrade) {
           userTradeInfo = `
-            <div style="margin-top: 8px; padding-top: 8px; border-top: 2px solid ${nearbyTrade.type === 'buy' ? '#4caf50' : '#f44336'}">
-              <div style="font-weight: 600; color: ${nearbyTrade.type === 'buy' ? '#4caf50' : '#f44336'}">
+            <div style="margin-top: 8px; padding-top: 8px; border-top: 2px solid ${nearbyTrade.type === 'buy' ? '#2196f3' : '#f44336'}">
+              <div style="font-weight: 600; color: ${nearbyTrade.type === 'buy' ? '#2196f3' : '#f44336'}">
                 Your ${nearbyTrade.type === 'buy' ? 'Buy' : 'Sell'}
               </div>
               <div style="display: flex; justify-content: space-between">
@@ -885,14 +885,14 @@ const PriceChartAdvanced = memo(({ token }) => {
             });
             
           const buyMarkerSeries = chart.addSeries(LineSeries, {
-            color: '#4caf50',
+            color: '#2196f3',
             lineVisible: false,
             lineWidth: 0,
             lastValueVisible: false,
             priceLineVisible: false,
             crosshairMarkerVisible: false,
             pointMarkersVisible: true,
-            pointMarkersRadius: 2,
+            pointMarkersRadius: 3.5,
           });
           buyMarkerSeries.setData(sortedBuyTrades);
         }
@@ -916,7 +916,7 @@ const PriceChartAdvanced = memo(({ token }) => {
             priceLineVisible: false,
             crosshairMarkerVisible: false,
             pointMarkersVisible: true,
-            pointMarkersRadius: 2,
+            pointMarkersRadius: 3.5,
           });
           sellMarkerSeries.setData(sortedSellTrades);
         }
@@ -1040,9 +1040,9 @@ const PriceChartAdvanced = memo(({ token }) => {
                       height: 0, 
                       borderLeft: '4px solid transparent',
                       borderRight: '4px solid transparent',
-                      borderBottom: '6px solid #4caf50'
+                      borderBottom: '6px solid #2196f3'
                     }} />
-                    <Typography variant="caption" sx={{ color: '#4caf50', fontWeight: 600 }}>
+                    <Typography variant="caption" sx={{ color: '#2196f3', fontWeight: 600 }}>
                       {userTrades.filter(t => t.type === 'buy').length}
                     </Typography>
                   </Box>
