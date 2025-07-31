@@ -52,6 +52,7 @@
     "i18next-browser-languagedetector": "^7.1.0",
     "json-to-csv-export": "^2.1.1",
     "keen-slider": "^6.8.6",
+    "lightweight-charts": "^5.0.8",
     "lodash.debounce": "^4.0.8",
     "lru-cache": "^11.0.0",
     "markdown-it": "^13.0.1",
