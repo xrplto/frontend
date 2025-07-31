@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo, useContext } from 'react';
-import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem } from '@mui/material';
+import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem, CircularProgress } from '@mui/material';
 import { createChart, CandlestickSeries, LineSeries, AreaSeries, HistogramSeries } from 'lightweight-charts';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
@@ -9,6 +9,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import TimelineIcon from '@mui/icons-material/Timeline';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const PriceChartAdvanced = memo(({ token }) => {
   const theme = useTheme();
@@ -27,6 +28,8 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [loading, setLoading] = useState(true);
   const [indicators, setIndicators] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(null);
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
@@ -126,9 +129,13 @@ const PriceChartAdvanced = memo(({ token }) => {
     
     const controller = new AbortController();
     
-    const fetchData = async () => {
+    const fetchData = async (isUpdate = false) => {
       try {
-        setLoading(true);
+        if (isUpdate) {
+          setIsUpdating(true);
+        } else {
+          setLoading(true);
+        }
         const apiRange = range === 'ALL' ? '1Y' : range;
         const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?range=${apiRange}&vs_currency=${activeFiatCurrency}`;
         
@@ -146,19 +153,30 @@ const PriceChartAdvanced = memo(({ token }) => {
           }));
           
           setData(processedData);
+          setLastUpdate(new Date());
           setLoading(false);
+          setIsUpdating(false);
         }
       } catch (error) {
         if (!axios.isCancel(error)) {
           console.error('Chart error:', error);
         }
         setLoading(false);
+        setIsUpdating(false);
       }
     };
 
     fetchData();
     
-    return () => controller.abort();
+    // Set up 4-second refresh interval
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 4000);
+    
+    return () => {
+      controller.abort();
+      clearInterval(interval);
+    };
   }, [token.md5, range, BASE_URL, activeFiatCurrency]);
 
   useEffect(() => {
@@ -435,6 +453,15 @@ const PriceChartAdvanced = memo(({ token }) => {
           <Typography variant="h6" sx={{ fontSize: '1rem' }}>
             {token.name} Price ({activeFiatCurrency})
           </Typography>
+          {isUpdating && (
+            <CircularProgress size={16} sx={{ ml: 1 }} />
+          )}
+          {!isUpdating && lastUpdate && (
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+              <RefreshIcon sx={{ fontSize: 12, verticalAlign: 'middle', mr: 0.5 }} />
+              {lastUpdate.toLocaleTimeString()}
+            </Typography>
+          )}
         </Box>
         
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
