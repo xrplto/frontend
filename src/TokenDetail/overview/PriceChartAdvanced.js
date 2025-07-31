@@ -19,6 +19,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const lineSeriesRef = useRef(null);
   const volumeSeriesRef = useRef(null);
   const areaSeriesRef = useRef(null);
+  const isMobile = theme.breakpoints.values.sm > window.innerWidth;
   
   const [chartType, setChartType] = useState('candles');
   const [range, setRange] = useState('1D');
@@ -174,7 +175,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: 400,
+      height: isMobile ? 280 : 400,
       layout: {
         background: {
           color: 'transparent'
@@ -208,10 +209,33 @@ const PriceChartAdvanced = memo(({ token }) => {
           top: 0.1,
           bottom: 0.2,
         },
+        mode: isMobile ? 2 : 0, // Mode 2 = overlay price scale
+        autoScale: true,
+        borderVisible: false,
+        visible: !isMobile, // Hide the scale completely on mobile
       },
       localization: {
         priceFormatter: (price) => {
           const symbol = currencySymbols[activeFiatCurrency] || '';
+          
+          // Use more compact formatting on mobile
+          if (isMobile) {
+            if (price < 0.00001) {
+              return symbol + price.toExponential(2);
+            } else if (price < 0.01) {
+              return symbol + price.toFixed(5);
+            } else if (price < 1) {
+              return symbol + price.toFixed(3);
+            } else if (price < 1000) {
+              return symbol + price.toFixed(2);
+            } else if (price < 1000000) {
+              return symbol + (price / 1000).toFixed(1) + 'K';
+            } else {
+              return symbol + (price / 1000000).toFixed(1) + 'M';
+            }
+          }
+          
+          // Desktop formatting
           if (price < 0.000000001) {
             return symbol + price.toFixed(12);
           } else if (price < 0.00001) {
@@ -284,6 +308,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         top: 0.8,
         bottom: 0,
       },
+      priceLineVisible: false,
+      lastValueVisible: !isMobile,
     });
     volumeSeries.setData(data.map(d => ({
       time: d.time,
@@ -490,7 +516,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         </Box>
       </Box>
 
-      <Box sx={{ position: 'relative', height: 400 }}>
+      <Box sx={{ position: 'relative', height: isMobile ? 280 : 400 }}>
         {loading ? (
           <Box sx={{ 
             position: 'absolute', 
