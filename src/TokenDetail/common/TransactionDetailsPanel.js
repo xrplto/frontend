@@ -150,20 +150,14 @@ const TransactionDetailsPanel = memo(({ open, onClose, transactionHash, onSelect
       sx={{
         width: '350px',
         height: '100vh',
-        position: 'fixed',
-        top: 0,
-        right: 0,
+        position: 'sticky',
+        top: '64px',
         background: theme.palette.background.paper,
         borderLeft: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        boxShadow: theme.shadows[8],
+        boxShadow: theme.shadows[2],
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
-        zIndex: 1200,
-        transform: open ? 'translateX(0)' : 'translateX(100%)',
-        transition: theme.transitions.create('transform', {
-          duration: theme.transitions.duration.enteringScreen,
-        })
+        overflow: 'hidden'
       }}
     >
       <Box

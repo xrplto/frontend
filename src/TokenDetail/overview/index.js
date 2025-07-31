@@ -12,7 +12,7 @@ const MDEditor = dynamic(() => import('react-markdown-editor-lite'), {
 });
 
 // Material
-import { Grid, Stack, useTheme, useMediaQuery, Typography, Paper, Button } from '@mui/material';
+import { Grid, Stack, useTheme, useMediaQuery, Typography, Paper, Button, Box } from '@mui/material';
 
 // Context
 import { useContext } from 'react';
@@ -23,14 +23,13 @@ import PriceChart from './PriceChartAdvanced';
 import PriceStatistics from './PriceStatistics';
 import Description from './Description';
 import TrendingTokens from './TrendingTokens';
-import TransactionDetailsPanel from '../common/TransactionDetailsPanel';
 
 import Swap from './Swap'; // Import Swap component
 import TradingHistory from './TradingHistory';
 
 // ----------------------------------------------------------------------
 
-export default function Overview({ token }) {
+export default function Overview({ token, onTransactionClick }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
@@ -40,8 +39,6 @@ export default function Overview({ token }) {
   const [showEditor, setShowEditor] = useState(false);
   const [description, setDescription] = useState(token.description || '');
   const [pairs, setPairs] = useState([]);
-  const [selectedTxHash, setSelectedTxHash] = useState(null);
-  const [txDetailsOpen, setTxDetailsOpen] = useState(false);
 
   // Initialize a markdown parser
   const mdParser = new MarkdownIt(/* Markdown-it options */);
@@ -109,16 +106,6 @@ export default function Overview({ token }) {
   let user = token.user;
   if (!user) user = token.name;
 
-  const handleTransactionClick = (hash) => {
-    setSelectedTxHash(hash);
-    setTxDetailsOpen(true);
-  };
-
-  const handleTxDetailsClose = () => {
-    setTxDetailsOpen(false);
-    setSelectedTxHash(null);
-  };
-
   return (
     <Grid container spacing={{ xs: 0, md: 3 }}>
       <Grid item xs={12} md={12} lg={8}>
@@ -130,7 +117,7 @@ export default function Overview({ token }) {
               amm={token.AMM} 
               token={token} 
               pairs={pairs} 
-              onTransactionClick={handleTransactionClick}
+              onTransactionClick={onTransactionClick}
             />
             {showEditor && (
               <MDEditor
@@ -164,13 +151,6 @@ export default function Overview({ token }) {
         )}
         <TrendingTokens />
       </Grid>
-      
-      {/* Transaction Details Panel */}
-      <TransactionDetailsPanel
-        open={txDetailsOpen}
-        onClose={handleTxDetailsClose}
-        transactionHash={selectedTxHash}
-      />
     </Grid>
   );
 }
