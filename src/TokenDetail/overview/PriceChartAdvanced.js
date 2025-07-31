@@ -231,6 +231,10 @@ const PriceChartAdvanced = memo(({ token }) => {
         borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
         timeVisible: true,
         secondsVisible: false,
+        rightOffset: 12,
+        barSpacing: 6,
+        fixLeftEdge: true,
+        fixRightEdge: true,
       },
     });
 
