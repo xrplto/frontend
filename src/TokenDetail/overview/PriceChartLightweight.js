@@ -29,6 +29,8 @@ const PriceChartLightweight = memo(({ token }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [dragStart, setDragStart] = useState(null);
+  const animationFrameRef = useRef(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
@@ -118,6 +120,7 @@ const PriceChartLightweight = memo(({ token }) => {
     // Poll every 3 seconds
     const pollData = async () => {
       try {
+        setIsUpdating(true);
         // OHLC v2 doesn't support ALL, use appropriate mappings
         const apiRange = range === 'ALL' ? '1Y' : range;
         let endpoint;
@@ -161,8 +164,10 @@ const PriceChartLightweight = memo(({ token }) => {
         }
         
         setLastUpdate(new Date());
+        setTimeout(() => setIsUpdating(false), 500); // Show update indicator for 500ms
       } catch (error) {
         console.error('Polling error:', error);
+        setIsUpdating(false);
       }
     };
     
@@ -177,8 +182,8 @@ const PriceChartLightweight = memo(({ token }) => {
     };
   }, [token.md5, range, chartType, hasInitialData, BASE_URL, activeFiatCurrency]);
 
-  // Draw chart using Canvas
-  useEffect(() => {
+  // Draw chart function
+  const drawChart = () => {
     if (!data || !canvasRef.current || data.length === 0) return;
 
     const canvas = canvasRef.current;
@@ -323,16 +328,27 @@ const PriceChartLightweight = memo(({ token }) => {
       const minCandles = 10; // Minimum number of candle slots to show
       const effectiveLength = Math.max(data.length, minCandles);
       const maxCandleWidth = 20; // Maximum candle width
-      const candleWidth = Math.min(maxCandleWidth, Math.max(1, chartWidth / effectiveLength - 1));
-      const candleSpacing = Math.min(2, candleWidth * 0.2);
-      const actualCandleWidth = candleWidth - candleSpacing;
       
-      // Center the candles if there are very few
-      const totalCandlesWidth = data.length * (candleWidth + candleSpacing);
-      const offsetX = data.length < minCandles ? (chartWidth - totalCandlesWidth) / 2 : 0;
+      // Calculate candle width to fill the entire chart width
+      const totalSpacing = effectiveLength > 1 ? 2 * (effectiveLength - 1) : 0; // 2px spacing between candles
+      const availableWidthForCandles = chartWidth - totalSpacing;
+      const candleWidth = Math.min(maxCandleWidth, Math.max(1, availableWidthForCandles / effectiveLength));
+      const actualSpacing = effectiveLength > 1 ? (chartWidth - (candleWidth * effectiveLength)) / (effectiveLength - 1) : 0;
+      
+      // For 1D interval with many candles, distribute them evenly across the full width
+      const useFullWidth = data.length > minCandles || range === '1D';
       
       data.forEach((item, index) => {
-        const x = leftPadding + offsetX + (index * (candleWidth + candleSpacing)) + candleWidth / 2 + panX;
+        let x;
+        if (useFullWidth) {
+          // Distribute candles evenly across full chart width
+          x = leftPadding + (index / (data.length - 1)) * chartWidth + panX;
+        } else {
+          // Center candles when there are very few
+          const totalWidth = data.length * candleWidth + (data.length - 1) * actualSpacing;
+          const offsetX = (chartWidth - totalWidth) / 2;
+          x = leftPadding + offsetX + index * (candleWidth + actualSpacing) + candleWidth / 2 + panX;
+        }
         const [time, open, high, low, close, volume] = item;
         
         // Ensure all OHLC values are finite numbers
@@ -368,7 +384,7 @@ const PriceChartLightweight = memo(({ token }) => {
         }
         
         // Draw wick with shadow effect
-        ctx.lineWidth = Math.max(1, actualCandleWidth * 0.15);
+        ctx.lineWidth = Math.max(1, candleWidth * 0.15);
         ctx.lineCap = 'round';
         
         // Shadow for wick
@@ -386,20 +402,23 @@ const PriceChartLightweight = memo(({ token }) => {
         // Draw body with rounded corners
         const bodyHeight = Math.abs(yClose - yOpen);
         const bodyY = Math.min(yOpen, yClose);
-        const cornerRadius = Math.min(2, actualCandleWidth * 0.1);
+        
+        // Adjust candle body width based on data density
+        const bodyWidth = useFullWidth ? Math.min(candleWidth * 0.8, 10) : candleWidth * 0.8;
+        const cornerRadius = Math.min(2, bodyWidth * 0.1);
         
         if (bodyHeight > 1) {
           // Rounded rectangle for body
           ctx.beginPath();
-          ctx.moveTo(x - actualCandleWidth / 2 + cornerRadius, bodyY);
-          ctx.lineTo(x + actualCandleWidth / 2 - cornerRadius, bodyY);
-          ctx.quadraticCurveTo(x + actualCandleWidth / 2, bodyY, x + actualCandleWidth / 2, bodyY + cornerRadius);
-          ctx.lineTo(x + actualCandleWidth / 2, bodyY + bodyHeight - cornerRadius);
-          ctx.quadraticCurveTo(x + actualCandleWidth / 2, bodyY + bodyHeight, x + actualCandleWidth / 2 - cornerRadius, bodyY + bodyHeight);
-          ctx.lineTo(x - actualCandleWidth / 2 + cornerRadius, bodyY + bodyHeight);
-          ctx.quadraticCurveTo(x - actualCandleWidth / 2, bodyY + bodyHeight, x - actualCandleWidth / 2, bodyY + bodyHeight - cornerRadius);
-          ctx.lineTo(x - actualCandleWidth / 2, bodyY + cornerRadius);
-          ctx.quadraticCurveTo(x - actualCandleWidth / 2, bodyY, x - actualCandleWidth / 2 + cornerRadius, bodyY);
+          ctx.moveTo(x - bodyWidth / 2 + cornerRadius, bodyY);
+          ctx.lineTo(x + bodyWidth / 2 - cornerRadius, bodyY);
+          ctx.quadraticCurveTo(x + bodyWidth / 2, bodyY, x + bodyWidth / 2, bodyY + cornerRadius);
+          ctx.lineTo(x + bodyWidth / 2, bodyY + bodyHeight - cornerRadius);
+          ctx.quadraticCurveTo(x + bodyWidth / 2, bodyY + bodyHeight, x + bodyWidth / 2 - cornerRadius, bodyY + bodyHeight);
+          ctx.lineTo(x - bodyWidth / 2 + cornerRadius, bodyY + bodyHeight);
+          ctx.quadraticCurveTo(x - bodyWidth / 2, bodyY + bodyHeight, x - bodyWidth / 2, bodyY + bodyHeight - cornerRadius);
+          ctx.lineTo(x - bodyWidth / 2, bodyY + cornerRadius);
+          ctx.quadraticCurveTo(x - bodyWidth / 2, bodyY, x - bodyWidth / 2 + cornerRadius, bodyY);
           ctx.closePath();
           ctx.fill();
           
@@ -408,7 +427,7 @@ const PriceChartLightweight = memo(({ token }) => {
           ctx.stroke();
         } else {
           // Thin line for doji candles
-          ctx.fillRect(x - actualCandleWidth / 2, bodyY - 0.5, actualCandleWidth, 1);
+          ctx.fillRect(x - bodyWidth / 2, bodyY - 0.5, bodyWidth, 1);
         }
       });
     }
@@ -465,24 +484,33 @@ const PriceChartLightweight = memo(({ token }) => {
       ctx.stroke();
       
       // Draw volume bars with same spacing as candles
-      let volumeBarWidth, volumeOffsetX;
-      
       if (chartType === 1) {
         // Match candlestick spacing for volume bars
         const minCandles = 10;
         const effectiveLength = Math.max(data.length, minCandles);
-        const maxBarWidth = 16; // Slightly smaller than candle width
-        volumeBarWidth = Math.min(maxBarWidth, Math.max(1, chartWidth / effectiveLength - 1));
-        const barSpacing = Math.min(2, volumeBarWidth * 0.2);
-        const actualBarWidth = volumeBarWidth - barSpacing;
-        
-        // Center volume bars if there are very few
-        const totalBarsWidth = data.length * (volumeBarWidth + barSpacing);
-        volumeOffsetX = data.length < minCandles ? (chartWidth - totalBarsWidth) / 2 : 0;
+        const useFullWidth = data.length > minCandles || range === '1D';
         
         data.forEach((item, index) => {
           const volume = item[5] || 0;
-          const x = leftPadding + volumeOffsetX + (index * (volumeBarWidth + barSpacing)) + panX;
+          let x, barWidth;
+          
+          if (useFullWidth) {
+            // Match candlestick distribution for full width
+            x = leftPadding + (index / (data.length - 1)) * chartWidth + panX;
+            barWidth = Math.min(8, chartWidth / data.length * 0.8);
+          } else {
+            // Match centered candlesticks
+            const maxBarWidth = 16;
+            const totalSpacing = effectiveLength > 1 ? 2 * (effectiveLength - 1) : 0;
+            const availableWidthForBars = chartWidth - totalSpacing;
+            const volumeBarWidth = Math.min(maxBarWidth, Math.max(1, availableWidthForBars / effectiveLength));
+            const actualSpacing = effectiveLength > 1 ? (chartWidth - (volumeBarWidth * effectiveLength)) / (effectiveLength - 1) : 0;
+            const totalWidth = data.length * volumeBarWidth + (data.length - 1) * actualSpacing;
+            const offsetX = (chartWidth - totalWidth) / 2;
+            x = leftPadding + offsetX + index * (volumeBarWidth + actualSpacing) + volumeBarWidth / 2 + panX;
+            barWidth = volumeBarWidth * 0.8;
+          }
+          
           const barHeight = (volume / maxVolume) * volumeChartHeight;
           const y = volumeY + volumeChartHeight - barHeight;
           
@@ -490,7 +518,7 @@ const PriceChartLightweight = memo(({ token }) => {
           const barColor = item[4] >= item[1] ? '#4caf5088' : '#f4433688';
           
           ctx.fillStyle = barColor;
-          ctx.fillRect(x, y, actualBarWidth, barHeight);
+          ctx.fillRect(x - barWidth / 2, y, barWidth, barHeight);
         });
       } else {
         // Line chart - use thinner bars
@@ -659,8 +687,33 @@ const PriceChartLightweight = memo(({ token }) => {
         }
       }
     }
+  };
 
-  }, [data, chartType, isDark, theme, mousePos, panOffset, activeFiatCurrency]);
+  // Use requestAnimationFrame for smooth updates
+  useEffect(() => {
+    if (!data || data.length === 0) return;
+
+    // Draw immediately when data changes
+    drawChart();
+
+    // Only animate when mouse is moving or dragging
+    if (mousePos || isDragging) {
+      const animate = () => {
+        drawChart();
+        if (mousePos || isDragging) {
+          animationFrameRef.current = requestAnimationFrame(animate);
+        }
+      };
+      
+      animationFrameRef.current = requestAnimationFrame(animate);
+    }
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [data, chartType, isDark, theme, mousePos, panOffset, activeFiatCurrency, isDragging]);
 
   return (
     <Paper elevation={0} sx={{ p: 2 }}>
@@ -671,9 +724,27 @@ const PriceChartLightweight = memo(({ token }) => {
             {token.name} {chartType === 2 ? 'Holders' : `Price (${activeFiatCurrency})`}
           </Typography>
           {lastUpdate && (
-            <Typography variant="caption" color="text.secondary">
-              Updated: {lastUpdate.toLocaleTimeString()}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              {isUpdating && (
+                <Box
+                  sx={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    bgcolor: theme.palette.success.main,
+                    animation: 'pulse 0.5s ease-in-out',
+                    '@keyframes pulse': {
+                      '0%': { opacity: 1, transform: 'scale(1)' },
+                      '50%': { opacity: 0.5, transform: 'scale(1.2)' },
+                      '100%': { opacity: 1, transform: 'scale(1)' },
+                    },
+                  }}
+                />
+              )}
+              <Typography variant="caption" color="text.secondary">
+                Updated: {lastUpdate.toLocaleTimeString()}
+              </Typography>
+            </Box>
           )}
         </Box>
         
