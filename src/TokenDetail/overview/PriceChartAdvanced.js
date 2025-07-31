@@ -887,12 +887,12 @@ const PriceChartAdvanced = memo(({ token }) => {
           const buyMarkerSeries = chart.addSeries(LineSeries, {
             color: '#4caf50',
             lineVisible: false,
+            lineWidth: 0,
             lastValueVisible: false,
             priceLineVisible: false,
             crosshairMarkerVisible: false,
             pointMarkersVisible: true,
-            pointMarkersRadius: 6,
-            title: 'Buy',
+            pointMarkersRadius: 2,
           });
           buyMarkerSeries.setData(sortedBuyTrades);
         }
@@ -911,12 +911,12 @@ const PriceChartAdvanced = memo(({ token }) => {
           const sellMarkerSeries = chart.addSeries(LineSeries, {
             color: '#f44336',
             lineVisible: false,
+            lineWidth: 0,
             lastValueVisible: false,
             priceLineVisible: false,
             crosshairMarkerVisible: false,
             pointMarkersVisible: true,
-            pointMarkersRadius: 6,
-            title: 'Sell',
+            pointMarkersRadius: 2,
           });
           sellMarkerSeries.setData(sortedSellTrades);
         }
