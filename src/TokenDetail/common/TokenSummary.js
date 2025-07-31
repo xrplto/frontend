@@ -1121,7 +1121,7 @@ const TokenSummary = memo(({ token }) => {
                     <Box sx={{ transform: { xs: 'scale(1.4)', sm: 'scale(1.8)' } }}>
                       {getOriginIcon(origin || 'XRPL')}
                     </Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: origin ? theme.palette.text.primary : '#1976d2', fontSize: { xs: '0.65rem', sm: '1rem' } }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: origin ? theme.palette.text.primary : '#1976d2', fontSize: { xs: '0.5rem', sm: '0.75rem' } }}>
                       {origin || 'XRPL'}
                     </Typography>
                   </Box>
