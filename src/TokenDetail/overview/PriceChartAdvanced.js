@@ -8,6 +8,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import GroupIcon from '@mui/icons-material/Group';
 
 const PriceChartAdvanced = memo(({ token }) => {
   const theme = useTheme();
@@ -29,13 +30,16 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [athData, setAthData] = useState({ price: null, percentDown: null });
   const [rsiValues, setRsiValues] = useState({});
+  const [holderData, setHolderData] = useState(null);
+  const [showHolders, setShowHolders] = useState(false);
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
 
   const chartTypeIcons = {
     candles: <CandlestickChartIcon fontSize="small" />,
-    line: <ShowChartIcon fontSize="small" />
+    line: <ShowChartIcon fontSize="small" />,
+    holders: <GroupIcon fontSize="small" />
   };
 
   const indicatorOptions = [
@@ -243,8 +247,58 @@ const PriceChartAdvanced = memo(({ token }) => {
     };
   }, [token.md5, range, BASE_URL, activeFiatCurrency]);
 
+  // Fetch holder data
   useEffect(() => {
-    if (!chartContainerRef.current || !data || data.length === 0) return;
+    if (!token?.md5 || chartType !== 'holders') return;
+    
+    const controller = new AbortController();
+    
+    const fetchHolderData = async () => {
+      try {
+        setLoading(true);
+        const endpoint = `${BASE_URL}/graphrich/${token.md5}?range=${range}`;
+        
+        const response = await axios.get(endpoint, { signal: controller.signal });
+        
+        if (response.data?.history && response.data.history.length > 0) {
+          // Process data and ensure unique timestamps
+          const processedData = response.data.history
+            .map(item => ({
+              time: Math.floor(item.time / 1000),
+              value: item.length || 0,
+              holders: item.length || 0,
+              top10: item.top10 || 0,
+              top20: item.top20 || 0,
+              top50: item.top50 || 0,
+              top100: item.top100 || 0,
+              active24H: item.active24H || 0
+            }))
+            .sort((a, b) => a.time - b.time) // Sort by time ascending
+            .filter((item, index, array) => {
+              // Remove duplicates, keeping the last occurrence
+              return index === array.length - 1 || item.time !== array[index + 1].time;
+            });
+          
+          setHolderData(processedData);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (!axios.isCancel(error)) {
+          console.error('Holder data error:', error);
+        }
+        setLoading(false);
+      }
+    };
+
+    fetchHolderData();
+    
+    return () => controller.abort();
+  }, [token.md5, range, BASE_URL, chartType]);
+
+  useEffect(() => {
+    // For holders chart, use holderData; for others use regular data
+    const chartData = chartType === 'holders' ? holderData : data;
+    if (!chartContainerRef.current || !chartData || chartData.length === 0) return;
 
     if (chartRef.current) {
       try {
@@ -298,6 +352,17 @@ const PriceChartAdvanced = memo(({ token }) => {
       },
       localization: {
         priceFormatter: (price) => {
+          // For holders chart, show as integer
+          if (chartType === 'holders') {
+            if (price < 1000) {
+              return Math.round(price).toString();
+            } else if (price < 1000000) {
+              return (price / 1000).toFixed(1) + 'K';
+            } else {
+              return (price / 1000000).toFixed(1) + 'M';
+            }
+          }
+          
           const symbol = currencySymbols[activeFiatCurrency] || '';
           
           // Use more compact formatting on mobile
@@ -365,7 +430,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       const symbol = currencySymbols[activeFiatCurrency] || '';
       
       // Find the candle data for the current time
-      const candle = data.find(d => d.time === param.time);
+      const candle = chartData.find(d => d.time === param.time);
       
       if (candle) {
         const formatPrice = (p) => p < 0.01 ? p.toFixed(8) : p.toFixed(4);
@@ -417,6 +482,20 @@ const PriceChartAdvanced = memo(({ token }) => {
               </div>
             ` : ''}
           `;
+        } else if (chartType === 'holders') {
+          ohlcData = `
+            <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
+            <div style="display: flex; justify-content: space-between"><span>Total Holders:</span><span>${candle.holders ? candle.holders.toLocaleString() : candle.value.toLocaleString()}</span></div>
+            ${candle.active24H ? `<div style="display: flex; justify-content: space-between"><span>Active 24H:</span><span>${candle.active24H.toLocaleString()}</span></div>` : ''}
+            ${candle.top10 !== undefined ? `
+              <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}">
+                <div style="display: flex; justify-content: space-between"><span>Top 10:</span><span>${candle.top10.toFixed(2)}%</span></div>
+                <div style="display: flex; justify-content: space-between"><span>Top 20:</span><span>${candle.top20.toFixed(2)}%</span></div>
+                <div style="display: flex; justify-content: space-between"><span>Top 50:</span><span>${candle.top50.toFixed(2)}%</span></div>
+                <div style="display: flex; justify-content: space-between"><span>Top 100:</span><span>${candle.top100.toFixed(2)}%</span></div>
+              </div>
+            ` : ''}
+          `;
         }
       }
 
@@ -443,54 +522,66 @@ const PriceChartAdvanced = memo(({ token }) => {
         wickUpColor: '#4caf50',
         wickDownColor: '#f44336',
       });
-      candleSeries.setData(data);
+      candleSeries.setData(chartData);
       candleSeriesRef.current = candleSeries;
     } else if (chartType === 'line') {
       const lineSeries = chart.addSeries(LineSeries, {
         color: theme.palette.primary.main,
         lineWidth: 2,
       });
-      lineSeries.setData(data.map(d => ({ time: d.time, value: d.close })));
+      lineSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
       lineSeriesRef.current = lineSeries;
+    } else if (chartType === 'holders') {
+      const holdersSeries = chart.addSeries(LineSeries, {
+        color: '#9c27b0',
+        lineWidth: 2,
+      });
+      holdersSeries.setData(chartData.map(d => ({ time: d.time, value: d.value || d.holders })));
+      lineSeriesRef.current = holdersSeries;
     }
 
-    const volumeSeries = chart.addSeries(HistogramSeries, {
-      color: '#26a69a',
-      priceFormat: {
-        type: 'volume',
-      },
-      priceScaleId: '',
-      scaleMargins: {
-        top: 0.9,
-        bottom: 0,
-      },
-      priceLineVisible: false,
-      lastValueVisible: !isMobile,
-    });
-    volumeSeries.setData(data.map(d => ({
-      time: d.time,
-      value: d.volume,
-      color: d.close >= d.open ? '#4caf5080' : '#f4433680'
-    })));
-    volumeSeriesRef.current = volumeSeries;
+    // Only show volume for price charts, not holder charts
+    if (chartType !== 'holders') {
+      const volumeSeries = chart.addSeries(HistogramSeries, {
+        color: '#26a69a',
+        priceFormat: {
+          type: 'volume',
+        },
+        priceScaleId: '',
+        scaleMargins: {
+          top: 0.9,
+          bottom: 0,
+        },
+        priceLineVisible: false,
+        lastValueVisible: !isMobile,
+      });
+      volumeSeries.setData(chartData.map(d => ({
+        time: d.time,
+        value: d.volume || 0,
+        color: d.close >= d.open ? '#4caf5080' : '#f4433680'
+      })));
+      volumeSeriesRef.current = volumeSeries;
+    }
 
-    indicators.forEach(indicator => {
-      if (indicator.id.startsWith('sma')) {
-        const smaData = calculateSMA(data, indicator.period);
-        const smaSeries = chart.addSeries(LineSeries, {
-          color: indicator.period === 20 ? '#2196f3' : '#ff9800',
-          lineWidth: 1,
-        });
-        smaSeries.setData(smaData);
-      } else if (indicator.id.startsWith('ema')) {
-        const emaData = calculateEMA(data, indicator.period);
-        const emaSeries = chart.addSeries(LineSeries, {
-          color: indicator.period === 20 ? '#9c27b0' : '#f44336',
-          lineWidth: 1,
-        });
-        emaSeries.setData(emaData);
-      } else if (indicator.id === 'bb') {
-        const bbData = calculateBollingerBands(data);
+    // Only apply indicators for price charts
+    if (chartType !== 'holders' && data) {
+      indicators.forEach(indicator => {
+        if (indicator.id.startsWith('sma')) {
+          const smaData = calculateSMA(data, indicator.period);
+          const smaSeries = chart.addSeries(LineSeries, {
+            color: indicator.period === 20 ? '#2196f3' : '#ff9800',
+            lineWidth: 1,
+          });
+          smaSeries.setData(smaData);
+        } else if (indicator.id.startsWith('ema')) {
+          const emaData = calculateEMA(data, indicator.period);
+          const emaSeries = chart.addSeries(LineSeries, {
+            color: indicator.period === 20 ? '#9c27b0' : '#f44336',
+            lineWidth: 1,
+          });
+          emaSeries.setData(emaData);
+        } else if (indicator.id === 'bb') {
+          const bbData = calculateBollingerBands(data);
         
         const upperBand = chart.addSeries(LineSeries, {
           color: '#795548',
@@ -542,8 +633,8 @@ const PriceChartAdvanced = memo(({ token }) => {
           
           // Create horizontal line across entire chart
           const lineData = [
-            { time: data[0].time, value: fib.price },
-            { time: data[data.length - 1].time, value: fib.price }
+            { time: chartData[0].time, value: fib.price },
+            { time: chartData[chartData.length - 1].time, value: fib.price }
           ];
           fibSeries.setData(lineData);
         });
@@ -586,8 +677,8 @@ const PriceChartAdvanced = memo(({ token }) => {
           crosshairMarkerVisible: false,
         });
         overboughtSeries.setData([
-          { time: data[0].time, value: 70 },
-          { time: data[data.length - 1].time, value: 70 }
+          { time: chartData[0].time, value: 70 },
+          { time: chartData[chartData.length - 1].time, value: 70 }
         ]);
         
         // Add oversold line (30)
@@ -601,8 +692,8 @@ const PriceChartAdvanced = memo(({ token }) => {
           crosshairMarkerVisible: false,
         });
         oversoldSeries.setData([
-          { time: data[0].time, value: 30 },
-          { time: data[data.length - 1].time, value: 30 }
+          { time: chartData[0].time, value: 30 },
+          { time: chartData[chartData.length - 1].time, value: 30 }
         ]);
         
         // Add middle line (50)
@@ -616,8 +707,8 @@ const PriceChartAdvanced = memo(({ token }) => {
           crosshairMarkerVisible: false,
         });
         middleSeries.setData([
-          { time: data[0].time, value: 50 },
-          { time: data[data.length - 1].time, value: 50 }
+          { time: chartData[0].time, value: 50 },
+          { time: chartData[chartData.length - 1].time, value: 50 }
         ]);
       } else if (indicator.id === 'ath' && athData.price) {
         // Add ATH line
@@ -631,12 +722,13 @@ const PriceChartAdvanced = memo(({ token }) => {
         });
         
         const athLineData = [
-          { time: data[0].time, value: athData.price },
-          { time: data[data.length - 1].time, value: athData.price }
+          { time: chartData[0].time, value: athData.price },
+          { time: chartData[chartData.length - 1].time, value: athData.price }
         ];
         athSeries.setData(athLineData);
       }
     });
+    }
 
     chart.timeScale().fitContent();
 
@@ -664,7 +756,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         chartRef.current = null;
       }
     };
-  }, [data, chartType, theme, isDark, indicators, activeFiatCurrency, athData, rsiValues]);
+  }, [data, holderData, chartType, theme, isDark, indicators, activeFiatCurrency, athData, rsiValues]);
 
   const handleIndicatorToggle = (indicator) => {
     setIndicators(prev => {
@@ -682,9 +774,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h6" sx={{ fontSize: '1rem' }}>
-            {token.name} Price ({activeFiatCurrency})
+            {token.name} {chartType === 'holders' ? 'Holders' : `Price (${activeFiatCurrency})`}
           </Typography>
-          {athData.price && (
+          {athData.price && chartType !== 'holders' && (
             <Box sx={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -725,7 +817,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 sx={{ px: 1.5 }}
                 startIcon={icon}
               >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
+                {type === 'holders' ? 'Holders' : type.charAt(0).toUpperCase() + type.slice(1)}
               </Button>
             ))}
           </ButtonGroup>
