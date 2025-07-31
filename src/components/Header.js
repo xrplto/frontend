@@ -113,11 +113,21 @@ const HorizonIcon = forwardRef((props, ref) => {
       {...otherProps}
       ref={ref}
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="#f97316"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      sx={{
+        '& circle, & path': {
+          fill: 'none',
+          stroke: '#f97316',
+          strokeWidth: 2,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round'
+        },
+        // Enhanced visibility on mobile
+        '@media (max-width: 600px)': {
+          '& circle, & path': {
+            strokeWidth: 2.5
+          }
+        }
+      }}
     >
       <circle cx="12" cy="12" r="4" />
       <path d="M12 2v2" />

@@ -71,6 +71,44 @@ const LedgerMemeIcon = forwardRef((props, ref) => {
 
 LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 
+const HorizonIcon = forwardRef((props, ref) => {
+  const { width, darkMode, ...otherProps } = props;
+  return (
+    <SvgIcon
+      {...otherProps}
+      ref={ref}
+      viewBox="0 0 24 24"
+      sx={{
+        '& circle, & path': {
+          fill: 'none',
+          stroke: '#f97316',
+          strokeWidth: 2,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round'
+        },
+        // Enhanced visibility on mobile
+        '@media (max-width: 600px)': {
+          '& circle, & path': {
+            strokeWidth: 2.5
+          }
+        }
+      }}
+    >
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2" />
+      <path d="M12 20v2" />
+      <path d="M4.93 4.93l1.41 1.41" />
+      <path d="M17.66 17.66l1.41 1.41" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+      <path d="M6.34 17.66l-1.41 1.41" />
+      <path d="M19.07 4.93l-1.41 1.41" />
+    </SvgIcon>
+  );
+});
+
+HorizonIcon.displayName = 'HorizonIcon';
+
 export default function SidebarDrawer({ toggleDrawer, isOpen }) {
   return (
     <Drawer toggleDrawer={toggleDrawer} isOpen={isOpen} title={' '}>
@@ -208,7 +246,10 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             component={Link} 
             href="/view/horizon"
           >
-            <Typography sx={{ fontSize: '0.875rem' }}>Horizon</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <HorizonIcon sx={{ fontSize: 12 }} />
+              <Typography sx={{ fontSize: '0.875rem' }}>Horizon</Typography>
+            </Box>
           </MenuItem>
           <Divider sx={{ my: 1 }} />
 
