@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo, useContext } from 'react';
-import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem, CircularProgress } from '@mui/material';
+import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem, CircularProgress, alpha } from '@mui/material';
 import { createChart, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries } from 'lightweight-charts';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
@@ -12,12 +12,13 @@ import GroupIcon from '@mui/icons-material/Group';
 
 const PriceChartAdvanced = memo(({ token }) => {
   const theme = useTheme();
-  const { activeFiatCurrency } = useContext(AppContext);
+  const { activeFiatCurrency, accountProfile } = useContext(AppContext);
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
   const candleSeriesRef = useRef(null);
   const lineSeriesRef = useRef(null);
   const volumeSeriesRef = useRef(null);
+  const userTradeMarkersRef = useRef(null);
   const isMobile = theme.breakpoints.values.sm > window.innerWidth;
   
   const [chartType, setChartType] = useState('candles');
@@ -32,6 +33,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [rsiValues, setRsiValues] = useState({});
   const [holderData, setHolderData] = useState(null);
   const [showHolders, setShowHolders] = useState(false);
+  const [userTrades, setUserTrades] = useState([]);
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
@@ -295,6 +297,54 @@ const PriceChartAdvanced = memo(({ token }) => {
     return () => controller.abort();
   }, [token.md5, range, BASE_URL, chartType]);
 
+  // Fetch user trading history
+  useEffect(() => {
+    if (!token?.md5 || !accountProfile?.account) return;
+    
+    const controller = new AbortController();
+    
+    const fetchUserTrades = async () => {
+      try {
+        const endpoint = `${BASE_URL}/history?md5=${token.md5}&account=${accountProfile.account}&page=0&limit=100`;
+        
+        const response = await axios.get(endpoint, { signal: controller.signal });
+        
+        if (response.data?.hists && response.data.hists.length > 0) {
+          // Process trades to identify buy/sell
+          const processedTrades = response.data.hists.map(trade => {
+            const isBuy = trade.taker === accountProfile.account && trade.got.currency === token.currency;
+            const isSell = trade.taker === accountProfile.account && trade.paid.currency === token.currency;
+            
+            return {
+              time: Math.floor(trade.time / 1000),
+              type: isBuy ? 'buy' : 'sell',
+              price: isBuy ? 
+                (parseFloat(trade.paid.value) / parseFloat(trade.got.value)) : 
+                (parseFloat(trade.got.value) / parseFloat(trade.paid.value)),
+              amount: isBuy ? parseFloat(trade.got.value) : parseFloat(trade.paid.value),
+              hash: trade.hash,
+              // Store raw trade data for tooltip
+              paidCurrency: trade.paid.currency === 'XRP' ? 'XRP' : trade.paid.currency.slice(0, 3),
+              paidValue: trade.paid.value,
+              gotCurrency: trade.got.currency === 'XRP' ? 'XRP' : trade.got.currency.slice(0, 3),
+              gotValue: trade.got.value
+            };
+          }).filter(trade => trade.time > 0 && trade.price > 0);
+          
+          setUserTrades(processedTrades);
+        }
+      } catch (error) {
+        if (!axios.isCancel(error)) {
+          console.error('User trades error:', error);
+        }
+      }
+    };
+
+    fetchUserTrades();
+    
+    return () => controller.abort();
+  }, [token.md5, token.currency, accountProfile?.account, BASE_URL]);
+
   useEffect(() => {
     // For holders chart, use holderData; for others use regular data
     const chartData = chartType === 'holders' ? holderData : data;
@@ -443,6 +493,34 @@ const PriceChartAdvanced = memo(({ token }) => {
       // Find the candle data for the current time
       const candle = chartData.find(d => d.time === param.time);
       
+      // Check if there's a user trade near this time
+      let userTradeInfo = '';
+      if (userTrades.length > 0 && chartType !== 'holders') {
+        const nearbyTrade = userTrades.find(trade => {
+          return Math.abs(trade.time - param.time) < 86400; // Within 1 day
+        });
+        
+        if (nearbyTrade) {
+          userTradeInfo = `
+            <div style="margin-top: 8px; padding-top: 8px; border-top: 2px solid ${nearbyTrade.type === 'buy' ? '#4caf50' : '#f44336'}">
+              <div style="font-weight: 600; color: ${nearbyTrade.type === 'buy' ? '#4caf50' : '#f44336'}">
+                Your ${nearbyTrade.type === 'buy' ? 'Buy' : 'Sell'}
+              </div>
+              <div style="display: flex; justify-content: space-between">
+                <span>Amount:</span><span>${nearbyTrade.amount.toFixed(4)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between">
+                <span>Price:</span><span>${symbol}${nearbyTrade.price.toFixed(6)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 10px; opacity: 0.7">
+                <span>${nearbyTrade.type === 'buy' ? 'Paid' : 'Got'}:</span>
+                <span>${nearbyTrade.type === 'buy' ? nearbyTrade.paidValue : nearbyTrade.gotValue} ${nearbyTrade.type === 'buy' ? nearbyTrade.paidCurrency : nearbyTrade.gotCurrency}</span>
+              </div>
+            </div>
+          `;
+        }
+      }
+      
       if (candle) {
         const formatPrice = (p) => p < 0.01 ? p.toFixed(8) : p.toFixed(4);
         
@@ -511,7 +589,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       }
 
       if (ohlcData) {
-        toolTip.innerHTML = ohlcData;
+        toolTip.innerHTML = ohlcData + userTradeInfo;
         const coordinate = chart.priceScale('right').width();
         const shiftedCoordinate = param.point.x - 50;
         if (coordinate === null) {
@@ -763,6 +841,88 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
     }
 
+    // Add user trade markers as a separate series
+    if (userTrades.length > 0 && chartType !== 'holders' && data) {
+      // Filter trades within the visible data range and sort by time
+      const firstDataTime = data[0].time;
+      const lastDataTime = data[data.length - 1].time;
+      const visibleTrades = userTrades
+        .filter(trade => trade.time >= firstDataTime && trade.time <= lastDataTime)
+        .sort((a, b) => a.time - b.time);
+
+      if (visibleTrades.length > 0) {
+        // Create separate series for buy and sell markers
+        const buyTrades = [];
+        const sellTrades = [];
+        
+        visibleTrades.forEach((trade, index) => {
+          // Find the closest data point to the trade time
+          const closestDataPoint = data.reduce((prev, curr) => {
+            return Math.abs(curr.time - trade.time) < Math.abs(prev.time - trade.time) ? curr : prev;
+          });
+          
+          const tradePoint = {
+            time: trade.time,
+            value: closestDataPoint.close || closestDataPoint.value
+          };
+          
+          if (trade.type === 'buy') {
+            buyTrades.push(tradePoint);
+          } else {
+            sellTrades.push(tradePoint);
+          }
+        });
+        
+        // Sort and handle duplicates for buy trades
+        if (buyTrades.length > 0) {
+          const sortedBuyTrades = buyTrades
+            .sort((a, b) => a.time - b.time)
+            .map((item, index, array) => {
+              if (index > 0 && item.time === array[index - 1].time) {
+                return { ...item, time: item.time + index };
+              }
+              return item;
+            });
+            
+          const buyMarkerSeries = chart.addSeries(LineSeries, {
+            color: '#4caf50',
+            lineVisible: false,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+            pointMarkersVisible: true,
+            pointMarkersRadius: 6,
+            title: 'Buy',
+          });
+          buyMarkerSeries.setData(sortedBuyTrades);
+        }
+        
+        // Sort and handle duplicates for sell trades
+        if (sellTrades.length > 0) {
+          const sortedSellTrades = sellTrades
+            .sort((a, b) => a.time - b.time)
+            .map((item, index, array) => {
+              if (index > 0 && item.time === array[index - 1].time) {
+                return { ...item, time: item.time + index };
+              }
+              return item;
+            });
+            
+          const sellMarkerSeries = chart.addSeries(LineSeries, {
+            color: '#f44336',
+            lineVisible: false,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+            pointMarkersVisible: true,
+            pointMarkersRadius: 6,
+            title: 'Sell',
+          });
+          sellMarkerSeries.setData(sortedSellTrades);
+        }
+      }
+    }
+
     chart.timeScale().fitContent();
 
     const handleResize = () => {
@@ -789,7 +949,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         chartRef.current = null;
       }
     };
-  }, [data, holderData, chartType, theme, isDark, indicators, activeFiatCurrency, athData, rsiValues]);
+  }, [data, holderData, chartType, theme, isDark, indicators, activeFiatCurrency, athData, rsiValues, userTrades]);
 
   const handleIndicatorToggle = (indicator) => {
     setIndicators(prev => {
@@ -856,6 +1016,53 @@ const PriceChartAdvanced = memo(({ token }) => {
                 </span>
               )}
             </Typography>
+          )}
+          {userTrades.length > 0 && chartType !== 'holders' && accountProfile && (
+            <Box sx={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: 0.5,
+              ml: 1,
+              px: 1,
+              py: 0.25,
+              borderRadius: 1,
+              bgcolor: alpha(theme.palette.info.main, 0.1),
+              border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+            }}>
+              <Typography variant="caption" sx={{ fontWeight: 500, color: theme.palette.info.main }}>
+                Your Trades: {userTrades.length}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 0.5 }}>
+                {userTrades.filter(t => t.type === 'buy').length > 0 && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                    <Box sx={{ 
+                      width: 0, 
+                      height: 0, 
+                      borderLeft: '4px solid transparent',
+                      borderRight: '4px solid transparent',
+                      borderBottom: '6px solid #4caf50'
+                    }} />
+                    <Typography variant="caption" sx={{ color: '#4caf50', fontWeight: 600 }}>
+                      {userTrades.filter(t => t.type === 'buy').length}
+                    </Typography>
+                  </Box>
+                )}
+                {userTrades.filter(t => t.type === 'sell').length > 0 && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                    <Box sx={{ 
+                      width: 0, 
+                      height: 0, 
+                      borderLeft: '4px solid transparent',
+                      borderRight: '4px solid transparent',
+                      borderTop: '6px solid #f44336'
+                    }} />
+                    <Typography variant="caption" sx={{ color: '#f44336', fontWeight: 600 }}>
+                      {userTrades.filter(t => t.type === 'sell').length}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </Box>
           )}
         </Box>
         
