@@ -116,11 +116,13 @@ const LiveCircle = styled('div')(({ theme }) => ({
 }));
 
 const TradeCard = styled(Card, {
-  shouldForwardProp: (prop) => prop !== 'isNew'
-})(({ theme, isNew }) => ({
+  shouldForwardProp: (prop) => prop !== 'isNew' && prop !== 'tradetype'
+})(({ theme, isNew, tradetype }) => ({
   marginBottom: theme.spacing(0.3),
   borderRadius: '8px',
-  backgroundColor: 'transparent',
+  background: tradetype === 'BUY'
+    ? `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.02)} 50%, transparent 100%)`
+    : `linear-gradient(90deg, ${alpha('#F44336', 0.08)} 0%, ${alpha('#F44336', 0.02)} 50%, transparent 100%)`,
   backdropFilter: 'none',
   WebkitBackdropFilter: 'none',
   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
@@ -147,7 +149,9 @@ const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
   height: '20px',
   fontWeight: 'bold',
   borderRadius: '10px',
-  backgroundColor: 'transparent',
+  background: tradetype === 'BUY' 
+    ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`
+    : `linear-gradient(135deg, ${alpha('#F44336', 0.2)} 0%, ${alpha('#F44336', 0.05)} 100%)`,
   color: tradetype === 'BUY' ? theme.palette.primary.main : '#F44336',
   border:
     tradetype === 'BUY'
@@ -862,7 +866,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
           }
 
           return (
-            <TradeCard key={trade._id} isNew={newTradeIds.has(trade._id)}>
+            <TradeCard key={trade._id} isNew={newTradeIds.has(trade._id)} tradetype={isBuy ? 'BUY' : 'SELL'}>
               <VolumeIndicator volume={volumePercentage} />
               <CardContent sx={{ p: 1.2, '&:last-child': { pb: 1.2 } }}>
                 <Box
