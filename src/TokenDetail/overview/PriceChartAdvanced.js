@@ -28,6 +28,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [athData, setAthData] = useState({ price: null, percentDown: null });
+  const [rsiValues, setRsiValues] = useState({});
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
@@ -43,6 +44,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     { id: 'ema20', name: 'EMA 20', period: 20 },
     { id: 'ema50', name: 'EMA 50', period: 50 },
     { id: 'bb', name: 'Bollinger Bands', period: 20 },
+    { id: 'rsi', name: 'RSI (14)', period: 14 },
     { id: 'fib', name: 'Fibonacci Extensions' },
     { id: 'ath', name: 'All-Time High' }
   ];
@@ -121,6 +123,52 @@ const PriceChartAdvanced = memo(({ token }) => {
     return bands;
   };
 
+  const calculateRSI = (data, period = 14) => {
+    if (data.length < period + 1) return [];
+    
+    const rsi = [];
+    let gains = 0;
+    let losses = 0;
+    
+    // Calculate initial average gain and loss
+    for (let i = 1; i <= period; i++) {
+      const change = (data[i].close || data[i].value) - (data[i - 1].close || data[i - 1].value);
+      if (change > 0) {
+        gains += change;
+      } else {
+        losses += Math.abs(change);
+      }
+    }
+    
+    let avgGain = gains / period;
+    let avgLoss = losses / period;
+    
+    // Calculate RSI for the first period
+    const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+    rsi.push({
+      time: data[period].time,
+      value: avgLoss === 0 ? 100 : 100 - (100 / (1 + rs))
+    });
+    
+    // Calculate RSI for remaining periods using Wilder's smoothing
+    for (let i = period + 1; i < data.length; i++) {
+      const change = (data[i].close || data[i].value) - (data[i - 1].close || data[i - 1].value);
+      const gain = change > 0 ? change : 0;
+      const loss = change < 0 ? Math.abs(change) : 0;
+      
+      avgGain = ((avgGain * (period - 1)) + gain) / period;
+      avgLoss = ((avgLoss * (period - 1)) + loss) / period;
+      
+      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+      rsi.push({
+        time: data[i].time,
+        value: avgLoss === 0 ? 100 : 100 - (100 / (1 + rs))
+      });
+    }
+    
+    return rsi;
+  };
+
   useEffect(() => {
     if (!token?.md5) return;
     
@@ -161,6 +209,14 @@ const PriceChartAdvanced = memo(({ token }) => {
             price: allTimeHigh,
             percentDown: percentFromATH
           });
+          
+          // Calculate RSI values for tooltip display
+          const rsiData = calculateRSI(processedData, 14);
+          const rsiMap = {};
+          rsiData.forEach(r => {
+            rsiMap[r.time] = r.value;
+          });
+          setRsiValues(rsiMap);
           
           setLoading(false);
           setIsUpdating(false);
@@ -318,6 +374,10 @@ const PriceChartAdvanced = memo(({ token }) => {
           const change = ((candle.close - candle.open) / candle.open * 100).toFixed(2);
           const changeColor = candle.close >= candle.open ? '#4caf50' : '#f44336';
           
+          // Check if RSI indicator is active and get RSI value
+          const hasRsi = indicators.some(i => i.id === 'rsi');
+          const rsiValue = hasRsi && rsiValues[param.time] ? rsiValues[param.time] : null;
+          
           ohlcData = `
             <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
             <div style="display: flex; justify-content: space-between"><span>O:</span><span>${symbol}${formatPrice(candle.open)}</span></div>
@@ -330,12 +390,32 @@ const PriceChartAdvanced = memo(({ token }) => {
             <div style="display: flex; justify-content: space-between; color: ${changeColor}">
               <span>Chg:</span><span>${change}%</span>
             </div>
+            ${rsiValue !== null ? `
+              <div style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}">
+                <span>RSI:</span>
+                <span style="color: ${rsiValue > 70 ? '#f44336' : rsiValue < 30 ? '#4caf50' : 'inherit'}">
+                  ${rsiValue.toFixed(1)}${rsiValue > 70 ? ' (OB)' : rsiValue < 30 ? ' (OS)' : ''}
+                </span>
+              </div>
+            ` : ''}
           `;
         } else if (chartType === 'line') {
+          // Check if RSI indicator is active and get RSI value
+          const hasRsi = indicators.some(i => i.id === 'rsi');
+          const rsiValue = hasRsi && rsiValues[param.time] ? rsiValues[param.time] : null;
+          
           ohlcData = `
             <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
             <div style="display: flex; justify-content: space-between"><span>Price:</span><span>${symbol}${formatPrice(candle.close)}</span></div>
             <div style="display: flex; justify-content: space-between"><span>Vol:</span><span>${candle.volume.toLocaleString()}</span></div>
+            ${rsiValue !== null ? `
+              <div style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}">
+                <span>RSI:</span>
+                <span style="color: ${rsiValue > 70 ? '#f44336' : rsiValue < 30 ? '#4caf50' : 'inherit'}">
+                  ${rsiValue.toFixed(1)}${rsiValue > 70 ? ' (OB)' : rsiValue < 30 ? ' (OS)' : ''}
+                </span>
+              </div>
+            ` : ''}
           `;
         }
       }
@@ -467,6 +547,78 @@ const PriceChartAdvanced = memo(({ token }) => {
           ];
           fibSeries.setData(lineData);
         });
+      } else if (indicator.id === 'rsi') {
+        const rsiData = calculateRSI(data, indicator.period);
+        
+        // RSI oscillator in separate pane
+        const rsiSeries = chart.addSeries(LineSeries, {
+          color: '#9c27b0',
+          lineWidth: 2,
+          priceScaleId: 'rsi',
+          priceFormat: {
+            type: 'custom',
+            formatter: (price) => price.toFixed(0),
+          },
+        });
+        
+        // Configure RSI scale
+        chart.priceScale('rsi').applyOptions({
+          scaleMargins: {
+            top: 0.8,
+            bottom: 0,
+          },
+          borderVisible: false,
+          autoScale: false,
+          minimum: 0,
+          maximum: 100,
+        });
+        
+        rsiSeries.setData(rsiData);
+        
+        // Add overbought line (70)
+        const overboughtSeries = chart.addSeries(LineSeries, {
+          color: '#f44336',
+          lineWidth: 1,
+          lineStyle: 2,
+          priceScaleId: 'rsi',
+          lastValueVisible: false,
+          priceLineVisible: false,
+          crosshairMarkerVisible: false,
+        });
+        overboughtSeries.setData([
+          { time: data[0].time, value: 70 },
+          { time: data[data.length - 1].time, value: 70 }
+        ]);
+        
+        // Add oversold line (30)
+        const oversoldSeries = chart.addSeries(LineSeries, {
+          color: '#4caf50',
+          lineWidth: 1,
+          lineStyle: 2,
+          priceScaleId: 'rsi',
+          lastValueVisible: false,
+          priceLineVisible: false,
+          crosshairMarkerVisible: false,
+        });
+        oversoldSeries.setData([
+          { time: data[0].time, value: 30 },
+          { time: data[data.length - 1].time, value: 30 }
+        ]);
+        
+        // Add middle line (50)
+        const middleSeries = chart.addSeries(LineSeries, {
+          color: theme.palette.divider,
+          lineWidth: 1,
+          lineStyle: 2,
+          priceScaleId: 'rsi',
+          lastValueVisible: false,
+          priceLineVisible: false,
+          crosshairMarkerVisible: false,
+        });
+        middleSeries.setData([
+          { time: data[0].time, value: 50 },
+          { time: data[data.length - 1].time, value: 50 }
+        ]);
       } else if (indicator.id === 'ath' && athData.price) {
         // Add ATH line
         const athSeries = chart.addSeries(LineSeries, {
@@ -512,7 +664,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         chartRef.current = null;
       }
     };
-  }, [data, chartType, theme, isDark, indicators, activeFiatCurrency, athData]);
+  }, [data, chartType, theme, isDark, indicators, activeFiatCurrency, athData, rsiValues]);
 
   const handleIndicatorToggle = (indicator) => {
     setIndicators(prev => {
