@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
+  Drawer,
   IconButton,
   Typography,
   Stack,
@@ -1037,25 +1035,29 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
     fetchTransactionHistory();
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: '12px',
-          background: theme.palette.background.paper,
-          backgroundImage: 'none'
-        }
+    <Box
+      sx={{
+        width: '300px',
+        height: '100vh',
+        position: 'sticky',
+        top: '64px',
+        background: theme.palette.background.paper,
+        borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        boxShadow: theme.shadows[2],
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
       }}
     >
-      <DialogTitle 
-        sx={{ 
+      <Box
+        sx={{
           p: 2,
           pb: 1,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          flexShrink: 0
         }}
       >
         <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -1133,9 +1135,9 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
         >
           Monitoring transactions from {creatorAddress}
         </Typography>
-      </DialogTitle>
+      </Box>
       
-      <DialogContent sx={{ p: 2, maxHeight: '70vh', overflowY: 'auto' }}>
+      <Box sx={{ p: 2, flex: 1, overflowY: 'auto' }}>
         {loading && transactions.length === 0 ? (
           <Box sx={{ py: 4, textAlign: 'center' }}>
             <CircularProgress size={32} />
@@ -1178,8 +1180,8 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
             ))}
           </Stack>
         )}
-      </DialogContent>
-    </Dialog>
+      </Box>
+    </Box>
   );
 });
 

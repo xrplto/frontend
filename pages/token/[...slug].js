@@ -32,6 +32,7 @@ function Detail({ data }) {
   const [token, setToken] = useState(data.token);
   const [trustsetToken, setTrustsetToken] = useState(null);
   const [hasClosedTrustset, setHasClosedTrustset] = useState(false);
+  const [creatorPanelOpen, setCreatorPanelOpen] = useState(false);
   const WSS_FEED_URL = `wss://api.xrpl.to/ws/token/${token.md5}`;
 
   useWebSocket(WSS_FEED_URL, {
@@ -81,9 +82,25 @@ function Detail({ data }) {
       <Topbar />
       <Header />
 
-      <Container maxWidth="xl">
-        <TokenDetail token={token} tab={data.tab} />
-      </Container>
+      {creatorPanelOpen ? (
+        <Box sx={{ width: '100%', px: 2 }}>
+          <TokenDetail 
+            token={token} 
+            tab={data.tab} 
+            onCreatorPanelToggle={(open) => setCreatorPanelOpen(open)}
+            creatorPanelOpen={creatorPanelOpen}
+          />
+        </Box>
+      ) : (
+        <Container maxWidth="xl">
+          <TokenDetail 
+            token={token} 
+            tab={data.tab} 
+            onCreatorPanelToggle={(open) => setCreatorPanelOpen(open)}
+            creatorPanelOpen={creatorPanelOpen}
+          />
+        </Container>
+      )}
 
       <ScrollToTop />
 

@@ -37,7 +37,6 @@ import { formatDistanceToNow } from 'date-fns';
 import Share from './Share';
 import Watch from './Watch';
 import TrustSetDialog from 'src/components/TrustSetDialog';
-import CreatorTransactionsDialog from './CreatorTransactionsDialog';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import EditIcon from '@mui/icons-material/Edit';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
@@ -70,7 +69,7 @@ const LowhighBarSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-valueLabel': { display: 'none' }
 }));
 
-const TokenSummary = memo(({ token }) => {
+const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCreatorTx: propLatestCreatorTx, setLatestCreatorTx }) => {
   const BASE_URL = process.env.API_URL;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -96,7 +95,6 @@ const TokenSummary = memo(({ token }) => {
   const [isRemove, setIsRemove] = useState(false);
   const [balance, setBalance] = useState(0);
   const [limit, setLimit] = useState(0);
-  const [creatorTxOpen, setCreatorTxOpen] = useState(false);
   const [editToken, setEditToken] = useState(null);
 
   const {
@@ -306,7 +304,7 @@ const TokenSummary = memo(({ token }) => {
   };
 
   // Get latest transaction from creator dialog
-  const [latestCreatorTx, setLatestCreatorTx] = useState(null);
+  const latestCreatorTx = propLatestCreatorTx;
   
   // Subscribe to creator transactions using WebSocket
   useEffect(() => {
@@ -726,7 +724,7 @@ const TokenSummary = memo(({ token }) => {
               <Tooltip title="View Creator Activity">
                 <IconButton
                   size="small"
-                  onClick={() => setCreatorTxOpen(true)}
+                  onClick={onCreatorTxToggle}
                   sx={{
                     width: 'auto',
                     minWidth: 24,
@@ -1229,7 +1227,7 @@ const TokenSummary = memo(({ token }) => {
                       <Tooltip title="View Creator Activity">
                         <IconButton
                           size="small"
-                          onClick={() => setCreatorTxOpen(true)}
+                          onClick={onCreatorTxToggle}
                           sx={{
                             width: 'auto',
                             minWidth: 32,
@@ -1878,15 +1876,6 @@ const TokenSummary = memo(({ token }) => {
           setToken={setTrustToken}
         />
       )}
-      
-      {/* Creator Transactions Dialog */}
-      <CreatorTransactionsDialog
-        open={creatorTxOpen}
-        onClose={() => setCreatorTxOpen(false)}
-        creatorAddress={creator}
-        tokenName={name}
-        onLatestTransaction={setLatestCreatorTx}
-      />
       
       {/* Edit Token Dialog */}
       {editToken && (
