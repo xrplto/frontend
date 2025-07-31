@@ -282,6 +282,75 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     chartRef.current = chart;
 
+    // Add tooltip
+    const toolTip = document.createElement('div');
+    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 4px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; box-shadow: 0 2px 8px ${isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`;
+    chartContainerRef.current.appendChild(toolTip);
+
+    chart.subscribeCrosshairMove(param => {
+      if (!param.time || param.point.x < 0 || param.point.x > chartContainerRef.current.clientWidth ||
+          param.point.y < 0 || param.point.y > chartContainerRef.current.clientHeight) {
+        toolTip.style.display = 'none';
+        return;
+      }
+
+      const dateStr = new Date(param.time * 1000).toLocaleDateString();
+      toolTip.style.display = 'block';
+      
+      let ohlcData = '';
+      const symbol = currencySymbols[activeFiatCurrency] || '';
+      
+      // Find the candle data for the current time
+      const candle = data.find(d => d.time === param.time);
+      
+      if (candle) {
+        const formatPrice = (p) => p < 0.01 ? p.toFixed(8) : p.toFixed(4);
+        
+        if (chartType === 'candles') {
+          const change = ((candle.close - candle.open) / candle.open * 100).toFixed(2);
+          const changeColor = candle.close >= candle.open ? '#4caf50' : '#f44336';
+          
+          ohlcData = `
+            <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
+            <div style="display: flex; justify-content: space-between"><span>O:</span><span>${symbol}${formatPrice(candle.open)}</span></div>
+            <div style="display: flex; justify-content: space-between"><span>H:</span><span>${symbol}${formatPrice(candle.high)}</span></div>
+            <div style="display: flex; justify-content: space-between"><span>L:</span><span>${symbol}${formatPrice(candle.low)}</span></div>
+            <div style="display: flex; justify-content: space-between; color: ${changeColor}"><span>C:</span><span>${symbol}${formatPrice(candle.close)}</span></div>
+            <div style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}">
+              <span>Vol:</span><span>${candle.volume.toLocaleString()}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; color: ${changeColor}">
+              <span>Chg:</span><span>${change}%</span>
+            </div>
+          `;
+        } else if (chartType === 'line' || chartType === 'area') {
+          ohlcData = `
+            <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
+            <div style="display: flex; justify-content: space-between"><span>Price:</span><span>${symbol}${formatPrice(candle.close)}</span></div>
+            <div style="display: flex; justify-content: space-between"><span>Vol:</span><span>${candle.volume.toLocaleString()}</span></div>
+          `;
+        } else if (chartType === 'bars') {
+          ohlcData = `
+            <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
+            <div style="display: flex; justify-content: space-between"><span>Volume:</span><span>${candle.volume.toLocaleString()}</span></div>
+          `;
+        }
+      }
+
+      if (ohlcData) {
+        toolTip.innerHTML = ohlcData;
+        const coordinate = chart.priceScale('right').width();
+        const shiftedCoordinate = param.point.x - 50;
+        if (coordinate === null) {
+          return;
+        }
+        const x = Math.max(0, Math.min(chartContainerRef.current.clientWidth - 150, shiftedCoordinate));
+        const y = 12;
+        toolTip.style.left = x + 'px';
+        toolTip.style.top = y + 'px';
+      }
+    });
+
     if (chartType === 'candles') {
       const candleSeries = chart.addSeries(CandlestickSeries, {
         upColor: '#4caf50',
@@ -424,6 +493,11 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      // Remove tooltip
+      if (chartContainerRef.current) {
+        const tooltips = chartContainerRef.current.querySelectorAll('div[style*="position: absolute"]');
+        tooltips.forEach(tooltip => tooltip.remove());
+      }
       if (chartRef.current) {
         try {
           chart.remove();
