@@ -392,7 +392,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       },
       priceScaleId: '',
       scaleMargins: {
-        top: 0.8,
+        top: 0.9,
         bottom: 0,
       },
       priceLineVisible: false,
