@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, memo, useContext } from 'react';
 import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem, CircularProgress } from '@mui/material';
-import { createChart, CandlestickSeries, LineSeries, HistogramSeries } from 'lightweight-charts';
+import { createChart, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries } from 'lightweight-charts';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
@@ -314,16 +314,27 @@ const PriceChartAdvanced = memo(({ token }) => {
       height: isMobile ? 280 : 400,
       layout: {
         background: {
-          color: 'transparent'
+          type: 'solid',
+          color: chartType === 'candles' 
+            ? (isDark ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.08)') 
+            : 'transparent'
         },
         textColor: theme.palette.text.primary,
+        fontSize: 12,
+        fontFamily: "'Segoe UI', Roboto, Arial, sans-serif",
       },
       grid: {
         vertLines: {
-          color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+          color: chartType === 'candles'
+            ? (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.1)')
+            : (isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'),
+          style: 1, // Dashed lines
         },
         horzLines: {
-          color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+          color: chartType === 'candles'
+            ? (isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)')
+            : (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'),
+          style: 0, // Solid lines
         },
       },
       crosshair: {
@@ -525,16 +536,32 @@ const PriceChartAdvanced = memo(({ token }) => {
       candleSeries.setData(chartData);
       candleSeriesRef.current = candleSeries;
     } else if (chartType === 'line') {
-      const lineSeries = chart.addSeries(LineSeries, {
-        color: theme.palette.primary.main,
+      // Create area series for line chart with gradient fill
+      const areaSeries = chart.addSeries(AreaSeries, {
+        lineColor: theme.palette.primary.main,
+        topColor: theme.palette.primary.main + '80', // 50% opacity
+        bottomColor: theme.palette.primary.main + '08', // 3% opacity
         lineWidth: 2,
+        lineStyle: 0,
+        crosshairMarkerVisible: true,
+        crosshairMarkerRadius: 4,
+        crosshairMarkerBorderColor: theme.palette.primary.main,
+        crosshairMarkerBackgroundColor: theme.palette.background.paper,
       });
-      lineSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
-      lineSeriesRef.current = lineSeries;
+      areaSeries.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+      lineSeriesRef.current = areaSeries;
     } else if (chartType === 'holders') {
-      const holdersSeries = chart.addSeries(LineSeries, {
-        color: '#9c27b0',
+      // Create area series for holders chart with purple gradient
+      const holdersSeries = chart.addSeries(AreaSeries, {
+        lineColor: '#9c27b0',
+        topColor: 'rgba(156, 39, 176, 0.56)', // Purple with 35% opacity
+        bottomColor: 'rgba(156, 39, 176, 0.04)', // Purple with 2.5% opacity
         lineWidth: 2,
+        lineStyle: 0,
+        crosshairMarkerVisible: true,
+        crosshairMarkerRadius: 4,
+        crosshairMarkerBorderColor: '#9c27b0',
+        crosshairMarkerBackgroundColor: theme.palette.background.paper,
       });
       holdersSeries.setData(chartData.map(d => ({ time: d.time, value: d.value || d.holders })));
       lineSeriesRef.current = holdersSeries;
@@ -558,7 +585,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       volumeSeries.setData(chartData.map(d => ({
         time: d.time,
         value: d.volume || 0,
-        color: d.close >= d.open ? '#4caf5080' : '#f4433680'
+        color: d.close >= d.open 
+          ? (isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.5)')  // Green with transparency
+          : (isDark ? 'rgba(244, 67, 54, 0.3)' : 'rgba(244, 67, 54, 0.5)')  // Red with transparency
       })));
       volumeSeriesRef.current = volumeSeries;
     }
@@ -569,15 +598,17 @@ const PriceChartAdvanced = memo(({ token }) => {
         if (indicator.id.startsWith('sma')) {
           const smaData = calculateSMA(data, indicator.period);
           const smaSeries = chart.addSeries(LineSeries, {
-            color: indicator.period === 20 ? '#2196f3' : '#ff9800',
-            lineWidth: 1,
+            color: indicator.period === 20 ? 'rgba(33, 150, 243, 0.9)' : 'rgba(255, 152, 0, 0.9)',
+            lineWidth: 2,
+            lineStyle: 0,
           });
           smaSeries.setData(smaData);
         } else if (indicator.id.startsWith('ema')) {
           const emaData = calculateEMA(data, indicator.period);
           const emaSeries = chart.addSeries(LineSeries, {
-            color: indicator.period === 20 ? '#9c27b0' : '#f44336',
-            lineWidth: 1,
+            color: indicator.period === 20 ? 'rgba(156, 39, 176, 0.9)' : 'rgba(244, 67, 54, 0.9)',
+            lineWidth: 2,
+            lineStyle: 0,
           });
           emaSeries.setData(emaData);
         } else if (indicator.id === 'bb') {
@@ -641,9 +672,11 @@ const PriceChartAdvanced = memo(({ token }) => {
       } else if (indicator.id === 'rsi') {
         const rsiData = calculateRSI(data, indicator.period);
         
-        // RSI oscillator in separate pane
-        const rsiSeries = chart.addSeries(LineSeries, {
-          color: '#9c27b0',
+        // RSI oscillator in separate pane with gradient area
+        const rsiSeries = chart.addSeries(AreaSeries, {
+          lineColor: '#9c27b0',
+          topColor: 'rgba(156, 39, 176, 0.4)',
+          bottomColor: 'rgba(156, 39, 176, 0.05)',
           lineWidth: 2,
           priceScaleId: 'rsi',
           priceFormat: {
@@ -770,7 +803,21 @@ const PriceChartAdvanced = memo(({ token }) => {
   };
 
   return (
-    <Paper elevation={0} sx={{ p: 2 }}>
+    <Paper 
+      elevation={0} 
+      sx={{ 
+        p: 2,
+        background: isDark 
+          ? 'linear-gradient(145deg, rgba(18, 18, 18, 0.9) 0%, rgba(25, 25, 25, 0.9) 100%)' 
+          : 'linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 250, 250, 0.9) 100%)',
+        backdropFilter: 'blur(10px)',
+        boxShadow: isDark 
+          ? '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+          : '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+        border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`,
+        borderRadius: 2,
+        overflow: 'hidden'
+      }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h6" sx={{ fontSize: '1rem' }}>
@@ -803,6 +850,11 @@ const PriceChartAdvanced = memo(({ token }) => {
             <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
               <RefreshIcon sx={{ fontSize: 12, verticalAlign: 'middle', mr: 0.5 }} />
               {lastUpdate.toLocaleTimeString()}
+              {chartType === 'holders' && holderData && holderData.length > 0 && (
+                <span style={{ marginLeft: '8px', color: theme.palette.primary.main }}>
+                  Top 10%: {holderData[holderData.length - 1].top10?.toFixed(2)}%
+                </span>
+              )}
             </Typography>
           )}
         </Box>
@@ -886,7 +938,26 @@ const PriceChartAdvanced = memo(({ token }) => {
         </Box>
       </Box>
 
-      <Box sx={{ position: 'relative', height: isMobile ? 280 : 400 }}>
+      <Box sx={{ 
+        position: 'relative', 
+        height: isMobile ? 280 : 400,
+        borderRadius: 1,
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${theme.palette.primary.main}40, transparent)`,
+          opacity: 0,
+          transition: 'opacity 0.3s ease',
+        },
+        '&:hover::before': {
+          opacity: 1,
+        }
+      }}>
         {loading ? (
           <Box sx={{ 
             position: 'absolute', 
