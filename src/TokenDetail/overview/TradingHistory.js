@@ -436,7 +436,7 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
   return sortedArrayByPrice;
 };
 
-const TradingHistory = ({ tokenId, amm, token, pairs }) => {
+const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -491,6 +491,12 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
   const handleXrpOnlyChange = (event) => {
     setXrpOnly(event.target.checked);
     setPage(1);
+  };
+
+  const handleTxClick = (hash) => {
+    if (onTransactionClick) {
+      onTransactionClick(hash);
+    }
   };
 
   const handleTabChange = (event, newValue) => {
@@ -1020,10 +1026,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs }) => {
                     <Tooltip title="View Transaction" arrow>
                       <IconButton
                         size="small"
-                        component={Link}
-                        href={`/tx/${trade.hash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        onClick={() => handleTxClick(trade.hash)}
                         sx={{
                           color: `${theme.palette.primary.main} !important`,
                           padding: '4px',
