@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef, memo, useContext } from 'react';
 import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem, CircularProgress } from '@mui/material';
-import { createChart, CandlestickSeries, LineSeries, AreaSeries, HistogramSeries } from 'lightweight-charts';
+import { createChart, CandlestickSeries, LineSeries, HistogramSeries } from 'lightweight-charts';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import TimelineIcon from '@mui/icons-material/Timeline';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 const PriceChartAdvanced = memo(({ token }) => {
@@ -19,7 +17,6 @@ const PriceChartAdvanced = memo(({ token }) => {
   const candleSeriesRef = useRef(null);
   const lineSeriesRef = useRef(null);
   const volumeSeriesRef = useRef(null);
-  const areaSeriesRef = useRef(null);
   const isMobile = theme.breakpoints.values.sm > window.innerWidth;
   
   const [chartType, setChartType] = useState('candles');
@@ -36,9 +33,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   const chartTypeIcons = {
     candles: <CandlestickChartIcon fontSize="small" />,
-    line: <ShowChartIcon fontSize="small" />,
-    area: <TimelineIcon fontSize="small" />,
-    bars: <BarChartIcon fontSize="small" />
+    line: <ShowChartIcon fontSize="small" />
   };
 
   const indicatorOptions = [
@@ -323,16 +318,11 @@ const PriceChartAdvanced = memo(({ token }) => {
               <span>Chg:</span><span>${change}%</span>
             </div>
           `;
-        } else if (chartType === 'line' || chartType === 'area') {
+        } else if (chartType === 'line') {
           ohlcData = `
             <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
             <div style="display: flex; justify-content: space-between"><span>Price:</span><span>${symbol}${formatPrice(candle.close)}</span></div>
             <div style="display: flex; justify-content: space-between"><span>Vol:</span><span>${candle.volume.toLocaleString()}</span></div>
-          `;
-        } else if (chartType === 'bars') {
-          ohlcData = `
-            <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
-            <div style="display: flex; justify-content: space-between"><span>Volume:</span><span>${candle.volume.toLocaleString()}</span></div>
           `;
         }
       }
@@ -369,20 +359,6 @@ const PriceChartAdvanced = memo(({ token }) => {
       });
       lineSeries.setData(data.map(d => ({ time: d.time, value: d.close })));
       lineSeriesRef.current = lineSeries;
-    } else if (chartType === 'area') {
-      const areaSeries = chart.addSeries(AreaSeries, {
-        lineColor: theme.palette.primary.main,
-        topColor: theme.palette.primary.main + '80',
-        bottomColor: theme.palette.primary.main + '10',
-        lineWidth: 2,
-      });
-      areaSeries.setData(data.map(d => ({ time: d.time, value: d.close })));
-      areaSeriesRef.current = areaSeries;
-    } else if (chartType === 'bars') {
-      const barSeries = chart.addSeries(HistogramSeries, {
-        color: theme.palette.primary.main,
-      });
-      barSeries.setData(data.map(d => ({ time: d.time, value: d.volume })));
     }
 
     const volumeSeries = chart.addSeries(HistogramSeries, {
