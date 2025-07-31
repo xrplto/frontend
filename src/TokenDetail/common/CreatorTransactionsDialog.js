@@ -47,7 +47,7 @@ const getFailureDescription = (code) => {
   return failureCodes[code] || `Transaction failed with code: ${code}`;
 };
 
-const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
+const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTransaction }) => {
   const theme = useTheme();
   const { tx, meta, validated, ledger_index } = transaction;
   
@@ -402,11 +402,13 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
   return (
     <Fade in timeout={300}>
       <Box
+        onClick={() => onSelectTransaction && onSelectTransaction(tx.hash)}
         sx={{
           p: 1,
           borderRadius: '6px',
           position: 'relative',
           overflow: 'hidden',
+          cursor: 'pointer',
           background: isTokenToXrpConversion
             ? 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)'
             : isXrpToTokenConversion
@@ -821,29 +823,13 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
             )}
           </Box>
 
-          <Tooltip title="View Transaction">
-            <IconButton
-              size="small"
-              onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
-              sx={{
-                width: 20,
-                height: 20,
-                padding: '2px',
-                '&:hover': {
-                  background: alpha(theme.palette.primary.main, 0.1)
-                }
-              }}
-            >
-              <OpenInNewIcon sx={{ fontSize: 12 }} />
-            </IconButton>
-          </Tooltip>
         </Stack>
       </Box>
     </Fade>
   );
 });
 
-const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenName, onLatestTransaction }) => {
+const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenName, onLatestTransaction, onSelectTransaction }) => {
   const theme = useTheme();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -1211,6 +1197,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
                 transaction={tx} 
                 isNew={index < newTxCount}
                 creatorAddress={creatorAddress}
+                onSelectTransaction={onSelectTransaction}
               />
             ))}
           </Stack>

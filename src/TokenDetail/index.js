@@ -8,6 +8,7 @@ import { Box, Divider, useTheme, useMediaQuery } from '@mui/material';
 import LinkCascade from './LinkCascade';
 import TokenSummary from './common/TokenSummary';
 import CreatorTransactionsDialog from './common/CreatorTransactionsDialog';
+import TransactionDetailsPanel from './common/TransactionDetailsPanel';
 import { AppContext } from 'src/AppContext';
 
 // Lazy load components
@@ -19,6 +20,8 @@ export default function TokenDetail({ token, onCreatorPanelToggle, creatorPanelO
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [creatorTxOpen, setCreatorTxOpen] = useState(creatorPanelOpen || false);
   const [latestCreatorTx, setLatestCreatorTx] = useState(null);
+  const [selectedTxHash, setSelectedTxHash] = useState(null);
+  const [txDetailsOpen, setTxDetailsOpen] = useState(false);
 
   // Sync internal state with parent
   useEffect(() => {
@@ -34,9 +37,20 @@ export default function TokenDetail({ token, onCreatorPanelToggle, creatorPanelO
     }
   };
 
+  // Handle transaction selection
+  const handleSelectTransaction = (hash) => {
+    setSelectedTxHash(hash);
+    setTxDetailsOpen(true);
+  };
+
+  // Handle transaction details close
+  const handleTxDetailsClose = () => {
+    setTxDetailsOpen(false);
+  };
+
   return (
     <Box sx={{ position: 'relative', display: 'flex' }}>
-      {/* Creator Transactions Panel - Fixed Sidebar */}
+      {/* Creator Transactions Panel - Left Sidebar */}
       {!isMobile && (
         <CreatorTransactionsDialog
           open={creatorTxOpen}
@@ -44,6 +58,7 @@ export default function TokenDetail({ token, onCreatorPanelToggle, creatorPanelO
           creatorAddress={token?.creator}
           tokenName={token?.name}
           onLatestTransaction={setLatestCreatorTx}
+          onSelectTransaction={handleSelectTransaction}
         />
       )}
       
@@ -72,6 +87,16 @@ export default function TokenDetail({ token, onCreatorPanelToggle, creatorPanelO
 
         <Overview token={token} />
       </Box>
+      
+      {/* Transaction Details Panel - Right Sidebar */}
+      {!isMobile && (
+        <TransactionDetailsPanel
+          open={txDetailsOpen}
+          onClose={handleTxDetailsClose}
+          transactionHash={selectedTxHash}
+          onSelectTransaction={handleSelectTransaction}
+        />
+      )}
     </Box>
   );
 }
