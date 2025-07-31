@@ -143,6 +143,32 @@ const TransactionDetailsPanel = memo(({ open, onClose, transactionHash, onSelect
     return theme.palette.error.main;
   };
 
+  const getPlatformFromSourceTag = (sourceTag) => {
+    const platformMap = {
+      74920348: 'First Ledger',
+      10011010: 'Magnetic',
+      101102979: 'xrp.cafe',
+      20221212: 'XPMarket',
+      69420589: 'Bidds',
+      110100111: 'Sologenic',
+      19089388: 'N/A',
+      20102305: 'Opulence',
+      13888813: 'Zerpmon',
+      11782013: 'ANODEX',
+      100010010: 'Xrpl Daddy',
+      123321: 'BearBull Scalper',
+      494456745: 'N/A',
+      42697468: 'Bithomp',
+      4152544945: 'ArtDept.fun',
+      411555: 'N/A',
+      80085: 'Zerpaay',
+      510162502: 'Sonar Muse',
+      80008000: 'Orchestra'
+    };
+    
+    return platformMap[sourceTag] || null;
+  };
+
   if (!open) return null;
 
   return (
@@ -371,6 +397,29 @@ const TransactionDetailsPanel = memo(({ open, onClose, transactionHash, onSelect
             </Box>
 
             <Divider />
+
+            {/* Platform Info */}
+            {transaction.SourceTag && getPlatformFromSourceTag(transaction.SourceTag) && getPlatformFromSourceTag(transaction.SourceTag) !== 'N/A' && (
+              <>
+                <Box>
+                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), mb: 0.5, display: 'block' }}>
+                    Platform
+                  </Typography>
+                  <Chip 
+                    label={getPlatformFromSourceTag(transaction.SourceTag)} 
+                    size="small"
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      height: '22px',
+                      background: alpha(theme.palette.primary.main, 0.1),
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      color: theme.palette.primary.main
+                    }}
+                  />
+                </Box>
+                <Divider />
+              </>
+            )}
 
             {/* Account Info */}
             <Box>
