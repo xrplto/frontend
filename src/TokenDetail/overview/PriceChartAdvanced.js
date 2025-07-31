@@ -27,6 +27,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
+  const [athData, setAthData] = useState({ price: null, percentDown: null });
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
@@ -42,7 +43,8 @@ const PriceChartAdvanced = memo(({ token }) => {
     { id: 'ema20', name: 'EMA 20', period: 20 },
     { id: 'ema50', name: 'EMA 50', period: 50 },
     { id: 'bb', name: 'Bollinger Bands', period: 20 },
-    { id: 'fib', name: 'Fibonacci Extensions' }
+    { id: 'fib', name: 'Fibonacci Extensions' },
+    { id: 'ath', name: 'All-Time High' }
   ];
 
   const convertScientificToRegular = (value) => {
@@ -149,6 +151,17 @@ const PriceChartAdvanced = memo(({ token }) => {
           
           setData(processedData);
           setLastUpdate(new Date());
+          
+          // Calculate ATH from the data
+          const allTimeHigh = Math.max(...processedData.map(d => d.high));
+          const currentPrice = processedData[processedData.length - 1].close;
+          const percentFromATH = ((currentPrice - allTimeHigh) / allTimeHigh * 100).toFixed(2);
+          
+          setAthData({
+            price: allTimeHigh,
+            percentDown: percentFromATH
+          });
+          
           setLoading(false);
           setIsUpdating(false);
         }
@@ -454,6 +467,22 @@ const PriceChartAdvanced = memo(({ token }) => {
           ];
           fibSeries.setData(lineData);
         });
+      } else if (indicator.id === 'ath' && athData.price) {
+        // Add ATH line
+        const athSeries = chart.addSeries(LineSeries, {
+          color: '#ff5722',
+          lineWidth: 2,
+          lineStyle: 1, // Dashed line
+          lastValueVisible: true,
+          priceLineVisible: true,
+          title: 'ATH',
+        });
+        
+        const athLineData = [
+          { time: data[0].time, value: athData.price },
+          { time: data[data.length - 1].time, value: athData.price }
+        ];
+        athSeries.setData(athLineData);
       }
     });
 
@@ -483,7 +512,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         chartRef.current = null;
       }
     };
-  }, [data, chartType, theme, isDark, indicators, activeFiatCurrency]);
+  }, [data, chartType, theme, isDark, indicators, activeFiatCurrency, athData]);
 
   const handleIndicatorToggle = (indicator) => {
     setIndicators(prev => {
@@ -499,10 +528,30 @@ const PriceChartAdvanced = memo(({ token }) => {
   return (
     <Paper elevation={0} sx={{ p: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h6" sx={{ fontSize: '1rem' }}>
             {token.name} Price ({activeFiatCurrency})
           </Typography>
+          {athData.price && (
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 0.5,
+              bgcolor: athData.percentDown < 0 ? 'error.main' : 'success.main',
+              color: 'white',
+              px: 1,
+              py: 0.25,
+              borderRadius: 1,
+              fontSize: '0.75rem'
+            }}>
+              <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                {athData.percentDown}% from ATH
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                ({currencySymbols[activeFiatCurrency] || ''}{athData.price < 0.01 ? athData.price.toFixed(8) : athData.price.toFixed(4)})
+              </Typography>
+            </Box>
+          )}
           {isUpdating && (
             <CircularProgress size={16} sx={{ ml: 1 }} />
           )}
