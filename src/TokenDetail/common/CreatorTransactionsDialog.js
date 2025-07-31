@@ -295,7 +295,18 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
   const formatTime = () => {
     if (tx.date) {
       const date = new Date((tx.date + 946684800) * 1000);
-      return formatDistanceToNow(date, { addSuffix: true });
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      
+      if (diffMins < 1) return 'now';
+      if (diffMins < 60) return `${diffMins}m`;
+      if (diffHours < 24) return `${diffHours}h`;
+      if (diffDays < 7) return `${diffDays}d`;
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)}w`;
+      return `${Math.floor(diffDays / 30)}mo`;
     }
     return 'Pending';
   };
@@ -392,8 +403,8 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
     <Fade in timeout={300}>
       <Box
         sx={{
-          p: 1.5,
-          borderRadius: '8px',
+          p: 1,
+          borderRadius: '6px',
           position: 'relative',
           overflow: 'hidden',
           background: isTokenToXrpConversion
@@ -519,12 +530,12 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
           })
         }}
       >
-        <Stack direction="row" spacing={1.5} alignItems="center">
+        <Stack direction="row" spacing={1} alignItems="center">
           <Box
             sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '8px',
+              width: 28,
+              height: 28,
+              borderRadius: '6px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -557,7 +568,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
             <Icon 
               icon={getTxIcon()} 
               style={{ 
-                fontSize: '18px', 
+                fontSize: '16px', 
                 color: isTokenToXrpConversion ? '#ff6347' : isXrpToTokenConversion ? '#4169e1' : getTxColor(),
                 filter: isTokenToXrpConversion ? 'drop-shadow(0 0 3px rgba(255, 99, 71, 0.6))' : isXrpToTokenConversion ? 'drop-shadow(0 0 3px rgba(65, 105, 225, 0.6))' : 'none'
               }} 
@@ -570,20 +581,32 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                 variant="body2" 
                 sx={{ 
                   fontWeight: 600,
-                  fontSize: '0.875rem',
+                  fontSize: '0.8rem',
                   color: meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' ? theme.palette.error.main : 'inherit'
                 }}
               >
-                {isTokenToXrpConversion ? 'Token → XRP' : isXrpToTokenConversion ? 'XRP → Token' : isCurrencyConversion ? 'Currency Swap' : txType}
-                {meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' && ' (Failed)'}
+                {isTokenToXrpConversion ? '→ XRP' : isXrpToTokenConversion ? 'XRP →' : isCurrencyConversion ? 'Swap' : 
+                  txType === 'Payment' ? (isIncoming ? 'Received' : 'Sent') :
+                  txType === 'OfferCreate' ? 'Offer' :
+                  txType === 'TrustSet' ? 'Trust' :
+                  txType === 'NFTokenMint' ? 'NFT Mint' :
+                  txType === 'NFTokenCreateOffer' ? 'NFT Offer' :
+                  txType === 'NFTokenAcceptOffer' ? 'NFT Accept' :
+                  txType === 'NFTokenCancelOffer' ? 'NFT Cancel' :
+                  txType === 'AMMDeposit' ? 'AMM +' :
+                  txType === 'AMMWithdraw' ? 'AMM -' :
+                  txType
+                }
+                {meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' && ' ✗'}
               </Typography>
               {isTokenToXrpConversion && (
                 <Chip
                   label="🔥 Sold"
                   size="small"
                   sx={{
-                    height: '16px',
-                    fontSize: '0.65rem',
+                    height: '14px',
+                    fontSize: '0.6rem',
+                    px: 0.5,
                     fontWeight: 700,
                     background: 'linear-gradient(135deg, #ff4500, #ffa500)',
                     color: 'white',
@@ -602,8 +625,9 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                   label="💎 Bought"
                   size="small"
                   sx={{
-                    height: '16px',
-                    fontSize: '0.65rem',
+                    height: '14px',
+                    fontSize: '0.6rem',
+                    px: 0.5,
                     fontWeight: 700,
                     background: 'linear-gradient(135deg, #00bfff, #9370db)',
                     color: 'white',
@@ -622,8 +646,9 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                   label="NEW"
                   size="small"
                   sx={{
-                    height: '16px',
-                    fontSize: '0.65rem',
+                    height: '14px',
+                    fontSize: '0.6rem',
+                    px: 0.5,
                     fontWeight: 700,
                     background: theme.palette.primary.main,
                     color: 'white'
@@ -636,8 +661,9 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                   size="small"
                   color="warning"
                   sx={{
-                    height: '16px',
-                    fontSize: '0.65rem'
+                    height: '14px',
+                    fontSize: '0.6rem',
+                    px: 0.5
                   }}
                 />
               )}
@@ -700,8 +726,9 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                     size="small"
                     color="error"
                     sx={{
-                      height: '16px',
-                      fontSize: '0.65rem',
+                      height: '14px',
+                      fontSize: '0.6rem',
+                      px: 0.5,
                       cursor: 'help'
                     }}
                   />
@@ -712,21 +739,23 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
             <Typography 
               variant="caption" 
               sx={{ 
-                color: alpha(theme.palette.text.secondary, 0.7),
-                fontSize: '0.75rem'
+                color: alpha(theme.palette.text.secondary, 0.6),
+                fontSize: '0.7rem',
+                lineHeight: 1
               }}
             >
               {formatTime()}
             </Typography>
           </Box>
 
-          <Box sx={{ minWidth: '100px', textAlign: 'right' }}>
+          <Box sx={{ minWidth: '80px', textAlign: 'right' }}>
             <Typography
               variant="body2"
               sx={{
                 fontWeight: 600,
                 color: getTxColor(),
-                fontSize: '0.875rem'
+                fontSize: '0.8rem',
+                lineHeight: 1.2
               }}
             >
               {txType === 'Payment' && !isIncoming && !isCurrencyConversion && '-'}
@@ -740,11 +769,12 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                     variant="caption"
                     sx={{
                       color: alpha(theme.palette.error.main, 0.8),
-                      fontSize: '0.7rem',
-                      display: 'block'
+                      fontSize: '0.65rem',
+                      display: 'block',
+                      lineHeight: 1.1
                     }}
                   >
-                    Attempted: {(() => {
+                    {(() => {
                       const sendMax = parseAmount(tx.SendMax);
                       if (!sendMax || typeof sendMax !== 'object') return 'N/A';
                       const currency = sendMax.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(sendMax.currency);
@@ -757,11 +787,12 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
                     variant="caption"
                     sx={{
                       color: alpha(theme.palette.warning.main, 0.8),
-                      fontSize: '0.7rem',
-                      display: 'block'
+                      fontSize: '0.65rem',
+                      display: 'block',
+                      lineHeight: 1.1
                     }}
                   >
-                    Min Required: {(() => {
+                    Min: {(() => {
                       const deliverMin = parseAmount(tx.DeliverMin);
                       if (!deliverMin || typeof deliverMin !== 'object') return 'N/A';
                       const currency = deliverMin.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(deliverMin.currency);
@@ -795,14 +826,15 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress }) => {
               size="small"
               onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
               sx={{
-                width: 24,
-                height: 24,
+                width: 20,
+                height: 20,
+                padding: '2px',
                 '&:hover': {
                   background: alpha(theme.palette.primary.main, 0.1)
                 }
               }}
             >
-              <OpenInNewIcon sx={{ fontSize: 14 }} />
+              <OpenInNewIcon sx={{ fontSize: 12 }} />
             </IconButton>
           </Tooltip>
         </Stack>
@@ -1040,7 +1072,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
   return (
     <Box
       sx={{
-        width: '300px',
+        width: '280px',
         height: '100vh',
         position: 'sticky',
         top: '64px',
@@ -1054,15 +1086,15 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
     >
       <Box
         sx={{
-          p: 2,
+          p: 1.5,
           pb: 1,
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
           flexShrink: 0
         }}
       >
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
               Creator Activity
             </Typography>
             {isSubscribed && (
@@ -1128,16 +1160,19 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
           variant="caption" 
           sx={{ 
             color: alpha(theme.palette.text.secondary, 0.7),
-            fontSize: '0.75rem',
+            fontSize: '0.7rem',
             display: 'block',
-            mt: 0.5
+            mt: 0.25,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
           }}
         >
-          Monitoring transactions from {creatorAddress}
+          {creatorAddress.slice(0, 8)}...{creatorAddress.slice(-4)}
         </Typography>
       </Box>
       
-      <Box sx={{ p: 2, flex: 1, overflowY: 'auto' }}>
+      <Box sx={{ p: 1.5, flex: 1, overflowY: 'auto' }}>
         {loading && transactions.length === 0 ? (
           <Box sx={{ py: 4, textAlign: 'center' }}>
             <CircularProgress size={32} />
@@ -1169,7 +1204,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
             </Typography>
           </Box>
         ) : (
-          <Stack spacing={1}>
+          <Stack spacing={0.75}>
             {transactions.slice(0, 20).map((tx, index) => (
               <TransactionRow 
                 key={tx.tx?.hash || index} 
