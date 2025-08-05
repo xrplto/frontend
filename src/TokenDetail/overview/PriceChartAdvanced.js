@@ -18,9 +18,6 @@ const PriceChartAdvanced = memo(({ token }) => {
   const candleSeriesRef = useRef(null);
   const lineSeriesRef = useRef(null);
   const volumeSeriesRef = useRef(null);
-  const userTradeMarkersRef = useRef(null);
-  const tooltipRef = useRef(null);
-  const lastChartTypeRef = useRef(null);
   const isMobile = theme.breakpoints.values.sm > window.innerWidth;
   
   const [chartType, setChartType] = useState('candles');
@@ -34,7 +31,6 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [athData, setAthData] = useState({ price: null, percentDown: null });
   const [rsiValues, setRsiValues] = useState({});
   const [holderData, setHolderData] = useState(null);
-  const [showHolders, setShowHolders] = useState(false);
   const [userTrades, setUserTrades] = useState([]);
   
   const BASE_URL = process.env.API_URL;
@@ -177,6 +173,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     return rsi;
   };
 
+  // Fetch price data
   useEffect(() => {
     if (!token?.md5) return;
     
@@ -196,14 +193,14 @@ const PriceChartAdvanced = memo(({ token }) => {
         
         if (response.data?.ohlc && response.data.ohlc.length > 0) {
           const processedData = response.data.ohlc.map(candle => ({
-            time: Math.floor(candle[0] / 1000),
+            time: Math.floor(candle[0] / 1000), // Convert ms to seconds
             open: convertScientificToRegular(candle[1]),
             high: convertScientificToRegular(candle[2]),
             low: convertScientificToRegular(candle[3]),
             close: convertScientificToRegular(candle[4]),
             value: convertScientificToRegular(candle[4]),
             volume: convertScientificToRegular(candle[5]) || 0
-          }));
+          })).sort((a, b) => a.time - b.time); // Ensure chronological order
           
           setData(processedData);
           setLastUpdate(new Date());
@@ -265,7 +262,6 @@ const PriceChartAdvanced = memo(({ token }) => {
         const response = await axios.get(endpoint, { signal: controller.signal });
         
         if (response.data?.history && response.data.history.length > 0) {
-          // Process data and ensure unique timestamps
           const processedData = response.data.history
             .map(item => ({
               time: Math.floor(item.time / 1000),
@@ -277,9 +273,8 @@ const PriceChartAdvanced = memo(({ token }) => {
               top100: item.top100 || 0,
               active24H: item.active24H || 0
             }))
-            .sort((a, b) => a.time - b.time) // Sort by time ascending
+            .sort((a, b) => a.time - b.time)
             .filter((item, index, array) => {
-              // Remove duplicates, keeping the last occurrence
               return index === array.length - 1 || item.time !== array[index + 1].time;
             });
           
@@ -299,67 +294,19 @@ const PriceChartAdvanced = memo(({ token }) => {
     return () => controller.abort();
   }, [token.md5, range, BASE_URL, chartType]);
 
-  // Fetch user trading history
-  useEffect(() => {
-    if (!token?.md5 || !accountProfile?.account) return;
-    
-    const controller = new AbortController();
-    
-    const fetchUserTrades = async () => {
-      try {
-        const endpoint = `${BASE_URL}/history?md5=${token.md5}&account=${accountProfile.account}&page=0&limit=100`;
-        
-        const response = await axios.get(endpoint, { signal: controller.signal });
-        
-        if (response.data?.hists && response.data.hists.length > 0) {
-          // Process trades to identify buy/sell
-          const processedTrades = response.data.hists.map(trade => {
-            const isBuy = trade.taker === accountProfile.account && trade.got.currency === token.currency;
-            const isSell = trade.taker === accountProfile.account && trade.paid.currency === token.currency;
-            
-            return {
-              time: Math.floor(trade.time / 1000),
-              type: isBuy ? 'buy' : 'sell',
-              price: isBuy ? 
-                (parseFloat(trade.paid.value) / parseFloat(trade.got.value)) : 
-                (parseFloat(trade.got.value) / parseFloat(trade.paid.value)),
-              amount: isBuy ? parseFloat(trade.got.value) : parseFloat(trade.paid.value),
-              hash: trade.hash,
-              // Store raw trade data for tooltip
-              paidCurrency: trade.paid.currency === 'XRP' ? 'XRP' : trade.paid.currency.slice(0, 3),
-              paidValue: trade.paid.value,
-              gotCurrency: trade.got.currency === 'XRP' ? 'XRP' : trade.got.currency.slice(0, 3),
-              gotValue: trade.got.value
-            };
-          }).filter(trade => trade.time > 0 && trade.price > 0);
-          
-          setUserTrades(processedTrades);
-        }
-      } catch (error) {
-        if (!axios.isCancel(error)) {
-          console.error('User trades error:', error);
-        }
-      }
-    };
-
-    fetchUserTrades();
-    
-    return () => controller.abort();
-  }, [token.md5, token.currency, accountProfile?.account, BASE_URL]);
-
-  // Create chart only when type changes
+  // Main chart effect - recreate chart when needed and update data
   useEffect(() => {
     if (!chartContainerRef.current) return;
-
-    // Only recreate if chart type actually changed
-    if (lastChartTypeRef.current === chartType && chartRef.current) return;
     
-    // Clean up previous chart
+    const chartData = chartType === 'holders' ? holderData : data;
+    if (!chartData || chartData.length === 0) return;
+
+    // Clean up existing chart
     if (chartRef.current) {
       try {
         chartRef.current.remove();
       } catch (e) {
-        // Chart already disposed
+        console.error('Error removing chart:', e);
       }
       chartRef.current = null;
       candleSeriesRef.current = null;
@@ -367,15 +314,14 @@ const PriceChartAdvanced = memo(({ token }) => {
       volumeSeriesRef.current = null;
     }
 
+    // Create new chart
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: isMobile ? 280 : 400,
       layout: {
         background: {
           type: 'solid',
-          color: chartType === 'candles' 
-            ? (isDark ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.08)') 
-            : 'transparent'
+          color: 'transparent'
         },
         textColor: theme.palette.text.primary,
         fontSize: 12,
@@ -383,16 +329,12 @@ const PriceChartAdvanced = memo(({ token }) => {
       },
       grid: {
         vertLines: {
-          color: chartType === 'candles'
-            ? (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.1)')
-            : (isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'),
-          style: 1, // Dashed lines
+          color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+          style: 1,
         },
         horzLines: {
-          color: chartType === 'candles'
-            ? (isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)')
-            : (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'),
-          style: 0, // Solid lines
+          color: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+          style: 0,
         },
       },
       crosshair: {
@@ -414,14 +356,13 @@ const PriceChartAdvanced = memo(({ token }) => {
           top: 0.1,
           bottom: 0.2,
         },
-        mode: isMobile ? 2 : 0, // Mode 2 = overlay price scale
+        mode: isMobile ? 2 : 0,
         autoScale: true,
         borderVisible: false,
-        visible: !isMobile, // Hide the scale completely on mobile
+        visible: !isMobile,
       },
       localization: {
         priceFormatter: (price) => {
-          // For holders chart, show as integer
           if (chartType === 'holders') {
             if (price < 1000) {
               return Math.round(price).toString();
@@ -434,24 +375,6 @@ const PriceChartAdvanced = memo(({ token }) => {
           
           const symbol = currencySymbols[activeFiatCurrency] || '';
           
-          // Use more compact formatting on mobile
-          if (isMobile) {
-            if (price < 0.00001) {
-              return symbol + price.toExponential(2);
-            } else if (price < 0.01) {
-              return symbol + price.toFixed(5);
-            } else if (price < 1) {
-              return symbol + price.toFixed(3);
-            } else if (price < 1000) {
-              return symbol + price.toFixed(2);
-            } else if (price < 1000000) {
-              return symbol + (price / 1000).toFixed(1) + 'K';
-            } else {
-              return symbol + (price / 1000000).toFixed(1) + 'M';
-            }
-          }
-          
-          // Desktop formatting
           if (price < 0.000000001) {
             return symbol + price.toFixed(12);
           } else if (price < 0.00001) {
@@ -479,27 +402,13 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
 
     chartRef.current = chart;
-    lastChartTypeRef.current = chartType;
 
-    // Create persistent tooltip
-    if (!tooltipRef.current) {
-      const toolTip = document.createElement('div');
-      tooltipRef.current = toolTip;
-      toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 4px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;`;
-      chartContainerRef.current.appendChild(toolTip);
-    }
-
-    const toolTip = tooltipRef.current;
-    // Update tooltip styles for theme
-    toolTip.style.background = isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)';
-    toolTip.style.color = theme.palette.text.primary;
-    toolTip.style.border = `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`;
-    toolTip.style.boxShadow = `0 2px 8px ${isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`;
+    // Create tooltip
+    const toolTip = document.createElement('div');
+    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 4px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; box-shadow: 0 2px 8px ${isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`;
+    chartContainerRef.current.appendChild(toolTip);
 
     chart.subscribeCrosshairMove(param => {
-      const chartData = chartType === 'holders' ? holderData : data;
-      if (!chartData || chartData.length === 0) return;
-      
       if (!param.time || param.point.x < 0 || param.point.x > chartContainerRef.current.clientWidth ||
           param.point.y < 0 || param.point.y > chartContainerRef.current.clientHeight) {
         toolTip.style.display = 'none';
@@ -511,37 +420,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       
       let ohlcData = '';
       const symbol = currencySymbols[activeFiatCurrency] || '';
-      
-      // Find the candle data for the current time
       const candle = chartData.find(d => d.time === param.time);
-      
-      // Check if there's a user trade near this time
-      let userTradeInfo = '';
-      if (userTrades.length > 0 && chartType !== 'holders') {
-        const nearbyTrade = userTrades.find(trade => {
-          return Math.abs(trade.time - param.time) < 86400; // Within 1 day
-        });
-        
-        if (nearbyTrade) {
-          userTradeInfo = `
-            <div style="margin-top: 8px; padding-top: 8px; border-top: 2px solid ${nearbyTrade.type === 'buy' ? '#2196f3' : '#f44336'}">
-              <div style="font-weight: 600; color: ${nearbyTrade.type === 'buy' ? '#2196f3' : '#f44336'}">
-                Your ${nearbyTrade.type === 'buy' ? 'Buy' : 'Sell'}
-              </div>
-              <div style="display: flex; justify-content: space-between">
-                <span>Amount:</span><span>${nearbyTrade.amount.toFixed(4)}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between">
-                <span>Price:</span><span>${symbol}${nearbyTrade.price.toFixed(6)}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; font-size: 10px; opacity: 0.7">
-                <span>${nearbyTrade.type === 'buy' ? 'Paid' : 'Got'}:</span>
-                <span>${nearbyTrade.type === 'buy' ? nearbyTrade.paidValue : nearbyTrade.gotValue} ${nearbyTrade.type === 'buy' ? nearbyTrade.paidCurrency : nearbyTrade.gotCurrency}</span>
-              </div>
-            </div>
-          `;
-        }
-      }
       
       if (candle) {
         const formatPrice = (p) => p < 0.01 ? p.toFixed(8) : p.toFixed(4);
@@ -549,10 +428,6 @@ const PriceChartAdvanced = memo(({ token }) => {
         if (chartType === 'candles') {
           const change = ((candle.close - candle.open) / candle.open * 100).toFixed(2);
           const changeColor = candle.close >= candle.open ? '#4caf50' : '#f44336';
-          
-          // Check if RSI indicator is active and get RSI value
-          const hasRsi = indicators.some(i => i.id === 'rsi');
-          const rsiValue = hasRsi && rsiValues[param.time] ? rsiValues[param.time] : null;
           
           ohlcData = `
             <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
@@ -566,38 +441,17 @@ const PriceChartAdvanced = memo(({ token }) => {
             <div style="display: flex; justify-content: space-between; color: ${changeColor}">
               <span>Chg:</span><span>${change}%</span>
             </div>
-            ${rsiValue !== null ? `
-              <div style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}">
-                <span>RSI:</span>
-                <span style="color: ${rsiValue > 70 ? '#f44336' : rsiValue < 30 ? '#4caf50' : 'inherit'}">
-                  ${rsiValue.toFixed(1)}${rsiValue > 70 ? ' (OB)' : rsiValue < 30 ? ' (OS)' : ''}
-                </span>
-              </div>
-            ` : ''}
           `;
         } else if (chartType === 'line') {
-          // Check if RSI indicator is active and get RSI value
-          const hasRsi = indicators.some(i => i.id === 'rsi');
-          const rsiValue = hasRsi && rsiValues[param.time] ? rsiValues[param.time] : null;
-          
           ohlcData = `
             <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
-            <div style="display: flex; justify-content: space-between"><span>Price:</span><span>${symbol}${formatPrice(candle.close)}</span></div>
-            <div style="display: flex; justify-content: space-between"><span>Vol:</span><span>${candle.volume.toLocaleString()}</span></div>
-            ${rsiValue !== null ? `
-              <div style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}">
-                <span>RSI:</span>
-                <span style="color: ${rsiValue > 70 ? '#f44336' : rsiValue < 30 ? '#4caf50' : 'inherit'}">
-                  ${rsiValue.toFixed(1)}${rsiValue > 70 ? ' (OB)' : rsiValue < 30 ? ' (OS)' : ''}
-                </span>
-              </div>
-            ` : ''}
+            <div style="display: flex; justify-content: space-between"><span>Price:</span><span>${symbol}${formatPrice(candle.close || candle.value)}</span></div>
+            <div style="display: flex; justify-content: space-between"><span>Vol:</span><span>${(candle.volume || 0).toLocaleString()}</span></div>
           `;
         } else if (chartType === 'holders') {
           ohlcData = `
             <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
-            <div style="display: flex; justify-content: space-between"><span>Total Holders:</span><span>${candle.holders ? candle.holders.toLocaleString() : candle.value.toLocaleString()}</span></div>
-            ${candle.active24H ? `<div style="display: flex; justify-content: space-between"><span>Active 24H:</span><span>${candle.active24H.toLocaleString()}</span></div>` : ''}
+            <div style="display: flex; justify-content: space-between"><span>Holders:</span><span>${candle.holders ? candle.holders.toLocaleString() : candle.value.toLocaleString()}</span></div>
             ${candle.top10 !== undefined ? `
               <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}">
                 <div style="display: flex; justify-content: space-between"><span>Top 10:</span><span>${candle.top10.toFixed(2)}%</span></div>
@@ -611,20 +465,15 @@ const PriceChartAdvanced = memo(({ token }) => {
       }
 
       if (ohlcData) {
-        toolTip.innerHTML = ohlcData + userTradeInfo;
-        const coordinate = chart.priceScale('right').width();
-        const shiftedCoordinate = param.point.x - 50;
-        if (coordinate === null) {
-          return;
-        }
-        const x = Math.max(0, Math.min(chartContainerRef.current.clientWidth - 150, shiftedCoordinate));
+        toolTip.innerHTML = ohlcData;
+        const x = Math.max(0, Math.min(chartContainerRef.current.clientWidth - 150, param.point.x - 50));
         const y = 12;
         toolTip.style.left = x + 'px';
         toolTip.style.top = y + 'px';
       }
     });
 
-    // Create series based on chart type
+    // Add series based on chart type
     if (chartType === 'candles') {
       const candleSeries = chart.addSeries(CandlestickSeries, {
         upColor: '#4caf50',
@@ -634,6 +483,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         wickUpColor: '#4caf50',
         wickDownColor: '#f44336',
       });
+      candleSeries.setData(chartData);
       candleSeriesRef.current = candleSeries;
     } else if (chartType === 'line') {
       const areaSeries = chart.addSeries(AreaSeries, {
@@ -647,6 +497,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         crosshairMarkerBorderColor: theme.palette.primary.main,
         crosshairMarkerBackgroundColor: theme.palette.background.paper,
       });
+      areaSeries.setData(chartData.map(d => ({ time: d.time, value: d.close || d.value })));
       lineSeriesRef.current = areaSeries;
     } else if (chartType === 'holders') {
       const holdersSeries = chart.addSeries(AreaSeries, {
@@ -660,11 +511,12 @@ const PriceChartAdvanced = memo(({ token }) => {
         crosshairMarkerBorderColor: '#9c27b0',
         crosshairMarkerBackgroundColor: theme.palette.background.paper,
       });
+      holdersSeries.setData(chartData.map(d => ({ time: d.time, value: d.value || d.holders })));
       lineSeriesRef.current = holdersSeries;
     }
 
-    // Create volume series for non-holder charts
-    if (chartType !== 'holders') {
+    // Add volume for non-holder charts
+    if (chartType !== 'holders' && data) {
       const volumeSeries = chart.addSeries(HistogramSeries, {
         color: '#26a69a',
         priceFormat: {
@@ -678,11 +530,20 @@ const PriceChartAdvanced = memo(({ token }) => {
         priceLineVisible: false,
         lastValueVisible: !isMobile,
       });
+      volumeSeries.setData(data.map(d => ({
+        time: d.time,
+        value: d.volume || 0,
+        color: d.close >= d.open 
+          ? (isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.5)')
+          : (isDark ? 'rgba(244, 67, 54, 0.3)' : 'rgba(244, 67, 54, 0.5)')
+      })));
       volumeSeriesRef.current = volumeSeries;
     }
 
+    chart.timeScale().fitContent();
+
     const handleResize = () => {
-      if (chartContainerRef.current) {
+      if (chartContainerRef.current && chart) {
         chart.applyOptions({ width: chartContainerRef.current.clientWidth });
       }
     };
@@ -691,51 +552,20 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      if (chartContainerRef.current) {
+        const tooltips = chartContainerRef.current.querySelectorAll('div[style*="position: absolute"]');
+        tooltips.forEach(tooltip => tooltip.remove());
+      }
+      if (chartRef.current) {
+        try {
+          chartRef.current.remove();
+        } catch (e) {
+          // Chart already disposed
+        }
+        chartRef.current = null;
+      }
     };
-  }, [chartType, theme, isDark, isMobile, activeFiatCurrency, indicators, rsiValues, userTrades]);
-
-  // Update data without recreating chart
-  useEffect(() => {
-    if (!chartRef.current) return;
-    
-    const chartData = chartType === 'holders' ? holderData : data;
-    if (!chartData || chartData.length === 0) return;
-
-    // Update series data
-    if (chartType === 'candles' && candleSeriesRef.current) {
-      candleSeriesRef.current.setData(chartData);
-    } else if (chartType === 'line' && lineSeriesRef.current) {
-      lineSeriesRef.current.setData(chartData.map(d => ({ time: d.time, value: d.close })));
-    } else if (chartType === 'holders' && lineSeriesRef.current) {
-      lineSeriesRef.current.setData(chartData.map(d => ({ time: d.time, value: d.value || d.holders })));
-    }
-    
-    // Update volume series
-    if (volumeSeriesRef.current && chartType !== 'holders') {
-      volumeSeriesRef.current.setData(chartData.map(d => ({
-        time: d.time,
-        value: d.volume || 0,
-        color: d.close >= d.open 
-          ? (isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.5)')
-          : (isDark ? 'rgba(244, 67, 54, 0.3)' : 'rgba(244, 67, 54, 0.5)')
-      })));
-    }
-
-    // Apply indicators
-    if (chartType !== 'holders' && data) {
-      // Note: For simplicity, indicators are recreated here
-      // In production, you'd want to track and update indicator series separately
-      indicators.forEach(indicator => {
-        // Implementation for indicators would go here
-        // This is simplified for brevity
-      });
-    }
-
-    // Fit content
-    if (chartRef.current) {
-      chartRef.current.timeScale().fitContent();
-    }
-  }, [data, holderData, chartType, isDark, indicators]);
+  }, [data, holderData, chartType, theme, isDark, activeFiatCurrency, isMobile]);
 
   const handleIndicatorToggle = (indicator) => {
     setIndicators(prev => {
@@ -796,59 +626,7 @@ const PriceChartAdvanced = memo(({ token }) => {
             <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
               <RefreshIcon sx={{ fontSize: 12, verticalAlign: 'middle', mr: 0.5 }} />
               {lastUpdate.toLocaleTimeString()}
-              {chartType === 'holders' && holderData && holderData.length > 0 && (
-                <span style={{ marginLeft: '8px', color: theme.palette.primary.main }}>
-                  Top 10%: {holderData[holderData.length - 1].top10?.toFixed(2)}%
-                </span>
-              )}
             </Typography>
-          )}
-          {userTrades.length > 0 && chartType !== 'holders' && accountProfile && (
-            <Box sx={{ 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              gap: 0.5,
-              ml: 1,
-              px: 1,
-              py: 0.25,
-              borderRadius: 1,
-              bgcolor: alpha(theme.palette.info.main, 0.1),
-              border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-            }}>
-              <Typography variant="caption" sx={{ fontWeight: 500, color: theme.palette.info.main }}>
-                Your Trades: {userTrades.length}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 0.5 }}>
-                {userTrades.filter(t => t.type === 'buy').length > 0 && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-                    <Box sx={{ 
-                      width: 0, 
-                      height: 0, 
-                      borderLeft: '4px solid transparent',
-                      borderRight: '4px solid transparent',
-                      borderBottom: '6px solid #2196f3'
-                    }} />
-                    <Typography variant="caption" sx={{ color: '#2196f3', fontWeight: 600 }}>
-                      {userTrades.filter(t => t.type === 'buy').length}
-                    </Typography>
-                  </Box>
-                )}
-                {userTrades.filter(t => t.type === 'sell').length > 0 && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-                    <Box sx={{ 
-                      width: 0, 
-                      height: 0, 
-                      borderLeft: '4px solid transparent',
-                      borderRight: '4px solid transparent',
-                      borderTop: '6px solid #f44336'
-                    }} />
-                    <Typography variant="caption" sx={{ color: '#f44336', fontWeight: 600 }}>
-                      {userTrades.filter(t => t.type === 'sell').length}
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-            </Box>
           )}
         </Box>
         
@@ -935,21 +713,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         position: 'relative', 
         height: isMobile ? 280 : 400,
         borderRadius: 1,
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '1px',
-          background: `linear-gradient(90deg, transparent, ${theme.palette.primary.main}40, transparent)`,
-          opacity: 0,
-          transition: 'opacity 0.3s ease',
-        },
-        '&:hover::before': {
-          opacity: 1,
-        }
+        overflow: 'hidden'
       }}>
         {loading ? (
           <Box sx={{ 
