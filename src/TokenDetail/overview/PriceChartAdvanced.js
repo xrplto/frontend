@@ -515,9 +515,14 @@ const PriceChartAdvanced = memo(({ token }) => {
           const visibleBars = range.to - range.from;
           const isZoomed = visibleBars < (dataLength * 0.95);
           
-          if (isZoomed !== isUserZoomed) {
-            console.log(isZoomed ? '🔍 User zoomed in' : '🔎 User zoomed out to full view');
-            setIsUserZoomed(isZoomed);
+          // Also check if user has scrolled away from the latest data
+          const isScrolledAway = range.to < (dataLength - 5); // Not showing last 5 bars
+          const shouldPauseUpdates = isZoomed || isScrolledAway;
+          
+          if (shouldPauseUpdates !== isUserZoomedRef.current) {
+            console.log(shouldPauseUpdates ? '🔍 User zoomed/scrolled - pausing updates' : '🔎 Full view restored - resuming updates');
+            setIsUserZoomed(shouldPauseUpdates);
+            isUserZoomedRef.current = shouldPauseUpdates;
           }
         }, 100); // Debounce for 100ms
       }
