@@ -18,6 +18,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const candleSeriesRef = useRef(null);
   const lineSeriesRef = useRef(null);
   const volumeSeriesRef = useRef(null);
+  const lastChartTypeRef = useRef(null);
   const isMobile = theme.breakpoints.values.sm > window.innerWidth;
   
   const [chartType, setChartType] = useState('candles');
@@ -32,6 +33,10 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [rsiValues, setRsiValues] = useState({});
   const [holderData, setHolderData] = useState(null);
   const [userTrades, setUserTrades] = useState([]);
+  const zoomStateRef = useRef(null);
+  const dataRef = useRef(null);
+  const holderDataRef = useRef(null);
+  const activeFiatCurrencyRef = useRef(activeFiatCurrency);
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
@@ -52,6 +57,11 @@ const PriceChartAdvanced = memo(({ token }) => {
     { id: 'fib', name: 'Fibonacci Extensions' },
     { id: 'ath', name: 'All-Time High' }
   ];
+
+  // Update refs when values change
+  useEffect(() => {
+    activeFiatCurrencyRef.current = activeFiatCurrency;
+  }, [activeFiatCurrency]);
 
   const convertScientificToRegular = (value) => {
     if (typeof value === 'string') {
@@ -203,6 +213,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           })).sort((a, b) => a.time - b.time); // Ensure chronological order
           
           setData(processedData);
+          dataRef.current = processedData;
           setLastUpdate(new Date());
           
           // Calculate ATH from the data
@@ -279,6 +290,7 @@ const PriceChartAdvanced = memo(({ token }) => {
             });
           
           setHolderData(processedData);
+          holderDataRef.current = processedData;
           setLoading(false);
         }
       } catch (error) {
@@ -294,14 +306,16 @@ const PriceChartAdvanced = memo(({ token }) => {
     return () => controller.abort();
   }, [token.md5, range, BASE_URL, chartType]);
 
-  // Main chart effect - recreate chart when needed and update data
+  // Create chart only when chart type changes
   useEffect(() => {
     if (!chartContainerRef.current) return;
     
-    const chartData = chartType === 'holders' ? holderData : data;
-    if (!chartData || chartData.length === 0) return;
-
-    // Clean up existing chart
+    // Only recreate chart if chart type changed
+    if (lastChartTypeRef.current === chartType && chartRef.current) {
+      return;
+    }
+    
+    // Clean up existing chart when chart type changes
     if (chartRef.current) {
       try {
         chartRef.current.remove();
@@ -313,6 +327,8 @@ const PriceChartAdvanced = memo(({ token }) => {
       lineSeriesRef.current = null;
       volumeSeriesRef.current = null;
     }
+    
+    lastChartTypeRef.current = chartType;
 
     // Create new chart
     const chart = createChart(chartContainerRef.current, {
@@ -373,7 +389,7 @@ const PriceChartAdvanced = memo(({ token }) => {
             }
           }
           
-          const symbol = currencySymbols[activeFiatCurrency] || '';
+          const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
           
           if (price < 0.000000001) {
             return symbol + price.toFixed(12);
@@ -419,8 +435,10 @@ const PriceChartAdvanced = memo(({ token }) => {
       toolTip.style.display = 'block';
       
       let ohlcData = '';
-      const symbol = currencySymbols[activeFiatCurrency] || '';
-      const candle = chartData.find(d => d.time === param.time);
+      const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
+      // Get data from correct source based on chart type using refs
+      const currentData = chartType === 'holders' ? holderDataRef.current : dataRef.current;
+      const candle = currentData ? currentData.find(d => d.time === param.time) : null;
       
       if (candle) {
         const formatPrice = (p) => p < 0.01 ? p.toFixed(8) : p.toFixed(4);
@@ -473,7 +491,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       }
     });
 
-    // Add series based on chart type
+    // Add series based on chart type (they'll get data in the update effect)
     if (chartType === 'candles') {
       const candleSeries = chart.addSeries(CandlestickSeries, {
         upColor: '#4caf50',
@@ -483,7 +501,6 @@ const PriceChartAdvanced = memo(({ token }) => {
         wickUpColor: '#4caf50',
         wickDownColor: '#f44336',
       });
-      candleSeries.setData(chartData);
       candleSeriesRef.current = candleSeries;
     } else if (chartType === 'line') {
       const areaSeries = chart.addSeries(AreaSeries, {
@@ -497,7 +514,6 @@ const PriceChartAdvanced = memo(({ token }) => {
         crosshairMarkerBorderColor: theme.palette.primary.main,
         crosshairMarkerBackgroundColor: theme.palette.background.paper,
       });
-      areaSeries.setData(chartData.map(d => ({ time: d.time, value: d.close || d.value })));
       lineSeriesRef.current = areaSeries;
     } else if (chartType === 'holders') {
       const holdersSeries = chart.addSeries(AreaSeries, {
@@ -511,12 +527,11 @@ const PriceChartAdvanced = memo(({ token }) => {
         crosshairMarkerBorderColor: '#9c27b0',
         crosshairMarkerBackgroundColor: theme.palette.background.paper,
       });
-      holdersSeries.setData(chartData.map(d => ({ time: d.time, value: d.value || d.holders })));
       lineSeriesRef.current = holdersSeries;
     }
 
-    // Add volume for non-holder charts
-    if (chartType !== 'holders' && data) {
+    // Add volume series for non-holder charts
+    if (chartType !== 'holders') {
       const volumeSeries = chart.addSeries(HistogramSeries, {
         color: '#26a69a',
         priceFormat: {
@@ -530,17 +545,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         priceLineVisible: false,
         lastValueVisible: !isMobile,
       });
-      volumeSeries.setData(data.map(d => ({
-        time: d.time,
-        value: d.volume || 0,
-        color: d.close >= d.open 
-          ? (isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.5)')
-          : (isDark ? 'rgba(244, 67, 54, 0.3)' : 'rgba(244, 67, 54, 0.5)')
-      })));
       volumeSeriesRef.current = volumeSeries;
     }
-
-    chart.timeScale().fitContent();
 
     const handleResize = () => {
       if (chartContainerRef.current && chart) {
@@ -565,7 +571,113 @@ const PriceChartAdvanced = memo(({ token }) => {
         chartRef.current = null;
       }
     };
-  }, [data, holderData, chartType, theme, isDark, activeFiatCurrency, isMobile]);
+  }, [chartType, theme, isDark, isMobile]); // Remove data deps to prevent recreation
+
+  // Separate effect to update data without recreating chart
+  useEffect(() => {
+    if (!chartRef.current) return;
+    
+    const chartData = chartType === 'holders' ? holderData : data;
+    if (!chartData || chartData.length === 0) return;
+
+    // Save current zoom state before updating
+    if (chartRef.current && chartRef.current.timeScale) {
+      try {
+        const visibleRange = chartRef.current.timeScale().getVisibleRange();
+        if (visibleRange) {
+          zoomStateRef.current = visibleRange;
+        }
+      } catch (e) {
+        // Ignore errors when getting visible range
+      }
+    }
+
+    // Create series if they don't exist yet
+    if (chartType === 'candles' && !candleSeriesRef.current) {
+      const candleSeries = chartRef.current.addSeries(CandlestickSeries, {
+        upColor: '#4caf50',
+        downColor: '#f44336',
+        borderUpColor: '#4caf50',
+        borderDownColor: '#f44336',
+        wickUpColor: '#4caf50',
+        wickDownColor: '#f44336',
+      });
+      candleSeriesRef.current = candleSeries;
+    }
+    
+    if ((chartType === 'line' || chartType === 'holders') && !lineSeriesRef.current) {
+      const seriesOptions = chartType === 'holders' ? {
+        lineColor: '#9c27b0',
+        topColor: 'rgba(156, 39, 176, 0.56)',
+        bottomColor: 'rgba(156, 39, 176, 0.04)',
+      } : {
+        lineColor: theme.palette.primary.main,
+        topColor: theme.palette.primary.main + '80',
+        bottomColor: theme.palette.primary.main + '08',
+      };
+      
+      const areaSeries = chartRef.current.addSeries(AreaSeries, {
+        ...seriesOptions,
+        lineWidth: 2,
+        lineStyle: 0,
+        crosshairMarkerVisible: true,
+        crosshairMarkerRadius: 4,
+      });
+      lineSeriesRef.current = areaSeries;
+    }
+    
+    if (chartType !== 'holders' && !volumeSeriesRef.current) {
+      const volumeSeries = chartRef.current.addSeries(HistogramSeries, {
+        color: '#26a69a',
+        priceFormat: { type: 'volume' },
+        priceScaleId: '',
+        scaleMargins: { top: 0.9, bottom: 0 },
+        priceLineVisible: false,
+        lastValueVisible: !isMobile,
+      });
+      volumeSeriesRef.current = volumeSeries;
+    }
+
+    // Update series data
+    if (chartType === 'candles' && candleSeriesRef.current) {
+      candleSeriesRef.current.setData(chartData);
+    } else if (chartType === 'line' && lineSeriesRef.current) {
+      lineSeriesRef.current.setData(chartData.map(d => ({ time: d.time, value: d.close || d.value })));
+    } else if (chartType === 'holders' && lineSeriesRef.current) {
+      lineSeriesRef.current.setData(chartData.map(d => ({ time: d.time, value: d.value || d.holders })));
+    }
+
+    // Update volume series
+    if (chartType !== 'holders' && volumeSeriesRef.current && data) {
+      volumeSeriesRef.current.setData(data.map(d => ({
+        time: d.time,
+        value: d.volume || 0,
+        color: d.close >= d.open 
+          ? (isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.5)')
+          : (isDark ? 'rgba(244, 67, 54, 0.3)' : 'rgba(244, 67, 54, 0.5)')
+      })));
+    }
+    
+    // Restore zoom state or fit content on range change
+    if (zoomStateRef.current && lastChartTypeRef.current === `${chartType}-${range}`) {
+      // This is an auto-update, restore the zoom
+      setTimeout(() => {
+        if (chartRef.current && chartRef.current.timeScale && zoomStateRef.current) {
+          try {
+            chartRef.current.timeScale().setVisibleRange(zoomStateRef.current);
+          } catch (e) {
+            // If restore fails, just fit content
+            chartRef.current.timeScale().fitContent();
+          }
+        }
+      }, 0);
+    } else {
+      // This is a range change or initial load, fit content
+      chartRef.current.timeScale().fitContent();
+      lastChartTypeRef.current = `${chartType}-${range}`;
+      zoomStateRef.current = null;
+    }
+  }, [data, holderData, chartType, isDark, range, theme, isMobile]);
 
   const handleIndicatorToggle = (indicator) => {
     setIndicators(prev => {
