@@ -495,44 +495,80 @@ function NewsPage() {
     if (!stats) return null;
     
     return (
-      <Box sx={{ flex: 1, py: 0.25, px: isMobile ? 0.5 : 1 }}>
-        <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'rgba(255,255,255,0.7)', fontSize: isMobile ? '0.7rem' : '0.75rem' }}>
+      <Box sx={{ 
+        flex: 1, 
+        p: 1.5,
+        borderRadius: 1.5,
+        background: theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, 0.02)'
+          : 'rgba(0, 0, 0, 0.02)',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          background: theme.palette.mode === 'dark'
+            ? 'rgba(255, 255, 255, 0.05)'
+            : 'rgba(0, 0, 0, 0.04)',
+          transform: 'translateY(-2px)'
+        }
+      }}>
+        <Typography variant="subtitle2" sx={{ 
+          mb: 1, 
+          color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)',
+          fontSize: isMobile ? '0.8rem' : '0.875rem',
+          fontWeight: 600,
+          letterSpacing: '0.025em'
+        }}>
           {period}
         </Typography>
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
           <Chip
             label={`Bullish ${stats.bullish || 0}%`}
             size="small"
             sx={{
-              background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#FFD700' 
-                ? 'linear-gradient(90deg, #00FF87 0%, #00E673 100%)' 
-                : 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)',
+              background: 'linear-gradient(90deg, #10B981 0%, #059669 100%)',
               color: 'white',
-              height: '20px',
-              fontWeight: 500,
-              boxShadow: theme.palette.mode === 'dark' && theme.palette.primary.main === '#FFD700' 
-                ? '0px 0px 10px rgba(0, 255, 135, 0.5)' 
-                : 'none'
+              height: '24px',
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              boxShadow: '0 2px 6px rgba(16, 185, 129, 0.25)',
+              transition: 'transform 0.2s ease',
+              '&:hover': {
+                transform: 'scale(1.05)',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)'
+              }
             }}
           />
           <Chip
             label={`Bearish ${stats.bearish || 0}%`}
             size="small"
             sx={{
-              background: 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)',
+              background: 'linear-gradient(90deg, #EF4444 0%, #DC2626 100%)',
               color: 'white',
-              height: '20px',
-              fontWeight: 500
+              height: '24px',
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              boxShadow: '0 2px 6px rgba(239, 68, 68, 0.25)',
+              transition: 'transform 0.2s ease',
+              '&:hover': {
+                transform: 'scale(1.05)',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.35)'
+              }
             }}
           />
           <Chip
             label={`Neutral ${stats.neutral || 0}%`}
             size="small"
             sx={{
-              background: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)',
+              background: 'linear-gradient(90deg, #F59E0B 0%, #D97706 100%)',
               color: 'white',
-              height: '20px',
-              fontWeight: 500
+              height: '24px',
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              boxShadow: '0 2px 6px rgba(245, 158, 11, 0.25)',
+              transition: 'transform 0.2s ease',
+              '&:hover': {
+                transform: 'scale(1.05)',
+                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.35)'
+              }
             }}
           />
         </Box>
@@ -1036,15 +1072,18 @@ function NewsPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 2,
-                  p: 1,
-                  borderRadius: 1,
+                  p: 2,
+                  borderRadius: 2,
                   background:
                     theme.palette.mode === 'dark'
-                      ? 'rgba(0, 0, 0, 0.6)'
-                      : 'rgba(255, 255, 255, 0.9)',
+                      ? 'linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(20, 20, 30, 0.95) 100%)'
+                      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 249, 250, 0.98) 100%)',
                   border: `1px solid ${
-                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-                  }`
+                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'
+                  }`,
+                  boxShadow: theme.palette.mode === 'dark'
+                    ? '0 4px 20px rgba(0, 0, 0, 0.2)'
+                    : '0 4px 20px rgba(0, 0, 0, 0.05)'
                 }}
               >
                 <IconButton
