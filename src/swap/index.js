@@ -575,13 +575,13 @@ const PanelContainer = styled(Box)(({ theme }) => ({
 }));
 
 const PanelHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(1.5),
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   background: alpha(theme.palette.background.paper, 0.02)
 }));
 
 const SearchContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(1.5),
   backgroundColor: alpha(theme.palette.background.default, 0.02),
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
 }));
@@ -590,7 +590,8 @@ const ScrollableContent = styled(Box)(({ theme }) => ({
   flex: 1,
   overflowY: 'auto',
   overflowX: 'hidden',
-  paddingBottom: theme.spacing(10),
+  padding: theme.spacing(1.5),
+  paddingBottom: theme.spacing(3),
   '&::-webkit-scrollbar': {
     width: '6px'
   },
@@ -606,58 +607,48 @@ const ScrollableContent = styled(Box)(({ theme }) => ({
   }
 }));
 
-const TokenCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  borderRadius: theme.spacing(2),
+const TokenCard = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(0.75),
+  borderRadius: theme.spacing(0.75),
   cursor: 'pointer',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-  backgroundColor: theme.palette.background.paper,
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: '-100%',
-    width: '100%',
-    height: '100%',
-    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.08)}, transparent)`,
-    transition: 'left 0.5s ease'
-  },
+  transition: 'all 0.2s ease',
+  border: `1px solid ${alpha(theme.palette.divider, 0.03)}`,
+  backgroundColor: alpha(theme.palette.background.paper, 0.2),
   '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.12)}`,
-    borderColor: alpha(theme.palette.primary.main, 0.2),
-    '&::before': {
-      left: '100%'
-    }
+    backgroundColor: alpha(theme.palette.primary.main, 0.06),
+    borderColor: alpha(theme.palette.primary.main, 0.15)
   },
   '&:active': {
-    transform: 'translateY(0)'
+    backgroundColor: alpha(theme.palette.primary.main, 0.08)
   }
 }));
 
 const CategoryChip = styled(Chip)(({ theme }) => ({
-  borderRadius: theme.spacing(1),
+  borderRadius: theme.spacing(0.75),
   fontWeight: 600,
+  fontSize: '0.75rem',
+  height: 24,
   transition: 'all 0.2s ease',
   '&:hover': {
     transform: 'translateY(-1px)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.15)}`
+  },
+  '& .MuiChip-label': {
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1)
   }
 }));
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
   fontWeight: 700,
-  fontSize: '0.875rem',
+  fontSize: '0.75rem',
   textTransform: 'uppercase',
   letterSpacing: '0.08em',
   color: theme.palette.text.secondary,
-  marginBottom: theme.spacing(2),
+  marginBottom: theme.spacing(1),
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1)
+  gap: theme.spacing(0.5)
 }));
 
 function truncate(str, n) {
@@ -2293,11 +2284,31 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
       const res = await axios.get(`${BASE_URL}/xrpnft/tokens`);
       if (res.status === 200 && res.data) {
         const tokenList = res.data.tokens || [];
-        setSelectorTokens(tokenList);
+        // Add XRP token with proper md5
+        const xrpToken = {
+          md5: '84e5efeb89c4eae8f68188982dc290d8',
+          name: 'XRP',
+          user: 'XRP',
+          issuer: 'XRPL',
+          currency: 'XRP',
+          ext: 'png',
+          isOMCF: 'yes'
+        };
+        setSelectorTokens([xrpToken, ...tokenList]);
       }
     } catch (err) {
       console.error('Load tokens error:', err);
-      setSelectorTokens([]);
+      // Still include XRP even on error
+      const xrpToken = {
+        md5: '84e5efeb89c4eae8f68188982dc290d8',
+        name: 'XRP',
+        user: 'XRP',
+        issuer: 'XRPL',
+        currency: 'XRP',
+        ext: 'png',
+        isOMCF: 'yes'
+      };
+      setSelectorTokens([xrpToken]);
     } finally {
       setLoadingTokens(false);
     }
@@ -2368,6 +2379,13 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
       }
     }
 
+    // Sort to put XRP first
+    filtered.sort((a, b) => {
+      if (a.currency === 'XRP') return -1;
+      if (b.currency === 'XRP') return 1;
+      return 0;
+    });
+
     setFilteredTokens(filtered);
   };
 
@@ -2391,17 +2409,17 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   };
 
   const renderTokenItem = (token, isToken1) => (
-    <Grid item xs={12} sm={6} md={4} key={token.md5}>
+    <Grid item xs={6} sm={4} md={3} key={token.md5}>
       <TokenCard onClick={() => handleSelectToken(token, isToken1)} elevation={0}>
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack direction="row" spacing={1} alignItems="center">
           <Box position="relative">
             <Avatar
               src={`https://s1.xrpl.to/token/${token.md5}`}
               alt={token.name}
               sx={{ 
-                width: 48, 
-                height: 48,
-                border: `2px solid ${alpha(theme.palette.divider, 0.1)}`
+                width: 32, 
+                height: 32,
+                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
               }}
               imgProps={{
                 onError: (e) => {
@@ -2416,7 +2434,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                     position: 'absolute',
                     bottom: -2,
                     right: -2,
-                    fontSize: 18,
+                    fontSize: 14,
                     color: '#00AB55',
                     bgcolor: 'background.paper',
                     borderRadius: '50%'
@@ -2427,35 +2445,36 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           </Box>
           
           <Box flex={1} minWidth={0}>
-            <Stack direction="row" alignItems="center" spacing={1}>
+            <Stack direction="row" alignItems="center" spacing={0.5}>
               <Typography 
-                variant="subtitle2" 
-                fontWeight={700}
+                variant="body2" 
+                fontWeight={600}
                 noWrap
+                sx={{ fontSize: '0.8rem' }}
                 color={token.isOMCF === 'yes' ? '#1db954' : 'text.primary'}
               >
                 {token.name}
               </Typography>
               {token.trending && (
-                <Icon icon={trendingUp} width={16} color={theme.palette.success.main} />
+                <Icon icon={trendingUp} width={12} color={theme.palette.success.main} />
               )}
             </Stack>
-            <Typography variant="caption" color="text.secondary" noWrap>
-              {token.user || token.issuer?.slice(0, 20) + '...'}
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: '0.7rem' }}>
+              {token.currency?.slice(0, 8)}
             </Typography>
             {token.vol24h && (
-              <Typography variant="caption" display="block" sx={{ color: theme.palette.success.main }}>
-                Vol: ${(token.vol24h / 1000).toFixed(1)}K
+              <Typography variant="caption" display="block" sx={{ color: theme.palette.success.main, fontSize: '0.7rem' }}>
+                ${(token.vol24h / 1000).toFixed(0)}K
               </Typography>
             )}
           </Box>
 
           {((isToken1 && token1?.md5 === token.md5) || (!isToken1 && token2?.md5 === token.md5)) && (
-            <Chip 
-              label="Current" 
-              size="small" 
-              color="primary" 
-              sx={{ fontWeight: 600 }}
+            <CheckCircleIcon 
+              sx={{ 
+                fontSize: 16,
+                color: theme.palette.primary.main
+              }} 
             />
           )}
         </Stack>
@@ -2684,13 +2703,13 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
 
         {/* Content */}
         <ScrollableContent>
-          <Box sx={{ p: 2 }}>
+          <Box>
             {/* Recent Tokens */}
             {!searchQuery && recentTokens.length > 0 && (
-              <Box mb={4}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+              <Box mb={2}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
                   <SectionTitle>
-                    <Icon icon={clockFill} width={18} />
+                    <Icon icon={clockFill} width={14} />
                     Recent Selections
                   </SectionTitle>
                   <Typography
@@ -2698,6 +2717,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                     sx={{ 
                       cursor: 'pointer',
                       color: theme.palette.error.main,
+                      fontSize: '0.7rem',
                       '&:hover': { textDecoration: 'underline' }
                     }}
                     onClick={handleClearRecent}
@@ -2705,10 +2725,10 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                     Clear All
                   </Typography>
                 </Stack>
-                <Grid container spacing={2}>
+                <Grid container spacing={1}>
                   {recentTokens.map(token => renderTokenItem(token, isToken1))}
                 </Grid>
-                <Divider sx={{ mt: 3, mb: 1 }} />
+                <Divider sx={{ mt: 2, mb: 1 }} />
               </Box>
             )}
 
@@ -2725,15 +2745,15 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </SectionTitle>
               
               {loadingTokens ? (
-                <Grid container spacing={2}>
-                  {[...Array(6)].map((_, i) => (
-                    <Grid item xs={12} sm={6} md={4} key={i}>
-                      <Paper sx={{ p: 2, borderRadius: 2 }}>
-                        <Stack direction="row" spacing={2} alignItems="center">
-                          <Skeleton variant="circular" width={48} height={48} />
+                <Grid container spacing={1}>
+                  {[...Array(8)].map((_, i) => (
+                    <Grid item xs={6} sm={4} md={3} key={i}>
+                      <Paper sx={{ p: 1, borderRadius: 1 }}>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Skeleton variant="circular" width={32} height={32} />
                           <Box flex={1}>
-                            <Skeleton variant="text" width="60%" />
-                            <Skeleton variant="text" width="40%" height={16} />
+                            <Skeleton variant="text" width="60%" height={14} />
+                            <Skeleton variant="text" width="40%" height={12} />
                           </Box>
                         </Stack>
                       </Paper>
@@ -2741,7 +2761,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                   ))}
                 </Grid>
               ) : filteredTokens.length > 0 ? (
-                <Grid container spacing={2}>
+                <Grid container spacing={1}>
                   {filteredTokens.slice(0, 50).map(token => renderTokenItem(token, isToken1))}
                 </Grid>
               ) : (
