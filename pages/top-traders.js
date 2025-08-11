@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef, memo } from 'react';
+import PropTypes from 'prop-types';
 import {
   Container,
   Typography,
@@ -33,6 +34,7 @@ import {
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
+import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import ReactECharts from 'echarts-for-react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -48,9 +50,9 @@ const StyledModal = styled(Modal)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   padding: theme.spacing(2),
-  backdropFilter: 'blur(16px)',
+  backdropFilter: 'blur(24px)',
   '& .MuiBackdrop-root': {
-    backgroundColor: 'transparent'
+    backgroundColor: alpha(theme.palette.common.black, 0.5)
   }
 }));
 
@@ -61,44 +63,54 @@ const ModalContent = styled(Paper)(({ theme }) => ({
   height: '90vh',
   display: 'flex',
   flexDirection: 'column',
-  backgroundColor: 'transparent',
-  borderRadius: '24px',
-  boxShadow: `0 16px 40px ${alpha(theme.palette.common.black, 0.2)}`,
-  padding: theme.spacing(3),
+  backgroundColor: theme.palette.mode === 'dark' 
+    ? alpha(theme.palette.background.paper, 0.95)
+    : theme.palette.background.paper,
+  borderRadius: '32px',
+  boxShadow: theme.palette.mode === 'dark'
+    ? `0 24px 64px ${alpha(theme.palette.common.black, 0.4)}`
+    : `0 24px 64px ${alpha(theme.palette.common.black, 0.1)}`,
+  padding: theme.spacing(4),
   overflow: 'hidden',
-  border: `1px solid ${alpha(theme.palette.divider, 0.25)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: '3px',
-    background: 'transparent',
-    borderRadius: '24px 24px 0 0'
+    height: '4px',
+    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+    borderRadius: '32px 32px 0 0'
   },
   '& .MuiTabs-root': {
-    marginBottom: theme.spacing(2),
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+    marginBottom: theme.spacing(3),
+    borderBottom: `2px solid ${alpha(theme.palette.divider, 0.08)}`
   },
   '& .tab-panel': {
-    height: 'calc(90vh - 120px)',
+    height: 'calc(90vh - 140px)',
     overflow: 'hidden'
   },
   '& .chart-section': {
-    height: '55vh',
-    borderRadius: '16px',
+    height: '52vh',
+    borderRadius: '20px',
     overflow: 'hidden',
-    background: 'transparent',
-    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+    background: theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.default, 0.4)
+      : alpha(theme.palette.grey[50], 0.5),
+    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+    padding: theme.spacing(2)
   },
   '& .metrics-section': {
-    height: '35vh',
+    height: '32vh',
     overflowY: 'auto',
-    padding: theme.spacing(2),
-    backgroundColor: 'transparent',
-    borderRadius: '16px',
-    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+    padding: theme.spacing(3),
+    backgroundColor: theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.default, 0.4)
+      : alpha(theme.palette.grey[50], 0.5),
+    borderRadius: '20px',
+    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+    marginTop: theme.spacing(2)
   }
 }));
 
@@ -111,120 +123,311 @@ function TabPanel({ children, value, index }) {
 }
 
 // Memoized TraderRow component to prevent unnecessary re-renders
-const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, theme }) => (
-  <TableRow
-    key={trader._id}
-    sx={{
-      '&:last-child td, &:last-child th': { border: 0 },
-      cursor: 'pointer',
-      borderBottom: 'none',
-      position: 'relative',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      backgroundColor: 'transparent',
-      '&:after': {
-        content: '""',
-        position: 'absolute',
-        bottom: 0,
-        left: '16px',
-        right: '16px',
-        height: '1px',
-        background: 'transparent'
-      },
-      '&:hover': {
-        backgroundColor: 'transparent',
-        transform: 'translateY(-1px)',
-        boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.05)}`,
-        '&:after': {
-          opacity: 0
-        }
-      }
-    }}
-    onClick={() => onRoiClick(trader)}
-  >
-    <TableCell 
-      component="th" 
-      scope="row"
+const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, theme, isMobile, index }) => {
+  const stickyCellStyles = {
+    first: {
+      position: 'sticky',
+      zIndex: 1001,
+      left: 0,
+      background: theme.palette.background.default,
+      width: isMobile ? '10px' : '40px',
+      minWidth: isMobile ? '10px' : '40px',
+      padding: isMobile ? '0px' : '12px 4px'
+    },
+    second: {
+      position: 'sticky',
+      zIndex: 1001,
+      left: isMobile ? '10px' : '40px',
+      background: theme.palette.background.default,
+      width: isMobile ? '14px' : '50px',
+      minWidth: isMobile ? '14px' : '50px',
+      padding: isMobile ? '1px 1px' : '12px 8px'
+    },
+    third: {
+      position: 'sticky',
+      zIndex: 1001,
+      left: isMobile ? '24px' : '90px',
+      background: theme.palette.background.default,
+      minWidth: isMobile ? '120px' : '250px',
+      maxWidth: isMobile ? '150px' : 'none',
+      padding: isMobile ? '1px 4px' : '12px 8px'
+    }
+  };
+
+  return (
+    <TableRow
+      key={trader._id}
       sx={{
-        backgroundColor: 'transparent'
+        borderBottom: 'none',
+        position: 'relative',
+        transition: 'background-color 0.15s ease',
+        backgroundColor: 'transparent',
+        width: '100%',
+        height: isMobile ? '32px' : 'auto',
+        contain: 'layout',
+        '&:after': isMobile ? {} : {
+          content: '""',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '1px',
+          background: alpha(theme.palette.divider, 0.08)
+        },
+        '&:hover': {
+          backgroundColor: alpha(theme.palette.primary.main, 0.04),
+          cursor: 'pointer',
+          '&:after': {
+            opacity: 0
+          }
+        },
+        '& .MuiTypography-root': {
+          fontSize: isMobile ? '10px' : '13px',
+          fontWeight: '500',
+          letterSpacing: '-0.01em'
+        },
+        '& .MuiTableCell-root': {
+          padding: isMobile ? '4px' : '12px',
+          whiteSpace: 'nowrap',
+          borderBottom: 'none',
+          backgroundColor: 'transparent',
+          height: isMobile ? '32px' : 'auto'
+        }
       }}
+      onClick={() => onRoiClick(trader)}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <TableCell align="left" sx={stickyCellStyles.first}>
         <Typography
-          component="a"
-          href={`/profile/${trader.address}`}
+          variant="h4"
           sx={{
-            textDecoration: 'none',
-            color: 'primary.main',
-            '&:hover': {
-              textDecoration: 'underline'
-            }
+            fontWeight: '600',
+            fontSize: isMobile ? '9px' : '13px',
+            color: alpha(theme.palette.text.secondary, 0.7),
+            textAlign: 'center',
+            fontFamily: 'Inter, sans-serif'
           }}
-          onClick={(e) => e.stopPropagation()}
         >
-          {trader.address}
+          {index + 1}
         </Typography>
-        {trader.AMM && (
-          <Chip
-            label="AMM"
-            size="small"
-            color="secondary"
-            sx={{
-              height: 20,
-              fontSize: '0.65rem',
-              '& .MuiChip-label': {
-                px: 1
+      </TableCell>
+      {!isMobile && (
+        <TableCell align="center" sx={stickyCellStyles.second}>
+          <StarOutlineIcon
+            sx={{ 
+              cursor: 'pointer', 
+              color: alpha(theme.palette.text.primary, 0.3),
+              fontSize: '18px',
+              transition: 'all 0.3s ease',
+              '&:hover': { 
+                color: '#FFB800',
+                transform: 'scale(1.1)'
               }
             }}
           />
-        )}
-      </Box>
-    </TableCell>
-    <TableCell align="right" sx={{ backgroundColor: 'transparent' }}>{formatCurrency(trader.volume24h)}</TableCell>
-    <TableCell
-      align="right"
-      sx={{
-        color: trader.profit24h >= 0 ? 'success.main' : 'error.main',
-        backgroundColor: 'transparent'
-      }}
-    >
-      {formatCurrency(trader.profit24h)}
-    </TableCell>
-    <TableCell align="right" sx={{ backgroundColor: 'transparent' }}>{trader.totalTrades}</TableCell>
-    <TableCell
-      align="right"
-      sx={{
-        color: trader.totalProfit >= 0 ? 'success.main' : 'error.main',
-        backgroundColor: 'transparent'
-      }}
-    >
-      {formatCurrency(trader.totalProfit)}
-    </TableCell>
-    <TableCell
-      align="right"
-      sx={{
-        color: trader.avgROI >= 0 ? 'success.main' : 'error.main',
-        backgroundColor: 'transparent'
-      }}
-    >
-      {formatPercentage(trader.avgROI)}
-    </TableCell>
-    <TableCell align="right" sx={{ backgroundColor: 'transparent' }}>
-      <IconButton
-        size="small"
-        onClick={(e) => onRoiClick(trader, e)}
-        title="Show trader analytics"
-        sx={{
-          color: 'primary.main',
-          '&:hover': {
-            color: 'primary.dark'
-          }
-        }}
+        </TableCell>
+      )}
+      <TableCell 
+        component="th" 
+        scope="row"
+        sx={stickyCellStyles.third}
       >
-        <ShowChartIcon fontSize="small" />
-      </IconButton>
-    </TableCell>
-  </TableRow>
-));
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.5 : 1 }}>
+          {isMobile && (
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: '600',
+                fontSize: '9px',
+                color: alpha(theme.palette.text.secondary, 0.7),
+                minWidth: '15px',
+                textAlign: 'center',
+                fontFamily: 'Inter, sans-serif'
+              }}
+            >
+              {index + 1}
+            </Typography>
+          )}
+          <Box
+            sx={{
+              width: isMobile ? 20 : 32,
+              height: isMobile ? 20 : 32,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              borderRadius: '50%',
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? alpha(theme.palette.grey[800], 0.5)
+                : alpha(theme.palette.grey[100], 0.8),
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                transform: 'scale(1.05)',
+                boxShadow: `0 8px 16px ${alpha(theme.palette.common.black, 0.1)}`
+              }
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: isMobile ? '10px' : '14px',
+                fontWeight: '600',
+                color: theme.palette.primary.main
+              }}
+            >
+              {trader.address.slice(0, 1).toUpperCase()}
+            </Typography>
+          </Box>
+          <Box sx={{ overflow: 'hidden', flexGrow: 1 }}>
+            <Typography
+              variant="p2"
+              sx={{
+                fontWeight: '400',
+                fontSize: isMobile ? '9px' : '12px',
+                lineHeight: 1.3,
+                color: theme.palette.text.secondary,
+                fontFamily: 'Inter, sans-serif'
+              }}
+              noWrap
+            >
+              Trader
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.2 : 0.5, marginTop: '2px' }}>
+              <Typography
+                component="a"
+                href={`/profile/${trader.address}`}
+                sx={{
+                  textDecoration: 'none',
+                  color: theme.palette.text.primary,
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: isMobile ? '11px' : '14px',
+                  fontWeight: 600,
+                  letterSpacing: '-0.01em',
+                  cursor: 'pointer',
+                  lineHeight: 1.2,
+                  '&:hover': {
+                    color: theme.palette.primary.main,
+                    textDecoration: 'underline'
+                  }
+                }}
+                onClick={(e) => e.stopPropagation()}
+                noWrap
+              >
+                {isMobile ? `${trader.address.slice(0, 6)}...${trader.address.slice(-4)}` : `${trader.address.slice(0, 12)}...${trader.address.slice(-6)}`}
+              </Typography>
+              {trader.AMM && (
+                <Chip
+                  label="AMM"
+                  size="small"
+                  sx={{
+                    height: isMobile ? 16 : 20,
+                    fontSize: isMobile ? '0.55rem' : '0.65rem',
+                    fontWeight: 600,
+                    background: alpha(theme.palette.secondary.main, 0.1),
+                    color: theme.palette.secondary.main,
+                    '& .MuiChip-label': {
+                      px: isMobile ? 0.5 : 0.75
+                    }
+                  }}
+                />
+              )}
+            </Box>
+          </Box>
+        </Box>
+      </TableCell>
+      <TableCell align="right" sx={{ minWidth: isMobile ? '32px' : '100px', padding: isMobile ? '1px 2px' : '12px 8px' }}>
+        <Typography 
+          variant="h4" 
+          noWrap
+          sx={{ 
+            fontWeight: 600,
+            fontSize: isMobile ? '12px' : '16px',
+            fontFamily: 'Inter, sans-serif',
+            letterSpacing: '-0.01em'
+          }}
+        >
+          {formatCurrency(trader.volume24h)}
+        </Typography>
+      </TableCell>
+      <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px', padding: isMobile ? '1px 2px' : '12px 8px' }}>
+        <Typography 
+          variant="h4" 
+          noWrap
+          sx={{ 
+            color: trader.profit24h >= 0 
+              ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C')
+              : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F'),
+            fontWeight: 600,
+            fontSize: isMobile ? '11px' : '13px',
+            textShadow: isMobile ? 'none' : (trader.profit24h >= 0 
+              ? '0 0 8px rgba(102, 187, 106, 0.3)' 
+              : '0 0 8px rgba(255, 82, 82, 0.3)')
+          }}
+        >
+          {trader.profit24h >= 0 ? '+' : ''}{formatCurrency(trader.profit24h)}
+        </Typography>
+      </TableCell>
+      <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px', padding: isMobile ? '1px 2px' : '12px 8px' }}>
+        <Typography variant="h4" noWrap sx={{ fontSize: isMobile ? '11px' : '13px', fontWeight: '500' }}>
+          {trader.totalTrades >= 1000000
+            ? `${(trader.totalTrades / 1000000).toFixed(1)}M`
+            : trader.totalTrades >= 1000
+              ? `${(trader.totalTrades / 1000).toFixed(1)}K`
+              : trader.totalTrades.toLocaleString()}
+        </Typography>
+      </TableCell>
+      {!isMobile && (
+        <TableCell align="right" sx={{ minWidth: '80px', padding: '12px 8px' }}>
+          <Typography 
+            variant="h4" 
+            noWrap
+            sx={{ 
+              color: trader.totalProfit >= 0 
+                ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C')
+                : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F'),
+              fontWeight: 600,
+              fontSize: '13px'
+            }}
+          >
+            {trader.totalProfit >= 0 ? '+' : ''}{formatCurrency(trader.totalProfit)}
+          </Typography>
+        </TableCell>
+      )}
+      <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px', padding: isMobile ? '1px 2px' : '12px 8px' }}>
+        <Typography 
+          variant="h4" 
+          noWrap
+          sx={{ 
+            color: trader.avgROI >= 0 
+              ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C')
+              : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F'),
+            fontWeight: 600,
+            fontSize: isMobile ? '11px' : '13px',
+            textShadow: isMobile ? 'none' : (trader.avgROI >= 0 
+              ? '0 0 8px rgba(102, 187, 106, 0.3)' 
+              : '0 0 8px rgba(255, 82, 82, 0.3)')
+          }}
+        >
+          {formatPercentage(trader.avgROI)}
+        </Typography>
+      </TableCell>
+      <TableCell align="center" sx={{ padding: isMobile ? '4px' : '8px' }}>
+        <IconButton
+          size="small"
+          onClick={(e) => onRoiClick(trader, e)}
+          title="Show trader analytics"
+          sx={{
+            color: theme.palette.primary.main,
+            padding: isMobile ? '4px' : '8px',
+            '&:hover': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.08)
+            }
+          }}
+        >
+          <ShowChartIcon sx={{ fontSize: isMobile ? '16px' : '20px' }} />
+        </IconButton>
+      </TableCell>
+    </TableRow>
+  );
+});
 
 TraderRow.displayName = 'TraderRow';
 
@@ -234,20 +437,26 @@ const MetricItem = ({ label, value, valueColor }) => (
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      py: 0.75,
+      py: 1,
+      px: 1.5,
+      borderRadius: '8px',
+      transition: 'background 0.2s',
+      '&:hover': {
+        background: (theme) => alpha(theme.palette.primary.main, 0.04)
+      },
       '&:not(:last-of-type)': {
-        borderBottom: (theme) => `1px solid ${alpha(theme.palette.divider, 0.08)}`
+        mb: 0.5
       }
     }}
   >
-    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem', fontWeight: 500 }}>
       {label}
     </Typography>
     <Typography
       variant="body2"
       sx={{
-        fontWeight: 600,
-        fontSize: '0.8rem',
+        fontWeight: 700,
+        fontSize: '0.85rem',
         color: valueColor || 'text.primary'
       }}
     >
@@ -256,22 +465,23 @@ const MetricItem = ({ label, value, valueColor }) => (
   </Box>
 );
 
-export default function Analytics() {
+export default function Analytics({ initialData, initialError }) {
   const dispatch = useDispatch();
-  const [traders, setTraders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [traders, setTraders] = useState(initialData?.data || []);
+  const [loading, setLoading] = useState(false);
   const [roiModalTrader, setRoiModalTrader] = useState(null);
   const [orderBy, setOrderBy] = useState('volume24h');
   const [order, setOrder] = useState('desc');
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(initialError || null);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(initialData?.pagination?.totalPages || 0);
+  const [totalItems, setTotalItems] = useState(initialData?.pagination?.total || 0);
   const [itemsPerPage] = useState(25);
   const [searchAddress, setSearchAddress] = useState('');
   const [debouncedSearchAddress, setDebouncedSearchAddress] = useState('');
   const [activeTab, setActiveTab] = useState(0);
   const [hideAmm, setHideAmm] = useState(false);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const darkMode = theme.palette.mode === 'dark';
@@ -346,7 +556,10 @@ export default function Analytics() {
 
   // Reset page when search changes
   useEffect(() => {
-    setPage(1);
+    if (debouncedSearchAddress !== '') {
+      setPage(1);
+      setIsFirstLoad(false); // Ensure we fetch new data
+    }
   }, [debouncedSearchAddress]);
 
   // Effect to handle WebSocket connection status
@@ -371,6 +584,12 @@ export default function Analytics() {
 
   // Memoize the fetch function to prevent unnecessary re-renders
   const fetchData = useCallback(async () => {
+    // Skip initial fetch if we have SSR data
+    if (isFirstLoad && initialData) {
+      setIsFirstLoad(false);
+      return;
+    }
+    
     try {
       setLoading(true);
       const queryParams = new URLSearchParams({
@@ -416,11 +635,21 @@ export default function Analytics() {
     } finally {
       setLoading(false);
     }
-  }, [page, itemsPerPage, orderBy, order, debouncedSearchAddress]);
+  }, [page, itemsPerPage, orderBy, order, debouncedSearchAddress, isFirstLoad, initialData]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    // Only fetch if not first load or if parameters changed
+    if (!isFirstLoad || !initialData) {
+      fetchData();
+    }
+  }, [fetchData, isFirstLoad, initialData]);
+  
+  // Mark as not first load after SSR data is used
+  useEffect(() => {
+    if (isFirstLoad && initialData) {
+      setIsFirstLoad(false);
+    }
+  }, [isFirstLoad, initialData]);
 
   // Memoize the handle functions to prevent unnecessary re-renders
   const handleRoiClick = useCallback((trader, event) => {
@@ -439,6 +668,7 @@ export default function Analytics() {
       const isAsc = orderBy === property && order === 'asc';
       setOrder(isAsc ? 'desc' : 'asc');
       setOrderBy(property);
+      setIsFirstLoad(false); // Ensure we fetch new data on sort
     },
     [orderBy, order]
   );
@@ -556,7 +786,9 @@ export default function Analytics() {
             data: dailyRoi,
             itemStyle: {
               color: function (params) {
-                return params.value >= 0 ? '#4caf50' : '#f44336';
+                return params.value >= 0 
+                  ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C')
+                  : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F');
               }
             }
           },
@@ -566,10 +798,24 @@ export default function Analytics() {
             data: cumulativeRoi,
             smooth: true,
             lineStyle: {
-              width: 3
+              width: 2,
+              color: theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00'
             },
             itemStyle: {
-              color: '#1976d2'
+              color: theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00'
+            },
+            areaStyle: {
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  { offset: 0, color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.3) },
+                  { offset: 1, color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.05) }
+                ]
+              }
             }
           }
         ]
@@ -643,7 +889,7 @@ export default function Analytics() {
             type: 'bar',
             data: dailyTrades,
             itemStyle: {
-              color: '#1976d2'
+              color: theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C'
             }
           },
           {
@@ -653,16 +899,30 @@ export default function Analytics() {
             data: cumulativeTrades,
             smooth: true,
             lineStyle: {
-              width: 3
+              width: 2,
+              color: theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00'
             },
             itemStyle: {
-              color: '#2196f3'
+              color: theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00'
+            },
+            areaStyle: {
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  { offset: 0, color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.2) },
+                  { offset: 1, color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.02) }
+                ]
+              }
             }
           }
         ]
       };
     },
-    [formatDate, formatCurrency]
+    [formatDate, formatCurrency, theme, alpha]
   );
 
   const createVolumeHistoryChartOptions = useCallback(
@@ -794,7 +1054,7 @@ export default function Analytics() {
             type: 'bar',
             data: dailyVolumes,
             itemStyle: {
-              color: '#1976d2'
+              color: alpha(theme.palette.mode === 'dark' ? '#90CAF9' : '#1976D2', 0.8)
             }
           },
           {
@@ -803,7 +1063,7 @@ export default function Analytics() {
             stack: 'daily',
             data: buyVolumes,
             itemStyle: {
-              color: '#4caf50'
+              color: theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C'
             }
           },
           {
@@ -812,7 +1072,7 @@ export default function Analytics() {
             stack: 'daily',
             data: sellVolumes,
             itemStyle: {
-              color: '#f44336'
+              color: theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F'
             }
           },
           {
@@ -822,16 +1082,30 @@ export default function Analytics() {
             data: cumulativeVolumes,
             smooth: true,
             lineStyle: {
-              width: 3
+              width: 2,
+              color: theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00'
             },
             itemStyle: {
-              color: '#2196f3'
+              color: theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00'
+            },
+            areaStyle: {
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  { offset: 0, color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.2) },
+                  { offset: 1, color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.02) }
+                ]
+              }
             }
           }
         ]
       };
     },
-    [formatDate, formatCurrency]
+    [formatDate, formatCurrency, theme, alpha]
   );
 
   // Memoize the chart options for the modal to prevent recreation on every render
@@ -853,14 +1127,16 @@ export default function Analytics() {
   // Memoize pagination handlers to prevent unnecessary re-renders
   const handlePrevPage = useCallback(() => {
     setPage((prev) => Math.max(1, prev - 1));
+    setIsFirstLoad(false); // Ensure we fetch new data on page change
   }, []);
 
   const handleNextPage = useCallback(() => {
     setPage((prev) => Math.min(totalPages, prev + 1));
+    setIsFirstLoad(false); // Ensure we fetch new data on page change
   }, [totalPages]);
 
-  // Early return for loading state to prevent unnecessary computations
-  if (loading) {
+  // Don't show loading state on initial SSR render
+  if (loading && !initialData) {
     return (
       <>
         <Topbar />
@@ -945,15 +1221,40 @@ export default function Analytics() {
               mb: { xs: 2, sm: 3, md: 4 }
             }}
           >
-            <Box sx={{ mb: { xs: 3, sm: 4, md: 5 } }}>
+            <Box sx={{ mb: { xs: 4, sm: 5, md: 6 }, textAlign: 'center' }}>
+              <Box sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 2,
+                px: 2,
+                py: 0.75,
+                borderRadius: '100px',
+                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.1)})`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                mb: 3
+              }}>
+                <ShowChartIcon sx={{ color: theme.palette.primary.main }} />
+                <Typography sx={{ 
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>
+                  Real-Time Analytics
+                </Typography>
+              </Box>
               <Typography
-                variant="h4"
+                variant="h3"
                 sx={{
                   color: theme.palette.text.primary,
-                  fontWeight: 700,
-                  fontSize: { xs: '1.6rem', sm: '1.8rem', md: '2.1rem' },
-                  letterSpacing: '-0.02em',
-                  mb: 1
+                  fontWeight: 800,
+                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                  letterSpacing: '-0.03em',
+                  mb: 2,
+                  background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
                 }}
               >
                 Top Traders Analytics
@@ -962,29 +1263,50 @@ export default function Analytics() {
                 variant="body1"
                 sx={{
                   color: theme.palette.text.secondary,
-                  fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-                  maxWidth: '600px',
-                  lineHeight: 1.6
+                  fontSize: { xs: '0.95rem', sm: '1.05rem', md: '1.15rem' },
+                  maxWidth: '700px',
+                  lineHeight: 1.7,
+                  mx: 'auto',
+                  fontWeight: 400
                 }}
               >
                 Discover the most successful traders on the XRPL ecosystem. Track performance
-                metrics, ROI trends, and trading patterns of top performers across different
-                timeframes and strategies.
+                metrics, ROI trends, and trading patterns of top performers.
               </Typography>
             </Box>
 
             <Card
               sx={{
-                borderRadius: '16px',
-                p: { xs: 1, sm: 2 },
-                backgroundColor: 'transparent',
-                backdropFilter: 'blur(12px)',
-                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.15)}`
+                borderRadius: '24px',
+                p: { xs: 2, sm: 3 },
+                backgroundColor: theme.palette.mode === 'dark'
+                  ? alpha(theme.palette.background.paper, 0.8)
+                  : theme.palette.background.paper,
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                boxShadow: theme.palette.mode === 'dark'
+                  ? `0 20px 60px ${alpha(theme.palette.common.black, 0.3)}`
+                  : `0 20px 60px ${alpha(theme.palette.common.black, 0.08)}`,
+                position: 'relative',
+                overflow: 'hidden',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '2px',
+                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+                  animation: 'shimmer 3s ease-in-out infinite'
+                },
+                '@keyframes shimmer': {
+                  '0%': { transform: 'translateX(-100%)' },
+                  '100%': { transform: 'translateX(100%)' }
+                }
               }}
             >
               <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-                {loading && (
+                {loading && !isFirstLoad && (
                   <Box
                     sx={{
                       display: 'flex',
@@ -1016,7 +1338,7 @@ export default function Analytics() {
                         mb: 1
                       }}
                     >
-                      Loading Top Traders
+                      Updating Traders
                     </Typography>
                     <Typography
                       variant="body2"
@@ -1025,7 +1347,7 @@ export default function Analytics() {
                         textAlign: 'center'
                       }}
                     >
-                      Analyzing trading performance and metrics...
+                      Fetching latest trading data...
                     </Typography>
                   </Box>
                 )}
@@ -1062,7 +1384,7 @@ export default function Analytics() {
                   </Box>
                 )}
 
-                {!loading && !error && (
+                {(!loading || isFirstLoad) && !error && traders.length > 0 && (
                   <>
                     <Box
                       sx={{
@@ -1082,7 +1404,7 @@ export default function Analytics() {
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <SearchIcon sx={{ color: theme.palette.text.secondary }} />
+                              <SearchIcon sx={{ color: theme.palette.primary.main }} />
                             </InputAdornment>
                           ),
                           endAdornment: searchAddress && (
@@ -1093,14 +1415,16 @@ export default function Analytics() {
                                 edge="end"
                                 sx={{
                                   color: theme.palette.text.secondary,
-                                  borderRadius: '8px',
+                                  borderRadius: '10px',
+                                  transition: 'all 0.2s',
                                   '&:hover': {
                                     color: theme.palette.error.main,
-                                    bgcolor: alpha(theme.palette.error.main, 0.08)
+                                    bgcolor: alpha(theme.palette.error.main, 0.1),
+                                    transform: 'scale(1.1)'
                                   }
                                 }}
                               >
-                                <ClearIcon />
+                                <ClearIcon fontSize="small" />
                               </IconButton>
                             </InputAdornment>
                           )
@@ -1108,13 +1432,23 @@ export default function Analytics() {
                         sx={{
                           maxWidth: 450,
                           '& .MuiOutlinedInput-root': {
-                            borderRadius: '12px',
-                            backgroundColor: 'transparent',
+                            borderRadius: '16px',
+                            backgroundColor: theme.palette.mode === 'dark'
+                              ? alpha(theme.palette.background.default, 0.6)
+                              : alpha(theme.palette.grey[50], 0.8),
+                            transition: 'all 0.3s',
                             '& fieldset': {
-                              borderColor: alpha(theme.palette.divider, 0.3)
+                              borderColor: alpha(theme.palette.divider, 0.2),
+                              borderWidth: '2px'
                             },
                             '&:hover fieldset': {
-                              borderColor: theme.palette.primary.main
+                              borderColor: alpha(theme.palette.primary.main, 0.4)
+                            },
+                            '&.Mui-focused': {
+                              backgroundColor: theme.palette.background.paper,
+                              '& fieldset': {
+                                borderColor: theme.palette.primary.main
+                              }
                             }
                           }
                         }}
@@ -1131,10 +1465,18 @@ export default function Analytics() {
                             <Switch
                               checked={hideAmm}
                               onChange={(e) => setHideAmm(e.target.checked)}
+                              sx={{
+                                '& .MuiSwitch-track': {
+                                  backgroundColor: alpha(theme.palette.text.secondary, 0.3)
+                                },
+                                '& .Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: alpha(theme.palette.primary.main, 0.5)
+                                }
+                              }}
                             />
                           }
                           label={
-                            <Typography sx={{ fontWeight: 500, color: theme.palette.text.primary }}>
+                            <Typography sx={{ fontWeight: 600, color: theme.palette.text.primary, fontSize: '0.9rem' }}>
                               Hide AMM
                             </Typography>
                           }
@@ -1144,43 +1486,53 @@ export default function Analytics() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: 1,
-                            px: 1.5,
-                            py: 0.5,
-                            borderRadius: '12px',
-                            background: 'transparent'
+                            px: 2,
+                            py: 0.75,
+                            borderRadius: '100px',
+                            background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)}, ${alpha(theme.palette.info.light, 0.1)})`,
+                            border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`
                           }}
                         >
-                          <Typography variant="caption" color="info.main" sx={{ fontWeight: 600 }}>
-                            {totalItems} Traders
+                          <Typography sx={{ 
+                            fontSize: '0.875rem',
+                            fontWeight: 700,
+                            background: `linear-gradient(135deg, ${theme.palette.info.main}, ${theme.palette.info.dark})`,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                          }}>
+                            {totalItems.toLocaleString()} Traders
                           </Typography>
                         </Box>
                       </Box>
                     </Box>
 
-                    <TableContainer>
+                    <TableContainer sx={{ borderRadius: '16px', overflow: 'hidden' }}>
                       <Table
                         sx={{
                           minWidth: 650,
                           '& .MuiTableCell-root': {
-                            padding: isMobile ? '6px 4px' : '16px 12px',
+                            padding: isMobile ? '8px 6px' : '18px 16px',
                             whiteSpace: 'nowrap',
                             borderBottom: 'none',
                             '&:not(:first-of-type)': {
-                              paddingLeft: isMobile ? '4px' : '8px'
+                              paddingLeft: isMobile ? '6px' : '12px'
                             }
                           },
-                          '& .MuiTableHead-root .MuiTableCell-root': {
-                            fontWeight: 700,
-                            fontSize: '0.8rem',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                            padding: '16px 16px',
-                            color: theme.palette.text.secondary,
-                            borderBottom: `1px solid ${theme.palette.divider}`,
+                          '& .MuiTableHead-root': {
+                            '& .MuiTableCell-root': {
+                              fontWeight: 600,
+                              fontSize: isMobile ? '10px' : '12px',
+                              textTransform: 'none',
+                              letterSpacing: '-0.01em',
+                              padding: isMobile ? '8px 4px' : '16px 12px',
+                              color: theme.palette.text.secondary,
+                              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                              backgroundColor: 'transparent',
                             '& .MuiTableSortLabel-root': {
-                              fontSize: '0.8rem',
-                              fontWeight: '700',
+                              fontSize: isMobile ? '10px' : '12px',
+                              fontWeight: '600',
                               color: 'inherit',
+                              letterSpacing: '-0.01em',
                               '&:hover': {
                                 color: theme.palette.primary.main
                               },
@@ -1191,7 +1543,8 @@ export default function Analytics() {
                                 }
                               },
                               '& .MuiTableSortLabel-icon': {
-                                fontSize: '16px'
+                                fontSize: isMobile ? '14px' : '16px',
+                                opacity: 0.5
                               }
                             }
                           },
@@ -1208,7 +1561,38 @@ export default function Analytics() {
                       >
                         <TableHead>
                           <TableRow>
-                            <TableCell>
+                            <TableCell sx={{ 
+                              position: 'sticky', 
+                              left: 0, 
+                              zIndex: 1002, 
+                              background: theme.palette.background.default,
+                              width: isMobile ? '10px' : '40px',
+                              minWidth: isMobile ? '10px' : '40px',
+                              padding: isMobile ? '8px 0px' : '16px 4px'
+                            }}>
+                              #
+                            </TableCell>
+                            {!isMobile && (
+                              <TableCell sx={{ 
+                                position: 'sticky', 
+                                left: '40px', 
+                                zIndex: 1002, 
+                                background: theme.palette.background.default,
+                                width: '50px',
+                                minWidth: '50px',
+                                padding: '16px 8px'
+                              }}>
+                                Watch
+                              </TableCell>
+                            )}
+                            <TableCell sx={{ 
+                              position: 'sticky', 
+                              left: isMobile ? '10px' : '90px', 
+                              zIndex: 1002, 
+                              background: theme.palette.background.default,
+                              minWidth: isMobile ? '120px' : '250px',
+                              padding: isMobile ? '8px 4px' : '16px 8px'
+                            }}>
                               <TableSortLabel
                                 active={orderBy === 'address'}
                                 direction={orderBy === 'address' ? order : 'asc'}
@@ -1217,7 +1601,7 @@ export default function Analytics() {
                                 Address
                               </TableSortLabel>
                             </TableCell>
-                            <TableCell align="right">
+                            <TableCell align="right" sx={{ minWidth: isMobile ? '32px' : '100px' }}>
                               <TableSortLabel
                                 active={orderBy === 'volume24h'}
                                 direction={orderBy === 'volume24h' ? order : 'asc'}
@@ -1226,7 +1610,7 @@ export default function Analytics() {
                                 Volume (24h)
                               </TableSortLabel>
                             </TableCell>
-                            <TableCell align="right">
+                            <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px' }}>
                               <TableSortLabel
                                 active={orderBy === 'profit24h'}
                                 direction={orderBy === 'profit24h' ? order : 'asc'}
@@ -1235,7 +1619,7 @@ export default function Analytics() {
                                 Profit/Loss (24h)
                               </TableSortLabel>
                             </TableCell>
-                            <TableCell align="right">
+                            <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px' }}>
                               <TableSortLabel
                                 active={orderBy === 'totalTrades'}
                                 direction={orderBy === 'totalTrades' ? order : 'asc'}
@@ -1244,16 +1628,18 @@ export default function Analytics() {
                                 Total Trades
                               </TableSortLabel>
                             </TableCell>
-                            <TableCell align="right">
-                              <TableSortLabel
-                                active={orderBy === 'totalProfit'}
-                                direction={orderBy === 'totalProfit' ? order : 'asc'}
-                                onClick={() => handleRequestSort('totalProfit')}
-                              >
-                                Total Profit
-                              </TableSortLabel>
-                            </TableCell>
-                            <TableCell align="right">
+                            {!isMobile && (
+                              <TableCell align="right" sx={{ minWidth: '80px' }}>
+                                <TableSortLabel
+                                  active={orderBy === 'totalProfit'}
+                                  direction={orderBy === 'totalProfit' ? order : 'asc'}
+                                  onClick={() => handleRequestSort('totalProfit')}
+                                >
+                                  Total Profit
+                                </TableSortLabel>
+                              </TableCell>
+                            )}
+                            <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px' }}>
                               <TableSortLabel
                                 active={orderBy === 'avgROI'}
                                 direction={orderBy === 'avgROI' ? order : 'asc'}
@@ -1266,14 +1652,16 @@ export default function Analytics() {
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {sortedTraders.map((trader) => (
+                          {sortedTraders.map((trader, index) => (
                             <TraderRow
                               key={trader._id}
                               trader={trader}
+                              index={index}
                               onRoiClick={handleRoiClick}
                               formatCurrency={formatCurrency}
                               formatPercentage={formatPercentage}
                               theme={theme}
+                              isMobile={isMobile}
                             />
                           ))}
                         </TableBody>
@@ -1282,23 +1670,62 @@ export default function Analytics() {
 
                     <Box
                       sx={{
-                        py: 3,
+                        py: 4,
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        mt: 3
+                        mt: 4,
+                        px: 2,
+                        borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
                       }}
                     >
-                      <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 600 }}>
+                      <Typography sx={{ 
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                        color: theme.palette.text.secondary 
+                      }}>
                         Showing{' '}
-                        {`${(page - 1) * itemsPerPage + 1}-${Math.min(
-                          page * itemsPerPage,
-                          totalItems
-                        )}`}{' '}
-                        of {totalItems} traders
+                        <Box component="span" sx={{ 
+                          color: theme.palette.text.primary,
+                          fontWeight: 700
+                        }}>
+                          {`${(page - 1) * itemsPerPage + 1}-${Math.min(
+                            page * itemsPerPage,
+                            totalItems
+                          )}`}
+                        </Box>
+                        {' '}of{' '}
+                        <Box component="span" sx={{ 
+                          color: theme.palette.primary.main,
+                          fontWeight: 700
+                        }}>
+                          {totalItems.toLocaleString()}
+                        </Box>
+                        {' '}traders
                       </Typography>
-                      <Box sx={{ display: 'flex', gap: 2 }}>
-                        <IconButton onClick={handlePrevPage} disabled={page === 1}>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          onClick={handlePrevPage}
+                          disabled={page === 1}
+                          variant="outlined"
+                          size="small"
+                          sx={{
+                            borderRadius: '12px',
+                            borderWidth: 2,
+                            px: 2,
+                            py: 1,
+                            minWidth: 'auto',
+                            borderColor: alpha(theme.palette.divider, 0.3),
+                            '&:hover': {
+                              borderWidth: 2,
+                              borderColor: theme.palette.primary.main,
+                              background: alpha(theme.palette.primary.main, 0.05)
+                            },
+                            '&.Mui-disabled': {
+                              borderWidth: 2
+                            }
+                          }}
+                        >
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path
                               d="M15 18L9 12L15 6"
@@ -1308,8 +1735,46 @@ export default function Analytics() {
                               strokeLinejoin="round"
                             />
                           </svg>
-                        </IconButton>
-                        <IconButton onClick={handleNextPage} disabled={page >= totalPages}>
+                        </Button>
+                        <Box sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          px: 2,
+                          py: 1,
+                          borderRadius: '12px',
+                          background: alpha(theme.palette.primary.main, 0.1),
+                          border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                        }}>
+                          <Typography sx={{ 
+                            fontSize: '0.875rem',
+                            fontWeight: 700,
+                            color: theme.palette.primary.main
+                          }}>
+                            {page} / {totalPages}
+                          </Typography>
+                        </Box>
+                        <Button
+                          onClick={handleNextPage}
+                          disabled={page >= totalPages}
+                          variant="outlined"
+                          size="small"
+                          sx={{
+                            borderRadius: '12px',
+                            borderWidth: 2,
+                            px: 2,
+                            py: 1,
+                            minWidth: 'auto',
+                            borderColor: alpha(theme.palette.divider, 0.3),
+                            '&:hover': {
+                              borderWidth: 2,
+                              borderColor: theme.palette.primary.main,
+                              background: alpha(theme.palette.primary.main, 0.05)
+                            },
+                            '&.Mui-disabled': {
+                              borderWidth: 2
+                            }
+                          }}
+                        >
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path
                               d="M9 6L15 12L9 18"
@@ -1319,7 +1784,7 @@ export default function Analytics() {
                               strokeLinejoin="round"
                             />
                           </svg>
-                        </IconButton>
+                        </Button>
                       </Box>
                     </Box>
                   </>
@@ -1748,3 +2213,79 @@ export default function Analytics() {
     </>
   );
 }
+
+// Server-side rendering function
+export async function getServerSideProps(context) {
+  // Extract query parameters from the URL
+  const { page = 1, sortBy = 'volume24h', sortOrder = 'desc', address = '' } = context.query;
+  
+  try {
+    // Build query params for the API
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: '25',
+      sortBy: sortBy.toString(),
+      sortOrder: sortOrder.toString()
+    });
+
+    if (address) {
+      queryParams.append('address', address.toString());
+    }
+
+    // Fetch data from the API
+    const response = await fetch(
+      `https://api.xrpl.to/api/analytics/cumulative-stats?${queryParams.toString()}`,
+      {
+        // Add timeout to prevent hanging
+        signal: AbortSignal.timeout(10000)
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API responded with status ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Validate the response structure
+    if (data && data.data && Array.isArray(data.data)) {
+      return {
+        props: {
+          initialData: data,
+          initialError: null
+        }
+      };
+    } else {
+      console.error('Invalid data structure from API:', data);
+      return {
+        props: {
+          initialData: null,
+          initialError: 'Invalid data format received from server'
+        }
+      };
+    }
+  } catch (error) {
+    console.error('Error in getServerSideProps:', error);
+    
+    // Return empty data with error message
+    return {
+      props: {
+        initialData: null,
+        initialError: error.message || 'Failed to load trader data'
+      }
+    };
+  }
+}
+
+Analytics.propTypes = {
+  initialData: PropTypes.shape({
+    data: PropTypes.array,
+    pagination: PropTypes.shape({
+      total: PropTypes.number,
+      totalPages: PropTypes.number,
+      currentPage: PropTypes.number,
+      limit: PropTypes.number
+    })
+  }),
+  initialError: PropTypes.string
+};
