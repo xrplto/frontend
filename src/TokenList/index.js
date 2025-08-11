@@ -125,6 +125,9 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
 
   const [lastJsonMessage, setLastJsonMessage] = useState(null);
   
+  // React 18 transition hook
+  const [isPending, startTransition] = useTransition();
+  
   // Optimized WebSocket handler with React 18 features
   const wsMessageQueue = useRef([]);
   const wsProcessTimer = useRef(null);
@@ -467,7 +470,6 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
 
   // Performance optimization: virtualization for large lists
   const [renderCount, setRenderCount] = useState(20);
-  const [isPending, startTransition] = useTransition();
   
   useEffect(() => {
     if (rows > 20) {

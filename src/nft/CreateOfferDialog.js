@@ -37,7 +37,6 @@ import { PulseLoader } from 'react-spinners';
 import { XRP_TOKEN } from 'src/utils/constants';
 
 // Components
-import QueryToken from 'src/components/QueryToken';
 import QRDialog from 'src/components/QRDialog';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { isInstalled, submitTransaction } from '@gemwallet/api';
@@ -561,7 +560,20 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                 }
               }}
             >
-              <QueryToken token={token} onChangeToken={setToken} />
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  p: 2,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.background.paper, 0.5)
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  {token?.name || 'XRP'}
+                </Typography>
+              </Box>
             </Box>
 
             <Box

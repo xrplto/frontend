@@ -129,7 +129,7 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
       position: 'sticky',
       zIndex: 1001,
       left: 0,
-      background: theme.palette.background.default,
+      backgroundColor: 'transparent !important',
       width: isMobile ? '10px' : '40px',
       minWidth: isMobile ? '10px' : '40px',
       padding: isMobile ? '0px' : '12px 4px'
@@ -138,7 +138,7 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
       position: 'sticky',
       zIndex: 1001,
       left: isMobile ? '10px' : '40px',
-      background: theme.palette.background.default,
+      backgroundColor: 'transparent !important',
       width: isMobile ? '14px' : '50px',
       minWidth: isMobile ? '14px' : '50px',
       padding: isMobile ? '1px 1px' : '12px 8px'
@@ -147,7 +147,7 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
       position: 'sticky',
       zIndex: 1001,
       left: isMobile ? '24px' : '90px',
-      background: theme.palette.background.default,
+      backgroundColor: 'transparent !important',
       minWidth: isMobile ? '120px' : '250px',
       maxWidth: isMobile ? '150px' : 'none',
       padding: isMobile ? '1px 4px' : '12px 8px'
@@ -1221,57 +1221,17 @@ export default function Analytics({ initialData, initialError }) {
               mb: { xs: 2, sm: 3, md: 4 }
             }}
           >
-            <Box sx={{ mb: { xs: 4, sm: 5, md: 6 }, textAlign: 'center' }}>
-              <Box sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 2,
-                px: 2,
-                py: 0.75,
-                borderRadius: '100px',
-                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.1)})`,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                mb: 3
-              }}>
-                <ShowChartIcon sx={{ color: theme.palette.primary.main }} />
-                <Typography sx={{ 
-                  fontSize: '0.875rem',
-                  fontWeight: 600,
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
-                  Real-Time Analytics
-                </Typography>
-              </Box>
+            <Box sx={{ mb: { xs: 2, sm: 3, md: 4 }, textAlign: 'center' }}>
               <Typography
                 variant="h3"
                 sx={{
                   color: theme.palette.text.primary,
-                  fontWeight: 800,
-                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-                  letterSpacing: '-0.03em',
-                  mb: 2,
-                  background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
+                  fontWeight: 600,
+                  fontSize: { xs: '1.75rem', sm: '2rem', md: '2.25rem' },
+                  letterSpacing: '-0.01em'
                 }}
               >
-                Top Traders Analytics
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: theme.palette.text.secondary,
-                  fontSize: { xs: '0.95rem', sm: '1.05rem', md: '1.15rem' },
-                  maxWidth: '700px',
-                  lineHeight: 1.7,
-                  mx: 'auto',
-                  fontWeight: 400
-                }}
-              >
-                Discover the most successful traders on the XRPL ecosystem. Track performance
-                metrics, ROI trends, and trading patterns of top performers.
+                Top Traders
               </Typography>
             </Box>
 
@@ -1519,6 +1479,7 @@ export default function Analytics({ initialData, initialError }) {
                             }
                           },
                           '& .MuiTableHead-root': {
+                            backgroundColor: 'transparent',
                             '& .MuiTableCell-root': {
                               fontWeight: 600,
                               fontSize: isMobile ? '10px' : '12px',
@@ -1527,7 +1488,8 @@ export default function Analytics({ initialData, initialError }) {
                               padding: isMobile ? '8px 4px' : '16px 12px',
                               color: theme.palette.text.secondary,
                               borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                              backgroundColor: 'transparent',
+                              backgroundColor: 'transparent !important'
+                            },
                             '& .MuiTableSortLabel-root': {
                               fontSize: isMobile ? '10px' : '12px',
                               fontWeight: '600',
@@ -1565,7 +1527,7 @@ export default function Analytics({ initialData, initialError }) {
                               position: 'sticky', 
                               left: 0, 
                               zIndex: 1002, 
-                              background: theme.palette.background.default,
+                              backgroundColor: 'transparent !important',
                               width: isMobile ? '10px' : '40px',
                               minWidth: isMobile ? '10px' : '40px',
                               padding: isMobile ? '8px 0px' : '16px 4px'
@@ -1577,7 +1539,7 @@ export default function Analytics({ initialData, initialError }) {
                                 position: 'sticky', 
                                 left: '40px', 
                                 zIndex: 1002, 
-                                background: theme.palette.background.default,
+                                backgroundColor: 'transparent !important',
                                 width: '50px',
                                 minWidth: '50px',
                                 padding: '16px 8px'
@@ -1589,7 +1551,7 @@ export default function Analytics({ initialData, initialError }) {
                               position: 'sticky', 
                               left: isMobile ? '10px' : '90px', 
                               zIndex: 1002, 
-                              background: theme.palette.background.default,
+                              backgroundColor: 'transparent !important',
                               minWidth: isMobile ? '120px' : '250px',
                               padding: isMobile ? '8px 4px' : '16px 8px'
                             }}>

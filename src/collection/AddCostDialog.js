@@ -14,7 +14,8 @@ import {
   IconButton,
   Stack,
   Typography,
-  TextField
+  TextField,
+  Box
 } from '@mui/material';
 
 import { Close as CloseIcon, AddCircle as AddCircleIcon } from '@mui/icons-material';
@@ -23,7 +24,6 @@ import { Close as CloseIcon, AddCircle as AddCircleIcon } from '@mui/icons-mater
 import { XRP_TOKEN } from 'src/utils/constants';
 
 // Components
-import QueryToken from 'src/components/QueryToken';
 
 // ----------------------------------------------------------------------
 const AddDialog = styled(Dialog)(({ theme }) => ({
@@ -122,7 +122,20 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
           <Stack sx={{ pl: 1, pr: 1 }}>
             {/* <Typography variant="p5" sx={{mt: 0}}></Typography> */}
             {/* <Typography variant="p6" sx={{mt: 2}}></Typography> */}
-            <QueryToken token={token} onChangeToken={setToken} />
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                p: 2,
+                border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                borderRadius: 2,
+                bgcolor: alpha(theme.palette.background.paper, 0.5)
+              }}
+            >
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                {token?.name || 'XRP'}
+              </Typography>
+            </Box>
 
             <Stack spacing={2} sx={{ mt: 3 }}>
               <Typography variant="p2">
