@@ -1,26 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useRouter } from 'next/router';
-import {
-  Box,
-  Container,
-  Typography,
-  Card,
-  CardContent,
-  Grid,
-  Chip,
-  CircularProgress,
-  Divider,
-  Paper,
-  TextField,
-  InputAdornment,
-  IconButton,
-  Pagination,
-  Stack,
-  useTheme,
-  useMediaQuery
-} from '@mui/material';
+import useSWR from 'swr';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Grid from '@mui/material/Grid';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
+import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import SearchIcon from '@mui/icons-material/Search';
-import { differenceInHours, differenceInDays, formatDistanceToNow } from 'date-fns';
+import differenceInHours from 'date-fns/differenceInHours';
+import differenceInDays from 'date-fns/differenceInDays';
+import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import Header from '../src/components/Header';
 import Footer from '../src/components/Footer';
 import Topbar from '../src/components/Topbar';
@@ -28,11 +29,29 @@ import useWebSocket from 'react-use-websocket';
 import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
 
-const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
+// SWR fetcher function
+const fetcher = async (url) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error('Failed to fetch news');
+  }
+  return response.json();
+};
+
+const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect }) => {
   const theme = useTheme();
   const [showAll, setShowAll] = useState(false);
-  const sortedSources = Object.entries(sources).sort(([, a], [, b]) => b.count - a.count);
-  const displayedSources = showAll ? sortedSources : sortedSources.slice(0, 12);
+  
+  const sortedSources = useMemo(() => 
+    Object.entries(sources).sort(([, a], [, b]) => b.count - a.count),
+    [sources]
+  );
+  
+  const displayedSources = useMemo(() => 
+    showAll ? sortedSources : sortedSources.slice(0, 12),
+    [showAll, sortedSources]
+  );
+  
   const totalSources = sortedSources.length;
   const hiddenCount = totalSources - 12;
 
@@ -179,7 +198,7 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
       </Box>
     </Paper>
   );
-};
+});
 
 function NewsPage() {
   const dispatch = useDispatch();
@@ -205,18 +224,22 @@ function NewsPage() {
   const [expandedArticles, setExpandedArticles] = useState({});
   const [searchSentimentScore, setSearchSentimentScore] = useState(null);
 
-  // Add WebSocket connection
+  // WebSocket connection - only for metrics, consider disabling if not needed
+  const enableWebSocket = false; // Set to true only if real-time metrics are needed
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-  const { sendJsonMessage } = useWebSocket(WSS_FEED_URL, {
-    shouldReconnect: (closeEvent) => true,
-    onMessage: (event) => {
+  const { sendJsonMessage } = useWebSocket(enableWebSocket ? WSS_FEED_URL : null, {
+    shouldReconnect: (closeEvent) => enableWebSocket,
+    onMessage: useCallback((event) => {
+      if (!enableWebSocket) return;
       try {
         const json = JSON.parse(event.data);
         dispatch(update_metrics(json));
       } catch (err) {
-        console.error('Error processing WebSocket message:', err);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error processing WebSocket message:', err);
+        }
       }
-    }
+    }, [dispatch, enableWebSocket])
   });
 
   // No client-side filtering needed - all filtering is done server-side
@@ -225,12 +248,14 @@ function NewsPage() {
   // Calculate pagination - always use totalCount from API when available
   const totalPages = Math.ceil(totalCount / itemsPerPage);
   
-  console.log('Pagination debug:', { totalCount, itemsPerPage, totalPages, filteredNewsLength: filteredNews.length });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Pagination debug:', { totalCount, itemsPerPage, totalPages, filteredNewsLength: filteredNews.length });
+  }
   
   // News is always paginated by API now
   const currentItems = filteredNews;
 
-  const handlePageChange = (event, value) => {
+  const handlePageChange = useCallback((event, value) => {
     setCurrentPage(value);
     const query = { page: value };
     if (itemsPerPage !== 10) query.limit = itemsPerPage;
@@ -238,9 +263,9 @@ function NewsPage() {
     if (searchQuery) query.q = searchQuery;
     router.push({ pathname: '/news', query }, undefined, { shallow: true });
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, [itemsPerPage, selectedSource, searchQuery, router]);
 
-  const handleSourceSelect = (source) => {
+  const handleSourceSelect = useCallback((source) => {
     setSelectedSource(source);
     setCurrentPage(1);
     const query = { page: 1 };
@@ -248,9 +273,9 @@ function NewsPage() {
     if (source) query.source = source;
     if (searchQuery) query.q = searchQuery;
     router.push({ pathname: '/news', query }, undefined, { shallow: true });
-  };
+  }, [itemsPerPage, searchQuery, router]);
 
-  const handleSearch = (e) => {
+  const handleSearch = useCallback((e) => {
     e.preventDefault();
     setSearchQuery(searchInput);
     setCurrentPage(1);
@@ -259,14 +284,14 @@ function NewsPage() {
     if (selectedSource) query.source = selectedSource;
     if (searchInput) query.q = searchInput;
     router.push({ pathname: '/news', query }, undefined, { shallow: true });
-  };
+  }, [searchInput, itemsPerPage, selectedSource, router]);
 
-  const toggleArticleExpansion = (articleId) => {
+  const toggleArticleExpansion = useCallback((articleId) => {
     setExpandedArticles((prev) => ({
       ...prev,
       [articleId]: !prev[articleId]
     }));
-  };
+  }, []);
 
   // Parse URL parameters on mount and router changes
   useEffect(() => {
@@ -313,13 +338,17 @@ function NewsPage() {
           ? `https://api.xrpl.to/api/news/search?q=${encodeURIComponent(searchQuery)}&${params.toString()}`
           : `https://api.xrpl.to/api/news?${params.toString()}`;
         
-        console.log('Fetching from endpoint:', endpoint);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Fetching from endpoint:', endpoint);
+        }
         const response = await fetch(endpoint);
         if (!response.ok) {
           throw new Error('Failed to fetch news');
         }
         const data = await response.json();
-        console.log('API Response:', data);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('API Response:', data);
+        }
         
         // Check if response has data array (both regular and search endpoints have this)
         if (data.data && Array.isArray(data.data)) {
@@ -338,7 +367,9 @@ function NewsPage() {
           
           // Only process sources if they exist (not present in search endpoint)
           if (data.sources) {
-            console.log('Sources data:', data.sources); // Debug log
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Sources data:', data.sources);
+            }
             const sourcesObj = data.sources.reduce((acc, source) => {
               acc[source.name] = {
                 count: source.count,
@@ -423,7 +454,9 @@ function NewsPage() {
           setSentimentStats(stats);
         }
       } catch (error) {
-        console.error('Error fetching news:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching news:', error);
+        }
         setError(error.message);
       } finally {
         setLoading(false);
