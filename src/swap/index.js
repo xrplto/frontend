@@ -18,9 +18,21 @@ import {
   Stack,
   Typography,
   Box,
-  Tooltip
+  Tooltip,
+  Slide,
+  TextField,
+  InputAdornment,
+  Avatar,
+  Skeleton,
+  Chip,
+  Grid,
+  Paper,
+  Divider
 } from '@mui/material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CloseIcon from '@mui/icons-material/Close';
 
 // Additional icons for future replacement (lucide-react not installed)
 
@@ -29,6 +41,10 @@ import { Icon } from '@iconify/react';
 import exchangeIcon from '@iconify/icons-uil/exchange';
 import infoFill from '@iconify/icons-eva/info-fill';
 import shareIcon from '@iconify/icons-uil/share-alt';
+import searchFill from '@iconify/icons-eva/search-fill';
+import arrowBack from '@iconify/icons-eva/arrow-back-fill';
+import trendingUp from '@iconify/icons-eva/trending-up-fill';
+import clockFill from '@iconify/icons-eva/clock-fill';
 
 // Context
 import { useContext } from 'react';
@@ -46,8 +62,8 @@ import { fNumber } from 'src/utils/formatNumber';
 // Components
 import ConnectWallet from 'src/components/ConnectWallet';
 import QRDialog from 'src/components/QRDialog';
-import QueryToken from 'src/components/QueryToken';
-import { currencySymbols } from 'src/utils/constants';
+import { currencySymbols, BASE_URL } from 'src/utils/constants';
+import Image from 'next/image';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
@@ -57,6 +73,7 @@ import Orders from 'src/TokenDetail/trade/account/Orders';
 
 // Router
 import { useRouter } from 'next/router';
+import { useRef } from 'react';
 
 const CurrencyContent = styled('div')(
   ({ theme }) => `
@@ -509,9 +526,155 @@ const ShareButton = styled(Button)(
 `
 );
 
+// Token Selector Components
+const MAX_RECENT_SEARCHES = 6;
+
+const TokenImage = styled(Image)(({ theme }) => ({
+  borderRadius: '50%',
+  overflow: 'hidden',
+  border: `1px solid ${theme.palette.mode === 'dark' 
+    ? alpha(theme.palette.divider, 0.1) 
+    : alpha(theme.palette.divider, 0.08)}`,
+  transition: 'all 0.3s ease'
+}));
+
+const SelectTokenButton = styled(Stack)(({ theme }) => ({
+  padding: '8px 12px 8px 8px',
+  borderRadius: '16px',
+  cursor: 'pointer',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  backgroundColor: 'transparent',
+  border: `1px solid ${theme.palette.mode === 'dark' 
+    ? alpha(theme.palette.divider, 0.08) 
+    : alpha(theme.palette.divider, 0.06)}`,
+  backdropFilter: 'blur(8px)',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.background.paper, 0.1),
+    borderColor: alpha(theme.palette.primary.main, 0.3),
+    transform: 'translateY(-1px)',
+    '& .arrow-icon': {
+      transform: 'rotate(180deg)',
+      color: theme.palette.primary.main
+    }
+  },
+  '&:active': {
+    transform: 'translateY(0)'
+  }
+}));
+
+const PanelContainer = styled(Box)(({ theme }) => ({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: theme.palette.background.default,
+  zIndex: 1400,
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden'
+}));
+
+const PanelHeader = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2, 2, 0, 2),
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  backgroundColor: theme.palette.background.paper,
+  backdropFilter: 'blur(10px)',
+  position: 'sticky',
+  top: 0,
+  zIndex: 1
+}));
+
+const SearchContainer = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2),
+  backgroundColor: theme.palette.background.paper,
+  position: 'sticky',
+  top: 64,
+  zIndex: 1,
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+}));
+
+const ScrollableContent = styled(Box)(({ theme }) => ({
+  flex: 1,
+  overflowY: 'auto',
+  overflowX: 'hidden',
+  paddingBottom: theme.spacing(10),
+  '&::-webkit-scrollbar': {
+    width: '6px'
+  },
+  '&::-webkit-scrollbar-track': {
+    backgroundColor: 'transparent'
+  },
+  '&::-webkit-scrollbar-thumb': {
+    backgroundColor: alpha(theme.palette.divider, 0.2),
+    borderRadius: '3px',
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.divider, 0.3)
+    }
+  }
+}));
+
+const TokenCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(2),
+  cursor: 'pointer',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+  backgroundColor: theme.palette.background.paper,
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.08)}, transparent)`,
+    transition: 'left 0.5s ease'
+  },
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.12)}`,
+    borderColor: alpha(theme.palette.primary.main, 0.2),
+    '&::before': {
+      left: '100%'
+    }
+  },
+  '&:active': {
+    transform: 'translateY(0)'
+  }
+}));
+
+const CategoryChip = styled(Chip)(({ theme }) => ({
+  borderRadius: theme.spacing(1),
+  fontWeight: 600,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+  }
+}));
+
+const SectionTitle = styled(Typography)(({ theme }) => ({
+  fontWeight: 700,
+  fontSize: '0.875rem',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  color: theme.palette.text.secondary,
+  marginBottom: theme.spacing(2),
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1)
+}));
+
+function truncate(str, n) {
+  if (!str) return '';
+  return str.length > n ? str.substr(0, n - 1) + '... ' : str;
+}
+
 export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAsks }) {
   const theme = useTheme();
-  const BASE_URL = process.env.API_URL;
   const QR_BLUR = '/static/blurqr.webp';
   const router = useRouter();
 
@@ -573,6 +736,26 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   // Use orderbook data from props
   const bids = propsBids || [];
   const asks = propsAsks || [];
+  
+  // Token Selector Panel states
+  const [panel1Open, setPanel1Open] = useState(false);
+  const [panel2Open, setPanel2Open] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectorTokens, setSelectorTokens] = useState([]);
+  const [filteredTokens, setFilteredTokens] = useState([]);
+  const [loadingTokens, setLoadingTokens] = useState(false);
+  const [recentTokens, setRecentTokens] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const searchInputRef = useRef(null);
+  
+  // Categories for filtering
+  const categories = [
+    { value: 'all', label: 'All Tokens', icon: '🌐' },
+    { value: 'trending', label: 'Trending', icon: '🔥' },
+    { value: 'stable', label: 'Stablecoins', icon: '💵' },
+    { value: 'defi', label: 'DeFi', icon: '🏦' },
+    { value: 'meme', label: 'Meme', icon: '🐕' },
+  ];
 
   const amount = revert ? amount2 : amount1;
   let value = revert ? amount1 : amount2;
@@ -2089,6 +2272,512 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     }
   };
 
+  // Token Selector Functions
+  useEffect(() => {
+    if (panel1Open || panel2Open) {
+      loadTokensForSelector();
+      loadRecentTokens();
+      // Focus search after animation
+      setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }, 300);
+    } else {
+      // Reset state when closing
+      setSearchQuery('');
+      setSelectedCategory('all');
+    }
+  }, [panel1Open, panel2Open]);
+
+  useEffect(() => {
+    filterSelectorTokens();
+  }, [searchQuery, selectorTokens, selectedCategory]);
+
+  const loadTokensForSelector = async () => {
+    if (loadingTokens) return;
+    setLoadingTokens(true);
+    try {
+      const res = await axios.get(`${BASE_URL}/xrpnft/tokens`);
+      if (res.status === 200 && res.data) {
+        const tokenList = res.data.tokens || [];
+        setSelectorTokens(tokenList);
+      }
+    } catch (err) {
+      console.error('Load tokens error:', err);
+      setSelectorTokens([]);
+    } finally {
+      setLoadingTokens(false);
+    }
+  };
+
+  const loadRecentTokens = () => {
+    try {
+      const recent = JSON.parse(localStorage.getItem('recentTokens') || '[]');
+      setRecentTokens(recent.slice(0, MAX_RECENT_SEARCHES));
+    } catch (e) {
+      setRecentTokens([]);
+    }
+  };
+
+  const filterSelectorTokens = async () => {
+    let filtered = [...selectorTokens];
+
+    // Apply category filter
+    if (selectedCategory === 'trending') {
+      filtered = filtered.sort((a, b) => (b.vol24h || 0) - (a.vol24h || 0)).slice(0, 20);
+    } else if (selectedCategory === 'stable') {
+      filtered = filtered.filter(t => 
+        t.name?.toLowerCase().includes('usd') || 
+        t.name?.toLowerCase().includes('stable') ||
+        t.currency === 'USD'
+      );
+    } else if (selectedCategory === 'defi') {
+      filtered = filtered.filter(t => 
+        t.category === 'defi' || 
+        t.name?.toLowerCase().includes('swap') ||
+        t.name?.toLowerCase().includes('lend')
+      );
+    } else if (selectedCategory === 'meme') {
+      filtered = filtered.filter(t => 
+        t.category === 'meme' || 
+        t.name?.toLowerCase().includes('doge') ||
+        t.name?.toLowerCase().includes('shib') ||
+        t.name?.toLowerCase().includes('pepe')
+      );
+    }
+
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(token => 
+        token.name?.toLowerCase().includes(query) ||
+        token.currency?.toLowerCase().includes(query) ||
+        token.user?.toLowerCase().includes(query)
+      );
+
+      // If searching and have API access, also search remotely
+      if (searchQuery.length > 2) {
+        try {
+          const res = await axios.get(`${BASE_URL}/xrpnft/tokens?filter=${searchQuery}`);
+          if (res.status === 200 && res.data?.tokens) {
+            const remoteTokens = res.data.tokens || [];
+            const mergedTokens = [...filtered];
+            remoteTokens.forEach(rt => {
+              if (!mergedTokens.find(t => t.md5 === rt.md5)) {
+                mergedTokens.push(rt);
+              }
+            });
+            filtered = mergedTokens;
+          }
+        } catch (err) {
+          console.error('Search error:', err);
+        }
+      }
+    }
+
+    setFilteredTokens(filtered);
+  };
+
+  const handleSelectToken = (token, isToken1) => {
+    // Save to recent tokens
+    const recent = [token, ...recentTokens.filter(t => t.md5 !== token.md5)].slice(0, MAX_RECENT_SEARCHES);
+    localStorage.setItem('recentTokens', JSON.stringify(recent));
+    
+    if (isToken1) {
+      onChangeToken1(token);
+      setPanel1Open(false);
+    } else {
+      onChangeToken2(token);
+      setPanel2Open(false);
+    }
+  };
+
+  const handleClearRecent = () => {
+    localStorage.removeItem('recentTokens');
+    setRecentTokens([]);
+  };
+
+  const renderTokenItem = (token, isToken1) => (
+    <Grid item xs={12} sm={6} md={4} key={token.md5}>
+      <TokenCard onClick={() => handleSelectToken(token, isToken1)} elevation={0}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Box position="relative">
+            <Avatar
+              src={`https://s1.xrpl.to/token/${token.md5}`}
+              alt={token.name}
+              sx={{ 
+                width: 48, 
+                height: 48,
+                border: `2px solid ${alpha(theme.palette.divider, 0.1)}`
+              }}
+              imgProps={{
+                onError: (e) => {
+                  e.target.src = '/static/alt.webp';
+                }
+              }}
+            />
+            {token.kyc && (
+              <Tooltip title="KYC Verified">
+                <CheckCircleIcon 
+                  sx={{ 
+                    position: 'absolute',
+                    bottom: -2,
+                    right: -2,
+                    fontSize: 18,
+                    color: '#00AB55',
+                    bgcolor: 'background.paper',
+                    borderRadius: '50%'
+                  }} 
+                />
+              </Tooltip>
+            )}
+          </Box>
+          
+          <Box flex={1} minWidth={0}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography 
+                variant="subtitle2" 
+                fontWeight={700}
+                noWrap
+                color={token.isOMCF === 'yes' ? '#1db954' : 'text.primary'}
+              >
+                {token.name}
+              </Typography>
+              {token.trending && (
+                <Icon icon={trendingUp} width={16} color={theme.palette.success.main} />
+              )}
+            </Stack>
+            <Typography variant="caption" color="text.secondary" noWrap>
+              {token.user || token.issuer?.slice(0, 20) + '...'}
+            </Typography>
+            {token.vol24h && (
+              <Typography variant="caption" display="block" sx={{ color: theme.palette.success.main }}>
+                Vol: ${(token.vol24h / 1000).toFixed(1)}K
+              </Typography>
+            )}
+          </Box>
+
+          {((isToken1 && token1?.md5 === token.md5) || (!isToken1 && token2?.md5 === token.md5)) && (
+            <Chip 
+              label="Current" 
+              size="small" 
+              color="primary" 
+              sx={{ fontWeight: 600 }}
+            />
+          )}
+        </Stack>
+      </TokenCard>
+    </Grid>
+  );
+
+  const renderTokenSelector = (token, onClickToken, panelTitle) => {
+    if (!token) return null;
+    
+    const { 
+      md5 = '', 
+      name = 'Select Token', 
+      user = '', 
+      kyc = false, 
+      isOMCF = 'no' 
+    } = token;
+    
+    const imgUrl = md5 ? `https://s1.xrpl.to/token/${md5}` : '/static/alt.webp';
+
+    return (
+      <SelectTokenButton
+        direction="row"
+        alignItems="center"
+        spacing={1.5}
+        onClick={onClickToken}
+      >
+        <Box sx={{ position: 'relative' }}>
+          <TokenImage
+            src={imgUrl}
+            width={36}
+            height={36}
+            alt={name || 'Token'}
+            onError={(event) => (event.target.src = '/static/alt.webp')}
+          />
+          {kyc && (
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: -2,
+                right: -2,
+                backgroundColor: '#00AB55',
+                borderRadius: '50%',
+                width: 14,
+                height: 14,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: `2px solid ${darkMode ? '#1a1a1a' : '#ffffff'}`,
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              <Typography sx={{ fontSize: '8px', color: 'white', fontWeight: 'bold' }}>✓</Typography>
+            </Box>
+          )}
+        </Box>
+        <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
+          <Typography
+            variant="subtitle2"
+            color={
+              isOMCF !== 'yes' 
+                ? 'text.primary' 
+                : darkMode ? '#00AB55' : '#4E8DF4'
+            }
+            sx={{ 
+              lineHeight: 1.2, 
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              letterSpacing: '-0.01em'
+            }}
+            noWrap
+          >
+            {name || 'Select Token'}
+          </Typography>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ 
+              lineHeight: 1, 
+              fontSize: '0.75rem', 
+              opacity: 0.8,
+              letterSpacing: '0.02em'
+            }}
+            noWrap
+          >
+            {user ? truncate(user, 15) : 'Choose a token to swap'}
+          </Typography>
+        </Stack>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            backgroundColor: theme => alpha(theme.palette.primary.main, 0.1),
+            borderRadius: '50%',
+            width: 28,
+            height: 28,
+            justifyContent: 'center',
+            ml: 1
+          }}
+        >
+          <ArrowDropDownIcon 
+            className="arrow-icon"
+            sx={{ 
+              fontSize: 18, 
+              color: 'primary.main',
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            }} 
+          />
+        </Box>
+      </SelectTokenButton>
+    );
+  };
+
+  const renderTokenSelectorPanel = (isOpen, onClose, currentToken, title, isToken1) => (
+    <Slide direction="left" in={isOpen} mountOnEnter unmountOnExit>
+      <PanelContainer>
+        {/* Header */}
+        <PanelHeader>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" pb={2}>
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <IconButton 
+                onClick={onClose}
+                sx={{ 
+                  bgcolor: alpha(theme.palette.primary.main, 0.08),
+                  '&:hover': {
+                    bgcolor: alpha(theme.palette.primary.main, 0.16),
+                    transform: 'translateX(-2px)'
+                  }
+                }}
+              >
+                <Icon icon={arrowBack} width={24} />
+              </IconButton>
+              <Typography variant="h6" fontWeight={700}>
+                {title}
+              </Typography>
+            </Stack>
+            
+            {currentToken && (
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Typography variant="caption" color="text.secondary">
+                  Current:
+                </Typography>
+                <Chip 
+                  avatar={
+                    <Avatar 
+                      src={`https://s1.xrpl.to/token/${currentToken.md5}`}
+                      sx={{ width: 20, height: 20 }}
+                    />
+                  }
+                  label={currentToken.name}
+                  size="small"
+                  variant="outlined"
+                />
+              </Stack>
+            )}
+          </Stack>
+        </PanelHeader>
+
+        {/* Search Bar */}
+        <SearchContainer>
+          <TextField
+            inputRef={searchInputRef}
+            fullWidth
+            placeholder="Search by name, symbol, or address..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            variant="outlined"
+            size="medium"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                backgroundColor: alpha(theme.palette.background.default, 0.8),
+                '& fieldset': {
+                  borderColor: alpha(theme.palette.divider, 0.15)
+                },
+                '&:hover fieldset': {
+                  borderColor: alpha(theme.palette.primary.main, 0.3)
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.palette.primary.main
+                }
+              }
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Icon icon={searchFill} width={20} color={theme.palette.text.secondary} />
+                </InputAdornment>
+              ),
+              endAdornment: searchQuery && (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => setSearchQuery('')}>
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+          />
+          
+          {/* Category Filters */}
+          <Stack 
+            direction="row" 
+            spacing={1} 
+            sx={{ 
+              mt: 2,
+              overflowX: 'auto',
+              pb: 1,
+              '&::-webkit-scrollbar': { height: 0 }
+            }}
+          >
+            {categories.map(cat => (
+              <CategoryChip
+                key={cat.value}
+                label={
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <span>{cat.icon}</span>
+                    <span>{cat.label}</span>
+                  </Stack>
+                }
+                onClick={() => setSelectedCategory(cat.value)}
+                color={selectedCategory === cat.value ? 'primary' : 'default'}
+                variant={selectedCategory === cat.value ? 'filled' : 'outlined'}
+              />
+            ))}
+          </Stack>
+        </SearchContainer>
+
+        {/* Content */}
+        <ScrollableContent>
+          <Box sx={{ p: 2 }}>
+            {/* Recent Tokens */}
+            {!searchQuery && recentTokens.length > 0 && (
+              <Box mb={4}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                  <SectionTitle>
+                    <Icon icon={clockFill} width={18} />
+                    Recent Selections
+                  </SectionTitle>
+                  <Typography
+                    variant="caption"
+                    sx={{ 
+                      cursor: 'pointer',
+                      color: theme.palette.error.main,
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                    onClick={handleClearRecent}
+                  >
+                    Clear All
+                  </Typography>
+                </Stack>
+                <Grid container spacing={2}>
+                  {recentTokens.map(token => renderTokenItem(token, isToken1))}
+                </Grid>
+                <Divider sx={{ mt: 3, mb: 1 }} />
+              </Box>
+            )}
+
+            {/* Token List */}
+            <Box>
+              <SectionTitle>
+                {searchQuery ? (
+                  <>Search Results ({filteredTokens.length})</>
+                ) : selectedCategory === 'all' ? (
+                  <>All Available Tokens</>
+                ) : (
+                  <>{categories.find(c => c.value === selectedCategory)?.label}</>
+                )}
+              </SectionTitle>
+              
+              {loadingTokens ? (
+                <Grid container spacing={2}>
+                  {[...Array(6)].map((_, i) => (
+                    <Grid item xs={12} sm={6} md={4} key={i}>
+                      <Paper sx={{ p: 2, borderRadius: 2 }}>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <Skeleton variant="circular" width={48} height={48} />
+                          <Box flex={1}>
+                            <Skeleton variant="text" width="60%" />
+                            <Skeleton variant="text" width="40%" height={16} />
+                          </Box>
+                        </Stack>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+              ) : filteredTokens.length > 0 ? (
+                <Grid container spacing={2}>
+                  {filteredTokens.slice(0, 50).map(token => renderTokenItem(token, isToken1))}
+                </Grid>
+              ) : (
+                <Paper 
+                  sx={{ 
+                    p: 6, 
+                    textAlign: 'center',
+                    borderRadius: 2,
+                    backgroundColor: alpha(theme.palette.background.paper, 0.5)
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom color="text.secondary">
+                    No tokens found
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {searchQuery 
+                      ? `No results for "${searchQuery}"`
+                      : 'No tokens available in this category'}
+                  </Typography>
+                </Paper>
+              )}
+            </Box>
+          </Box>
+        </ScrollableContent>
+      </PanelContainer>
+    </Slide>
+  );
 
   return (
     <Box
@@ -2203,7 +2892,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               <Box sx={{ p: { xs: 1.5, sm: 2.5 }, position: 'relative', zIndex: 1 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
                   <Stack direction="row" alignItems="center" spacing={1}>
-                    <QueryToken token={token1} onChangeToken={onChangeToken1} />
+                    {renderTokenSelector(token1, () => setPanel1Open(true), "Select token to swap from")}
                     <IconButton
                       size="small"
                       onClick={() => setShowChart1(!showChart1)}
@@ -2382,7 +3071,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               <Box sx={{ p: { xs: 1.5, sm: 2.5 }, position: 'relative', zIndex: 1 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
                   <Stack direction="row" alignItems="center" spacing={1}>
-                    <QueryToken token={token2} onChangeToken={onChangeToken2} />
+                    {renderTokenSelector(token2, () => setPanel2Open(true), "Select token to receive")}
                     <IconButton
                       size="small"
                       onClick={() => setShowChart2(!showChart2)}
@@ -3279,6 +3968,10 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
         </Box>
       )}
       </Stack>
+      
+      {/* Token Selector Panels */}
+      {renderTokenSelectorPanel(panel1Open, () => setPanel1Open(false), token1, "Select token to swap from", true)}
+      {renderTokenSelectorPanel(panel2Open, () => setPanel2Open(false), token2, "Select token to receive", false)}
     </Box>
   );
 }
