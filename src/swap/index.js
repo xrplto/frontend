@@ -82,30 +82,26 @@ const CurrencyContent = styled('div')(
     display: flex;
     flex: 1 1 0%;
     flex-direction: row;
-    padding: 16px;
-    border-radius: 12px;
-    -webkit-box-align: center;
+    padding: 20px;
+    border-radius: 16px;
     align-items: center;
-    background: ${theme.palette.background.paper};
-    border: 1px solid ${alpha(theme.palette.divider, 0.15)};
-    transition: all 0.2s ease;
+    background: ${alpha(theme.palette.background.paper, 0.6)};
+    backdrop-filter: blur(10px);
+    border: 1px solid ${alpha(theme.palette.divider, 0.08)};
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
     &:hover {
-      border-color: ${alpha(theme.palette.primary.main, 0.3)};
-      box-shadow: 0 2px 8px ${alpha(theme.palette.primary.main, 0.08)};
+      background: ${alpha(theme.palette.background.paper, 0.8)};
+      border-color: ${alpha(theme.palette.primary.main, 0.2)};
+      transform: translateY(-1px);
     }
     
     &:not(:first-of-type) {
-      margin-top: 8px;
+      margin-top: 12px;
     }
     
     @media (max-width: 600px) {
-      padding: 12px;
-      border-radius: 10px;
-    }
-    
-    @media (min-width: 900px) {
-      padding: 20px 24px;
+      padding: 16px;
       border-radius: 14px;
     }
 `
@@ -134,26 +130,21 @@ const OverviewWrapper = styled('div')(
   ({ theme }) => `
     flex-direction: column;
     box-sizing: border-box;
-    border-radius: 16px;
+    border-radius: 24px;
     display: flex;
-    background: ${theme.palette.background.paper};
-    border: 1px solid ${alpha(theme.palette.divider, 0.12)};
-    padding-bottom: 8px;
+    background: ${alpha(theme.palette.background.paper, 0.95)};
+    backdrop-filter: blur(20px);
+    border: 1px solid ${alpha(theme.palette.divider, 0.08)};
     width: 100%;
-    max-width: 600px;
+    max-width: 480px;
     margin: 0 auto;
-    box-shadow: 0 4px 16px ${alpha(theme.palette.common.black, 0.04)};
+    box-shadow: 0 20px 60px ${alpha(theme.palette.common.black, 0.1)};
+    overflow: hidden;
 
     @media (max-width: 600px) {
-        border-radius: 12px;
-        margin: 0 8px;
-        box-shadow: 0 2px 8px ${alpha(theme.palette.common.black, 0.03)};
-    }
-    
-    @media (min-width: 900px) {
         border-radius: 20px;
-        max-width: 700px;
-        box-shadow: 0 8px 24px ${alpha(theme.palette.common.black, 0.06)};
+        margin: 0 12px;
+        box-shadow: 0 10px 30px ${alpha(theme.palette.common.black, 0.08)};
     }
 `
 );
@@ -169,193 +160,107 @@ const ConverterFrame = styled('div')(
 
 const ExchangeButton = styled(Button)(
   ({ theme }) => `
-    @media (max-width: 600px) {
-        margin-left: 8px;
-        margin-right: 8px;
-    }
-    @media (min-width: 900px) {
-        padding: 16px 32px;
-        border-radius: 10px;
-        min-height: 56px;
-        font-size: 16px;
-    }
+    width: 100%;
+    padding: 18px 24px;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: ${theme.palette.primary.main};
+    color: white;
+    border: none;
     position: relative;
     overflow: hidden;
-    padding: 14px 24px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    background: ${theme.palette.primary.main};
     
-    &:hover {
-      background: ${theme.palette.primary.dark};
-    }
-    
-    &:active {
-      background: ${theme.palette.primary.dark};
-    }
-    min-height: 48px;
-    background: linear-gradient(45deg, 
-      ${theme.palette.primary.main} 0%, 
-      ${alpha(theme.palette.primary.main, 0.8)} 25%,
-      ${alpha(theme.palette.primary.light, 0.9)} 50%,
-      ${alpha(theme.palette.primary.main, 0.8)} 75%,
-      ${theme.palette.primary.main} 100%);
-    background-size: 200% 200%;
-    animation: gradient 5s ease infinite;
-    box-shadow: 
-      0 0 10px ${alpha(theme.palette.primary.main, 0.5)},
-      0 0 20px ${alpha(theme.palette.primary.main, 0.3)},
-      0 0 30px ${alpha(theme.palette.primary.main, 0.2)};
-
-    @keyframes gradient {
-      0% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-      100% {
-        background-position: 0% 50%;
-      }
-    }
-
-    &::before {
-      content: "";
+    &::after {
+      content: '';
       position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, ${alpha(
-        theme.palette.primary.light,
-        0.15
-      )} 0%, transparent 70%);
-      animation: rotate 4s linear infinite;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
     }
-
-    @keyframes rotate {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    &:hover {
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 
-        0 0 15px ${alpha(theme.palette.primary.main, 0.6)},
-        0 0 30px ${alpha(theme.palette.primary.main, 0.4)},
-        0 0 45px ${alpha(theme.palette.primary.main, 0.3)};
-      &::before {
-        opacity: 1;
+    
+    &:hover:not(:disabled) {
+      background: ${theme.palette.primary.dark};
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px ${alpha(theme.palette.primary.main, 0.3)};
+      
+      &::after {
+        width: 300px;
+        height: 300px;
       }
     }
-
+    
     &:active {
       transform: translateY(0);
     }
-
+    
     &:disabled {
-      background: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'};
-      box-shadow: none;
-      &::before {
-        display: none;
-      }
+      background: ${alpha(theme.palette.action.disabled, 0.12)};
+      color: ${theme.palette.action.disabled};
+      cursor: not-allowed;
     }
-
-    & .MuiButton-label {
-      color: #fff;
-      font-weight: 500;
-      z-index: 1;
+    
+    @media (max-width: 600px) {
+      padding: 16px 20px;
+      font-size: 15px;
     }
 `
 );
 
 const AllowButton = styled(Button)(
   ({ theme }) => `
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 13px;
     font-weight: 600;
-    min-width: 60px;
-    height: 32px;
     text-transform: none;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    background: ${alpha(theme.palette.primary.main, 0.08)};
+    transition: all 0.2s ease;
+    background: ${alpha(theme.palette.primary.main, 0.1)};
     color: ${theme.palette.primary.main};
     border: 1px solid ${alpha(theme.palette.primary.main, 0.2)};
     
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, ${alpha(
-        theme.palette.primary.main,
-        0.2
-      )}, transparent);
-      transition: left 0.5s;
-    }
-    
     &:hover {
-      background: ${alpha(theme.palette.primary.main, 0.12)};
-      border-color: ${alpha(theme.palette.primary.main, 0.3)};
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px ${alpha(theme.palette.primary.main, 0.15)};
-      
-      &::before {
-        left: 100%;
-      }
-    }
-    
-    &:active {
-      transform: translateY(0);
-      transition: transform 0.1s;
+      background: ${alpha(theme.palette.primary.main, 0.15)};
+      border-color: ${theme.palette.primary.main};
+      transform: scale(1.02);
     }
 `
 );
 
 const ToggleButton = styled(IconButton)(
   ({ theme }) => `
-    background-color: ${alpha(theme.palette.mode === 'dark' ? '#000000' : '#ffffff', 0.8)};
-    border: 1px solid ${
-      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-    };
-    width: 40px;
-    height: 40px;
+    background: ${theme.palette.background.paper};
+    border: 2px solid ${alpha(theme.palette.divider, 0.12)};
+    width: 36px;
+    height: 36px;
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     z-index: 2;
-    transition: all 0.2s ease-in-out;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 2px 8px ${alpha(theme.palette.common.black, 0.1)};
     
     &:hover {
-      background-color: ${alpha(theme.palette.mode === 'dark' ? '#000000' : '#ffffff', 0.9)};
-      transform: translate(-50%, -50%) rotate(180deg);
+      background: ${theme.palette.primary.main};
+      border-color: ${theme.palette.primary.main};
+      transform: translate(-50%, -50%) rotate(180deg) scale(1.1);
+      box-shadow: 0 4px 12px ${alpha(theme.palette.primary.main, 0.3)};
+      
+      svg {
+        color: white;
+      }
     }
 
     &.switching {
       transform: translate(-50%, -50%) rotate(180deg);
-    }
-    
-    @media (max-width: 600px) {
-      width: 32px;
-      height: 32px;
-    }
-    
-    @media (min-width: 900px) {
-      width: 48px;
-      height: 48px;
     }
 `
 );
@@ -377,28 +282,21 @@ const WalletDisplay = styled('div')(
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px;
-    margin-bottom: 20px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(
-      theme.palette.success.main,
-      0.04
-    )} 100%);
-    border: 1px solid ${alpha(theme.palette.success.main, 0.2)};
-    backdrop-filter: blur(10px);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: 14px;
+    background: ${alpha(theme.palette.success.main, 0.05)};
+    border: 1px solid ${alpha(theme.palette.success.main, 0.15)};
+    transition: all 0.3s ease;
     
-    @media (max-width: 600px) {
-      margin-left: 10px;
-      margin-right: 10px;
-      padding: 12px 20px;
-      margin-bottom: 16px;
-      border-radius: 12px;
+    &:hover {
+      background: ${alpha(theme.palette.success.main, 0.08)};
+      border-color: ${alpha(theme.palette.success.main, 0.25)};
     }
     
-    @media (min-width: 900px) {
-      padding: 20px 32px;
-      margin-bottom: 24px;
-      border-radius: 20px;
+    @media (max-width: 600px) {
+      padding: 10px 14px;
+      margin-bottom: 12px;
     }
 `
 );
@@ -539,39 +437,38 @@ const TokenImage = styled(Image)(({ theme }) => ({
 }));
 
 const SelectTokenButton = styled(Stack)(({ theme }) => ({
-  padding: '8px 12px 8px 8px',
-  borderRadius: '16px',
+  padding: '10px 14px',
+  borderRadius: '14px',
   cursor: 'pointer',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  backgroundColor: 'transparent',
-  border: `1px solid ${theme.palette.mode === 'dark' 
-    ? alpha(theme.palette.divider, 0.08) 
-    : alpha(theme.palette.divider, 0.06)}`,
-  backdropFilter: 'blur(8px)',
+  transition: 'all 0.2s ease',
+  backgroundColor: alpha(theme.palette.background.paper, 0.5),
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  backdropFilter: 'blur(10px)',
   '&:hover': {
-    backgroundColor: alpha(theme.palette.background.paper, 0.1),
-    borderColor: alpha(theme.palette.primary.main, 0.3),
-    transform: 'translateY(-1px)',
+    backgroundColor: alpha(theme.palette.background.paper, 0.7),
+    borderColor: alpha(theme.palette.primary.main, 0.2),
+    transform: 'scale(1.02)',
     '& .arrow-icon': {
-      transform: 'rotate(180deg)',
       color: theme.palette.primary.main
     }
   },
   '&:active': {
-    transform: 'translateY(0)'
+    transform: 'scale(0.98)'
   }
 }));
 
 const PanelContainer = styled(Box)(({ theme }) => ({
   width: '100%',
-  minHeight: '600px',
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: '20px',
+  minHeight: '500px',
+  maxHeight: '80vh',
+  backgroundColor: alpha(theme.palette.background.paper, 0.98),
+  borderRadius: '24px',
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
-  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  boxShadow: `0 20px 60px ${alpha(theme.palette.common.black, 0.15)}`,
+  backdropFilter: 'blur(20px)'
 }));
 
 const PanelHeader = styled(Box)(({ theme }) => ({
@@ -608,34 +505,33 @@ const ScrollableContent = styled(Box)(({ theme }) => ({
 }));
 
 const TokenCard = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(0.75),
-  borderRadius: theme.spacing(0.75),
+  padding: '12px',
+  borderRadius: '12px',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
-  border: `1px solid ${alpha(theme.palette.divider, 0.03)}`,
-  backgroundColor: alpha(theme.palette.background.paper, 0.2),
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.06),
-    borderColor: alpha(theme.palette.primary.main, 0.15)
+    backgroundColor: alpha(theme.palette.primary.main, 0.04),
+    transform: 'translateX(4px)'
   },
   '&:active': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.08)
+    transform: 'translateX(0)'
   }
 }));
 
 const CategoryChip = styled(Chip)(({ theme }) => ({
-  borderRadius: theme.spacing(0.75),
+  borderRadius: '10px',
   fontWeight: 600,
-  fontSize: '0.75rem',
-  height: 24,
+  fontSize: '0.8rem',
+  height: 32,
   transition: 'all 0.2s ease',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   '&:hover': {
-    transform: 'translateY(-1px)',
-    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.15)}`
+    transform: 'scale(1.05)',
+    borderColor: theme.palette.primary.main
   },
   '& .MuiChip-label': {
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1)
+    paddingLeft: '12px',
+    paddingRight: '12px'
   }
 }));
 
@@ -2959,127 +2855,87 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           </Box>
 
           <Box sx={{ p: 3 }}>
-            {/* First Token with Integrated Sparkline */}
+            {/* First Token - Clean Card Design */}
             <Box
               sx={{
                 position: 'relative',
-                overflow: 'hidden',
-                borderRadius: '16px',
-                border: `1px solid ${focusTop ? alpha(theme.palette.primary.main, 0.3) : alpha(theme.palette.divider, 0.05)}`,
+                borderRadius: '20px',
+                border: `1px solid ${focusTop ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.06)}`,
                 transition: 'all 0.3s ease',
-                backgroundColor: alpha(theme.palette.background.paper, 0.02),
+                backgroundColor: alpha(theme.palette.background.paper, 0.3),
+                backdropFilter: 'blur(10px)',
                 '&:hover': {
-                  backgroundColor: alpha(theme.palette.background.paper, 0.04),
+                  backgroundColor: alpha(theme.palette.background.paper, 0.4),
                   borderColor: alpha(theme.palette.primary.main, 0.1)
                 }
               }}
             >
-              {/* Sparkline Background */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  width: '120px',
-                  height: '100%',
-                  opacity: 0.4,
-                  pointerEvents: 'none',
-                  maskImage: 'linear-gradient(to left, rgba(0,0,0,0.3), transparent)'
-                }}
-              >
-                <LoadChart
-                  url={`${BASE_URL}/sparkline/${revert ? token2.md5 : token1.md5}?period=24h&${revert ? token2.pro24h : token1.pro24h}`}
-                  style={{ width: '100%', height: '100%' }}
-                  showGradient={false}
-                  lineWidth={1.5}
-                  animation={false}
-                />
-              </Box>
-              
-              {/* Token Content */}
-              <Box sx={{ p: { xs: 1.5, sm: 2.5 }, position: 'relative', zIndex: 1 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
+              <Box sx={{ p: { xs: 2, sm: 3 } }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>You pay</Typography>
                     {renderTokenSelector(token1, () => setPanel1Open(true), "Select token to swap from")}
-                    <IconButton
-                      size="small"
-                      onClick={() => setShowChart1(!showChart1)}
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Input
+                      placeholder="0"
+                      disableUnderline
+                      value={amount1}
+                      onChange={handleChangeAmount1}
                       sx={{
-                        color: showChart1 ? theme.palette.primary.main : theme.palette.text.secondary,
-                        backgroundColor: showChart1 ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
-                        '&:hover': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.2)
+                        input: {
+                          textAlign: 'right',
+                          fontSize: { xs: '20px', sm: '28px' },
+                          fontWeight: 600,
+                          padding: 0,
+                          background: 'transparent',
+                          color: theme.palette.text.primary,
+                          '&::placeholder': {
+                            color: alpha(theme.palette.text.primary, 0.25)
+                          }
                         }
                       }}
-                    >
-                      <Icon icon="mdi:chart-line" width={18} height={18} />
-                    </IconButton>
-                  </Stack>
-                  <Input
-                    placeholder="0"
-                    disableUnderline
-                    value={amount1}
-                    onChange={handleChangeAmount1}
-                    sx={{
-                      width: '45%',
-                      input: {
-                        textAlign: 'right',
-                        fontSize: { xs: '18px', sm: '24px' },
-                        fontWeight: 700,
-                        padding: 0,
-                        background: 'transparent',
-                        color: theme.palette.text.primary,
-                        '&::placeholder': {
-                          color: alpha(theme.palette.text.primary, 0.3)
-                        }
-                      }
-                    }}
-                    onFocus={() => setFocusTop(true)}
-                    onBlur={() => setFocusTop(false)}
-                  />
-                </Stack>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Stack direction="row" alignItems="center" spacing={0.5}>
-                    <Typography variant="caption" color="text.secondary">
-                      {isLoggedIn && accountPairBalance && `Balance: ${fNumber(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value)}`}
+                      onFocus={() => setFocusTop(true)}
+                      onBlur={() => setFocusTop(false)}
+                    />
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                      {tokenPrice1 > 0 && `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}`}
                     </Typography>
-                    {isLoggedIn && accountPairBalance && (revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value) > 0 && (
+                  </Box>
+                </Stack>
+                {isLoggedIn && accountPairBalance && (
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Typography variant="caption" color="text.secondary">
+                      Balance: {fNumber(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value)}
+                    </Typography>
+                    {(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value) > 0 && (
                       <Stack direction="row" spacing={0.5}>
                         {[25, 50, 100].map(percent => (
-                          <Button
+                          <Chip
                             key={percent}
+                            label={`${percent}%`}
                             size="small"
                             onClick={() => {
                               const balance = revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value;
                               const newAmount = (balance * percent / 100).toFixed(6);
-                              // Trigger the same logic as handleChangeAmount1
                               handleChangeAmount1({ target: { value: newAmount } });
                             }}
                             sx={{
-                              minWidth: 'auto',
-                              padding: '2px 6px',
-                              fontSize: '0.65rem',
-                              fontWeight: 600,
-                              height: '18px',
-                              borderRadius: '4px',
-                              background: alpha(theme.palette.primary.main, 0.1),
+                              height: '20px',
+                              fontSize: '0.7rem',
+                              cursor: 'pointer',
+                              backgroundColor: alpha(theme.palette.primary.main, 0.08),
                               color: theme.palette.primary.main,
-                              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                               '&:hover': {
-                                background: alpha(theme.palette.primary.main, 0.2),
+                                backgroundColor: alpha(theme.palette.primary.main, 0.15),
                               }
                             }}
-                          >
-                            {percent}%
-                          </Button>
+                          />
                         ))}
                       </Stack>
                     )}
                   </Stack>
-                  <Typography variant="caption" color="text.secondary">
-                    {tokenPrice1 > 0 && `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}`}
-                  </Typography>
-                </Stack>
+                )}
               </Box>
             </Box>
 
@@ -3108,123 +2964,71 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Box>
             )}
 
-            {/* Minimalist Swap Button */}
-            <Box sx={{ position: 'relative', height: '24px', my: { xs: 1, sm: 2 } }}>
-              <IconButton
+            {/* Clean Swap Button */}
+            <Box sx={{ position: 'relative', height: '20px', my: 1 }}>
+              <ToggleButton
                 onClick={onRevertExchange}
                 disabled={isSwitching}
-                sx={{
-                  position: 'absolute',
-                  left: '50%',
-                  top: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: { xs: '36px', sm: '40px' },
-                  height: { xs: '36px', sm: '40px' },
-                  backgroundColor: theme.palette.background.default,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                  '&:hover': {
-                    backgroundColor: theme.palette.action.hover,
-                    '& svg': {
-                      transform: 'rotate(180deg)'
-                    }
-                  },
-                  '& svg': {
-                    transition: 'transform 0.3s ease'
-                  }
-                }}
+                className={isSwitching ? 'switching' : ''}
                 title="Switch currencies (Alt + S)"
               >
-                <Icon icon={exchangeIcon} width={18} height={18} />
-              </IconButton>
+                <Icon icon={exchangeIcon} width={20} height={20} />
+              </ToggleButton>
             </Box>
 
-            {/* Second Token with Integrated Sparkline */}
+            {/* Second Token - Clean Card Design */}
             <Box
               sx={{
                 position: 'relative',
-                overflow: 'hidden',
-                borderRadius: '16px',
-                border: `1px solid ${focusBottom ? alpha(theme.palette.primary.main, 0.3) : alpha(theme.palette.divider, 0.05)}`,
+                borderRadius: '20px',
+                border: `1px solid ${focusBottom ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.06)}`,
                 transition: 'all 0.3s ease',
-                backgroundColor: alpha(theme.palette.background.paper, 0.02),
+                backgroundColor: alpha(theme.palette.background.paper, 0.3),
+                backdropFilter: 'blur(10px)',
                 '&:hover': {
-                  backgroundColor: alpha(theme.palette.background.paper, 0.04),
+                  backgroundColor: alpha(theme.palette.background.paper, 0.4),
                   borderColor: alpha(theme.palette.primary.main, 0.1)
                 }
               }}
             >
-              {/* Sparkline Background */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  width: '120px',
-                  height: '100%',
-                  opacity: 0.4,
-                  pointerEvents: 'none',
-                  maskImage: 'linear-gradient(to left, rgba(0,0,0,0.3), transparent)'
-                }}
-              >
-                <LoadChart
-                  url={`${BASE_URL}/sparkline/${revert ? token1.md5 : token2.md5}?period=24h&${revert ? token1.pro24h : token2.pro24h}`}
-                  style={{ width: '100%', height: '100%' }}
-                  showGradient={false}
-                  lineWidth={1.5}
-                  animation={false}
-                />
-              </Box>
-              
-              {/* Token Content */}
-              <Box sx={{ p: { xs: 1.5, sm: 2.5 }, position: 'relative', zIndex: 1 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
+              <Box sx={{ p: { xs: 2, sm: 3 } }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>You receive</Typography>
                     {renderTokenSelector(token2, () => setPanel2Open(true), "Select token to receive")}
-                    <IconButton
-                      size="small"
-                      onClick={() => setShowChart2(!showChart2)}
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Input
+                      placeholder="0"
+                      disableUnderline
+                      value={amount1 === '' ? '' : amount2}
+                      onChange={handleChangeAmount2}
                       sx={{
-                        color: showChart2 ? theme.palette.primary.main : theme.palette.text.secondary,
-                        backgroundColor: showChart2 ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
-                        '&:hover': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.2)
+                        input: {
+                          textAlign: 'right',
+                          fontSize: { xs: '20px', sm: '28px' },
+                          fontWeight: 600,
+                          padding: 0,
+                          background: 'transparent',
+                          color: theme.palette.text.primary,
+                          '&::placeholder': {
+                            color: alpha(theme.palette.text.primary, 0.25)
+                          }
                         }
                       }}
-                    >
-                      <Icon icon="mdi:chart-line" width={18} height={18} />
-                    </IconButton>
-                  </Stack>
-                  <Input
-                    placeholder="0"
-                    disableUnderline
-                    value={amount1 === '' ? '' : amount2}
-                    onChange={handleChangeAmount2}
-                    sx={{
-                      width: '45%',
-                      input: {
-                        textAlign: 'right',
-                        fontSize: { xs: '18px', sm: '24px' },
-                        fontWeight: 700,
-                        padding: 0,
-                        background: 'transparent',
-                        color: theme.palette.text.primary,
-                        '&::placeholder': {
-                          color: alpha(theme.palette.text.primary, 0.3)
-                        }
-                      }
-                    }}
-                    onFocus={() => setFocusBottom(true)}
-                    onBlur={() => setFocusBottom(false)}
-                  />
+                      onFocus={() => setFocusBottom(true)}
+                      onBlur={() => setFocusBottom(false)}
+                    />
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                      {tokenPrice2 > 0 && `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}`}
+                    </Typography>
+                  </Box>
                 </Stack>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                {isLoggedIn && accountPairBalance && (
                   <Typography variant="caption" color="text.secondary">
-                    {isLoggedIn && `Balance: ${revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value}`}
+                    Balance: {fNumber(revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value)}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {tokenPrice2 > 0 && `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}`}
-                  </Typography>
-                </Stack>
+                )}
               </Box>
             </Box>
 
