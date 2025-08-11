@@ -120,15 +120,7 @@ export default function Description({
               sx={{ 
                 position: 'relative',
                 ...(!expanded && {
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 60,
-                    background: `linear-gradient(transparent, ${theme.palette.background.paper})`
-                  }
+                  overflow: 'hidden'
                 })
               }}
             >
@@ -139,7 +131,7 @@ export default function Description({
                       variant="body2" 
                       paragraph
                       sx={{ 
-                        color: 'text.secondary',
+                        color: 'text.primary',
                         lineHeight: 1.7,
                         mb: 1.5
                       }}
@@ -177,7 +169,7 @@ export default function Description({
                       component="li" 
                       variant="body2"
                       sx={{ 
-                        color: 'text.secondary',
+                        color: 'text.primary',
                         mb: 0.5,
                         lineHeight: 1.7
                       }}
