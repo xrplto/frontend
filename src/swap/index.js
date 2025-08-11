@@ -2281,10 +2281,11 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     if (loadingTokens) return;
     setLoadingTokens(true);
     try {
-      const res = await axios.get(`${BASE_URL}/xrpnft/tokens`);
+      // Use the same endpoint that provides marketcap data
+      const res = await axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`);
       if (res.status === 200 && res.data) {
         const tokenList = res.data.tokens || [];
-        // Add XRP token with proper md5
+        // Add XRP token with full data
         const xrpToken = {
           md5: '84e5efeb89c4eae8f68188982dc290d8',
           name: 'XRP',
@@ -2292,7 +2293,10 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           issuer: 'XRPL',
           currency: 'XRP',
           ext: 'png',
-          isOMCF: 'yes'
+          isOMCF: 'yes',
+          marketcap: 0, // XRP marketcap is not relevant here
+          vol24hxrp: 0,
+          exch: 1
         };
         setSelectorTokens([xrpToken, ...tokenList]);
       }
@@ -2306,7 +2310,10 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
         issuer: 'XRPL',
         currency: 'XRP',
         ext: 'png',
-        isOMCF: 'yes'
+        isOMCF: 'yes',
+        marketcap: 0,
+        vol24hxrp: 0,
+        exch: 1
       };
       setSelectorTokens([xrpToken]);
     } finally {
@@ -2409,77 +2416,93 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   };
 
   const renderTokenItem = (token, isToken1) => (
-    <Grid item xs={6} sm={4} md={3} key={token.md5}>
-      <TokenCard onClick={() => handleSelectToken(token, isToken1)} elevation={0}>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Box position="relative">
-            <Avatar
-              src={`https://s1.xrpl.to/token/${token.md5}`}
-              alt={token.name}
-              sx={{ 
-                width: 32, 
-                height: 32,
-                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-              }}
-              imgProps={{
-                onError: (e) => {
-                  e.target.src = '/static/alt.webp';
-                }
-              }}
-            />
-            {token.kyc && (
-              <Tooltip title="KYC Verified">
-                <CheckCircleIcon 
-                  sx={{ 
-                    position: 'absolute',
-                    bottom: -2,
-                    right: -2,
-                    fontSize: 14,
-                    color: '#00AB55',
-                    bgcolor: 'background.paper',
-                    borderRadius: '50%'
-                  }} 
-                />
-              </Tooltip>
-            )}
-          </Box>
-          
-          <Box flex={1} minWidth={0}>
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <Typography 
-                variant="body2" 
-                fontWeight={600}
-                noWrap
-                sx={{ fontSize: '0.8rem' }}
-                color={token.isOMCF === 'yes' ? '#1db954' : 'text.primary'}
-              >
-                {token.name}
-              </Typography>
-              {token.trending && (
-                <Icon icon={trendingUp} width={12} color={theme.palette.success.main} />
-              )}
-            </Stack>
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: '0.7rem' }}>
-              {token.currency?.slice(0, 8)}
-            </Typography>
-            {token.vol24h && (
-              <Typography variant="caption" display="block" sx={{ color: theme.palette.success.main, fontSize: '0.7rem' }}>
-                ${(token.vol24h / 1000).toFixed(0)}K
-              </Typography>
-            )}
-          </Box>
-
-          {((isToken1 && token1?.md5 === token.md5) || (!isToken1 && token2?.md5 === token.md5)) && (
+    <Box
+      key={token.md5}
+      onClick={() => handleSelectToken(token, isToken1)}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        padding: '8px 12px',
+        cursor: 'pointer',
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+        transition: 'all 0.2s ease',
+        '&:hover': {
+          backgroundColor: alpha(theme.palette.primary.main, 0.04),
+        },
+        '&:last-child': {
+          borderBottom: 'none'
+        }
+      }}
+    >
+      <Avatar
+        src={`https://s1.xrpl.to/token/${token.md5}`}
+        alt={token.name}
+        sx={{ 
+          width: 28, 
+          height: 28,
+          mr: 1.5
+        }}
+        imgProps={{
+          onError: (e) => {
+            e.target.src = '/static/alt.webp';
+          }
+        }}
+      />
+      
+      <Box sx={{ flex: '0 0 25%', minWidth: 0 }}>
+        <Stack direction="row" alignItems="center" spacing={0.5}>
+          <Typography 
+            variant="body2" 
+            fontWeight={600}
+            noWrap
+            sx={{ fontSize: '0.8rem' }}
+            color={token.isOMCF === 'yes' ? '#1db954' : 'text.primary'}
+          >
+            {token.name}
+          </Typography>
+          {token.verified && (
             <CheckCircleIcon 
               sx={{ 
-                fontSize: 16,
-                color: theme.palette.primary.main
+                fontSize: 12,
+                color: theme.palette.primary.main,
+                flexShrink: 0
               }} 
             />
           )}
         </Stack>
-      </TokenCard>
-    </Grid>
+        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', display: 'block' }}>
+          {token.user || 'Unknown'}
+        </Typography>
+      </Box>
+
+      <Box sx={{ flex: '0 0 20%', textAlign: 'right' }}>
+        <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+          ${token.usd ? parseFloat(token.usd).toFixed(4) : (token.exch ? (token.exch / (metrics?.USD || 0.35)).toFixed(4) : '0.0000')}
+        </Typography>
+      </Box>
+
+      <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
+        <Typography variant="caption" sx={{ fontSize: '0.75rem', color: theme.palette.success.main }}>
+          ${token.vol24h ? `${(token.vol24h / 1000).toFixed(0)}K` : (token.vol24hxrp ? `${(token.vol24hxrp / (metrics?.USD || 0.35) / 1000).toFixed(0)}K` : '0')}
+        </Typography>
+      </Box>
+
+      <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
+        <Typography variant="caption" sx={{ fontSize: '0.75rem', color: theme.palette.info.main }}>
+          {token.marketcap ? `$${(token.marketcap / (metrics?.USD || 0.35) / 1000000).toFixed(1)}M` : '$0M'}
+        </Typography>
+      </Box>
+
+      {((isToken1 && token1?.md5 === token.md5) || (!isToken1 && token2?.md5 === token.md5)) && (
+        <CheckCircleIcon 
+          sx={{ 
+            fontSize: 16,
+            color: theme.palette.primary.main,
+            ml: 1
+          }} 
+        />
+      )}
+    </Box>
   );
 
   const renderTokenSelector = (token, onClickToken, panelTitle) => {
@@ -2725,9 +2748,9 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                     Clear All
                   </Typography>
                 </Stack>
-                <Grid container spacing={1}>
+                <Box sx={{ border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 1 }}>
                   {recentTokens.map(token => renderTokenItem(token, isToken1))}
-                </Grid>
+                </Box>
                 <Divider sx={{ mt: 2, mb: 1 }} />
               </Box>
             )}
@@ -2761,9 +2784,44 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                   ))}
                 </Grid>
               ) : filteredTokens.length > 0 ? (
-                <Grid container spacing={1}>
-                  {filteredTokens.slice(0, 50).map(token => renderTokenItem(token, isToken1))}
-                </Grid>
+                <Box>
+                  {/* Table Header */}
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      padding: '8px 12px',
+                      borderBottom: `2px solid ${alpha(theme.palette.divider, 0.15)}`,
+                      backgroundColor: alpha(theme.palette.background.default, 0.3)
+                    }}
+                  >
+                    <Box sx={{ width: 28, mr: 1.5 }} />
+                    <Box sx={{ flex: '0 0 25%' }}>
+                      <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                        TOKEN
+                      </Typography>
+                    </Box>
+                    <Box sx={{ flex: '0 0 20%', textAlign: 'right' }}>
+                      <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                        PRICE (USD)
+                      </Typography>
+                    </Box>
+                    <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
+                      <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                        24H VOL (USD)
+                      </Typography>
+                    </Box>
+                    <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
+                      <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                        MARKET CAP
+                      </Typography>
+                    </Box>
+                  </Box>
+                  {/* Table Body */}
+                  <Box sx={{ border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 1, borderTop: 'none' }}>
+                    {filteredTokens.slice(0, 50).map(token => renderTokenItem(token, isToken1))}
+                  </Box>
+                </Box>
               ) : (
                 <Paper 
                   sx={{ 
