@@ -36,8 +36,9 @@ import { useRouter } from 'next/router';
 
 const TransitionTypo = styled(Typography)(
   () => `
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: color 0.15s ease;
         contain: layout style paint;
+        will-change: color;
     `
 );
 
@@ -403,10 +404,11 @@ function FTokenRow({
     () => ({
       borderBottom: 'none',
       position: 'relative',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'background-color 0.15s ease',
       backgroundColor: 'transparent',
       width: '100%',
       height: isMobile ? '32px' : 'auto',
+      contain: 'layout',
       '&:after': isMobile ? {} : {
         content: '""',
         position: 'absolute',
@@ -418,8 +420,6 @@ function FTokenRow({
       },
       '&:hover': {
         backgroundColor: alpha(theme.palette.primary.main, 0.04),
-        transform: isMobile ? 'none' : 'translateY(-1px)',
-        boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.05)}`,
         cursor: 'pointer',
         '&:after': {
           opacity: 0
@@ -567,18 +567,15 @@ function FTokenRow({
   }, [dateon, date]);
 
   const sparklineUrl = useMemo(() => {
-    let url = `${BASE_URL}/sparkline/${md5}?period=24h`;
-    if (isOlderThanOneDay) {
-      url += '&lightweight=true&maxPoints=30';
-    }
+    let url = `${BASE_URL}/sparkline/${md5}?period=24h&lightweight=true&maxPoints=20`;
     return url;
-  }, [BASE_URL, md5, isOlderThanOneDay]);
+  }, [BASE_URL, md5]);
 
   useEffect(() => {
     setPriceColor(getPriceColor(memoizedToken.bearbull, theme));
     const timer = setTimeout(() => {
       setPriceColor('');
-    }, 3000);
+    }, 1500); // Reduced animation time
 
     return () => clearTimeout(timer);
   }, [time, memoizedToken.bearbull, theme]);
@@ -687,9 +684,9 @@ function FTokenRow({
                   width={isMobile ? 20 : 32}
                   height={isMobile ? 20 : 32}
                   sizes="(max-width: 768px) 20px, 32px"
-                  quality={90}
+                  quality={75}
                   loading="lazy"
-                  unoptimized
+                  unoptimized={false}
                   placeholder="blur"
                   blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   style={{ objectFit: 'cover', width: '100%', height: '100%' }}
@@ -704,9 +701,9 @@ function FTokenRow({
                   width={isMobile ? 20 : 32}
                   height={isMobile ? 20 : 32}
                   sizes="(max-width: 768px) 20px, 32px"
-                  quality={90}
+                  quality={75}
                   loading="lazy"
-                  unoptimized
+                  unoptimized={false}
                   placeholder="blur"
                   blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   style={{ objectFit: 'cover', width: '100%', height: '100%' }}
@@ -1035,7 +1032,7 @@ function FTokenRow({
               style={{ width: '100%', height: '100%' }}
               animation={false}
               showGradient={false}
-              lineWidth={2}
+              lineWidth={1.5}
               opts={chartOpts}
             />
           </Box>

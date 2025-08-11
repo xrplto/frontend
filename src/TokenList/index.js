@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect, useCallback, useRef, useMemo, useDeferredValue } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, useDeferredValue, useTransition } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { Box, Table, TableBody, useTheme, useMediaQuery } from '@mui/material';
 import { useContext } from 'react';
@@ -17,34 +17,27 @@ import { debounce } from 'lodash';
 import { throttle } from 'lodash';
 import { useRouter } from 'next/router';
 
-// Optimized memoization with custom comparison
+// Optimized memoization for high-frequency updates
 const MemoizedTokenRow = memo(TokenRow, (prevProps, nextProps) => {
-  // Only re-render if specific props change
   const prev = prevProps.token;
   const next = nextProps.token;
   
-  // Check critical fields that affect display
-  if (prev.md5 !== next.md5) return false;
+  // Fast path: check only price and percentage changes for trading
   if (prev.exch !== next.exch) return false;
-  if (prev.pro5m !== next.pro5m) return false;
-  if (prev.pro1h !== next.pro1h) return false;
   if (prev.pro24h !== next.pro24h) return false;
-  if (prev.pro7d !== next.pro7d) return false;
-  if (prev.vol24hxrp !== next.vol24hxrp) return false;
-  if (prev.marketcap !== next.marketcap) return false;
   if (prev.time !== next.time) return false;
   
-  // Check other props
-  if (prevProps.scrollLeft !== nextProps.scrollLeft) return false;
+  // Check watchlist only if changed
+  if (prevProps.watchList !== nextProps.watchList) {
+    const prevInWatchlist = prevProps.watchList.includes(prev.md5);
+    const nextInWatchlist = nextProps.watchList.includes(next.md5);
+    if (prevInWatchlist !== nextInWatchlist) return false;
+  }
+  
+  // Check currency changes
   if (prevProps.exchRate !== nextProps.exchRate) return false;
-  if (prevProps.activeFiatCurrency !== nextProps.activeFiatCurrency) return false;
   
-  // Check watchlist
-  const prevInWatchlist = prevProps.watchList.includes(prev.md5);
-  const nextInWatchlist = nextProps.watchList.includes(next.md5);
-  if (prevInWatchlist !== nextInWatchlist) return false;
-  
-  return true; // Props are equal, skip re-render
+  return true; // Skip re-render
 });
 const LazyEditTokenDialog = lazy(() => import('src/components/EditTokenDialog'));
 const LazyTrustSetDialog = lazy(() => import('src/components/TrustSetDialog'));
@@ -140,59 +133,55 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const processWebSocketQueue = useCallback(() => {
     if (wsMessageQueue.current.length === 0) return;
     
-    // Use React 18's automatic batching
-    const messages = [...wsMessageQueue.current];
-    wsMessageQueue.current = [];
+    const messages = wsMessageQueue.current.splice(0, 50); // Process max 50 at once
     
-    // Process all messages at once
     const aggregatedTokens = new Map();
     let latestMetrics = null;
     
     messages.forEach(msg => {
-      if (msg.metrics) {
-        latestMetrics = msg.metrics;
-      }
+      if (msg.metrics) latestMetrics = msg.metrics;
       if (msg.tokens) {
-        msg.tokens.forEach(token => {
-          aggregatedTokens.set(token.md5, token);
+        msg.tokens.forEach(token => aggregatedTokens.set(token.md5, token));
+      }
+    });
+    
+    // Use startTransition for non-urgent updates
+    startTransition(() => {
+      if (latestMetrics) dispatch(update_metrics(latestMetrics));
+      
+      if (aggregatedTokens.size > 0) {
+        setTokens(prevTokens => {
+          const tokenMap = new Map(prevTokens.map(t => [t.md5, t]));
+          let hasChanges = false;
+          
+          aggregatedTokens.forEach((newToken, md5) => {
+            const existing = tokenMap.get(md5);
+            if (existing) {
+              // Only check critical trading fields
+              if (existing.exch !== newToken.exch || 
+                  existing.pro24h !== newToken.pro24h ||
+                  existing.vol24hxrp !== newToken.vol24hxrp) {
+                tokenMap.set(md5, {
+                  ...existing,
+                  ...newToken,
+                  time: Date.now(),
+                  bearbull: existing.exch > newToken.exch ? -1 : 1
+                });
+                hasChanges = true;
+              }
+            }
+          });
+          
+          return hasChanges ? Array.from(tokenMap.values()) : prevTokens;
         });
       }
     });
     
-    // Apply updates in a single batch
-    if (latestMetrics) {
-      dispatch(update_metrics(latestMetrics));
+    // Continue processing if more messages
+    if (wsMessageQueue.current.length > 0) {
+      requestAnimationFrame(() => processWebSocketQueue());
     }
-    
-    if (aggregatedTokens.size > 0) {
-      setTokens(prevTokens => {
-        const tokenMap = new Map(prevTokens.map(t => [t.md5, t]));
-        let hasChanges = false;
-        
-        aggregatedTokens.forEach((newToken, md5) => {
-          const existing = tokenMap.get(md5);
-          if (existing) {
-            // Quick check for changes
-            const needsUpdate = Object.keys(newToken).some(
-              key => newToken[key] !== existing[key]
-            );
-            
-            if (needsUpdate) {
-              tokenMap.set(md5, {
-                ...existing,
-                ...newToken,
-                time: Date.now(),
-                bearbull: existing.exch > newToken.exch ? -1 : 1
-              });
-              hasChanges = true;
-            }
-          }
-        });
-        
-        return hasChanges ? Array.from(tokenMap.values()) : prevTokens;
-      });
-    }
-  }, [dispatch, setTokens]);
+  }, [dispatch, setTokens, startTransition]);
 
   const { sendJsonMessage, readyState } = useWebSocket(WSS_FEED_URL, {
     shouldReconnect: () => true,
@@ -210,9 +199,9 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           clearTimeout(wsProcessTimer.current);
         }
         
-        wsProcessTimer.current = setTimeout(() => {
+        wsProcessTimer.current = requestAnimationFrame(() => {
           processWebSocketQueue();
-        }, 500); // Process every 580ms - 8 updates per 4s ledger cycle
+        }); // Use RAF for smoother updates
         
       } catch (err) {
         console.error('Error parsing WebSocket message:', err);
@@ -476,20 +465,27 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     setSync(prev => prev + 1);
   }, []);
 
-  // Performance optimization: limit initial render to 50 rows
-  const [renderCount, setRenderCount] = useState(50);
+  // Performance optimization: virtualization for large lists
+  const [renderCount, setRenderCount] = useState(20);
+  const [isPending, startTransition] = useTransition();
   
   useEffect(() => {
-    if (rows > 50) {
-      // Progressively render more rows after initial mount
-      const timer = setTimeout(() => {
-        setRenderCount(rows);
-      }, 100);
-      return () => clearTimeout(timer);
+    if (rows > 20) {
+      // Immediate render of visible rows
+      setRenderCount(Math.min(50, rows));
+      // Load rest progressively
+      if (rows > 50) {
+        const timer = requestIdleCallback(() => {
+          startTransition(() => {
+            setRenderCount(Math.min(rows, 100));
+          });
+        }, { timeout: 100 });
+        return () => cancelIdleCallback(timer);
+      }
     } else {
       setRenderCount(rows);
     }
-  }, [rows]);
+  }, [rows, startTransition]);
   
   const visibleTokens = useMemo(() => {
     return tokens.slice(0, Math.min(renderCount, rows));
@@ -572,10 +568,12 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           '& .MuiTableCell-root': {
             padding: '2px 6px',
             height: '32px',
-            contain: 'layout style paint'
+            contain: 'layout style paint',
+            willChange: 'auto'
           },
           '& .MuiTableRow-root': {
-            willChange: 'transform',
+            willChange: 'auto',
+            contain: 'layout style',
             '&:hover': {
               backgroundColor: 'rgba(0, 0, 0, 0.04)'
             }
@@ -584,10 +582,11 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         ref={tableContainerRef}
       >
         <Table ref={tableRef} size="small" sx={{ 
-          tableLayout: 'auto',
+          tableLayout: 'fixed',
           width: '100%',
-          opacity: isDeferring ? 0.95 : 1,
-          transition: 'opacity 0.1s ease'
+          opacity: isDeferring || isPending ? 0.95 : 1,
+          transition: isDeferring || isPending ? 'opacity 0.1s ease' : 'none',
+          contain: 'layout'
         }}>
           <TokenListHead
             order={order}
