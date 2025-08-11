@@ -239,12 +239,13 @@ const getOriginIcon = (origin, isMobile) => {
     case 'aigent.run':
       return (
         <Image
-          src="/static/aigentrun.gif"
+          src="/static/aigentrun-small.gif"
           alt="Aigent.Run"
           width={isMobile ? 10 : 14}
           height={isMobile ? 10 : 14}
           sizes={isMobile ? '10px' : '14px'}
           quality={85}
+          unoptimized
           style={{
             objectFit: 'contain',
             marginRight: isMobile ? '1px' : '2px'
@@ -267,7 +268,7 @@ const getOriginIcon = (origin, isMobile) => {
           }}
         >
           <Image
-            src="/magneticx-logo.webp"
+            src="/magneticx-logo-small.webp"
             alt="Magnetic X"
             width={isMobile ? 7 : 10}
             height={isMobile ? 7 : 10}
@@ -688,6 +689,7 @@ function FTokenRow({
                   sizes="(max-width: 768px) 20px, 32px"
                   quality={90}
                   loading="lazy"
+                  unoptimized
                   placeholder="blur"
                   blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   style={{ objectFit: 'cover', width: '100%', height: '100%' }}
@@ -704,6 +706,7 @@ function FTokenRow({
                   sizes="(max-width: 768px) 20px, 32px"
                   quality={90}
                   loading="lazy"
+                  unoptimized
                   placeholder="blur"
                   blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   style={{ objectFit: 'cover', width: '100%', height: '100%' }}
