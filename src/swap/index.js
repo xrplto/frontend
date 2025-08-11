@@ -563,34 +563,26 @@ const SelectTokenButton = styled(Stack)(({ theme }) => ({
 }));
 
 const PanelContainer = styled(Box)(({ theme }) => ({
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: theme.palette.background.default,
-  zIndex: 1400,
+  width: '100%',
+  minHeight: '600px',
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: '20px',
   display: 'flex',
   flexDirection: 'column',
-  overflow: 'hidden'
+  overflow: 'hidden',
+  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`
 }));
 
 const PanelHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2, 2, 0, 2),
+  padding: theme.spacing(2),
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  backgroundColor: theme.palette.background.paper,
-  backdropFilter: 'blur(10px)',
-  position: 'sticky',
-  top: 0,
-  zIndex: 1
+  background: alpha(theme.palette.background.paper, 0.02)
 }));
 
 const SearchContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
-  backgroundColor: theme.palette.background.paper,
-  position: 'sticky',
-  top: 64,
-  zIndex: 1,
+  backgroundColor: alpha(theme.palette.background.default, 0.02),
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
 }));
 
@@ -2577,9 +2569,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     );
   };
 
-  const renderTokenSelectorPanel = (isOpen, onClose, currentToken, title, isToken1) => (
-    <Slide direction="left" in={isOpen} mountOnEnter unmountOnExit>
-      <PanelContainer>
+  const renderTokenSelectorPanel = (currentToken, title, isToken1, onClose) => (
+    <PanelContainer>
         {/* Header */}
         <PanelHeader>
           <Stack direction="row" alignItems="center" justifyContent="space-between" pb={2}>
@@ -2776,32 +2767,71 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           </Box>
         </ScrollableContent>
       </PanelContainer>
-    </Slide>
   );
+
+  // Check if we should show token selector
+  const showTokenSelector = panel1Open || panel2Open;
+  const currentSelectorToken = panel1Open ? token1 : token2;
+  const selectorTitle = panel1Open ? "Select token to swap from" : "Select token to receive";
+  const isToken1Selector = panel1Open;
 
   return (
     <Box
       sx={{ 
         width: '100%', 
-        maxWidth: showOrderbook ? '1200px' : '800px', 
+        maxWidth: showOrderbook && !showTokenSelector ? '1200px' : '800px', 
         margin: '0 auto', 
         px: { xs: 0.5, sm: 2, md: 3 },
         transition: 'max-width 0.3s ease'
       }}
     >
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={{ xs: 1, md: 3 }}
-        alignItems="flex-start"
-        justifyContent="center"
-        sx={{ width: '100%' }}
-      >
-        <Stack sx={{ 
-          width: '100%', 
-          flex: showOrderbook ? '0 0 auto' : '1',
-          maxWidth: showOrderbook ? '480px' : '100%',
-          transition: 'all 0.3s ease' 
-        }}>
+      <Box sx={{ position: 'relative', width: '100%' }}>
+        {/* Token Selector */}
+        <Box
+          sx={{
+            opacity: showTokenSelector ? 1 : 0,
+            visibility: showTokenSelector ? 'visible' : 'hidden',
+            position: showTokenSelector ? 'relative' : 'absolute',
+            width: '100%',
+            transition: 'opacity 0.3s ease, visibility 0.3s ease',
+            pointerEvents: showTokenSelector ? 'auto' : 'none'
+          }}
+        >
+          {(panel1Open || panel2Open) && renderTokenSelectorPanel(
+            currentSelectorToken, 
+            selectorTitle, 
+            isToken1Selector,
+            () => {
+              setPanel1Open(false);
+              setPanel2Open(false);
+            }
+          )}
+        </Box>
+
+        {/* Swap UI */}
+        <Box
+          sx={{
+            opacity: showTokenSelector ? 0 : 1,
+            visibility: showTokenSelector ? 'hidden' : 'visible',
+            position: showTokenSelector ? 'absolute' : 'relative',
+            width: '100%',
+            transition: 'opacity 0.3s ease, visibility 0.3s ease',
+            pointerEvents: showTokenSelector ? 'none' : 'auto'
+          }}
+        >
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={{ xs: 1, md: 3 }}
+          alignItems="flex-start"
+          justifyContent="center"
+          sx={{ width: '100%' }}
+        >
+          <Stack sx={{ 
+            width: '100%', 
+            flex: showOrderbook ? '0 0 auto' : '1',
+            maxWidth: showOrderbook ? '480px' : '100%',
+            transition: 'all 0.3s ease' 
+          }}>
         {accountProfile && accountProfile.account && (
           <WalletDisplay>
             <WalletInfo>
@@ -3967,11 +3997,9 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           </Box>
         </Box>
       )}
-      </Stack>
-      
-      {/* Token Selector Panels */}
-      {renderTokenSelectorPanel(panel1Open, () => setPanel1Open(false), token1, "Select token to swap from", true)}
-      {renderTokenSelectorPanel(panel2Open, () => setPanel2Open(false), token2, "Select token to receive", false)}
+        </Stack>
+        </Box>
+      </Box>
     </Box>
   );
 }
