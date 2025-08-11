@@ -29,7 +29,8 @@ import {
   Switch,
   useTheme,
   useMediaQuery,
-  Button
+  Button,
+  Stack
 } from '@mui/material';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import SearchIcon from '@mui/icons-material/Search';
@@ -44,6 +45,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
 import { alpha } from '@mui/material/styles';
 import Link from 'next/link';
+import Head from 'next/head';
 
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: 'flex',
@@ -123,78 +125,104 @@ function TabPanel({ children, value, index }) {
 }
 
 // Memoized TraderRow component to prevent unnecessary re-renders
-const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, theme, isMobile, index }) => {
-  const stickyCellStyles = {
-    first: {
-      position: 'sticky',
-      zIndex: 1001,
-      left: 0,
-      backgroundColor: 'transparent !important',
-      width: isMobile ? '10px' : '40px',
-      minWidth: isMobile ? '10px' : '40px',
-      padding: isMobile ? '0px' : '12px 4px'
-    },
-    second: {
-      position: 'sticky',
-      zIndex: 1001,
-      left: isMobile ? '10px' : '40px',
-      backgroundColor: 'transparent !important',
-      width: isMobile ? '14px' : '50px',
-      minWidth: isMobile ? '14px' : '50px',
-      padding: isMobile ? '1px 1px' : '12px 8px'
-    },
-    third: {
-      position: 'sticky',
-      zIndex: 1001,
-      left: isMobile ? '24px' : '90px',
-      backgroundColor: 'transparent !important',
-      minWidth: isMobile ? '120px' : '250px',
-      maxWidth: isMobile ? '150px' : 'none',
-      padding: isMobile ? '1px 4px' : '12px 8px'
-    }
-  };
+const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, theme, isMobile, index, scrollLeft }) => {
+  const stickyCellStyles = useMemo(
+    () => ({
+      first: {
+        position: 'sticky',
+        zIndex: 1001,
+        left: 0,
+        background: theme.palette.background.default,
+        width: isMobile ? '10px' : '40px',
+        minWidth: isMobile ? '10px' : '40px',
+        padding: isMobile ? '0px' : '12px 4px'
+      },
+      second: {
+        position: 'sticky',
+        zIndex: 1001,
+        left: isMobile ? '10px' : '40px',
+        background: theme.palette.background.default,
+        width: isMobile ? '14px' : '50px',
+        minWidth: isMobile ? '14px' : '50px',
+        padding: isMobile ? '1px 1px' : '12px 8px'
+      },
+      third: {
+        position: 'sticky',
+        zIndex: 1001,
+        left: isMobile ? '24px' : '90px',
+        background: theme.palette.background.default,
+        minWidth: isMobile ? '80px' : '250px',
+        maxWidth: isMobile ? '100px' : 'none',
+        padding: isMobile ? '1px 4px' : '12px 8px',
+        '&:before': scrollLeft
+          ? {
+              content: "''",
+              boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
+              position: 'absolute',
+              top: '0',
+              right: '0',
+              bottom: '-1px',
+              width: '30px',
+              transform: 'translate(100%)',
+              transition: 'box-shadow .3s',
+              pointerEvents: 'none'
+            }
+          : {}
+      }
+    }),
+    [theme, isMobile, scrollLeft]
+  );
+
+  const tableRowStyle = useMemo(
+    () => ({
+      borderBottom: 'none',
+      position: 'relative',
+      transition: 'background-color 0.15s ease',
+      backgroundColor: 'transparent',
+      width: '100%',
+      height: isMobile ? '32px' : 'auto',
+      contain: 'layout',
+      '&:after': isMobile ? {} : {
+        content: '""',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '1px',
+        background: alpha(theme.palette.divider, 0.08)
+      },
+      '&:hover': {
+        backgroundColor: alpha(theme.palette.primary.main, 0.04),
+        cursor: 'pointer',
+        '&:after': {
+          opacity: 0
+        }
+      },
+      '& .MuiTypography-root': {
+        fontSize: isMobile ? '10px' : '13px',
+        fontWeight: '500',
+        letterSpacing: '-0.01em'
+      },
+      '& .MuiTableCell-root': {
+        padding: isMobile ? '4px' : '12px',
+        whiteSpace: 'nowrap',
+        borderBottom: 'none',
+        backgroundColor: 'transparent',
+        height: isMobile ? '32px' : 'auto'
+      }
+    }),
+    [isMobile, theme]
+  );
+
+  const handleRowClick = useCallback(() => {
+    onRoiClick(trader);
+  }, [onRoiClick, trader]);
 
   return (
     <TableRow
       key={trader._id}
-      sx={{
-        borderBottom: 'none',
-        position: 'relative',
-        transition: 'background-color 0.15s ease',
-        backgroundColor: 'transparent',
-        width: '100%',
-        height: isMobile ? '32px' : 'auto',
-        contain: 'layout',
-        '&:after': isMobile ? {} : {
-          content: '""',
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '1px',
-          background: alpha(theme.palette.divider, 0.08)
-        },
-        '&:hover': {
-          backgroundColor: alpha(theme.palette.primary.main, 0.04),
-          cursor: 'pointer',
-          '&:after': {
-            opacity: 0
-          }
-        },
-        '& .MuiTypography-root': {
-          fontSize: isMobile ? '10px' : '13px',
-          fontWeight: '500',
-          letterSpacing: '-0.01em'
-        },
-        '& .MuiTableCell-root': {
-          padding: isMobile ? '4px' : '12px',
-          whiteSpace: 'nowrap',
-          borderBottom: 'none',
-          backgroundColor: 'transparent',
-          height: isMobile ? '32px' : 'auto'
-        }
-      }}
-      onClick={() => onRoiClick(trader)}
+      sx={tableRowStyle}
+      onClick={handleRowClick}
     >
       <TableCell align="left" sx={stickyCellStyles.first}>
         <Typography
@@ -231,7 +259,7 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
         scope="row"
         sx={stickyCellStyles.third}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.5 : 1 }}>
+        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
           {isMobile && (
             <Typography
               variant="h4"
@@ -276,7 +304,7 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
               {trader.address.slice(0, 1).toUpperCase()}
             </Typography>
           </Box>
-          <Box sx={{ overflow: 'hidden', flexGrow: 1 }}>
+          <Stack direction="column" spacing={0} sx={{ overflow: 'hidden', flexGrow: 1 }}>
             <Typography
               variant="p2"
               sx={{
@@ -290,7 +318,7 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
             >
               Trader
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.2 : 0.5, marginTop: '2px' }}>
+            <Stack direction="row" spacing={isMobile ? 0.2 : 0.5} alignItems="center" sx={{ marginTop: '2px' }}>
               <Typography
                 component="a"
                 href={`/profile/${trader.address}`}
@@ -329,9 +357,9 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
                   }}
                 />
               )}
-            </Box>
-          </Box>
-        </Box>
+            </Stack>
+          </Stack>
+        </Stack>
       </TableCell>
       <TableCell align="right" sx={{ minWidth: isMobile ? '32px' : '100px', padding: isMobile ? '1px 2px' : '12px 8px' }}>
         <Typography 
@@ -482,6 +510,7 @@ export default function Analytics({ initialData, initialError }) {
   const [activeTab, setActiveTab] = useState(0);
   const [hideAmm, setHideAmm] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [scrollLeft, setScrollLeft] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const darkMode = theme.palette.mode === 'dark';
@@ -582,55 +611,90 @@ export default function Analytics({ initialData, initialError }) {
     }
   }, [lastMessage]);
 
+  // Initialize state from SSR data
+  useEffect(() => {
+    if (initialData && isFirstLoad) {
+      setTraders(initialData.data || []);
+      if (initialData.pagination) {
+        setTotalPages(initialData.pagination.totalPages || 0);
+        setTotalItems(initialData.pagination.total || 0);
+      }
+      setIsFirstLoad(false);
+    }
+  }, [initialData, isFirstLoad]);
+
   // Memoize the fetch function to prevent unnecessary re-renders
   const fetchData = useCallback(async () => {
-    // Skip initial fetch if we have SSR data
+    // Skip initial fetch if we have SSR data and it's first load
     if (isFirstLoad && initialData) {
-      setIsFirstLoad(false);
       return;
     }
     
     try {
       setLoading(true);
       const queryParams = new URLSearchParams({
-        page: page,
-        limit: itemsPerPage,
+        page: page.toString(),
+        limit: itemsPerPage.toString(),
         sortBy: orderBy,
         sortOrder: order
       });
 
       if (debouncedSearchAddress) {
-        queryParams.append('address', debouncedSearchAddress);
+        queryParams.append('address', debouncedSearchAddress.trim());
       }
 
-      const response = await fetch(
-        `https://api.xrpl.to/api/analytics/cumulative-stats?${queryParams.toString()}`
-      );
-      const responseData = await response.json();
-      console.log('Fetched traders data:', responseData);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      // Handle the data structure and pagination
-      if (responseData && responseData.data) {
-        if (Array.isArray(responseData.data)) {
-          setTraders(responseData.data);
-          // Set pagination data if available
-          if (responseData.pagination) {
-            setTotalPages(responseData.pagination.totalPages);
-            setTotalItems(responseData.pagination.total);
+      try {
+        const response = await fetch(
+          `https://api.xrpl.to/api/analytics/cumulative-stats?${queryParams.toString()}`,
+          {
+            signal: controller.signal,
+            headers: {
+              'Accept': 'application/json'
+            }
           }
+        );
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const responseData = await response.json();
+
+        // Handle the data structure and pagination
+        if (responseData && Array.isArray(responseData.data)) {
+          setTraders(responseData.data);
+          
+          // Set pagination data with fallbacks
+          const pagination = responseData.pagination || {};
+          setTotalPages(pagination.totalPages || Math.ceil((pagination.total || responseData.data.length) / itemsPerPage));
+          setTotalItems(pagination.total || responseData.data.length);
           setError(null);
         } else {
-          console.error('Unexpected data structure:', responseData);
-          setError('Invalid data format received from server');
+          console.warn('API returned unexpected data structure:', responseData);
           setTraders([]);
+          setError('No data available');
         }
-      } else {
-        setError('Invalid data format received from server');
-        setTraders([]);
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        throw fetchError;
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      setError('Error fetching data');
+      
+      // Provide user-friendly error messages
+      let errorMessage = 'Failed to load trader data';
+      if (error.name === 'AbortError') {
+        errorMessage = 'Request timed out - please try again';
+      } else if (!navigator.onLine) {
+        errorMessage = 'Network error - please check your connection';
+      }
+      
+      setError(errorMessage);
       setTraders([]);
     } finally {
       setLoading(false);
@@ -639,17 +703,10 @@ export default function Analytics({ initialData, initialError }) {
 
   useEffect(() => {
     // Only fetch if not first load or if parameters changed
-    if (!isFirstLoad || !initialData) {
+    if (!isFirstLoad) {
       fetchData();
     }
-  }, [fetchData, isFirstLoad, initialData]);
-  
-  // Mark as not first load after SSR data is used
-  useEffect(() => {
-    if (isFirstLoad && initialData) {
-      setIsFirstLoad(false);
-    }
-  }, [isFirstLoad, initialData]);
+  }, [fetchData, isFirstLoad]);
 
   // Memoize the handle functions to prevent unnecessary re-renders
   const handleRoiClick = useCallback((trader, event) => {
@@ -1135,6 +1192,12 @@ export default function Analytics({ initialData, initialError }) {
     setIsFirstLoad(false); // Ensure we fetch new data on page change
   }, [totalPages]);
 
+  // Add scroll handler for sticky shadow effect
+  const handleScroll = useCallback((event) => {
+    const { target } = event;
+    setScrollLeft(target.scrollLeft > 0);
+  }, []);
+
   // Don't show loading state on initial SSR render
   if (loading && !initialData) {
     return (
@@ -1203,6 +1266,30 @@ export default function Analytics({ initialData, initialError }) {
 
   return (
     <>
+      <Head>
+        <title>Top Traders Analytics - XRPL.to</title>
+        <meta 
+          name="description" 
+          content="Discover the most successful traders on the XRPL ecosystem. Track performance metrics, ROI trends, and trading patterns of top performers in real-time." 
+        />
+        <meta name="keywords" content="XRPL traders, XRP trading, crypto analytics, trading metrics, ROI analysis, XRPL ecosystem" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:title" content="Top Traders Analytics - XRPL.to" />
+        <meta 
+          property="og:description" 
+          content="Discover the most successful traders on the XRPL ecosystem. Track performance metrics, ROI trends, and trading patterns of top performers." 
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://xrpl.to/top-traders" />
+        <meta property="og:site_name" content="XRPL.to" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Top Traders Analytics - XRPL.to" />
+        <meta 
+          name="twitter:description" 
+          content="Discover the most successful traders on the XRPL ecosystem. Track performance metrics, ROI trends, and trading patterns." 
+        />
+        <link rel="canonical" href="https://xrpl.to/top-traders" />
+      </Head>
       <Topbar />
       <Header />
       <Container maxWidth="xl">
@@ -1221,19 +1308,6 @@ export default function Analytics({ initialData, initialError }) {
               mb: { xs: 2, sm: 3, md: 4 }
             }}
           >
-            <Box sx={{ mb: { xs: 2, sm: 3, md: 4 }, textAlign: 'center' }}>
-              <Typography
-                variant="h3"
-                sx={{
-                  color: theme.palette.text.primary,
-                  fontWeight: 600,
-                  fontSize: { xs: '1.75rem', sm: '2rem', md: '2.25rem' },
-                  letterSpacing: '-0.01em'
-                }}
-              >
-                Top Traders
-              </Typography>
-            </Box>
 
             <Card
               sx={{
@@ -1246,23 +1320,7 @@ export default function Analytics({ initialData, initialError }) {
                 border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                 boxShadow: theme.palette.mode === 'dark'
                   ? `0 20px 60px ${alpha(theme.palette.common.black, 0.3)}`
-                  : `0 20px 60px ${alpha(theme.palette.common.black, 0.08)}`,
-                position: 'relative',
-                overflow: 'hidden',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '2px',
-                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
-                  animation: 'shimmer 3s ease-in-out infinite'
-                },
-                '@keyframes shimmer': {
-                  '0%': { transform: 'translateX(-100%)' },
-                  '100%': { transform: 'translateX(100%)' }
-                }
+                  : `0 20px 60px ${alpha(theme.palette.common.black, 0.08)}`
               }}
             >
               <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
@@ -1466,7 +1524,7 @@ export default function Analytics({ initialData, initialError }) {
                       </Box>
                     </Box>
 
-                    <TableContainer sx={{ borderRadius: '16px', overflow: 'hidden' }}>
+                    <TableContainer sx={{ borderRadius: '16px', overflow: 'hidden' }} onScroll={handleScroll}>
                       <Table
                         sx={{
                           minWidth: 650,
@@ -1527,7 +1585,7 @@ export default function Analytics({ initialData, initialError }) {
                               position: 'sticky', 
                               left: 0, 
                               zIndex: 1002, 
-                              backgroundColor: 'transparent !important',
+                              backgroundColor: `${theme.palette.background.default} !important`,
                               width: isMobile ? '10px' : '40px',
                               minWidth: isMobile ? '10px' : '40px',
                               padding: isMobile ? '8px 0px' : '16px 4px'
@@ -1539,7 +1597,7 @@ export default function Analytics({ initialData, initialError }) {
                                 position: 'sticky', 
                                 left: '40px', 
                                 zIndex: 1002, 
-                                backgroundColor: 'transparent !important',
+                                backgroundColor: `${theme.palette.background.default} !important`,
                                 width: '50px',
                                 minWidth: '50px',
                                 padding: '16px 8px'
@@ -1551,7 +1609,7 @@ export default function Analytics({ initialData, initialError }) {
                               position: 'sticky', 
                               left: isMobile ? '10px' : '90px', 
                               zIndex: 1002, 
-                              backgroundColor: 'transparent !important',
+                              backgroundColor: `${theme.palette.background.default} !important`,
                               minWidth: isMobile ? '120px' : '250px',
                               padding: isMobile ? '8px 4px' : '16px 8px'
                             }}>
@@ -1624,6 +1682,7 @@ export default function Analytics({ initialData, initialError }) {
                               formatPercentage={formatPercentage}
                               theme={theme}
                               isMobile={isMobile}
+                              scrollLeft={scrollLeft}
                             />
                           ))}
                         </TableBody>
@@ -2178,62 +2237,135 @@ export default function Analytics({ initialData, initialError }) {
 
 // Server-side rendering function
 export async function getServerSideProps(context) {
-  // Extract query parameters from the URL
-  const { page = 1, sortBy = 'volume24h', sortOrder = 'desc', address = '' } = context.query;
+  const { req, res, query } = context;
+  
+  // Set cache headers for better performance
+  res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
+  
+  // Extract and validate query parameters
+  const {
+    page = 1,
+    sortBy = 'volume24h',
+    sortOrder = 'desc',
+    address = ''
+  } = query;
+
+  // Validate page number
+  const pageNum = Math.max(1, parseInt(page.toString(), 10) || 1);
   
   try {
     // Build query params for the API
     const queryParams = new URLSearchParams({
-      page: page.toString(),
+      page: pageNum.toString(),
       limit: '25',
       sortBy: sortBy.toString(),
       sortOrder: sortOrder.toString()
     });
 
-    if (address) {
-      queryParams.append('address', address.toString());
+    if (address && typeof address === 'string' && address.trim()) {
+      queryParams.append('address', address.toString().trim());
     }
 
-    // Fetch data from the API
-    const response = await fetch(
-      `https://api.xrpl.to/api/analytics/cumulative-stats?${queryParams.toString()}`,
-      {
-        // Add timeout to prevent hanging
-        signal: AbortSignal.timeout(10000)
+    // Fetch data from the API with proper error handling
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
+    try {
+      const response = await fetch(
+        `https://api.xrpl.to/api/analytics/cumulative-stats?${queryParams.toString()}`,
+        {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'XRPL.to/1.0'
+          }
+        }
+      );
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        // Handle different HTTP error codes
+        if (response.status === 404) {
+          throw new Error('API endpoint not found');
+        }
+        if (response.status === 500) {
+          throw new Error('Server error - please try again later');
+        }
+        if (response.status === 429) {
+          throw new Error('Too many requests - please try again later');
+        }
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
-    );
 
-    if (!response.ok) {
-      throw new Error(`API responded with status ${response.status}`);
-    }
+      const data = await response.json();
 
-    const data = await response.json();
+      // Validate the response structure more thoroughly
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid response format');
+      }
 
-    // Validate the response structure
-    if (data && data.data && Array.isArray(data.data)) {
+      if (!data.data || !Array.isArray(data.data)) {
+        console.warn('API returned non-array data:', data);
+        return {
+          props: {
+            initialData: { data: [], pagination: { total: 0, totalPages: 0, currentPage: 1, limit: 25 } },
+            initialError: null
+          }
+        };
+      }
+
+      // Validate pagination structure
+      const validatedData = {
+        ...data,
+        pagination: {
+          total: data.pagination?.total || data.data.length,
+          totalPages: data.pagination?.totalPages || Math.ceil((data.pagination?.total || data.data.length) / 25),
+          currentPage: data.pagination?.currentPage || pageNum,
+          limit: data.pagination?.limit || 25
+        }
+      };
+
       return {
         props: {
-          initialData: data,
+          initialData: validatedData,
           initialError: null
         }
       };
-    } else {
-      console.error('Invalid data structure from API:', data);
-      return {
-        props: {
-          initialData: null,
-          initialError: 'Invalid data format received from server'
-        }
-      };
+
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      throw fetchError;
     }
+
   } catch (error) {
     console.error('Error in getServerSideProps:', error);
     
-    // Return empty data with error message
+    // Log more detailed error information
+    const errorDetails = {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      query: query,
+      timestamp: new Date().toISOString()
+    };
+    console.error('Detailed error:', errorDetails);
+
+    // Return appropriate error based on error type
+    let userFriendlyError = 'Failed to load trader data';
+    
+    if (error.name === 'AbortError') {
+      userFriendlyError = 'Request timeout - please try again';
+    } else if (error.message.includes('fetch')) {
+      userFriendlyError = 'Network error - please check your connection';
+    } else if (error.message.includes('API error')) {
+      userFriendlyError = error.message;
+    }
+
     return {
       props: {
         initialData: null,
-        initialError: error.message || 'Failed to load trader data'
+        initialError: userFriendlyError
       }
     };
   }
