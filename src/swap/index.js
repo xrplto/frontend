@@ -1295,29 +1295,37 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
 
         let Amount, SendMax, DeliverMin;
 
-        // Use the correct amounts based on revert state
-        // amount = what we're sending, value = what we want to receive
-        const sendAmount = revert ? amount2 : amount1;
-        const receiveAmount = revert ? amount1 : amount2;
+        // IMPORTANT: In XRPL Payment transactions:
+        // - SendMax = what you're willing to spend (input)
+        // - Amount = what you want to receive (output)
+        // 
+        // The UI shows: Top field (amount1) -> Bottom field (amount2)
+        // This means: Spend amount1 of curr1 to get amount2 of curr2
         
-        // Build SendMax - handle XRP special case
-        if (curr1.currency === 'XRP') {
+        // Always: Send from top field (curr1/amount1), Receive in bottom field (curr2/amount2)
+        const sendCurrency = curr1;
+        const receiveCurrency = curr2;
+        const sendAmount = amount1;
+        const receiveAmount = amount2;
+        
+        // Build SendMax (what we're spending) - handle XRP special case
+        if (sendCurrency.currency === 'XRP') {
           SendMax = new Decimal(sendAmount).mul(1000000).toFixed(0, Decimal.ROUND_DOWN); // Convert to drops
         } else {
           SendMax = {
-            currency: curr1.currency,
-            issuer: curr1.issuer,
+            currency: sendCurrency.currency,
+            issuer: sendCurrency.issuer,
             value: new Decimal(sendAmount).toFixed(6, Decimal.ROUND_DOWN)
           };
         }
         
-        // Build Amount - handle XRP special case
-        if (curr2.currency === 'XRP') {
+        // Build Amount (what we want to receive) - handle XRP special case
+        if (receiveCurrency.currency === 'XRP') {
           Amount = new Decimal(receiveAmount).mul(1000000).toFixed(0, Decimal.ROUND_DOWN); // Convert to drops
         } else {
           Amount = {
-            currency: curr2.currency,
-            issuer: curr2.issuer,
+            currency: receiveCurrency.currency,
+            issuer: receiveCurrency.issuer,
             value: new Decimal(receiveAmount).toFixed(6, Decimal.ROUND_DOWN)
           };
         }
@@ -1364,7 +1372,9 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           });
           console.log('Currencies:', {
             curr1: curr1,
-            curr2: curr2
+            curr2: curr2,
+            sendCurrency: sendCurrency,
+            receiveCurrency: receiveCurrency
           });
           console.log('Transaction Fields:', {
             SendMax: SendMax,
