@@ -845,33 +845,33 @@ function NewsPage() {
                       </Box>
                     </Box>
                     <Box>
-                      {article.articleImage && (
-                        <Box
-                          sx={{
-                            float: 'left',
-                            mr: 2,
-                            mb: 1,
-                            width: isMobile ? 40 : 60,
-                            height: isMobile ? 40 : 60,
-                            borderRadius: 1,
-                            overflow: 'hidden',
-                            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+                      <Box
+                        sx={{
+                          float: 'left',
+                          mr: 2,
+                          mb: 1,
+                          width: isMobile ? 40 : 60,
+                          height: isMobile ? 40 : 60,
+                          borderRadius: 1,
+                          overflow: 'hidden',
+                          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+                        }}
+                      >
+                        <img
+                          src={article.articleImage || '/static/default-news.svg'}
+                          alt={extractTitle(article.title)}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
                           }}
-                        >
-                          <img
-                            src={article.articleImage}
-                            alt={extractTitle(article.title)}
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover'
-                            }}
-                            onError={(e) => {
-                              e.target.parentElement.style.display = 'none';
-                            }}
-                          />
-                        </Box>
-                      )}
+                          onError={(e) => {
+                            if (e.target.src !== '/static/default-news.svg') {
+                              e.target.src = '/static/default-news.svg';
+                            }
+                          }}
+                        />
+                      </Box>
                       <Typography
                         variant="body2"
                         sx={{
