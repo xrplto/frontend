@@ -147,11 +147,12 @@ export default function SearchToolbar({
             boxShadow: 'none',
             textTransform: 'none',
             fontWeight: 600,
-            px: { xs: 0.75, sm: 2 },
-            py: { xs: 0.25, sm: 0.25 },
-            fontSize: { xs: '0.7rem', sm: '0.875rem' },
-            minHeight: { xs: 20, sm: 28 },
-            height: { xs: 20, sm: 28 },
+            px: { xs: 1, sm: 1.5 },
+            py: { xs: 0.5, sm: 0.5 },
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            minHeight: { xs: 32, sm: 36 },
+            height: { xs: 32, sm: 36 },
+            minWidth: { xs: 80, sm: 100 },
             '&:hover': {
               boxShadow: 2
             }
@@ -176,7 +177,7 @@ export default function SearchToolbar({
             <Button
               onClick={() => setViewType('row')}
               variant={viewType === 'row' ? 'contained' : 'outlined'}
-              sx={{ minWidth: { xs: 28, sm: 36 }, px: { xs: 0.5, sm: 1 }, py: { xs: 0.25, sm: 0.5 } }}
+              sx={{ minWidth: { xs: 36, sm: 40 }, height: { xs: 32, sm: 36 }, px: { xs: 0.5, sm: 1 }, py: { xs: 0.5, sm: 0.5 } }}
             >
               <TableRowsIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
             </Button>
@@ -185,7 +186,7 @@ export default function SearchToolbar({
             <Button
               onClick={() => window.location.href = '/tokens-heatmap'}
               variant={viewType === 'heatmap' ? 'contained' : 'outlined'}
-              sx={{ minWidth: { xs: 28, sm: 36 }, px: { xs: 0.5, sm: 1 }, py: { xs: 0.25, sm: 0.5 } }}
+              sx={{ minWidth: { xs: 36, sm: 40 }, height: { xs: 32, sm: 36 }, px: { xs: 0.5, sm: 1 }, py: { xs: 0.5, sm: 0.5 } }}
             >
               <GridViewIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
             </Button>
@@ -217,10 +218,11 @@ export default function SearchToolbar({
               variant="outlined"
               sx={{
                 '& .MuiButton-root': {
-                  minWidth: { xs: 24, sm: 32 },
-                  px: { xs: 0.25, sm: 0.75 },
-                  py: { xs: 0.1, sm: 0.25 },
-                  fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                  minWidth: { xs: 36, sm: 40 },
+                  height: { xs: 32, sm: 36 },
+                  px: { xs: 0.5, sm: 0.75 },
+                  py: { xs: 0.5, sm: 0.5 },
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
                   fontWeight: 500,
                   borderColor: alpha(theme.palette.divider, 0.2),
                   '&:hover': {
@@ -312,8 +314,9 @@ export default function SearchToolbar({
                 : alpha('#ff5722', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.6rem', sm: '0.75rem' },
-            height: { xs: 20, sm: 28 },
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            height: { xs: 32, sm: 36 },
+            px: { xs: 1, sm: 1.5 },
             transition: 'all 0.2s ease'
           }}
         />
@@ -335,8 +338,9 @@ export default function SearchToolbar({
                 : alpha('#2196f3', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.6rem', sm: '0.75rem' },
-            height: { xs: 20, sm: 28 },
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            height: { xs: 32, sm: 36 },
+            px: { xs: 1, sm: 1.5 },
             transition: 'all 0.2s ease'
           }}
         />
@@ -358,8 +362,9 @@ export default function SearchToolbar({
                 : alpha('#4caf50', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.6rem', sm: '0.75rem' },
-            height: { xs: 20, sm: 28 },
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            height: { xs: 32, sm: 36 },
+            px: { xs: 1, sm: 1.5 },
             display: { xs: 'none', sm: 'flex' },
             transition: 'all 0.2s ease'
           }}
@@ -382,8 +387,9 @@ export default function SearchToolbar({
                 : alpha('#ff9800', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.6rem', sm: '0.75rem' },
-            height: { xs: 20, sm: 28 },
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            height: { xs: 32, sm: 36 },
+            px: { xs: 1, sm: 1.5 },
             transition: 'all 0.2s ease'
           }}
         />
@@ -405,8 +411,9 @@ export default function SearchToolbar({
                 : alpha('#9c27b0', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.6rem', sm: '0.75rem' },
-            height: { xs: 20, sm: 28 },
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            height: { xs: 32, sm: 36 },
+            px: { xs: 1, sm: 1.5 },
             display: { xs: 'none', sm: 'flex' },
             transition: 'all 0.2s ease'
           }}
@@ -415,7 +422,7 @@ export default function SearchToolbar({
         {/* Top Categories */}
         {tags && tags.length > 0 && (
           <>
-            <Divider orientation="vertical" flexItem sx={{ mx: { xs: 0.25, sm: 0.5 }, height: 20, display: { xs: 'none', sm: 'block' } }} />
+            <Divider orientation="vertical" flexItem sx={{ mx: { xs: 0.25, sm: 0.5 }, height: 28, display: { xs: 'none', sm: 'block' } }} />
             
             {/* Display first 5 categories from tags array */}
             {tags.slice(0, 10).map((tag, index) => {
@@ -434,9 +441,9 @@ export default function SearchToolbar({
                     background: tagName === tag ? alpha(colors[index], 0.2) : 'transparent',
                     border: `1px solid ${alpha(colors[index], 0.3)}`,
                     '&:hover': { background: alpha(colors[index], 0.3) },
-                    fontSize: { xs: '0.55rem', sm: '0.75rem' },
-                    height: { xs: 20, sm: 28 },
-                    px: { xs: 0.5, sm: 1 },
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    height: { xs: 32, sm: 36 },
+                    px: { xs: 1, sm: 1.5 },
                     display: { xs: index < 2 ? 'flex' : 'none', sm: index < 6 ? 'flex' : 'none', md: 'flex' }
                   }}
                 />
@@ -450,8 +457,8 @@ export default function SearchToolbar({
                 onClick={() => setCategoriesOpen(true)}
                 sx={{
                   ml: 0.5,
-                  width: { xs: 24, sm: 32 },
-                  height: { xs: 20, sm: 28 },
+                  width: { xs: 32, sm: 36 },
+                  height: { xs: 32, sm: 36 },
                   border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                   borderRadius: 0.5,
                   backgroundColor: alpha(theme.palette.primary.main, 0.08),
