@@ -47,7 +47,6 @@ import { convertHexToString, parseNFTokenID, getNftFilesUrls } from 'src/utils/p
 
 // Components
 import FlagsContainer from 'src/components/Flags';
-import Properties from './Properties';
 import Tabs from './Tabs';
 
 // Translation function
@@ -494,9 +493,41 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       {properties && properties.length > 0 && (
         <Paper sx={{ p: 1, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
           <SectionTitle>Properties</SectionTitle>
-          <Box sx={{ maxHeight: 120, overflowY: 'auto' }}>
-            <Properties properties={properties} total={total} />
-          </Box>
+          <Grid container spacing={0.5} sx={{ maxHeight: 120, overflowY: 'auto' }}>
+            {properties.map((item, idx) => {
+              const type = item.type || item.trait_type;
+              const value = item.value;
+              const count = item.count || 0;
+              const rarity = total > 0 && count > 0 ? ((count * 100) / total).toFixed(2) : 0;
+              
+              return (
+                <Grid item key={`${type}-${value}`} xs={6} sm={4} md={3}>
+                  <Paper
+                    sx={{
+                      p: 0.5,
+                      textAlign: 'center',
+                      borderRadius: '4px',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      backgroundColor: alpha(theme.palette.background.paper, 0.3),
+                      height: '100%'
+                    }}
+                  >
+                    <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
+                      {type}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.7rem', fontWeight: 500, my: 0.25 }}>
+                      {value}
+                    </Typography>
+                    {total > 0 && count > 0 && (
+                      <Typography sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
+                        {count} ({rarity}%)
+                      </Typography>
+                    )}
+                  </Paper>
+                </Grid>
+              );
+            })}
+          </Grid>
         </Paper>
       )}
 
