@@ -633,6 +633,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
+                objectPosition: 'center',
                 transition: 'transform 0.3s ease',
                 opacity: loadingImg ? 0 : 1
               }}
@@ -2460,30 +2461,130 @@ export default function CollectionView({ collection }) {
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 3 }} alignItems="center">
               <Box
                 sx={{
-                  px: 2,
-                  py: 1,
-                  borderRadius: '8px',
-                  backgroundColor: 'transparent',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
+                  px: 2.5,
+                  py: 1.2,
+                  borderRadius: '12px',
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.03)} 0%, ${alpha(theme.palette.primary.light, 0.01)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'translateY(-1px)',
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.08)}`,
+                    borderColor: alpha(theme.palette.primary.main, 0.25),
+                    '& .date-badge': {
+                      transform: 'scale(1.05)',
+                      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.light, 0.1)} 100%)`
+                    }
+                  },
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.05)}, transparent)`,
+                    animation: 'shimmer 3s infinite'
+                  },
+                  '@keyframes shimmer': {
+                    '100%': { left: '100%' }
+                  }
                 }}
               >
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                  <Box
+                    sx={{
+                      p: 0.5,
+                      borderRadius: '6px',
+                      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <PeopleIcon sx={{ fontSize: '0.9rem', color: theme.palette.primary.main }} />
+                  </Box>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      color: alpha(theme.palette.text.secondary, 0.7),
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                  >
                     Created by
                   </Typography>
                   <Link color="inherit" href={`/profile/${account}`} underline="none">
                     <Typography
                       variant="body2"
-                      color="primary"
-                      fontWeight={600}
-                      sx={{ fontSize: '0.8rem', '&:hover': { textDecoration: 'underline' } }}
+                      sx={{ 
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                        transition: 'all 0.2s ease',
+                        '&:hover': { 
+                          transform: 'translateY(-1px)',
+                          filter: 'brightness(1.2)'
+                        }
+                      }}
                     >
                       {accountName || account.slice(0, 4) + '...' + account.slice(-4)}
                     </Typography>
                   </Link>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-                    • {formatMonthYear(created)}
-                  </Typography>
+                  <Box
+                    className="date-badge"
+                    sx={{
+                      ml: 'auto',
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: '20px',
+                      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.light, 0.04)} 100%)`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      transition: 'all 0.2s ease',
+                      position: 'relative',
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '4px',
+                        height: '4px',
+                        borderRadius: '50%',
+                        background: theme.palette.success.main,
+                        boxShadow: `0 0 8px ${alpha(theme.palette.success.main, 0.6)}`,
+                        animation: 'pulse 2s infinite'
+                      },
+                      '@keyframes pulse': {
+                        '0%, 100%': { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' },
+                        '50%': { opacity: 0.6, transform: 'translate(-50%, -50%) scale(1.5)' }
+                      }
+                    }}
+                  >
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        fontSize: '0.7rem',
+                        fontWeight: 600,
+                        color: theme.palette.primary.main,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        pl: 1.5
+                      }}
+                    >
+                      {formatMonthYear(created)}
+                    </Typography>
+                  </Box>
                 </Stack>
               </Box>
 
