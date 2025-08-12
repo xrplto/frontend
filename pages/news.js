@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useRouter } from 'next/router';
-import useSWR from 'swr';
+import dynamic from 'next/dynamic';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -12,31 +12,18 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import SearchIcon from '@mui/icons-material/Search';
-import differenceInHours from 'date-fns/differenceInHours';
-import differenceInDays from 'date-fns/differenceInDays';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
-import Header from '../src/components/Header';
-import Footer from '../src/components/Footer';
-import Topbar from '../src/components/Topbar';
-import useWebSocket from 'react-use-websocket';
-import { useDispatch } from 'react-redux';
-import { update_metrics } from 'src/redux/statusSlice';
 
-// SWR fetcher function
-const fetcher = async (url) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error('Failed to fetch news');
-  }
-  return response.json();
-};
+const Header = dynamic(() => import('../src/components/Header'), { ssr: true });
+const Footer = dynamic(() => import('../src/components/Footer'), { ssr: true });
+const Topbar = dynamic(() => import('../src/components/Topbar'), { ssr: true });
+
 
 const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect }) => {
   const theme = useTheme();
@@ -200,8 +187,9 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect }) => {
   );
 });
 
+SourcesMenu.displayName = 'SourcesMenu';
+
 function NewsPage() {
-  const dispatch = useDispatch();
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -214,45 +202,18 @@ function NewsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
-  const [sentimentStats, setSentimentStats] = useState({
+  const [sentimentStats, setSentimentStats] = useState(() => ({
     last24h: { bullish: 0, bearish: 0, neutral: 0 },
     last7d: { bullish: 0, bearish: 0, neutral: 0 },
     last30d: { bullish: 0, bearish: 0, neutral: 0 },
     all: { bullish: 0, bearish: 0, neutral: 0 }
-  });
+  }));
   const [sourcesStats, setSourcesStats] = useState({});
   const [expandedArticles, setExpandedArticles] = useState({});
   const [searchSentimentScore, setSearchSentimentScore] = useState(null);
 
-  // WebSocket connection - only for metrics, consider disabling if not needed
-  const enableWebSocket = false; // Set to true only if real-time metrics are needed
-  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-  const { sendJsonMessage } = useWebSocket(enableWebSocket ? WSS_FEED_URL : null, {
-    shouldReconnect: (closeEvent) => enableWebSocket,
-    onMessage: useCallback((event) => {
-      if (!enableWebSocket) return;
-      try {
-        const json = JSON.parse(event.data);
-        dispatch(update_metrics(json));
-      } catch (err) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error processing WebSocket message:', err);
-        }
-      }
-    }, [dispatch, enableWebSocket])
-  });
-
-  // No client-side filtering needed - all filtering is done server-side
-  const filteredNews = Array.isArray(news) ? news : [];
-
-  // Calculate pagination - always use totalCount from API when available
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
-  
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Pagination debug:', { totalCount, itemsPerPage, totalPages, filteredNewsLength: filteredNews.length });
-  }
-  
-  // News is always paginated by API now
+  const filteredNews = useMemo(() => Array.isArray(news) ? news : [], [news]);
+  const totalPages = useMemo(() => Math.ceil(totalCount / itemsPerPage), [totalCount, itemsPerPage]);
   const currentItems = filteredNews;
 
   const handlePageChange = useCallback((event, value) => {
@@ -338,17 +299,11 @@ function NewsPage() {
           ? `https://api.xrpl.to/api/news/search?q=${encodeURIComponent(searchQuery)}&${params.toString()}`
           : `https://api.xrpl.to/api/news?${params.toString()}`;
         
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Fetching from endpoint:', endpoint);
-        }
         const response = await fetch(endpoint);
         if (!response.ok) {
           throw new Error('Failed to fetch news');
         }
         const data = await response.json();
-        if (process.env.NODE_ENV === 'development') {
-          console.log('API Response:', data);
-        }
         
         // Check if response has data array (both regular and search endpoints have this)
         if (data.data && Array.isArray(data.data)) {
@@ -367,9 +322,6 @@ function NewsPage() {
           
           // Only process sources if they exist (not present in search endpoint)
           if (data.sources) {
-            if (process.env.NODE_ENV === 'development') {
-              console.log('Sources data:', data.sources);
-            }
             const sourcesObj = data.sources.reduce((acc, source) => {
               acc[source.name] = {
                 count: source.count,
@@ -424,39 +376,7 @@ function NewsPage() {
           setSearchSentimentScore(null);
         }
 
-        // Only calculate sentiment if not provided by API
-        if (!data.sentiment) {
-          const now = new Date();
-          const stats = {
-            last24h: { bullish: 0, bearish: 0, neutral: 0 },
-            last7d: { bullish: 0, bearish: 0, neutral: 0 },
-            last30d: { bullish: 0, bearish: 0, neutral: 0 }
-          };
-
-          const newsData = data.data || (Array.isArray(data) ? data : []);
-          if (Array.isArray(newsData)) {
-            newsData.forEach((article) => {
-              const pubDate = new Date(article.pubDate);
-              const sentiment = article.sentiment?.toLowerCase() || 'neutral';
-
-              if (differenceInHours(now, pubDate) <= 24) {
-                stats.last24h[sentiment]++;
-              }
-              if (differenceInDays(now, pubDate) <= 7) {
-                stats.last7d[sentiment]++;
-              }
-              if (differenceInDays(now, pubDate) <= 30) {
-                stats.last30d[sentiment]++;
-              }
-            });
-          }
-
-          setSentimentStats(stats);
-        }
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error fetching news:', error);
-        }
         setError(error.message);
       } finally {
         setLoading(false);
@@ -479,19 +399,18 @@ function NewsPage() {
     }
   };
 
-  // Function to strip HTML tags
-  const stripHtml = (html) => {
+  const stripHtml = useCallback((html) => {
+    if (typeof window === 'undefined') return html;
     const doc = new DOMParser().parseFromString(html, 'text/html');
     return doc.body.textContent || '';
-  };
+  }, []);
 
-  // Function to extract title from HTML content
-  const extractTitle = (htmlContent) => {
+  const extractTitle = useCallback((htmlContent) => {
     const titleMatch = htmlContent.match(/>([^<]+)</);
     return titleMatch ? titleMatch[1] : htmlContent;
-  };
+  }, []);
 
-  const SentimentSummary = ({ period, stats }) => {
+  const SentimentSummary = memo(({ period, stats }) => {
     if (!stats) return null;
     
     return (
@@ -574,7 +493,9 @@ function NewsPage() {
         </Box>
       </Box>
     );
-  };
+  });
+  
+  SentimentSummary.displayName = 'SentimentSummary';
 
   if (loading) {
     return (
@@ -685,6 +606,7 @@ function NewsPage() {
                   size="small"
                   variant="standard"
                   placeholder="Search XRPL News"
+                  aria-label="Search news articles"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   InputProps={{
@@ -929,6 +851,8 @@ function NewsPage() {
                         <img
                           src={article.articleImage || '/static/default-news.svg'}
                           alt={extractTitle(article.title)}
+                          loading="lazy"
+                          decoding="async"
                           style={{
                             width: '100%',
                             height: '100%',
@@ -966,8 +890,7 @@ function NewsPage() {
                       }}
                     />
                     {expandedArticles[article._id] && (
-                      <Typography
-                        variant="body2"
+                      <Box
                         sx={{
                           mb: 1,
                           color:
@@ -982,7 +905,7 @@ function NewsPage() {
                           (paragraph, index) =>
                             paragraph.trim() && (
                               <Typography
-                                key={`${article._id}-para-${paragraph.substring(0, 20).replace(/\s+/g, '')}`}
+                                key={`${article._id}-para-${index}`}
                                 paragraph
                                 sx={{ mb: 1 }}
                               >
@@ -990,7 +913,7 @@ function NewsPage() {
                               </Typography>
                             )
                         )}
-                      </Typography>
+                      </Box>
                     )}
                     <Box
                       sx={{
@@ -1013,7 +936,9 @@ function NewsPage() {
                           }}
                         >
                           {article.sourceName} •{' '}
-                          {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
+                          <time dateTime={article.pubDate}>
+                            {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
+                          </time>
                         </Typography>
                         {article.articleBody && (
                           <Chip
@@ -1039,6 +964,7 @@ function NewsPage() {
                         href={article.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        aria-label="Read full article on external site"
                         sx={{
                           color: theme.palette.primary.main,
                           textDecoration: 'none',
@@ -1178,6 +1104,6 @@ export async function getStaticProps() {
     props: {
       ogp
     },
-    revalidate: 300 // Revalidate every 5 minutes
+    revalidate: 60 // Revalidate every minute for better caching
   };
 }
