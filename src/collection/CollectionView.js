@@ -836,8 +836,10 @@ const NFTGrid = React.memo(({ collection }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const [nfts, setNfts] = useState([]);
-  const [page, setPage] = useState(0);
+  // Initialize with SSR data if available
+  const initialNfts = collection?.initialNfts || [];
+  const [nfts, setNfts] = useState(initialNfts);
+  const [page, setPage] = useState(initialNfts.length > 0 ? 1 : 0);
   const [hasMore, setHasMore] = useState(true);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
@@ -845,6 +847,7 @@ const NFTGrid = React.memo(({ collection }) => {
   const [filter, setFilter] = useState(0);
   const [subFilter, setSubFilter] = useState('default');
   const [filterAttrs, setFilterAttrs] = useState([]);
+  const [isFirstLoad, setIsFirstLoad] = useState(initialNfts.length === 0);
 
   const sortOptions = useMemo(() => [
     { value: 'default', label: 'Default', icon: '📊', desc: 'Collection order' },
@@ -891,10 +894,13 @@ const NFTGrid = React.memo(({ collection }) => {
     setHasMore(true);
   }, [search, filter, subFilter, filterAttrs]);
 
-  // Fetch on page change
+  // Fetch on page change (skip if we have initial SSR data)
   useEffect(() => {
-    fetchNfts();
-  }, [fetchNfts]);
+    if (!isFirstLoad || page > 0) {
+      fetchNfts();
+    }
+    setIsFirstLoad(false);
+  }, [fetchNfts, isFirstLoad, page]);
 
   const debouncedSearch = useMemo(
     () => debounce((value) => setSearch(value), 500),
