@@ -73,7 +73,7 @@ import SportsScoreIcon from '@mui/icons-material/SportsScore';
 import { Icon } from '@iconify/react';
 import infoFilled from '@iconify/icons-ep/info-filled';
 
-import { ClipLoader } from 'react-spinners';
+import CircularProgress from '@mui/material/CircularProgress';
 
 // Utils & Context
 import { AppContext } from 'src/AppContext';
@@ -85,13 +85,13 @@ import { formatMonthYear } from 'src/utils/formatTime';
 import { getNftCoverUrl } from 'src/utils/parse/utils';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 
-// Styled Components
+// Styled Components with optimized styles
 const MainContainer = styled(Box)({
   width: '100%',
   position: 'relative',
-  animation: 'fadeInUp 0.6s ease-out',
+  opacity: 0,
+  animation: 'fadeInUp 0.3s ease-out forwards',
   '@keyframes fadeInUp': {
-    from: { opacity: 0, transform: 'translateY(20px)' },
     to: { opacity: 1, transform: 'translateY(0)' }
   }
 });
@@ -104,7 +104,7 @@ const CompactCard = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(3),
   position: 'relative',
   overflow: 'hidden',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'transform 0.2s ease, border-color 0.2s ease',
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(2),
     marginBottom: theme.spacing(2),
@@ -120,9 +120,10 @@ const IconCover = styled(Box)(({ theme }) => ({
   background: 'transparent',
   position: 'relative',
   overflow: 'hidden',
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'transform 0.2s ease',
+  willChange: 'transform',
   '&:hover': {
-    transform: 'translateY(-3px) scale(1.05)',
+    transform: 'translateY(-2px)',
     borderColor: alpha(theme.palette.primary.main, 0.3)
   },
   [theme.breakpoints.up('sm')]: {
@@ -143,12 +144,7 @@ const CompactStatsCard = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
-  alignItems: 'center',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    borderColor: alpha(theme.palette.primary.main, 0.2)
-  }
+  alignItems: 'center'
 }));
 
 const ActionButton = styled(IconButton)(({ theme }) => ({
@@ -156,11 +152,10 @@ const ActionButton = styled(IconButton)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
   borderRadius: '14px',
   padding: { xs: '8px', sm: '12px' },
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'border-color 0.15s ease',
   '&:hover': {
     background: alpha(theme.palette.primary.main, 0.08),
-    borderColor: alpha(theme.palette.primary.main, 0.3),
-    transform: 'translateY(-2px)'
+    borderColor: alpha(theme.palette.primary.main, 0.3)
   }
 }));
 
@@ -252,16 +247,11 @@ const StyledAccordion = styled(Accordion)(({ theme }) => ({
   marginBottom: '8px !important',
   overflow: 'hidden',
   position: 'relative',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:before': {
     display: 'none'
   },
   '&.Mui-expanded': {
-    margin: '0 0 8px 0 !important',
-    transform: 'translateY(-1px)'
-  },
-  '&:hover': {
-    transform: 'translateY(-0.5px)'
+    margin: '0 0 8px 0 !important'
   }
 }));
 
@@ -271,7 +261,7 @@ const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
   borderRadius: '12px 12px 0 0',
   padding: '8px 12px',
   minHeight: '48px !important',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'transform 0.2s ease, border-color 0.2s ease',
   '& .MuiAccordionSummary-content': {
     margin: '0 !important',
     alignItems: 'center'
@@ -299,12 +289,11 @@ const AttributeItem = styled(Box)(({ theme, checked }) => ({
   border: `1px solid ${
     checked ? alpha(theme.palette.primary.main, 0.15) : alpha(theme.palette.divider, 0.06)
   }`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'border-color 0.15s ease',
   marginBottom: '6px',
   cursor: 'pointer',
   '&:hover': {
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-    transform: 'translateX(2px)'
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`
   }
 }));
 
@@ -329,11 +318,7 @@ const CountChip = styled(Box)(({ theme }) => ({
   fontWeight: 600,
   fontSize: '0.65rem',
   minWidth: '24px',
-  textAlign: 'center',
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    transform: 'scale(1.03)'
-  }
+  textAlign: 'center'
 }));
 
 function AttributeFilter({ attrs, setFilterAttrs }) {
@@ -557,12 +542,13 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
   );
 }
 
-// NFT Card Component
+// NFT Card Component with optimized image loading
 const NFTCard = React.memo(({ nft, collection, onRemove }) => {
   const theme = useTheme();
   const { accountProfile } = useContext(AppContext);
   const isAdmin = accountProfile?.admin;
   const [loadingImg, setLoadingImg] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   const {
     uuid,
@@ -578,11 +564,15 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
     MasterSequence
   } = nft;
 
-  const isSold = true;
+  const isSold = cost?.amount || costb?.amount || amount; // Show SALE badge only if there's a price
   const imgUrl = getNftCoverUrl(nft, 'small');
   const name = nft.meta?.name || meta?.Name || 'No Name';
 
   const handleImageLoad = () => setLoadingImg(false);
+  const handleImageError = () => {
+    setLoadingImg(false);
+    setImageError(true);
+  };
 
   const handleRemoveNft = (e) => {
     e.preventDefault();
@@ -620,143 +610,138 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'transform 0.15s ease',
           cursor: 'pointer'
         }}
       >
-        {/* Admin Close Button */}
-        {isAdmin && (
-          <IconButton
-            size="small"
-            onClick={handleRemoveNft}
-            sx={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              zIndex: 10,
-              backgroundColor: 'transparent',
-              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.error.main, 0.1),
-                borderColor: alpha(theme.palette.error.main, 0.3),
-                color: theme.palette.error.main,
-                transform: 'rotate(90deg)'
-              }
-            }}
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        )}
-
-        {/* Sale Badge */}
-        {isSold && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 12,
-              right: 12,
-              zIndex: 9,
-              px: 1,
-              py: 0.5,
-              borderRadius: 1,
-              border: `1px solid ${theme.palette.error.main}`,
-              color: theme.palette.error.main,
-              fontSize: '0.65rem',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-              backgroundColor: 'transparent'
-            }}
-          >
-            SALE
-          </Box>
-        )}
-
-        {/* Image Section */}
+        {/* Image Section with lazy loading */}
         <Box sx={{ position: 'relative', height: '65%', overflow: 'hidden' }}>
-          {loadingImg ? (
-            <Skeleton variant="rectangular" sx={{ width: '100%', height: '100%' }} />
-          ) : (
+          {loadingImg && !imageError && (
+            <Skeleton variant="rectangular" sx={{ width: '100%', height: '100%', position: 'absolute' }} />
+          )}
+          {!imageError ? (
             <Box
               component="img"
               src={imgUrl}
               alt={name}
+              loading="lazy"
+              decoding="async"
               className="card-media"
+              onLoad={handleImageLoad}
+              onError={handleImageError}
               sx={{
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                transition: 'transform 0.3s ease',
+                opacity: loadingImg ? 0 : 1
               }}
             />
+          ) : (
+            <Box
+              sx={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: 'action.disabledBackground'
+              }}
+            >
+              <Typography variant="caption" color="text.secondary">Image unavailable</Typography>
+            </Box>
           )}
-          <img src={imgUrl} style={{ display: 'none' }} onLoad={handleImageLoad} alt="" />
 
-          {/* Overlays */}
+          {/* Admin Close Button */}
+          {isAdmin && (
+            <IconButton
+              size="small"
+              onClick={handleRemoveNft}
+              sx={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                zIndex: 10,
+                backgroundColor: 'background.paper',
+                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.error.main, 0.1),
+                  borderColor: alpha(theme.palette.error.main, 0.3),
+                  color: theme.palette.error.main,
+                  transform: 'rotate(90deg)'
+                }
+              }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          )}
+
+          {/* Sale Badge - top left */}
+          {isSold && !isAdmin && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 8,
+                left: 8,
+                zIndex: 9,
+                px: 1,
+                py: 0.5,
+                borderRadius: 1,
+                backgroundColor: theme.palette.error.main,
+                color: 'white',
+                fontSize: '0.65rem',
+                fontWeight: 'bold',
+                textTransform: 'uppercase'
+              }}
+            >
+              SALE
+            </Box>
+          )}
+
+          {/* Bottom overlays */}
           <Stack
-            direction="column"
+            direction="row"
             spacing={0.5}
-            sx={{ position: 'absolute', top: 8, left: 8, right: 8 }}
+            sx={{ 
+              position: 'absolute', 
+              bottom: 8, 
+              left: 8, 
+              right: 8,
+              flexWrap: 'wrap',
+              gap: 0.5
+            }}
           >
             {/* Offer Badge */}
             {costb?.amount && (
-              <Box
+              <Chip
+                label={`Offer ✕ ${fNumber(costb.amount)}`}
+                size="small"
                 sx={{
-                  alignSelf: 'flex-end',
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 1,
-                  border: `1px solid ${alpha(theme.palette.success.main, 0.5)}`,
-                  color: theme.palette.success.main,
-                  fontSize: '0.65rem',
-                  fontWeight: 700,
-                  backgroundColor: 'transparent'
+                  height: 20,
+                  fontSize: '0.6rem',
+                  fontWeight: 600,
+                  backgroundColor: alpha(theme.palette.success.main, 0.9),
+                  color: 'white',
+                  '& .MuiChip-label': { px: 1 }
                 }}
-              >
-                Offer ✕ {fNumber(costb.amount)}
-              </Box>
+              />
             )}
 
             {/* Transfer Badge */}
             {destination && getMinterName(account) && (
-              <Box
+              <Chip
+                icon={<SendIcon sx={{ fontSize: '0.7rem !important', color: 'white' }} />}
+                label="Transfer"
+                size="small"
                 sx={{
-                  alignSelf: 'flex-start',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 1,
-                  border: `1px solid ${theme.palette.primary.main}`,
-                  color: theme.palette.primary.main,
-                  fontSize: '0.65rem',
-                  fontWeight: 'bold',
-                  textTransform: 'uppercase',
-                  backgroundColor: 'transparent'
-                }}
-              >
-                <SendIcon sx={{ fontSize: '0.9rem' }} />
-                Transfer
-              </Box>
-            )}
-
-            {/* Update Event */}
-            {updateEvent && (
-              <Box
-                sx={{
-                  alignSelf: 'flex-end',
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 1,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                  color: theme.palette.text.primary,
-                  fontSize: '0.7rem',
+                  height: 20,
+                  fontSize: '0.6rem',
                   fontWeight: 600,
-                  backgroundColor: 'transparent'
+                  backgroundColor: alpha(theme.palette.primary.main, 0.9),
+                  color: 'white',
+                  '& .MuiChip-label': { px: 0.5 }
                 }}
-              >
-                {updateEvent}
-              </Box>
+              />
             )}
           </Stack>
         </Box>
@@ -842,8 +827,8 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
   );
 });
 
-// NFT Grid Component
-const NFTGrid = ({ collection }) => {
+// NFT Grid Component with optimized rendering
+const NFTGrid = React.memo(({ collection }) => {
   const BASE_URL = 'https://api.xrpnft.com/api';
   const theme = useTheme();
   const { setDeletingNfts } = useContext(AppContext);
@@ -860,21 +845,21 @@ const NFTGrid = ({ collection }) => {
   const [subFilter, setSubFilter] = useState('default');
   const [filterAttrs, setFilterAttrs] = useState([]);
 
-  const sortOptions = [
+  const sortOptions = useMemo(() => [
     { value: 'default', label: 'Default', icon: '📊', desc: 'Collection order' },
     { value: 'pricexrpasc', label: 'Price: Low to High', icon: '💰', desc: 'Cheapest first' },
     { value: 'pricexrpdesc', label: 'Price: High to Low', icon: '💎', desc: 'Most expensive' },
     { value: 'rarityasc', label: 'Rarity: Common First', icon: '🌟', desc: 'Common to rare' },
     { value: 'raritydesc', label: 'Rarity: Rare First', icon: '👑', desc: 'Rare to common' },
     { value: 'recent', label: 'Recently Listed', icon: '🆕', desc: 'Newest listings' }
-  ];
+  ], []);
 
   const currentSort = sortOptions.find(opt => opt.value === subFilter) || sortOptions[0];
 
-  // Fetch NFTs
+  // Fetch NFTs with optimized batch size
   const fetchNfts = useCallback(() => {
     setLoading(true);
-    const limit = 32;
+    const limit = isMobile ? 16 : 24;
     const body = {
       page,
       limit,
@@ -911,7 +896,7 @@ const NFTGrid = ({ collection }) => {
   }, [fetchNfts]);
 
   const debouncedSearch = useMemo(
-    () => debounce((value) => setSearch(value), 300),
+    () => debounce((value) => setSearch(value), 500),
     []
   );
 
@@ -957,7 +942,7 @@ const NFTGrid = ({ collection }) => {
               borderRadius: '16px',
               border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
               backgroundColor: 'transparent',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              transition: 'transform 0.2s ease, border-color 0.2s ease',
               '&:focus-within': {
                 borderColor: theme.palette.primary.main,
                 transform: 'translateY(-1px)',
@@ -965,7 +950,7 @@ const NFTGrid = ({ collection }) => {
               }
             }}
           >
-            <SearchIcon sx={{ color: theme.palette.text.secondary, mr: 1.5, fontSize: '1.3rem' }} />
+            <SearchIcon sx={{ color: 'text.secondary', mr: 1.5, fontSize: '1.3rem' }} />
             <TextField
               fullWidth
               variant="standard"
@@ -998,7 +983,7 @@ const NFTGrid = ({ collection }) => {
                         <ClearIcon fontSize="small" />
                       </IconButton>
                     )}
-                    {loading && <ClipLoader color={theme.palette.primary.main} size={16} />}
+                    {loading && <CircularProgress size={16} sx={{ color: 'primary.main' }} />}
                   </Stack>
                 )
               }}
@@ -1019,7 +1004,7 @@ const NFTGrid = ({ collection }) => {
                 border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                 color: theme.palette.text.primary,
                 backgroundColor: 'transparent',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'transform 0.2s ease, border-color 0.2s ease',
                 '&:hover': {
                   backgroundColor: alpha(theme.palette.primary.main, 0.08),
                   borderColor: theme.palette.primary.main,
@@ -1050,7 +1035,7 @@ const NFTGrid = ({ collection }) => {
                 backgroundColor: showFilter ? theme.palette.primary.main : 'transparent',
                 border: `1px solid ${showFilter ? theme.palette.primary.main : alpha(theme.palette.divider, 0.3)}`,
                 color: showFilter ? 'white' : theme.palette.text.primary,
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'transform 0.2s ease, border-color 0.2s ease',
                 '&:hover': {
                   backgroundColor: showFilter ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.08),
                   borderColor: theme.palette.primary.main,
@@ -1319,7 +1304,7 @@ const NFTGrid = ({ collection }) => {
         hasMore={hasMore}
         loader={
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <ClipLoader color={theme.palette.primary.main} size={30} />
+            <CircularProgress size={30} sx={{ color: 'primary.main' }} />
           </Box>
         }
         endMessage={
@@ -1362,7 +1347,7 @@ const NFTGrid = ({ collection }) => {
       </InfiniteScroll>
     </Box>
   );
-};
+});
 
 // FilterAttribute Component
 function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
@@ -1523,7 +1508,7 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                           borderRadius: '12px',
                           background: 'transparent',
                           border: (theme) => `1px solid ${isChecked ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.08)}`,
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          transition: 'transform 0.2s ease, border-color 0.2s ease',
                           '&:hover': {
                             border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                             transform: 'translateX(4px)'
@@ -1698,7 +1683,7 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
             expandIcon={
               <ExpandMoreIcon sx={{ 
                 fontSize: '1.2rem',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'transform 0.2s ease, border-color 0.2s ease',
                 color: theme.palette.primary.main
               }} />
             }
@@ -1762,7 +1747,7 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                     borderRadius: '12px', 
                     background: (filter & 1) ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
                     border: `1px solid ${(filter & 1) ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.08)}`, 
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+                    transition: 'transform 0.2s ease, border-color 0.2s ease', 
                     cursor: 'pointer',
                     '&:hover': { 
                       transform: 'translateY(-1px)', 
@@ -1886,7 +1871,7 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                   borderRadius: '12px', 
                   background: (filter & 4) ? alpha(theme.palette.warning.main, 0.04) : 'transparent',
                   border: `1px solid ${(filter & 4) ? alpha(theme.palette.warning.main, 0.2) : alpha(theme.palette.divider, 0.08)}`, 
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+                  transition: 'transform 0.2s ease, border-color 0.2s ease', 
                   cursor: 'pointer',
                   '&:hover': { 
                     transform: 'translateY(-1px)', 
@@ -2088,7 +2073,7 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
             expandIcon={
               <ExpandMoreIcon sx={{ 
                 fontSize: '1.2rem',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'transform 0.2s ease, border-color 0.2s ease',
                 color: theme.palette.success.main
               }} />
             }
@@ -2162,11 +2147,12 @@ const CardWrapper = styled(Card)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   padding: 0,
   cursor: 'pointer',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'transform 0.2s ease',
   overflow: 'hidden',
   paddingBottom: '5px',
+  willChange: 'transform',
   '&:hover': {
-    transform: 'translateY(-4px)',
+    transform: 'translateY(-2px)',
     borderColor: alpha(theme.palette.primary.main, 0.3)
   }
 }));
@@ -2612,7 +2598,7 @@ export default function CollectionView({ collection }) {
                   px: 3,
                   py: 1.5,
                   minWidth: '100px',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transition: 'transform 0.2s ease, border-color 0.2s ease',
                   '&.Mui-selected': {
                     bgcolor: 'transparent',
                     color: theme.palette.primary.main,
