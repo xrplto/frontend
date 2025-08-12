@@ -15,8 +15,15 @@ module.exports = {
     API_URL: process.env.API_URL,
     MAINTENANCE: process.env.MAINTENANCE
   },
+  swcMinify: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    minimumCacheTTL: 60,
     remotePatterns: [
       {
         protocol: 'https',
@@ -31,7 +38,7 @@ module.exports = {
       {
         protocol: 'https',
         hostname: 's1.xrpnft.com',
-        pathname: '/collection/**'
+        pathname: '/**'
       }
     ]
   },
@@ -101,6 +108,18 @@ module.exports = {
             priority: 30,
             minChunks: 1,
             reuseExistingChunk: true
+          },
+          mui: {
+            name: 'mui',
+            test: /[\\/]node_modules[\\/]@mui[\\/]/,
+            priority: 35,
+            reuseExistingChunk: true,
+          },
+          charts: {
+            name: 'charts',
+            test: /[\\/]node_modules[\\/](highcharts|apexcharts|echarts|recharts)[\\/]/,
+            priority: 25,
+            reuseExistingChunk: true,
           }
         }
       }

@@ -1,8 +1,14 @@
-import React, { useState, useEffect, useContext, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import axios from 'axios';
-import InfiniteScroll from 'react-infinite-scroll-component';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import debounce from 'lodash.debounce';
+
+// Lazy load heavy components
+const InfiniteScroll = dynamic(() => import('react-infinite-scroll-component'), {
+  ssr: false,
+  loading: () => <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={30} /></Box>
+});
 import { FacebookShareButton, TwitterShareButton } from 'react-share';
 import { FacebookIcon, TwitterIcon } from 'react-share';
 
@@ -635,7 +641,8 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
                 objectFit: 'cover',
                 objectPosition: 'center',
                 transition: 'transform 0.3s ease',
-                opacity: loadingImg ? 0 : 1
+                opacity: loadingImg ? 0 : 1,
+                willChange: 'transform'
               }}
             />
           ) : (
