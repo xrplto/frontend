@@ -426,7 +426,7 @@ const SearchToolbar = memo(function SearchToolbar({
             <Divider orientation="vertical" flexItem sx={{ mx: { xs: 0.25, sm: 0.5 }, height: 28, display: { xs: 'none', sm: 'block' } }} />
             
             {/* Display first 5 categories from tags array */}
-            {tags.slice(0, 10).map((tag, index) => {
+            {tags.slice(0, 5).map((tag, index) => {
               const normalizedTag = tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
               const colors = ['#e91e63', '#00bcd4', '#4caf50', '#673ab7', '#ff9800', '#795548', '#607d8b', '#ff5722', '#3f51b5', '#009688'];
               const emojis = ['🏷️', '📍', '⭐', '💫', '🎯', '🔖', '🎨', '🌟', '🏆', '💡'];
@@ -445,34 +445,33 @@ const SearchToolbar = memo(function SearchToolbar({
                     fontSize: { xs: '0.75rem', sm: '0.875rem' },
                     height: { xs: 32, sm: 36 },
                     px: { xs: 1, sm: 1.5 },
-                    display: { xs: index < 2 ? 'flex' : 'none', sm: index < 6 ? 'flex' : 'none', md: 'flex' }
+                    display: 'flex'
                   }}
                 />
               );
             })}
             
-            {/* Categories Button */}
-            <Tooltip title="More Categories">
-              <IconButton 
-                size="small"
-                onClick={() => setCategoriesOpen(true)}
-                sx={{
-                  ml: 0.5,
-                  width: { xs: 32, sm: 36 },
-                  height: { xs: 32, sm: 36 },
-                  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                  borderRadius: 0.5,
-                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.15),
-                    transform: 'scale(1.05)'
-                  },
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <CategoryIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
-              </IconButton>
-            </Tooltip>
+            {/* All Tags Button */}
+            <Chip
+              label="All Tags"
+              size="small"
+              icon={<CategoryIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />}
+              onClick={() => setCategoriesOpen(true)}
+              sx={{
+                cursor: 'pointer',
+                background: alpha(theme.palette.primary.main, 0.08),
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                fontWeight: 600,
+                '&:hover': {
+                  background: alpha(theme.palette.primary.main, 0.15),
+                  transform: 'scale(1.05)'
+                },
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                height: { xs: 32, sm: 36 },
+                px: { xs: 1, sm: 1.5 },
+                transition: 'all 0.2s ease'
+              }}
+            />
           </>
         )}
       </Stack>
