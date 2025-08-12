@@ -22,7 +22,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CollectionsIcon from '@mui/icons-material/Collections';
-import { useState, useEffect, useRef, useCallback, useContext } from 'react';
+import { useState, useEffect, useRef, useCallback, useContext, useMemo, memo } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import useDebounce from 'src/hooks/useDebounce';
@@ -34,7 +34,18 @@ import { fNumberWithCurreny } from 'src/utils/formatNumber';
 const API_URL = process.env.API_URL;
 const NFT_API_URL = 'https://api.xrpnft.com/api';
 
-export default function SearchModal({ open, onClose }) {
+// Memoized price formatter
+const formatPrice = (price) => {
+  if (price === 0) return '0.00';
+  if (price < 0.00000001) return parseFloat(price).toFixed(12);
+  if (price < 0.0000001) return parseFloat(price).toFixed(10);
+  if (price < 0.000001) return parseFloat(price).toFixed(8);
+  if (price < 0.0001) return parseFloat(price).toFixed(6);
+  if (price < 1) return parseFloat(price).toFixed(4);
+  return parseFloat(price).toFixed(2);
+};
+
+const SearchModal = memo(function SearchModal({ open, onClose }) {
   const theme = useTheme();
   const router = useRouter();
   const inputRef = useRef(null);
@@ -50,54 +61,73 @@ export default function SearchModal({ open, onClose }) {
   const [trendingCollections, setTrendingCollections] = useState([]);
   const [loadingTrending, setLoadingTrending] = useState(false);
   
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Load recent searches from localStorage
   useEffect(() => {
+    if (!open) return;
     const stored = localStorage.getItem('recentSearches');
     if (stored) {
-      setRecentSearches(JSON.parse(stored));
+      try {
+        setRecentSearches(JSON.parse(stored));
+      } catch (e) {
+        console.error('Failed to parse recent searches', e);
+      }
     }
-  }, []);
+  }, [open]);
 
   // Focus input when modal opens
   useEffect(() => {
     if (open && inputRef.current) {
-      inputRef.current.focus();
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [open]);
 
   // Fetch trending tokens and collections when modal opens
   useEffect(() => {
     if (!open) return;
+    
+    let cancelled = false;
+    const controller = new AbortController();
 
     const fetchTrending = async () => {
       setLoadingTrending(true);
       try {
         // Fetch trending tokens
         const [tokensRes, collectionsRes] = await Promise.all([
-          axios.post(`${API_URL}/search`, { search: '' }),
+          axios.post(`${API_URL}/search`, { search: '' }, { signal: controller.signal }),
           axios.post(`${NFT_API_URL}/search`, { 
             search: '', 
             type: 'SEARCH_ITEM_COLLECTION_ACCOUNT' 
-          })
+          }, { signal: controller.signal })
         ]);
 
-        if (tokensRes.data?.tokens) {
-          setTrendingTokens(tokensRes.data.tokens.slice(0, 4));
-        }
+        if (!cancelled) {
+          if (tokensRes.data?.tokens) {
+            setTrendingTokens(tokensRes.data.tokens.slice(0, 4));
+          }
 
-        if (collectionsRes.data?.collections) {
-          setTrendingCollections(collectionsRes.data.collections.slice(0, 3));
+          if (collectionsRes.data?.collections) {
+            setTrendingCollections(collectionsRes.data.collections.slice(0, 3));
+          }
         }
       } catch (error) {
-        console.error('Error fetching trending:', error);
+        if (!axios.isCancel(error)) {
+          console.error('Error fetching trending:', error);
+        }
       } finally {
-        setLoadingTrending(false);
+        if (!cancelled) {
+          setLoadingTrending(false);
+        }
       }
     };
 
     fetchTrending();
+    
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [open]);
 
   // Perform search
@@ -107,12 +137,14 @@ export default function SearchModal({ open, onClose }) {
       return;
     }
 
+    const controller = new AbortController();
+
     const searchTokens = async () => {
       setLoading(true);
       try {
         const response = await axios.post(`${API_URL}/search`, {
           search: debouncedSearchQuery
-        });
+        }, { signal: controller.signal });
         
         if (response.data?.tokens) {
           setSearchResults(prev => ({
@@ -121,13 +153,17 @@ export default function SearchModal({ open, onClose }) {
           }));
         }
       } catch (error) {
-        console.error('Search error:', error);
+        if (!axios.isCancel(error)) {
+          console.error('Search error:', error);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     searchTokens();
+    
+    return () => controller.abort();
   }, [debouncedSearchQuery, open]);
 
   const handleClose = useCallback(() => {
@@ -154,14 +190,19 @@ export default function SearchModal({ open, onClose }) {
       r.slug !== item.slug || r.type !== type
     )].slice(0, 5);
     setRecentSearches(updated);
-    localStorage.setItem('recentSearches', JSON.stringify(updated));
+    
+    // Defer localStorage write
+    requestIdleCallback(() => {
+      localStorage.setItem('recentSearches', JSON.stringify(updated));
+    });
     
     // Navigate to result
     if (type === 'token') {
-      window.location.href = `/token/${item.slug}`;
+      router.push(`/token/${item.slug}`);
     } else if (type === 'collection') {
-      window.location.href = `/collection/${item.slug}`;
+      router.push(`/collection/${item.slug}`);
     }
+    handleClose();
   }, [recentSearches, router, handleClose]);
 
   const handleKeyDown = useCallback((e) => {
@@ -170,33 +211,38 @@ export default function SearchModal({ open, onClose }) {
     }
   }, [handleClose]);
 
+  // Memoize styles to prevent recalculation
+  const modalStyles = useMemo(() => ({
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    pt: '10vh',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    backgroundColor: alpha(theme.palette.background.default, 0.85)
+  }), [theme]);
+
+  const paperStyles = useMemo(() => ({
+    width: '90%',
+    maxWidth: 600,
+    maxHeight: '70vh',
+    overflow: 'hidden',
+    borderRadius: { xs: '10px', sm: '16px' },
+    background: theme.palette.background.paper,
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+    boxShadow: theme.shadows[24]
+  }), [theme]);
+
   return (
     <Modal
       open={open}
       onClose={handleClose}
-      sx={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        pt: '10vh',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        backgroundColor: alpha(theme.palette.background.default, 0.85)
-      }}
+      sx={modalStyles}
     >
       <Paper
-        sx={{
-          width: '90%',
-          maxWidth: 600,
-          maxHeight: '70vh',
-          overflow: 'hidden',
-          borderRadius: { xs: '10px', sm: '16px' },
-          background: theme.palette.background.paper,
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-          boxShadow: theme.shadows[24]
-        }}
+        sx={paperStyles}
         onKeyDown={handleKeyDown}
       >
         {/* Search Header */}
@@ -253,10 +299,11 @@ export default function SearchModal({ open, onClose }) {
                           onClick={() => {
                             // Navigate directly for recent searches since we already have the data
                             if (item.type === 'token') {
-                              window.location.href = `/token/${item.slug}`;
+                              router.push(`/token/${item.slug}`);
                             } else if (item.type === 'collection') {
-                              window.location.href = `/collection/${item.slug}`;
+                              router.push(`/collection/${item.slug}`);
                             }
+                            handleClose();
                           }} 
                           sx={{ py: 0.5 }}
                         >
@@ -266,6 +313,7 @@ export default function SearchModal({ open, onClose }) {
                                 ? `https://s1.xrpnft.com/collection/${item.logoImage}` 
                                 : `https://s1.xrpl.to/token/${item.md5}`}
                               sx={{ width: 28, height: 28 }}
+                              imgProps={{ loading: 'lazy' }}
                             >
                               {item.user?.[0] || item.name?.[0]}
                             </Avatar>
@@ -302,11 +350,12 @@ export default function SearchModal({ open, onClose }) {
                   <List disablePadding dense>
                     {trendingTokens.map((token, index) => (
                       <ListItem key={index} disablePadding>
-                        <ListItemButton onClick={() => window.location.href = `/token/${token.slug}`} sx={{ py: 0.5, px: 2 }}>
+                        <ListItemButton onClick={() => { router.push(`/token/${token.slug}`); handleClose(); }} sx={{ py: 0.5, px: 2 }}>
                           <ListItemAvatar sx={{ minWidth: 36 }}>
                             <Avatar
                               src={`https://s1.xrpl.to/token/${token.md5}`}
                               sx={{ width: 28, height: 28 }}
+                              imgProps={{ loading: 'lazy' }}
                             />
                           </ListItemAvatar>
                           <ListItemText
@@ -319,19 +368,7 @@ export default function SearchModal({ open, onClose }) {
                           <Stack alignItems="flex-end" spacing={0}>
                             {token.exch !== undefined && token.exch !== null && (
                               <Typography variant="body2" fontSize="0.8rem" fontWeight={500}>
-                                ${token.exch === 0 
-                                  ? '0.00'
-                                  : token.exch < 0.00000001
-                                  ? parseFloat(token.exch).toFixed(12)
-                                  : token.exch < 0.0000001
-                                  ? parseFloat(token.exch).toFixed(10)
-                                  : token.exch < 0.000001
-                                  ? parseFloat(token.exch).toFixed(8)
-                                  : token.exch < 0.0001
-                                  ? parseFloat(token.exch).toFixed(6)
-                                  : token.exch < 1
-                                  ? parseFloat(token.exch).toFixed(4)
-                                  : parseFloat(token.exch).toFixed(2)}
+                                ${formatPrice(token.exch)}
                               </Typography>
                             )}
                             {token.pro24h !== undefined && token.pro24h !== null && (
@@ -365,11 +402,12 @@ export default function SearchModal({ open, onClose }) {
                   <List disablePadding dense>
                     {trendingCollections.map((collection, index) => (
                       <ListItem key={index} disablePadding>
-                        <ListItemButton onClick={() => window.location.href = `/collection/${collection.slug}`} sx={{ py: 0.5, px: 2 }}>
+                        <ListItemButton onClick={() => { router.push(`/collection/${collection.slug}`); handleClose(); }} sx={{ py: 0.5, px: 2 }}>
                           <ListItemAvatar sx={{ minWidth: 36 }}>
                             <Avatar
                               src={`https://s1.xrpnft.com/collection/${collection.logoImage}`}
                               sx={{ width: 28, height: 28 }}
+                              imgProps={{ loading: 'lazy' }}
                             />
                           </ListItemAvatar>
                           <ListItemText
@@ -419,11 +457,12 @@ export default function SearchModal({ open, onClose }) {
               <List disablePadding dense>
                 {searchResults.tokens.map((token, index) => (
                   <ListItem key={index} disablePadding>
-                    <ListItemButton onClick={() => window.location.href = `/token/${token.slug}`} sx={{ py: 0.5, px: 2 }}>
+                    <ListItemButton onClick={() => { router.push(`/token/${token.slug}`); handleClose(); }} sx={{ py: 0.5, px: 2 }}>
                       <ListItemAvatar sx={{ minWidth: 36 }}>
                         <Avatar
                           src={`https://s1.xrpl.to/token/${token.md5}`}
                           sx={{ width: 28, height: 28 }}
+                          imgProps={{ loading: 'lazy' }}
                         />
                       </ListItemAvatar>
                       <ListItemText
@@ -487,4 +526,6 @@ export default function SearchModal({ open, onClose }) {
       </Paper>
     </Modal>
   );
-}
+});
+
+export default SearchModal;
