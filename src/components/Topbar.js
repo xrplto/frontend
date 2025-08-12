@@ -693,6 +693,21 @@ const Topbar = () => {
     setTradeFilter(event.target.value);
   }, []);
 
+  // Move throttled functions outside of useEffect
+  const throttledSetTrades = useMemo(
+    () => throttle((newTrades) => {
+      setTrades(newTrades);
+    }, 200),
+    []
+  );
+
+  const throttledAddTrade = useMemo(
+    () => throttle((newTrade) => {
+      setTrades((prevTrades) => [newTrade, ...prevTrades].slice(0, 200));
+    }, 200),
+    []
+  );
+
   useEffect(() => {
     if (!tradeDrawerOpen) {
       return;
@@ -724,20 +739,6 @@ const Topbar = () => {
       setIsWsLoading(false);
     };
 
-    const throttledSetTrades = useMemo(
-      () => throttle((newTrades) => {
-        setTrades(newTrades);
-      }, 200),
-      []
-    );
-
-    const throttledAddTrade = useMemo(
-      () => throttle((newTrade) => {
-        setTrades((prevTrades) => [newTrade, ...prevTrades].slice(0, 200));
-      }, 200),
-      []
-    );
-
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -768,7 +769,7 @@ const Topbar = () => {
       throttledSetTrades.cancel(); // Cancel any pending throttled calls
       throttledAddTrade.cancel(); // Cancel any pending throttled calls
     };
-  }, [tradeDrawerOpen, tradeFilter]);
+  }, [tradeDrawerOpen, tradeFilter, throttledSetTrades, throttledAddTrade]);
 
   // Since API filtering is now handled server-side, just sort trades
   const filteredTrades = useMemo(() => {
