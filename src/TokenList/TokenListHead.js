@@ -12,7 +12,7 @@ import {
   alpha,
   styled
 } from '@mui/material';
-import { useContext } from 'react';
+import { useContext, memo, useMemo } from 'react';
 import { AppContext } from 'src/AppContext';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -210,7 +210,7 @@ const TABLE_HEAD = [
   },
 ];
 
-export default function TokenListHead({
+const TokenListHead = memo(function TokenListHead({
   order,
   orderBy,
   onRequestSort,
@@ -222,11 +222,14 @@ export default function TokenListHead({
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { darkMode } = useContext(AppContext);
 
-  const createSortHandler = (id, no) => (event) => {
-    onRequestSort(event, id, no);
-  };
+  const createSortHandler = useMemo(
+    () => (id, no) => (event) => {
+      onRequestSort(event, id, no);
+    },
+    [onRequestSort]
+  );
 
-  const getStickyLeft = (id) => {
+  const getStickyLeft = useMemo(() => (id) => {
     if (!TABLE_HEAD.find(h => h.id === id)?.sticky) return 'unset';
     
     // Fixed positions for sticky columns
@@ -237,7 +240,7 @@ export default function TokenListHead({
     };
     
     return stickyPositions[id] || 'unset';
-  };
+  }, [isMobile]);
 
   return (
     <TableHead
@@ -337,4 +340,6 @@ export default function TokenListHead({
       </TableRow>
     </TableHead>
   );
-}
+});
+
+export default TokenListHead;

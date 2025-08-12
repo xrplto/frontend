@@ -7,11 +7,7 @@ import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { update_metrics, update_filteredCount, selectMetrics } from 'src/redux/statusSlice';
 import TokenListHead from './TokenListHead';
-import TokenListToolbar from './TokenListToolbar';
-import SearchToolbar from './SearchToolbar';
 import { TokenRow } from './TokenRow';
-import EditTokenDialog from 'src/components/EditTokenDialog';
-import TrustSetDialog from 'src/components/TrustSetDialog';
 import React, { memo, lazy, Suspense } from 'react';
 import { debounce } from 'lodash';
 import { throttle } from 'lodash';
@@ -41,6 +37,8 @@ const MemoizedTokenRow = memo(TokenRow, (prevProps, nextProps) => {
 });
 const LazyEditTokenDialog = lazy(() => import('src/components/EditTokenDialog'));
 const LazyTrustSetDialog = lazy(() => import('src/components/TrustSetDialog'));
+const LazySearchToolbar = lazy(() => import('./SearchToolbar'));
+const LazyTokenListToolbar = lazy(() => import('./TokenListToolbar'));
 
 export default function TokenList({ showWatchList, tag, tagName, tags, tokens, setTokens, tMap, initialOrderBy }) {
   const { accountProfile, openSnackbar, setLoading, darkMode, activeFiatCurrency } =
@@ -131,12 +129,14 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   // Optimized WebSocket handler with React 18 features
   const wsMessageQueue = useRef([]);
   const wsProcessTimer = useRef(null);
+  const wsProcessing = useRef(false);
   
   // Process WebSocket messages in batches for better performance
   const processWebSocketQueue = useCallback(() => {
-    if (wsMessageQueue.current.length === 0) return;
+    if (wsProcessing.current || wsMessageQueue.current.length === 0) return;
+    wsProcessing.current = true;
     
-    const messages = wsMessageQueue.current.splice(0, 50); // Process max 50 at once
+    const messages = wsMessageQueue.current.splice(0, 25); // Process max 25 at once for smoother updates
     
     const aggregatedTokens = new Map();
     let latestMetrics = null;
@@ -180,9 +180,10 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
       }
     });
     
+    wsProcessing.current = false;
     // Continue processing if more messages
     if (wsMessageQueue.current.length > 0) {
-      requestAnimationFrame(() => processWebSocketQueue());
+      requestIdleCallback(() => processWebSocketQueue(), { timeout: 50 });
     }
   }, [dispatch, setTokens, startTransition]);
 
@@ -528,7 +529,8 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
       )}
 
       <Box sx={{ mb: 0.5 }}>
-        <SearchToolbar
+        <Suspense fallback={<Box sx={{ height: 56 }} />}>
+          <LazySearchToolbar
           tags={tags}
           tagName={tagName}
           filterName={filterName}
@@ -550,6 +552,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           currentOrderBy={orderBy}
           setOrderBy={setOrderBy}
         />
+        </Suspense>
       </Box>
 
       <Box
@@ -625,13 +628,15 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           width: '100%'
         }}
       >
-        <TokenListToolbar
+        <Suspense fallback={<Box sx={{ height: 52 }} />}>
+          <LazyTokenListToolbar
           rows={rows}
           setRows={updateRows}
           page={page}
           setPage={updatePage}
           tokens={tokens}
         />
+        </Suspense>
       </Box>
     </>
   );

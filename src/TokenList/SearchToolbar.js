@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, memo } from 'react';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -34,7 +34,8 @@ import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import CategoriesDrawer from 'src/components/CategoriesDrawer';
+import dynamic from 'next/dynamic';
+const CategoriesDrawer = dynamic(() => import('src/components/CategoriesDrawer'));
 
 // Helper function
 function getTagValue(tags, tagName) {
@@ -44,7 +45,7 @@ function getTagValue(tags, tagName) {
   return idx + 1;
 }
 
-export default function SearchToolbar({
+const SearchToolbar = memo(function SearchToolbar({
   tags,
   tagName,
   filterName,
@@ -522,4 +523,6 @@ export default function SearchToolbar({
       />
     </Paper>
   );
-}
+});
+
+export default SearchToolbar;

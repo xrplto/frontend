@@ -16,7 +16,7 @@ import { FirstPage, LastPage, ViewList } from '@mui/icons-material';
 // Redux
 import { useSelector, useDispatch } from 'react-redux';
 import { selectFilteredCount } from 'src/redux/statusSlice';
-import { useCallback } from 'react';
+import { useCallback, memo } from 'react';
 // ----------------------------------------------------------------------
 
 const StyledToolbar = styled(Box)(({ theme }) => ({
@@ -97,7 +97,7 @@ const NavButton = styled(IconButton)(({ theme }) => ({
   }
 }));
 
-export default function TokenListToolbar({ rows, setRows, page, setPage, tokens }) {
+const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, setPage, tokens }) {
   const filteredCount = useSelector(selectFilteredCount);
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -252,4 +252,6 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
       </RowsSelector>
     </StyledToolbar>
   );
-}
+});
+
+export default TokenListToolbar;

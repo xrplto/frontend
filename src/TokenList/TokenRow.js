@@ -1,7 +1,10 @@
 import Decimal from 'decimal.js';
 import { useState, useEffect, useContext, memo, useMemo, useCallback } from 'react';
 import React from 'react';
-import Image from 'next/image';
+import dynamic from 'next/dynamic';
+const Image = dynamic(() => import('next/image'), { 
+  loading: () => <Box sx={{ width: '100%', height: '100%', backgroundColor: 'action.hover' }} />
+});
 import {
   styled,
   useMediaQuery,
@@ -38,7 +41,7 @@ const TransitionTypo = styled(Typography)(
   () => `
         transition: color 0.15s ease;
         contain: layout style paint;
-        will-change: color;
+        will-change: auto;
     `
 );
 
@@ -366,7 +369,7 @@ const TokenImageWrapper = styled(Box)(({ theme }) => ({
   }
 }));
 
-function FTokenRow({
+const FTokenRow = React.memo(function FTokenRow({
   time,
   token,
   setEditToken,
@@ -567,9 +570,9 @@ function FTokenRow({
   }, [dateon, date]);
 
   const sparklineUrl = useMemo(() => {
-    let url = `${BASE_URL}/sparkline/${md5}?period=24h&lightweight=true&maxPoints=20`;
-    return url;
-  }, [BASE_URL, md5]);
+    if (!BASE_URL || !md5 || isMobile) return null;
+    return `${BASE_URL}/sparkline/${md5}?period=24h&lightweight=true&maxPoints=20`;
+  }, [BASE_URL, md5, isMobile]);
 
   useEffect(() => {
     setPriceColor(getPriceColor(memoizedToken.bearbull, theme));
@@ -684,11 +687,9 @@ function FTokenRow({
                   width={isMobile ? 20 : 32}
                   height={isMobile ? 20 : 32}
                   sizes="(max-width: 768px) 20px, 32px"
-                  quality={75}
+                  quality={60}
                   loading="lazy"
                   unoptimized={false}
-                  placeholder="blur"
-                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                   onError={handleImgError}
                 />
@@ -701,11 +702,9 @@ function FTokenRow({
                   width={isMobile ? 20 : 32}
                   height={isMobile ? 20 : 32}
                   sizes="(max-width: 768px) 20px, 32px"
-                  quality={75}
+                  quality={60}
                   loading="lazy"
                   unoptimized={false}
-                  placeholder="blur"
-                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                   onError={handleImgError}
                 />
@@ -1027,19 +1026,41 @@ function FTokenRow({
               zIndex: 1
             }}
           >
-            <LoadChart
-              url={sparklineUrl}
-              style={{ width: '100%', height: '100%' }}
-              animation={false}
-              showGradient={false}
-              lineWidth={1.5}
-              opts={chartOpts}
-            />
+            {sparklineUrl && (
+              <LoadChart
+                url={sparklineUrl}
+                style={{ width: '100%', height: '100%' }}
+                animation={false}
+                showGradient={false}
+                lineWidth={1.5}
+                opts={chartOpts}
+              />
+            )}
           </Box>
         </TableCell>
       )}
     </TableRow>
   );
-}
+}, (prevProps, nextProps) => {
+  const prev = prevProps.token;
+  const next = nextProps.token;
+  
+  // Only re-render if critical fields change
+  if (prev.exch !== next.exch) return false;
+  if (prev.pro24h !== next.pro24h) return false;
+  if (prev.pro5m !== next.pro5m) return false;
+  if (prev.pro1h !== next.pro1h) return false;
+  if (prev.time !== next.time) return false;
+  if (prevProps.exchRate !== nextProps.exchRate) return false;
+  
+  // Check watchlist changes
+  if (prevProps.watchList !== nextProps.watchList) {
+    const prevInWatchlist = prevProps.watchList.includes(prev.md5);
+    const nextInWatchlist = nextProps.watchList.includes(next.md5);
+    if (prevInWatchlist !== nextInWatchlist) return false;
+  }
+  
+  return true; // Skip re-render
+});
 
-export const TokenRow = memo(FTokenRow);
+export const TokenRow = FTokenRow;
