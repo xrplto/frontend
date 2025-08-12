@@ -1,35 +1,84 @@
 import axios from 'axios';
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { useState, useEffect } from 'react';
-
-import MarkdownIt from 'markdown-it';
-import ReactMarkdown from 'react-markdown';
-import 'react-markdown-editor-lite/lib/index.css'; // import style manually
-
-const MDEditor = dynamic(() => import('react-markdown-editor-lite'), {
-  ssr: false
-});
+import { useState, useEffect, useContext } from 'react';
 
 // Material
 import { Grid, Stack, useTheme, useMediaQuery, Typography, Paper, Button, Box } from '@mui/material';
 
 // Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-// Components
-import PriceChart from './PriceChartAdvanced';
-import PriceStatistics from './PriceStatistics';
-import Description from './Description';
-import TrendingTokens from './TrendingTokens';
+// Lazy load heavy components
+const MDEditor = dynamic(() => import('react-markdown-editor-lite'), {
+  ssr: false,
+  loading: () => <div style={{ height: '500px' }} />
+});
 
-import Swap from './Swap'; // Import Swap component
-import TradingHistory from './TradingHistory';
+const PriceChart = dynamic(() => import('./PriceChartAdvanced'), {
+  loading: () => <div style={{ height: '400px' }} />,
+  ssr: false
+});
+
+const TradingHistory = dynamic(() => import('./TradingHistory'), {
+  loading: () => <div style={{ height: '400px' }} />,
+  ssr: false
+});
+
+const PriceStatistics = dynamic(() => import('./PriceStatistics'), {
+  ssr: false
+});
+
+const Description = dynamic(() => import('./Description'), {
+  ssr: false
+});
+
+const TrendingTokens = dynamic(() => import('./TrendingTokens'), {
+  ssr: false
+});
+
+const Swap = dynamic(() => import('./Swap'), {
+  ssr: false
+});
+
+// Import markdown parser lazily
+let MarkdownIt = null;
+const getMarkdownParser = () => {
+  if (!MarkdownIt) {
+    MarkdownIt = require('markdown-it');
+  }
+  return new MarkdownIt();
+};
+
+// Performance: Intersection Observer for lazy loading
+const useIntersectionObserver = (ref, options = {}) => {
+  const [isVisible, setIsVisible] = useState(false);
+  
+  useEffect(() => {
+    const element = ref?.current;
+    if (!element) return;
+    
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '100px', threshold: 0.1, ...options }
+    );
+    
+    observer.observe(element);
+    
+    return () => observer.disconnect();
+  }, [ref, options]);
+  
+  return isVisible;
+};
 
 // ----------------------------------------------------------------------
 
-export default function Overview({ token, onTransactionClick }) {
+const Overview = memo(({ token, onTransactionClick }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
@@ -40,13 +89,17 @@ export default function Overview({ token, onTransactionClick }) {
   const [description, setDescription] = useState(token.description || '');
   const [pairs, setPairs] = useState([]);
 
-  // Initialize a markdown parser
-  const mdParser = new MarkdownIt(/* Markdown-it options */);
+  // Lazy initialize markdown parser
+  const mdParser = useMemo(() => {
+    if (showEditor) {
+      return getMarkdownParser();
+    }
+    return null;
+  }, [showEditor]);
 
-  const handleEditorChange = ({ html, text }) => {
-    // console.log('handleEditorChange', html, text);
+  const handleEditorChange = useCallback(({ html, text }) => {
     setDescription(text);
-  };
+  }, []);
 
   // Fetch pairs data
   useEffect(() => {
@@ -67,7 +120,7 @@ export default function Overview({ token, onTransactionClick }) {
     }
   }, [token.md5, BASE_URL]);
 
-  const onApplyDescription = async () => {
+  const onApplyDescription = useCallback(async () => {
     if (token.description === description) return;
 
     let finish = false;
@@ -101,7 +154,7 @@ export default function Overview({ token, onTransactionClick }) {
     }
     setLoading(false);
     if (finish) setShowEditor(false);
-  };
+  }, [token, description, accountProfile, BASE_URL, setLoading, openSnackbar]);
 
   let user = token.user;
   if (!user) user = token.name;
@@ -153,4 +206,8 @@ export default function Overview({ token, onTransactionClick }) {
       </Grid>
     </Grid>
   );
-}
+});
+
+Overview.displayName = 'Overview';
+
+export default Overview;

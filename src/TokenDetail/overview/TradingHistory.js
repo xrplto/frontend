@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { MD5 } from 'crypto-js';
 import Decimal from 'decimal.js';
@@ -52,6 +52,40 @@ import PairsSelect from 'src/TokenDetail/trade/PairsSelect';
 import { lazy, Suspense } from 'react';
 
 const RichListData = lazy(() => import('src/TokenDetail/richlist/RichListData'));
+
+// Performance utilities
+const throttle = (func, delay) => {
+  let lastCall = 0;
+  let timeout;
+  return (...args) => {
+    const now = Date.now();
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      return func(...args);
+    }
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      lastCall = Date.now();
+      func(...args);
+    }, delay - (now - lastCall));
+  };
+};
+
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  
+  return debouncedValue;
+};
 
 // Define the highlight animation with softer colors
 const highlightAnimation = (theme) => keyframes`
@@ -538,25 +572,28 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
     }
   }, [tokenId, page, xrpOnly]);
 
-  // WebSocket message processor for OrderBook
-  const processOrderBookMessages = (event) => {
-    const orderBook = JSON.parse(event.data);
+  // WebSocket message processor for OrderBook - throttled for performance
+  const processOrderBookMessages = useMemo(
+    () => throttle((event) => {
+      const orderBook = JSON.parse(event.data);
 
-    if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
-      const req = orderBook.id % 2;
-      if (req === 1) {
-        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS, orderBookData.asks);
-        setOrderBookData(prev => ({ ...prev, asks: parsed }));
+      if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
+        const req = orderBook.id % 2;
+        if (req === 1) {
+          const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS, orderBookData.asks);
+          setOrderBookData(prev => ({ ...prev, asks: parsed }));
+        }
+        if (req === 0) {
+          const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, orderBookData.bids);
+          setOrderBookData(prev => ({ ...prev, bids: parsed }));
+          setTimeout(() => {
+            setClearNewFlag(true);
+          }, 2000);
+        }
       }
-      if (req === 0) {
-        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, orderBookData.bids);
-        setOrderBookData(prev => ({ ...prev, bids: parsed }));
-        setTimeout(() => {
-          setClearNewFlag(true);
-        }, 2000);
-      }
-    }
-  };
+    }, 100), // Throttle to max 10 updates per second
+    [orderBookData.asks, orderBookData.bids]
+  );
 
   // OrderBook WebSocket request
   const requestOrderBook = useCallback(() => {

@@ -1,20 +1,36 @@
 import dynamic from 'next/dynamic';
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useCallback, memo, useMemo } from 'react';
 
 // Material
 import { Box, Divider, useTheme, useMediaQuery } from '@mui/material';
 
 // Components
-import LinkCascade from './LinkCascade';
-import TokenSummary from './common/TokenSummary';
-import CreatorTransactionsDialog from './common/CreatorTransactionsDialog';
-import TransactionDetailsPanel from './common/TransactionDetailsPanel';
 import { AppContext } from 'src/AppContext';
 
-// Lazy load components
-const Overview = dynamic(() => import('./overview'));
+// Lazy load all heavy components
+const Overview = dynamic(() => import('./overview'), {
+  loading: () => <div style={{ height: '400px' }} />,
+  ssr: false
+});
 
-export default function TokenDetail({ token, onCreatorPanelToggle, creatorPanelOpen, onTransactionPanelToggle, transactionPanelOpen }) {
+const LinkCascade = dynamic(() => import('./LinkCascade'), {
+  ssr: false
+});
+
+const TokenSummary = dynamic(() => import('./common/TokenSummary'), {
+  loading: () => <div style={{ height: '200px' }} />,
+  ssr: false
+});
+
+const CreatorTransactionsDialog = dynamic(() => import('./common/CreatorTransactionsDialog'), {
+  ssr: false
+});
+
+const TransactionDetailsPanel = dynamic(() => import('./common/TransactionDetailsPanel'), {
+  ssr: false
+});
+
+const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTransactionPanelToggle, transactionPanelOpen }) => {
   const { darkMode } = useContext(AppContext);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -32,31 +48,31 @@ export default function TokenDetail({ token, onCreatorPanelToggle, creatorPanelO
     setTxDetailsOpen(transactionPanelOpen || false);
   }, [transactionPanelOpen]);
 
-  // Notify parent when state changes
-  const handleCreatorTxToggle = () => {
+  // Memoize callback functions to prevent re-renders
+  const handleCreatorTxToggle = useCallback(() => {
     const newState = !creatorTxOpen;
     setCreatorTxOpen(newState);
     if (onCreatorPanelToggle) {
       onCreatorPanelToggle(newState);
     }
-  };
+  }, [creatorTxOpen, onCreatorPanelToggle]);
 
   // Handle transaction selection
-  const handleSelectTransaction = (hash) => {
+  const handleSelectTransaction = useCallback((hash) => {
     setSelectedTxHash(hash);
     setTxDetailsOpen(true);
     if (onTransactionPanelToggle) {
       onTransactionPanelToggle(true);
     }
-  };
+  }, [onTransactionPanelToggle]);
 
   // Handle transaction details close
-  const handleTxDetailsClose = () => {
+  const handleTxDetailsClose = useCallback(() => {
     setTxDetailsOpen(false);
     if (onTransactionPanelToggle) {
       onTransactionPanelToggle(false);
     }
-  };
+  }, [onTransactionPanelToggle]);
 
   return (
     <Box sx={{ position: 'relative', display: 'flex' }}>
@@ -109,4 +125,8 @@ export default function TokenDetail({ token, onCreatorPanelToggle, creatorPanelO
       )}
     </Box>
   );
-}
+});
+
+TokenDetail.displayName = 'TokenDetail';
+
+export default TokenDetail;

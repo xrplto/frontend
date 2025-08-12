@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo, useContext } from 'react';
+import { useState, useEffect, useRef, memo, useContext, useMemo } from 'react';
 import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem, CircularProgress, alpha } from '@mui/material';
 import { createChart, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries } from 'lightweight-charts';
 import axios from 'axios';
@@ -10,6 +10,24 @@ import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import GroupIcon from '@mui/icons-material/Group';
 
+// Performance: Throttle chart updates
+const throttle = (func, delay) => {
+  let lastCall = 0;
+  let timeout;
+  return (...args) => {
+    const now = Date.now();
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      return func(...args);
+    }
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      lastCall = Date.now();
+      func(...args);
+    }, delay - (now - lastCall));
+  };
+};
+
 const PriceChartAdvanced = memo(({ token }) => {
   const theme = useTheme();
   const { activeFiatCurrency, accountProfile } = useContext(AppContext);
@@ -20,6 +38,14 @@ const PriceChartAdvanced = memo(({ token }) => {
   const volumeSeriesRef = useRef(null);
   const lastChartTypeRef = useRef(null);
   const isMobile = theme.breakpoints.values.sm > window.innerWidth;
+  const isTablet = theme.breakpoints.values.md > window.innerWidth;
+  
+  // Performance: Reduce data points for mobile/tablet
+  const maxDataPoints = useMemo(() => {
+    if (isMobile) return 100;
+    if (isTablet) return 200;
+    return 500;
+  }, [isMobile, isTablet]);
   
   const [chartType, setChartType] = useState('candles');
   const [range, setRange] = useState('1D');
