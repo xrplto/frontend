@@ -1,4 +1,5 @@
-import React, { useState, useContext, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useContext, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import Decimal from 'decimal.js';
 import 'src/utils/i18n';
 import {
@@ -12,41 +13,42 @@ import {
   useTheme,
   useMediaQuery,
   IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
   CircularProgress,
   MenuItem,
   Select,
   FormControl,
   Chip,
-  Divider,
-  Card,
-  CardContent,
-  Skeleton
+  Skeleton,
+  Card
 } from '@mui/material';
-import SmartToy from '@mui/icons-material/SmartToy';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import CloseIcon from '@mui/icons-material/Close';
 import LinkIcon from '@mui/icons-material/Link';
 import { useRouter } from 'next/router';
-
 import { useDispatch, useSelector } from 'react-redux';
 import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
 import { useTranslation } from 'react-i18next';
 import { AppContext } from 'src/AppContext';
-import { fIntNumber, fNumber } from 'src/utils/formatNumber';
-import CurrencySwithcer from './CurrencySwitcher';
-import ThemeSwitcher from './ThemeSwitcher';
 import { currencySymbols, getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
-import useSWR from 'swr';
 import axios from 'axios';
 import { throttle } from 'lodash';
 
-const TopWrapper = styled(Box)(
+// Lazy load drawer component
+const Drawer = dynamic(() => import('@mui/material/Drawer'), { ssr: false });
+const List = dynamic(() => import('@mui/material/List'), { ssr: false });
+const ListItem = dynamic(() => import('@mui/material/ListItem'), { ssr: false });
+
+// Lazy load switchers
+const CurrencySwithcer = dynamic(() => import('./CurrencySwitcher'), { 
+  loading: () => <Skeleton variant="rectangular" width={100} height={32} />,
+  ssr: false 
+});
+const ThemeSwitcher = dynamic(() => import('./ThemeSwitcher'), { 
+  loading: () => <Skeleton variant="circular" width={32} height={32} />,
+  ssr: false 
+});
+
+const TopWrapper = styled('header')(
   ({ theme }) => `
     width: 100%;
     display: flex;
@@ -58,10 +60,11 @@ const TopWrapper = styled(Box)(
     position: relative;
     z-index: 1099;
     box-shadow: 0 1px 3px ${alpha(theme.palette.common.black, 0.05)};
+    contain: layout style;
 `
 );
 
-const ContentWrapper = styled(Box)(({ theme }) => ({
+const ContentWrapper = styled('nav')(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(0.5),
   paddingTop: 0,
@@ -74,11 +77,12 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
     scrollSnapAlign: 'center'
   },
   '::-webkit-scrollbar': { display: 'none' },
-  scrollbarWidth: 'none'
+  scrollbarWidth: 'none',
+  contain: 'layout style'
 }));
 
 
-const APILabel = styled('a')(({ theme }) => ({
+const APILabel = styled('button')(({ theme }) => ({
   fontSize: '12px',
   fontWeight: 600,
   color: theme.palette.text.primary,
@@ -98,16 +102,20 @@ const APILabel = styled('a')(({ theme }) => ({
   gap: '6px',
   minHeight: '32px',
   border: `1px solid ${theme.palette.primary.main === '#0080ff' ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`,
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   cursor: 'pointer',
+  willChange: 'transform',
   '&:hover': {
     background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
       ? alpha(theme.palette.primary.main, 0.04)
       : theme.palette.primary.main === '#0080ff'
         ? alpha(theme.palette.primary.main, 0.15)
         : alpha(theme.palette.success.main, 0.2),
-    transform: 'translateY(-1px)',
-    boxShadow: `0 4px 12px ${theme.palette.primary.main === '#0080ff' ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`
+    transform: 'translateY(-1px)'
+  },
+  '&:focus': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: '2px'
   }
 }));
 
@@ -315,8 +323,9 @@ const TokenImage = styled('img')(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark'
     ? alpha(theme.palette.grey[800], 0.5)
     : alpha(theme.palette.grey[100], 0.8),
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  objectFit: 'cover'
+  objectFit: 'cover',
+  loading: 'lazy',
+  decoding: 'async'
 }));
 
 const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
@@ -540,28 +549,29 @@ const Topbar = () => {
     return metrics?.global?.total !== undefined && 
            metrics?.global?.totalAddresses !== undefined &&
            metrics?.H24?.transactions24H !== undefined &&
-           metrics?.global?.total > 0; // Ensure we have actual data, not just default zeros
-  }, [metrics]);
+           metrics?.global?.total > 0;
+  }, [metrics?.global?.total, metrics?.global?.totalAddresses, metrics?.H24?.transactions24H]);
 
   // Fetch metrics if not loaded
   useEffect(() => {
-    console.log('Topbar metrics state:', metrics);
-    console.log('Topbar metrics loaded:', metricsLoaded);
-    
     if (!metricsLoaded) {
+      const controller = new AbortController();
       const fetchMetrics = async () => {
         try {
-          console.log('Fetching metrics in Topbar...');
-          const response = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
+          const response = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=', {
+            signal: controller.signal
+          });
           if (response.status === 200 && response.data) {
-            console.log('Metrics fetched successfully:', response.data);
             dispatch(update_metrics(response.data));
           }
         } catch (error) {
-          console.error('Error fetching metrics in Topbar:', error);
+          if (!axios.isCancel(error)) {
+            console.error('Error fetching metrics:', error);
+          }
         }
       };
       fetchMetrics();
+      return () => controller.abort();
     }
   }, [metricsLoaded, dispatch]);
 
@@ -714,13 +724,19 @@ const Topbar = () => {
       setIsWsLoading(false);
     };
 
-    const throttledSetTrades = throttle((newTrades) => {
-      setTrades(newTrades);
-    }, 200); // Throttle to update every 200ms
+    const throttledSetTrades = useMemo(
+      () => throttle((newTrades) => {
+        setTrades(newTrades);
+      }, 200),
+      []
+    );
 
-    const throttledAddTrade = throttle((newTrade) => {
-      setTrades((prevTrades) => [newTrade, ...prevTrades].slice(0, 200));
-    }, 200); // Throttle to update every 200ms
+    const throttledAddTrade = useMemo(
+      () => throttle((newTrade) => {
+        setTrades((prevTrades) => [newTrade, ...prevTrades].slice(0, 200));
+      }, 200),
+      []
+    );
 
     ws.onmessage = (event) => {
       try {
@@ -876,6 +892,8 @@ const Topbar = () => {
                     e.preventDefault();
                     handleTradeDrawerOpen();
                   }}
+                  aria-label="Open live trades"
+                  type="button"
                 >
                   <PulsatingCircle />
                   <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
@@ -1036,6 +1054,8 @@ const Topbar = () => {
                   e.preventDefault();
                   handleTradeDrawerOpen();
                 }}
+                aria-label="Open live trades"
+                type="button"
               >
                 <PulsatingCircle />
                 <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
@@ -1043,9 +1063,10 @@ const Topbar = () => {
                 </Typography>
               </APILabel>
               <APILabel
-                component="a"
+                as="a"
                 href="/api-docs"
                 sx={{ ml: 1 }}
+                aria-label="API documentation"
               >
                 <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
                   API
@@ -1195,6 +1216,8 @@ const Topbar = () => {
                     <TokenImage
                       src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
                       alt={decodeCurrency(trade.paid.currency)}
+                      loading="lazy"
+                      decoding="async"
                     />
                     <Box sx={{ minWidth: 0, flex: 1 }}>
                       <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem', lineHeight: 1.2, fontFamily: 'Inter, sans-serif' }}>
@@ -1225,6 +1248,8 @@ const Topbar = () => {
                     <TokenImage
                       src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
                       alt={decodeCurrency(trade.got.currency)}
+                      loading="lazy"
+                      decoding="async"
                     />
                   </Box>
 
