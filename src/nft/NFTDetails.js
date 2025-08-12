@@ -420,7 +420,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
   const { collection, account, date, meta, cslug, NFTokenID, props, total, volume, rarity_rank, files } = nft;
 
-  const { flag, issuer, taxon, transferFee } = useMemo(() => parseNFTokenID(NFTokenID), [NFTokenID]);
+  const { flag, issuer, transferFee } = useMemo(() => parseNFTokenID(NFTokenID), [NFTokenID]);
 
   const strDateTime = useMemo(() => {
     if (!date) return '';
@@ -582,15 +582,9 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
           </Grid>
 
           <Grid item xs={12}>
-            <Stack direction="row" spacing={2} sx={{ mt: 0.5 }}>
-              <Stack direction="row" spacing={0.5}>
-                <Label sx={{ mb: 0 }}>Taxon:</Label>
-                <Value sx={{ fontSize: '0.65rem' }}>{taxon}</Value>
-              </Stack>
-              <Stack direction="row" spacing={0.5}>
-                <Label sx={{ mb: 0 }}>Fee:</Label>
-                <Value sx={{ fontSize: '0.65rem' }}>{transferFee}%</Value>
-              </Stack>
+            <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
+              <Label sx={{ mb: 0 }}>Fee:</Label>
+              <Value sx={{ fontSize: '0.65rem' }}>{transferFee}%</Value>
             </Stack>
           </Grid>
 
