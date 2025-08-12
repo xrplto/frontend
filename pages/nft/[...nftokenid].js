@@ -1,8 +1,9 @@
+import React, { lazy, Suspense } from 'react';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 
 // Material
-import { Box, Container, styled, Toolbar } from '@mui/material';
+import { Box, Container, styled, Toolbar, CircularProgress } from '@mui/material';
 
 // Utils
 import { getNftCoverUrl } from 'src/utils/parse/utils';
@@ -14,7 +15,7 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import CollectionBreadcrumb from 'src/collection/CollectionBreadcrumb';
 import { useContext } from 'react';
-import TokenDetail from 'src/nft';
+const TokenDetail = lazy(() => import('src/nft'));
 import useWebSocket from 'react-use-websocket';
 import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
@@ -70,7 +71,13 @@ export default function Overview({ nft }) {
         {collectionData && (
           <CollectionBreadcrumb collection={collectionData} nftName={nftName} nftId={nftId} />
         )}
-        <TokenDetail nft={nft.nft} />
+        <Suspense fallback={
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+            <CircularProgress />
+          </Box>
+        }>
+          <TokenDetail nft={nft.nft} />
+        </Suspense>
       </Container>
 
       <ScrollToTop />

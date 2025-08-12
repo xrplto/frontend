@@ -1,3 +1,4 @@
+import React, { memo } from 'react';
 // Material
 import {
     Box,
@@ -69,19 +70,21 @@ const gridItem = {
 };
 
 // https://stackoverflow.com/questions/50743402/material-ui-grid-item-height
-export default function Properties({ properties, total }) {
+const Properties = memo(function Properties({ properties, total }) {
     return (
-        <Grid container spacing={1}>
+        <Grid container spacing={0.5}>
         {
             properties.map((item, idx) => (
-                <Grid item key={"Properties" + idx} xs={6} sm={4} md={3}>
+                <Grid item key={`${item.type}-${item.value}`} xs={6} sm={4} md={3}>
                     <Trait prop={item} total={total || 0} />
                 </Grid>
             ))
         }
         </Grid>
     );
-}
+});
+
+export default Properties;
 
 // export default function Properties({ properties, total }) {
 //     return (
