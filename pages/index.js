@@ -165,7 +165,8 @@ function Overview({ data }) {
 export default Overview;
 
 export async function getStaticProps() {
-  const data = await getTokens('vol24hxrp', 'desc');
+  // Fetch only 50 tokens initially to reduce page data size
+  const data = await getTokens('vol24hxrp', 'desc', 'yes', false, false, 50);
 
   let ret = {};
   if (data) {

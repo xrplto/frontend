@@ -39,7 +39,6 @@ export default function Document() {
         
         {/* Performance optimizations */}
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="format-detection" content="telephone=no" />
         
         {/* Improve LCP with font preload */}

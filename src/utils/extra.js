@@ -26,13 +26,14 @@ async function getTokens(
   sortType = 'desc',
   tags = 'yes',
   showNew = false,
-  showSlug = false
+  showSlug = false,
+  limit = 100
 ) {
   const BASE_URL = process.env.API_URL;
   let data = null;
   try {
     const res = await axios.get(
-      `${BASE_URL}/tokens?start=0&limit=100&sortBy=${sortBy}&sortType=${sortType}&filter=&tags=${tags}&showNew=${showNew}&showSlug=${showSlug}`
+      `${BASE_URL}/tokens?start=0&limit=${limit}&sortBy=${sortBy}&sortType=${sortType}&filter=&tags=${tags}&showNew=${showNew}&showSlug=${showSlug}`
     );
 
     const essentialTokenFields = [
