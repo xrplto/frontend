@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js';
-import { useContext, useState, useEffect, useRef, useMemo } from 'react';
+import { useContext, useState, useEffect, useRef, useMemo, memo } from 'react';
 // Material
 import {
   alpha,
@@ -79,15 +79,11 @@ const MetricBox = styled(Paper)(({ theme }) => ({
   alignItems: 'flex-start',
   borderRadius: '6px',
   background: 'transparent',
-  backdropFilter: 'none',
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
   boxShadow: 'none',
-  transition: 'border-color 0.2s ease',
   position: 'relative',
   overflow: 'hidden',
-  '&:hover': {
-    borderColor: alpha(theme.palette.divider, 0.2),
-  }
+  contain: 'layout style paint'
 }));
 
 // Refined MetricTitle
@@ -175,7 +171,7 @@ export default function Summary() {
   // Add default value of 1 for the divisor to prevent DecimalError
   const fiatRate = metrics[activeFiatCurrency] || 1;
 
-  const CustomTooltip = ({ active, payload, label }) => {
+  const CustomTooltip = memo(({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       const platforms = data.platforms || {};
@@ -228,7 +224,7 @@ export default function Summary() {
             border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
             minWidth: 240,
             position: 'relative',
-            zIndex: 999999999,
+            zIndex: 9999,
             pointerEvents: 'none',
             overflow: 'visible',
           }}
@@ -361,47 +357,33 @@ export default function Summary() {
       );
     }
     return null;
-  };
+  });
 
   // Simulate loading completion after data is available
   useEffect(() => {
-    if (metrics.global && metrics[activeFiatCurrency] && tokenCreation) {
-      setIsLoading(false);
-    }
+    const timer = setTimeout(() => {
+      if (metrics.global && metrics[activeFiatCurrency] && tokenCreation) {
+        setIsLoading(false);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [metrics, activeFiatCurrency, tokenCreation]);
 
-  if (
-    !metrics.global ||
-    !metrics[activeFiatCurrency] ||
-    !metrics.global.gMarketcap ||
-    !metrics.global.gMarketcapPro ||
-    !metrics.global.gDexVolume ||
-    !metrics.global.gDexVolumePro
-  ) {
-    console.log(
-      '----------->Empty metrics value detected (Summary block disabled): metrics.global',
-      metrics.global,
-      'metrics[activeFiatCurrency]',
-      metrics[activeFiatCurrency]
-    );
-  }
+  // Remove console.log for production - use conditional rendering instead
 
-  const gMarketcap = new Decimal(metrics.global?.gMarketcap || 0)
-    .div(fiatRate)
-    .toFixed(2, Decimal.ROUND_DOWN);
-  const gMarketcapPro = new Decimal(metrics.global?.gMarketcapPro || 0).toNumber();
-  const gDexVolume = new Decimal(metrics.global?.gDexVolume || 0).div(fiatRate).toNumber();
-  const gDexVolumePro = new Decimal(metrics.global?.gDexVolumePro || 0).toNumber();
-  const gStableVolume = new Decimal(metrics.global?.gStableVolume || 0).div(fiatRate).toNumber();
-  const gStableVolumePro = new Decimal(metrics.global?.gStableVolumePro || 0).toFixed(
-    2,
-    Decimal.ROUND_DOWN
-  );
-  const gMemeVolume = new Decimal(metrics.global?.gMemeVolume || 0).div(fiatRate).toNumber();
-  const gMemeVolumePro = new Decimal(metrics.global?.gMemeVolumePro || 0).toFixed(
-    2,
-    Decimal.ROUND_DOWN
-  );
+  const marketMetrics = useMemo(() => {
+    if (!metrics.global) return {};
+    return {
+      gMarketcap: new Decimal(metrics.global.gMarketcap || 0).div(fiatRate).toFixed(2, Decimal.ROUND_DOWN),
+      gMarketcapPro: metrics.global.gMarketcapPro || 0,
+      gDexVolume: new Decimal(metrics.global.gDexVolume || 0).div(fiatRate).toNumber(),
+      gDexVolumePro: metrics.global.gDexVolumePro || 0,
+      gStableVolume: new Decimal(metrics.global.gStableVolume || 0).div(fiatRate).toNumber(),
+      gStableVolumePro: new Decimal(metrics.global.gStableVolumePro || 0).toFixed(2, Decimal.ROUND_DOWN),
+      gMemeVolume: new Decimal(metrics.global.gMemeVolume || 0).div(fiatRate).toNumber(),
+      gMemeVolumePro: new Decimal(metrics.global.gMemeVolumePro || 0).toFixed(2, Decimal.ROUND_DOWN)
+    };
+  }, [metrics.global, fiatRate]);
 
   const sentimentScore = metrics.global?.sentimentScore || 0;
 
@@ -481,27 +463,21 @@ export default function Summary() {
         borderRadius: { xs: '8px', sm: '16px' },
         boxShadow: { 
           xs: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
-          sm: `
-            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+          sm: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`
         },
         padding: { xs: 1, sm: 3 },
         overflow: 'visible',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        willChange: 'transform',
         '&::before': {
           display: 'none'
         },
         '&:hover': {
-          transform: { xs: 'none', sm: 'translateY(-2px)' },
+          transform: { xs: 'none', sm: 'translateY(-1px)' },
           boxShadow: {
             xs: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
-            sm: `
-              0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-              0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-              inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`
-          },
-          border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
+            sm: `0 12px 40px ${alpha(theme.palette.common.black, 0.15)}`
+          }
         },
         '& > *': {
           position: 'relative',
@@ -533,7 +509,8 @@ export default function Summary() {
               spacing={{ xs: 0.5, sm: 1, md: 2 }}
               sx={{
                 flexWrap: 'wrap',
-                width: '100%'
+                width: '100%',
+                contain: 'layout style paint'
               }}
             >
               {[...Array(6)].map((_, index) => (
@@ -594,10 +571,10 @@ export default function Summary() {
                       <MetricTitle>Market Cap</MetricTitle>
                       <MetricValue>
                         {currencySymbols[activeFiatCurrency]}
-                        {formatNumberWithDecimals(Number(gMarketcap))}
+                        {formatNumberWithDecimals(Number(marketMetrics.gMarketcap || 0))}
                       </MetricValue>
-                      <PercentageChange isPositive={gMarketcapPro >= 0}>
-                        {gMarketcapPro >= 0 ? '+' : ''}{gMarketcapPro.toFixed(1)}%
+                      <PercentageChange isPositive={marketMetrics.gMarketcapPro >= 0}>
+                        {marketMetrics.gMarketcapPro >= 0 ? '+' : ''}{(marketMetrics.gMarketcapPro || 0).toFixed(1)}%
                       </PercentageChange>
                     </MetricBox>
                   </Grid>
@@ -608,10 +585,10 @@ export default function Summary() {
                       <MetricTitle>24h Volume</MetricTitle>
                       <MetricValue>
                         {currencySymbols[activeFiatCurrency]}
-                        {formatNumberWithDecimals(gDexVolume)}
+                        {formatNumberWithDecimals(marketMetrics.gDexVolume || 0)}
                       </MetricValue>
-                      <PercentageChange isPositive={gDexVolumePro >= 0}>
-                        {gDexVolumePro >= 0 ? '+' : ''}{gDexVolumePro.toFixed(1)}%
+                      <PercentageChange isPositive={marketMetrics.gDexVolumePro >= 0}>
+                        {marketMetrics.gDexVolumePro >= 0 ? '+' : ''}{(marketMetrics.gDexVolumePro || 0).toFixed(1)}%
                       </PercentageChange>
                     </MetricBox>
                   </Grid>
@@ -637,9 +614,9 @@ export default function Summary() {
                       <MetricTitle>Stables</MetricTitle>
                       <MetricValue>
                         {currencySymbols[activeFiatCurrency]}
-                        {formatNumberWithDecimals(gStableVolume)}
+                        {formatNumberWithDecimals(marketMetrics.gStableVolume || 0)}
                       </MetricValue>
-                      <VolumePercentage>{gStableVolumePro}% of vol</VolumePercentage>
+                      <VolumePercentage>{marketMetrics.gStableVolumePro || 0}% of vol</VolumePercentage>
                     </MetricBox>
                   </Grid>
 
@@ -649,9 +626,9 @@ export default function Summary() {
                       <MetricTitle>Memes</MetricTitle>
                       <MetricValue>
                         {currencySymbols[activeFiatCurrency]}
-                        {formatNumberWithDecimals(gMemeVolume)}
+                        {formatNumberWithDecimals(marketMetrics.gMemeVolume || 0)}
                       </MetricValue>
-                      <VolumePercentage>{gMemeVolumePro}% of vol</VolumePercentage>
+                      <VolumePercentage>{marketMetrics.gMemeVolumePro || 0}% of vol</VolumePercentage>
                     </MetricBox>
                   </Grid>
 
@@ -767,7 +744,7 @@ export default function Summary() {
                           <Tooltip 
                             content={<CustomTooltip />} 
                             wrapperStyle={{ 
-                              zIndex: 99999999,
+                              zIndex: 9999,
                               pointerEvents: 'none'
                             }} 
                             position={{ y: -10 }}
