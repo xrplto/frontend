@@ -51,7 +51,6 @@ import BidAskChart from 'src/TokenDetail/trade/BidAskChart';
 import PairsSelect from 'src/TokenDetail/trade/PairsSelect';
 import { lazy, Suspense } from 'react';
 
-const RichListData = lazy(() => import('src/TokenDetail/richlist/RichListData'));
 
 // Performance utilities
 const throttle = (func, delay) => {
@@ -1251,7 +1250,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
       
       {tabValue === 4 && token && (
         <Suspense fallback={<CircularProgress />}>
-          <RichListData token={token} />
+          {/* Rich list removed */}
         </Suspense>
       )}
     </Stack>

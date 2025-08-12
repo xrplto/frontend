@@ -1,2 +1,0 @@
-// Export the minimal version for performance
-export { default } from './RichListChartMinimal';
