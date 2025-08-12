@@ -26,15 +26,15 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useTranslation } from 'react-i18next';
-import { useState, useContext, useEffect, forwardRef } from 'react';
+import { useState, useContext, useEffect, forwardRef, memo, useCallback, lazy, Suspense } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 // import sdk from "@crossmarkio/sdk";
 import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
 import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
-import WalletConnectModal from './WalletConnectModal';
-import SearchModal from './SearchModal';
+const WalletConnectModal = lazy(() => import('./WalletConnectModal'));
+const SearchModal = lazy(() => import('./SearchModal'));
 import Wallet from 'src/components/Wallet';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 
@@ -45,7 +45,7 @@ import FiberNewIcon from '@mui/icons-material/FiberNew';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 
 // Add XPMarket icon component
-const XPMarketIcon = (props) => {
+const XPMarketIcon = memo((props) => {
   // Filter out non-DOM props that might cause warnings
   const { darkMode, ...otherProps } = props;
 
@@ -65,9 +65,9 @@ const XPMarketIcon = (props) => {
       />
     </SvgIcon>
   );
-};
+});
 
-const LedgerMemeIcon = forwardRef((props, ref) => {
+const LedgerMemeIcon = memo(forwardRef((props, ref) => {
   // Filter out any non-DOM props that might cause warnings
   const { width, darkMode, ...otherProps } = props;
 
@@ -102,11 +102,11 @@ const LedgerMemeIcon = forwardRef((props, ref) => {
       </g>
     </SvgIcon>
   );
-});
+}));
 
 LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 
-const HorizonIcon = forwardRef((props, ref) => {
+const HorizonIcon = memo(forwardRef((props, ref) => {
   const { width, darkMode, ...otherProps } = props;
   return (
     <SvgIcon
@@ -140,7 +140,7 @@ const HorizonIcon = forwardRef((props, ref) => {
       <path d="M19.07 4.93l-1.41 1.41" />
     </SvgIcon>
   );
-});
+}));
 
 HorizonIcon.displayName = 'HorizonIcon';
 
@@ -164,6 +164,7 @@ const HeaderWrapper = styled(Box)(
       inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)};
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
+    will-change: transform;
     
     ${theme.breakpoints.down('sm')} {
       height: ${theme.spacing(6)};
@@ -200,7 +201,7 @@ const StyledLink = styled(Link, {
     margin-right: 20px;
     padding: 8px 16px;
     border-radius: 12px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
     background: 'transparent';
@@ -257,7 +258,7 @@ const StyledMenuItem = styled(MenuItem, {
     color: ${darkMode ? 'white' : theme.palette.text.primary};
     margin: 4px 8px;
     border-radius: 10px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: 'transparent';
     backdrop-filter: blur(15px) saturate(120%);
     -webkit-backdrop-filter: blur(15px) saturate(120%);
@@ -304,7 +305,7 @@ const StyledMenuItem = styled(MenuItem, {
 `
 );
 
-export default function Header(props) {
+function Header(props) {
   const { t } = useTranslation(); // set translation const
   const theme = useTheme();
   const dispatch = useDispatch();
@@ -322,37 +323,46 @@ export default function Header(props) {
   const openTokensMenu = Boolean(tokensAnchorEl);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
-  const handleFullSearch = (e) => {
+  // Memoize menu items for better performance
+  const discoverMenuItems = [
+    { path: '/trending', name: 'Trending', icon: '🔥' },
+    { path: '/spotlight', name: 'Spotlight', icon: '🔍' },
+    { path: '/most-viewed', name: 'Most Viewed', icon: '👁' },
+    { path: '/gainers/24h', name: 'Gainers', icon: '📈' },
+    { path: '/new', name: 'New', icon: '✨' }
+  ];
+
+  const handleFullSearch = useCallback((e) => {
     setFullSearch(true);
     setSearchModalOpen(true);
-  };
+  }, []);
 
-  const toggleDrawer = (isOpen = true) => {
+  const toggleDrawer = useCallback((isOpen = true) => {
     setOpenDrawer(isOpen);
-  };
+  }, []);
 
-  const openSnackbar = (message, severity) => {
+  const openSnackbar = useCallback((message, severity) => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
     setSnackbarOpen(true);
-  };
+  }, []);
 
-  const handleSnackbarClose = () => {
+  const handleSnackbarClose = useCallback(() => {
     setSnackbarOpen(false);
-  };
+  }, []);
 
-  const handleTokensClick = (event) => {
+  const handleTokensClick = useCallback((event) => {
     setTokensAnchorEl(event.currentTarget);
-  };
+  }, []);
 
-  const handleTokensClose = () => {
+  const handleTokensClose = useCallback(() => {
     setTokensAnchorEl(null);
-  };
+  }, []);
 
-  const handleTokenOptionSelect = (path) => {
+  const handleTokenOptionSelect = useCallback((path) => {
     window.location.href = path;
     handleTokensClose();
-  };
+  }, [handleTokensClose]);
 
   useEffect(() => {
     if (isProcessing === 1 && isClosed) {
@@ -366,6 +376,7 @@ export default function Header(props) {
 
   useEffect(() => {
     let isMounted = true;
+    let cleanup;
 
     const initializeCrossmark = async () => {
       if (isDesktop && typeof window !== 'undefined') {
@@ -380,8 +391,13 @@ export default function Header(props) {
             return; // Don't attempt to load Crossmark on mobile devices
           }
 
-          // Dynamically import the SDK
-          const { default: CrossmarkSDK } = await import('@crossmarkio/sdk');
+          // Dynamically import the SDK with preconnect hint
+          const link = document.createElement('link');
+          link.rel = 'preconnect';
+          link.href = 'https://crossmarkio.com';
+          document.head.appendChild(link);
+
+          const { default: CrossmarkSDK } = await import(/* webpackPreload: true */ '@crossmarkio/sdk');
 
           if (isMounted && CrossmarkSDK && typeof CrossmarkSDK.on === 'function') {
             const handleClose = () => {
@@ -392,7 +408,7 @@ export default function Header(props) {
 
             CrossmarkSDK.on('close', handleClose);
 
-            return () => {
+            cleanup = () => {
               if (CrossmarkSDK && typeof CrossmarkSDK.off === 'function') {
                 CrossmarkSDK.off('close', handleClose);
               }
@@ -405,10 +421,13 @@ export default function Header(props) {
       }
     };
 
-    initializeCrossmark();
+    // Delay initialization to improve initial load
+    const timer = setTimeout(initializeCrossmark, 100);
 
     return () => {
       isMounted = false;
+      clearTimeout(timer);
+      if (cleanup) cleanup();
     };
   }, [isDesktop]);
 
@@ -430,7 +449,7 @@ export default function Header(props) {
               alignItems: 'center'
             }}
           >
-            <Logo alt="xrpl.to Logo" style={{ marginRight: '24px' }} />
+            <Logo alt="xrpl.to Logo" style={{ marginRight: '24px', width: 'auto', height: '40px' }} />
           </Box>
 
           {isDesktop && (
@@ -542,6 +561,9 @@ export default function Header(props) {
                       component="img"
                       src="/magneticx-logo.webp"
                       alt="Magnetic X"
+                      loading="lazy"
+                      width="16"
+                      height="16"
                       sx={{ width: 16, height: 16, objectFit: 'contain' }}
                     />
                     <Typography variant="body2" fontSize={14}>Magnetic X</Typography>
@@ -580,6 +602,7 @@ export default function Header(props) {
                       height={16}
                       sizes="16px"
                       quality={85}
+                      loading="lazy"
                       style={{ objectFit: 'contain' }}
                     />
                     <Typography variant="body2" fontSize={14}>aigent.run</Typography>
@@ -624,13 +647,7 @@ export default function Header(props) {
                   </Typography>
                 </Box>
 
-                {[
-                  { path: '/trending', name: 'Trending', icon: '🔥' },
-                  { path: '/spotlight', name: 'Spotlight', icon: '🔍' },
-                  { path: '/most-viewed', name: 'Most Viewed', icon: '👁' },
-                  { path: '/gainers/24h', name: 'Gainers', icon: '📈' },
-                  { path: '/new', name: 'New', icon: '✨' }
-                ].map((item) => (
+                {discoverMenuItems.map((item) => (
                   <MenuItem
                     key={item.path}
                     onClick={() => handleTokenOptionSelect(item.path)}
@@ -710,7 +727,9 @@ export default function Header(props) {
             </Box>
           )}
 
-          <WalletConnectModal />
+          <Suspense fallback={null}>
+            <WalletConnectModal />
+          </Suspense>
 
           {fullSearch && (
             <NavSearchBar
@@ -734,7 +753,7 @@ export default function Header(props) {
                 }
               }}
             >
-              <Logo alt="xrpl.to Logo" />
+              <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '32px' }} />
             </Box>
           )}
 
@@ -760,7 +779,7 @@ export default function Header(props) {
 
             {!fullSearch && isTabletOrMobile && (
               <IconButton 
-                aria-label="search" 
+                aria-label="Open search" 
                 onClick={handleFullSearch}
                 sx={{ 
                   padding: { xs: '8px', sm: '10px' },
@@ -798,6 +817,7 @@ export default function Header(props) {
                         background: 'transparent',
                         backdropFilter: 'blur(20px) saturate(150%)',
                         WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+                        contain: 'layout style paint',
                         border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
                         boxShadow: `
                           0 2px 8px ${alpha(theme.palette.common.black, 0.08)}, 
@@ -850,6 +870,7 @@ export default function Header(props) {
 
             {isTabletOrMobile && !fullSearch && (
               <IconButton 
+                aria-label="Open menu"
                 onClick={() => toggleDrawer(true)}
                 sx={{ 
                   padding: { xs: '8px', sm: '10px' },
@@ -875,7 +896,11 @@ export default function Header(props) {
         severity={snackbarSeverity}
       />
 
-      <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+      <Suspense fallback={null}>
+        <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+      </Suspense>
     </HeaderWrapper>
   );
 }
+
+export default memo(Header);
