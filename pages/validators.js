@@ -339,7 +339,9 @@ function ValidatorsPage() {
     
     return {
       best: sorted.slice(0, 10),
-      worst: nonVoting.length > 0 ? nonVoting.slice(0, 10) : sorted.slice(-10).reverse(),
+      worst: nonVoting.length > 0 
+        ? [...nonVoting, ...sorted.slice(-(10 - Math.min(nonVoting.length, 10))).reverse()].slice(0, 10)
+        : sorted.slice(-10).reverse(),
       nonVotingCount: nonVoting.length,
       totalCount: unlValidators.length,
       unlOnly: true
@@ -535,7 +537,12 @@ function ValidatorsPage() {
                             </TableHead>
                             <TableBody>
                               {validatorPerformance.worst.map((v, i) => (
-                                <TableRow key={i}>
+                                <TableRow key={i} sx={{ 
+                                  backgroundColor: v.votesCount === 0 ? 'error.light' : 'transparent',
+                                  '&:hover': {
+                                    backgroundColor: v.votesCount === 0 ? 'error.main' : 'action.hover'
+                                  }
+                                }}>
                                   <TableCell>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                       {v.verified && <CheckCircleIcon color="success" fontSize="small" />}
@@ -555,7 +562,12 @@ function ValidatorsPage() {
                                     </Box>
                                   </TableCell>
                                   <TableCell align="center">
-                                    <Chip label={v.votesCount} size="small" color="warning" />
+                                    <Chip 
+                                      label={v.votesCount} 
+                                      size="small" 
+                                      color={v.votesCount === 0 ? "error" : "warning"}
+                                      variant={v.votesCount === 0 ? "filled" : "outlined"}
+                                    />
                                   </TableCell>
                                   <TableCell align="right">
                                     <Typography variant="body2">{v.participationRate}%</Typography>
