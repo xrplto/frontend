@@ -7,12 +7,11 @@ import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { update_metrics, update_filteredCount, selectMetrics } from 'src/redux/statusSlice';
 import TokenListHead from './TokenListHead';
-import { TokenRow } from './TokenRow';
+import { TokenRow, MobileContainer, MobileHeader, HeaderCell } from './TokenRow';
 import React, { memo, lazy, Suspense } from 'react';
 import { debounce } from 'lodash';
 import { throttle } from 'lodash';
 import { useRouter } from 'next/router';
-import MobileTokenList from './MobileTokenList';
 
 // Optimized memoization for high-frequency updates
 const MemoizedTokenRow = memo(TokenRow, (prevProps, nextProps) => {
@@ -646,15 +645,58 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
       </SearchContainer>
 
       {isMobile ? (
-        <MobileTokenList
-          tokens={deferredTokens}
-          darkMode={darkMode}
-          exchRate={exchRate}
-          activeFiatCurrency={activeFiatCurrency}
-          order={order}
-          orderBy={orderBy}
-          onRequestSort={handleRequestSort}
-        />
+        <MobileContainer darkMode={darkMode}>
+          <MobileHeader darkMode={darkMode}>
+            <HeaderCell 
+              flex={2} 
+              align="left" 
+              darkMode={darkMode}
+              sortable
+              onClick={() => handleRequestSort(null, 'name')}
+              debugColor="cyan"
+            >
+              Token
+            </HeaderCell>
+            <HeaderCell 
+              flex={1.2} 
+              align="right" 
+              darkMode={darkMode}
+              sortable
+              onClick={() => handleRequestSort(null, 'exch')}
+              debugColor="yellow"
+            >
+              Price
+            </HeaderCell>
+            <HeaderCell 
+              flex={0.7} 
+              align="right" 
+              darkMode={darkMode}
+              sortable
+              onClick={() => handleRequestSort(null, 'pro24h')}
+              debugColor="magenta"
+            >
+              24H
+            </HeaderCell>
+          </MobileHeader>
+          {deferredTokens.map((row, idx) => (
+            <MemoizedTokenRow
+              key={row.md5}
+              time={row.time}
+              idx={idx + page * rows}
+              token={row}
+              setEditToken={setEditToken}
+              setTrustToken={setTrustToken}
+              watchList={watchList}
+              onChangeWatchList={onChangeWatchList}
+              scrollLeft={scrollLeft}
+              activeFiatCurrency={activeFiatCurrency}
+              exchRate={exchRate}
+              darkMode={darkMode}
+              isMobile={true}
+              isLoggedIn={!!accountProfile?.account}
+            />
+          ))}
+        </MobileContainer>
       ) : (
         <TableContainer ref={tableContainerRef} isMobile={isMobile}>
           <StyledTable 

@@ -33,54 +33,103 @@ const StyledCell = styled.td`
   vertical-align: middle;
 `;
 
-const MobileCell = styled.td`
-  padding: 16px 8px; /* Reduced horizontal padding */
-  white-space: nowrap;
-  text-align: ${props => props.align || 'left'};
-  font-size: 14px;
-  color: ${props => props.darkMode ? '#fff' : '#000'};
-  vertical-align: middle;
-  box-sizing: border-box; /* Ensure padding is included in width calculation */
+// Mobile-specific flexbox components
+const MobileTokenCard = styled.div`
+  display: flex;
+  width: 100%;
+  padding: 6px 4px;
+  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-sizing: border-box;
+  align-items: center;
+  
+  &:hover {
+    background-color: ${props => props.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+  }
 `;
 
+const MobileTokenInfo = styled.div`
+  flex: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 2px;
+  min-width: 0;
+  border: 1px solid cyan; /* DEBUG */
+`;
+
+const MobilePriceCell = styled.div`
+  flex: 1.2;
+  text-align: right;
+  padding: 0 2px;
+  font-weight: 600;
+  font-size: 11px;
+  color: ${props => props.darkMode ? '#fff' : '#000'};
+  border: 1px solid yellow; /* DEBUG */
+  min-width: 65px;
+  word-break: break-all;
+  line-height: 1.3;
+`;
+
+const MobilePercentCell = styled.div`
+  flex: 0.7;
+  text-align: right;
+  padding: 0 2px;
+  font-weight: 600;
+  font-size: 11px;
+  color: ${props => props.color};
+  border: 1px solid magenta; /* DEBUG */
+  min-width: 45px;
+`;
+
+// Shared components with mobile/desktop variations
 const TokenImage = styled.div`
-  width: ${props => props.isMobile ? '36px' : '32px'};
-  height: ${props => props.isMobile ? '36px' : '32px'};
+  width: ${props => props.isMobile ? '24px' : '32px'};
+  height: ${props => props.isMobile ? '24px' : '32px'};
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
   background: ${props => props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
 `;
 
+const TokenDetails = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+`;
+
 const TokenName = styled.span`
   font-weight: 600;
-  font-size: ${props => props.isMobile ? '15px' : '14px'};
+  font-size: ${props => props.isMobile ? '12px' : '14px'};
   color: ${props => props.darkMode ? '#fff' : '#000'};
-  max-width: ${props => props.isMobile ? '160px' : '150px'};
+  max-width: ${props => props.isMobile ? '100px' : '150px'};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   display: block;
-  line-height: 1.4;
+  line-height: ${props => props.isMobile ? '1.2' : '1.4'};
 `;
 
 const UserName = styled.span`
-  font-size: ${props => props.isMobile ? '13px' : '10px'};
+  font-size: ${props => props.isMobile ? '9px' : '10px'};
   color: ${props => props.darkMode ? '#6b7280' : '#9ca3af'};
   opacity: 0.8;
   font-weight: 400;
   display: block;
-  max-width: ${props => props.isMobile ? '160px' : '150px'};
+  max-width: ${props => props.isMobile ? '100px' : '150px'};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.4;
-  margin-top: 3px;
+  line-height: ${props => props.isMobile ? '1.2' : '1.4'};
+  margin-top: ${props => props.isMobile ? '1px' : '3px'};
 `;
 
 const PriceText = styled.span`
   font-weight: 600;
-  font-size: ${props => props.isMobile ? '15px' : '14px'};
+  font-size: ${props => props.isMobile ? '11px' : '14px'};
   color: ${props => props.priceColor || (props.darkMode ? '#fff' : '#000')};
   transition: color 0.3s ease;
 `;
@@ -88,7 +137,7 @@ const PriceText = styled.span`
 const PercentText = styled.span`
   font-weight: 600;
   color: ${props => props.color};
-  font-size: ${props => props.isMobile ? '14px' : '13px'};
+  font-size: ${props => props.isMobile ? '11px' : '13px'};
 `;
 
 const truncate = (str, n) => {
@@ -125,15 +174,13 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
   const { name, user, md5, slug, pro24h, exch } = token;
   const [priceColor, setPriceColor] = useState('');
   
-  // DEBUG: Mobile row logging - enhanced
+  // DEBUG: Mobile row logging
   useEffect(() => {
     console.log(`[Mobile Debug] Token:`, {
       name: name?.substring(0, 20),
       md5,
       exch,
-      pro24h,
-      isMobileComponent: true,
-      windowWidth: window.innerWidth
+      pro24h
     });
   }, [name, md5, exch, pro24h]);
   
@@ -150,78 +197,39 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
+  // Using flexbox layout instead of table
   return (
-    <StyledRow darkMode={darkMode} onClick={handleRowClick} style={{ width: '100%' }}>
-      <MobileCell 
-        align="left" 
-        darkMode={darkMode}
-        style={{
-          border: '1px solid cyan', // DEBUG: Cyan border for mobile token cell
-          width: '60%',  // Increased from 50% to give more space to token
-          minWidth: '60%',
-          maxWidth: '60%',
-          paddingLeft: '8px',
-          paddingRight: '8px',
-          boxSizing: 'border-box'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <TokenImage darkMode={darkMode} isMobile={true}>
-            <Image
-              src={imgError ? '/static/alt.webp' : imgUrl}
-              alt={name}
-              width={36}
-              height={36}
-              onError={() => setImgError(true)}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </TokenImage>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <TokenName darkMode={darkMode} isMobile={true} title={name}>
-              {truncate(name, 20)}
-            </TokenName>
-            <UserName darkMode={darkMode} isMobile={true} title={user}>
-              {truncate(user, 20)}
-            </UserName>
-          </div>
-        </div>
-      </MobileCell>
-      
-      <MobileCell 
-        align="right" 
-        darkMode={darkMode}
-        style={{
-          border: '1px solid yellow', // DEBUG: Yellow border for price cell
-          width: '20%',
-          minWidth: '20%',
-          maxWidth: '20%',
-          boxSizing: 'border-box'
-        }}
-      >
-        <PriceText darkMode={darkMode} isMobile={true} priceColor={priceColor}>
-          <NumberTooltip
-            prepend={currencySymbols[activeFiatCurrency]}
-            number={fNumberWithCurreny(exch, exchRate)}
+    <MobileTokenCard darkMode={darkMode} onClick={handleRowClick}>
+      <MobileTokenInfo darkMode={darkMode}>
+        <TokenImage darkMode={darkMode} isMobile={true}>
+          <Image
+            src={imgError ? '/static/alt.webp' : imgUrl}
+            alt={name}
+            width={24}
+            height={24}
+            onError={() => setImgError(true)}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
-        </PriceText>
-      </MobileCell>
+        </TokenImage>
+        <TokenDetails>
+          <TokenName darkMode={darkMode} isMobile={true}>{name}</TokenName>
+          <UserName darkMode={darkMode} isMobile={true}>{user}</UserName>
+        </TokenDetails>
+      </MobileTokenInfo>
       
-      <MobileCell 
-        align="right" 
-        darkMode={darkMode}
-        style={{
-          border: '1px solid magenta', // DEBUG: Magenta border for percent cell
-          width: '20%',
-          minWidth: '20%',
-          maxWidth: '20%',
-          boxSizing: 'border-box'
-        }}
-      >
-        <PercentText color={getPercentColor(pro24h)} isMobile={true}>
-          {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%` : '0.0%'}
-        </PercentText>
-      </MobileCell>
-    </StyledRow>
+      <MobilePriceCell darkMode={darkMode}>
+        <NumberTooltip
+          prepend={currencySymbols[activeFiatCurrency]}
+          number={fNumberWithCurreny(exch, exchRate)}
+        />
+      </MobilePriceCell>
+      
+      <MobilePercentCell color={getPercentColor(pro24h)}>
+        {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) 
+          ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%` 
+          : '0.0%'}
+      </MobilePercentCell>
+    </MobileTokenCard>
   );
 };
 
@@ -533,5 +541,72 @@ const FTokenRow = React.memo(function FTokenRow({
   
   return true;
 });
+
+// Mobile list components for header and container
+export const MobileTokenList = ({ tokens, darkMode, exchRate, activeFiatCurrency, order, orderBy, onRequestSort }) => {
+  const handleSort = (field) => {
+    onRequestSort(null, field);
+  };
+
+  return (
+    <>
+      {tokens.map((token, idx) => (
+        <FTokenRow
+          key={token.md5}
+          time={token.time}
+          idx={idx}
+          token={token}
+          watchList={[]}
+          onChangeWatchList={() => {}}
+          scrollLeft={false}
+          exchRate={exchRate}
+          darkMode={darkMode}
+          isMobile={true}
+          activeFiatCurrency={activeFiatCurrency}
+          isLoggedIn={false}
+        />
+      ))}
+    </>
+  );
+};
+
+export const MobileContainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  background: ${props => props.darkMode ? '#121212' : '#fff'};
+  border: 2px solid lime; /* DEBUG */
+`;
+
+export const MobileHeader = styled.div`
+  display: flex;
+  width: 100%;
+  padding: 6px 4px;
+  background: ${props => props.darkMode ? '#1a1a1a' : '#f5f5f5'};
+  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: ${props => props.darkMode ? '#999' : '#666'};
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-sizing: border-box;
+`;
+
+export const HeaderCell = styled.div`
+  flex: ${props => props.flex || 1};
+  text-align: ${props => props.align || 'left'};
+  padding: 0 4px;
+  cursor: ${props => props.sortable ? 'pointer' : 'default'};
+  border: 1px solid ${props => props.debugColor || 'transparent'}; /* DEBUG */
+  
+  &:hover {
+    color: ${props => props.sortable && (props.darkMode ? '#fff' : '#000')};
+  }
+`;
 
 export const TokenRow = FTokenRow;
