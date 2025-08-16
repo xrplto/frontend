@@ -104,7 +104,7 @@ const MetricBox = styled.div`
   background: transparent;
   border: 1px solid rgba(145, 158, 171, 0.12);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   
   @media (max-width: 600px) {
     padding: 4px;
@@ -197,6 +197,8 @@ const TooltipContainer = styled.div`
   padding: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 200px;
+  z-index: 9999;
+  position: relative;
 `;
 
 const Skeleton = styled.div`
@@ -488,9 +490,9 @@ export default function Summary() {
                 </Stack>
               </MetricBox>
 
-              <MetricBox style={{ gridColumn: 'span 2' }}>
+              <MetricBox style={{ gridColumn: 'span 2', overflow: 'visible' }}>
                 <MetricTitle>New Tokens (30d)</MetricTitle>
-                <div style={{ width: '100%', height: '60px', marginTop: '-4px' }}>
+                <div style={{ width: '100%', height: '60px', marginTop: '-4px', overflow: 'visible' }}>
                   {chartData.length > 0 && (
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart
@@ -503,6 +505,16 @@ export default function Summary() {
                             <stop offset="95%" stopColor="#8C7CF0" stopOpacity={0} />
                           </linearGradient>
                         </defs>
+                        <Tooltip 
+                          content={<CustomTooltip />} 
+                          wrapperStyle={{ 
+                            zIndex: 9999,
+                            pointerEvents: 'none'
+                          }}
+                          cursor={{ fill: 'transparent' }}
+                          offset={10}
+                          allowEscapeViewBox={{ x: true, y: true }}
+                        />
                         <Area
                           type="monotone"
                           dataKey="Tokens"
