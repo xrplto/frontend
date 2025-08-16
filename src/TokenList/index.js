@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect, useCallback, useRef, useMemo, useDeferredValue, useTransition } from 'react';
 import useWebSocket from 'react-use-websocket';
-import { Box, Table, TableBody, useTheme, useMediaQuery } from '@mui/material';
+import styled from '@emotion/styled';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
@@ -40,14 +40,86 @@ const LazyTrustSetDialog = lazy(() => import('src/components/TrustSetDialog'));
 const LazySearchToolbar = lazy(() => import('./SearchToolbar'));
 const LazyTokenListToolbar = lazy(() => import('./TokenListToolbar'));
 
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
+const TableContainer = styled.div`
+  display: flex;
+  gap: 0;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  overflow-x: auto;
+  overflow-y: visible;
+  width: 100%;
+  min-width: 0;
+  scrollbar-width: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  & > * {
+    scroll-snap-align: center;
+  }
+`;
+
+const StyledTable = styled.table`
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  transition: opacity 0.1s ease;
+  contain: layout;
+`;
+
+const StyledTableBody = styled.tbody`
+  tr {
+    will-change: auto;
+    contain: layout style;
+    transition: background-color 0.15s ease;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+  
+  td {
+    padding: 2px 6px;
+    height: 32px;
+    contain: layout style paint;
+    will-change: auto;
+  }
+`;
+
+const ToolbarContainer = styled.div`
+  margin-top: 0.25rem;
+  display: ${props => props.isMobile ? 'block' : 'flex'};
+  justify-content: ${props => props.isMobile ? 'flex-start' : 'center'};
+  width: 100%;
+`;
+
+const SearchContainer = styled.div`
+  margin-bottom: 0.5rem;
+`;
+
 export default function TokenList({ showWatchList, tag, tagName, tags, tokens, setTokens, tMap, initialOrderBy }) {
   const { accountProfile, openSnackbar, setLoading, darkMode, activeFiatCurrency } =
     useContext(AppContext);
-  const theme = useTheme();
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency];
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 960);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   const router = useRouter();
 
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
@@ -528,8 +600,8 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         </Suspense>
       )}
 
-      <Box sx={{ mb: 0.5 }}>
-        <Suspense fallback={<Box sx={{ height: 56 }} />}>
+      <SearchContainer>
+        <Suspense fallback={<div style={{ height: '56px' }} />}>
           <LazySearchToolbar
           tags={tags}
           tagName={tagName}
@@ -553,46 +625,13 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           setOrderBy={setOrderBy}
         />
         </Suspense>
-      </Box>
+      </SearchContainer>
 
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 0,
-          paddingTop: '2px',
-          paddingBottom: '2px',
-          overflowX: 'auto',
-          overflowY: 'visible',
-          width: '100%',
-          minWidth: 0,
-          '& > *': {
-            scrollSnapAlign: 'center'
-          },
-          '::-webkit-scrollbar': { display: 'none' },
-          scrollbarWidth: 'none',
-          '& .MuiTableCell-root': {
-            padding: '2px 6px',
-            height: '32px',
-            contain: 'layout style paint',
-            willChange: 'auto'
-          },
-          '& .MuiTableRow-root': {
-            willChange: 'auto',
-            contain: 'layout style',
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.04)'
-            }
-          }
-        }}
-        ref={tableContainerRef}
-      >
-        <Table ref={tableRef} size="small" sx={{ 
-          tableLayout: 'fixed',
-          width: '100%',
-          opacity: isDeferring || isPending ? 0.95 : 1,
-          transition: isDeferring || isPending ? 'opacity 0.1s ease' : 'none',
-          contain: 'layout'
-        }}>
+      <TableContainer ref={tableContainerRef}>
+        <StyledTable 
+          ref={tableRef}
+          style={{ opacity: isDeferring || isPending ? 0.95 : 1 }}
+        >
           <TokenListHead
             order={order}
             orderBy={orderBy}
@@ -600,8 +639,10 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
             scrollLeft={scrollLeft}
             tokens={tokens}
             scrollTopLength={scrollTopLength}
+            darkMode={darkMode}
+            isMobile={isMobile}
           />
-          <TableBody>
+          <StyledTableBody>
             {deferredTokens.map((row, idx) => (
               <MemoizedTokenRow
                 key={row.md5}
@@ -615,20 +656,15 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
                 scrollLeft={scrollLeft}
                 activeFiatCurrency={activeFiatCurrency}
                 exchRate={exchRate}
+                darkMode={darkMode}
+                isMobile={isMobile}
               />
             ))}
-          </TableBody>
-        </Table>
-      </Box>
-      <Box
-        sx={{
-          mt: 0.25,
-          display: isMobile ? 'block' : 'flex',
-          justifyContent: isMobile ? 'flex-start' : 'center',
-          width: '100%'
-        }}
-      >
-        <Suspense fallback={<Box sx={{ height: 52 }} />}>
+          </StyledTableBody>
+        </StyledTable>
+      </TableContainer>
+      <ToolbarContainer isMobile={isMobile}>
+        <Suspense fallback={<div style={{ height: '52px' }} />}>
           <LazyTokenListToolbar
           rows={rows}
           setRows={updateRows}
@@ -637,7 +673,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           tokens={tokens}
         />
         </Suspense>
-      </Box>
+      </ToolbarContainer>
     </>
   );
 }

@@ -1,72 +1,94 @@
-import { visuallyHidden } from '@mui/utils';
-import {
-  useMediaQuery,
-  useTheme,
-  Box,
-  TableRow,
-  TableCell,
-  TableHead,
-  TableSortLabel,
-  Tooltip,
-  Typography,
-  alpha,
-  styled
-} from '@mui/material';
 import { useContext, memo, useMemo } from 'react';
+import styled from '@emotion/styled';
 import { AppContext } from 'src/AppContext';
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  fontWeight: 700,
-  fontSize: '0.75rem',
-  letterSpacing: '0.5px',
-  textTransform: 'uppercase',
-  color: theme.palette.text.secondary,
-  padding: '16px 12px',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  whiteSpace: 'nowrap'
-}));
-
-const StyledTableSortLabel = styled(TableSortLabel)(({ theme }) => ({
-  '&.MuiTableSortLabel-root': {
-    color: 'inherit',
-    '&:hover': {
-      color: theme.palette.text.primary
-    },
-    '&.Mui-active': {
-      color: theme.palette.primary.main,
-      '& .MuiTableSortLabel-icon': {
-        color: theme.palette.primary.main
-      }
-    }
+const StyledTableHead = styled.thead`
+  position: sticky;
+  top: ${props => props.scrollTopLength || 0}px;
+  z-index: 10;
+  background: transparent;
+  
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: ${props => props.darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
   }
-}));
+`;
+
+const StyledTableCell = styled.th`
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: ${props => props.darkMode ? '#999' : '#666'};
+  padding: 16px 12px;
+  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  white-space: nowrap;
+  text-align: ${props => props.align || 'left'};
+  width: ${props => props.width || 'auto'};
+  cursor: ${props => props.sortable ? 'pointer' : 'default'};
+  position: ${props => props.sticky ? 'sticky' : 'relative'};
+  left: ${props => props.left || 'unset'};
+  z-index: ${props => props.sticky ? 11 : 'auto'};
+  background: ${props => props.sticky ? (props.darkMode ? '#121212' : '#fff') : 'transparent'};
+  
+  &:hover {
+    color: ${props => props.sortable ? (props.darkMode ? '#fff' : '#000') : 'inherit'};
+  }
+  
+  ${props => props.scrollLeft && props.stickyThird && `
+    &::after {
+      content: "";
+      position: absolute;
+      right: -1px;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: ${props.darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
+      box-shadow: 2px 0 4px rgba(0, 0, 0, 0.08);
+    }
+  `}
+`;
+
+const SortIndicator = styled.span`
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.65rem;
+  color: ${props => props.active ? '#2196f3' : (props.darkMode ? '#666' : '#999')};
+  transition: transform 0.2s;
+  transform: ${props => props.direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)'};
+`;
 
 const TABLE_HEAD = [
   { 
     id: 'star', 
     label: '', 
-    align: 'left', 
-    width: '', 
+    align: 'center', 
+    width: '40px', 
     order: false,
-    sticky: true,
+    sticky: false,
     mobileHide: false
   },
   {
     id: 'rank',
     label: '#',
     align: 'center',
-    width: '3%',
+    width: '50px',
     order: false,
-    sticky: true,
-    mobileHide: true
+    sticky: false,
+    mobileHide: false
   },
   {
     id: 'token',
     label: 'TOKEN',
     align: 'left',
-    width: '18%',
+    width: '250px',
     order: true,
-    sticky: true,
+    sticky: false,
     mobileHide: false
   },
   {
@@ -210,18 +232,55 @@ const TABLE_HEAD = [
   },
 ];
 
+const Tooltip = styled.div`
+  position: relative;
+  display: inline-block;
+  
+  &:hover .tooltip-content {
+    visibility: visible;
+    opacity: 1;
+  }
+  
+  .tooltip-content {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 9999;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    
+    &:after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: rgba(0, 0, 0, 0.9) transparent transparent transparent;
+    }
+  }
+`;
+
 const TokenListHead = memo(function TokenListHead({
   order,
   orderBy,
   onRequestSort,
   scrollLeft,
   tokens = [],
-  scrollTopLength
+  scrollTopLength,
+  darkMode,
+  isMobile
 }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { darkMode } = useContext(AppContext);
-
   const createSortHandler = useMemo(
     () => (id, no) => (event) => {
       onRequestSort(event, id, no);
@@ -230,37 +289,12 @@ const TokenListHead = memo(function TokenListHead({
   );
 
   const getStickyLeft = useMemo(() => (id) => {
-    if (!TABLE_HEAD.find(h => h.id === id)?.sticky) return 'unset';
-    
-    // Fixed positions for sticky columns
-    const stickyPositions = {
-      'star': 0,
-      'rank': isMobile ? 0 : 40,
-      'token': isMobile ? 24 : 90
-    };
-    
-    return stickyPositions[id] || 'unset';
-  }, [isMobile]);
+    return 'unset'; // No sticky columns anymore
+  }, []);
 
   return (
-    <TableHead
-      sx={{
-        position: 'sticky',
-        top: scrollTopLength || 0,
-        zIndex: 10,
-        background: 'transparent',
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: '1px',
-          background: alpha(theme.palette.divider, 0.12)
-        }
-      }}
-    >
-      <TableRow>
+    <StyledTableHead scrollTopLength={scrollTopLength} darkMode={darkMode}>
+      <tr>
         {TABLE_HEAD.filter(column => {
           if (!column.id) return true;
           if (isMobile) {
@@ -275,61 +309,45 @@ const TokenListHead = memo(function TokenListHead({
             <StyledTableCell
               key={headCell.id}
               align={headCell.align}
-              sortDirection={orderBy === headCell.id ? order : false}
-              sx={{
-                width: headCell.width,
-                ...(isSticky && {
-                  position: 'sticky',
-                  ...(headCell.stickyRight ? {
-                    right: 0,
-                    background: theme.palette.background.default
-                  } : {
-                    left: getStickyLeft(headCell.id)
-                  }),
-                  zIndex: 11,
-                  background: headCell.stickyRight ? theme.palette.background.default : 'transparent',
-                  '&::after': scrollLeft && headCell.id === 'token' ? {
-                    content: '""',
-                    position: 'absolute',
-                    right: -1,
-                    top: 0,
-                    bottom: 0,
-                    width: '1px',
-                    background: alpha(theme.palette.divider, 0.12),
-                    boxShadow: `2px 0 4px ${alpha(theme.palette.common.black, 0.08)}`
-                  } : {}
-                })
-              }}
+              width={headCell.width}
+              darkMode={darkMode}
+              sortable={headCell.order}
+              sticky={isSticky}
+              left={isSticky ? getStickyLeft(headCell.id) : 'unset'}
+              stickyThird={headCell.id === 'token'}
+              scrollLeft={scrollLeft && headCell.id === 'token'}
+              onClick={headCell.order ? createSortHandler(headCell.id, headCell.no) : undefined}
             >
               {headCell.order ? (
                 headCell.tooltip ? (
-                  <Tooltip title={headCell.tooltip} placement="top">
-                    <StyledTableSortLabel
-                      active={orderBy === headCell.id}
-                      direction={orderBy === headCell.id ? order : 'desc'}
-                      onClick={createSortHandler(headCell.id, headCell.no)}
-                    >
+                  <Tooltip>
+                    <span>
                       {headCell.label}
                       {orderBy === headCell.id && (
-                        <Box component="span" sx={{ ...visuallyHidden }}>
-                          {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                        </Box>
+                        <SortIndicator 
+                          active={true} 
+                          direction={order} 
+                          darkMode={darkMode}
+                        >
+                          ▼
+                        </SortIndicator>
                       )}
-                    </StyledTableSortLabel>
+                    </span>
+                    <span className="tooltip-content">{headCell.tooltip}</span>
                   </Tooltip>
                 ) : (
-                  <StyledTableSortLabel
-                    active={orderBy === headCell.id}
-                    direction={orderBy === headCell.id ? order : 'desc'}
-                    onClick={createSortHandler(headCell.id, headCell.no)}
-                  >
+                  <span>
                     {headCell.label}
                     {orderBy === headCell.id && (
-                      <Box component="span" sx={{ ...visuallyHidden }}>
-                        {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                      </Box>
+                      <SortIndicator 
+                        active={true} 
+                        direction={order} 
+                        darkMode={darkMode}
+                      >
+                        ▼
+                      </SortIndicator>
                     )}
-                  </StyledTableSortLabel>
+                  </span>
                 )
               ) : (
                 headCell.label
@@ -337,8 +355,8 @@ const TokenListHead = memo(function TokenListHead({
             </StyledTableCell>
           );
         })}
-      </TableRow>
-    </TableHead>
+      </tr>
+    </StyledTableHead>
   );
 });
 
