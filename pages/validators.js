@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Head from 'next/head';
 import {
   Box,
   Container,
@@ -100,13 +101,13 @@ const TabPanel = ({ children, value, index, ...other }) => {
   );
 };
 
-function ValidatorsPage() {
-  const [validators, setValidators] = useState([]);
-  const [nodes, setNodes] = useState([]);
-  const [serverVersions, setServerVersions] = useState([]);
-  const [amendments, setAmendments] = useState([]);
+function ValidatorsPage({ initialValidators = [], initialNodes = [], initialServerVersions = [], initialAmendments = [] }) {
+  const [validators, setValidators] = useState(initialValidators);
+  const [nodes, setNodes] = useState(initialNodes);
+  const [serverVersions, setServerVersions] = useState(initialServerVersions);
+  const [amendments, setAmendments] = useState(initialAmendments);
   const [amendmentVotes, setAmendmentVotes] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [tabValue, setTabValue] = useState(0);
   const [amendmentFilter, setAmendmentFilter] = useState('all'); // all, enabled, pending, voting
@@ -114,90 +115,30 @@ function ValidatorsPage() {
   const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        // Fetch all data in parallel
-        const [validatorsRes, nodesRes, versionsRes, amendmentsRes] = await Promise.all([
-          fetch('https://api.xrpscan.com/api/v1/validatorregistry'),
-          fetch('https://api.xrpscan.com/api/v1/nodes'),
-          fetch('https://api.xrpscan.com/api/v1/network/server_versions'),
-          fetch('https://api.xrpscan.com/api/v1/amendments')
-        ]);
-
-        if (!validatorsRes.ok || !nodesRes.ok || !versionsRes.ok || !amendmentsRes.ok) {
-          throw new Error('Failed to fetch data');
-        }
-
-        const [validatorsData, nodesData, versionsData, amendmentsData] = await Promise.all([
-          validatorsRes.json(),
-          nodesRes.json(),
-          versionsRes.json(),
-          amendmentsRes.json()
-        ]);
-
-        setValidators(validatorsData || []);
-        setNodes(nodesData || []);
-        setServerVersions(versionsData || []);
-        // Check if amendmentsData is an array or needs to be extracted
-        const amendmentsList = Array.isArray(amendmentsData) ? amendmentsData : 
-                               amendmentsData?.amendments ? amendmentsData.amendments : 
-                               Object.values(amendmentsData || {});
-        setAmendments(amendmentsList);
-        
-        // Extract actual voting data from validators
-        const votesData = {};
-        
-        // Debug: Check the structure of validator votes
-        if (validatorsData && validatorsData.length > 0) {
-          console.log('Sample validator data:', validatorsData[0]);
-          console.log('Sample votes structure:', validatorsData[0].votes);
-        }
-        
-        for (const amendment of amendmentsList.filter(a => !a.enabled && a.count > 0)) {
-          // Find validators that voted for this amendment
-          const supportingValidators = validatorsData
-            .filter(v => {
-              // Check if validator has votes and amendments array
-              if (v.votes && Array.isArray(v.votes.amendments)) {
-                return v.votes.amendments.includes(amendment.amendment_id);
-              }
-              // Also check if votes is an object with amendments property
-              if (v.votes && v.votes.amendments && Array.isArray(v.votes.amendments)) {
-                return v.votes.amendments.includes(amendment.amendment_id);
-              }
-              return false;
-            })
-            .map(v => ({
-              validator: v.master_key,
-              domain: v.domain || null,
-              domain_legacy: v.domain_legacy || null,
-              verified: v.meta?.verified || false
-            }));
-          
-          votesData[amendment.amendment_id] = supportingValidators;
-          
-          // If we found supporting validators, log them
-          if (supportingValidators.length > 0) {
-            console.log(`Found ${supportingValidators.length} validators supporting ${amendment.name}`);
-          }
-        }
-        
-        setAmendmentVotes(votesData);
-        console.log('All amendment votes:', votesData);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    }
-
-    fetchData();
+    // Process voting data from initial validators
+    const votesData = {};
     
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    for (const amendment of amendments.filter(a => !a.enabled && a.count > 0)) {
+      // Find validators that voted for this amendment
+      const supportingValidators = validators
+        .filter(v => {
+          if (v.votes && Array.isArray(v.votes.amendments)) {
+            return v.votes.amendments.includes(amendment.amendment_id);
+          }
+          return false;
+        })
+        .map(v => ({
+          validator: v.master_key,
+          domain: v.domain || null,
+          domain_legacy: v.domain_legacy || null,
+          verified: v.meta?.verified || false
+        }));
+      
+      votesData[amendment.amendment_id] = supportingValidators;
+    }
+    
+    setAmendmentVotes(votesData);
+  }, [validators, amendments]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -351,11 +292,30 @@ function ValidatorsPage() {
   const validatorPerformance = getValidatorPerformance();
 
   return (
-    <OverviewWrapper>
-      {!isMobile && <Toolbar id="back-to-top-anchor" />}
-      {!isMobile ? <Topbar /> : ''}
-      <Header />
-      {isMobile ? <Topbar /> : ''}
+    <>
+      <Head>
+        <title>XRPL Validators & Network Infrastructure | XRPL.to</title>
+        <meta name="description" content={`Monitor ${validators.length} XRPL validators, ${nodes.length} nodes, and ${amendments.length} protocol amendments. Real-time voting data, UNL performance metrics, and network statistics.`} />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="XRPL Validators & Network Infrastructure" />
+        <meta property="og:description" content={`Track ${validators.length} validators, ${nodes.length} nodes, and ${amendments.filter(a => !a.enabled && a.count > 0).length} active amendment votes on the XRP Ledger network.`} />
+        <meta property="og:image" content="https://xrpl.to/images/validators-og.png" />
+        <meta property="og:url" content="https://xrpl.to/validators" />
+        <meta property="og:type" content="website" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="XRPL Validators & Network Infrastructure" />
+        <meta name="twitter:description" content={`${validators.length} validators • ${nodes.length} nodes • ${amendments.filter(a => !a.enabled && a.count > 0).length} active votes`} />
+        <meta name="twitter:image" content="https://xrpl.to/images/validators-og.png" />
+      </Head>
+      
+      <OverviewWrapper>
+        {!isMobile && <Toolbar id="back-to-top-anchor" />}
+        {!isMobile ? <Topbar /> : ''}
+        <Header />
+        {isMobile ? <Topbar /> : ''}
 
       <Container maxWidth="xl">
         <Box sx={{ py: 4 }}>
@@ -459,17 +419,18 @@ function ValidatorsPage() {
                 </Grid>
               </Grid>
 
-              {/* Validator Performance Section */}
+
+              {/* Validator Performance Section - 3 columns */}
               {validators.length > 0 && validatorPerformance.best.length > 0 && (
                 <Grid container spacing={3} sx={{ mb: 4 }}>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={4}>
                     <Card>
                       <CardContent>
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: 'success.main' }}>
-                          🏆 Top Performing UNL Validators
+                          🏆 Top Performing UNL
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                          Most active UNL validators in voting ({validatorPerformance.totalCount} total on UNL)
+                          Most active in voting
                         </Typography>
                         <TableContainer>
                           <Table size="small">
@@ -477,35 +438,28 @@ function ValidatorsPage() {
                               <TableRow>
                                 <TableCell>Validator</TableCell>
                                 <TableCell align="center">Votes</TableCell>
-                                <TableCell align="right">Participation</TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>
                               {validatorPerformance.best.map((v, i) => (
                                 <TableRow key={i}>
                                   <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                      {v.verified && <CheckCircleIcon color="success" fontSize="small" />}
-                                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                        <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
-                                          {v.domain}
-                                        </Typography>
-                                        <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
-                                          {v.unl?.includes('vl.xrplf.org') && (
-                                            <Chip label="XRPLF" size="small" sx={{ height: 16, fontSize: '0.65rem' }} />
-                                          )}
-                                          {v.unl?.includes('vl.ripple.com') && (
-                                            <Chip label="Ripple" size="small" sx={{ height: 16, fontSize: '0.65rem' }} />
-                                          )}
-                                        </Box>
+                                    <Box>
+                                      <Typography variant="body2" noWrap sx={{ maxWidth: 150 }}>
+                                        {v.domain}
+                                      </Typography>
+                                      <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+                                        {v.unl?.includes('vl.xrplf.org') && (
+                                          <Chip label="XRPLF" size="small" sx={{ height: 14, fontSize: '0.6rem' }} />
+                                        )}
+                                        {v.unl?.includes('vl.ripple.com') && (
+                                          <Chip label="Ripple" size="small" sx={{ height: 14, fontSize: '0.6rem' }} />
+                                        )}
                                       </Box>
                                     </Box>
                                   </TableCell>
                                   <TableCell align="center">
                                     <Chip label={v.votesCount} size="small" color="success" />
-                                  </TableCell>
-                                  <TableCell align="right">
-                                    <Typography variant="body2">{v.participationRate}%</Typography>
                                   </TableCell>
                                 </TableRow>
                               ))}
@@ -515,16 +469,15 @@ function ValidatorsPage() {
                       </CardContent>
                     </Card>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  
+                  <Grid item xs={12} md={4}>
                     <Card>
                       <CardContent>
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: 'error.main' }}>
-                          ⚠️ {validatorPerformance.nonVotingCount > 0 ? 'Non-Voting UNL Validators' : 'Least Active UNL Validators'}
+                          ⚠️ Non-Voting UNL
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                          {validatorPerformance.nonVotingCount > 0 
-                            ? `${validatorPerformance.nonVotingCount} UNL validators not voting on any amendments`
-                            : 'Lowest participation among UNL validators'}
+                          {validatorPerformance.nonVotingCount} not voting
                         </Typography>
                         <TableContainer>
                           <Table size="small">
@@ -532,32 +485,25 @@ function ValidatorsPage() {
                               <TableRow>
                                 <TableCell>Validator</TableCell>
                                 <TableCell align="center">Votes</TableCell>
-                                <TableCell align="right">Participation</TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>
                               {validatorPerformance.worst.map((v, i) => (
                                 <TableRow key={i} sx={{ 
-                                  backgroundColor: v.votesCount === 0 ? 'error.light' : 'transparent',
-                                  '&:hover': {
-                                    backgroundColor: v.votesCount === 0 ? 'error.main' : 'action.hover'
-                                  }
+                                  backgroundColor: v.votesCount === 0 ? 'error.light' : 'transparent'
                                 }}>
                                   <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                      {v.verified && <CheckCircleIcon color="success" fontSize="small" />}
-                                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                        <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
-                                          {v.domain}
-                                        </Typography>
-                                        <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
-                                          {v.unl?.includes('vl.xrplf.org') && (
-                                            <Chip label="XRPLF" size="small" sx={{ height: 16, fontSize: '0.65rem' }} />
-                                          )}
-                                          {v.unl?.includes('vl.ripple.com') && (
-                                            <Chip label="Ripple" size="small" sx={{ height: 16, fontSize: '0.65rem' }} />
-                                          )}
-                                        </Box>
+                                    <Box>
+                                      <Typography variant="body2" noWrap sx={{ maxWidth: 150 }}>
+                                        {v.domain}
+                                      </Typography>
+                                      <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+                                        {v.unl?.includes('vl.xrplf.org') && (
+                                          <Chip label="XRPLF" size="small" sx={{ height: 14, fontSize: '0.6rem' }} />
+                                        )}
+                                        {v.unl?.includes('vl.ripple.com') && (
+                                          <Chip label="Ripple" size="small" sx={{ height: 14, fontSize: '0.6rem' }} />
+                                        )}
                                       </Box>
                                     </Box>
                                   </TableCell>
@@ -569,9 +515,6 @@ function ValidatorsPage() {
                                       variant={v.votesCount === 0 ? "filled" : "outlined"}
                                     />
                                   </TableCell>
-                                  <TableCell align="right">
-                                    <Typography variant="body2">{v.participationRate}%</Typography>
-                                  </TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
@@ -580,8 +523,88 @@ function ValidatorsPage() {
                       </CardContent>
                     </Card>
                   </Grid>
+
+                  <Grid item xs={12} md={4}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: 'info.main' }}>
+                          📊 Recent Participation
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                          Last 10 amendments
+                        </Typography>
+                        <TableContainer>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Validator</TableCell>
+                                <TableCell align="center">Votes</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {(() => {
+                                const recentAmendments = amendments
+                                  .filter(a => !a.enabled)
+                                  .sort((a, b) => {
+                                    const versionA = a.introduced || '0.0.0';
+                                    const versionB = b.introduced || '0.0.0';
+                                    return versionB.localeCompare(versionA, undefined, { numeric: true });
+                                  })
+                                  .slice(0, 10)
+                                  .map(a => a.amendment_id);
+                                
+                                return validators
+                                  .filter(v => v.unl && Array.isArray(v.unl) && 
+                                    (v.unl.includes('vl.xrplf.org') || v.unl.includes('vl.ripple.com')))
+                                  .map(v => {
+                                    const votesOnRecent = v.votes?.amendments?.filter(a => recentAmendments.includes(a)).length || 0;
+                                    return {
+                                      domain: v.domain || v.domain_legacy || truncateKey(v.master_key, 16),
+                                      votesCount: votesOnRecent,
+                                      unl: v.unl
+                                    };
+                                  })
+                                  .sort((a, b) => a.votesCount - b.votesCount || a.domain.localeCompare(b.domain))
+                                  .slice(0, 10)
+                                  .map((v, i) => (
+                                    <TableRow key={i} sx={{ 
+                                      backgroundColor: v.votesCount === 0 ? 'warning.light' : 'transparent'
+                                    }}>
+                                      <TableCell>
+                                        <Box>
+                                          <Typography variant="body2" noWrap sx={{ maxWidth: 150 }}>
+                                            {v.domain}
+                                          </Typography>
+                                          <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+                                            {v.unl?.includes('vl.xrplf.org') && (
+                                              <Chip label="XRPLF" size="small" sx={{ height: 14, fontSize: '0.6rem' }} />
+                                            )}
+                                            {v.unl?.includes('vl.ripple.com') && (
+                                              <Chip label="Ripple" size="small" sx={{ height: 14, fontSize: '0.6rem' }} />
+                                            )}
+                                          </Box>
+                                        </Box>
+                                      </TableCell>
+                                      <TableCell align="center">
+                                        <Chip 
+                                          label={`${v.votesCount}/10`} 
+                                          size="small" 
+                                          color={v.votesCount === 0 ? "error" : v.votesCount < 5 ? "warning" : "info"}
+                                          variant="outlined"
+                                        />
+                                      </TableCell>
+                                    </TableRow>
+                                  ));
+                              })()}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </CardContent>
+                    </Card>
+                  </Grid>
                 </Grid>
               )}
+
 
               {/* Version Distribution Chart */}
               {validators.length > 0 && (
@@ -1322,7 +1345,54 @@ function ValidatorsPage() {
       <ScrollToTop />
       <Footer />
     </OverviewWrapper>
+    </>
   );
+}
+
+export async function getServerSideProps(context) {
+  // Set cache headers for 5 minutes
+  context.res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=300, stale-while-revalidate=600'
+  );
+
+  try {
+    // Fetch all data server-side
+    const [validatorsRes, nodesRes, versionsRes, amendmentsRes] = await Promise.all([
+      fetch('https://api.xrpscan.com/api/v1/validatorregistry'),
+      fetch('https://api.xrpscan.com/api/v1/nodes'),
+      fetch('https://api.xrpscan.com/api/v1/network/server_versions'),
+      fetch('https://api.xrpscan.com/api/v1/amendments')
+    ]);
+
+    const [validatorsData, nodesData, versionsData, amendmentsData] = await Promise.all([
+      validatorsRes.json(),
+      nodesRes.json(),
+      versionsRes.json(),
+      amendmentsRes.json()
+    ]);
+
+    return {
+      props: {
+        initialValidators: validatorsData || [],
+        initialNodes: nodesData || [],
+        initialServerVersions: versionsData || [],
+        initialAmendments: Array.isArray(amendmentsData) ? amendmentsData : 
+                          amendmentsData?.amendments ? amendmentsData.amendments : 
+                          Object.values(amendmentsData || {})
+      }
+    };
+  } catch (error) {
+    console.error('Failed to fetch data:', error);
+    return {
+      props: {
+        initialValidators: [],
+        initialNodes: [],
+        initialServerVersions: [],
+        initialAmendments: []
+      }
+    };
+  }
 }
 
 export default ValidatorsPage;
