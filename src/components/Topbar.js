@@ -362,8 +362,8 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2.5, 3),
   background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
     ? alpha('#030310', 0.9)
-    : 'transparent',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+    : theme.palette.background.paper,
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   position: 'sticky',
   top: 0,
   zIndex: 1,
@@ -373,10 +373,10 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
-    background: 'transparent',
+    background: theme.palette.background.paper,
     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    backdropFilter: 'none',
-    boxShadow: 'none'
+    backdropFilter: 'blur(10px)',
+    boxShadow: theme.shadows[5]
   }
 }));
 
