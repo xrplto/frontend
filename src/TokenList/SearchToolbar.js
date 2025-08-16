@@ -115,8 +115,8 @@ const SearchToolbar = memo(function SearchToolbar({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        p: { xs: 0.25, sm: 0.5 },
-        gap: { xs: 0.25, sm: 1 },
+        p: { xs: 0.5, sm: 0.5 },
+        gap: { xs: 0.5, sm: 1 },
         borderRadius: 1,
         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         background: darkMode 
@@ -125,16 +125,16 @@ const SearchToolbar = memo(function SearchToolbar({
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)}`,
-        flexWrap: 'wrap',
-        flexDirection: { xs: 'column', sm: 'row' }
+        flexWrap: 'nowrap',
+        flexDirection: 'row'
       }}
     >
       {/* Left Section - View Selector */}
       <Stack 
         direction="row" 
-        spacing={{ xs: 0.25, sm: 1 }} 
+        spacing={{ xs: 0.5, sm: 1 }} 
         alignItems="center"
-        sx={{ width: { xs: '100%', sm: 'auto' } }}
+        sx={{ flexShrink: 0 }}
       >
         <Button
           variant="contained"
@@ -144,7 +144,7 @@ const SearchToolbar = memo(function SearchToolbar({
           sx={{
             background: theme.palette.mode === 'dark' 
               ? 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)'
-              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              : 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)',
             boxShadow: 'none',
             textTransform: 'none',
             fontWeight: 600,
