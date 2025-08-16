@@ -1,6 +1,4 @@
-// Material
-import { styled, alpha } from '@mui/material/styles';
-import { Link, Stack, Typography } from '@mui/material';
+import styled from '@emotion/styled';
 
 // Context
 import { useContext } from 'react';
@@ -11,9 +9,33 @@ import { fNumber } from 'src/utils/formatNumber';
 
 // Components
 
-const ContentTypography = styled(Typography)({
-  color: alpha('#919EAB', 0.99)
-});
+const ContentTypography = styled.div`
+  color: rgba(145, 158, 171, 0.99);
+`;
+
+const Container = styled.div`
+  margin-top: 16px;
+`;
+
+const Title = styled.h1`
+  margin: 0;
+  font-size: 2.125rem;
+  font-weight: 300;
+  line-height: 1.235;
+  letter-spacing: -0.00833em;
+  
+  @media (max-width: 600px) {
+    font-size: 1.5rem;
+  }
+`;
+
+const Subtitle = styled.div`
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.00938em;
+  margin-top: 16px;
+`;
 
 export default function SummaryWatchList({}) {
   const { accountProfile, openSnackbar, setLoading } = useContext(AppContext);
@@ -21,14 +43,16 @@ export default function SummaryWatchList({}) {
   const account = accountProfile?.account;
 
   return (
-    <Stack sx={{ mt: 2 }}>
-      <Typography variant="h1">My Token Watchlist</Typography>
+    <Container>
+      <Title>My Token Watchlist</Title>
 
       {!account && (
-        <ContentTypography variant="subtitle1" sx={{ mt: 2 }}>
-          Please log in to view your Watchlist.
-        </ContentTypography>
+        <Subtitle>
+          <ContentTypography>
+            Please log in to view your Watchlist.
+          </ContentTypography>
+        </Subtitle>
       )}
-    </Stack>
+    </Container>
   );
 }

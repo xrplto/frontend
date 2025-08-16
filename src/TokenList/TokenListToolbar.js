@@ -1,119 +1,236 @@
-// Material
-import {
-  alpha,
-  styled,
-  Box,
-  Pagination,
-  Select,
-  MenuItem,
-  IconButton,
-  Typography,
-  Chip,
-  useTheme
-} from '@mui/material';
-import { FirstPage, LastPage, ViewList } from '@mui/icons-material';
-// ----------------------------------------------------------------------
-// Redux
+import styled from '@emotion/styled';
+import { Icon } from '@iconify/react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectFilteredCount } from 'src/redux/statusSlice';
-import { useCallback, memo } from 'react';
-// ----------------------------------------------------------------------
+import { useCallback, memo, useState, useRef, useEffect } from 'react';
 
-const StyledToolbar = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: theme.spacing(0.5, 0),
-  gap: theme.spacing(0.75),
-  flexWrap: 'wrap',
-  [theme.breakpoints.down('md')]: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    flexWrap: 'wrap',
-    gap: theme.spacing(0.25),
-    padding: theme.spacing(0.25)
+// Styled Components
+const StyledToolbar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  gap: 6px;
+  flex-wrap: wrap;
+  
+  @media (max-width: 900px) {
+    flex-direction: row;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 2px;
   }
-}));
+`;
 
-const PaginationContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(0.5),
-  padding: theme.spacing(0.5, 1),
-  borderRadius: theme.shape.borderRadius * 2,
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  boxShadow: theme.shadows[1],
-  [theme.breakpoints.down('md')]: {
-    width: '100%',
-    justifyContent: 'center',
-    padding: theme.spacing(0.25, 0.5)
+const PaginationContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  background: white;
+  border: 1px solid rgba(145, 158, 171, 0.12);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  
+  @media (max-width: 900px) {
+    width: 100%;
+    justify-content: center;
+    padding: 2px 4px;
   }
-}));
+`;
 
-const RowsSelector = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(0.5),
-  padding: theme.spacing(0.5, 1),
-  borderRadius: theme.shape.borderRadius * 2,
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  boxShadow: theme.shadows[1],
-  [theme.breakpoints.down('md')]: {
-    flex: 1,
-    minWidth: 'calc(50% - 8px)',
-    justifyContent: 'center',
-    padding: theme.spacing(0.5, 1),
-    gap: theme.spacing(0.25)
+const RowsSelector = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  background: white;
+  border: 1px solid rgba(145, 158, 171, 0.12);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  
+  @media (max-width: 900px) {
+    flex: 1;
+    min-width: calc(50% - 8px);
+    justify-content: center;
+    padding: 4px 8px;
+    gap: 2px;
   }
-}));
+`;
 
-const CustomSelect = styled(Select)(({ theme }) => ({
-  '& .MuiOutlinedInput-notchedOutline': {
-    border: 'none'
-  },
-  '& .MuiSelect-select': {
-    paddingRight: theme.spacing(1),
-    paddingLeft: 0,
-    fontWeight: 600,
-    color: theme.palette.primary.main,
-    minWidth: 40
-  },
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.04)
+const InfoBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  border: 1px solid rgba(145, 158, 171, 0.12);
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  padding: 4px 8px;
+  
+  @media (max-width: 900px) {
+    flex: 1;
+    min-width: calc(50% - 8px);
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 4px 8px;
   }
-}));
+`;
 
-const NavButton = styled(IconButton)(({ theme }) => ({
-  width: 28,
-  height: 28,
-  borderRadius: theme.shape.borderRadius,
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.08)
-  },
-  '&:disabled': {
-    color: theme.palette.text.disabled
+const Chip = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border: 1px solid rgba(145, 158, 171, 0.32);
+  border-radius: 6px;
+  color: #212B36;
+`;
+
+const Text = styled.span`
+  font-size: 12px;
+  color: rgba(145, 158, 171, 0.8);
+  font-weight: ${props => props.fontWeight || 500};
+`;
+
+const NavButton = styled.button`
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  padding: 0;
+  
+  &:hover:not(:disabled) {
+    background: rgba(33, 150, 243, 0.08);
   }
-}));
+  
+  &:disabled {
+    color: rgba(145, 158, 171, 0.48);
+    cursor: not-allowed;
+  }
+`;
+
+const PageButton = styled.button`
+  min-width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: none;
+  background: ${props => props.selected ? '#2196F3' : 'transparent'};
+  color: ${props => props.selected ? 'white' : 'inherit'};
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: ${props => props.selected ? 600 : 500};
+  
+  &:hover:not(:disabled) {
+    background: ${props => props.selected ? '#1976D2' : 'rgba(33, 150, 243, 0.08)'};
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+`;
+
+const Select = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const SelectButton = styled.button`
+  background: transparent;
+  border: none;
+  color: #2196F3;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 40px;
+  
+  &:hover {
+    background: rgba(33, 150, 243, 0.04);
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+  }
+`;
+
+const SelectMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 60px;
+`;
+
+const SelectOption = styled.button`
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  color: #212B36;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+`;
+
+const CenterBox = styled.div`
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+`;
 
 const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, setPage, tokens }) {
   const filteredCount = useSelector(selectFilteredCount);
-  const dispatch = useDispatch();
-  const theme = useTheme();
+  const [selectOpen, setSelectOpen] = useState(false);
+  const selectRef = useRef(null);
 
   const currentFilteredCount = filteredCount ?? 0;
   const num = currentFilteredCount / rows;
   let page_count = Math.floor(num);
   if (num % 1 !== 0) page_count++;
-  page_count = Math.max(page_count, 1); // Ensure at least 1 page
+  page_count = Math.max(page_count, 1);
 
   const start = currentFilteredCount > 0 ? page * rows + 1 : 0;
   let end = start + rows - 1;
   if (end > currentFilteredCount) end = currentFilteredCount;
 
-  const handleChangeRows = (event) => {
-    setRows(parseInt(event.target.value, 10));
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setSelectOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleChangeRows = (value) => {
+    setRows(value);
+    setSelectOpen(false);
   };
 
   const gotoTop = useCallback((event) => {
@@ -126,13 +243,10 @@ const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, s
     }
   }, []);
 
-  const handleChangePage = useCallback(
-    (event, newPage) => {
-      setPage(newPage - 1);
-      gotoTop(event);
-    },
-    [setPage, gotoTop]
-  );
+  const handleChangePage = useCallback((newPage) => {
+    setPage(newPage);
+    gotoTop({ target: document });
+  }, [setPage, gotoTop]);
 
   const handleFirstPage = useCallback(() => {
     setPage(0);
@@ -144,111 +258,94 @@ const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, s
     gotoTop({ target: document });
   }, [setPage, gotoTop, page_count]);
 
+  // Generate page numbers to show
+  const getPageNumbers = () => {
+    const pages = [];
+    const current = page + 1;
+    const total = page_count;
+    
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (current <= 3) {
+        for (let i = 1; i <= 5; i++) pages.push(i);
+        pages.push('...');
+        pages.push(total);
+      } else if (current >= total - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = total - 4; i <= total; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = current - 1; i <= current + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(total);
+      }
+    }
+    return pages;
+  };
+
   return (
     <StyledToolbar>
-      {/* Section 1: Results Info */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0.5,
-          flexWrap: 'wrap',
-          border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-          borderRadius: theme.shape.borderRadius * 2,
-          backgroundColor: theme.palette.background.paper,
-          boxShadow: theme.shadows[1],
-          [theme.breakpoints.down('md')]: {
-            flex: 1,
-            minWidth: 'calc(50% - 8px)',
-            justifyContent: 'flex-start',
-            gap: theme.spacing(0.5),
-            padding: theme.spacing(0.5, 1)
-          }
-        }}
-      >
-        <Chip
-          label={`${start}-${end} of ${currentFilteredCount.toLocaleString()}`}
-          variant="outlined"
-          size="small"
-          sx={{
-            fontWeight: 600,
-            '& .MuiChip-label': {
-              px: 0.5
-            }
-          }}
-        />
-        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-          tokens
-        </Typography>
-      </Box>
+      <InfoBox>
+        <Chip>{`${start}-${end} of ${currentFilteredCount.toLocaleString()}`}</Chip>
+        <Text>tokens</Text>
+      </InfoBox>
 
-      {/* Section 3: Pagination controls - Wrapped in a new Box for centering */}
-      <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
+      <CenterBox>
         <PaginationContainer>
           <NavButton
             onClick={handleFirstPage}
             disabled={page === 0}
-            size="small"
             title="First page"
           >
-            <FirstPage sx={{ fontSize: '0.875rem' }} />
+            <Icon icon="material-symbols:first-page" width="14" height="14" />
           </NavButton>
 
-          <Pagination
-            page={page + 1}
-            onChange={handleChangePage}
-            count={page_count}
-            size="small"
-            siblingCount={1}
-            boundaryCount={1}
-            sx={{
-              '& .MuiPaginationItem-root': {
-                minWidth: '20px',
-                height: '20px',
-                borderRadius: 1.5,
-                margin: '0 0px',
-                padding: '0 1px',
-                fontWeight: 500,
-                '&:hover': {
-                  backgroundColor: 'primary.lighter'
-                },
-                '&.Mui-selected': {
-                  backgroundColor: 'primary.main',
-                  color: 'white',
-                  fontWeight: 600,
-                  '&:hover': {
-                    backgroundColor: 'primary.dark'
-                  }
-                }
-              }
-            }}
-          />
+          {getPageNumbers().map((pageNum, idx) => {
+            if (pageNum === '...') {
+              return <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', fontSize: '12px' }}>...</span>;
+            }
+            return (
+              <PageButton
+                key={pageNum}
+                selected={pageNum === page + 1}
+                onClick={() => handleChangePage(pageNum - 1)}
+              >
+                {pageNum}
+              </PageButton>
+            );
+          })}
 
           <NavButton
             onClick={handleLastPage}
             disabled={page === page_count - 1}
-            size="small"
             title="Last page"
           >
-            <LastPage sx={{ fontSize: '0.875rem' }} />
+            <Icon icon="material-symbols:last-page" width="14" height="14" />
           </NavButton>
         </PaginationContainer>
-      </Box>
+      </CenterBox>
 
-      {/* Section 2: Rows Selector - Moved to the end */}
       <RowsSelector>
-        <ViewList sx={{ fontSize: '0.875rem' }} color="action" />
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 500, color: 'text.secondary', fontSize: '0.75rem' }}
-        >
-          Rows
-        </Typography>
-        <CustomSelect value={rows} onChange={handleChangeRows} size="small">
-          <MenuItem value={100}>100</MenuItem>
-          <MenuItem value={50}>50</MenuItem>
-          <MenuItem value={20}>20</MenuItem>
-        </CustomSelect>
+        <Icon icon="material-symbols:view-list" width="14" height="14" style={{ color: 'rgba(0, 0, 0, 0.54)' }} />
+        <Text>Rows</Text>
+        <Select ref={selectRef}>
+          <SelectButton onClick={() => setSelectOpen(!selectOpen)}>
+            {rows}
+            <Icon icon="material-symbols:arrow-drop-down" width="16" height="16" />
+          </SelectButton>
+          {selectOpen && (
+            <SelectMenu>
+              <SelectOption onClick={() => handleChangeRows(100)}>100</SelectOption>
+              <SelectOption onClick={() => handleChangeRows(50)}>50</SelectOption>
+              <SelectOption onClick={() => handleChangeRows(20)}>20</SelectOption>
+            </SelectMenu>
+          )}
+        </Select>
       </RowsSelector>
     </StyledToolbar>
   );

@@ -1,58 +1,59 @@
-// Material
-import {
-    alpha,
-    styled,
-    Link,
-    Stack,
-    Tooltip,
-    Typography
-} from '@mui/material';
+import styled from '@emotion/styled';
+import { Icon } from '@iconify/react';
 
-import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
 // ----------------------------------------------------------------------
 
-const RootStyle = styled('div')(({ theme }) => ({
-    zIndex: 999,
-    right: 0,
-    display: 'flex',
-    cursor: 'pointer',
-    position: 'fixed',
-    alignItems: 'center',
-    top: theme.spacing(23),
-    paddingLeft: theme.spacing(1.5),
-    paddingRight: theme.spacing(1),
-    paddingTop: theme.spacing(0.7),
-    paddingBottom: theme.spacing(0.7),
-    // boxShadow: theme.customShadows.z20,
-    backdropFilter: 'blur(3px)',
-    WebkitBackdropFilter: 'blur(3px)', // Fix on Mobile
-    // color: theme.palette.text.widget,
-    // backgroundColor: theme.palette.background.widget,
-    backgroundColor: alpha('#8C7CF0', 0.08),
-    borderTopLeftRadius: 16,
-    borderBottomLeftRadius: 16,
-}));
+const RootStyle = styled.button`
+    z-index: 999;
+    right: 0;
+    display: flex;
+    cursor: pointer;
+    position: fixed;
+    align-items: center;
+    top: 184px;
+    padding: 5.6px 8px 5.6px 12px;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    background-color: rgba(140, 124, 240, 0.08);
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+    border: none;
+    color: ${props => props.active ? '#FF5630' : 'inherit'};
+    text-decoration: none;
+    font-family: inherit;
+    
+    &:hover {
+        opacity: 0.9;
+    }
+`;
+
+const Stack = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 6.4px;
+`;
+
+const Caption = styled.span`
+    font-size: 12px;
+    line-height: 1.66;
+    word-wrap: break-word;
+`;
 
 // ----------------------------------------------------------------------
 export default function WidgetDate({showDate, setShowDate}) {
     return (
-        <Link
-            component="button"
-            underline="none"
-            variant="body2"
-            color={showDate?'error':'inherit'}
+        <RootStyle
+            active={showDate}
             onClick={() => {
                 setShowDate(!showDate);
             }}
         >
-            <RootStyle>
-                    <Stack direction="row" spacing={0.8} alignItems='center'>
-                        <UpdateDisabledIcon />
-                        <Typography align="center" style={{ wordWrap: "break-word" }} variant="caption" >
-                            Date
-                        </Typography>
-                    </Stack>
-            </RootStyle>
-        </Link>
+            <Stack>
+                <Icon icon="material-symbols:update-disabled" width="20" height="20" />
+                <Caption>
+                    Date
+                </Caption>
+            </Stack>
+        </RootStyle>
     );
 }
