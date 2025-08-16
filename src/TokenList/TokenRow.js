@@ -199,6 +199,18 @@ const DesktopTokenRow = ({
   } = token;
   const [priceColor, setPriceColor] = useState('');
   
+  // Debug logging
+  useEffect(() => {
+    console.log(`[TokenRow Debug] Row ${idx}:`, {
+      md5,
+      name: name?.substring(0, 20),
+      watchListLength: watchList?.length,
+      isInWatchlist: watchList?.includes(md5),
+      hasWatchList: !!watchList,
+      watchListType: Array.isArray(watchList) ? 'array' : typeof watchList
+    });
+  }, [idx, md5, name, watchList]);
+  
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value)) return darkMode ? '#66BB6A' : '#388E3C';
     return value < 0 ? (darkMode ? '#FF5252' : '#D32F2F') : (darkMode ? '#66BB6A' : '#388E3C');
@@ -214,26 +226,58 @@ const DesktopTokenRow = ({
 
   return (
     <StyledRow darkMode={darkMode} onClick={handleRowClick}>
-      <StyledCell align="center" darkMode={darkMode}>
+      <StyledCell 
+        align="center" 
+        darkMode={darkMode} 
+        style={{ 
+          width: '40px', 
+          minWidth: '40px',
+          maxWidth: '40px',
+          border: '1px solid red', // DEBUG: Red border for star column
+          boxSizing: 'border-box'
+        }}
+      >
         <span 
           onClick={handleWatchlistClick}
           style={{ 
             cursor: 'pointer', 
             fontSize: '18px',
-            color: watchList.includes(md5) ? '#FFB800' : 'rgba(255, 255, 255, 0.3)'
+            color: watchList.includes(md5) ? '#FFB800' : 'rgba(255, 255, 255, 0.3)',
+            display: 'inline-block',
+            width: '100%'
           }}
         >
           {watchList.includes(md5) ? '★' : '☆'}
         </span>
       </StyledCell>
       
-      <StyledCell align="center" darkMode={darkMode}>
+      <StyledCell 
+        align="center" 
+        darkMode={darkMode} 
+        style={{ 
+          width: '40px', 
+          minWidth: '40px',
+          maxWidth: '40px',
+          border: '1px solid blue', // DEBUG: Blue border for rank column
+          boxSizing: 'border-box'
+        }}
+      >
         <span style={{ fontWeight: '600', color: darkMode ? '#999' : '#666' }}>
           {idx + 1}
         </span>
       </StyledCell>
       
-      <StyledCell align="left" darkMode={darkMode}>
+      <StyledCell 
+        align="left" 
+        darkMode={darkMode} 
+        style={{ 
+          width: '250px', 
+          minWidth: '250px',
+          maxWidth: '250px',
+          border: '1px solid green', // DEBUG: Green border for token column
+          boxSizing: 'border-box'
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <TokenImage darkMode={darkMode}>
             <Image

@@ -67,11 +67,12 @@ const TableContainer = styled.div`
 `;
 
 const StyledTable = styled.table`
-  table-layout: fixed;
+  table-layout: auto; /* Changed from fixed to auto to handle dynamic content */
   width: 100%;
   border-collapse: collapse;
   transition: opacity 0.1s ease;
   contain: layout;
+  min-width: 1200px; /* Ensure minimum width for all columns */
 `;
 
 const StyledTableBody = styled.tbody`
@@ -419,19 +420,26 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   useEffect(() => {
     const getWatchList = () => {
       const account = accountProfile?.account;
+      console.log('[DEBUG] Getting watchlist for account:', account); // DEBUG
       if (!account) {
+        console.log('[DEBUG] No account, setting empty watchlist'); // DEBUG
         setWatchList([]);
         return;
       }
 
+      console.log('[DEBUG] Fetching watchlist from API...'); // DEBUG
       axios
         .get(`${BASE_URL}/watchlist/get_list?account=${account}`)
         .then((res) => {
           if (res.status === 200) {
+            console.log('[DEBUG] Watchlist received:', res.data.watchlist?.length, 'items'); // DEBUG
             setWatchList(res.data.watchlist);
           }
         })
-        .catch((err) => console.log('Error on getting watchlist!', err));
+        .catch((err) => {
+          console.log('[DEBUG] Error on getting watchlist!', err); // DEBUG
+          console.log('Error on getting watchlist!', err);
+        });
     };
     getWatchList();
   }, [accountProfile, sync]);

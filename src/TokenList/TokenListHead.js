@@ -333,6 +333,13 @@ const TokenListHead = memo(function TokenListHead({
               stickyThird={headCell.id === 'token'}
               scrollLeft={scrollLeft && headCell.id === 'token'}
               onClick={headCell.order ? createSortHandler(headCell.id, headCell.no) : undefined}
+              style={{
+                // DEBUG: Add colored borders to match row columns
+                border: headCell.id === 'star' ? '1px solid red' : 
+                        headCell.id === 'rank' ? '1px solid blue' : 
+                        headCell.id === 'token' ? '1px solid green' : undefined,
+                boxSizing: 'border-box'
+              }}
             >
               {headCell.order ? (
                 headCell.tooltip ? (
