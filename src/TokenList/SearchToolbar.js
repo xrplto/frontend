@@ -132,9 +132,9 @@ const Button = styled.button`
   }
   
   @media (max-width: 600px) {
-    padding: 2px 6px;
-    font-size: 0.7rem;
-    height: 28px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    height: 32px;
   }
 `;
 
@@ -142,73 +142,61 @@ const IconButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   padding: 0;
-  border: ${props => props.selected ? '1px solid #2196f3' : '1px solid rgba(145, 158, 171, 0.32)'};
-  border-radius: 6px;
-  background: ${props => props.selected ? 'rgba(33, 150, 243, 0.12)' : 'transparent'};
+  border: ${props => props.selected ? '1px solid rgba(33, 150, 243, 0.3)' : '1px solid rgba(145, 158, 171, 0.08)'};
+  border-radius: 8px;
+  background: ${props => props.selected ? 'rgba(33, 150, 243, 0.08)' : 'rgba(0, 0, 0, 0.02)'};
   color: ${props => props.selected ? '#2196f3' : 'inherit'};
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   flex-shrink: 0;
   
   &:hover {
-    background: rgba(33, 150, 243, 0.08);
-    border-color: #2196f3;
+    background: rgba(33, 150, 243, 0.06);
+    border-color: rgba(33, 150, 243, 0.2);
+    transform: translateY(-1px);
   }
   
   @media (max-width: 600px) {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
   }
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: 0;
+  gap: 2px;
   flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.02);
+  padding: 2px;
+  border-radius: 10px;
   
   & > button {
-    border-radius: 0;
-    border: 1px solid rgba(145, 158, 171, 0.2);
-    min-width: 30px;
+    border-radius: 8px;
+    border: none;
+    min-width: 36px;
     height: 32px;
-    padding: 0 6px;
-    font-size: 0.75rem;
+    padding: 0 8px;
+    font-size: 0.8rem;
     font-weight: 500;
     background: transparent;
     cursor: pointer;
-    transition: all 0.2s;
-    
-    &:first-of-type {
-      border-top-left-radius: 6px;
-      border-bottom-left-radius: 6px;
-    }
-    
-    &:last-child {
-      border-top-right-radius: 6px;
-      border-bottom-right-radius: 6px;
-      border-left: none;
-    }
-    
-    &:not(:first-of-type):not(:last-child) {
-      border-left: none;
-    }
+    transition: all 0.3s ease;
     
     &:hover {
-      border-color: rgba(33, 150, 243, 0.3);
-      background: rgba(33, 150, 243, 0.05);
+      background: rgba(33, 150, 243, 0.08);
     }
   }
   
   & > button.selected {
-    background: #2196f3;
-    color: #fff;
+    background: rgba(33, 150, 243, 0.15);
+    color: #2196f3;
     font-weight: 600;
     
     &:hover {
-      background: #1976d2;
+      background: rgba(33, 150, 243, 0.2);
     }
   }
   
@@ -226,9 +214,9 @@ const ButtonGroup = styled.div`
 
 const Divider = styled.div`
   width: 1px;
-  height: 20px;
-  background: rgba(145, 158, 171, 0.24);
-  margin: 0 2px;
+  height: 24px;
+  background: rgba(145, 158, 171, 0.08);
+  margin: 0 4px;
   flex-shrink: 0;
   
   @media (max-width: 600px) {
@@ -240,23 +228,23 @@ const Divider = styled.div`
 const Chip = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 2px 8px;
+  gap: 4px;
+  padding: 4px 12px;
   border: ${props => props.border || 'none'};
-  border-radius: 14px;
-  background: ${props => props.background || 'rgba(145, 158, 171, 0.1)'};
+  border-radius: 16px;
+  background: ${props => props.background || 'rgba(145, 158, 171, 0.05)'};
   color: ${props => props.color || 'inherit'};
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   white-space: nowrap;
-  height: 28px;
+  height: 32px;
   flex-shrink: 0;
   
   &:hover {
-    background: ${props => props.hoverBackground || 'rgba(145, 158, 171, 0.25)'};
-    transform: scale(1.02);
+    background: ${props => props.hoverBackground || 'rgba(145, 158, 171, 0.15)'};
+    transform: translateY(-1px);
   }
   
   @media (max-width: 600px) {
@@ -270,22 +258,23 @@ const Chip = styled.button`
 const TagChip = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 2px 8px;
-  border: 1px solid ${props => props.borderColor || 'rgba(145, 158, 171, 0.32)'};
-  border-radius: 14px;
-  background: ${props => props.background || 'transparent'};
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid ${props => props.borderColor || 'rgba(145, 158, 171, 0.08)'};
+  border-radius: 16px;
+  background: ${props => props.background || 'rgba(0, 0, 0, 0.02)'};
   color: ${props => props.color || 'inherit'};
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   white-space: nowrap;
-  height: 26px;
+  height: 30px;
   flex-shrink: 0;
   
   &:hover {
-    background: ${props => props.hoverBackground || 'rgba(33, 150, 243, 0.08)'};
+    background: ${props => props.hoverBackground || 'rgba(33, 150, 243, 0.06)'};
+    transform: translateY(-1px);
   }
   
   @media (max-width: 600px) {
@@ -299,23 +288,23 @@ const TagChip = styled.button`
 const AllTagsButton = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 2px 8px;
-  border: 1px solid rgba(33, 150, 243, 0.3);
-  border-radius: 14px;
-  background: rgba(33, 150, 243, 0.08);
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid rgba(33, 150, 243, 0.15);
+  border-radius: 16px;
+  background: rgba(33, 150, 243, 0.06);
   color: inherit;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   white-space: nowrap;
-  height: 26px;
+  height: 30px;
   flex-shrink: 0;
   
   &:hover {
-    background: rgba(33, 150, 243, 0.15);
-    transform: scale(1.02);
+    background: rgba(33, 150, 243, 0.1);
+    transform: translateY(-1px);
   }
   
   @media (max-width: 600px) {
@@ -332,10 +321,11 @@ const Dropdown = styled.div`
 const DropdownMenu = styled.div`
   position: fixed;
   margin-top: 36px;
-  background: ${props => props.darkMode ? '#1a1a1a' : 'white'};
-  border: 1px solid rgba(145, 158, 171, 0.12);
-  border-radius: 8px;
-  box-shadow: 0 8px 16px rgba(145, 158, 171, 0.24);
+  background: ${props => props.darkMode ? 'rgba(26, 26, 26, 0.95)' : 'rgba(255, 255, 255, 0.95)'};
+  backdrop-filter: blur(12px);
+  border: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   min-width: 200px;
   z-index: 9999;
   overflow: visible;
@@ -346,17 +336,18 @@ const MenuItem = styled.button`
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 8px 16px;
+  padding: 10px 16px;
   border: none;
-  background: ${props => props.selected ? 'rgba(33, 150, 243, 0.08)' : 'transparent'};
+  background: ${props => props.selected ? 'rgba(33, 150, 243, 0.06)' : 'transparent'};
   color: inherit;
   font-size: 14px;
   text-align: left;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
   
   &:hover {
-    background: rgba(145, 158, 171, 0.08);
+    background: rgba(145, 158, 171, 0.06);
+    padding-left: 20px;
   }
 `;
 
