@@ -391,7 +391,7 @@ const SearchToolbar = memo(function SearchToolbar({
   const buttonRef = useRef(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const containerRef = useRef(null);
-  const [visibleTagCount, setVisibleTagCount] = useState(7);
+  const [visibleTagCount, setVisibleTagCount] = useState(8);
 
   // Calculate how many tags can fit without scrolling
   useEffect(() => {
@@ -425,8 +425,8 @@ const SearchToolbar = memo(function SearchToolbar({
       const avgTagWidth = 90;
       const possibleTags = Math.floor(availableWidth / avgTagWidth);
       
-      // Set the visible count, with min of 3 and max of 7 tags
-      const optimalCount = Math.max(3, Math.min(possibleTags, Math.min(7, tags.length)));
+      // Set the visible count, with min of 3 and max of 8 tags
+      const optimalCount = Math.max(3, Math.min(possibleTags, Math.min(8, tags.length)));
       setVisibleTagCount(optimalCount);
     };
     
