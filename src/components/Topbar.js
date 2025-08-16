@@ -53,13 +53,12 @@ const TopWrapper = styled('header')(
     width: 100%;
     display: flex;
     align-items: center;
-    height: ${theme.spacing(5)};
-    background: transparent;
-    backdrop-filter: none;
-    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.05)};
+    height: ${theme.spacing(4.5)};
+    background: ${theme.palette.mode === 'dark' ? theme.palette.background.default : theme.palette.background.paper};
+    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.1)};
     position: relative;
     z-index: 1099;
-    box-shadow: 0 1px 3px ${alpha(theme.palette.common.black, 0.05)};
+    box-shadow: 0 1px 2px ${alpha(theme.palette.common.black, 0.05)};
     contain: layout style;
 `
 );
@@ -83,35 +82,22 @@ const ContentWrapper = styled('nav')(({ theme }) => ({
 
 
 const APILabel = styled('button')(({ theme }) => ({
-  fontSize: '12px',
+  fontSize: '11px',
   fontWeight: 600,
   color: theme.palette.text.primary,
   textDecoration: 'none',
-  marginLeft: theme.spacing(1),
-  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-    ? alpha('#030310', 0.7)
-    : theme.palette.primary.main === '#0080ff'
-      ? alpha(theme.palette.primary.main, 0.1)
-      : theme.palette.mode === 'dark'
-        ? alpha(theme.palette.success.dark, 0.15)
-        : alpha(theme.palette.success.light, 0.15),
-  padding: '6px 12px',
-  borderRadius: '12px',
+  marginLeft: theme.spacing(0.5),
+  background: alpha(theme.palette.primary.main, 0.08),
+  padding: '4px 10px',
+  borderRadius: '8px',
   display: 'flex',
   alignItems: 'center',
-  gap: '6px',
-  minHeight: '32px',
-  border: `1px solid ${theme.palette.primary.main === '#0080ff' ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`,
-  transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  gap: '4px',
+  minHeight: '26px',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
   cursor: 'pointer',
-  willChange: 'transform',
   '&:hover': {
-    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-      ? alpha(theme.palette.primary.main, 0.04)
-      : theme.palette.primary.main === '#0080ff'
-        ? alpha(theme.palette.primary.main, 0.15)
-        : alpha(theme.palette.success.main, 0.2),
-    transform: 'translateY(-1px)'
+    background: alpha(theme.palette.primary.main, 0.12)
   },
   '&:focus': {
     outline: `2px solid ${theme.palette.primary.main}`,
@@ -125,29 +111,25 @@ const MobileMetric = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   gap: theme.spacing(0.5),
   width: '100%',
-  padding: theme.spacing(0.5, 0),
+  padding: theme.spacing(0.5, 0.75),
   borderRadius: 0,
-  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-    ? alpha('#030310', 0.5)
-    : 'transparent',
+  background: 'transparent',
   border: 'none',
-  minHeight: theme.spacing(4)
+  minHeight: theme.spacing(3.5)
 }));
 
 const H24Style = styled('div')(({ theme }) => ({
   cursor: 'pointer',
   padding: theme.spacing(0.25, 0.5),
-  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-  borderRadius: theme.spacing(0.75),
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  minWidth: '28px',
+  background: theme.palette.primary.main,
+  borderRadius: theme.spacing(0.5),
+  minWidth: '24px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  boxShadow: `0 1px 4px ${alpha(theme.palette.primary.main, 0.25)}`,
+  boxShadow: `0 1px 2px ${alpha(theme.palette.primary.main, 0.2)}`,
   '&:hover': {
-    transform: 'scale(1.05)',
-    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.35)}`
+    background: theme.palette.primary.dark
   }
 }));
 
@@ -183,34 +165,11 @@ const TradeButton = styled(IconButton)(({ theme }) => ({
 }));
 
 const PulsatingCircle = styled('div')(({ theme }) => ({
-  width: '8px',
-  height: '8px',
+  width: '6px',
+  height: '6px',
   borderRadius: '50%',
-  backgroundColor: theme.palette.primary.main === '#0080ff' ? theme.palette.primary.main : theme.palette.success.main,
-  position: 'relative',
-  boxShadow: `0 0 10px ${alpha(theme.palette.primary.main === '#0080ff' ? theme.palette.primary.main : theme.palette.success.main, 0.5)}`,
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '100%',
-    height: '100%',
-    borderRadius: '50%',
-    backgroundColor: 'inherit',
-    animation: 'pulse-simple 2s ease-in-out infinite'
-  },
-  '@keyframes pulse-simple': {
-    '0%, 100%': {
-      transform: 'translate(-50%, -50%) scale(1)',
-      opacity: 1
-    },
-    '50%': {
-      transform: 'translate(-50%, -50%) scale(2.5)',
-      opacity: 0
-    }
-  }
+  background: theme.palette.success.main,
+  position: 'relative'
 }));
 
 const LiveIndicator = styled('div')(({ theme }) => ({
@@ -238,54 +197,29 @@ const LiveIndicator = styled('div')(({ theme }) => ({
 }));
 
 const LiveCircle = styled('div')(({ theme }) => ({
-  width: '8px',
-  height: '8px',
+  width: '6px',
+  height: '6px',
   borderRadius: '50%',
-  backgroundColor: theme.palette.primary.main === '#0080ff' ? theme.palette.primary.main : theme.palette.success.main,
-  position: 'relative',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    width: '100%',
-    height: '100%',
-    borderRadius: '50%',
-    backgroundColor: 'inherit',
-    animation: 'ripple-simple 2s ease-in-out infinite'
-  },
-  '@keyframes ripple-simple': {
-    '0%': {
-      transform: 'translate(-50%, -50%) scale(1)',
-      opacity: 0.9
-    },
-    '100%': {
-      transform: 'translate(-50%, -50%) scale(3)',
-      opacity: 0
-    }
-  }
+  background: theme.palette.success.main,
+  position: 'relative'
 }));
 
 
 const MetricContainer = styled(Stack)(({ theme }) => ({
-  padding: theme.spacing(0.75, 1.25),
-  borderRadius: theme.spacing(1),
+  padding: theme.spacing(0.5, 0.75),
+  borderRadius: theme.spacing(0.75),
   background: 'transparent',
   minWidth: 'auto',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   '&:hover': {
-    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-      ? alpha(theme.palette.primary.main, 0.04)
-      : alpha(theme.palette.action.hover, 0.05),
-    transform: 'translateY(-1px)'
+    background: alpha(theme.palette.action.hover, 0.04)
   }
 }));
 
 const MetricLabel = styled(Typography)(({ theme }) => ({
   color: alpha(theme.palette.text.secondary, 0.7),
   fontWeight: 600,
-  fontSize: '0.65rem',
+  fontSize: '0.6rem',
   textTransform: 'uppercase',
   letterSpacing: '0.5px',
   lineHeight: 1,
@@ -294,7 +228,7 @@ const MetricLabel = styled(Typography)(({ theme }) => ({
 
 const MetricValue = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
-  fontSize: '0.95rem',
+  fontSize: '0.85rem',
   lineHeight: 1,
   fontFamily: 'Inter, sans-serif',
   letterSpacing: '-0.01em'
@@ -317,8 +251,8 @@ const TradeCard = styled(Card)(({ theme }) => ({
 }));
 
 const TokenImage = styled('img')(({ theme }) => ({
-  width: 24,
-  height: 24,
+  width: 20,
+  height: 20,
   borderRadius: '50%',
   backgroundColor: theme.palette.mode === 'dark'
     ? alpha(theme.palette.grey[800], 0.5)
@@ -329,28 +263,28 @@ const TokenImage = styled('img')(({ theme }) => ({
 }));
 
 const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
-  height: 22,
-  fontSize: '0.7rem',
+  height: 18,
+  fontSize: '0.65rem',
   fontWeight: 600,
-  borderRadius: '6px',
-  minWidth: '24px',
+  borderRadius: '4px',
+  minWidth: '20px',
   fontFamily: 'Inter, sans-serif',
   ...(tradetype === 'BUY' && {
-    background: alpha(theme.palette.success.main, 0.15),
+    background: alpha(theme.palette.success.main, 0.1),
     color: theme.palette.success.dark,
-    border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`,
+    border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
     '& .MuiChip-label': {
-      paddingLeft: '6px',
-      paddingRight: '6px'
+      paddingLeft: '4px',
+      paddingRight: '4px'
     }
   }),
   ...(tradetype === 'SELL' && {
-    background: alpha(theme.palette.error.main, 0.15),
+    background: alpha(theme.palette.error.main, 0.1),
     color: theme.palette.error.dark,
-    border: `1px solid ${alpha(theme.palette.error.main, 0.3)}`,
+    border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
     '& .MuiChip-label': {
-      paddingLeft: '6px',
-      paddingRight: '6px'
+      paddingLeft: '4px',
+      paddingRight: '4px'
     }
   })
 }));
@@ -359,24 +293,23 @@ const DrawerHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  padding: theme.spacing(2.5, 3),
-  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-    ? alpha('#030310', 0.9)
+  padding: theme.spacing(2, 2.5),
+  background: theme.palette.mode === 'dark' 
+    ? theme.palette.background.default
     : theme.palette.background.paper,
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   position: 'sticky',
   top: 0,
-  zIndex: 1,
-  backdropFilter: 'blur(20px)',
-  boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.05)}`
+  zIndex: 1
 }));
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
-    background: theme.palette.background.paper,
-    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    backdropFilter: 'blur(10px)',
-    boxShadow: theme.shadows[5]
+    background: theme.palette.mode === 'dark'
+      ? theme.palette.background.default
+      : theme.palette.background.paper,
+    borderLeft: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    boxShadow: theme.shadows[4]
   }
 }));
 
@@ -835,11 +768,14 @@ const Topbar = () => {
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 0.5,
-                    p: 0.25,
-                    borderRadius: 0.5,
-                    background: alpha(mobileMetrics[currentMetricIndex].color, 0.08),
-                    flex: 1
+                    gap: 0.75,
+                    p: 0.75,
+                    borderRadius: 1,
+                    background: `linear-gradient(135deg, ${alpha(mobileMetrics[currentMetricIndex].color, 0.12)} 0%, ${alpha(mobileMetrics[currentMetricIndex].color, 0.06)} 100%)`,
+                    border: `1px solid ${alpha(mobileMetrics[currentMetricIndex].color, 0.15)}`,
+                    flex: 1,
+                    boxShadow: `inset 0 1px 2px ${alpha(mobileMetrics[currentMetricIndex].color, 0.08)}`,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
                 >
                   <Typography
@@ -1091,7 +1027,7 @@ const Topbar = () => {
       >
         <DrawerHeader>
           <Box display="flex" alignItems="center" gap={0.5}>
-            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
               Global Trades
             </Typography>
             <LiveCircle />
@@ -1171,11 +1107,19 @@ const Topbar = () => {
               
               // Calculate background opacity based on XRP volume
               const xrpAmount = getXRPAmount(trade);
-              const maxXrp = Math.max(...filteredTrades.map(t => getXRPAmount(t)));
-              const minOpacity = 0.02;
-              const maxOpacity = 0.15;
-              const opacityRatio = maxXrp > 0 ? Math.min(xrpAmount / maxXrp, 1) : 0;
-              const backgroundOpacity = minOpacity + (opacityRatio * (maxOpacity - minOpacity));
+              const isBuy = trade.paid?.currency === 'XRP';
+              
+              // Calculate opacity based on XRP amount (adjusted for smaller amounts)
+              let opacity = 0.05; // base opacity
+              if (xrpAmount > 0) {
+                if (xrpAmount < 10) opacity = 0.05;
+                else if (xrpAmount < 50) opacity = 0.07;
+                else if (xrpAmount < 100) opacity = 0.09;
+                else if (xrpAmount < 500) opacity = 0.11;
+                else if (xrpAmount < 1000) opacity = 0.13;
+                else if (xrpAmount < 5000) opacity = 0.15;
+                else opacity = 0.18; // whale trades
+              }
               
               return (
               <ListItem
@@ -1185,84 +1129,93 @@ const Topbar = () => {
                 sx={{
                   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
                   position: 'relative',
-                  overflow: 'hidden',
-                  padding: '12px 16px',
+                  padding: '8px 12px',
                   width: '100%',
-                  margin: '0 8px',
-                  width: 'calc(100% - 16px)',
-                  borderRadius: '8px',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  margin: 0,
+                  borderRadius: 0,
                   textDecoration: 'none',
                   color: 'inherit',
-                  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-                    ? alpha('#030310', 0.5)
-                    : theme.palette.mode === 'dark'
-                      ? alpha(theme.palette.background.default, 0.3)
-                      : alpha(theme.palette.grey[50], 0.5),
+                  background: isBuy 
+                    ? alpha(theme.palette.success.main, opacity)
+                    : alpha(theme.palette.error.main, opacity),
                   cursor: 'pointer',
                   '&:hover': {
-                    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-                      ? alpha(theme.palette.primary.main, 0.04)
-                      : theme.palette.mode === 'dark'
-                        ? alpha(theme.palette.background.default, 0.6)
-                        : alpha(theme.palette.grey[100], 0.8),
-                    transform: 'translateY(-1px)',
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
+                    background: isBuy
+                      ? alpha(theme.palette.success.main, opacity * 1.5)
+                      : alpha(theme.palette.error.main, opacity * 1.5)
                   }
                 }}
               >
 
-                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flex: 1 }}>
-                    <TokenImage
-                      src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
-                      alt={decodeCurrency(trade.paid.currency)}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <Box sx={{ minWidth: 0, flex: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem', lineHeight: 1.2, fontFamily: 'Inter, sans-serif' }}>
-                        {formatTradeValue(trade.paid.value)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', lineHeight: 1.2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px', opacity: 0.8 }}>
-                        {decodeCurrency(trade.paid.currency)}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1.5 }}>
-                    <SwapHorizIcon sx={{ color: alpha(theme.palette.text.secondary, 0.4), fontSize: '1rem' }} />
-                    <Typography component="span" sx={{ fontSize: '1rem' }}>
-                      {getTradeSizeEmoji(getXRPAmount(trade))}
+                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
+                  {/* Time Column */}
+                  <Box sx={{ minWidth: 55, textAlign: 'left' }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', opacity: 0.8 }}>
+                      {formatRelativeTime(trade.time)}
                     </Typography>
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1, justifyContent: 'flex-end' }}>
-                    <Box sx={{ textAlign: 'right', minWidth: 0, flex: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.75rem', lineHeight: 1, fontFamily: 'monospace' }}>
-                        {formatTradeValue(trade.got.value)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', lineHeight: 1, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        {decodeCurrency(trade.got.currency)}
-                      </Typography>
-                    </Box>
-                    <TokenImage
-                      src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
-                      alt={decodeCurrency(trade.got.currency)}
-                      loading="lazy"
-                      decoding="async"
-                    />
+                  {/* Type Column (Buy/Sell) */}
+                  <Box sx={{ minWidth: 35, textAlign: 'center' }}>
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        fontSize: '0.7rem', 
+                        fontWeight: 700,
+                        color: isBuy ? theme.palette.success.main : theme.palette.error.main
+                      }}
+                    >
+                      {isBuy ? 'BUY' : 'SELL'}
+                    </Typography>
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 1, minWidth: 120, justifyContent: 'flex-end' }}>
+                  {/* Amount/Price Column */}
+                  <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
+                      <TokenImage
+                        src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
+                        alt={decodeCurrency(trade.paid.currency)}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.1 }}>
+                          {formatTradeValue(trade.paid.value)} {decodeCurrency(trade.paid.currency)}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <SwapHorizIcon sx={{ color: alpha(theme.palette.text.secondary, 0.3), fontSize: '0.8rem' }} />
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.1 }}>
+                          {formatTradeValue(trade.got.value)} {decodeCurrency(trade.got.currency)}
+                        </Typography>
+                      </Box>
+                      <TokenImage
+                        src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
+                        alt={decodeCurrency(trade.got.currency)}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </Box>
+                  </Box>
+
+                  {/* Size Emoji & Link */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, minWidth: 35 }}>
+                    <Typography component="span" sx={{ fontSize: '0.85rem' }}>
+                      {getTradeSizeEmoji(getXRPAmount(trade))}
+                    </Typography>
                     {trade.hash && (
                       <IconButton
                         component="a"
                         href={txPath}
                         size="small"
                         sx={{
-                          width: 16,
-                          height: 16,
+                          width: 14,
+                          height: 14,
+                          padding: 0,
                           color: 'text.secondary',
                           '&:hover': {
                             color: 'primary.main'
@@ -1270,17 +1223,9 @@ const Topbar = () => {
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <LinkIcon sx={{ fontSize: '0.7rem' }} />
+                        <LinkIcon sx={{ fontSize: '0.6rem' }} />
                       </IconButton>
                     )}
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
-                      {formatRelativeTime(trade.time)}
-                    </Typography>
-                    <TradeTypeChip
-                      size="small"
-                      label={trade.paid?.currency === 'XRP' ? 'B' : 'S'}
-                      tradetype={trade.paid?.currency === 'XRP' ? 'BUY' : 'SELL'}
-                    />
                   </Box>
                 </Box>
               </ListItem>
