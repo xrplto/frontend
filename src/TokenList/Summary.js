@@ -244,6 +244,16 @@ export default function Summary() {
   const { activeFiatCurrency, darkMode } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Debug logging to see what metrics we're receiving
+  useEffect(() => {
+    console.log('DEBUG - Metrics received:', metrics);
+    console.log('DEBUG - Metrics.global:', metrics.global);
+    console.log('DEBUG - Total tokens:', metrics.total_tokens);
+    console.log('DEBUG - Global.total:', metrics.global?.total);
+    console.log('DEBUG - Active holders:', metrics.active_holders);
+    console.log('DEBUG - New tokens 24h:', metrics.new_tokens_24h);
+  }, [metrics]);
+
   const fiatRate = metrics[activeFiatCurrency] || 1;
 
   const CustomTooltip = memo(({ active, payload, label }) => {
@@ -400,9 +410,9 @@ export default function Summary() {
                 <MetricValue>
                   {xrpPriceSymbol}{xrpPrice}
                 </MetricValue>
-                <PercentageChange isPositive={metrics.XRPchange24h >= 0}>
-                  {metrics.XRPchange24h >= 0 ? '▲' : '▼'}
-                  {Math.abs(metrics.XRPchange24h).toFixed(2)}%
+                <PercentageChange isPositive={(metrics.XRPchange24h || 0) >= 0}>
+                  {(metrics.XRPchange24h || 0) >= 0 ? '▲' : '▼'}
+                  {Math.abs(metrics.XRPchange24h || 0).toFixed(2)}%
                 </PercentageChange>
               </MetricBox>
 
@@ -410,7 +420,7 @@ export default function Summary() {
                 <MetricTitle>Market Cap</MetricTitle>
                 <MetricValue>
                   {currencySymbols[activeFiatCurrency]}
-                  {formatNumberWithDecimals(new Decimal(metrics.market_cap_usd || 0).div(fiatRate).toNumber())}
+                  {formatNumberWithDecimals(new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0).div(fiatRate).toNumber())}
                 </MetricValue>
                 <VolumePercentage>
                   #{metrics.market_cap_rank || '-'}
@@ -421,17 +431,17 @@ export default function Summary() {
                 <MetricTitle>24h Volume</MetricTitle>
                 <MetricValue>
                   {currencySymbols[activeFiatCurrency]}
-                  {formatNumberWithDecimals(new Decimal(metrics.total_volume_usd || 0).div(fiatRate).toNumber())}
+                  {formatNumberWithDecimals(new Decimal(metrics.global?.gDexVolume || metrics.total_volume_usd || 0).div(fiatRate).toNumber())}
                 </MetricValue>
                 <ContentTypography>
-                  Vol/MCap: {((metrics.total_volume_usd / metrics.market_cap_usd) * 100).toFixed(2)}%
+                  Vol/MCap: {((metrics.global?.gDexVolume || metrics.total_volume_usd || 0) / (metrics.global?.gMarketcap || metrics.market_cap_usd || 1) * 100).toFixed(2)}%
                 </ContentTypography>
               </MetricBox>
 
               <MetricBox>
                 <MetricTitle>New Tokens (24h)</MetricTitle>
                 <MetricValue>
-                  {metrics.new_tokens_24h || 0}
+                  {metrics.H24?.transactions24H || metrics.new_tokens_24h || 0}
                 </MetricValue>
                 <Stack direction="row" spacing="4px">
                   <Icon icon="mdi:fiber-new" width="14" height="14" style={{ color: '#8C7CF0' }} />
@@ -442,7 +452,7 @@ export default function Summary() {
               <MetricBox>
                 <MetricTitle>Active Holders</MetricTitle>
                 <MetricValue>
-                  {formatNumberWithDecimals(metrics.active_holders || 0)}
+                  {formatNumberWithDecimals(metrics.H24?.activeAddresses24H || metrics.active_holders || 0)}
                 </MetricValue>
                 <Stack direction="row" spacing="4px">
                   <Icon icon="mdi:account-group" width="14" height="14" style={{ color: '#4ECDC4' }} />
@@ -453,7 +463,7 @@ export default function Summary() {
               <MetricBox>
                 <MetricTitle>Total Tokens</MetricTitle>
                 <MetricValue>
-                  {formatNumberWithDecimals(metrics.total_tokens || 0)}
+                  {formatNumberWithDecimals(metrics.global?.total || metrics.total_tokens || 0)}
                 </MetricValue>
                 <Stack direction="row" spacing="4px">
                   <Icon icon="mdi:cash-multiple" width="14" height="14" style={{ color: '#FFD93D' }} />
