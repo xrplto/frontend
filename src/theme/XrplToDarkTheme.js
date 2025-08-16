@@ -8,8 +8,8 @@ const themeColors = {
   warning: '#FF9800',
   error: '#F44336',
   info: '#2196F3',
-  black: '#FFFFFF',
-  white: '#000000',
+  black: '#000000',
+  white: '#FFFFFF',
   primaryAlt: '#0A0E1A',
   trueWhite: '#ffffff'
 };
@@ -75,20 +75,20 @@ export const XrplToDarkTheme = createTheme({
       contrastText: '#fff'
     },
     text: {
-      primary: themeColors.black,
-      secondary: alpha(themeColors.black, 0.7),
-      disabled: alpha(themeColors.black, 0.5)
+      primary: themeColors.white,
+      secondary: alpha(themeColors.white, 0.7),
+      disabled: alpha(themeColors.white, 0.5)
     },
     background: {
-      paper: themeColors.white,
+      paper: '#111827',
       default: '#000000'
     },
     action: {
-      active: themeColors.black,
+      active: themeColors.white,
       hover: alpha(themeColors.primary, 0.1),
-      selected: alpha(themeColors.black, 0.1),
-      disabled: alpha(themeColors.black, 0.5),
-      disabledBackground: alpha(themeColors.black, 0.05)
+      selected: alpha(themeColors.white, 0.1),
+      disabled: alpha(themeColors.white, 0.5),
+      disabledBackground: alpha(themeColors.white, 0.05)
     }
   },
 
@@ -251,7 +251,7 @@ export const XrplToDarkTheme = createTheme({
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
-          color: themeColors.black,
+          color: themeColors.white,
           background: alpha('#222531', 1),
           padding: '8px 16px',
           fontSize: 13
@@ -262,7 +262,7 @@ export const XrplToDarkTheme = createTheme({
     MuiDivider: {
       styleOverrides: {
         root: {
-          background: alpha(themeColors.black, 0.1),
+          background: alpha(themeColors.white, 0.1),
           border: 0,
           height: 1
         }
@@ -272,7 +272,7 @@ export const XrplToDarkTheme = createTheme({
       styleOverrides: {
         root: {
           '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: alpha(themeColors.black, 0.5)
+            borderColor: alpha(themeColors.white, 0.5)
           },
           '&.Mui-focused:hover .MuiOutlinedInput-notchedOutline': {
             borderColor: themeColors.primary

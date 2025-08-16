@@ -34,9 +34,9 @@ const Container = styled.div`
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   flex-direction: row;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: visible;
   position: relative;
   transition: all 0.3s ease;
@@ -50,22 +50,24 @@ const Container = styled.div`
       : 'rgba(0, 0, 0, 0.05)'};
   }
   
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: rgba(145, 158, 171, 0.2);
-    border-radius: 2px;
-  }
-  
   @media (max-width: 600px) {
     padding: 6px;
     gap: 6px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(145, 158, 171, 0.2);
+      border-radius: 2px;
+    }
   }
 `;
 
@@ -385,19 +387,81 @@ const SearchToolbar = memo(function SearchToolbar({
   const [mainMenuOpen, setMainMenuOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const mainMenuRef = useRef(null);
+  const dropdownMenuRef = useRef(null);
   const buttonRef = useRef(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const containerRef = useRef(null);
+  const [visibleTagCount, setVisibleTagCount] = useState(10);
+
+  // Calculate how many tags can fit without scrolling
+  useEffect(() => {
+    const calculateVisibleTags = () => {
+      if (!containerRef.current || !tags || tags.length === 0) return;
+      
+      const container = containerRef.current;
+      const containerWidth = container.offsetWidth;
+      
+      // Get all non-tag elements' total width
+      const children = Array.from(container.children);
+      let fixedElementsWidth = 0;
+      
+      children.forEach(child => {
+        // Count width of all elements except tag chips
+        const isTagChip = child.textContent && tags.some(tag => child.textContent.includes(tag));
+        if (!isTagChip && child.offsetWidth) {
+          fixedElementsWidth += child.offsetWidth + 10; // 10px for gap
+        }
+      });
+      
+      // Available width for tags (with some buffer)
+      const availableWidth = containerWidth - fixedElementsWidth - 100; // 100px for "All Tags" button
+      
+      if (availableWidth <= 0) {
+        setVisibleTagCount(3); // Minimum tags to show
+        return;
+      }
+      
+      // Estimate average tag width (roughly 80-120px per tag depending on text)
+      const avgTagWidth = 90;
+      const possibleTags = Math.floor(availableWidth / avgTagWidth);
+      
+      // Set the visible count, with min of 3 and max of all tags
+      const optimalCount = Math.max(3, Math.min(possibleTags, tags.length));
+      setVisibleTagCount(optimalCount);
+    };
+    
+    // Delay initial calculation to ensure DOM is ready
+    const timeoutId = setTimeout(calculateVisibleTags, 100);
+    
+    // Recalculate on window resize
+    const handleResize = () => {
+      calculateVisibleTags();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [tags]);
 
   // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (mainMenuRef.current && !mainMenuRef.current.contains(event.target)) {
+      // Check if click is outside both the button and the dropdown menu
+      const isOutsideButton = buttonRef.current && !buttonRef.current.contains(event.target);
+      const isOutsideMenu = dropdownMenuRef.current && !dropdownMenuRef.current.contains(event.target);
+      
+      if (isOutsideButton && isOutsideMenu) {
         setMainMenuOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    
+    if (mainMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [mainMenuOpen]);
 
   // Determine current view
   const currentView = useMemo(() => {
@@ -425,9 +489,15 @@ const SearchToolbar = memo(function SearchToolbar({
   }, [currentOrderBy, router.pathname]);
 
   const handleViewChange = useCallback((path) => {
-    router.push(path);
+    if (path.startsWith('http')) {
+      window.location.href = path;
+    } else if (path === '/') {
+      window.location.href = '/';
+    } else {
+      window.location.href = path;
+    }
     setMainMenuOpen(false);
-  }, [router]);
+  }, []);
 
   const getViewIcon = (view) => {
     switch(view) {
@@ -456,7 +526,7 @@ const SearchToolbar = memo(function SearchToolbar({
   };
 
   return (
-    <Container darkMode={darkMode}>
+    <Container darkMode={darkMode} ref={containerRef}>
       {/* View Selector */}
       <Dropdown ref={mainMenuRef}>
         <Button
@@ -568,7 +638,7 @@ const SearchToolbar = memo(function SearchToolbar({
       )}
 
       <Chip
-        onClick={() => handleViewChange('/trending')}
+        onClick={() => window.location.href = '/trending'}
         background={currentView === 'trending' 
           ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
           : 'rgba(255, 87, 34, 0.1)'}
@@ -581,7 +651,7 @@ const SearchToolbar = memo(function SearchToolbar({
       </Chip>
 
       <Chip
-        onClick={() => handleViewChange('/spotlight')}
+        onClick={() => window.location.href = '/spotlight'}
         background={currentView === 'spotlight' 
           ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
           : 'rgba(33, 150, 243, 0.1)'}
@@ -594,7 +664,7 @@ const SearchToolbar = memo(function SearchToolbar({
       </Chip>
 
       <Chip
-        onClick={() => handleViewChange('/gainers/24h')}
+        onClick={() => window.location.href = '/gainers/24h'}
         background={currentView === 'gainers' 
           ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
           : 'rgba(76, 175, 80, 0.1)'}
@@ -608,7 +678,7 @@ const SearchToolbar = memo(function SearchToolbar({
       </Chip>
 
       <Chip
-        onClick={() => handleViewChange('/new')}
+        onClick={() => window.location.href = '/new'}
         background={currentView === 'new' 
           ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
           : 'rgba(255, 152, 0, 0.1)'}
@@ -621,7 +691,7 @@ const SearchToolbar = memo(function SearchToolbar({
       </Chip>
 
       <Chip
-        onClick={() => handleViewChange('/most-viewed')}
+        onClick={() => window.location.href = '/most-viewed'}
         background={currentView === 'most-viewed' 
           ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
           : 'rgba(156, 39, 176, 0.1)'}
@@ -639,8 +709,8 @@ const SearchToolbar = memo(function SearchToolbar({
         <>
           <Divider />
           
-          {/* Display first 10 categories from tags array */}
-          {tags.slice(0, 10).map((tag, index) => {
+          {/* Display categories dynamically based on available space */}
+          {tags.slice(0, visibleTagCount).map((tag, index) => {
             const normalizedTag = tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
             const colors = ['#e91e63', '#00bcd4', '#4caf50', '#673ab7', '#ff9800', '#795548', '#607d8b', '#3f51b5', '#009688', '#ff5722'];
             const emojis = ['🏷️', '📍', '⭐', '💫', '🎯', '🔖', '🎨', '🌟', '🏆', '💡'];
@@ -649,7 +719,7 @@ const SearchToolbar = memo(function SearchToolbar({
             return (
               <TagChip
                 key={tag}
-                onClick={() => handleViewChange(`/view/${normalizedTag}`)}
+                onClick={() => window.location.href = `/view/${normalizedTag}`}
                 borderColor={`${colors[index]}4D`}
                 background={isSelected ? `${colors[index]}33` : 'transparent'}
                 color={darkMode ? '#fff' : '#333'}
@@ -682,31 +752,64 @@ const SearchToolbar = memo(function SearchToolbar({
       {/* Dropdown Menu Portal */}
       {mainMenuOpen && typeof document !== 'undefined' && createPortal(
         <DropdownMenu 
+          ref={dropdownMenuRef}
           darkMode={darkMode}
           style={{ 
             top: `${menuPosition.top}px`, 
             left: `${menuPosition.left}px` 
           }}
         >
-          <MenuItem onClick={() => handleViewChange('/')} selected={currentView === 'tokens'}>
+          <MenuItem 
+            onClick={(e) => { 
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = '/'; 
+            }} 
+            selected={currentView === 'tokens'}
+          >
             <Icon icon="material-symbols:apps" width="18" height="18" />
             All Tokens
           </MenuItem>
-          <MenuItem onClick={() => handleViewChange('/collections')} selected={currentView === 'nfts'}>
+          <MenuItem 
+            onClick={(e) => { 
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = '/collections'; 
+            }} 
+            selected={currentView === 'nfts'}
+          >
             <Icon icon="material-symbols:collections" width="18" height="18" />
             NFT Collections
           </MenuItem>
           <MenuDivider />
-          <MenuItem onClick={() => handleViewChange('/watchlist')}>
+          <MenuItem 
+            onClick={(e) => { 
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = '/watchlist'; 
+            }}
+          >
             <Icon icon="material-symbols:star" width="18" height="18" style={{ color: '#ffc107' }} />
             My Watchlist
           </MenuItem>
           <MenuDivider />
-          <MenuItem onClick={() => handleViewChange('/tokens-heatmap')}>
+          <MenuItem 
+            onClick={(e) => { 
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = '/tokens-heatmap'; 
+            }}
+          >
             <Icon icon="material-symbols:grid-view" width="18" height="18" style={{ color: '#ff5722' }} />
             Heatmap View
           </MenuItem>
-          <MenuItem onClick={() => handleViewChange('/top-traders')}>
+          <MenuItem 
+            onClick={(e) => { 
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = '/top-traders'; 
+            }}
+          >
             <Icon icon="material-symbols:leaderboard" width="18" height="18" style={{ color: '#2196f3' }} />
             Top Traders
           </MenuItem>
