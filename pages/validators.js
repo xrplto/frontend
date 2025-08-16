@@ -275,13 +275,13 @@ function ValidatorsPage() {
     return diffInSeconds < 120 ? 'online' : 'offline';
   };
 
-  // Calculate version distribution for chart
+  // Calculate version distribution for validators
   const getVersionDistribution = () => {
-    if (!nodes || nodes.length === 0) return [];
+    if (!validators || validators.length === 0) return [];
 
     const versionCounts = {};
-    nodes.forEach(node => {
-      const version = node.server_version || 'Unknown';
+    validators.forEach(v => {
+      const version = v.server_version?.version || v.server_version?.version_full || 'Unknown';
       versionCounts[version] = (versionCounts[version] || 0) + 1;
     });
 
@@ -298,7 +298,7 @@ function ValidatorsPage() {
     return sortedVersions.map(([version, count]) => ({
       name: version,
       value: count,
-      percentage: ((count / nodes.length) * 100).toFixed(1)
+      percentage: ((count / validators.length) * 100).toFixed(1)
     }));
   };
 
@@ -584,13 +584,13 @@ function ValidatorsPage() {
               )}
 
               {/* Version Distribution Chart */}
-              {nodes.length > 0 && (
+              {validators.length > 0 && (
                 <Grid container spacing={3} sx={{ mb: 4 }}>
                   <Grid item xs={12} md={6}>
                     <Card>
                       <CardContent>
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                          Server Version Distribution
+                          Validator Version Distribution
                         </Typography>
                         <ResponsiveContainer width="100%" height={350}>
                           <PieChart>
@@ -620,10 +620,10 @@ function ValidatorsPage() {
                         </ResponsiveContainer>
                         <Box sx={{ mt: 2, textAlign: 'center' }}>
                           <Typography variant="body2" color="text.secondary">
-                            Total Nodes
+                            Total Validators
                           </Typography>
                           <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                            {nodes.length}
+                            {validators.length}
                           </Typography>
                         </Box>
                       </CardContent>
