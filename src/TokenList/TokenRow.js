@@ -16,6 +16,8 @@ const StyledRow = styled.tr`
   border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   transition: background-color 0.15s ease;
   cursor: pointer;
+  margin: 0; /* Ensure no margin */
+  padding: 0; /* Ensure no padding */
   
   &:hover {
     background-color: ${props => props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
@@ -32,12 +34,13 @@ const StyledCell = styled.td`
 `;
 
 const MobileCell = styled.td`
-  padding: 16px 12px;
+  padding: 16px 8px; /* Reduced horizontal padding */
   white-space: nowrap;
   text-align: ${props => props.align || 'left'};
   font-size: 14px;
   color: ${props => props.darkMode ? '#fff' : '#000'};
   vertical-align: middle;
+  box-sizing: border-box; /* Ensure padding is included in width calculation */
 `;
 
 const TokenImage = styled.div`
@@ -122,6 +125,18 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
   const { name, user, md5, slug, pro24h, exch } = token;
   const [priceColor, setPriceColor] = useState('');
   
+  // DEBUG: Mobile row logging - enhanced
+  useEffect(() => {
+    console.log(`[Mobile Debug] Token:`, {
+      name: name?.substring(0, 20),
+      md5,
+      exch,
+      pro24h,
+      isMobileComponent: true,
+      windowWidth: window.innerWidth
+    });
+  }, [name, md5, exch, pro24h]);
+  
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value)) return darkMode ? '#66BB6A' : '#388E3C';
     return value < 0 ? (darkMode ? '#FF5252' : '#D32F2F') : (darkMode ? '#66BB6A' : '#388E3C');
@@ -136,8 +151,20 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
   return (
-    <StyledRow darkMode={darkMode} onClick={handleRowClick}>
-      <MobileCell align="left" darkMode={darkMode}>
+    <StyledRow darkMode={darkMode} onClick={handleRowClick} style={{ width: '100%' }}>
+      <MobileCell 
+        align="left" 
+        darkMode={darkMode}
+        style={{
+          border: '1px solid cyan', // DEBUG: Cyan border for mobile token cell
+          width: '60%',  // Increased from 50% to give more space to token
+          minWidth: '60%',
+          maxWidth: '60%',
+          paddingLeft: '8px',
+          paddingRight: '8px',
+          boxSizing: 'border-box'
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <TokenImage darkMode={darkMode} isMobile={true}>
             <Image
@@ -160,7 +187,17 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
         </div>
       </MobileCell>
       
-      <MobileCell align="right" darkMode={darkMode}>
+      <MobileCell 
+        align="right" 
+        darkMode={darkMode}
+        style={{
+          border: '1px solid yellow', // DEBUG: Yellow border for price cell
+          width: '20%',
+          minWidth: '20%',
+          maxWidth: '20%',
+          boxSizing: 'border-box'
+        }}
+      >
         <PriceText darkMode={darkMode} isMobile={true} priceColor={priceColor}>
           <NumberTooltip
             prepend={currencySymbols[activeFiatCurrency]}
@@ -169,7 +206,17 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
         </PriceText>
       </MobileCell>
       
-      <MobileCell align="right" darkMode={darkMode}>
+      <MobileCell 
+        align="right" 
+        darkMode={darkMode}
+        style={{
+          border: '1px solid magenta', // DEBUG: Magenta border for percent cell
+          width: '20%',
+          minWidth: '20%',
+          maxWidth: '20%',
+          boxSizing: 'border-box'
+        }}
+      >
         <PercentText color={getPercentColor(pro24h)} isMobile={true}>
           {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%` : '0.0%'}
         </PercentText>
@@ -191,7 +238,8 @@ const DesktopTokenRow = ({
   setImgError,
   sparklineUrl,
   convertedValues,
-  formatValue
+  formatValue,
+  isLoggedIn
 }) => {
   const { 
     name, user, md5, slug, pro24h, pro7d, pro1h, pro5m, exch, 
@@ -199,17 +247,15 @@ const DesktopTokenRow = ({
   } = token;
   const [priceColor, setPriceColor] = useState('');
   
-  // Debug logging
+  // DEBUG: Desktop row logging
   useEffect(() => {
-    console.log(`[TokenRow Debug] Row ${idx}:`, {
+    console.log(`[Desktop Debug] Row ${idx}:`, {
       md5,
       name: name?.substring(0, 20),
-      watchListLength: watchList?.length,
-      isInWatchlist: watchList?.includes(md5),
-      hasWatchList: !!watchList,
-      watchListType: Array.isArray(watchList) ? 'array' : typeof watchList
+      isLoggedIn,
+      watchList: watchList?.length
     });
-  }, [idx, md5, name, watchList]);
+  }, [idx, md5, name, isLoggedIn, watchList]);
   
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value)) return darkMode ? '#66BB6A' : '#388E3C';
@@ -226,30 +272,31 @@ const DesktopTokenRow = ({
 
   return (
     <StyledRow darkMode={darkMode} onClick={handleRowClick}>
-      <StyledCell 
-        align="center" 
-        darkMode={darkMode} 
-        style={{ 
-          width: '40px', 
-          minWidth: '40px',
-          maxWidth: '40px',
-          border: '1px solid red', // DEBUG: Red border for star column
-          boxSizing: 'border-box'
-        }}
-      >
-        <span 
-          onClick={handleWatchlistClick}
+      {isLoggedIn && (
+        <StyledCell 
+          align="center" 
+          darkMode={darkMode} 
           style={{ 
-            cursor: 'pointer', 
-            fontSize: '18px',
-            color: watchList.includes(md5) ? '#FFB800' : 'rgba(255, 255, 255, 0.3)',
-            display: 'inline-block',
-            width: '100%'
+            width: '40px', 
+            minWidth: '40px',
+            maxWidth: '40px',
+            border: '1px solid red' // DEBUG
           }}
         >
-          {watchList.includes(md5) ? '★' : '☆'}
-        </span>
-      </StyledCell>
+          <span 
+            onClick={handleWatchlistClick}
+            style={{ 
+              cursor: 'pointer', 
+              fontSize: '18px',
+              color: watchList.includes(md5) ? '#FFB800' : 'rgba(255, 255, 255, 0.3)',
+              display: 'inline-block',
+              width: '100%'
+            }}
+          >
+            {watchList.includes(md5) ? '★' : '☆'}
+          </span>
+        </StyledCell>
+      )}
       
       <StyledCell 
         align="center" 
@@ -257,9 +304,7 @@ const DesktopTokenRow = ({
         style={{ 
           width: '40px', 
           minWidth: '40px',
-          maxWidth: '40px',
-          border: '1px solid blue', // DEBUG: Blue border for rank column
-          boxSizing: 'border-box'
+          maxWidth: '40px'
         }}
       >
         <span style={{ fontWeight: '600', color: darkMode ? '#999' : '#666' }}>
@@ -274,8 +319,7 @@ const DesktopTokenRow = ({
           width: '250px', 
           minWidth: '250px',
           maxWidth: '250px',
-          border: '1px solid green', // DEBUG: Green border for token column
-          boxSizing: 'border-box'
+          border: '1px solid green' // DEBUG
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -396,7 +440,8 @@ const FTokenRow = React.memo(function FTokenRow({
   idx,
   darkMode,
   isMobile,
-  activeFiatCurrency
+  activeFiatCurrency,
+  isLoggedIn
 }) {
   const BASE_URL = process.env.API_URL;
   const { accountProfile } = useContext(AppContext);
@@ -465,6 +510,7 @@ const FTokenRow = React.memo(function FTokenRow({
       sparklineUrl={sparklineUrl}
       convertedValues={convertedValues}
       formatValue={formatValue}
+      isLoggedIn={isLoggedIn}
     />
   );
 }, (prevProps, nextProps) => {
@@ -477,6 +523,7 @@ const FTokenRow = React.memo(function FTokenRow({
   if (prev.pro1h !== next.pro1h) return false;
   if (prev.time !== next.time) return false;
   if (prevProps.exchRate !== nextProps.exchRate) return false;
+  if (prevProps.isLoggedIn !== nextProps.isLoggedIn) return false;
   
   if (prevProps.watchList !== nextProps.watchList) {
     const prevInWatchlist = prevProps.watchList.includes(prev.md5);

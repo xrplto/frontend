@@ -12,6 +12,7 @@ import React, { memo, lazy, Suspense } from 'react';
 import { debounce } from 'lodash';
 import { throttle } from 'lodash';
 import { useRouter } from 'next/router';
+import MobileTokenList from './MobileTokenList';
 
 // Optimized memoization for high-frequency updates
 const MemoizedTokenRow = memo(TokenRow, (prevProps, nextProps) => {
@@ -44,6 +45,8 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  padding: 0; /* Ensure no padding */
+  margin: 0; /* Ensure no margin */
 `;
 
 const TableContainer = styled.div`
@@ -51,11 +54,15 @@ const TableContainer = styled.div`
   gap: 0;
   padding-top: 2px;
   padding-bottom: 2px;
+  padding-left: ${props => props.isMobile ? '0' : '0'}; /* No left padding */
+  padding-right: ${props => props.isMobile ? '0' : '0'}; /* No right padding */
   overflow-x: auto;
   overflow-y: visible;
   width: 100%;
   min-width: 0;
   scrollbar-width: none;
+  border: 2px solid purple; /* DEBUG: Purple border for container */
+  box-sizing: border-box;
   
   &::-webkit-scrollbar {
     display: none;
@@ -67,19 +74,27 @@ const TableContainer = styled.div`
 `;
 
 const StyledTable = styled.table`
-  table-layout: auto; /* Changed from fixed to auto to handle dynamic content */
+  table-layout: ${props => props.isMobile ? 'fixed' : 'auto'}; /* Fixed layout on mobile for consistent columns */
   width: 100%;
   border-collapse: collapse;
   transition: opacity 0.1s ease;
   contain: layout;
-  min-width: 1200px; /* Ensure minimum width for all columns */
+  min-width: ${props => props.isMobile ? '100%' : '1200px'}; /* Mobile should be 100% width */
+  border: 2px solid orange; /* DEBUG: Orange border for table */
+  margin: 0;
+  padding: 0;
 `;
 
 const StyledTableBody = styled.tbody`
+  margin: 0;
+  padding: 0;
+  
   tr {
     will-change: auto;
     contain: layout style;
     transition: background-color 0.15s ease;
+    margin: 0;
+    padding: 0;
     
     &:hover {
       background-color: rgba(0, 0, 0, 0.04);
@@ -87,8 +102,8 @@ const StyledTableBody = styled.tbody`
   }
   
   td {
-    padding: 2px 6px;
-    height: 32px;
+    padding: ${props => props.isMobile ? '16px 8px' : '2px 6px'};
+    height: ${props => props.isMobile ? 'auto' : '32px'};
     contain: layout style paint;
     will-change: auto;
   }
@@ -115,7 +130,9 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 960);
+      const mobile = window.innerWidth < 960;
+      setIsMobile(mobile);
+      console.log('[DEBUG] Mobile mode:', mobile, 'Width:', window.innerWidth); // DEBUG
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -420,26 +437,19 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   useEffect(() => {
     const getWatchList = () => {
       const account = accountProfile?.account;
-      console.log('[DEBUG] Getting watchlist for account:', account); // DEBUG
       if (!account) {
-        console.log('[DEBUG] No account, setting empty watchlist'); // DEBUG
         setWatchList([]);
         return;
       }
 
-      console.log('[DEBUG] Fetching watchlist from API...'); // DEBUG
       axios
         .get(`${BASE_URL}/watchlist/get_list?account=${account}`)
         .then((res) => {
           if (res.status === 200) {
-            console.log('[DEBUG] Watchlist received:', res.data.watchlist?.length, 'items'); // DEBUG
             setWatchList(res.data.watchlist);
           }
         })
-        .catch((err) => {
-          console.log('[DEBUG] Error on getting watchlist!', err); // DEBUG
-          console.log('Error on getting watchlist!', err);
-        });
+        .catch((err) => console.log('Error on getting watchlist!', err));
     };
     getWatchList();
   }, [accountProfile, sync]);
@@ -635,42 +645,57 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         </Suspense>
       </SearchContainer>
 
-      <TableContainer ref={tableContainerRef}>
-        <StyledTable 
-          ref={tableRef}
-          style={{ opacity: isDeferring || isPending ? 0.95 : 1 }}
-        >
-          <TokenListHead
-            order={order}
-            orderBy={orderBy}
-            onRequestSort={handleRequestSort}
-            scrollLeft={scrollLeft}
-            tokens={tokens}
-            scrollTopLength={scrollTopLength}
-            darkMode={darkMode}
+      {isMobile ? (
+        <MobileTokenList
+          tokens={deferredTokens}
+          darkMode={darkMode}
+          exchRate={exchRate}
+          activeFiatCurrency={activeFiatCurrency}
+          order={order}
+          orderBy={orderBy}
+          onRequestSort={handleRequestSort}
+        />
+      ) : (
+        <TableContainer ref={tableContainerRef} isMobile={isMobile}>
+          <StyledTable 
+            ref={tableRef}
             isMobile={isMobile}
-          />
-          <StyledTableBody>
-            {deferredTokens.map((row, idx) => (
-              <MemoizedTokenRow
-                key={row.md5}
-                time={row.time}
-                idx={idx + page * rows}
-                token={row}
-                setEditToken={setEditToken}
-                setTrustToken={setTrustToken}
-                watchList={watchList}
-                onChangeWatchList={onChangeWatchList}
-                scrollLeft={scrollLeft}
-                activeFiatCurrency={activeFiatCurrency}
-                exchRate={exchRate}
-                darkMode={darkMode}
-                isMobile={isMobile}
-              />
-            ))}
-          </StyledTableBody>
-        </StyledTable>
-      </TableContainer>
+            style={{ opacity: isDeferring || isPending ? 0.95 : 1 }}
+          >
+            <TokenListHead
+              order={order}
+              orderBy={orderBy}
+              onRequestSort={handleRequestSort}
+              scrollLeft={scrollLeft}
+              tokens={tokens}
+              scrollTopLength={scrollTopLength}
+              darkMode={darkMode}
+              isMobile={isMobile}
+              isLoggedIn={!!accountProfile?.account}
+            />
+            <StyledTableBody isMobile={isMobile}>
+              {deferredTokens.map((row, idx) => (
+                <MemoizedTokenRow
+                  key={row.md5}
+                  time={row.time}
+                  idx={idx + page * rows}
+                  token={row}
+                  setEditToken={setEditToken}
+                  setTrustToken={setTrustToken}
+                  watchList={watchList}
+                  onChangeWatchList={onChangeWatchList}
+                  scrollLeft={scrollLeft}
+                  activeFiatCurrency={activeFiatCurrency}
+                  exchRate={exchRate}
+                  darkMode={darkMode}
+                  isMobile={isMobile}
+                  isLoggedIn={!!accountProfile?.account}
+                />
+              ))}
+            </StyledTableBody>
+          </StyledTable>
+        </TableContainer>
+      )}
       <ToolbarContainer isMobile={isMobile}>
         <Suspense fallback={<div style={{ height: '52px' }} />}>
           <LazyTokenListToolbar

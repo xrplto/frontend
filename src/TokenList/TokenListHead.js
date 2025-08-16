@@ -25,11 +25,14 @@ const StyledTableCell = styled.th`
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: ${props => props.darkMode ? '#999' : '#666'};
-  padding: ${props => props.isMobile ? '16px 12px' : '16px 12px'};
+  padding: ${props => props.isMobile ? '16px 8px' : '16px 12px'};  // Match mobile cell padding
   border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   white-space: nowrap;
   text-align: ${props => props.align || 'left'};
   width: ${props => props.width || 'auto'};
+  min-width: ${props => props.width || 'auto'};
+  max-width: ${props => props.width || 'auto'};
+  box-sizing: border-box;
   cursor: ${props => props.sortable ? 'pointer' : 'default'};
   position: ${props => props.sticky ? 'sticky' : 'relative'};
   left: ${props => props.left || 'unset'};
@@ -68,7 +71,7 @@ const MOBILE_TABLE_HEAD = [
     id: 'token',
     label: 'TOKEN',
     align: 'left',
-    width: '50%',
+    width: '60%',  // Match the row width
     order: true,
     sticky: false,
     mobileHide: false
@@ -77,7 +80,7 @@ const MOBILE_TABLE_HEAD = [
     id: 'exch',
     label: 'PRICE',
     align: 'right',
-    width: '25%',
+    width: '20%',  // Match the row width
     order: true,
     sticky: false,
     mobileHide: false
@@ -86,7 +89,7 @@ const MOBILE_TABLE_HEAD = [
     id: 'pro24h',
     label: '24H %',
     align: 'right',
-    width: '25%',
+    width: '20%',  // Match the row width
     order: true,
     sticky: false,
     mobileHide: false,
@@ -299,7 +302,8 @@ const TokenListHead = memo(function TokenListHead({
   tokens = [],
   scrollTopLength,
   darkMode,
-  isMobile
+  isMobile,
+  isLoggedIn = false
 }) {
   const createSortHandler = useMemo(
     () => (id, no) => (event) => {
@@ -313,11 +317,17 @@ const TokenListHead = memo(function TokenListHead({
   }, []);
 
   const TABLE_HEAD = isMobile ? MOBILE_TABLE_HEAD : DESKTOP_TABLE_HEAD;
+  
+  // Filter out star column if user is not logged in
+  const filteredTableHead = TABLE_HEAD.filter(headCell => {
+    if (headCell.id === 'star' && !isLoggedIn) return false;
+    return true;
+  });
 
   return (
     <StyledTableHead scrollTopLength={scrollTopLength} darkMode={darkMode}>
       <tr>
-        {TABLE_HEAD.map((headCell) => {
+        {filteredTableHead.map((headCell) => {
           const isSticky = headCell.sticky && (!isMobile || !headCell.mobileHide);
           
           return (
@@ -334,11 +344,16 @@ const TokenListHead = memo(function TokenListHead({
               scrollLeft={scrollLeft && headCell.id === 'token'}
               onClick={headCell.order ? createSortHandler(headCell.id, headCell.no) : undefined}
               style={{
-                // DEBUG: Add colored borders to match row columns
-                border: headCell.id === 'star' ? '1px solid red' : 
-                        headCell.id === 'rank' ? '1px solid blue' : 
-                        headCell.id === 'token' ? '1px solid green' : undefined,
-                boxSizing: 'border-box'
+                // DEBUG: Add colored borders for mobile
+                border: isMobile ? (
+                  headCell.id === 'token' ? '1px solid cyan' :
+                  headCell.id === 'exch' ? '1px solid yellow' :
+                  headCell.id === 'pro24h' ? '1px solid magenta' : undefined
+                ) : (
+                  headCell.id === 'star' ? '1px solid red' :
+                  headCell.id === 'rank' ? '1px solid blue' :
+                  headCell.id === 'token' ? '1px solid green' : undefined
+                )
               }}
             >
               {headCell.order ? (
