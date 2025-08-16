@@ -3,8 +3,6 @@ import { useState, useEffect, useContext, memo, useMemo, useCallback } from 'rea
 import React from 'react';
 import dynamic from 'next/dynamic';
 import styled from '@emotion/styled';
-import { Icon } from '@iconify/react';
-import chartLineUp from '@iconify/icons-ph/chart-line-up';
 
 const Image = dynamic(() => import('next/image'));
 
@@ -13,7 +11,6 @@ import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatNumber'
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
 import LoadChart from 'src/components/LoadChart';
-import { useRouter } from 'next/router';
 
 const StyledRow = styled.tr`
   border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
@@ -26,24 +23,26 @@ const StyledRow = styled.tr`
 `;
 
 const StyledCell = styled.td`
-  padding: ${props => props.isMobile ? '8px 4px' : '12px 8px'};
+  padding: 12px 8px;
   white-space: nowrap;
   text-align: ${props => props.align || 'left'};
-  font-size: ${props => props.isMobile ? '11px' : '13px'};
+  font-size: 13px;
   color: ${props => props.darkMode ? '#fff' : '#000'};
   vertical-align: middle;
-  
-  ${props => props.sticky && `
-    position: sticky;
-    left: ${props.left}px;
-    background: ${props.darkMode ? '#121212' : '#fff'};
-    z-index: 1;
-  `}
+`;
+
+const MobileCell = styled.td`
+  padding: 16px 12px;
+  white-space: nowrap;
+  text-align: ${props => props.align || 'left'};
+  font-size: 14px;
+  color: ${props => props.darkMode ? '#fff' : '#000'};
+  vertical-align: middle;
 `;
 
 const TokenImage = styled.div`
-  width: ${props => props.isMobile ? '24px' : '32px'};
-  height: ${props => props.isMobile ? '24px' : '32px'};
+  width: ${props => props.isMobile ? '36px' : '32px'};
+  height: ${props => props.isMobile ? '36px' : '32px'};
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
@@ -52,32 +51,41 @@ const TokenImage = styled.div`
 
 const TokenName = styled.span`
   font-weight: 600;
-  font-size: ${props => props.isMobile ? '12px' : '14px'};
+  font-size: ${props => props.isMobile ? '15px' : '14px'};
   color: ${props => props.darkMode ? '#fff' : '#000'};
-  max-width: ${props => props.isMobile ? '80px' : '150px'};
+  max-width: ${props => props.isMobile ? '160px' : '150px'};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: block;
+  line-height: 1.4;
 `;
 
 const UserName = styled.span`
-  font-size: ${props => props.isMobile ? '9px' : '10px'};
+  font-size: ${props => props.isMobile ? '13px' : '10px'};
   color: ${props => props.darkMode ? '#6b7280' : '#9ca3af'};
-  opacity: 0.6;
+  opacity: 0.8;
   font-weight: 400;
+  display: block;
+  max-width: ${props => props.isMobile ? '160px' : '150px'};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+  margin-top: 3px;
 `;
 
 const PriceText = styled.span`
   font-weight: 600;
-  font-size: ${props => props.isMobile ? '12px' : '14px'};
+  font-size: ${props => props.isMobile ? '15px' : '14px'};
   color: ${props => props.priceColor || (props.darkMode ? '#fff' : '#000')};
   transition: color 0.3s ease;
 `;
 
 const PercentText = styled.span`
-  font-weight: 500;
+  font-weight: 600;
   color: ${props => props.color};
-  text-shadow: ${props => props.shadow || 'none'};
+  font-size: ${props => props.isMobile ? '14px' : '13px'};
 `;
 
 const truncate = (str, n) => {
@@ -110,6 +118,229 @@ const formatTimeAgo = (dateValue, fallbackValue) => {
   return `${days}d`;
 };
 
+const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleRowClick, imgError, setImgError }) => {
+  const { name, user, md5, slug, pro24h, exch } = token;
+  const [priceColor, setPriceColor] = useState('');
+  
+  const getPercentColor = (value) => {
+    if (value === undefined || value === null || isNaN(value)) return darkMode ? '#66BB6A' : '#388E3C';
+    return value < 0 ? (darkMode ? '#FF5252' : '#D32F2F') : (darkMode ? '#66BB6A' : '#388E3C');
+  };
+
+  useEffect(() => {
+    setPriceColor(token.bearbull === -1 ? '#FF5252' : token.bearbull === 1 ? '#66BB6A' : '');
+    const timer = setTimeout(() => setPriceColor(''), 1500);
+    return () => clearTimeout(timer);
+  }, [token.bearbull]);
+
+  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+
+  return (
+    <StyledRow darkMode={darkMode} onClick={handleRowClick}>
+      <MobileCell align="left" darkMode={darkMode}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <TokenImage darkMode={darkMode} isMobile={true}>
+            <Image
+              src={imgError ? '/static/alt.webp' : imgUrl}
+              alt={name}
+              width={36}
+              height={36}
+              onError={() => setImgError(true)}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </TokenImage>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <TokenName darkMode={darkMode} isMobile={true} title={name}>
+              {truncate(name, 20)}
+            </TokenName>
+            <UserName darkMode={darkMode} isMobile={true} title={user}>
+              {truncate(user, 20)}
+            </UserName>
+          </div>
+        </div>
+      </MobileCell>
+      
+      <MobileCell align="right" darkMode={darkMode}>
+        <PriceText darkMode={darkMode} isMobile={true} priceColor={priceColor}>
+          <NumberTooltip
+            prepend={currencySymbols[activeFiatCurrency]}
+            number={fNumberWithCurreny(exch, exchRate)}
+          />
+        </PriceText>
+      </MobileCell>
+      
+      <MobileCell align="right" darkMode={darkMode}>
+        <PercentText color={getPercentColor(pro24h)} isMobile={true}>
+          {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%` : '0.0%'}
+        </PercentText>
+      </MobileCell>
+    </StyledRow>
+  );
+};
+
+const DesktopTokenRow = ({ 
+  token, 
+  darkMode, 
+  exchRate, 
+  activeFiatCurrency, 
+  handleRowClick, 
+  handleWatchlistClick,
+  watchList,
+  idx,
+  imgError,
+  setImgError,
+  sparklineUrl,
+  convertedValues,
+  formatValue
+}) => {
+  const { 
+    name, user, md5, slug, pro24h, pro7d, pro1h, pro5m, exch, 
+    vol24htx, tvl, holders, amount, dateon, date 
+  } = token;
+  const [priceColor, setPriceColor] = useState('');
+  
+  const getPercentColor = (value) => {
+    if (value === undefined || value === null || isNaN(value)) return darkMode ? '#66BB6A' : '#388E3C';
+    return value < 0 ? (darkMode ? '#FF5252' : '#D32F2F') : (darkMode ? '#66BB6A' : '#388E3C');
+  };
+
+  useEffect(() => {
+    setPriceColor(token.bearbull === -1 ? '#FF5252' : token.bearbull === 1 ? '#66BB6A' : '');
+    const timer = setTimeout(() => setPriceColor(''), 1500);
+    return () => clearTimeout(timer);
+  }, [token.bearbull]);
+
+  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+
+  return (
+    <StyledRow darkMode={darkMode} onClick={handleRowClick}>
+      <StyledCell align="center" darkMode={darkMode}>
+        <span 
+          onClick={handleWatchlistClick}
+          style={{ 
+            cursor: 'pointer', 
+            fontSize: '18px',
+            color: watchList.includes(md5) ? '#FFB800' : 'rgba(255, 255, 255, 0.3)'
+          }}
+        >
+          {watchList.includes(md5) ? '★' : '☆'}
+        </span>
+      </StyledCell>
+      
+      <StyledCell align="center" darkMode={darkMode}>
+        <span style={{ fontWeight: '600', color: darkMode ? '#999' : '#666' }}>
+          {idx + 1}
+        </span>
+      </StyledCell>
+      
+      <StyledCell align="left" darkMode={darkMode}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <TokenImage darkMode={darkMode}>
+            <Image
+              src={imgError ? '/static/alt.webp' : imgUrl}
+              alt={name}
+              width={32}
+              height={32}
+              onError={() => setImgError(true)}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </TokenImage>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <TokenName darkMode={darkMode} title={name}>
+              {truncate(name, 20)}
+            </TokenName>
+            <UserName darkMode={darkMode} title={user}>
+              {truncate(user, 12)}
+            </UserName>
+          </div>
+        </div>
+      </StyledCell>
+      
+      <StyledCell align="right" darkMode={darkMode}>
+        <PriceText darkMode={darkMode} priceColor={priceColor}>
+          <NumberTooltip
+            prepend={currencySymbols[activeFiatCurrency]}
+            number={fNumberWithCurreny(exch, exchRate)}
+          />
+        </PriceText>
+      </StyledCell>
+      
+      <StyledCell align="right" darkMode={darkMode}>
+        <PercentText color={getPercentColor(pro5m)}>
+          {pro5m !== undefined && pro5m !== null && !isNaN(pro5m) ? `${pro5m.toFixed(2)}%` : '0.00%'}
+        </PercentText>
+      </StyledCell>
+      
+      <StyledCell align="right" darkMode={darkMode}>
+        <PercentText color={getPercentColor(pro1h)}>
+          {pro1h !== undefined && pro1h !== null && !isNaN(pro1h) ? `${pro1h.toFixed(2)}%` : '0.00%'}
+        </PercentText>
+      </StyledCell>
+      
+      <StyledCell align="right" darkMode={darkMode}>
+        <PercentText color={getPercentColor(pro24h)}>
+          {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%` : '0.0%'}
+        </PercentText>
+      </StyledCell>
+      
+      <StyledCell align="right" darkMode={darkMode}>
+        <PercentText color={getPercentColor(pro7d)}>
+          {pro7d !== undefined && pro7d !== null && !isNaN(pro7d) ? `${pro7d.toFixed(2)}%` : '0.00%'}
+        </PercentText>
+      </StyledCell>
+      
+      <StyledCell align="right" darkMode={darkMode}>
+        {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.volume)}
+      </StyledCell>
+      
+      <StyledCell align="right" darkMode={darkMode}>
+        <span style={{ fontSize: '11px', color: darkMode ? '#999' : '#666' }}>
+          {formatTimeAgo(dateon, date)}
+        </span>
+      </StyledCell>
+      
+      <StyledCell align="right" darkMode={darkMode}>
+        {formatValue(vol24htx, 'int')}
+      </StyledCell>
+      
+      <StyledCell align="right" darkMode={darkMode}>
+        {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.tvl)}
+      </StyledCell>
+      
+      <StyledCell align="right" darkMode={darkMode}>
+        <span style={{ fontWeight: '600' }}>
+          {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.marketCap)}
+        </span>
+      </StyledCell>
+      
+      <StyledCell align="right" darkMode={darkMode}>
+        {formatValue(holders, 'int')}
+      </StyledCell>
+      
+      <StyledCell align="right" darkMode={darkMode}>
+        {formatValue(amount)} {truncate(name, 6)}
+      </StyledCell>
+      
+      <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px' }}>
+        {sparklineUrl ? (
+          <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
+            <LoadChart
+              url={sparklineUrl}
+              style={{ width: '100%', height: '100%' }}
+              animation={false}
+              showGradient={false}
+              lineWidth={1.5}
+              opts={{ renderer: 'svg', width: 260, height: 60 }}
+            />
+          </div>
+        ) : (
+          <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
+        )}
+      </StyledCell>
+    </StyledRow>
+  );
+};
+
 const FTokenRow = React.memo(function FTokenRow({
   time,
   token,
@@ -127,7 +358,6 @@ const FTokenRow = React.memo(function FTokenRow({
   const { accountProfile } = useContext(AppContext);
   const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
   
-  const [priceColor, setPriceColor] = useState('');
   const [imgError, setImgError] = useState(false);
   
   const {
@@ -157,167 +387,41 @@ const FTokenRow = React.memo(function FTokenRow({
     return type === 'int' ? fIntNumber(val) : fNumber(val);
   };
   
-  const getPercentColor = (value) => {
-    if (value === undefined || value === null || isNaN(value)) return darkMode ? '#66BB6A' : '#388E3C';
-    return value < 0 
-      ? (darkMode ? '#FF5252' : '#D32F2F')
-      : (darkMode ? '#66BB6A' : '#388E3C');
-  };
-  
-  useEffect(() => {
-    setPriceColor(token.bearbull === -1 ? '#FF5252' : token.bearbull === 1 ? '#66BB6A' : '');
-    const timer = setTimeout(() => setPriceColor(''), 1500);
-    return () => clearTimeout(timer);
-  }, [time, token.bearbull]);
-  
-  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
   const sparklineUrl = useMemo(() => {
     if (!BASE_URL || !md5 || isMobile) return null;
     return `${BASE_URL}/sparkline/${md5}?period=24h&lightweight=true&maxPoints=20`;
   }, [BASE_URL, md5, isMobile]);
   
+  if (isMobile) {
+    return (
+      <MobileTokenRow
+        token={token}
+        darkMode={darkMode}
+        exchRate={exchRate}
+        activeFiatCurrency={activeFiatCurrency}
+        handleRowClick={handleRowClick}
+        imgError={imgError}
+        setImgError={setImgError}
+      />
+    );
+  }
+
   return (
-    <StyledRow darkMode={darkMode} onClick={handleRowClick}>
-      <StyledCell align="center" darkMode={darkMode} isMobile={isMobile}>
-        <span 
-          onClick={handleWatchlistClick}
-          style={{ 
-            cursor: 'pointer', 
-            fontSize: isMobile ? '14px' : '18px',
-            color: watchList.includes(md5) ? '#FFB800' : 'rgba(255, 255, 255, 0.3)'
-          }}
-        >
-          {watchList.includes(md5) ? '★' : '☆'}
-        </span>
-      </StyledCell>
-      
-      <StyledCell align="center" darkMode={darkMode} isMobile={isMobile}>
-        <span style={{ fontWeight: '600', color: darkMode ? '#999' : '#666' }}>
-          {idx + 1}
-        </span>
-      </StyledCell>
-      
-      <StyledCell align="left" darkMode={darkMode} isMobile={isMobile}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <TokenImage darkMode={darkMode} isMobile={isMobile}>
-            <Image
-              src={imgError ? '/static/alt.webp' : imgUrl}
-              alt={name}
-              width={isMobile ? 24 : 32}
-              height={isMobile ? 24 : 32}
-              onError={() => setImgError(true)}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </TokenImage>
-          <div>
-            <TokenName darkMode={darkMode} isMobile={isMobile} title={name} style={{ display: 'block' }}>
-              {name}
-            </TokenName>
-            <UserName darkMode={darkMode} isMobile={isMobile} title={user} style={{ display: 'block' }}>
-              {truncate(user, 12)}
-            </UserName>
-          </div>
-        </div>
-      </StyledCell>
-      
-      <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-        <PriceText darkMode={darkMode} isMobile={isMobile} priceColor={priceColor}>
-          <NumberTooltip
-            prepend={currencySymbols[activeFiatCurrency]}
-            number={fNumberWithCurreny(exch, exchRate)}
-          />
-        </PriceText>
-      </StyledCell>
-      
-      {!isMobile && (
-        <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-          <PercentText color={getPercentColor(pro5m)}>
-            {pro5m !== undefined && pro5m !== null && !isNaN(pro5m) ? `${pro5m.toFixed(2)}%` : '0.00%'}
-          </PercentText>
-        </StyledCell>
-      )}
-      
-      {!isMobile && (
-        <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-          <PercentText color={getPercentColor(pro1h)}>
-            {pro1h !== undefined && pro1h !== null && !isNaN(pro1h) ? `${pro1h.toFixed(2)}%` : '0.00%'}
-          </PercentText>
-        </StyledCell>
-      )}
-      
-      <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-        <PercentText color={getPercentColor(pro24h)}>
-          {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${pro24h.toFixed(isMobile ? 1 : 2)}%` : '0.00%'}
-        </PercentText>
-      </StyledCell>
-      
-      {isMobile && (
-        <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-          <span style={{ fontWeight: '600' }}>
-            {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.marketCap)}
-          </span>
-        </StyledCell>
-      )}
-      
-      {!isMobile && (
-        <>
-          <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-            <PercentText color={getPercentColor(pro7d)}>
-              {pro7d !== undefined && pro7d !== null && !isNaN(pro7d) ? `${pro7d.toFixed(2)}%` : '0.00%'}
-            </PercentText>
-          </StyledCell>
-          
-          <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-            {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.volume)}
-          </StyledCell>
-          
-          <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-            <span style={{ fontSize: '11px', color: darkMode ? '#999' : '#666' }}>
-              {formatTimeAgo(dateon, date)}
-            </span>
-          </StyledCell>
-          
-          <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-            {formatValue(vol24htx, 'int')}
-          </StyledCell>
-          
-          <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-            {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.tvl)}
-          </StyledCell>
-          
-          <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-            <span style={{ fontWeight: '600' }}>
-              {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.marketCap)}
-            </span>
-          </StyledCell>
-          
-          <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-            {formatValue(holders, 'int')}
-          </StyledCell>
-          
-          <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
-            {formatValue(amount)} {truncate(name, 6)}
-          </StyledCell>
-          
-          <StyledCell align="center" darkMode={darkMode} isMobile={isMobile} style={{ minWidth: '280px' }}>
-            {sparklineUrl ? (
-              <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
-                <LoadChart
-                  url={sparklineUrl}
-                  style={{ width: '100%', height: '100%' }}
-                  animation={false}
-                  showGradient={false}
-                  lineWidth={1.5}
-                  opts={{ renderer: 'svg', width: 260, height: 60 }}
-                />
-              </div>
-            ) : (
-              <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
-            )}
-          </StyledCell>
-        </>
-      )}
-    </StyledRow>
+    <DesktopTokenRow
+      token={token}
+      darkMode={darkMode}
+      exchRate={exchRate}
+      activeFiatCurrency={activeFiatCurrency}
+      handleRowClick={handleRowClick}
+      handleWatchlistClick={handleWatchlistClick}
+      watchList={watchList}
+      idx={idx}
+      imgError={imgError}
+      setImgError={setImgError}
+      sparklineUrl={sparklineUrl}
+      convertedValues={convertedValues}
+      formatValue={formatValue}
+    />
   );
 }, (prevProps, nextProps) => {
   const prev = prevProps.token;

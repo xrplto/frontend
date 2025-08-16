@@ -25,7 +25,7 @@ const StyledTableCell = styled.th`
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: ${props => props.darkMode ? '#999' : '#666'};
-  padding: 16px 12px;
+  padding: ${props => props.isMobile ? '16px 12px' : '16px 12px'};
   border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   white-space: nowrap;
   text-align: ${props => props.align || 'left'};
@@ -63,7 +63,38 @@ const SortIndicator = styled.span`
   transform: ${props => props.direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)'};
 `;
 
-const TABLE_HEAD = [
+const MOBILE_TABLE_HEAD = [
+  {
+    id: 'token',
+    label: 'TOKEN',
+    align: 'left',
+    width: '50%',
+    order: true,
+    sticky: false,
+    mobileHide: false
+  },
+  {
+    id: 'exch',
+    label: 'PRICE',
+    align: 'right',
+    width: '25%',
+    order: true,
+    sticky: false,
+    mobileHide: false
+  },
+  {
+    id: 'pro24h',
+    label: '24H %',
+    align: 'right',
+    width: '25%',
+    order: true,
+    sticky: false,
+    mobileHide: false,
+    tooltip: '24 hour change'
+  }
+];
+
+const DESKTOP_TABLE_HEAD = [
   { 
     id: 'star', 
     label: '', 
@@ -71,16 +102,16 @@ const TABLE_HEAD = [
     width: '40px', 
     order: false,
     sticky: false,
-    mobileHide: false
+    mobileHide: true
   },
   {
     id: 'rank',
     label: '#',
     align: 'center',
-    width: '50px',
+    width: '40px',
     order: false,
     sticky: false,
-    mobileHide: false
+    mobileHide: true
   },
   {
     id: 'token',
@@ -129,17 +160,6 @@ const TABLE_HEAD = [
     sticky: false,
     mobileHide: false,
     tooltip: '24 hour change'
-  },
-  {
-    id: 'marketcapMobile',
-    label: 'MCAP',
-    align: 'right',
-    width: '8%',
-    order: true,
-    sticky: false,
-    mobileHide: false,
-    mobileOnly: true,
-    tooltip: 'Market cap'
   },
   {
     id: 'pro7d',
@@ -292,17 +312,12 @@ const TokenListHead = memo(function TokenListHead({
     return 'unset'; // No sticky columns anymore
   }, []);
 
+  const TABLE_HEAD = isMobile ? MOBILE_TABLE_HEAD : DESKTOP_TABLE_HEAD;
+
   return (
     <StyledTableHead scrollTopLength={scrollTopLength} darkMode={darkMode}>
       <tr>
-        {TABLE_HEAD.filter(column => {
-          if (!column.id) return true;
-          if (isMobile) {
-            return !column.mobileHide;
-          } else {
-            return !column.mobileOnly;
-          }
-        }).map((headCell) => {
+        {TABLE_HEAD.map((headCell) => {
           const isSticky = headCell.sticky && (!isMobile || !headCell.mobileHide);
           
           return (
@@ -311,6 +326,7 @@ const TokenListHead = memo(function TokenListHead({
               align={headCell.align}
               width={headCell.width}
               darkMode={darkMode}
+              isMobile={isMobile}
               sortable={headCell.order}
               sticky={isSticky}
               left={isSticky ? getStickyLeft(headCell.id) : 'unset'}
