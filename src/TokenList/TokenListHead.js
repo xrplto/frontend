@@ -343,18 +343,6 @@ const TokenListHead = memo(function TokenListHead({
               stickyThird={headCell.id === 'token'}
               scrollLeft={scrollLeft && headCell.id === 'token'}
               onClick={headCell.order ? createSortHandler(headCell.id, headCell.no) : undefined}
-              style={{
-                // DEBUG: Add colored borders for mobile
-                border: isMobile ? (
-                  headCell.id === 'token' ? '1px solid cyan' :
-                  headCell.id === 'exch' ? '1px solid yellow' :
-                  headCell.id === 'pro24h' ? '1px solid magenta' : undefined
-                ) : (
-                  headCell.id === 'star' ? '1px solid red' :
-                  headCell.id === 'rank' ? '1px solid blue' :
-                  headCell.id === 'token' ? '1px solid green' : undefined
-                )
-              }}
             >
               {headCell.order ? (
                 headCell.tooltip ? (

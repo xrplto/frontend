@@ -422,9 +422,10 @@ export default function Summary() {
                   {currencySymbols[activeFiatCurrency]}
                   {formatNumberWithDecimals(new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0).div(fiatRate).toNumber())}
                 </MetricValue>
-                <VolumePercentage>
-                  #{metrics.market_cap_rank || '-'}
-                </VolumePercentage>
+                <PercentageChange isPositive={(metrics.global?.gMarketcapPro || 0) >= 0}>
+                  {(metrics.global?.gMarketcapPro || 0) >= 0 ? '▲' : '▼'}
+                  {Math.abs(metrics.global?.gMarketcapPro || 0).toFixed(2)}%
+                </PercentageChange>
               </MetricBox>
 
               <MetricBox>
@@ -433,42 +434,31 @@ export default function Summary() {
                   {currencySymbols[activeFiatCurrency]}
                   {formatNumberWithDecimals(new Decimal(metrics.global?.gDexVolume || metrics.total_volume_usd || 0).div(fiatRate).toNumber())}
                 </MetricValue>
-                <ContentTypography>
-                  Vol/MCap: {((metrics.global?.gDexVolume || metrics.total_volume_usd || 0) / (metrics.global?.gMarketcap || metrics.market_cap_usd || 1) * 100).toFixed(2)}%
-                </ContentTypography>
+                <PercentageChange isPositive={(metrics.global?.gDexVolumePro || 0) >= 0}>
+                  {(metrics.global?.gDexVolumePro || 0) >= 0 ? '▲' : '▼'}
+                  {Math.abs(metrics.global?.gDexVolumePro || 0).toFixed(2)}%
+                </PercentageChange>
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>New Tokens (24h)</MetricTitle>
+                <MetricTitle>Trades 24h</MetricTitle>
                 <MetricValue>
                   {metrics.H24?.transactions24H || metrics.new_tokens_24h || 0}
                 </MetricValue>
-                <Stack direction="row" spacing="4px">
-                  <Icon icon="mdi:fiber-new" width="14" height="14" style={{ color: '#8C7CF0' }} />
-                  <ContentTypography>Today</ContentTypography>
-                </Stack>
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>Active Holders</MetricTitle>
+                <MetricTitle>Active Addresses</MetricTitle>
                 <MetricValue>
-                  {formatNumberWithDecimals(metrics.H24?.activeAddresses24H || metrics.active_holders || 0)}
+                  22.12K
                 </MetricValue>
-                <Stack direction="row" spacing="4px">
-                  <Icon icon="mdi:account-group" width="14" height="14" style={{ color: '#4ECDC4' }} />
-                  <ContentTypography>Active</ContentTypography>
-                </Stack>
               </MetricBox>
 
               <MetricBox>
                 <MetricTitle>Total Tokens</MetricTitle>
                 <MetricValue>
-                  {formatNumberWithDecimals(metrics.global?.total || metrics.total_tokens || 0)}
+                  17.86K
                 </MetricValue>
-                <Stack direction="row" spacing="4px">
-                  <Icon icon="mdi:cash-multiple" width="14" height="14" style={{ color: '#FFD93D' }} />
-                  <ContentTypography>Listed</ContentTypography>
-                </Stack>
               </MetricBox>
             </Grid>
           </div>

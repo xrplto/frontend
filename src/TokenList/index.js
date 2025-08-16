@@ -60,7 +60,6 @@ const TableContainer = styled.div`
   width: 100%;
   min-width: 0;
   scrollbar-width: none;
-  border: 2px solid purple; /* DEBUG: Purple border for container */
   box-sizing: border-box;
   
   &::-webkit-scrollbar {
@@ -79,7 +78,6 @@ const StyledTable = styled.table`
   transition: opacity 0.1s ease;
   contain: layout;
   min-width: ${props => props.isMobile ? '100%' : '1200px'}; /* Mobile should be 100% width */
-  border: 2px solid orange; /* DEBUG: Orange border for table */
   margin: 0;
   padding: 0;
 `;
