@@ -21,19 +21,33 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 4px;
-  gap: 8px;
-  border-radius: 8px;
-  border: 1px solid rgba(145, 158, 171, 0.1);
+  padding: 8px;
+  gap: 10px;
+  border-radius: 12px;
+  border: 1px solid ${props => props.darkMode 
+    ? 'rgba(255, 255, 255, 0.03)'
+    : 'rgba(0, 0, 0, 0.03)'};
   background: ${props => props.darkMode 
-    ? 'rgba(33, 43, 54, 0.15)'
-    : 'rgba(255, 255, 255, 0.25)'};
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    ? 'rgba(255, 255, 255, 0.01)'
+    : 'rgba(0, 0, 0, 0.01)'};
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
   flex-wrap: nowrap;
   flex-direction: row;
   overflow-x: auto;
+  overflow-y: visible;
+  position: relative;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: ${props => props.darkMode 
+      ? 'rgba(255, 255, 255, 0.02)'
+      : 'rgba(0, 0, 0, 0.02)'};
+    border-color: ${props => props.darkMode 
+      ? 'rgba(255, 255, 255, 0.05)'
+      : 'rgba(0, 0, 0, 0.05)'};
+  }
   
   &::-webkit-scrollbar {
     height: 4px;
@@ -44,13 +58,13 @@ const Container = styled.div`
   }
   
   &::-webkit-scrollbar-thumb {
-    background: rgba(145, 158, 171, 0.3);
+    background: rgba(145, 158, 171, 0.2);
     border-radius: 2px;
   }
   
   @media (max-width: 600px) {
-    padding: 4px;
-    gap: 4px;
+    padding: 6px;
+    gap: 6px;
   }
 `;
 
@@ -70,32 +84,32 @@ const Button = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 4px 8px;
-  border: ${props => props.variant === 'outlined' ? '1px solid rgba(145, 158, 171, 0.32)' : 'none'};
-  border-radius: 6px;
+  gap: 4px;
+  padding: 6px 12px;
+  border: ${props => props.variant === 'outlined' ? '1px solid rgba(145, 158, 171, 0.15)' : 'none'};
+  border-radius: 8px;
   background: ${props => {
     if (props.variant === 'contained') {
       return props.theme?.palette?.mode === 'dark'
-        ? 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)'
-        : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        ? 'rgba(255, 255, 255, 0.08)'
+        : 'rgba(0, 0, 0, 0.06)';
     }
-    if (props.selected) return 'rgba(33, 150, 243, 0.12)';
+    if (props.selected) return 'rgba(33, 150, 243, 0.08)';
     return 'transparent';
   }};
   color: ${props => {
-    if (props.variant === 'contained') return 'white';
+    if (props.variant === 'contained') return props.theme?.palette?.mode === 'dark' ? '#fff' : '#333';
     if (props.selected) return '#2196f3';
     return 'inherit';
   }};
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: ${props => props.variant === 'contained' ? 600 : 500};
   text-transform: none;
   font-family: inherit;
-  height: 32px;
+  height: 36px;
   min-width: ${props => props.minWidth || 'auto'};
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   white-space: nowrap;
   flex-shrink: 0;
   
@@ -103,12 +117,13 @@ const Button = styled.button`
     background: ${props => {
       if (props.variant === 'contained') {
         return props.theme?.palette?.mode === 'dark'
-          ? 'linear-gradient(135deg, #1a3568 0%, #26488e 100%)'
-          : 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)';
+          ? 'rgba(255, 255, 255, 0.12)'
+          : 'rgba(0, 0, 0, 0.08)';
       }
-      return 'rgba(33, 150, 243, 0.08)';
+      return 'rgba(33, 150, 243, 0.06)';
     }};
-    box-shadow: ${props => props.variant === 'contained' ? '0 4px 8px rgba(0, 0, 0, 0.2)' : 'none'};
+    transform: translateY(-1px);
+    box-shadow: ${props => props.variant === 'contained' ? '0 2px 6px rgba(0, 0, 0, 0.08)' : 'none'};
   }
   
   &:disabled {
@@ -315,16 +330,15 @@ const Dropdown = styled.div`
 `;
 
 const DropdownMenu = styled.div`
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
+  position: fixed;
+  margin-top: 36px;
   background: ${props => props.darkMode ? '#1a1a1a' : 'white'};
   border: 1px solid rgba(145, 158, 171, 0.12);
   border-radius: 8px;
   box-shadow: 0 8px 16px rgba(145, 158, 171, 0.24);
   min-width: 200px;
   z-index: 9999;
-  overflow: hidden;
+  overflow: visible;
 `;
 
 const MenuItem = styled.button`
