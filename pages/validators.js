@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -29,6 +29,10 @@ import StorageIcon from '@mui/icons-material/Storage';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import RouterIcon from '@mui/icons-material/Router';
 import DnsIcon from '@mui/icons-material/Dns';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import IconButton from '@mui/material/IconButton';
+import Collapse from '@mui/material/Collapse';
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -101,10 +105,12 @@ function ValidatorsPage() {
   const [nodes, setNodes] = useState([]);
   const [serverVersions, setServerVersions] = useState([]);
   const [amendments, setAmendments] = useState([]);
+  const [amendmentVotes, setAmendmentVotes] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tabValue, setTabValue] = useState(0);
   const [amendmentFilter, setAmendmentFilter] = useState('all'); // all, enabled, pending, voting
+  const [expandedAmendment, setExpandedAmendment] = useState(null);
   const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
@@ -138,7 +144,47 @@ function ValidatorsPage() {
                                amendmentsData?.amendments ? amendmentsData.amendments : 
                                Object.values(amendmentsData || {});
         setAmendments(amendmentsList);
-        console.log('Amendments data:', amendmentsList); // Debug log
+        
+        // Extract actual voting data from validators
+        const votesData = {};
+        
+        // Debug: Check the structure of validator votes
+        if (validatorsData && validatorsData.length > 0) {
+          console.log('Sample validator data:', validatorsData[0]);
+          console.log('Sample votes structure:', validatorsData[0].votes);
+        }
+        
+        for (const amendment of amendmentsList.filter(a => !a.enabled && a.count > 0)) {
+          // Find validators that voted for this amendment
+          const supportingValidators = validatorsData
+            .filter(v => {
+              // Check if validator has votes and amendments array
+              if (v.votes && Array.isArray(v.votes.amendments)) {
+                return v.votes.amendments.includes(amendment.amendment_id);
+              }
+              // Also check if votes is an object with amendments property
+              if (v.votes && v.votes.amendments && Array.isArray(v.votes.amendments)) {
+                return v.votes.amendments.includes(amendment.amendment_id);
+              }
+              return false;
+            })
+            .map(v => ({
+              validator: v.master_key,
+              domain: v.domain || null,
+              domain_legacy: v.domain_legacy || null,
+              verified: v.meta?.verified || false
+            }));
+          
+          votesData[amendment.amendment_id] = supportingValidators;
+          
+          // If we found supporting validators, log them
+          if (supportingValidators.length > 0) {
+            console.log(`Found ${supportingValidators.length} validators supporting ${amendment.name}`);
+          }
+        }
+        
+        setAmendmentVotes(votesData);
+        console.log('All amendment votes:', votesData);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -931,12 +977,23 @@ function ValidatorsPage() {
                                 return bPercent - aPercent;
                               })
                               .map((amendment, index) => (
-                              <TableRow key={index} hover>
-                                <TableCell>
-                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                    {amendment.name}
-                                  </Typography>
-                                </TableCell>
+                              <React.Fragment key={index}>
+                                <TableRow hover>
+                                  <TableCell>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      {!amendment.enabled && amendment.count > 0 && (
+                                        <IconButton
+                                          size="small"
+                                          onClick={() => setExpandedAmendment(expandedAmendment === amendment.amendment_id ? null : amendment.amendment_id)}
+                                        >
+                                          {expandedAmendment === amendment.amendment_id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                                        </IconButton>
+                                      )}
+                                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                        {amendment.name}
+                                      </Typography>
+                                    </Box>
+                                  </TableCell>
                                 <TableCell>
                                   <Typography
                                     variant="body2"
@@ -961,13 +1018,20 @@ function ValidatorsPage() {
                                   </Box>
                                 </TableCell>
                                 <TableCell>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Typography variant="body2">
-                                      {amendment.count}/{amendment.validations}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                      (threshold: {amendment.threshold})
-                                    </Typography>
+                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      <Typography variant="body2">
+                                        {amendment.count}/{amendment.validations}
+                                      </Typography>
+                                      <Typography variant="body2" color="text.secondary">
+                                        (threshold: {amendment.threshold})
+                                      </Typography>
+                                    </Box>
+                                    {!amendment.enabled && amendment.count > 0 && (
+                                      <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }} onClick={() => setExpandedAmendment(expandedAmendment === amendment.amendment_id ? null : amendment.amendment_id)}>
+                                        {expandedAmendment === amendment.amendment_id ? 'Hide' : 'Show'} voters
+                                      </Typography>
+                                    )}
                                   </Box>
                                 </TableCell>
                                 <TableCell>
@@ -995,7 +1059,72 @@ function ValidatorsPage() {
                                     <Typography variant="body2" color="text.secondary">-</Typography>
                                   )}
                                 </TableCell>
-                              </TableRow>
+                                </TableRow>
+                                {expandedAmendment === amendment.amendment_id && (
+                                  <TableRow>
+                                    <TableCell colSpan={7} sx={{ py: 0 }}>
+                                      <Collapse in={expandedAmendment === amendment.amendment_id} timeout="auto" unmountOnExit>
+                                        <Box sx={{ p: 2, bgcolor: 'background.default' }}>
+                                          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                                            Supporting Validators ({amendmentVotes[amendment.amendment_id]?.length || 0} of {amendment.count})
+                                          </Typography>
+                                          {amendmentVotes[amendment.amendment_id]?.length > 0 ? (
+                                            <Box>
+                                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                                {amendmentVotes[amendment.amendment_id].map((vote, i) => (
+                                                  <Chip
+                                                    key={i}
+                                                    label={vote.domain || vote.domain_legacy || truncateKey(vote.validator, 12)}
+                                                    size="small"
+                                                    variant={vote.verified ? 'filled' : 'outlined'}
+                                                    color={vote.verified ? 'success' : 'default'}
+                                                    icon={vote.verified ? <CheckCircleIcon fontSize="small" /> : null}
+                                                  />
+                                                ))}
+                                              </Box>
+                                            </Box>
+                                          ) : (
+                                            <Box>
+                                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                                {amendment.count} validators are supporting this amendment
+                                              </Typography>
+                                              <Typography variant="caption" color="text.secondary">
+                                                Check browser console for debug information about validator vote structure.
+                                              </Typography>
+                                              {validators.length > 0 && (
+                                                <Box sx={{ mt: 2 }}>
+                                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                                                    All validators voting on amendments:
+                                                  </Typography>
+                                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                                    {validators
+                                                      .filter(v => v.votes?.amendments?.includes(amendment.amendment_id))
+                                                      .map((v, i) => (
+                                                        <Chip
+                                                          key={i}
+                                                          label={v.domain || v.domain_legacy || truncateKey(v.master_key, 12)}
+                                                          size="small"
+                                                          variant={v.meta?.verified ? 'filled' : 'outlined'}
+                                                          color={v.meta?.verified ? 'success' : 'default'}
+                                                          icon={v.meta?.verified ? <CheckCircleIcon fontSize="small" /> : null}
+                                                        />
+                                                      ))}
+                                                    {validators.filter(v => v.votes?.amendments?.includes(amendment.amendment_id)).length === 0 && (
+                                                      <Typography variant="caption" color="text.secondary">
+                                                        Unable to match voting validators. Showing count: {amendment.count}
+                                                      </Typography>
+                                                    )}
+                                                  </Box>
+                                                </Box>
+                                              )}
+                                            </Box>
+                                          )}
+                                        </Box>
+                                      </Collapse>
+                                    </TableCell>
+                                  </TableRow>
+                                )}
+                              </React.Fragment>
                             ))}
                           </TableBody>
                         </Table>
