@@ -687,10 +687,10 @@ const SearchToolbar = memo(function SearchToolbar({
       {/* Categories Drawer */}
       {categoriesOpen && (
         <CategoriesDrawer
-          open={categoriesOpen}
-          onClose={() => setCategoriesOpen(false)}
+          isOpen={categoriesOpen}
+          toggleDrawer={() => setCategoriesOpen(false)}
           tags={tags}
-          tagName={tagName}
+          md5="categories-drawer"
         />
       )}
     </Container>
