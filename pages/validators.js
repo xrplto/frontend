@@ -636,33 +636,43 @@ function ValidatorsPage() {
                           Available Versions
                         </Typography>
                         <Box sx={{ maxHeight: 350, overflow: 'auto' }}>
-                          {serverVersions.map((version, index) => (
-                            <Box 
-                              key={index} 
-                              sx={{ 
-                                display: 'flex', 
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                py: 1,
-                                px: 2,
-                                borderBottom: '1px solid',
-                                borderColor: 'divider',
-                                '&:hover': {
-                                  backgroundColor: 'action.hover'
-                                }
-                              }}
-                            >
-                              <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                                {version}
-                              </Typography>
-                              {index === 0 && (
-                                <Chip label="Latest" size="small" color="success" />
-                              )}
-                              {index < 3 && index > 0 && (
-                                <Chip label="Recent" size="small" color="info" />
-                              )}
-                            </Box>
-                          ))}
+                          {serverVersions.map((version, index) => {
+                            const nodeCount = nodes.filter(n => n.server_version === version || n.version === version).length;
+                            return (
+                              <Box 
+                                key={index} 
+                                sx={{ 
+                                  display: 'flex', 
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  py: 1,
+                                  px: 2,
+                                  borderBottom: '1px solid',
+                                  borderColor: 'divider',
+                                  '&:hover': {
+                                    backgroundColor: 'action.hover'
+                                  }
+                                }}
+                              >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                                    {version}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    ({nodeCount} nodes)
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                  {index === 0 && (
+                                    <Chip label="Latest" size="small" color="success" />
+                                  )}
+                                  {index < 3 && index > 0 && (
+                                    <Chip label="Recent" size="small" color="info" />
+                                  )}
+                                </Box>
+                              </Box>
+                            );
+                          })}
                         </Box>
                       </CardContent>
                     </Card>
