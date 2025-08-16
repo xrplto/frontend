@@ -56,7 +56,6 @@ const MobileTokenInfo = styled.div`
   gap: 6px;
   padding: 0 2px;
   min-width: 0;
-  border: 1px solid cyan; /* DEBUG */
 `;
 
 const MobilePriceCell = styled.div`
@@ -66,7 +65,6 @@ const MobilePriceCell = styled.div`
   font-weight: 600;
   font-size: 11px;
   color: ${props => props.darkMode ? '#fff' : '#000'};
-  border: 1px solid yellow; /* DEBUG */
   min-width: 65px;
   word-break: break-all;
   line-height: 1.3;
@@ -79,7 +77,6 @@ const MobilePercentCell = styled.div`
   font-weight: 600;
   font-size: 11px;
   color: ${props => props.color};
-  border: 1px solid magenta; /* DEBUG */
   min-width: 45px;
 `;
 
@@ -174,16 +171,6 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
   const { name, user, md5, slug, pro24h, exch } = token;
   const [priceColor, setPriceColor] = useState('');
   
-  // DEBUG: Mobile row logging
-  useEffect(() => {
-    console.log(`[Mobile Debug] Token:`, {
-      name: name?.substring(0, 20),
-      md5,
-      exch,
-      pro24h
-    });
-  }, [name, md5, exch, pro24h]);
-  
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value)) return darkMode ? '#66BB6A' : '#388E3C';
     return value < 0 ? (darkMode ? '#FF5252' : '#D32F2F') : (darkMode ? '#66BB6A' : '#388E3C');
@@ -255,16 +242,6 @@ const DesktopTokenRow = ({
   } = token;
   const [priceColor, setPriceColor] = useState('');
   
-  // DEBUG: Desktop row logging
-  useEffect(() => {
-    console.log(`[Desktop Debug] Row ${idx}:`, {
-      md5,
-      name: name?.substring(0, 20),
-      isLoggedIn,
-      watchList: watchList?.length
-    });
-  }, [idx, md5, name, isLoggedIn, watchList]);
-  
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value)) return darkMode ? '#66BB6A' : '#388E3C';
     return value < 0 ? (darkMode ? '#FF5252' : '#D32F2F') : (darkMode ? '#66BB6A' : '#388E3C');
@@ -287,8 +264,7 @@ const DesktopTokenRow = ({
           style={{ 
             width: '40px', 
             minWidth: '40px',
-            maxWidth: '40px',
-            border: '1px solid red' // DEBUG
+            maxWidth: '40px'
           }}
         >
           <span 
@@ -326,8 +302,7 @@ const DesktopTokenRow = ({
         style={{ 
           width: '250px', 
           minWidth: '250px',
-          maxWidth: '250px',
-          border: '1px solid green' // DEBUG
+          maxWidth: '250px'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -578,7 +553,6 @@ export const MobileContainer = styled.div`
   padding: 0;
   margin: 0;
   background: ${props => props.darkMode ? '#121212' : '#fff'};
-  border: 2px solid lime; /* DEBUG */
 `;
 
 export const MobileHeader = styled.div`
@@ -602,7 +576,6 @@ export const HeaderCell = styled.div`
   text-align: ${props => props.align || 'left'};
   padding: 0 4px;
   cursor: ${props => props.sortable ? 'pointer' : 'default'};
-  border: 1px solid ${props => props.debugColor || 'transparent'}; /* DEBUG */
   
   &:hover {
     color: ${props => props.sortable && (props.darkMode ? '#fff' : '#000')};
