@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import dynamic from 'next/dynamic';
+import { createPortal } from 'react-dom';
 
 const CategoriesDrawer = dynamic(() => import('src/components/CategoriesDrawer'));
 
@@ -320,15 +321,14 @@ const Dropdown = styled.div`
 
 const DropdownMenu = styled.div`
   position: fixed;
-  margin-top: 36px;
-  background: ${props => props.darkMode ? 'rgba(26, 26, 26, 0.95)' : 'rgba(255, 255, 255, 0.95)'};
-  backdrop-filter: blur(12px);
-  border: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  background: ${props => props.darkMode ? '#1a1a1a' : '#ffffff'};
+  border: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   min-width: 200px;
-  z-index: 9999;
+  z-index: 99999;
   overflow: visible;
+  padding: 8px 0;
 `;
 
 const MenuItem = styled.button`
@@ -385,6 +385,8 @@ const SearchToolbar = memo(function SearchToolbar({
   const [mainMenuOpen, setMainMenuOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const mainMenuRef = useRef(null);
+  const buttonRef = useRef(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -423,9 +425,9 @@ const SearchToolbar = memo(function SearchToolbar({
   }, [currentOrderBy, router.pathname]);
 
   const handleViewChange = useCallback((path) => {
-    window.location.href = path;
+    router.push(path);
     setMainMenuOpen(false);
-  }, []);
+  }, [router]);
 
   const getViewIcon = (view) => {
     switch(view) {
@@ -458,9 +460,19 @@ const SearchToolbar = memo(function SearchToolbar({
       {/* View Selector */}
       <Dropdown ref={mainMenuRef}>
         <Button
+          ref={buttonRef}
           variant="contained"
           size="small"
-          onClick={() => setMainMenuOpen(!mainMenuOpen)}
+          onClick={(e) => {
+            if (buttonRef.current) {
+              const rect = buttonRef.current.getBoundingClientRect();
+              setMenuPosition({ 
+                top: rect.bottom + 4, 
+                left: rect.left 
+              });
+            }
+            setMainMenuOpen(!mainMenuOpen);
+          }}
           minWidth="80"
           theme={{ palette: { mode: darkMode ? 'dark' : 'light' } }}
         >
@@ -468,33 +480,6 @@ const SearchToolbar = memo(function SearchToolbar({
           <span>{getViewLabel(currentView)}</span>
           <Icon icon="material-symbols:keyboard-arrow-down" width="18" height="18" />
         </Button>
-          
-        {mainMenuOpen && (
-          <DropdownMenu darkMode={darkMode}>
-            <MenuItem onClick={() => handleViewChange('/')} selected={currentView === 'tokens'}>
-              <Icon icon="material-symbols:apps" width="18" height="18" />
-              All Tokens
-            </MenuItem>
-            <MenuItem onClick={() => handleViewChange('/collections')} selected={currentView === 'nfts'}>
-              <Icon icon="material-symbols:collections" width="18" height="18" />
-              NFT Collections
-            </MenuItem>
-            <MenuDivider />
-            <MenuItem onClick={() => handleViewChange('/watchlist')}>
-              <Icon icon="material-symbols:star" width="18" height="18" style={{ color: '#ffc107' }} />
-              My Watchlist
-            </MenuItem>
-            <MenuDivider />
-            <MenuItem onClick={() => handleViewChange('/tokens-heatmap')}>
-              <Icon icon="material-symbols:grid-view" width="18" height="18" style={{ color: '#ff5722' }} />
-              Heatmap View
-            </MenuItem>
-            <MenuItem onClick={() => handleViewChange('/top-traders')}>
-              <Icon icon="material-symbols:leaderboard" width="18" height="18" style={{ color: '#2196f3' }} />
-              Top Traders
-            </MenuItem>
-          </DropdownMenu>
-        )}
       </Dropdown>
 
       <Divider />
@@ -692,6 +677,41 @@ const SearchToolbar = memo(function SearchToolbar({
           tags={tags}
           md5="categories-drawer"
         />
+      )}
+      
+      {/* Dropdown Menu Portal */}
+      {mainMenuOpen && typeof document !== 'undefined' && createPortal(
+        <DropdownMenu 
+          darkMode={darkMode}
+          style={{ 
+            top: `${menuPosition.top}px`, 
+            left: `${menuPosition.left}px` 
+          }}
+        >
+          <MenuItem onClick={() => handleViewChange('/')} selected={currentView === 'tokens'}>
+            <Icon icon="material-symbols:apps" width="18" height="18" />
+            All Tokens
+          </MenuItem>
+          <MenuItem onClick={() => handleViewChange('/collections')} selected={currentView === 'nfts'}>
+            <Icon icon="material-symbols:collections" width="18" height="18" />
+            NFT Collections
+          </MenuItem>
+          <MenuDivider />
+          <MenuItem onClick={() => handleViewChange('/watchlist')}>
+            <Icon icon="material-symbols:star" width="18" height="18" style={{ color: '#ffc107' }} />
+            My Watchlist
+          </MenuItem>
+          <MenuDivider />
+          <MenuItem onClick={() => handleViewChange('/tokens-heatmap')}>
+            <Icon icon="material-symbols:grid-view" width="18" height="18" style={{ color: '#ff5722' }} />
+            Heatmap View
+          </MenuItem>
+          <MenuItem onClick={() => handleViewChange('/top-traders')}>
+            <Icon icon="material-symbols:leaderboard" width="18" height="18" style={{ color: '#2196f3' }} />
+            Top Traders
+          </MenuItem>
+        </DropdownMenu>,
+        document.body
       )}
     </Container>
   );
