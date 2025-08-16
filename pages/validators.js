@@ -306,6 +306,47 @@ function ValidatorsPage() {
   
   const versionData = getVersionDistribution();
   const COLORS = ['#4caf50', '#2196f3', '#ff9800', '#f44336', '#9c27b0', '#00bcd4', '#8bc34a', '#ffeb3b', '#795548', '#607d8b'];
+  
+  // Calculate validator performance based on voting (UNL validators only)
+  const getValidatorPerformance = () => {
+    // Filter only validators that are on a UNL (vl.xrplf.org or vl.ripple.com)
+    const unlValidators = validators.filter(v => 
+      v.unl && Array.isArray(v.unl) && 
+      (v.unl.includes('vl.xrplf.org') || v.unl.includes('vl.ripple.com'))
+    );
+    
+    const allPerformance = unlValidators.map(v => {
+      const votesCount = v.votes?.amendments?.length || 0;
+      const activeAmendments = amendments.filter(a => !a.enabled && a.count > 0).length;
+      const participationRate = activeAmendments > 0 ? (votesCount / activeAmendments * 100) : 0;
+      
+      return {
+        domain: v.domain || v.domain_legacy || truncateKey(v.master_key, 16),
+        master_key: v.master_key,
+        verified: v.meta?.verified || false,
+        votesCount,
+        participationRate: participationRate.toFixed(1),
+        amendments: v.votes?.amendments || [],
+        unl: v.unl
+      };
+    });
+    
+    const voting = allPerformance.filter(v => v.votesCount > 0);
+    const nonVoting = allPerformance.filter(v => v.votesCount === 0);
+    
+    // Sort by votes count
+    const sorted = voting.sort((a, b) => b.votesCount - a.votesCount);
+    
+    return {
+      best: sorted.slice(0, 10),
+      worst: nonVoting.length > 0 ? nonVoting.slice(0, 10) : sorted.slice(-10).reverse(),
+      nonVotingCount: nonVoting.length,
+      totalCount: unlValidators.length,
+      unlOnly: true
+    };
+  };
+  
+  const validatorPerformance = getValidatorPerformance();
 
   return (
     <OverviewWrapper>
@@ -415,6 +456,120 @@ function ValidatorsPage() {
                   </Card>
                 </Grid>
               </Grid>
+
+              {/* Validator Performance Section */}
+              {validators.length > 0 && validatorPerformance.best.length > 0 && (
+                <Grid container spacing={3} sx={{ mb: 4 }}>
+                  <Grid item xs={12} md={6}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: 'success.main' }}>
+                          🏆 Top Performing UNL Validators
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                          Most active UNL validators in voting ({validatorPerformance.totalCount} total on UNL)
+                        </Typography>
+                        <TableContainer>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Validator</TableCell>
+                                <TableCell align="center">Votes</TableCell>
+                                <TableCell align="right">Participation</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {validatorPerformance.best.map((v, i) => (
+                                <TableRow key={i}>
+                                  <TableCell>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      {v.verified && <CheckCircleIcon color="success" fontSize="small" />}
+                                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                        <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
+                                          {v.domain}
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+                                          {v.unl?.includes('vl.xrplf.org') && (
+                                            <Chip label="XRPLF" size="small" sx={{ height: 16, fontSize: '0.65rem' }} />
+                                          )}
+                                          {v.unl?.includes('vl.ripple.com') && (
+                                            <Chip label="Ripple" size="small" sx={{ height: 16, fontSize: '0.65rem' }} />
+                                          )}
+                                        </Box>
+                                      </Box>
+                                    </Box>
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    <Chip label={v.votesCount} size="small" color="success" />
+                                  </TableCell>
+                                  <TableCell align="right">
+                                    <Typography variant="body2">{v.participationRate}%</Typography>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: 'error.main' }}>
+                          ⚠️ {validatorPerformance.nonVotingCount > 0 ? 'Non-Voting UNL Validators' : 'Least Active UNL Validators'}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                          {validatorPerformance.nonVotingCount > 0 
+                            ? `${validatorPerformance.nonVotingCount} UNL validators not voting on any amendments`
+                            : 'Lowest participation among UNL validators'}
+                        </Typography>
+                        <TableContainer>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Validator</TableCell>
+                                <TableCell align="center">Votes</TableCell>
+                                <TableCell align="right">Participation</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {validatorPerformance.worst.map((v, i) => (
+                                <TableRow key={i}>
+                                  <TableCell>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      {v.verified && <CheckCircleIcon color="success" fontSize="small" />}
+                                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                        <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
+                                          {v.domain}
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+                                          {v.unl?.includes('vl.xrplf.org') && (
+                                            <Chip label="XRPLF" size="small" sx={{ height: 16, fontSize: '0.65rem' }} />
+                                          )}
+                                          {v.unl?.includes('vl.ripple.com') && (
+                                            <Chip label="Ripple" size="small" sx={{ height: 16, fontSize: '0.65rem' }} />
+                                          )}
+                                        </Box>
+                                      </Box>
+                                    </Box>
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    <Chip label={v.votesCount} size="small" color="warning" />
+                                  </TableCell>
+                                  <TableCell align="right">
+                                    <Typography variant="body2">{v.participationRate}%</Typography>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+              )}
 
               {/* Version Distribution Chart */}
               {nodes.length > 0 && (
