@@ -148,22 +148,22 @@ const SearchToolbar = memo(function SearchToolbar({
             boxShadow: 'none',
             textTransform: 'none',
             fontWeight: 600,
-            px: { xs: 1, sm: 1.5 },
-            py: { xs: 0.5, sm: 0.5 },
-            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-            minHeight: { xs: 32, sm: 36 },
-            height: { xs: 32, sm: 36 },
-            minWidth: { xs: 80, sm: 100 },
+            px: { xs: 0.75, sm: 1.5 },
+            py: { xs: 0.25, sm: 0.5 },
+            fontSize: { xs: '0.7rem', sm: '0.875rem' },
+            minHeight: { xs: 28, sm: 36 },
+            height: { xs: 28, sm: 36 },
+            minWidth: { xs: 60, sm: 100 },
             '&:hover': {
               boxShadow: 2
             }
           }}
         >
-          {currentView === 'tokens' && <><AppsIcon sx={{ fontSize: { xs: 16, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> Tokens</>}
-          {currentView === 'nfts' && <><CollectionsIcon sx={{ fontSize: { xs: 16, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> NFTs</>}
-          {currentView === 'trending' && <><LocalFireDepartmentIcon sx={{ fontSize: { xs: 16, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> Trending</>}
-          {currentView === 'gainers' && <><TrendingUpIcon sx={{ fontSize: { xs: 16, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> Gainers</>}
-          {currentView === 'new' && <><NewReleasesIcon sx={{ fontSize: { xs: 16, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> New</>}
+          {currentView === 'tokens' && <><AppsIcon sx={{ fontSize: { xs: 14, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Tokens</Box></>}
+          {currentView === 'nfts' && <><CollectionsIcon sx={{ fontSize: { xs: 14, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>NFTs</Box></>}
+          {currentView === 'trending' && <><LocalFireDepartmentIcon sx={{ fontSize: { xs: 14, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Trending</Box></>}
+          {currentView === 'gainers' && <><TrendingUpIcon sx={{ fontSize: { xs: 14, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Gainers</Box></>}
+          {currentView === 'new' && <><NewReleasesIcon sx={{ fontSize: { xs: 14, sm: 18 }, mr: { xs: 0.25, sm: 0.5 } }} /> <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>New</Box></>}
         </Button>
 
         <Divider orientation="vertical" flexItem sx={{ mx: 0.25, display: { xs: 'none', sm: 'block' } }} />
@@ -172,13 +172,13 @@ const SearchToolbar = memo(function SearchToolbar({
         <ButtonGroup 
           size="small" 
           variant="outlined"
-          sx={{ ml: { xs: 'auto', sm: 0 } }}
+          sx={{ display: { xs: 'none', sm: 'flex' } }}
         >
           <Tooltip title="List View">
             <Button
               onClick={() => setViewType('row')}
               variant={viewType === 'row' ? 'contained' : 'outlined'}
-              sx={{ minWidth: { xs: 36, sm: 40 }, height: { xs: 32, sm: 36 }, px: { xs: 0.5, sm: 1 }, py: { xs: 0.5, sm: 0.5 } }}
+              sx={{ minWidth: { xs: 30, sm: 40 }, height: { xs: 28, sm: 36 }, px: { xs: 0.5, sm: 1 }, py: 0.25 }}
             >
               <TableRowsIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
             </Button>
@@ -187,7 +187,7 @@ const SearchToolbar = memo(function SearchToolbar({
             <Button
               onClick={() => window.location.href = '/tokens-heatmap'}
               variant={viewType === 'heatmap' ? 'contained' : 'outlined'}
-              sx={{ minWidth: { xs: 36, sm: 40 }, height: { xs: 32, sm: 36 }, px: { xs: 0.5, sm: 1 }, py: { xs: 0.5, sm: 0.5 } }}
+              sx={{ minWidth: { xs: 30, sm: 40 }, height: { xs: 28, sm: 36 }, px: { xs: 0.5, sm: 1 }, py: 0.25 }}
             >
               <GridViewIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
             </Button>
@@ -202,13 +202,12 @@ const SearchToolbar = memo(function SearchToolbar({
         sx={{ 
           flex: 1,
           overflowX: 'auto',
-          px: { xs: 0.25, sm: 1 },
-          py: { xs: 0.25, sm: 0 },
+          px: { xs: 0, sm: 1 },
           alignItems: 'center',
-          width: { xs: '100%', sm: 'auto' },
           justifyContent: { xs: 'flex-start', sm: 'center' },
           '&::-webkit-scrollbar': { display: 'none' },
-          scrollbarWidth: 'none'
+          scrollbarWidth: 'none',
+          minWidth: 0
         }}
       >
         {/* Period selector for gainers or price change sorting */}
@@ -219,11 +218,11 @@ const SearchToolbar = memo(function SearchToolbar({
               variant="outlined"
               sx={{
                 '& .MuiButton-root': {
-                  minWidth: { xs: 36, sm: 40 },
-                  height: { xs: 32, sm: 36 },
-                  px: { xs: 0.5, sm: 0.75 },
-                  py: { xs: 0.5, sm: 0.5 },
-                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  minWidth: { xs: 28, sm: 40 },
+                  height: { xs: 26, sm: 36 },
+                  px: { xs: 0.4, sm: 0.75 },
+                  py: { xs: 0.25, sm: 0.5 },
+                  fontSize: { xs: '0.65rem', sm: '0.875rem' },
                   fontWeight: 500,
                   borderColor: alpha(theme.palette.divider, 0.2),
                   '&:hover': {
@@ -315,9 +314,9 @@ const SearchToolbar = memo(function SearchToolbar({
                 : alpha('#ff5722', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-            height: { xs: 32, sm: 36 },
-            px: { xs: 1, sm: 1.5 },
+            fontSize: { xs: '0.65rem', sm: '0.875rem' },
+            height: { xs: 24, sm: 36 },
+            px: { xs: 0.5, sm: 1.5 },
             transition: 'all 0.2s ease'
           }}
         />
@@ -339,9 +338,9 @@ const SearchToolbar = memo(function SearchToolbar({
                 : alpha('#2196f3', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-            height: { xs: 32, sm: 36 },
-            px: { xs: 1, sm: 1.5 },
+            fontSize: { xs: '0.65rem', sm: '0.875rem' },
+            height: { xs: 24, sm: 36 },
+            px: { xs: 0.5, sm: 1.5 },
             transition: 'all 0.2s ease'
           }}
         />
@@ -363,9 +362,9 @@ const SearchToolbar = memo(function SearchToolbar({
                 : alpha('#4caf50', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-            height: { xs: 32, sm: 36 },
-            px: { xs: 1, sm: 1.5 },
+            fontSize: { xs: '0.65rem', sm: '0.875rem' },
+            height: { xs: 24, sm: 36 },
+            px: { xs: 0.5, sm: 1.5 },
             display: { xs: 'none', sm: 'flex' },
             transition: 'all 0.2s ease'
           }}
@@ -388,9 +387,9 @@ const SearchToolbar = memo(function SearchToolbar({
                 : alpha('#ff9800', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-            height: { xs: 32, sm: 36 },
-            px: { xs: 1, sm: 1.5 },
+            fontSize: { xs: '0.65rem', sm: '0.875rem' },
+            height: { xs: 24, sm: 36 },
+            px: { xs: 0.5, sm: 1.5 },
             transition: 'all 0.2s ease'
           }}
         />
@@ -412,9 +411,9 @@ const SearchToolbar = memo(function SearchToolbar({
                 : alpha('#9c27b0', 0.25),
               transform: 'scale(1.05)'
             },
-            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-            height: { xs: 32, sm: 36 },
-            px: { xs: 1, sm: 1.5 },
+            fontSize: { xs: '0.65rem', sm: '0.875rem' },
+            height: { xs: 24, sm: 36 },
+            px: { xs: 0.5, sm: 1.5 },
             display: { xs: 'none', sm: 'flex' },
             transition: 'all 0.2s ease'
           }}
@@ -423,7 +422,7 @@ const SearchToolbar = memo(function SearchToolbar({
         {/* Top Categories */}
         {tags && tags.length > 0 && (
           <>
-            <Divider orientation="vertical" flexItem sx={{ mx: { xs: 0.25, sm: 0.5 }, height: 28, display: { xs: 'none', sm: 'block' } }} />
+            <Divider orientation="vertical" flexItem sx={{ mx: { xs: 0.25, sm: 0.5 }, height: { xs: 20, sm: 28 }, display: { xs: 'none', sm: 'block' } }} />
             
             {/* Display first 5 categories from tags array */}
             {tags.slice(0, 5).map((tag, index) => {
@@ -442,10 +441,10 @@ const SearchToolbar = memo(function SearchToolbar({
                     background: tagName === tag ? alpha(colors[index], 0.2) : 'transparent',
                     border: `1px solid ${alpha(colors[index], 0.3)}`,
                     '&:hover': { background: alpha(colors[index], 0.3) },
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    height: { xs: 32, sm: 36 },
-                    px: { xs: 1, sm: 1.5 },
-                    display: 'flex'
+                    fontSize: { xs: '0.6rem', sm: '0.875rem' },
+                    height: { xs: 24, sm: 36 },
+                    px: { xs: 0.5, sm: 1.5 },
+                    display: { xs: index < 3 ? 'flex' : 'none', sm: 'flex' }
                   }}
                 />
               );
@@ -466,9 +465,9 @@ const SearchToolbar = memo(function SearchToolbar({
                   background: alpha(theme.palette.primary.main, 0.15),
                   transform: 'scale(1.05)'
                 },
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                height: { xs: 32, sm: 36 },
-                px: { xs: 1, sm: 1.5 },
+                fontSize: { xs: '0.6rem', sm: '0.875rem' },
+                height: { xs: 24, sm: 36 },
+                px: { xs: 0.5, sm: 1.5 },
                 transition: 'all 0.2s ease'
               }}
             />
