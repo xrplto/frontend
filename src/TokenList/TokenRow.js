@@ -158,7 +158,7 @@ const FTokenRow = React.memo(function FTokenRow({
   };
   
   const getPercentColor = (value) => {
-    if (!value || isNaN(value)) return darkMode ? '#999' : '#666';
+    if (value === undefined || value === null || isNaN(value)) return darkMode ? '#66BB6A' : '#388E3C';
     return value < 0 
       ? (darkMode ? '#FF5252' : '#D32F2F')
       : (darkMode ? '#66BB6A' : '#388E3C');
@@ -232,7 +232,7 @@ const FTokenRow = React.memo(function FTokenRow({
       {!isMobile && (
         <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
           <PercentText color={getPercentColor(pro5m)}>
-            {pro5m ? `${pro5m.toFixed(2)}%` : '-'}
+            {pro5m !== undefined && pro5m !== null && !isNaN(pro5m) ? `${pro5m.toFixed(2)}%` : '0.00%'}
           </PercentText>
         </StyledCell>
       )}
@@ -240,14 +240,14 @@ const FTokenRow = React.memo(function FTokenRow({
       {!isMobile && (
         <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
           <PercentText color={getPercentColor(pro1h)}>
-            {pro1h ? `${pro1h.toFixed(2)}%` : '-'}
+            {pro1h !== undefined && pro1h !== null && !isNaN(pro1h) ? `${pro1h.toFixed(2)}%` : '0.00%'}
           </PercentText>
         </StyledCell>
       )}
       
       <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
         <PercentText color={getPercentColor(pro24h)}>
-          {pro24h ? `${pro24h.toFixed(isMobile ? 1 : 2)}%` : '-'}
+          {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${pro24h.toFixed(isMobile ? 1 : 2)}%` : '0.00%'}
         </PercentText>
       </StyledCell>
       
@@ -263,7 +263,7 @@ const FTokenRow = React.memo(function FTokenRow({
         <>
           <StyledCell align="right" darkMode={darkMode} isMobile={isMobile}>
             <PercentText color={getPercentColor(pro7d)}>
-              {pro7d ? `${pro7d.toFixed(2)}%` : '-'}
+              {pro7d !== undefined && pro7d !== null && !isNaN(pro7d) ? `${pro7d.toFixed(2)}%` : '0.00%'}
             </PercentText>
           </StyledCell>
           
