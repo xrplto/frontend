@@ -190,8 +190,9 @@ const ChartContainer = styled.div`
 `;
 
 const TooltipContainer = styled.div`
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: ${props => props.darkMode ? '#1c1c1c' : 'white'};
+  color: ${props => props.darkMode ? '#fff' : '#000'};
+  border: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -264,23 +265,28 @@ export default function Summary() {
       const tokensInvolved = (data.tokensInvolved || [])
         .slice()
         .sort((a, b) => (b.marketcap || 0) - (a.marketcap || 0));
+      
+      // Debug: Check what fields are available in the first token
+      if (tokensInvolved.length > 0 && !tokensInvolved[0].currency && !tokensInvolved[0].name) {
+        console.log('Token data structure:', tokensInvolved[0]);
+      }
 
       const renderStat = (iconName, label, value) => (
         <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
           <Stack direction="row" alignItems="center" spacing="2px">
-            <Icon icon={iconName} width="14" height="14" style={{ color: 'rgba(145, 158, 171, 0.8)' }} />
-            <span style={{ fontSize: '0.75rem', color: 'rgba(145, 158, 171, 0.8)' }}>
+            <Icon icon={iconName} width="14" height="14" style={{ color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)' }} />
+            <span style={{ fontSize: '0.75rem', color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
               {label}
             </span>
           </Stack>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{value}</span>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'inherit' }}>{value}</span>
         </Stack>
       );
 
       return (
-        <TooltipContainer>
+        <TooltipContainer darkMode={darkMode}>
           <Stack spacing="8px">
-            <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '8px' }}>
+            <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '8px', color: 'inherit' }}>
               {format(new Date(data.originalDate), 'MMM dd, yyyy')}
             </div>
             
@@ -293,16 +299,16 @@ export default function Summary() {
 
             {platformEntries.length > 0 && (
               <>
-                <div style={{ borderTop: '1px solid rgba(0, 0, 0, 0.08)', margin: '8px -12px' }}></div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '8px' }}>
+                <div style={{ borderTop: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)', margin: '8px -12px' }}></div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '8px', color: 'inherit' }}>
                   Platforms
                 </div>
                 {platformEntries.map(([platform, count]) => (
                   <Stack key={platform} direction="row" justifyContent="space-between">
-                    <span style={{ fontSize: '0.7rem', color: 'rgba(145, 158, 171, 0.8)' }}>
+                    <span style={{ fontSize: '0.7rem', color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
                       {platform}
                     </span>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 600 }}>{count}</span>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'inherit' }}>{count}</span>
                   </Stack>
                 ))}
               </>
@@ -310,16 +316,16 @@ export default function Summary() {
 
             {tokensInvolved.length > 0 && (
               <>
-                <div style={{ borderTop: '1px solid rgba(0, 0, 0, 0.08)', margin: '8px -12px' }}></div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '8px' }}>
+                <div style={{ borderTop: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)', margin: '8px -12px' }}></div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '8px', color: 'inherit' }}>
                   Top Tokens Created
                 </div>
                 {tokensInvolved.slice(0, 3).map((token, idx) => (
                   <Stack key={idx} direction="row" justifyContent="space-between">
-                    <span style={{ fontSize: '0.7rem', color: 'rgba(145, 158, 171, 0.8)' }}>
-                      {token.currency}
+                    <span style={{ fontSize: '0.7rem', color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
+                      {token.currency || token.symbol || token.ticker || token.code || token.currencyCode || token.name || `Token ${idx + 1}`}
                     </span>
-                    <span style={{ fontSize: '0.7rem' }}>
+                    <span style={{ fontSize: '0.7rem', color: 'inherit' }}>
                       {currencySymbols[activeFiatCurrency]}
                       {formatNumberWithDecimals(new Decimal(token.marketcap || 0).div(fiatRate).toNumber())}
                     </span>
@@ -393,8 +399,8 @@ export default function Summary() {
         {/* Main Metrics Section */}
         {isLoading ? (
           <div style={{ width: '100%', paddingBottom: '0' }}>
-            <Grid cols={6} mdCols={3} smCols={2} spacing="16px">
-              {[...Array(6)].map((_, i) => (
+            <Grid cols={8} mdCols={4} smCols={2} spacing="16px">
+              {[...Array(7)].map((_, i) => (
                 <MetricBox key={i}>
                   <Skeleton height="12px" width="60%" style={{ marginBottom: '4px' }} />
                   <Skeleton height="20px" width="80%" />
@@ -404,18 +410,7 @@ export default function Summary() {
           </div>
         ) : (
           <div style={{ width: '100%' }}>
-            <Grid cols={6} mdCols={3} smCols={2} spacing="16px">
-              <MetricBox>
-                <MetricTitle>XRP Price</MetricTitle>
-                <MetricValue>
-                  {xrpPriceSymbol}{xrpPrice}
-                </MetricValue>
-                <PercentageChange isPositive={(metrics.XRPchange24h || 0) >= 0}>
-                  {(metrics.XRPchange24h || 0) >= 0 ? '▲' : '▼'}
-                  {Math.abs(metrics.XRPchange24h || 0).toFixed(2)}%
-                </PercentageChange>
-              </MetricBox>
-
+            <Grid cols={8} mdCols={4} smCols={2} spacing="16px">
               <MetricBox>
                 <MetricTitle>Market Cap</MetricTitle>
                 <MetricValue>
@@ -441,65 +436,90 @@ export default function Summary() {
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>Trades 24h</MetricTitle>
+                <MetricTitle>XRP Price</MetricTitle>
                 <MetricValue>
-                  {metrics.H24?.transactions24H || metrics.new_tokens_24h || 0}
+                  {xrpPriceSymbol}{xrpPrice}
                 </MetricValue>
+                <PercentageChange isPositive={(metrics.XRPchange24h || 0) >= 0}>
+                  {(metrics.XRPchange24h || 0) >= 0 ? '▲' : '▼'}
+                  {Math.abs(metrics.XRPchange24h || 0).toFixed(2)}%
+                </PercentageChange>
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>Active Addresses</MetricTitle>
+                <MetricTitle>Stables</MetricTitle>
                 <MetricValue>
-                  22.12K
+                  {currencySymbols[activeFiatCurrency]}
+                  {formatNumberWithDecimals(new Decimal(metrics.global?.gStableVolume || 0).div(fiatRate).toNumber())}
                 </MetricValue>
+                <PercentageChange isPositive={(metrics.global?.gStableVolumePro || 0) >= 0}>
+                  {(metrics.global?.gStableVolumePro || 0) >= 0 ? '▲' : '▼'}
+                  {Math.abs(metrics.global?.gStableVolumePro || 0).toFixed(2)}%
+                </PercentageChange>
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>Total Tokens</MetricTitle>
+                <MetricTitle>Memes</MetricTitle>
                 <MetricValue>
-                  17.86K
+                  {currencySymbols[activeFiatCurrency]}
+                  {formatNumberWithDecimals(new Decimal(metrics.global?.gMemeVolume || 0).div(fiatRate).toNumber())}
                 </MetricValue>
+                <PercentageChange isPositive={(metrics.global?.gMemeVolumePro || 0) >= 0}>
+                  {(metrics.global?.gMemeVolumePro || 0) >= 0 ? '▲' : '▼'}
+                  {Math.abs(metrics.global?.gMemeVolumePro || 0).toFixed(2)}%
+                </PercentageChange>
+              </MetricBox>
+
+              <MetricBox>
+                <MetricTitle>Sentiment</MetricTitle>
+                <MetricValue>
+                  {(metrics.global?.sentimentScore || 0).toFixed(1)}
+                </MetricValue>
+                <Stack direction="row" spacing="4px">
+                  <Icon 
+                    icon={metrics.global?.sentimentScore >= 50 ? "mdi:emoticon-happy" : "mdi:emoticon-sad"} 
+                    width="14" 
+                    height="14" 
+                    style={{ color: metrics.global?.sentimentScore >= 50 ? '#4ECDC4' : '#f87171' }} 
+                  />
+                  <ContentTypography>
+                    {metrics.global?.sentimentScore >= 50 ? 'Bullish' : 'Bearish'}
+                  </ContentTypography>
+                </Stack>
+              </MetricBox>
+
+              <MetricBox style={{ gridColumn: 'span 2' }}>
+                <MetricTitle>New Tokens (30d)</MetricTitle>
+                <div style={{ width: '100%', height: '60px', marginTop: '-4px' }}>
+                  {chartData.length > 0 && (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart
+                        data={chartData}
+                        margin={{ top: 5, right: 0, left: 0, bottom: 0 }}
+                      >
+                        <defs>
+                          <linearGradient id="colorTokensCompact" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8C7CF0" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#8C7CF0" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <Area
+                          type="monotone"
+                          dataKey="Tokens"
+                          stroke="#8C7CF0"
+                          strokeWidth={1.5}
+                          fill="url(#colorTokensCompact)"
+                          dot={false}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
               </MetricBox>
             </Grid>
           </div>
         )}
 
-        {/* Chart Section */}
-        {chartData.length > 0 && (
-          <ChartContainer height="180px" mt="16px">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={chartData}
-                margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-              >
-                <defs>
-                  <linearGradient id="colorTokens" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8C7CF0" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#8C7CF0" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(145, 158, 171, 0.1)" />
-                <XAxis 
-                  dataKey="date" 
-                  tick={{ fontSize: 10 }} 
-                  stroke="rgba(145, 158, 171, 0.5)"
-                />
-                <YAxis 
-                  tick={{ fontSize: 10 }} 
-                  stroke="rgba(145, 158, 171, 0.5)"
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="Tokens"
-                  stroke="#8C7CF0"
-                  strokeWidth={2}
-                  fill="url(#colorTokens)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        )}
       </Stack>
     </Container>
   );
