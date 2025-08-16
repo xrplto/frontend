@@ -257,10 +257,7 @@ function ValidatorsPage() {
   };
 
   const onlineNodes = nodes.filter(node => getNodeStatus(node.last_seen) === 'online').length;
-  const averageUptime = nodes.length > 0 
-    ? Math.floor(nodes.reduce((acc, node) => acc + (node.uptime || 0), 0) / nodes.length)
-    : 0;
-
+  
   const versionData = getVersionDistribution();
   const COLORS = ['#4caf50', '#2196f3', '#ff9800', '#f44336', '#9c27b0', '#00bcd4', '#8bc34a', '#ffeb3b', '#795548', '#607d8b'];
 
@@ -357,13 +354,16 @@ function ValidatorsPage() {
                   <Card>
                     <CardContent>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <AccessTimeIcon color="warning" sx={{ mr: 1 }} />
+                        <AccessTimeIcon color="info" sx={{ mr: 1 }} />
                         <Typography color="text.secondary" variant="body2">
-                          Avg Uptime
+                          Active Voting
                         </Typography>
                       </Box>
                       <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                        {formatUptime(averageUptime)}
+                        {amendments.filter(a => !a.enabled && a.count > 0).length}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {amendments.filter(a => !a.enabled && !a.majority && a.count >= a.threshold * 0.75).length} near consensus
                       </Typography>
                     </CardContent>
                   </Card>
