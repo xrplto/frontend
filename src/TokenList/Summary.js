@@ -42,28 +42,11 @@ const Container = styled.div`
   width: 100%;
   max-width: 100%;
   background: transparent;
-  border: 1px solid rgba(145, 158, 171, 0.2);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  padding: ${props => props.theme?.spacing?.(3) || '24px'};
   overflow: visible;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-  }
   
   @media (max-width: 600px) {
     margin-top: 0;
     margin-bottom: 8px;
-    padding: 8px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    
-    &:hover {
-      transform: none;
-    }
   }
 `;
 
@@ -79,81 +62,98 @@ const Stack = styled.div`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(${props => props.cols || 1}, 1fr);
-  gap: ${props => props.spacing || '16px'};
+  gap: ${props => props.spacing || '20px'};
   width: 100%;
   
   @media (max-width: 900px) {
     grid-template-columns: repeat(${props => props.mdCols || props.cols || 1}, 1fr);
+    gap: 16px;
   }
   
   @media (max-width: 600px) {
     grid-template-columns: repeat(${props => props.smCols || 2}, 1fr);
-    gap: 8px;
+    gap: 12px;
   }
 `;
 
 const MetricBox = styled.div`
-  padding: 12px;
+  padding: 20px;
   height: 100%;
-  min-height: 80px;
+  min-height: 100px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  border-radius: 6px;
-  background: transparent;
-  border: 1px solid rgba(145, 158, 171, 0.12);
+  border-radius: 12px;
+  background: ${props => props.theme?.palette?.mode === 'dark' 
+    ? 'rgba(255, 255, 255, 0.02)' 
+    : 'rgba(0, 0, 0, 0.02)'};
+  border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.05)'
+    : 'rgba(0, 0, 0, 0.05)'};
   position: relative;
   overflow: visible;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: ${props => props.theme?.palette?.mode === 'dark' 
+      ? 'rgba(255, 255, 255, 0.04)' 
+      : 'rgba(0, 0, 0, 0.04)'};
+    border-color: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(0, 0, 0, 0.08)'};
+  }
   
   @media (max-width: 600px) {
-    padding: 4px;
-    min-height: 44px;
+    padding: 12px;
+    min-height: 60px;
+    border-radius: 8px;
   }
 `;
 
 const MetricTitle = styled.span`
-  font-size: 0.65rem;
-  font-weight: 400;
-  color: rgba(145, 158, 171, 0.5);
-  margin-bottom: 2px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(145, 158, 171, 0.6);
+  margin-bottom: 4px;
   letter-spacing: 0.02em;
-  line-height: 1;
+  line-height: 1.2;
   
   @media (max-width: 600px) {
-    font-size: 0.55rem;
-    margin-bottom: 0;
+    font-size: 0.65rem;
+    margin-bottom: 2px;
   }
 `;
 
 const MetricValue = styled.span`
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: ${props => props.theme?.palette?.text?.primary || '#212B36'};
-  line-height: 1;
-  margin-bottom: 1px;
+  line-height: 1.2;
+  margin-bottom: 4px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   
   @media (max-width: 600px) {
-    font-size: 0.75rem;
-    margin-bottom: 0;
+    font-size: 1rem;
+    margin-bottom: 2px;
   }
 `;
 
 const PercentageChange = styled.span`
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   color: ${props => props.isPositive 
     ? (props.theme?.palette?.mode === 'dark' ? '#4ade80' : '#16a34a')
     : (props.theme?.palette?.mode === 'dark' ? '#f87171' : '#dc2626')};
   display: inline-flex;
   align-items: flex-start;
-  gap: 2px;
-  font-weight: 500;
+  gap: 3px;
+  font-weight: 600;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   
   @media (max-width: 600px) {
-    font-size: 0.55rem;
+    font-size: 0.7rem;
   }
 `;
 
@@ -401,7 +401,7 @@ export default function Summary() {
         {/* Main Metrics Section */}
         {isLoading ? (
           <div style={{ width: '100%', paddingBottom: '0' }}>
-            <Grid cols={8} mdCols={4} smCols={2} spacing="16px">
+            <Grid cols={8} mdCols={4} smCols={2}>
               {[...Array(7)].map((_, i) => (
                 <MetricBox key={i}>
                   <Skeleton height="12px" width="60%" style={{ marginBottom: '4px' }} />
@@ -412,7 +412,7 @@ export default function Summary() {
           </div>
         ) : (
           <div style={{ width: '100%' }}>
-            <Grid cols={8} mdCols={4} smCols={2} spacing="16px">
+            <Grid cols={8} mdCols={4} smCols={2}>
               <MetricBox>
                 <MetricTitle>Market Cap</MetricTitle>
                 <MetricValue>

@@ -316,15 +316,14 @@ const Dropdown = styled.div`
 
 const DropdownMenu = styled.div`
   position: absolute;
-  top: 100%;
-  ${props => props.align === 'right' ? 'right: 0;' : 'left: 0;'}
-  margin-top: 4px;
+  top: calc(100% + 4px);
+  left: 0;
   background: ${props => props.darkMode ? '#1a1a1a' : 'white'};
   border: 1px solid rgba(145, 158, 171, 0.12);
   border-radius: 8px;
   box-shadow: 0 8px 16px rgba(145, 158, 171, 0.24);
   min-width: 200px;
-  z-index: 1000;
+  z-index: 9999;
   overflow: hidden;
 `;
 
@@ -451,247 +450,234 @@ const SearchToolbar = memo(function SearchToolbar({
 
   return (
     <Container darkMode={darkMode}>
-      {/* Left Section - View Selector */}
-      <Stack direction="row" spacing="4px" alignItems="center" flexShrink={0} width="100%" xs={{ width: '100%' }}>
-        <Dropdown ref={mainMenuRef}>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => setMainMenuOpen(!mainMenuOpen)}
-            minWidth="100"
-            theme={{ palette: { mode: darkMode ? 'dark' : 'light' } }}
-          >
-            <Icon icon={getViewIcon(currentView)} width="18" height="18" />
-            <span>{getViewLabel(currentView)}</span>
-            <Icon icon="material-symbols:keyboard-arrow-down" width="20" height="20" />
-          </Button>
+      {/* View Selector */}
+      <Dropdown ref={mainMenuRef}>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() => setMainMenuOpen(!mainMenuOpen)}
+          minWidth="80"
+          theme={{ palette: { mode: darkMode ? 'dark' : 'light' } }}
+        >
+          <Icon icon={getViewIcon(currentView)} width="16" height="16" />
+          <span>{getViewLabel(currentView)}</span>
+          <Icon icon="material-symbols:keyboard-arrow-down" width="18" height="18" />
+        </Button>
           
-          {mainMenuOpen && (
-            <DropdownMenu darkMode={darkMode}>
-              <MenuItem onClick={() => handleViewChange('/')} selected={currentView === 'tokens'}>
-                <Icon icon="material-symbols:apps" width="20" height="20" />
-                All Tokens
-              </MenuItem>
-              <MenuItem onClick={() => handleViewChange('/collections')} selected={currentView === 'nfts'}>
-                <Icon icon="material-symbols:collections" width="20" height="20" />
-                NFT Collections
-              </MenuItem>
-              <MenuDivider />
-              <MenuItem onClick={() => handleViewChange('/watchlist')}>
-                <Icon icon="material-symbols:star" width="20" height="20" style={{ color: '#ffc107' }} />
-                My Watchlist
-              </MenuItem>
-              <MenuDivider />
-              <MenuItem onClick={() => handleViewChange('/tokens-heatmap')}>
-                <Icon icon="material-symbols:grid-view" width="20" height="20" style={{ color: '#ff5722' }} />
-                Heatmap View
-              </MenuItem>
-              <MenuItem onClick={() => handleViewChange('/top-traders')}>
-                <Icon icon="material-symbols:leaderboard" width="20" height="20" style={{ color: '#2196f3' }} />
-                Top Traders
-              </MenuItem>
-            </DropdownMenu>
-          )}
-        </Dropdown>
+        {mainMenuOpen && (
+          <DropdownMenu darkMode={darkMode}>
+            <MenuItem onClick={() => handleViewChange('/')} selected={currentView === 'tokens'}>
+              <Icon icon="material-symbols:apps" width="18" height="18" />
+              All Tokens
+            </MenuItem>
+            <MenuItem onClick={() => handleViewChange('/collections')} selected={currentView === 'nfts'}>
+              <Icon icon="material-symbols:collections" width="18" height="18" />
+              NFT Collections
+            </MenuItem>
+            <MenuDivider />
+            <MenuItem onClick={() => handleViewChange('/watchlist')}>
+              <Icon icon="material-symbols:star" width="18" height="18" style={{ color: '#ffc107' }} />
+              My Watchlist
+            </MenuItem>
+            <MenuDivider />
+            <MenuItem onClick={() => handleViewChange('/tokens-heatmap')}>
+              <Icon icon="material-symbols:grid-view" width="18" height="18" style={{ color: '#ff5722' }} />
+              Heatmap View
+            </MenuItem>
+            <MenuItem onClick={() => handleViewChange('/top-traders')}>
+              <Icon icon="material-symbols:leaderboard" width="18" height="18" style={{ color: '#2196f3' }} />
+              Top Traders
+            </MenuItem>
+          </DropdownMenu>
+        )}
+      </Dropdown>
 
-        <Divider hideOnMobile />
+      <Divider />
 
-        {/* View Type Toggle */}
-        <ButtonGroup>
-          <IconButton
-            size="small"
-            selected={viewType === 'row'}
-            onClick={() => setViewType('row')}
-            title="List View"
-          >
-            <Icon icon="material-symbols:table-rows" width="20" height="20" />
-          </IconButton>
-          <IconButton
-            size="small"
-            selected={viewType === 'heatmap'}
-            onClick={() => window.location.href = '/tokens-heatmap'}
-            title="Grid View"
-          >
-            <Icon icon="material-symbols:grid-view" width="20" height="20" />
-          </IconButton>
-        </ButtonGroup>
-      </Stack>
+      {/* View Type Toggle */}
+      <ButtonGroup>
+        <IconButton
+          size="small"
+          selected={viewType === 'row'}
+          onClick={() => setViewType('row')}
+          title="List View"
+        >
+          <Icon icon="material-symbols:table-rows" width="18" height="18" />
+        </IconButton>
+        <IconButton
+          size="small"
+          selected={viewType === 'heatmap'}
+          onClick={() => window.location.href = '/tokens-heatmap'}
+          title="Grid View"
+        >
+          <Icon icon="material-symbols:grid-view" width="18" height="18" />
+        </IconButton>
+      </ButtonGroup>
 
-      {/* Center Section - Quick Filters */}
-      <Stack 
-        direction="row" 
-        spacing="4px" 
-        flex={1}
-        overflowX="auto"
-        padding="0 8px"
-        alignItems="center"
-        width="100%"
-        justifyContent="center"
-        xs={{ width: '100%' }}
+      <Divider />
+
+      {/* Period selector for gainers or price change sorting */}
+      {(currentView === 'gainers' || ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentOrderBy)) && (
+        <>
+          <ButtonGroup>
+            <button
+              className={currentPeriod === '5m' ? 'selected' : ''}
+              onClick={() => {
+                if (currentView === 'gainers') {
+                  window.location.href = '/gainers/5m';
+                } else {
+                  setOrderBy('pro5m');
+                  setSync(prev => prev + 1);
+                }
+              }}
+            >
+              5m
+            </button>
+            <button
+              className={currentPeriod === '1h' ? 'selected' : ''}
+              onClick={() => {
+                if (currentView === 'gainers') {
+                  window.location.href = '/gainers/1h';
+                } else {
+                  setOrderBy('pro1h');
+                  setSync(prev => prev + 1);
+                }
+              }}
+            >
+              1h
+            </button>
+            <button
+              className={currentPeriod === '24h' ? 'selected' : ''}
+              onClick={() => {
+                if (currentView === 'gainers') {
+                  window.location.href = '/gainers/24h';
+                } else {
+                  setOrderBy('pro24h');
+                  setSync(prev => prev + 1);
+                }
+              }}
+            >
+              24h
+            </button>
+            <button
+              className={currentPeriod === '7d' ? 'selected' : ''}
+              onClick={() => {
+                if (currentView === 'gainers') {
+                  window.location.href = '/gainers/7d';
+                } else {
+                  setOrderBy('pro7d');
+                  setSync(prev => prev + 1);
+                }
+              }}
+            >
+              7d
+            </button>
+          </ButtonGroup>
+          <Divider />
+        </>
+      )}
+
+      <Chip
+        onClick={() => handleViewChange('/trending')}
+        background={currentView === 'trending' 
+          ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
+          : 'rgba(255, 87, 34, 0.1)'}
+        color={currentView === 'trending' ? '#fff' : '#ff5722'}
+        hoverBackground={currentView === 'trending'
+          ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
+          : 'rgba(255, 87, 34, 0.25)'}
       >
-        {/* Period selector for gainers or price change sorting */}
-        {(currentView === 'gainers' || ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentOrderBy)) && (
-          <>
-            <ButtonGroup buttonMinWidth="40px">
-              <button
-                className={currentPeriod === '5m' ? 'selected' : ''}
-                onClick={() => {
-                  if (currentView === 'gainers') {
-                    window.location.href = '/gainers/5m';
-                  } else {
-                    setOrderBy('pro5m');
-                    setSync(prev => prev + 1);
-                  }
-                }}
-              >
-                5m
-              </button>
-              <button
-                className={currentPeriod === '1h' ? 'selected' : ''}
-                onClick={() => {
-                  if (currentView === 'gainers') {
-                    window.location.href = '/gainers/1h';
-                  } else {
-                    setOrderBy('pro1h');
-                    setSync(prev => prev + 1);
-                  }
-                }}
-              >
-                1h
-              </button>
-              <button
-                className={currentPeriod === '24h' ? 'selected' : ''}
-                onClick={() => {
-                  if (currentView === 'gainers') {
-                    window.location.href = '/gainers/24h';
-                  } else {
-                    setOrderBy('pro24h');
-                    setSync(prev => prev + 1);
-                  }
-                }}
-              >
-                24h
-              </button>
-              <button
-                className={currentPeriod === '7d' ? 'selected' : ''}
-                onClick={() => {
-                  if (currentView === 'gainers') {
-                    window.location.href = '/gainers/7d';
-                  } else {
-                    setOrderBy('pro7d');
-                    setSync(prev => prev + 1);
-                  }
-                }}
-              >
-                7d
-              </button>
-            </ButtonGroup>
-            <Divider hideOnMobile />
-          </>
-        )}
+        🔥 Hot
+      </Chip>
 
-        <Chip
-          onClick={() => handleViewChange('/trending')}
-          background={currentView === 'trending' 
-            ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
-            : 'rgba(255, 87, 34, 0.1)'}
-          color={currentView === 'trending' ? '#fff' : '#ff5722'}
-          hoverBackground={currentView === 'trending'
-            ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
-            : 'rgba(255, 87, 34, 0.25)'}
-        >
-          🔥 Hot
-        </Chip>
+      <Chip
+        onClick={() => handleViewChange('/spotlight')}
+        background={currentView === 'spotlight' 
+          ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
+          : 'rgba(33, 150, 243, 0.1)'}
+        color={currentView === 'spotlight' ? '#fff' : '#2196f3'}
+        hoverBackground={currentView === 'spotlight'
+          ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
+          : 'rgba(33, 150, 243, 0.25)'}
+      >
+        💎 Gems
+      </Chip>
 
-        <Chip
-          onClick={() => handleViewChange('/spotlight')}
-          background={currentView === 'spotlight' 
-            ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
-            : 'rgba(33, 150, 243, 0.1)'}
-          color={currentView === 'spotlight' ? '#fff' : '#2196f3'}
-          hoverBackground={currentView === 'spotlight'
-            ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
-            : 'rgba(33, 150, 243, 0.25)'}
-        >
-          💎 Gems
-        </Chip>
+      <Chip
+        onClick={() => handleViewChange('/gainers/24h')}
+        background={currentView === 'gainers' 
+          ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
+          : 'rgba(76, 175, 80, 0.1)'}
+        color={currentView === 'gainers' ? '#fff' : '#4caf50'}
+        hoverBackground={currentView === 'gainers'
+          ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
+          : 'rgba(76, 175, 80, 0.25)'}
+        hideOnMobile
+      >
+        🚀 Gainers
+      </Chip>
 
-        <Chip
-          onClick={() => handleViewChange('/gainers/24h')}
-          background={currentView === 'gainers' 
-            ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
-            : 'rgba(76, 175, 80, 0.1)'}
-          color={currentView === 'gainers' ? '#fff' : '#4caf50'}
-          hoverBackground={currentView === 'gainers'
-            ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
-            : 'rgba(76, 175, 80, 0.25)'}
-          hideOnMobile
-        >
-          🚀 Gainers
-        </Chip>
+      <Chip
+        onClick={() => handleViewChange('/new')}
+        background={currentView === 'new' 
+          ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
+          : 'rgba(255, 152, 0, 0.1)'}
+        color={currentView === 'new' ? '#fff' : '#ff9800'}
+        hoverBackground={currentView === 'new'
+          ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
+          : 'rgba(255, 152, 0, 0.25)'}
+      >
+        ✨ New
+      </Chip>
 
-        <Chip
-          onClick={() => handleViewChange('/new')}
-          background={currentView === 'new' 
-            ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
-            : 'rgba(255, 152, 0, 0.1)'}
-          color={currentView === 'new' ? '#fff' : '#ff9800'}
-          hoverBackground={currentView === 'new'
-            ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
-            : 'rgba(255, 152, 0, 0.25)'}
-        >
-          ✨ New
-        </Chip>
+      <Chip
+        onClick={() => handleViewChange('/most-viewed')}
+        background={currentView === 'most-viewed' 
+          ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
+          : 'rgba(156, 39, 176, 0.1)'}
+        color={currentView === 'most-viewed' ? '#fff' : '#9c27b0'}
+        hoverBackground={currentView === 'most-viewed'
+          ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
+          : 'rgba(156, 39, 176, 0.25)'}
+        hideOnMobile
+      >
+        👁️ Popular
+      </Chip>
 
-        <Chip
-          onClick={() => handleViewChange('/most-viewed')}
-          background={currentView === 'most-viewed' 
-            ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
-            : 'rgba(156, 39, 176, 0.1)'}
-          color={currentView === 'most-viewed' ? '#fff' : '#9c27b0'}
-          hoverBackground={currentView === 'most-viewed'
-            ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
-            : 'rgba(156, 39, 176, 0.25)'}
-          hideOnMobile
-        >
-          👁️ Popular
-        </Chip>
-
-        {/* Top Categories */}
-        {tags && tags.length > 0 && (
-          <>
-            <Divider hideOnMobile />
+      {/* Top Categories */}
+      {tags && tags.length > 0 && (
+        <>
+          <Divider />
+          
+          {/* Display first 10 categories from tags array */}
+          {tags.slice(0, 10).map((tag, index) => {
+            const normalizedTag = tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
+            const colors = ['#e91e63', '#00bcd4', '#4caf50', '#673ab7', '#ff9800', '#795548', '#607d8b', '#3f51b5', '#009688', '#ff5722'];
+            const emojis = ['🏷️', '📍', '⭐', '💫', '🎯', '🔖', '🎨', '🌟', '🏆', '💡'];
+            const isSelected = tagName === tag;
             
-            {/* Display first 5 categories from tags array */}
-            {tags.slice(0, 5).map((tag, index) => {
-              const normalizedTag = tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
-              const colors = ['#e91e63', '#00bcd4', '#4caf50', '#673ab7', '#ff9800'];
-              const emojis = ['🏷️', '📍', '⭐', '💫', '🎯'];
-              const isSelected = tagName === tag;
-              
-              return (
-                <TagChip
-                  key={tag}
-                  onClick={() => handleViewChange(`/view/${normalizedTag}`)}
-                  borderColor={`${colors[index]}4D`}
-                  background={isSelected ? `${colors[index]}33` : 'transparent'}
-                  color={darkMode ? '#fff' : '#333'}
-                  hoverBackground={`${colors[index]}4D`}
-                >
-                  <span>{emojis[index]}</span>
-                  <span>{tag}</span>
-                </TagChip>
-              );
-            })}
-            
-            {/* All Tags Button */}
-            <AllTagsButton onClick={() => setCategoriesOpen(true)}>
-              <Icon icon="material-symbols:category" width="16" height="16" />
-              <span>All Tags</span>
-            </AllTagsButton>
-          </>
-        )}
-      </Stack>
+            return (
+              <TagChip
+                key={tag}
+                onClick={() => handleViewChange(`/view/${normalizedTag}`)}
+                borderColor={`${colors[index]}4D`}
+                background={isSelected ? `${colors[index]}33` : 'transparent'}
+                color={darkMode ? '#fff' : '#333'}
+                hoverBackground={`${colors[index]}4D`}
+              >
+                <span>{emojis[index]}</span>
+                <span>{tag}</span>
+              </TagChip>
+            );
+          })}
+          
+          {/* All Tags Button */}
+          <AllTagsButton onClick={() => setCategoriesOpen(true)}>
+            <Icon icon="material-symbols:category" width="14" height="14" />
+            <span>All Tags</span>
+          </AllTagsButton>
+        </>
+      )}
 
       {/* Categories Drawer */}
       {categoriesOpen && (
