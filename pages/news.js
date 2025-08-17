@@ -1,32 +1,20 @@
 import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
-import Paper from '@mui/material/Paper';
-import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
-import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import SearchIcon from '@mui/icons-material/Search';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
+import { useSelector } from 'react-redux';
+import { useTheme } from '@mui/material/styles';
+import styles from './news.module.css';
 
 const Header = dynamic(() => import('../src/components/Header'), { ssr: true });
 const Footer = dynamic(() => import('../src/components/Footer'), { ssr: true });
 const Topbar = dynamic(() => import('../src/components/Topbar'), { ssr: true });
 
 
-const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect }) => {
+const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave }) => {
   const theme = useTheme();
+  const themeMode = useSelector((state) => state.status.theme);
+  const isDark = themeMode === 'dark';
   const [showAll, setShowAll] = useState(false);
   
   const sortedSources = useMemo(() => 
@@ -42,148 +30,87 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect }) => {
   const totalSources = sortedSources.length;
   const hiddenCount = totalSources - 12;
 
+  // Simple transparent background like TokenRow with theme text color
+  const containerStyle = {
+    background: 'transparent',
+    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
+    color: theme.palette.text.primary
+  };
+
   return (
-    <Paper
-      sx={{
-        mb: 1,
-        py: 0.5,
-        px: 1,
-        background:
-          theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.9)',
-        backdropFilter: 'blur(10px)',
-        border: `1px solid ${
-          theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-        }`,
-        borderRadius: 1
-      }}
+    <div 
+      className={`${styles.sourcesMenuContainer} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
+      style={containerStyle}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-        <Typography
-          variant="subtitle2"
-          sx={{
-            fontWeight: 600,
-            color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
-            fontSize: '0.75rem'
+      <div className={styles.sourcesHeader}>
+        <span className={styles.sourcesTitle}>
+          News Sources ({totalSources})
+        </span>
+        {totalSources > 12 && (
+          <button
+            className={styles.chipButton}
+            onClick={() => setShowAll(!showAll)}
+            style={{
+              background: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText
+            }}
+          >
+            {showAll ? 'Show Less' : `Show All (+${hiddenCount})`}
+          </button>
+        )}
+      </div>
+      <div className={styles.sourcesChips}>
+        <button
+          className={`${styles.sourceChip} ${!selectedSource ? styles.selected : ''}`}
+          onClick={() => onSourceSelect(null)}
+          style={{
+            borderColor: theme.palette.primary.main,
+            color: !selectedSource ? theme.palette.primary.contrastText : theme.palette.primary.main,
+            background: !selectedSource ? theme.palette.primary.main : 'transparent'
           }}
         >
-          News Sources ({totalSources})
-        </Typography>
-        {totalSources > 12 && (
-          <Chip
-            label={showAll ? 'Show Less' : `Show All (+${hiddenCount})`}
-            size="small"
-            onClick={() => setShowAll(!showAll)}
-            sx={{
-              cursor: 'pointer',
-              background: theme.palette.primary.main,
-              color: '#fff',
-              '&:hover': {
-                background: theme.palette.primary.dark
-              }
-            }}
-          />
-        )}
-      </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-        <Chip
-          key="all"
-          label="All Sources"
-          size="small"
-          onClick={() => onSourceSelect(null)}
-          sx={{
-            background: !selectedSource ? theme.palette.primary.main : 'transparent',
-            color: !selectedSource ? '#fff' : theme.palette.primary.main,
-            border: `1px solid ${theme.palette.primary.main}`,
-            height: '22px',
-            fontSize: '0.7rem',
-            '& .MuiChip-label': {
-              px: 0.5,
-              py: 0
-            },
-            '&:hover': {
-              background: !selectedSource ? theme.palette.primary.dark : theme.palette.primary.main,
-              color: '#fff'
-            }
-          }}
-        />
+          All Sources
+        </button>
         {displayedSources.map(([source, data]) => {
           const sentiment = data.sentiment;
           const hasSentiment = sentiment && (sentiment.Bullish || sentiment.Bearish || sentiment.Neutral);
           
           return (
-            <Chip
+            <button
               key={source}
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <span>{source}</span>
-                  <span style={{ opacity: 0.7, fontSize: '0.85em' }}>({data.count})</span>
-                  {hasSentiment && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, ml: 0.5 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Box sx={{ 
-                          width: 6, 
-                          height: 6, 
-                          borderRadius: '50%', 
-                          bgcolor: 'success.main',
-                          mr: 0.25
-                        }} />
-                        <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
-                          {sentiment.Bullish}%
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Box sx={{ 
-                          width: 6, 
-                          height: 6, 
-                          borderRadius: '50%', 
-                          bgcolor: 'error.main',
-                          mr: 0.25
-                        }} />
-                        <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
-                          {sentiment.Bearish}%
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Box sx={{ 
-                          width: 6, 
-                          height: 6, 
-                          borderRadius: '50%', 
-                          bgcolor: 'warning.main',
-                          mr: 0.25
-                        }} />
-                        <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
-                          {sentiment.Neutral}%
-                        </Typography>
-                      </Box>
-                    </Box>
-                  )}
-                </Box>
-              }
-              size="small"
+              className={`${styles.sourceChip} ${selectedSource === source ? styles.selected : ''}`}
               onClick={() => onSourceSelect(source)}
-              sx={{
-                background: selectedSource === source ? theme.palette.primary.main : 'transparent',
-                color: selectedSource === source ? '#fff' : theme.palette.primary.main,
-                border: `1px solid ${theme.palette.primary.main}`,
-                height: '20px',
-                fontSize: '0.7rem',
-                '& .MuiChip-label': {
-                  px: 0.5,
-                  py: 0
-                },
-                '&:hover': {
-                  background:
-                    selectedSource === source
-                      ? theme.palette.primary.dark
-                      : theme.palette.primary.main,
-                  color: '#fff'
-                }
+              style={{
+                borderColor: theme.palette.primary.main,
+                color: selectedSource === source ? theme.palette.primary.contrastText : theme.palette.primary.main,
+                background: selectedSource === source ? theme.palette.primary.main : 'transparent'
               }}
-            />
+            >
+              <span className={styles.chipContent}>
+                <span>{source}</span>
+                <span className={styles.chipCount}>({data.count})</span>
+                {hasSentiment && (
+                  <span className={styles.sentimentIndicators}>
+                    <span className={styles.sentimentItem}>
+                      <span className={`${styles.sentimentDot} ${styles.bullish}`}></span>
+                      <span className={styles.sentimentText}>{sentiment.Bullish}%</span>
+                    </span>
+                    <span className={styles.sentimentItem}>
+                      <span className={`${styles.sentimentDot} ${styles.bearish}`}></span>
+                      <span className={styles.sentimentText}>{sentiment.Bearish}%</span>
+                    </span>
+                    <span className={styles.sentimentItem}>
+                      <span className={`${styles.sentimentDot} ${styles.neutral}`}></span>
+                      <span className={styles.sentimentText}>{sentiment.Neutral}%</span>
+                    </span>
+                  </span>
+                )}
+              </span>
+            </button>
           );
         })}
-      </Box>
-    </Paper>
+      </div>
+    </div>
   );
 });
 
@@ -192,7 +119,20 @@ SourcesMenu.displayName = 'SourcesMenu';
 function NewsPage() {
   const router = useRouter();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const themeMode = useSelector((state) => state.status.theme);
+  const themeName = useSelector((state) => state.status.themeName);
+  const isDark = themeMode === 'dark';
+  const isSyncWave = themeName === 'SyncWaveTheme';
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 600);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -387,15 +327,29 @@ function NewsPage() {
   }, [currentPage, itemsPerPage, selectedSource, searchQuery]);
 
   const getSentimentColor = (sentiment) => {
+    if (isSyncWave) {
+      // Use SyncWave theme colors (cyberpunk neon)
+      switch (sentiment?.toLowerCase()) {
+        case 'bullish':
+          return '#00ff00'; // Neon Green
+        case 'bearish':
+          return '#ff0066'; // Hot Pink
+        case 'neutral':
+          return '#ffff00'; // Neon Yellow
+        default:
+          return '#00ccff'; // Electric Blue
+      }
+    }
+    // Default colors
     switch (sentiment?.toLowerCase()) {
       case 'bullish':
-        return theme.palette.success.main;
+        return '#10B981';
       case 'bearish':
-        return theme.palette.error.main;
+        return '#EF4444';
       case 'neutral':
-        return theme.palette.warning.main;
+        return '#F59E0B';
       default:
-        return theme.palette.grey[500];
+        return '#9CA3AF';
     }
   };
 
@@ -414,84 +368,22 @@ function NewsPage() {
     if (!stats) return null;
     
     return (
-      <Box sx={{ 
-        flex: 1, 
-        p: 1.5,
-        borderRadius: 1.5,
-        background: theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, 0.02)'
-          : 'rgba(0, 0, 0, 0.02)',
-        transition: 'all 0.3s ease',
-        '&:hover': {
-          background: theme.palette.mode === 'dark'
-            ? 'rgba(255, 255, 255, 0.05)'
-            : 'rgba(0, 0, 0, 0.04)',
-          transform: 'translateY(-2px)'
-        }
-      }}>
-        <Typography variant="subtitle2" sx={{ 
-          mb: 1, 
-          color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)',
-          fontSize: isMobile ? '0.8rem' : '0.875rem',
-          fontWeight: 600,
-          letterSpacing: '0.025em'
-        }}>
+      <div className={`${styles.sentimentSummary} ${isDark ? styles.dark : ''}`}>
+        <h3 className={styles.sentimentPeriod}>
           {period}
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
-          <Chip
-            label={`Bullish ${stats.bullish || 0}%`}
-            size="small"
-            sx={{
-              background: 'linear-gradient(90deg, #10B981 0%, #059669 100%)',
-              color: 'white',
-              height: '24px',
-              fontWeight: 600,
-              fontSize: '0.75rem',
-              boxShadow: '0 2px 6px rgba(16, 185, 129, 0.25)',
-              transition: 'transform 0.2s ease',
-              '&:hover': {
-                transform: 'scale(1.05)',
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)'
-              }
-            }}
-          />
-          <Chip
-            label={`Bearish ${stats.bearish || 0}%`}
-            size="small"
-            sx={{
-              background: 'linear-gradient(90deg, #EF4444 0%, #DC2626 100%)',
-              color: 'white',
-              height: '24px',
-              fontWeight: 600,
-              fontSize: '0.75rem',
-              boxShadow: '0 2px 6px rgba(239, 68, 68, 0.25)',
-              transition: 'transform 0.2s ease',
-              '&:hover': {
-                transform: 'scale(1.05)',
-                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.35)'
-              }
-            }}
-          />
-          <Chip
-            label={`Neutral ${stats.neutral || 0}%`}
-            size="small"
-            sx={{
-              background: 'linear-gradient(90deg, #F59E0B 0%, #D97706 100%)',
-              color: 'white',
-              height: '24px',
-              fontWeight: 600,
-              fontSize: '0.75rem',
-              boxShadow: '0 2px 6px rgba(245, 158, 11, 0.25)',
-              transition: 'transform 0.2s ease',
-              '&:hover': {
-                transform: 'scale(1.05)',
-                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.35)'
-              }
-            }}
-          />
-        </Box>
-      </Box>
+        </h3>
+        <div className={styles.sentimentChips}>
+          <span className={`${styles.sentimentChip} ${styles.bullishChip}`}>
+            Bullish {stats.bullish || 0}%
+          </span>
+          <span className={`${styles.sentimentChip} ${styles.bearishChip}`}>
+            Bearish {stats.bearish || 0}%
+          </span>
+          <span className={`${styles.sentimentChip} ${styles.neutralChip}`}>
+            Neutral {stats.neutral || 0}%
+          </span>
+        </div>
+      </div>
     );
   });
   
@@ -499,589 +391,356 @@ function NewsPage() {
 
   if (loading) {
     return (
-      <>
+      <div style={{ background: theme.palette.background.default, minHeight: '100vh', color: theme.palette.text.primary }}>
         <Topbar />
         <Header />
-        <Container maxWidth="xl" sx={{ py: 4, textAlign: 'center' }}>
-          <CircularProgress />
-        </Container>
+        <div className={`${styles.container} ${isDark ? styles.dark : ''}`}>
+          <div className={styles.loadingContainer}>
+            <div className={styles.spinner}></div>
+          </div>
+        </div>
         <Footer />
-      </>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <>
+      <div style={{ background: theme.palette.background.default, minHeight: '100vh', color: theme.palette.text.primary }}>
         <Topbar />
         <Header />
-        <Container maxWidth="xl" sx={{ py: 4 }}>
-          <Typography color="error">Error: {error}</Typography>
-        </Container>
+        <div className={`${styles.container} ${isDark ? styles.dark : ''}`}>
+          <div className={styles.errorMessage} style={{ color: theme.palette.error.main }}>Error: {error}</div>
+        </div>
         <Footer />
-      </>
+      </div>
     );
   }
 
+  // Get background and text styles from theme
+  const backgroundStyle = {
+    background: theme.palette.background.default,
+    minHeight: '100vh',
+    color: theme.palette.text.primary
+  };
+
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-        background: theme.palette.mode === 'dark' ? '#000' : '#fff'
-      }}
+    <div 
+      className={`${styles.pageWrapper} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`} 
+      style={backgroundStyle}
     >
       <Topbar />
       <Header />
-      <Box sx={{ flex: 1 }}>
-        <Container maxWidth="xl" sx={{ py: 2 }}>
-          <Box sx={{ mb: 2 }}>
-            <Typography
-              variant="h5"
-              component="h1"
-              sx={{
-                color: theme.palette.primary.main,
-                fontWeight: 600
-              }}
-            >
+      <div className={styles.mainContent}>
+        <div className={`${styles.container} ${isDark ? styles.dark : ''}`}>
+          <div className={`${styles.pageHeader} ${isDark ? styles.dark : ''}`}>
+            <h1 className={styles.pageTitle} style={{ color: theme.palette.primary.main }}>
               Latest XRP Ledger News
               {totalCount > 0 && (
-                <Typography
-                  component="span"
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    ml: 1,
-                    fontSize: '0.875rem',
-                    fontWeight: 400
-                  }}
-                >
+                <span className={styles.articleCount} style={{ color: theme.palette.text.secondary }}>
                   ({totalCount.toLocaleString()} articles)
-                </Typography>
+                </span>
               )}
-            </Typography>
-          </Box>
+            </h1>
+          </div>
 
-          <Box sx={{ mb: 2 }}>
+          <div className={`${styles.searchBox} ${isDark ? styles.dark : ''}`}>
             <form onSubmit={handleSearch}>
-              <Paper
-                elevation={0}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  px: 1.5,
-                  py: 0.5,
-                  background: theme.palette.mode === 'dark' 
-                    ? 'rgba(255,255,255,0.05)' 
-                    : 'rgba(0,0,0,0.03)',
-                  border: `1px solid ${
-                    theme.palette.mode === 'dark' 
-                      ? 'rgba(255,255,255,0.1)' 
-                      : 'rgba(0,0,0,0.1)'
-                  }`,
-                  borderRadius: 2,
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    borderColor: theme.palette.primary.main,
-                    background: theme.palette.mode === 'dark' 
-                      ? 'rgba(255,255,255,0.08)' 
-                      : 'rgba(0,0,0,0.05)',
-                  },
-                  '&:focus-within': {
-                    borderColor: theme.palette.primary.main,
-                    boxShadow: `0 0 0 2px ${theme.palette.primary.main}20`,
-                  }
-                }}
-              >
-                <SearchIcon
-                  sx={{
-                    color: theme.palette.mode === 'dark'
-                      ? 'rgba(255,255,255,0.5)'
-                      : 'rgba(0,0,0,0.5)',
-                    mr: 1.5
-                  }}
-                />
-                <TextField
-                  fullWidth
-                  size="small"
-                  variant="standard"
+              <div className={`${styles.searchContainer} ${isDark ? styles.dark : ''}`}>
+                <svg className={styles.searchIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <input
+                  type="text"
+                  className={styles.searchInput}
                   placeholder="Search XRPL News"
                   aria-label="Search news articles"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  InputProps={{
-                    disableUnderline: true,
-                    style: { fontSize: '0.95rem' },
-                    endAdornment: searchInput && (
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          setSearchInput('');
-                          setSearchQuery('');
-                          setSearchSentimentScore(null);
-                          setCurrentPage(1);
-                          const query = { page: 1 };
-                          if (itemsPerPage !== 10) query.limit = itemsPerPage;
-                          if (selectedSource) query.source = selectedSource;
-                          router.push({ pathname: '/news', query }, undefined, { shallow: true });
-                        }}
-                        sx={{
-                          ml: 1,
-                          p: 0.5,
-                          '&:hover': {
-                            bgcolor: theme.palette.mode === 'dark'
-                              ? 'rgba(255,255,255,0.1)'
-                              : 'rgba(0,0,0,0.1)'
-                          }
-                        }}
-                      >
-                        <Box
-                          component="span"
-                          sx={{ 
-                            fontSize: '1.2rem',
-                            color: theme.palette.mode === 'dark' 
-                              ? 'rgba(255,255,255,0.5)' 
-                              : 'rgba(0,0,0,0.5)'
-                          }}
-                        >
-                          ×
-                        </Box>
-                      </IconButton>
-                    )
-                  }}
-                  sx={{
-                    '& .MuiInput-root': {
-                      color: theme.palette.mode === 'dark' ? '#fff' : '#000',
-                    },
-                    '& .MuiInputBase-input::placeholder': {
-                      color: theme.palette.mode === 'dark' 
-                        ? 'rgba(255,255,255,0.5)' 
-                        : 'rgba(0,0,0,0.5)',
-                      opacity: 1
-                    }
-                  }}
                 />
                 {searchInput && (
-                  <Chip
-                    label="Search"
-                    size="small"
-                    onClick={handleSearch}
-                    sx={{
-                      ml: 1,
-                      height: 24,
-                      bgcolor: theme.palette.primary.main,
-                      color: '#fff',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        bgcolor: theme.palette.primary.dark
-                      }
-                    }}
-                  />
+                  <>
+                    <button
+                      type="button"
+                      className={styles.clearButton}
+                      onClick={() => {
+                        setSearchInput('');
+                        setSearchQuery('');
+                        setSearchSentimentScore(null);
+                        setCurrentPage(1);
+                        const query = { page: 1 };
+                        if (itemsPerPage !== 10) query.limit = itemsPerPage;
+                        if (selectedSource) query.source = selectedSource;
+                        router.push({ pathname: '/news', query }, undefined, { shallow: true });
+                      }}
+                    >
+                      ×
+                    </button>
+                    <button
+                      type="submit"
+                      className={styles.searchButton}
+                      style={{
+                        background: theme.palette.primary.main,
+                        color: theme.palette.primary.contrastText
+                      }}
+                    >
+                      Search
+                    </button>
+                  </>
                 )}
-              </Paper>
+              </div>
             </form>
-          </Box>
+          </div>
 
           <SourcesMenu
             sources={sourcesStats}
             selectedSource={selectedSource}
             onSourceSelect={handleSourceSelect}
+            isSyncWave={isSyncWave}
           />
 
-          <Paper
-            sx={{
-              mb: 1.5,
-              p: 1,
-              background:
-                theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(10px)',
-              border: `1px solid ${
-                theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-              }`,
-              borderRadius: 1
+          <div 
+            className={`${styles.sentimentContainer} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
+            style={{
+              background: 'transparent',
+              border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
+              color: theme.palette.text.primary
             }}
           >
-            <Typography
-              variant="h6"
-              gutterBottom
-              sx={{
-                mb: 1,
-                color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
-                fontWeight: 600,
-                fontSize: '1rem'
-              }}
-            >
+            <h2 className={styles.sentimentTitle} style={{ color: theme.palette.text.primary }}>
               Sentiment Analysis
               {searchQuery && searchSentimentScore !== null && (
-                <Typography
-                  component="span"
-                  sx={{
-                    ml: 1,
-                    color: theme.palette.primary.main,
-                    fontWeight: 700
-                  }}
-                >
+                <span className={styles.sentimentScore} style={{ color: theme.palette.primary.main }}>
                   (Score: {searchSentimentScore})
-                </Typography>
+                </span>
               )}
               {selectedSource && (
-                <Typography
-                  component="span"
-                  sx={{
-                    ml: 1,
-                    color:
-                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                  }}
-                >
+                <span className={styles.sentimentSource} style={{ color: theme.palette.text.secondary }}>
                   ({selectedSource})
-                </Typography>
+                </span>
               )}
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: isMobile ? 0.5 : 1 }}>
+            </h2>
+            <div className={`${styles.sentimentGrid} ${isMobile ? styles.mobile : ''}`}>
               <SentimentSummary period="Last 24h" stats={sentimentStats.last24h} />
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{
-                  borderColor:
-                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                  display: isMobile ? 'none' : 'block'
-                }}
-              />
+              {!isMobile && <div className={styles.divider}></div>}
               <SentimentSummary period="7d" stats={sentimentStats.last7d} />
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{
-                  borderColor:
-                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                  display: isMobile ? 'none' : 'block'
-                }}
-              />
+              {!isMobile && <div className={styles.divider}></div>}
               <SentimentSummary period="30d" stats={sentimentStats.last30d} />
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{
-                  borderColor:
-                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                  display: isMobile ? 'none' : 'block'
-                }}
-              />
+              {!isMobile && <div className={styles.divider}></div>}
               <SentimentSummary period="All Time" stats={sentimentStats.all} />
-            </Box>
-          </Paper>
+            </div>
+          </div>
 
-          <Grid container spacing={1}>
+          <div className={`${styles.newsGrid} ${isDark ? styles.dark : ''}`}>
             {currentItems.map((article) => (
-              <Grid item xs={12} key={article._id}>
-                <Card
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    background:
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(0, 0, 0, 0.6)'
-                        : 'rgba(255, 255, 255, 0.9)',
-                    backdropFilter: 'blur(10px)',
-                    border: `1px solid ${
-                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-                    }`,
-                    borderRadius: 1,
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow:
-                        theme.palette.mode === 'dark'
-                          ? '0 8px 24px rgba(255,255,255,0.1)'
-                          : '0 8px 24px rgba(0,0,0,0.1)',
-                      borderColor: theme.palette.primary.main
-                    }
-                  }}
-                >
-                  <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        mb: 1
-                      }}
-                    >
-                      <Typography
-                        variant="h6"
-                        component="h2"
-                        sx={{
-                          flex: 1,
-                          color: theme.palette.mode === 'dark' ? '#fff' : '#000',
-                          fontWeight: 500,
-                          fontSize: isMobile ? '0.875rem' : '0.95rem',
-                          lineHeight: 1.3
-                        }}
+              <div 
+                key={article._id} 
+                className={`${styles.newsCard} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
+                style={{
+                  background: 'transparent',
+                  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
+                  color: theme.palette.text.primary
+                }}
+              >
+                <div className={`${styles.cardContent} ${isDark ? styles.dark : ''}`}>
+                  <div className={styles.cardHeader}>
+                    <h2 className={styles.articleTitle} style={{ color: theme.palette.text.primary }}>
+                      {extractTitle(article.title)}
+                    </h2>
+                    <div className={styles.sentimentBadge}>
+                      <span 
+                        className={styles.sentimentLabel}
+                        style={{ backgroundColor: getSentimentColor(article.sentiment) }}
                       >
-                        {extractTitle(article.title)}
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', ml: 2 }}>
-                        <Chip
-                          label={article.sentiment || 'Unknown'}
-                          size="small"
-                          sx={{
-                            backgroundColor: getSentimentColor(article.sentiment),
-                            color: '#fff',
-                            height: '20px',
-                            fontWeight: 500
-                          }}
-                        />
-                      </Box>
-                    </Box>
-                    <Box>
-                      <Box
-                        sx={{
-                          float: 'left',
-                          mr: 2,
-                          mb: 1,
-                          width: isMobile ? 40 : 60,
-                          height: isMobile ? 40 : 60,
-                          borderRadius: 1,
-                          overflow: 'hidden',
-                          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+                        {article.sentiment || 'Unknown'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={styles.articleContent}>
+                    <div className={styles.articleImage}>
+                      <img
+                        src={article.articleImage || '/static/default-news.svg'}
+                        alt={extractTitle(article.title)}
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          if (e.target.src !== '/static/default-news.svg') {
+                            e.target.src = '/static/default-news.svg';
+                          }
                         }}
-                      >
-                        <img
-                          src={article.articleImage || '/static/default-news.svg'}
-                          alt={extractTitle(article.title)}
-                          loading="lazy"
-                          decoding="async"
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                          }}
-                          onError={(e) => {
-                            if (e.target.src !== '/static/default-news.svg') {
-                              e.target.src = '/static/default-news.svg';
-                            }
-                          }}
-                        />
-                      </Box>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          mb: 1,
-                          color:
-                            theme.palette.mode === 'dark'
-                              ? 'rgba(255,255,255,0.7)'
-                              : 'rgba(0,0,0,0.7)',
-                          lineHeight: 1.4,
-                          fontSize: '0.813rem'
-                        }}
-                      >
-                        {article.summary}
-                      </Typography>
-                    </Box>
-                    <Divider
-                      sx={{
-                        my: 1,
-                        borderColor:
-                          theme.palette.mode === 'dark'
-                            ? 'rgba(255,255,255,0.1)'
-                            : 'rgba(0,0,0,0.1)'
-                      }}
-                    />
+                      />
+                    </div>
+                    <p className={styles.articleSummary} style={{ color: theme.palette.text.secondary }}>
+                      {article.summary}
+                    </p>
+                  </div>
+                  <div className={styles.divider}></div>
                     {expandedArticles[article._id] && (
-                      <Box
-                        sx={{
-                          mb: 1,
-                          color:
-                            theme.palette.mode === 'dark'
-                              ? 'rgba(255,255,255,0.8)'
-                              : 'rgba(0,0,0,0.8)',
-                          lineHeight: 1.4,
-                          fontSize: '0.813rem'
-                        }}
-                      >
+                      <div className={styles.expandedContent}>
                         {article.articleBody?.split('\n').map(
                           (paragraph, index) =>
                             paragraph.trim() && (
-                              <Typography
+                              <p
                                 key={`${article._id}-para-${index}`}
-                                paragraph
-                                sx={{ mb: 1 }}
+                                className={styles.articleParagraph}
                               >
                                 {paragraph}
-                              </Typography>
+                              </p>
                             )
                         )}
-                      </Box>
+                      </div>
                     )}
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: isMobile ? 'column' : 'row',
-                        justifyContent: 'space-between',
-                        alignItems: isMobile ? 'flex-start' : 'center',
-                        gap: isMobile ? 1 : 0,
-                        mt: 1
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color:
-                              theme.palette.mode === 'dark'
-                                ? 'rgba(255,255,255,0.5)'
-                                : 'rgba(0,0,0,0.5)'
-                          }}
-                        >
+                    <div className={`${styles.cardFooter} ${isMobile ? styles.mobile : ''}`}>
+                      <div className={styles.metaInfo}>
+                        <span className={styles.sourceMeta} style={{ color: theme.palette.text.secondary }}>
                           {article.sourceName} •{' '}
                           <time dateTime={article.pubDate}>
                             {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
                           </time>
-                        </Typography>
+                        </span>
                         {article.articleBody && (
-                          <Chip
-                            label={expandedArticles[article._id] ? 'Show Less' : 'Show More'}
-                            size="small"
+                          <button
+                            className={styles.expandButton}
                             onClick={() => toggleArticleExpansion(article._id)}
-                            sx={{
-                              cursor: 'pointer',
-                              backgroundColor: 'transparent',
-                              color: theme.palette.primary.main,
-                              border: `1px solid ${theme.palette.primary.main}`,
-                              '&:hover': {
-                                backgroundColor: theme.palette.primary.main,
-                                color: '#fff'
-                              }
-                            }}
-                          />
+                          >
+                            {expandedArticles[article._id] ? 'Show Less' : 'Show More'}
+                          </button>
                         )}
-                      </Box>
-                      <Typography
-                        variant="caption"
-                        component="a"
+                      </div>
+                      <a
                         href={article.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Read full article on external site"
-                        sx={{
-                          color: theme.palette.primary.main,
-                          textDecoration: 'none',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          '&:hover': {
-                            color: theme.palette.primary.dark
-                          }
-                        }}
+                        className={styles.readMoreLink}
                       >
                         Read full article →
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
+                      </a>
+                    </div>
+                </div>
+              </div>
             ))}
-          </Grid>
+          </div>
 
           {totalCount > 0 && (
-            <Stack spacing={1} alignItems="center" sx={{ mt: 2, mb: 1 }}>
-              <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 1 }}>
+            <div className={`${styles.paginationContainer} ${isDark ? styles.dark : ''}`}>
+              <p className={styles.resultsInfo} style={{ color: theme.palette.text.secondary }}>
                 {searchQuery && `Found ${totalCount} articles for "${searchQuery}"`}
                 {selectedSource && !searchQuery && `Showing ${totalCount} articles from ${selectedSource}`}
                 {!searchQuery && !selectedSource && `Showing ${currentItems.length} of ${totalCount} articles`}
-              </Typography>
+              </p>
               {totalPages > 1 && (
-                <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  p: 2,
-                  borderRadius: 2,
-                  background:
-                    theme.palette.mode === 'dark'
-                      ? 'linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(20, 20, 30, 0.95) 100%)'
-                      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 249, 250, 0.98) 100%)',
-                  border: `1px solid ${
-                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'
-                  }`,
-                  boxShadow: theme.palette.mode === 'dark'
-                    ? '0 4px 20px rgba(0, 0, 0, 0.2)'
-                    : '0 4px 20px rgba(0, 0, 0, 0.05)'
-                }}
-              >
-                <IconButton
-                  onClick={() => handlePageChange(null, 1)}
-                  disabled={currentPage === 1}
-                  sx={{
-                    color:
-                      currentPage === 1
-                        ? theme.palette.mode === 'dark'
-                          ? 'rgba(255,255,255,0.3)'
-                          : 'rgba(0,0,0,0.3)'
-                        : theme.palette.primary.main,
-                    '&:hover': {
-                      backgroundColor:
-                        theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-                    }
+                <div 
+                  className={`${styles.paginationBox} ${isSyncWave ? styles.syncwave : ''}`}
+                  style={{
+                    background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+                    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
+                    color: theme.palette.text.primary
                   }}
                 >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <button
+                    className={`${styles.paginationButton} ${currentPage === 1 ? styles.disabled : ''}`}
+                    onClick={() => handlePageChange(null, 1)}
+                    disabled={currentPage === 1}
+                    style={{
+                      color: currentPage === 1 
+                        ? theme.palette.text.disabled 
+                        : theme.palette.primary.main
+                    }}
                   >
-                    <path
-                      d="M18.41 16.59L13.82 12L18.41 7.41L17 6L11 12L17 18L18.41 16.59Z"
-                      fill="currentColor"
-                    />
-                    <path
-                      d="M12.41 16.59L7.82 12L12.41 7.41L11 6L5 12L11 18L12.41 16.59Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </IconButton>
-                <Pagination
-                  count={totalPages}
-                  page={currentPage}
-                  onChange={handlePageChange}
-                  color="primary"
-                  size="large"
-                  siblingCount={1}
-                  boundaryCount={1}
-                  sx={{
-                    '& .MuiPaginationItem-root': {
-                      color: theme.palette.mode === 'dark' ? '#fff' : '#000',
-                      borderColor:
-                        theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                      '&.Mui-selected': {
-                        backgroundColor: theme.palette.primary.main,
-                        color: '#fff',
-                        '&:hover': {
-                          backgroundColor: theme.palette.primary.dark
-                        }
-                      },
-                      '&:hover': {
-                        backgroundColor:
-                          theme.palette.mode === 'dark'
-                            ? 'rgba(255,255,255,0.1)'
-                            : 'rgba(0,0,0,0.1)'
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M18.41 16.59L13.82 12L18.41 7.41L17 6L11 12L17 18L18.41 16.59Z"
+                        fill="currentColor"
+                      />
+                      <path
+                        d="M12.41 16.59L7.82 12L12.41 7.41L11 6L5 12L11 18L12.41 16.59Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </button>
+                  <div className={styles.paginationNumbers}>
+                    {[...Array(totalPages)].map((_, index) => {
+                      const page = index + 1;
+                      // Show first page, last page, current page, and pages around current
+                      if (
+                        page === 1 ||
+                        page === totalPages ||
+                        page === currentPage ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                      ) {
+                        return (
+                          <button
+                            key={page}
+                            className={`${styles.pageNumber} ${page === currentPage ? styles.active : ''}`}
+                            onClick={() => handlePageChange(null, page)}
+                            style={{
+                              color: page === currentPage 
+                                ? (theme.palette.mode === 'dark' ? '#000' : '#fff')
+                                : theme.palette.text.primary,
+                              background: page === currentPage 
+                                ? theme.palette.primary.main 
+                                : 'transparent',
+                              borderColor: page === currentPage 
+                                ? theme.palette.primary.main 
+                                : (theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)')
+                            }}
+                          >
+                            {page}
+                          </button>
+                        );
                       }
-                    }
-                  }}
-                />
-              </Box>
+                      // Show ellipsis
+                      if (page === 2 && currentPage > 4) {
+                        return <span key={page} className={styles.ellipsis} style={{ color: theme.palette.text.secondary }}>...</span>;
+                      }
+                      if (page === totalPages - 1 && currentPage < totalPages - 3) {
+                        return <span key={page} className={styles.ellipsis} style={{ color: theme.palette.text.secondary }}>...</span>;
+                      }
+                      return null;
+                    })}
+                  </div>
+                  <button
+                    className={`${styles.paginationButton} ${currentPage === totalPages ? styles.disabled : ''}`}
+                    onClick={() => handlePageChange(null, totalPages)}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      color: currentPage === totalPages 
+                        ? theme.palette.text.disabled 
+                        : theme.palette.primary.main
+                    }}
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M5.59 7.41L10.18 12L5.59 16.59L7 18L13 12L7 6L5.59 7.41Z"
+                        fill="currentColor"
+                      />
+                      <path
+                        d="M11.59 7.41L16.18 12L11.59 16.59L13 18L19 12L13 6L11.59 7.41Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </button>
+                </div>
               )}
-            </Stack>
+            </div>
           )}
-        </Container>
-      </Box>
+        </div>
+      </div>
       <Footer />
-    </Box>
+    </div>
   );
 }
 

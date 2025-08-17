@@ -1,0 +1,919 @@
+/* Page Layout */
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* Background will be set inline from theme */
+}
+
+.mainContent {
+  flex: 1;
+}
+
+.container {
+  max-width: 1536px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  color: #000;
+}
+
+.dark .container {
+  color: #fff;
+}
+
+.loadingContainer {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #3b82f6;
+  animation: spin 0.8s linear infinite;
+}
+
+.dark .spinner {
+  border-color: rgba(255, 255, 255, 0.1);
+  border-top-color: #3b82f6;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.errorMessage {
+  color: #ef4444;
+  padding: 2rem 0;
+}
+
+/* Page Header */
+.pageHeader {
+  margin-bottom: 2rem;
+}
+
+.pageTitle {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: #3b82f6;
+  margin: 0;
+}
+
+.articleCount {
+  color: #6b7280;
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.dark .articleCount {
+  color: #9ca3af;
+}
+
+/* Search Box */
+.searchBox {
+  margin-bottom: 2rem;
+}
+
+.dark .searchBox {
+  color: #fff;
+}
+
+.searchContainer {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1.5rem;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.dark .searchContainer {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.searchContainer:hover {
+  border-color: #3b82f6;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dark .searchContainer:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.searchContainer:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.125);
+}
+
+.searchIcon {
+  color: rgba(0, 0, 0, 0.5);
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.dark .searchIcon {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+  color: #000;
+}
+
+.dark .searchInput {
+  color: #fff;
+}
+
+.searchInput::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.dark .searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.clearButton {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  margin-left: 0.5rem;
+  transition: background 0.2s;
+}
+
+.dark .clearButton {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.clearButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.dark .clearButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.searchButton {
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  /* Background and color set inline from theme */
+}
+
+.searchButton:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+/* Sources Menu */
+.sourcesMenuContainer {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+  /* Background and border set inline from theme */
+}
+
+.sourcesHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.sourcesTitle {
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.dark .sourcesTitle {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.sourcesChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sourceChip {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.7rem;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  /* Border color, background, and color set inline from theme */
+}
+
+.sourceChip:hover {
+  opacity: 0.8;
+  transform: scale(1.02);
+}
+
+/* SyncWave theme source chips */
+.syncwave .sourceChip {
+  border: 1px solid #00ffff;
+  color: #00ffff;
+  background: rgba(0, 255, 255, 0.1);
+  text-shadow: 0 0 5px currentColor;
+}
+
+.syncwave .sourceChip:hover {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.syncwave .sourceChip.selected {
+  background: linear-gradient(135deg, #00ffff 0%, #0080ff 100%);
+  color: #000;
+  text-shadow: none;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.syncwave .sourceChip.selected:hover {
+  background: linear-gradient(135deg, #00ffff 0%, #00ccff 100%);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.7);
+}
+
+.chipContent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chipCount {
+  opacity: 0.7;
+  font-size: 0.85em;
+}
+
+.chipButton {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  /* Background and color set inline from theme */
+}
+
+.chipButton:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+.sentimentIndicators {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+}
+
+.sentimentItem {
+  display: flex;
+  align-items: center;
+}
+
+.sentimentDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 0.25rem;
+}
+
+.sentimentDot.bullish {
+  background: #10b981;
+}
+
+.sentimentDot.bearish {
+  background: #ef4444;
+}
+
+.sentimentDot.neutral {
+  background: #f59e0b;
+}
+
+/* SyncWave theme sentiment dots */
+.syncwave .sentimentDot.bullish {
+  background: #00ff00;
+  box-shadow: 0 0 10px #00ff00;
+}
+
+.syncwave .sentimentDot.bearish {
+  background: #ff0066;
+  box-shadow: 0 0 10px #ff0066;
+}
+
+.syncwave .sentimentDot.neutral {
+  background: #ffff00;
+  box-shadow: 0 0 10px #ffff00;
+}
+
+.sentimentText {
+  font-size: 0.7rem;
+}
+
+/* Sentiment Analysis */
+.sentimentContainer {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+  /* Background and border set inline from theme */
+}
+
+.sentimentTitle {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.dark .sentimentTitle {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.sentimentScore {
+  margin-left: 0.5rem;
+  color: #3b82f6;
+  font-weight: 700;
+}
+
+.sentimentSource {
+  margin-left: 0.5rem;
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 400;
+}
+
+.dark .sentimentSource {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.sentimentGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.sentimentGrid.mobile {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sentimentSummary {
+  flex: 1;
+  padding: 1.5rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+}
+
+.sentimentSummary:hover {
+  background: rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.dark .sentimentSummary {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.dark .sentimentSummary:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sentimentPeriod {
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.dark .sentimentPeriod {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sentimentChips {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.sentimentChip {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  transition: transform 0.2s ease;
+}
+
+.sentimentChip:hover {
+  transform: scale(1.05);
+}
+
+.sentimentChip.bullishChip {
+  background: linear-gradient(90deg, #10B981 0%, #059669 100%);
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+}
+
+.sentimentChip.bullishChip:hover {
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.sentimentChip.bearishChip {
+  background: linear-gradient(90deg, #EF4444 0%, #DC2626 100%);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+}
+
+.sentimentChip.bearishChip:hover {
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+.sentimentChip.neutralChip {
+  background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%);
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25);
+}
+
+.sentimentChip.neutralChip:hover {
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+}
+
+/* SyncWave theme overrides for sentiment chips */
+.syncwave .sentimentChip.bullishChip {
+  background: #00ff00;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), 0 0 40px rgba(0, 255, 0, 0.3);
+  text-shadow: 0 0 10px currentColor;
+}
+
+.syncwave .sentimentChip.bearishChip {
+  background: #ff0066;
+  box-shadow: 0 0 20px rgba(255, 0, 102, 0.5), 0 0 40px rgba(255, 0, 102, 0.3);
+  text-shadow: 0 0 10px currentColor;
+}
+
+.syncwave .sentimentChip.neutralChip {
+  background: #ffff00;
+  box-shadow: 0 0 20px rgba(255, 255, 0, 0.5), 0 0 40px rgba(255, 255, 0, 0.3);
+  text-shadow: 0 0 10px currentColor;
+  color: #000;
+}
+
+.divider {
+  width: 1px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.dark .divider {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* News Grid */
+.newsGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+.dark .newsGrid {
+  color: #fff;
+}
+
+.newsCard {
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+  /* Background and border set inline from theme */
+}
+
+.newsCard:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+.dark .newsCard:hover {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* SyncWave uses same simple hover as default */
+
+.cardContent {
+  padding: 1.5rem;
+}
+
+.dark .cardContent {
+  color: #fff;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.articleTitle {
+  flex: 1;
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: #000;
+}
+
+.dark .articleTitle {
+  color: #fff;
+}
+
+.sentimentBadge {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-left: 2rem;
+}
+
+.sentimentLabel {
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.articleContent {
+  clear: both;
+}
+
+.articleImage {
+  float: left;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dark .articleImage {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.articleImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.articleSummary {
+  margin: 0 0 1rem 0;
+  color: rgba(0, 0, 0, 0.7);
+  line-height: 1.4;
+  font-size: 0.813rem;
+}
+
+.dark .articleSummary {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.expandedContent {
+  margin-bottom: 1rem;
+  color: rgba(0, 0, 0, 0.8);
+  line-height: 1.4;
+  font-size: 0.813rem;
+}
+
+.dark .expandedContent {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.articleParagraph {
+  margin: 0 0 1rem 0;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.cardFooter.mobile {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.metaInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.sourceMeta {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 0.813rem;
+}
+
+.dark .sourceMeta {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.expandButton {
+  padding: 0.25rem 0.75rem;
+  background: transparent;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.expandButton:hover {
+  background: #3b82f6;
+  color: white;
+}
+
+.readMoreLink {
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 0.813rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s;
+}
+
+.readMoreLink:hover {
+  color: #2563eb;
+}
+
+/* Pagination */
+.paginationContainer {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dark .paginationContainer {
+  color: #fff;
+}
+
+.resultsInfo {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0 0 1rem 0;
+}
+
+.dark .resultsInfo {
+  color: #9ca3af;
+}
+
+.paginationBox {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+  /* Background and border set inline from theme */
+}
+
+.paginationButton {
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.paginationButton:hover:not(.disabled) {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.dark .paginationButton:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.paginationButton.disabled {
+  color: rgba(0, 0, 0, 0.3);
+  cursor: not-allowed;
+}
+
+.dark .paginationButton.disabled {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.paginationNumbers {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.pageNumber {
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  color: #000;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.dark .pageNumber {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.pageNumber:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.dark .pageNumber:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pageNumber.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.pageNumber.active:hover {
+  background: #2563eb;
+}
+
+.ellipsis {
+  color: #6b7280;
+  padding: 0 0.5rem;
+}
+
+.dark .ellipsis {
+  color: #9ca3af;
+}
+
+/* SyncWave theme text effects */
+.syncwave h1,
+.syncwave h2,
+.syncwave h3 {
+  text-shadow: 0 0 10px currentColor;
+}
+
+.syncwave .pageTitle {
+  color: #00ffff;
+  text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+  animation: neon-glow 2s ease-in-out infinite;
+}
+
+.syncwave .searchIcon {
+  color: #00ffff;
+}
+
+.syncwave .searchContainer {
+  border-color: rgba(0, 255, 255, 0.3);
+  background: rgba(26, 0, 51, 0.5);
+}
+
+.syncwave .searchContainer:hover {
+  border-color: rgba(0, 255, 255, 0.5);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.syncwave .searchContainer:focus-within {
+  border-color: #00ffff;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.syncwave .searchButton {
+  background: linear-gradient(135deg, #00ffff 0%, #0080ff 100%);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+  color: #000;
+}
+
+.syncwave .searchButton:hover {
+  background: linear-gradient(135deg, #00ffff 0%, #00ccff 100%);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.7);
+}
+
+.syncwave .expandButton {
+  border-color: #00ffff;
+  color: #00ffff;
+  background: rgba(0, 255, 255, 0.1);
+  text-shadow: 0 0 5px currentColor;
+}
+
+.syncwave .expandButton:hover {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.syncwave .readMoreLink {
+  color: #00ffff;
+  text-shadow: 0 0 5px currentColor;
+}
+
+.syncwave .readMoreLink:hover {
+  color: #00ffff;
+  text-shadow: 0 0 20px currentColor;
+}
+
+.syncwave .pageNumber {
+  border-color: rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+  background: rgba(26, 0, 51, 0.6);
+  text-shadow: 0 0 5px currentColor;
+}
+
+.syncwave .pageNumber:hover {
+  background: rgba(0, 255, 255, 0.15);
+  border-color: rgba(0, 255, 255, 0.5);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.syncwave .pageNumber.active {
+  background: linear-gradient(135deg, #00ffff 0%, #0080ff 100%);
+  color: #000;
+  border-color: #00ffff;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  text-shadow: none;
+}
+
+.syncwave .pageNumber.active:hover {
+  background: linear-gradient(135deg, #00ffff 0%, #00ccff 100%);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.7);
+}
+
+@keyframes neon-glow {
+  0% {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+  50% {
+    text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+  }
+  100% {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 600px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+
+  .articleTitle {
+    font-size: 0.875rem;
+  }
+
+  .articleImage {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sentimentPeriod {
+    font-size: 0.8rem;
+  }
+
+  .paginationBox {
+    padding: 1rem;
+    gap: 1rem;
+  }
+}
