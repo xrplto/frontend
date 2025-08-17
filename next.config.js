@@ -15,7 +15,6 @@ module.exports = {
     API_URL: process.env.API_URL,
     MAINTENANCE: process.env.MAINTENANCE
   },
-  swcMinify: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
