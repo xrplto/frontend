@@ -2530,15 +2530,41 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
       <Box sx={{ flex: '0 0 20%', textAlign: 'right' }}>
         <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
           {(() => {
-            if (!token.exch) return '0 XRP';
-            const price = parseFloat(token.exch);
-            if (price >= 1) return `${price.toFixed(4)} XRP`;
-            if (price >= 0.01) return `${price.toFixed(6)} XRP`;
-            if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
-            if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
-            if (price >= 0.0000001) return `${price.toFixed(12)} XRP`;
-            // For extremely small values, show up to 15 decimal places
-            return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
+            if (!token.exch && token.exch !== 0) return '0 XRP';
+            
+            // Convert to number, handling scientific notation
+            let price = Number(token.exch);
+            
+            // Check for invalid number
+            if (isNaN(price) || price === 0) return '0 XRP';
+            
+            // For large numbers
+            if (price >= 1) {
+              return `${price.toFixed(4)} XRP`;
+            }
+            
+            // For smaller numbers, dynamically determine decimal places
+            // Convert to string to check how many decimals we need
+            const priceStr = price.toString();
+            
+            // If already in decimal format, just format it
+            if (!priceStr.includes('e')) {
+              if (price >= 0.01) return `${price.toFixed(6)} XRP`;
+              if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
+              if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
+              return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
+            }
+            
+            // Handle scientific notation (e.g., 2.8273e-7)
+            // Use toFixed with enough decimal places
+            const exponent = parseInt(priceStr.split('e')[1]);
+            const decimalPlaces = Math.abs(exponent) + 4; // Add 4 more digits after the significant part
+            
+            // Cap at 20 decimal places for display
+            const formattedPrice = price.toFixed(Math.min(decimalPlaces, 20));
+            
+            // Remove trailing zeros
+            return `${formattedPrice.replace(/\.?0+$/, '')} XRP`;
           })()}
         </Typography>
       </Box>
@@ -4150,11 +4176,35 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                     <Typography variant="subtitle2" color="text.secondary" fontWeight={500}>
                       {token1.name} Price (24h)
                     </Typography>
-                    {latestPrice1 && (
+                    {(token1.exch || tokenExch1 || latestPrice1) && (
                       <Typography variant="h6" fontWeight={700} color="text.primary">
                         {token1.currency === 'XRP' 
-                          ? `$${fNumber(latestPrice1)}`
-                          : `${fNumber(latestPrice1)} XRP`
+                          ? `$${fNumber(latestPrice1 || token1.exch || tokenExch1)}`
+                          : (() => {
+                              // Use token.exch first, then tokenExch1, then latestPrice1
+                              let price = Number(token1.exch || tokenExch1 || latestPrice1);
+                              if (isNaN(price) || price === 0) return '0 XRP';
+                              
+                              // Format based on size
+                              if (price >= 1) {
+                                return `${price.toFixed(4)} XRP`;
+                              }
+                              
+                              // Handle scientific notation for small numbers
+                              const priceStr = price.toString();
+                              if (priceStr.includes('e')) {
+                                const exponent = parseInt(priceStr.split('e')[1]);
+                                const decimalPlaces = Math.abs(exponent) + 4;
+                                const formattedPrice = price.toFixed(Math.min(decimalPlaces, 20));
+                                return `${formattedPrice.replace(/\.?0+$/, '')} XRP`;
+                              }
+                              
+                              // Regular small numbers
+                              if (price >= 0.01) return `${price.toFixed(6)} XRP`;
+                              if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
+                              if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
+                              return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
+                            })()
                         }
                       </Typography>
                     )}
@@ -4195,11 +4245,35 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                     <Typography variant="subtitle2" color="text.secondary" fontWeight={500}>
                       {token2.name} Price (24h)
                     </Typography>
-                    {latestPrice2 && (
+                    {(token2.exch || tokenExch2 || latestPrice2) && (
                       <Typography variant="h6" fontWeight={700} color="text.primary">
                         {token2.currency === 'XRP' 
-                          ? `$${fNumber(latestPrice2)}`
-                          : `${fNumber(latestPrice2)} XRP`
+                          ? `$${fNumber(latestPrice2 || token2.exch || tokenExch2)}`
+                          : (() => {
+                              // Use token.exch first, then tokenExch2, then latestPrice2
+                              let price = Number(token2.exch || tokenExch2 || latestPrice2);
+                              if (isNaN(price) || price === 0) return '0 XRP';
+                              
+                              // Format based on size
+                              if (price >= 1) {
+                                return `${price.toFixed(4)} XRP`;
+                              }
+                              
+                              // Handle scientific notation for small numbers
+                              const priceStr = price.toString();
+                              if (priceStr.includes('e')) {
+                                const exponent = parseInt(priceStr.split('e')[1]);
+                                const decimalPlaces = Math.abs(exponent) + 4;
+                                const formattedPrice = price.toFixed(Math.min(decimalPlaces, 20));
+                                return `${formattedPrice.replace(/\.?0+$/, '')} XRP`;
+                              }
+                              
+                              // Regular small numbers
+                              if (price >= 0.01) return `${price.toFixed(6)} XRP`;
+                              if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
+                              if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
+                              return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
+                            })()
                         }
                       </Typography>
                     )}
