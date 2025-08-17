@@ -1792,37 +1792,39 @@ const Swap = ({ token }) => {
             </Box>
           )}
           
-          {/* Show/Hide Buttons */}
-          <Box sx={{ px: 1, py: 0.5 }}>
-            <Stack direction="row" spacing={0.5} justifyContent="center">
-              <Button
-                size="small"
-                variant="text"
-                onClick={() => setShowOrderbook(!showOrderbook)}
-                sx={{
-                  fontSize: '0.65rem',
-                  textTransform: 'none',
-                  py: 0,
-                  minHeight: '24px'
-                }}
-              >
-                {showOrderbook ? 'Hide' : 'Show'} Book
-              </Button>
-              <Button
-                size="small"
-                variant="text"
-                onClick={() => setShowOrders(!showOrders)}
-                sx={{
-                  fontSize: '0.65rem',
-                  textTransform: 'none',
-                  py: 0,
-                  minHeight: '24px'
-                }}
-              >
-                {showOrders ? 'Hide' : 'Show'} Orders
-              </Button>
-            </Stack>
-          </Box>
+          {/* Show/Hide Buttons - Only show in limit mode */}
+          {orderType === 'limit' && (
+            <Box sx={{ px: 1, py: 0.5 }}>
+              <Stack direction="row" spacing={0.5} justifyContent="center">
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={() => setShowOrderbook(!showOrderbook)}
+                  sx={{
+                    fontSize: '0.65rem',
+                    textTransform: 'none',
+                    py: 0,
+                    minHeight: '24px'
+                  }}
+                >
+                  {showOrderbook ? 'Hide' : 'Show'} Book
+                </Button>
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={() => setShowOrders(!showOrders)}
+                  sx={{
+                    fontSize: '0.65rem',
+                    textTransform: 'none',
+                    py: 0,
+                    minHeight: '24px'
+                  }}
+                >
+                  {showOrders ? 'Hide' : 'Show'} Orders
+                </Button>
+              </Stack>
+            </Box>
+          )}
           
           {/* Transaction Summary */}
           {orderType === 'limit' && amount1 && amount2 && limitPrice && (
