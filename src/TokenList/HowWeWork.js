@@ -162,6 +162,83 @@ export default function HowWeWork({ data }) {
               for XRPL market data, providing the tools and insights needed to navigate the
               decentralized finance landscape effectively.
             </BodyText>
+
+            <SectionTitle style={{ marginTop: '24px' }}>Interactive Live & Historical Token Charts</SectionTitle>
+            <BodyText>
+              Each token's dedicated page features dynamic charts showcasing both live and historical
+              price movements. Customize your view by selecting specific date ranges to analyze trends
+              from an asset's inception to the present. These charts are freely accessible to all users,
+              offering valuable insights at no cost.
+            </BodyText>
+
+            <SectionTitle style={{ marginTop: '24px' }}>Transparent Token Price Calculations</SectionTitle>
+            <BodyText>
+              Our token prices reflect real-time data from the XRP Ledger DEX, ensuring transparency and
+              accuracy. This means that as the XRP Ledger produces new ledgers, our platform updates to
+              provide the latest information. For developers and analysts seeking programmatic access,
+              our comprehensive{' '}
+              <StyledLink href="/api-docs">
+                XRPL API documentation
+              </StyledLink>{' '}
+              provides detailed guidance on integrating and utilizing our data feeds.
+            </BodyText>
+
+            <SectionTitle style={{ marginTop: '24px' }}>XRPL Token Valuation Methodology</SectionTitle>
+            <BodyText>
+              We calculate the market capitalization of XRPL tokens by multiplying the total circulating
+              supply by the current reference price. This approach offers a clear and consistent metric
+              for assessing the value of individual assets within the XRP Ledger.
+            </BodyText>
+
+            <StyledDivider />
+            
+            <SectionTitle>Global XRPL Token Market Overview</SectionTitle>
+            <BodyText>
+              As of June 1, 2025, the XRP Ledger hosts approximately 9,752 tokens, encompassing a
+              diverse array of currencies and projects. XRPL.to automatically lists all tokens available
+              on the ledger, providing a comprehensive view of the ecosystem. While we strive to present
+              accurate information, we encourage users to conduct their own research to assess the
+              legitimacy and potential of each project.
+            </BodyText>
+
+            <SectionTitle style={{ marginTop: '24px' }}>Understanding XRPL Tokens</SectionTitle>
+            <BodyText>
+              Within the XRP Ledger, assets other than XRP are represented as tokens, which can be
+              either fungible or non-fungible. These tokens facilitate a wide range of applications,
+              including stablecoins backed by external assets, community credits, and unique digital
+              collectibles. The ledger's design ensures that tokens are issued and held through{' '}
+              <StyledLink href="https://xrpl.org/trust-lines-and-issuing.html" target="_blank" rel="noopener noreferrer">
+                trust lines
+              </StyledLink>
+              , providing flexibility and security for various use cases.
+            </BodyText>
+
+            <SectionTitle style={{ marginTop: '24px' }}>NFT Trading on the XRP Ledger</SectionTitle>
+            <BodyText>
+              XRPL.to offers a seamless NFT trading experience, allowing users to explore, buy, and
+              sell non-fungible tokens directly on the XRP Ledger. Our platform provides detailed
+              information about collections, individual NFTs, ownership history, and current market
+              offers, making it easy to participate in the growing XRPL NFT ecosystem.
+            </BodyText>
+
+            <SectionTitle style={{ marginTop: '24px' }}>Advanced Trading & Portfolio Management</SectionTitle>
+            <BodyText>
+              Beyond market data, XRPL.to features comprehensive trading tools including real-time
+              order books, trade execution capabilities, and portfolio tracking. Monitor your token
+              holdings, track transaction history, and manage your digital assets all in one place.
+              Our platform supports both casual investors and professional traders with tools designed
+              for every level of expertise.
+            </BodyText>
+
+            <StyledDivider />
+
+            <SectionTitle>Stay Informed with XRPL.to</SectionTitle>
+            <BodyText>
+              Join our growing community of XRPL enthusiasts and stay updated with the latest market
+              trends, token launches, and ecosystem developments. XRPL.to is committed to being your
+              trusted companion in the XRP Ledger journey, providing the data, tools, and insights
+              you need to make informed decisions in the evolving world of decentralized finance.
+            </BodyText>
           </ContentContainer>
         )}
       </CollapseContainer>
