@@ -141,16 +141,16 @@ function Overview({ data }) {
       <Topbar />
       <Header />
 
-      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2, md: 2 } }}>
         <Box
           sx={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'flex-start',
             gap: 3,
             minHeight: 'calc(100vh - 180px)',
-            pt: { xs: 1, sm: 0 }
+            pt: { xs: 1, sm: 2, md: 3 }
           }}
         >
           <Box 
