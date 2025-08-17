@@ -7,7 +7,13 @@ import {
   IconButton,
   Box,
   Alert,
-  AlertTitle
+  AlertTitle,
+  Tabs,
+  Tab,
+  Chip,
+  Select,
+  MenuItem,
+  Paper
 } from '@mui/material';
 import { styled, useTheme, keyframes, alpha, css } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
@@ -191,6 +197,15 @@ const TokenImage = styled(Image)(({ theme }) => ({
   }
 }));
 
+const SummaryBox = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(1),
+  backgroundColor: alpha(theme.palette.background.paper, 0.05),
+  borderRadius: '8px',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  marginTop: theme.spacing(1),
+  marginBottom: theme.spacing(1)
+}));
+
 const Swap = ({ token }) => {
   const WSS_URL = 'wss://xrplcluster.com';
 
@@ -252,6 +267,8 @@ const Swap = ({ token }) => {
   const [slippage, setSlippage] = useState(5); // Default 5% slippage
   const [orderType, setOrderType] = useState('market'); // 'market' or 'limit'
   const [limitPrice, setLimitPrice] = useState('');
+  const [orderExpiry, setOrderExpiry] = useState('never');
+  const [expiryHours, setExpiryHours] = useState(24);
   
   // Add state for orderbook visibility
   const [showOrderbook, setShowOrderbook] = useState(false);
@@ -859,6 +876,17 @@ const Swap = ({ token }) => {
         };
 
         let TakerGets, TakerPays;
+        
+        // Recalculate amount2 based on limit price for limit orders
+        let limitAmount2 = amount2;
+        if (limitPrice && amount1) {
+          const limitPriceDecimal = new Decimal(limitPrice);
+          const amount1Decimal = new Decimal(amount1);
+          
+          // Price is always curr2/curr1 (e.g., RLUSD per XRP)
+          // So amount2 = amount1 * price
+          limitAmount2 = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
+        }
 
         if (revert) {
           // Selling curr2 to get curr1
@@ -870,14 +898,14 @@ const Swap = ({ token }) => {
           TakerPays = {
             currency: curr2.currency,
             issuer: curr2.issuer,
-            value: amount2.toString()
+            value: limitAmount2.toString()
           };
         } else {
           // Selling curr1 to get curr2
           TakerGets = {
             currency: curr2.currency,
             issuer: curr2.issuer,
-            value: amount2.toString()
+            value: limitAmount2.toString()
           };
           TakerPays = {
             currency: curr1.currency,
@@ -904,6 +932,14 @@ const Swap = ({ token }) => {
           SourceTag: 20221212,
           Memos: configureMemos('', '', 'Limit Order via XPmarket.com')
         };
+        
+        // Add expiration if specified
+        if (orderExpiry !== 'never') {
+          const RIPPLE_EPOCH = 946684800; // Jan 1, 2000 00:00 UTC
+          const now = Math.floor(Date.now() / 1000) - RIPPLE_EPOCH;
+          const expiration = now + (expiryHours * 60 * 60);
+          transactionData.Expiration = expiration;
+        }
       } else {
         // Use Payment transaction for market orders
         const PaymentFlags = {
@@ -1418,6 +1454,33 @@ const Swap = ({ token }) => {
   return (
     <Stack alignItems="center" width="100%" sx={{ px: { xs: 0, sm: 0 } }}>
       <OverviewWrapper>
+        {/* Market/Limit Tabs */}
+        <Box sx={{ mb: 1 }}>
+          <Tabs
+            value={orderType}
+            onChange={(e, newValue) => {
+              setOrderType(newValue);
+              if (newValue === 'market') {
+                setShowOrderbook(false);
+                setShowOrders(false);
+              }
+            }}
+            variant="fullWidth"
+            sx={{
+              minHeight: '32px',
+              '& .MuiTab-root': {
+                minHeight: '32px',
+                fontSize: '0.85rem',
+                py: 0.5,
+                textTransform: 'none'
+              }
+            }}
+          >
+            <Tab value="market" label="Market" />
+            <Tab value="limit" label="Limit" />
+          </Tabs>
+        </Box>
+        
         <ConverterFrame>
           <CurrencyContent style={{ backgroundColor: color1 }}>
             <Box display="flex" flexDirection="column" flex="1" gap="3px">
@@ -1782,11 +1845,16 @@ const Swap = ({ token }) => {
                     const limitPriceDecimal = new Decimal(limitPrice || 0);
                     const amount1Decimal = new Decimal(amount1 || 0);
                     let total;
+                    // Price is always curr2/curr1 (e.g., RLUSD per XRP)
+                    // So total curr2 = amount1 * price
                     if (curr1.currency === 'XRP' && curr2.currency !== 'XRP') {
-                      total = amount1Decimal.div(limitPriceDecimal).toFixed(6);
+                      // Selling XRP for Token: price is Token/XRP, so multiply
+                      total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
                     } else if (curr1.currency !== 'XRP' && curr2.currency === 'XRP') {
+                      // Selling Token for XRP: price is XRP/Token, so multiply
                       total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
                     } else {
+                      // Token to Token: multiply
                       total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
                     }
                     return `${total} ${curr2.name}`;
