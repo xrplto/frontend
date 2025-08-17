@@ -457,15 +457,17 @@ export const FloatingPinnedChart = memo(() => {
         ? { currency: tokenCurrency, issuer: tokenIssuer }
         : { currency: 'XRP', issuer: '' };
 
-      // Fetch exchange rates
+      // Fetch exchange rates - always with XRP as token1
       let receiveAmount = '0';
       try {
+        const xrpMd5 = 'f8cd8e5bc5aeb1e8e5e89e83f8ee2d06';
         const ratesRes = await axios.get(
-          `${BASE_URL}/pair_rates?md51=${swapFromXRP ? 'f8cd8e5bc5aeb1e8e5e89e83f8ee2d06' : activePinnedChart.token.md5}&md52=${swapFromXRP ? activePinnedChart.token.md5 : 'f8cd8e5bc5aeb1e8e5e89e83f8ee2d06'}`
+          `${BASE_URL}/pair_rates?md51=${xrpMd5}&md52=${activePinnedChart.token.md5}`
         );
         
         if (ratesRes.data) {
-          const rate1 = Number(ratesRes.data.rate1) || 0;
+          // rate1 = 1 (XRP to XRP)
+          // rate2 = XRP per token
           const rate2 = Number(ratesRes.data.rate2) || 0;
           
           // Calculate receive amount based on rates
@@ -478,9 +480,9 @@ export const FloatingPinnedChart = memo(() => {
                 receiveAmount = amount.div(rate2).toFixed(15, Decimal.ROUND_DOWN);
               }
             } else {
-              // Token -> XRP: multiply token by rate1 (XRP per token)
-              if (rate1 > 0) {
-                receiveAmount = amount.mul(rate1).toFixed(15, Decimal.ROUND_DOWN);
+              // Token -> XRP: multiply token by rate2 (XRP per token)
+              if (rate2 > 0) {
+                receiveAmount = amount.mul(rate2).toFixed(15, Decimal.ROUND_DOWN);
               }
             }
           }
@@ -1549,11 +1551,12 @@ export const FloatingPinnedChart = memo(() => {
                               return result;
                             }
                           } else {
-                            // Token -> XRP: multiply token by rate1 (XRP per token)
-                            // If rate1 is 0.35 (0.35 XRP per RLUSD), then 1 RLUSD * 0.35 = 0.35 XRP
-                            if (tokenExchangeRate.rate1 > 0) {
-                              const result = amount.mul(tokenExchangeRate.rate1).toFixed(6);
-                              console.log('[PinnedChartTracker] Token->XRP calc:', `${swapAmount} * ${tokenExchangeRate.rate1} = ${result}`);
+                            // Token -> XRP: multiply token by rate2 (XRP per token)
+                            // rate2 is XRP per token, so multiply token amount by rate2
+                            // If rate2 is 0.35 (0.35 XRP per RLUSD), then 2 RLUSD * 0.35 = 0.7 XRP
+                            if (tokenExchangeRate.rate2 > 0) {
+                              const result = amount.mul(tokenExchangeRate.rate2).toFixed(6);
+                              console.log('[PinnedChartTracker] Token->XRP calc:', `${swapAmount} * ${tokenExchangeRate.rate2} = ${result}`);
                               return result;
                             }
                           }
