@@ -1,16 +1,4 @@
 import React from 'react';
-import {
-  Box,
-  Container,
-  Grid,
-  Toolbar,
-  Typography,
-  Card,
-  CardContent,
-  useTheme,
-  Alert,
-  AlertTitle
-} from '@mui/material';
 import axios from 'axios';
 // import { performance } from 'perf_hooks';
 import Topbar from 'src/components/Topbar';
@@ -19,7 +7,6 @@ import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
 
 function DisclaimerPage() {
-  const theme = useTheme();
 
   const disclaimerSections = [
     {
@@ -49,135 +36,250 @@ function DisclaimerPage() {
   ];
 
   return (
-    <Box>
-      <Toolbar id="back-to-top-anchor" />
+    <div>
+      <div id="back-to-top-anchor" />
       <Topbar />
       <Header />
 
-      <Container maxWidth="xl">
-        <Grid container spacing={4}>
-          <Grid item xs={12}>
-            <Box sx={{ textAlign: 'center', my: 6 }}>
-              <Typography
-                variant="h1"
-                sx={{
-                  mb: 2,
-                  fontSize: { xs: '2.5rem', md: '3.5rem' },
-                  fontWeight: 700,
-                  background: 'linear-gradient(45deg, #ff9800, #f57c00)',
-                  backgroundClip: 'text',
-                  textFillColor: 'transparent',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}
-              >
-                Disclaimer
-              </Typography>
-              <Typography variant="h5" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
-                Important legal information and disclosures
-              </Typography>
-            </Box>
+      <div className="container">
+        <div className="disclaimer-header">
+          <h1 className="gradient-title">
+            Disclaimer
+          </h1>
+          <h2 className="subtitle">
+            Important legal information and disclosures
+          </h2>
+        </div>
 
-            {/* Important Notice */}
-            <Alert
-              severity="warning"
-              sx={{
-                mb: 4,
-                fontSize: '1.1rem',
-                '& .MuiAlert-message': { width: '100%' }
-              }}
-            >
-              <AlertTitle sx={{ fontSize: '1.2rem', fontWeight: 600 }}>Important Notice</AlertTitle>
-              Please read this disclaimer carefully before using xrpl.to. By accessing and using
-              this website, you acknowledge and agree to the terms outlined below.
-            </Alert>
+        {/* Important Notice */}
+        <div className="alert alert-warning">
+          <h3 className="alert-title">Important Notice</h3>
+          <p className="alert-message">
+            Please read this disclaimer carefully before using xrpl.to. By accessing and using
+            this website, you acknowledge and agree to the terms outlined below.
+          </p>
+        </div>
 
-            <Grid container spacing={4}>
-              {disclaimerSections.map((section) => (
-                <Grid item xs={12} md={6} key={section.title}>
-                  <Card
-                    elevation={3}
-                    sx={{
-                      height: '100%',
-                      background:
-                        section.type === 'warning'
-                          ? `linear-gradient(135deg, ${theme.palette.warning.main}08, ${theme.palette.error.main}08)`
-                          : section.type === 'success'
-                            ? `linear-gradient(135deg, ${theme.palette.success.main}08, ${theme.palette.info.main}08)`
-                            : `linear-gradient(135deg, ${theme.palette.info.main}08, ${theme.palette.primary.main}08)`,
-                      border: `1px solid ${
-                        section.type === 'warning'
-                          ? theme.palette.warning.main + '30'
-                          : section.type === 'success'
-                            ? theme.palette.success.main + '30'
-                            : theme.palette.info.main + '30'
-                      }`
-                    }}
-                  >
-                    <CardContent sx={{ p: 4 }}>
-                      <Typography
-                        variant="h4"
-                        gutterBottom
-                        sx={{
-                          fontWeight: 600,
-                          mb: 3,
-                          color:
-                            section.type === 'warning'
-                              ? 'warning.main'
-                              : section.type === 'success'
-                                ? 'success.main'
-                                : 'info.main'
-                        }}
-                      >
-                        {section.title}
-                      </Typography>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          lineHeight: 1.7,
-                          fontSize: '1.05rem'
-                        }}
-                      >
-                        {section.content}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
+        <div className="sections-grid">
+          {disclaimerSections.map((section) => (
+            <div className={`section-card ${section.type}-card`} key={section.title}>
+              <h2 className={`section-title ${section.type}`}>
+                {section.title}
+              </h2>
+              <p className="section-content">
+                {section.content}
+              </p>
+            </div>
+          ))}
+        </div>
 
-            {/* Footer Notice */}
-            <Card
-              elevation={2}
-              sx={{
-                mt: 4,
-                background: `linear-gradient(135deg, ${theme.palette.primary.main}08, ${theme.palette.secondary.main}08)`,
-                border: `1px solid ${theme.palette.divider}`
-              }}
-            >
-              <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <Typography
-                  variant="h5"
-                  gutterBottom
-                  sx={{ fontWeight: 600, color: 'text.primary' }}
-                >
-                  Questions or Concerns?
-                </Typography>
-                <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
-                  If you have any questions about this disclaimer or need clarification on any of
-                  these terms, please contact us at{' '}
-                  <Typography component="span" sx={{ color: 'primary.main', fontWeight: 600 }}>
-                    hello@xrpl.to
-                  </Typography>
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      </Container>
+        {/* Footer Notice */}
+        <div className="footer-card">
+          <h3 className="footer-title">
+            Questions or Concerns?
+          </h3>
+          <p className="footer-text">
+            If you have any questions about this disclaimer or need clarification on any of
+            these terms, please contact us at{' '}
+            <span className="email-link">
+              hello@xrpl.to
+            </span>
+          </p>
+        </div>
+      </div>
 
       <Footer />
-    </Box>
+
+      <style jsx>{`
+        .container {
+          max-width: 1536px;
+          margin: 0 auto;
+          padding: 0 24px;
+        }
+
+        .disclaimer-header {
+          text-align: center;
+          margin: 48px 0;
+        }
+
+        .gradient-title {
+          font-size: 2.5rem;
+          font-weight: 700;
+          background: linear-gradient(45deg, #ff9800, #f57c00);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin-bottom: 16px;
+        }
+
+        @media (min-width: 768px) {
+          .gradient-title {
+            font-size: 3.5rem;
+          }
+        }
+
+        .subtitle {
+          font-size: 1.25rem;
+          color: rgba(0,0,0,0.6);
+          max-width: 600px;
+          margin: 0 auto;
+          font-weight: 400;
+        }
+
+        .alert {
+          padding: 20px;
+          border-radius: 8px;
+          margin-bottom: 32px;
+        }
+
+        .alert-warning {
+          background: #fff3e0;
+          border: 1px solid #ff9800;
+        }
+
+        .alert-title {
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: #e65100;
+          margin-bottom: 12px;
+        }
+
+        .alert-message {
+          font-size: 1.1rem;
+          line-height: 1.6;
+          color: rgba(0,0,0,0.87);
+        }
+
+        .sections-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 32px;
+          margin-bottom: 48px;
+        }
+
+        @media (min-width: 768px) {
+          .sections-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+
+        .section-card {
+          background: white;
+          border-radius: 8px;
+          padding: 32px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          height: 100%;
+        }
+
+        .section-card.warning-card {
+          background: linear-gradient(135deg, rgba(255,152,0,0.03), rgba(244,67,54,0.03));
+          border: 1px solid rgba(255,152,0,0.18);
+        }
+
+        .section-card.success-card {
+          background: linear-gradient(135deg, rgba(76,175,80,0.03), rgba(33,150,243,0.03));
+          border: 1px solid rgba(76,175,80,0.18);
+        }
+
+        .section-card.info-card {
+          background: linear-gradient(135deg, rgba(33,150,243,0.03), rgba(33,150,243,0.03));
+          border: 1px solid rgba(33,150,243,0.18);
+        }
+
+        .section-title {
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin-bottom: 24px;
+        }
+
+        .section-title.warning {
+          color: #ff9800;
+        }
+
+        .section-title.success {
+          color: #4caf50;
+        }
+
+        .section-title.info {
+          color: #2196f3;
+        }
+
+        .section-content {
+          line-height: 1.7;
+          font-size: 1.05rem;
+          color: rgba(0,0,0,0.87);
+        }
+
+        .footer-card {
+          background: linear-gradient(135deg, rgba(33,150,243,0.03), rgba(156,39,176,0.03));
+          border: 1px solid rgba(0,0,0,0.12);
+          border-radius: 8px;
+          padding: 32px;
+          text-align: center;
+          margin-top: 32px;
+        }
+
+        .footer-title {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: rgba(0,0,0,0.87);
+          margin-bottom: 16px;
+        }
+
+        .footer-text {
+          line-height: 1.7;
+          color: rgba(0,0,0,0.87);
+        }
+
+        .email-link {
+          color: #1976d2;
+          font-weight: 600;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+          .subtitle {
+            color: rgba(255,255,255,0.6);
+          }
+
+          .alert-warning {
+            background: rgba(255,152,0,0.15);
+            border: 1px solid #ff9800;
+          }
+
+          .alert-message {
+            color: rgba(255,255,255,0.87);
+          }
+
+          .section-card {
+            background: #1e1e1e;
+          }
+
+          .section-card.warning-card {
+            background: linear-gradient(135deg, rgba(255,152,0,0.08), rgba(244,67,54,0.08));
+          }
+
+          .section-card.success-card {
+            background: linear-gradient(135deg, rgba(76,175,80,0.08), rgba(33,150,243,0.08));
+          }
+
+          .section-card.info-card {
+            background: linear-gradient(135deg, rgba(33,150,243,0.08), rgba(33,150,243,0.08));
+          }
+
+          .section-content,
+          .footer-title,
+          .footer-text {
+            color: rgba(255,255,255,0.87);
+          }
+
+          .footer-card {
+            background: linear-gradient(135deg, rgba(33,150,243,0.08), rgba(156,39,176,0.08));
+            border: 1px solid rgba(255,255,255,0.12);
+          }
+        }
+      `}</style>
+    </div>
   );
 }
 

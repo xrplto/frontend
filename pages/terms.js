@@ -1,19 +1,4 @@
 import React from 'react';
-import {
-  Box,
-  Container,
-  Grid,
-  Toolbar,
-  Typography,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  Stack,
-  useTheme,
-  ListItem,
-  List
-} from '@mui/material';
 import axios from 'axios';
 // import { performance } from 'perf_hooks';
 import Topbar from 'src/components/Topbar';
@@ -22,7 +7,6 @@ import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
 
 function TermsPage() {
-  const theme = useTheme();
 
   const termsSections = [
     {
@@ -145,173 +129,258 @@ function TermsPage() {
   ];
 
   return (
-    <Box>
-      <Toolbar id="back-to-top-anchor" />
+    <div>
+      <div id="back-to-top-anchor" />
       <Topbar />
       <Header />
 
-      <Container maxWidth="xl">
-        <Grid container spacing={4}>
-          <Grid item xs={12}>
-            <Box sx={{ textAlign: 'center', my: 6 }}>
-              <Typography
-                variant="h1"
-                sx={{
-                  mb: 2,
-                  fontSize: { xs: '2.5rem', md: '3.5rem' },
-                  fontWeight: 700,
-                  background: 'linear-gradient(45deg, #2e7d32, #66bb6a)',
-                  backgroundClip: 'text',
-                  textFillColor: 'transparent',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}
-              >
-                Terms and Conditions
-              </Typography>
-              <Chip
-                label="Last updated: May 27, 2023"
-                color="success"
-                variant="outlined"
-                sx={{ fontSize: '1rem', py: 2 }}
-              />
-            </Box>
+      <div className="container">
+        <div className="terms-header">
+          <h1 className="gradient-title">
+            Terms and Conditions
+          </h1>
+          <span className="date-chip">
+            Last updated: May 27, 2023
+          </span>
+        </div>
 
-            <Grid container spacing={4}>
-              {/* Main Terms Sections */}
-              {termsSections.map((section) => (
-                <Grid item xs={12} md={6} key={section.title}>
-                  <Card
-                    elevation={3}
-                    sx={{
-                      height: '100%',
-                      background: `linear-gradient(135deg, ${theme.palette.success.main}08, ${theme.palette.primary.main}08)`,
-                      border: `1px solid ${theme.palette.divider}`
-                    }}
-                  >
-                    <CardContent sx={{ p: 4 }}>
-                      <Typography
-                        variant="h4"
-                        gutterBottom
-                        sx={{ fontWeight: 600, color: 'success.main', mb: 3 }}
-                      >
-                        {section.title}
-                      </Typography>
-                      {section.content ? (
-                        <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                          {section.content}
-                        </Typography>
-                      ) : (
-                        <Stack spacing={3}>
-                          {section.subsections.map((item) => (
-                            <Box key={`${section.title}-${item.subtitle}`}>
-                              <Typography
-                                variant="h6"
-                                sx={{ fontWeight: 600, mb: 1, color: 'primary.main' }}
-                              >
-                                {item.subtitle}
-                              </Typography>
-                              <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                                {item.text}
-                              </Typography>
-                            </Box>
-                          ))}
-                        </Stack>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Grid>
+        <div className="sections-grid">
+          {/* Main Terms Sections */}
+          {termsSections.map((section) => (
+            <div className="section-card main-card" key={section.title}>
+              <h2 className="section-title success">
+                {section.title}
+              </h2>
+              {section.content ? (
+                <p className="section-content">
+                  {section.content}
+                </p>
+              ) : (
+                <div className="subsections">
+                  {section.subsections.map((item) => (
+                    <div className="subsection" key={`${section.title}-${item.subtitle}`}>
+                      <h3 className="subsection-title">
+                        {item.subtitle}
+                      </h3>
+                      <p className="subsection-text">
+                        {item.text}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Additional Sections */}
+          {additionalSections.map((section) => (
+            <div className="section-card" key={section.title}>
+              <h3 className="section-title">
+                {section.title}
+              </h3>
+              <p className="section-content">
+                {section.content}
+              </p>
+            </div>
+          ))}
+
+          {/* Disclaimer and Limitation Section */}
+          <div className="section-card full-width warning-card">
+            <h2 className="section-title warning">
+              Disclaimer and Limitation of Liability
+            </h2>
+            <div className="subsections">
+              {disclaimerSubsections.map((item) => (
+                <div className="subsection" key={item.subtitle}>
+                  <h3 className="subsection-title error">
+                    {item.subtitle}
+                  </h3>
+                  <p className="subsection-text">
+                    {item.text}
+                  </p>
+                </div>
               ))}
+            </div>
+          </div>
 
-              {/* Additional Sections */}
-              {additionalSections.map((section) => (
-                <Grid item xs={12} md={6} key={section.title}>
-                  <Card elevation={2} sx={{ height: '100%' }}>
-                    <CardContent sx={{ p: 4 }}>
-                      <Typography
-                        variant="h5"
-                        gutterBottom
-                        sx={{ fontWeight: 600, color: 'primary.main', mb: 2 }}
-                      >
-                        {section.title}
-                      </Typography>
-                      <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                        {section.content}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-
-              {/* Disclaimer and Limitation Section */}
-              <Grid item xs={12}>
-                <Card
-                  elevation={3}
-                  sx={{
-                    background: `linear-gradient(135deg, ${theme.palette.warning.main}08, ${theme.palette.error.main}08)`,
-                    border: `1px solid ${theme.palette.warning.main}30`
-                  }}
-                >
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography
-                      variant="h4"
-                      gutterBottom
-                      sx={{ fontWeight: 600, color: 'warning.main', mb: 3 }}
-                    >
-                      Disclaimer and Limitation of Liability
-                    </Typography>
-                    <Stack spacing={3}>
-                      {disclaimerSubsections.map((item) => (
-                        <Box key={item.subtitle}>
-                          <Typography
-                            variant="h6"
-                            sx={{ fontWeight: 600, mb: 1, color: 'error.main' }}
-                          >
-                            {item.subtitle}
-                          </Typography>
-                          <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                            {item.text}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-
-              {/* Contact Section */}
-              <Grid item xs={12}>
-                <Card
-                  elevation={3}
-                  sx={{
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main}08, ${theme.palette.secondary.main}08)`,
-                    border: `1px solid ${theme.palette.divider}`
-                  }}
-                >
-                  <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                    <Typography
-                      variant="h4"
-                      gutterBottom
-                      sx={{ fontWeight: 600, color: 'primary.main' }}
-                    >
-                      Contact Us
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
-                      If you have any questions about this Agreement, please contact us at{' '}
-                      <Typography component="span" sx={{ color: 'primary.main', fontWeight: 600 }}>
-                        hello@xrpl.to
-                      </Typography>
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Container>
+          {/* Contact Section */}
+          <div className="section-card full-width contact-card">
+            <h2 className="section-title">
+              Contact Us
+            </h2>
+            <p className="section-content center">
+              If you have any questions about this Agreement, please contact us at{' '}
+              <span className="email-link">
+                hello@xrpl.to
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
 
       <Footer />
-    </Box>
+
+      <style jsx>{`
+        .container {
+          max-width: 1536px;
+          margin: 0 auto;
+          padding: 0 24px;
+        }
+
+        .terms-header {
+          text-align: center;
+          margin: 48px 0;
+        }
+
+        .gradient-title {
+          font-size: 2.5rem;
+          font-weight: 700;
+          background: linear-gradient(45deg, #2e7d32, #66bb6a);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin-bottom: 16px;
+        }
+
+        @media (min-width: 768px) {
+          .gradient-title {
+            font-size: 3.5rem;
+          }
+        }
+
+        .date-chip {
+          display: inline-block;
+          padding: 8px 16px;
+          border: 1px solid #66bb6a;
+          border-radius: 16px;
+          color: #66bb6a;
+          font-size: 1rem;
+        }
+
+        .sections-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 32px;
+          margin-bottom: 48px;
+        }
+
+        @media (min-width: 768px) {
+          .sections-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+
+        .section-card {
+          background: white;
+          border-radius: 8px;
+          padding: 32px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          height: 100%;
+        }
+
+        .section-card.main-card {
+          background: linear-gradient(135deg, rgba(102,187,106,0.03), rgba(33,150,243,0.03));
+          border: 1px solid rgba(0,0,0,0.12);
+        }
+
+        .section-card.warning-card {
+          background: linear-gradient(135deg, rgba(255,152,0,0.03), rgba(244,67,54,0.03));
+          border: 1px solid rgba(255,152,0,0.18);
+        }
+
+        .section-card.contact-card {
+          background: linear-gradient(135deg, rgba(33,150,243,0.03), rgba(156,39,176,0.03));
+          border: 1px solid rgba(0,0,0,0.12);
+        }
+
+        .section-card.full-width {
+          grid-column: 1 / -1;
+        }
+
+        .section-title {
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: #1976d2;
+          margin-bottom: 24px;
+        }
+
+        .section-title.success {
+          color: #2e7d32;
+        }
+
+        .section-title.warning {
+          color: #ff9800;
+        }
+
+        .section-content {
+          line-height: 1.6;
+          color: rgba(0,0,0,0.87);
+        }
+
+        .section-content.center {
+          text-align: center;
+          line-height: 1.7;
+        }
+
+        .subsections {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        .subsection-title {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: #1976d2;
+          margin-bottom: 8px;
+        }
+
+        .subsection-title.error {
+          color: #f44336;
+        }
+
+        .subsection-text {
+          line-height: 1.6;
+          color: rgba(0,0,0,0.87);
+        }
+
+        .email-link {
+          color: #1976d2;
+          font-weight: 600;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+          .section-card {
+            background: #1e1e1e;
+          }
+
+          .section-card.main-card {
+            background: linear-gradient(135deg, rgba(102,187,106,0.08), rgba(33,150,243,0.08));
+            border: 1px solid rgba(255,255,255,0.12);
+          }
+
+          .section-card.warning-card {
+            background: linear-gradient(135deg, rgba(255,152,0,0.08), rgba(244,67,54,0.08));
+          }
+
+          .section-card.contact-card {
+            background: linear-gradient(135deg, rgba(33,150,243,0.08), rgba(156,39,176,0.08));
+            border: 1px solid rgba(255,255,255,0.12);
+          }
+
+          .section-content,
+          .subsection-text {
+            color: rgba(255,255,255,0.87);
+          }
+
+          .date-chip {
+            color: #66bb6a;
+            border-color: #66bb6a;
+          }
+        }
+      `}</style>
+    </div>
   );
 }
 

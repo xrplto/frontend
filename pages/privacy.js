@@ -1,19 +1,4 @@
 import React from 'react';
-import {
-  Box,
-  Container,
-  Grid,
-  Toolbar,
-  Typography,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  Stack,
-  useTheme,
-  List,
-  ListItem
-} from '@mui/material';
 import axios from 'axios';
 // import { performance } from 'perf_hooks';
 import Topbar from 'src/components/Topbar';
@@ -22,53 +7,52 @@ import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
 
 function PrivacyPage() {
-  const theme = useTheme();
 
   const sections = [
     {
-      title: 'Information We Collect',
+      title: 'No Data Collection',
       content: [
         {
-          subtitle: 'Personal Information',
-          text: 'We may collect certain personal information from you when you use xrpl.to, such as your XRP Ledger address, transaction history, and account information. We only collect personal information that is necessary for the operation and functionality of the App.'
+          subtitle: 'Zero Personal Information',
+          text: 'xrpl.to does not collect, store, or process any personal information. We do not track your XRP Ledger address, transaction history, or any account information. Your privacy is absolute.'
         },
         {
-          subtitle: 'Non-Personal Information',
-          text: 'We may also collect non-personal information, such as your device information, IP address, browser type, and operating system, in order to improve the App and provide a better user experience.'
+          subtitle: 'No Tracking or Analytics',
+          text: 'We do not use cookies, tracking pixels, or any analytics tools. We do not collect IP addresses, device information, browser types, or any other data about your usage of xrpl.to.'
         }
       ]
     },
     {
-      title: 'How We Use Your Information',
+      title: 'No Communication',
       content: [
         {
-          subtitle: 'Provision of Services',
-          text: 'We use the information we collect to provide and improve the services offered by xrpl.to. This includes processing transactions, facilitating XRP Ledger functionalities, and ensuring the security and integrity of the App.'
+          subtitle: 'We Will Never Contact You',
+          text: 'xrpl.to will never send you emails, messages, or communications of any kind. We do not have your contact information and will never ask for it.'
         },
         {
-          subtitle: 'Communication',
-          text: 'We may use your personal information to communicate with you, respond to your inquiries, and provide you with updates or information related to xrpl.to.'
+          subtitle: 'No Marketing or Updates',
+          text: 'Since we do not collect any data, we cannot and will not send you marketing materials, updates, or any other communications. Your use of xrpl.to is completely anonymous.'
         },
         {
-          subtitle: 'Statistical Analysis',
-          text: 'We may aggregate and anonymize non-personal information for statistical analysis and research purposes to improve our services, enhance user experience, and develop new features.'
+          subtitle: 'Beware of Scams',
+          text: 'If you receive any communication claiming to be from xrpl.to, it is fraudulent. We will never contact you for any reason.'
         }
       ]
     },
     {
-      title: 'Information Sharing and Disclosure',
+      title: 'Your Privacy is Guaranteed',
       content: [
         {
-          subtitle: 'Service Providers',
-          text: 'We may engage third-party service providers to assist us in operating and maintaining xrpl.to. These service providers may have access to your personal information only to perform tasks on our behalf and are obligated not to disclose or use it for any other purpose.'
+          subtitle: 'No Third-Party Sharing',
+          text: 'Since we do not collect any data, there is nothing to share with third parties. Your information remains entirely in your control.'
         },
         {
-          subtitle: 'Legal Requirements',
-          text: 'We may disclose your information if required by law, regulation, or legal process, or if we believe it is necessary to protect the rights, property, or safety of xrpl.to, its users, or others.'
+          subtitle: 'Decentralized by Design',
+          text: 'xrpl.to operates as a decentralized interface to the XRP Ledger. All transactions occur directly on the blockchain without any intermediary data collection.'
         },
         {
-          subtitle: 'Business Transfers',
-          text: 'In the event of a merger, acquisition, or sale of all or a portion of our assets, your personal information may be transferred or disclosed as part of the transaction. We will take steps to ensure the confidentiality of your personal information is maintained.'
+          subtitle: 'Open Source Transparency',
+          text: 'Our commitment to privacy is verifiable through our open-source code. You can audit our practices to confirm that no data collection occurs.'
         }
       ]
     }
@@ -77,204 +61,331 @@ function PrivacyPage() {
   const additionalSections = [
     {
       title: 'Data Security',
-      text: 'We implement appropriate security measures to protect the information we collect from unauthorized access, disclosure, alteration, or destruction. However, no method of transmission over the Internet or electronic storage is 100% secure, and we cannot guarantee absolute security.'
+      text: 'Since xrpl.to does not collect any data, there is no user information to secure. All interactions with the XRP Ledger occur directly through your wallet, maintaining complete security and privacy.'
     },
     {
       title: 'Third-Party Links',
-      text: 'xrpl.to may contain links to third-party websites or services. We are not responsible for the privacy practices or content of these third-party sites. We encourage you to review the privacy policies of those sites before providing any personal information.'
+      text: 'xrpl.to may contain links to third-party websites or services. We are not responsible for the privacy practices of these third-party sites. Since we collect no data, any information you provide to third parties is solely between you and them.'
     },
     {
-      title: "Children's Privacy",
-      text: 'xrpl.to is not intended for use by individuals under the age of 18. We do not knowingly collect personal information from children. If we become aware that we have inadvertently collected personal information from a child, we will promptly delete it from our records.'
+      title: 'Use of Service',
+      text: 'xrpl.to is accessible to everyone without any data collection requirements. No registration, no tracking, no personal information needed. Just connect your wallet and use the service freely.'
     },
     {
       title: 'Changes to this Privacy Policy',
-      text: 'We reserve the right to modify this Privacy Policy at any time. If we make material changes, we will notify you by posting the updated Privacy Policy on xrpl.to. Your continued use of the App after the changes have been made constitutes your acceptance of the revised Privacy Policy.'
+      text: 'Our commitment to zero data collection is permanent. Any updates to this policy will only strengthen privacy protections. We will never introduce data collection practices.'
     }
   ];
 
   return (
-    <Box>
-      <Toolbar id="back-to-top-anchor" />
+    <div>
+      <div id="back-to-top-anchor" />
       <Topbar />
       <Header />
 
-      <Container maxWidth="xl">
-        <Grid container spacing={4}>
-          <Grid item xs={12}>
-            <Box sx={{ textAlign: 'center', my: 6 }}>
-              <Typography
-                variant="h1"
-                sx={{
-                  mb: 2,
-                  fontSize: { xs: '2.5rem', md: '3.5rem' },
-                  fontWeight: 700,
-                  background: 'linear-gradient(45deg, #1976d2, #42a5f5)',
-                  backgroundClip: 'text',
-                  textFillColor: 'transparent',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}
-              >
-                Privacy Policy
-              </Typography>
-              <Chip
-                label="Effective Date: May 27, 2023"
-                color="primary"
-                variant="outlined"
-                sx={{ fontSize: '1rem', py: 2 }}
-              />
-            </Box>
+      <div className="container">
+        <div className="privacy-header">
+          <h1 className="gradient-title">
+            Privacy Policy
+          </h1>
+          <span className="date-chip">
+            Effective Date: May 27, 2023
+          </span>
+        </div>
 
-            {/* Introduction Card */}
-            <Card elevation={2} sx={{ mb: 4 }}>
-              <CardContent sx={{ p: 4 }}>
-                <Typography variant="body1" sx={{ lineHeight: 1.7, fontSize: '1.1rem' }}>
-                  At xrpl.to, we are committed to protecting your privacy and ensuring the security
-                  of your personal information. This Privacy Policy explains how we collect, use,
-                  and disclose information when you access or use our web application on the XRP
-                  Ledger ("xrpl.to" or the "App"). By using xrpl.to, you consent to the practices
-                  described in this Privacy Policy.
-                </Typography>
-              </CardContent>
-            </Card>
+        {/* Introduction Card */}
+        <div className="intro-card">
+          <p className="intro-text">
+            At xrpl.to, your privacy is absolute. We do not collect, store, or process any personal 
+            information whatsoever. We will never contact you, send you emails, or communicate with 
+            you in any way. This Privacy Policy confirms our commitment to zero data collection and 
+            complete user anonymity when using our decentralized interface to the XRP Ledger.
+          </p>
+        </div>
 
-            <Grid container spacing={4}>
-              {/* Main Policy Sections */}
-              {sections.map((section) => (
-                <Grid item xs={12} md={6} key={section.title}>
-                  <Card
-                    elevation={3}
-                    sx={{
-                      height: '100%',
-                      background: `linear-gradient(135deg, ${theme.palette.primary.main}08, ${theme.palette.secondary.main}08)`,
-                      border: `1px solid ${theme.palette.divider}`
-                    }}
-                  >
-                    <CardContent sx={{ p: 4 }}>
-                      <Typography
-                        variant="h4"
-                        gutterBottom
-                        sx={{ fontWeight: 600, color: 'primary.main', mb: 3 }}
-                      >
-                        {section.title}
-                      </Typography>
-                      <Stack spacing={3}>
-                        {section.content.map((item, itemIndex) => (
-                          <Box key={`${section.title}-${item.subtitle}`}>
-                            <Typography
-                              variant="h6"
-                              sx={{ fontWeight: 600, mb: 1, color: 'secondary.main' }}
-                            >
-                              {item.subtitle}
-                            </Typography>
-                            <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                              {item.text}
-                            </Typography>
-                          </Box>
-                        ))}
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
+        <div className="sections-grid">
+          {/* Main Policy Sections */}
+          {sections.map((section) => (
+            <div className="section-card main-card" key={section.title}>
+              <h2 className="section-title primary">
+                {section.title}
+              </h2>
+              <div className="subsections">
+                {section.content.map((item, itemIndex) => (
+                  <div className="subsection" key={`${section.title}-${item.subtitle}`}>
+                    <h3 className="subsection-title secondary">
+                      {item.subtitle}
+                    </h3>
+                    <p className="subsection-text">
+                      {item.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
 
-              {/* Additional Sections */}
-              {additionalSections.map((section, index) => (
-                <Grid item xs={12} md={6} key={section.title}>
-                  <Card elevation={2} sx={{ height: '100%' }}>
-                    <CardContent sx={{ p: 4 }}>
-                      <Typography
-                        variant="h5"
-                        gutterBottom
-                        sx={{ fontWeight: 600, color: 'primary.main', mb: 2 }}
-                      >
-                        {section.title}
-                      </Typography>
-                      <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                        {section.text}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
+          {/* Additional Sections */}
+          {additionalSections.map((section, index) => (
+            <div className="section-card" key={section.title}>
+              <h3 className="section-title">
+                {section.title}
+              </h3>
+              <p className="section-content">
+                {section.text}
+              </p>
+            </div>
+          ))}
 
-              {/* Contact Section */}
-              <Grid item xs={12}>
-                <Card
-                  elevation={3}
-                  sx={{
-                    background: `linear-gradient(135deg, ${theme.palette.secondary.main}10, ${theme.palette.primary.main}10)`,
-                    border: `1px solid ${theme.palette.divider}`
-                  }}
-                >
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography
-                      variant="h4"
-                      gutterBottom
-                      sx={{ fontWeight: 600, color: 'secondary.main', textAlign: 'center' }}
-                    >
-                      Contact Us
-                    </Typography>
-                    <Stack spacing={2} sx={{ textAlign: 'center' }}>
-                      <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
-                        If you have any questions, concerns, or requests regarding this Privacy
-                        Policy or the privacy practices of xrpl.to, please contact us at{' '}
-                        <Typography
-                          component="span"
-                          sx={{ color: 'primary.main', fontWeight: 600 }}
-                        >
-                          hello@xrpl.to
-                        </Typography>
-                      </Typography>
-                      <Divider sx={{ my: 2 }} />
-                      <Typography variant="body2" color="text.secondary">
-                        Please note that this Privacy Policy applies only to the use of xrpl.to and
-                        does not extend to any other websites, platforms, or services that may be
-                        linked or integrated with xrpl.to.
-                      </Typography>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
+          {/* Important Notice Section */}
+          <div className="section-card full-width contact-card">
+            <h2 className="section-title secondary center">
+              Important Notice
+            </h2>
+            <div className="contact-content">
+              <p className="section-content center">
+                <strong>xrpl.to will NEVER contact you.</strong> We do not have your email or any 
+                contact information. If someone claims to represent xrpl.to and contacts you, 
+                it is a scam. Report it immediately.
+              </p>
+              <hr className="divider" />
+              <p className="note-text">
+                This Privacy Policy applies only to xrpl.to. Third-party services linked from our 
+                platform may have different privacy practices. Since we collect no data, any 
+                information you provide to third parties is solely your responsibility.
+              </p>
+            </div>
+          </div>
 
-              {/* Timeline Card */}
-              <Grid item xs={12}>
-                <Card elevation={2}>
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography
-                      variant="h5"
-                      gutterBottom
-                      sx={{ fontWeight: 600, textAlign: 'center', mb: 3 }}
-                    >
-                      Policy Updates
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 3
-                      }}
-                    >
-                      <Chip
-                        label="May 27, 2023"
-                        color="primary"
-                        variant="outlined"
-                        sx={{ fontWeight: 600 }}
-                      />
-                      <Typography variant="body1">Privacy Policy Creation</Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Container>
+          {/* Timeline Card */}
+          <div className="section-card full-width">
+            <h3 className="section-title center">
+              Policy Updates
+            </h3>
+            <div className="timeline">
+              <span className="timeline-date">
+                May 27, 2023
+              </span>
+              <p className="timeline-text">Privacy Policy Creation</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <Footer />
-    </Box>
+
+      <style jsx>{`
+        .container {
+          max-width: 1536px;
+          margin: 0 auto;
+          padding: 0 24px;
+        }
+
+        .privacy-header {
+          text-align: center;
+          margin: 48px 0;
+        }
+
+        .gradient-title {
+          font-size: 2.5rem;
+          font-weight: 700;
+          background: linear-gradient(45deg, #1976d2, #42a5f5);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin-bottom: 16px;
+        }
+
+        @media (min-width: 768px) {
+          .gradient-title {
+            font-size: 3.5rem;
+          }
+        }
+
+        .date-chip {
+          display: inline-block;
+          padding: 8px 16px;
+          border: 1px solid #1976d2;
+          border-radius: 16px;
+          color: #1976d2;
+          font-size: 1rem;
+        }
+
+        .intro-card {
+          background: white;
+          border-radius: 8px;
+          padding: 32px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          margin-bottom: 32px;
+        }
+
+        .intro-text {
+          line-height: 1.7;
+          font-size: 1.1rem;
+          color: rgba(0,0,0,0.87);
+        }
+
+        .sections-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 32px;
+          margin-bottom: 48px;
+        }
+
+        @media (min-width: 768px) {
+          .sections-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+
+        .section-card {
+          background: white;
+          border-radius: 8px;
+          padding: 32px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          height: 100%;
+        }
+
+        .section-card.main-card {
+          background: linear-gradient(135deg, rgba(33,150,243,0.03), rgba(156,39,176,0.03));
+          border: 1px solid rgba(0,0,0,0.12);
+        }
+
+        .section-card.contact-card {
+          background: linear-gradient(135deg, rgba(156,39,176,0.06), rgba(33,150,243,0.06));
+          border: 1px solid rgba(0,0,0,0.12);
+        }
+
+        .section-card.full-width {
+          grid-column: 1 / -1;
+        }
+
+        .section-title {
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: #1976d2;
+          margin-bottom: 24px;
+        }
+
+        .section-title.primary {
+          color: #1976d2;
+        }
+
+        .section-title.secondary {
+          color: #9c27b0;
+        }
+
+        .section-title.center {
+          text-align: center;
+        }
+
+        .section-content {
+          line-height: 1.6;
+          color: rgba(0,0,0,0.87);
+        }
+
+        .section-content.center {
+          text-align: center;
+          line-height: 1.7;
+        }
+
+        .subsections {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        .subsection-title {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: #1976d2;
+          margin-bottom: 8px;
+        }
+
+        .subsection-title.secondary {
+          color: #9c27b0;
+        }
+
+        .subsection-text {
+          line-height: 1.6;
+          color: rgba(0,0,0,0.87);
+        }
+
+        .contact-content {
+          text-align: center;
+        }
+
+        .email-link {
+          color: #1976d2;
+          font-weight: 600;
+        }
+
+        .divider {
+          margin: 16px 0;
+          border: 0;
+          border-top: 1px solid rgba(0,0,0,0.12);
+        }
+
+        .note-text {
+          color: rgba(0,0,0,0.6);
+          font-size: 0.875rem;
+          line-height: 1.4;
+        }
+
+        .timeline {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 24px;
+        }
+
+        .timeline-date {
+          display: inline-block;
+          padding: 6px 12px;
+          border: 1px solid #1976d2;
+          border-radius: 16px;
+          color: #1976d2;
+          font-weight: 600;
+        }
+
+        .timeline-text {
+          color: rgba(0,0,0,0.87);
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+          .intro-card,
+          .section-card {
+            background: #1e1e1e;
+          }
+
+          .section-card.main-card {
+            background: linear-gradient(135deg, rgba(33,150,243,0.08), rgba(156,39,176,0.08));
+            border: 1px solid rgba(255,255,255,0.12);
+          }
+
+          .section-card.contact-card {
+            background: linear-gradient(135deg, rgba(156,39,176,0.1), rgba(33,150,243,0.1));
+            border: 1px solid rgba(255,255,255,0.12);
+          }
+
+          .intro-text,
+          .section-content,
+          .subsection-text,
+          .timeline-text {
+            color: rgba(255,255,255,0.87);
+          }
+
+          .note-text {
+            color: rgba(255,255,255,0.6);
+          }
+
+          .divider {
+            border-top: 1px solid rgba(255,255,255,0.12);
+          }
+        }
+      `}</style>
+    </div>
   );
 }
 

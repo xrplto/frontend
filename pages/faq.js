@@ -1,16 +1,4 @@
-import React from 'react';
-import {
-  Box,
-  Container,
-  Grid,
-  Toolbar,
-  Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  useTheme
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import React, { useState } from 'react';
 import axios from 'axios';
 // import { performance } from 'perf_hooks';
 import Topbar from 'src/components/Topbar';
@@ -19,7 +7,11 @@ import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
 
 function FAQPage() {
-  const theme = useTheme();
+  const [expandedIndex, setExpandedIndex] = useState(null);
+
+  const toggleAccordion = (index) => {
+    setExpandedIndex(expandedIndex === index ? null : index);
+  };
 
   const faqs = [
     {
@@ -81,95 +73,184 @@ function FAQPage() {
   ];
 
   return (
-    <Box>
-      <Toolbar id="back-to-top-anchor" />
+    <div>
+      <div id="back-to-top-anchor" />
       <Topbar />
       <Header />
 
-      <Container maxWidth="xl">
-        <Grid container spacing={4}>
-          <Grid item xs={12}>
-            <Box sx={{ textAlign: 'center', my: 6 }}>
-              <Typography
-                variant="h1"
-                sx={{
-                  mb: 2,
-                  fontSize: { xs: '2.5rem', md: '3.5rem' },
-                  fontWeight: 700,
-                  background: 'linear-gradient(45deg, #9c27b0, #e91e63)',
-                  backgroundClip: 'text',
-                  textFillColor: 'transparent',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}
-              >
-                Frequently Asked Questions
-              </Typography>
-              <Typography variant="h5" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
-                Find answers to common questions about xrpl.to
-              </Typography>
-            </Box>
+      <div className="container">
+        <div className="faq-header">
+          <h1 className="gradient-title">
+            Frequently Asked Questions
+          </h1>
+          <h2 className="subtitle">
+            Find answers to common questions about xrpl.to
+          </h2>
+        </div>
 
-            <Box sx={{ maxWidth: '900px', mx: 'auto' }}>
-              {faqs.map((faq) => (
-                <Accordion
-                  key={faq.question}
-                  elevation={2}
-                  sx={{
-                    mb: 2,
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main}08, ${theme.palette.secondary.main}08)`,
-                    border: `1px solid ${theme.palette.divider}`,
-                    '&:before': {
-                      display: 'none'
-                    },
-                    '&.Mui-expanded': {
-                      margin: '0 0 16px 0'
-                    }
-                  }}
+        <div className="faq-list">
+          {faqs.map((faq, index) => (
+            <div className="accordion-item" key={index}>
+              <button
+                className={`accordion-header ${expandedIndex === index ? 'expanded' : ''}`}
+                onClick={() => toggleAccordion(index)}
+                aria-expanded={expandedIndex === index}
+              >
+                <span className="question-text">{faq.question}</span>
+                <svg
+                  className="expand-icon"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon sx={{ color: 'primary.main' }} />}
-                    sx={{
-                      '& .MuiAccordionSummary-content': {
-                        margin: '16px 0'
-                      },
-                      '&:hover': {
-                        backgroundColor: `${theme.palette.primary.main}10`
-                      }
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 600,
-                        color: 'text.primary',
-                        pr: 2
-                      }}
-                    >
-                      {faq.question}
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ pt: 0, pb: 3 }}>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        lineHeight: 1.7,
-                        fontSize: '1.05rem',
-                        color: 'text.secondary'
-                      }}
-                    >
-                      {faq.answer}
-                    </Typography>
-                  </AccordionDetails>
-                </Accordion>
-              ))}
-            </Box>
-          </Grid>
-        </Grid>
-      </Container>
+                  <path
+                    d="M7 10l5 5 5-5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <div className={`accordion-content ${expandedIndex === index ? 'expanded' : ''}`}>
+                <p className="answer-text">{faq.answer}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <Footer />
-    </Box>
+
+      <style jsx>{`
+        .container {
+          max-width: 1536px;
+          margin: 0 auto;
+          padding: 0 24px;
+        }
+
+        .faq-header {
+          text-align: center;
+          margin: 48px 0;
+        }
+
+        .gradient-title {
+          font-size: 2.5rem;
+          font-weight: 700;
+          background: linear-gradient(45deg, #9c27b0, #e91e63);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin-bottom: 16px;
+        }
+
+        @media (min-width: 768px) {
+          .gradient-title {
+            font-size: 3.5rem;
+          }
+        }
+
+        .subtitle {
+          font-size: 1.25rem;
+          color: rgba(0,0,0,0.6);
+          max-width: 600px;
+          margin: 0 auto;
+          font-weight: 400;
+        }
+
+        .faq-list {
+          max-width: 900px;
+          margin: 0 auto;
+        }
+
+        .accordion-item {
+          margin-bottom: 16px;
+          background: linear-gradient(135deg, rgba(33,150,243,0.03), rgba(156,39,176,0.03));
+          border: 1px solid rgba(0,0,0,0.12);
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        .accordion-header {
+          width: 100%;
+          padding: 20px 24px;
+          background: transparent;
+          border: none;
+          text-align: left;
+          cursor: pointer;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          transition: background-color 0.3s ease;
+        }
+
+        .accordion-header:hover {
+          background-color: rgba(33,150,243,0.06);
+        }
+
+        .question-text {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: rgba(0,0,0,0.87);
+          padding-right: 16px;
+          flex: 1;
+        }
+
+        .expand-icon {
+          color: #1976d2;
+          transition: transform 0.3s ease;
+          flex-shrink: 0;
+        }
+
+        .accordion-header.expanded .expand-icon {
+          transform: rotate(180deg);
+        }
+
+        .accordion-content {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.3s ease;
+        }
+
+        .accordion-content.expanded {
+          max-height: 500px;
+        }
+
+        .answer-text {
+          padding: 0 24px 24px;
+          margin: 0;
+          line-height: 1.7;
+          font-size: 1.05rem;
+          color: rgba(0,0,0,0.6);
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+          .subtitle {
+            color: rgba(255,255,255,0.6);
+          }
+
+          .accordion-item {
+            background: linear-gradient(135deg, rgba(33,150,243,0.08), rgba(156,39,176,0.08));
+            border: 1px solid rgba(255,255,255,0.12);
+          }
+
+          .accordion-header:hover {
+            background-color: rgba(33,150,243,0.12);
+          }
+
+          .question-text {
+            color: rgba(255,255,255,0.87);
+          }
+
+          .answer-text {
+            color: rgba(255,255,255,0.6);
+          }
+        }
+      `}</style>
+    </div>
   );
 }
 
