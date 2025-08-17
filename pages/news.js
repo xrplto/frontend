@@ -433,63 +433,64 @@ function NewsPage() {
       <Header />
       <div className={styles.mainContent}>
         <div className={`${styles.container} ${isDark ? styles.dark : ''}`}>
-          <div className={`${styles.pageHeader} ${isDark ? styles.dark : ''}`}>
-            <h1 className={styles.pageTitle} style={{ color: theme.palette.primary.main }}>
-              Latest XRP Ledger News
-              {totalCount > 0 && (
-                <span className={styles.articleCount} style={{ color: theme.palette.text.secondary }}>
-                  ({totalCount.toLocaleString()} articles)
-                </span>
-              )}
-            </h1>
-          </div>
-
-          <div className={`${styles.searchBox} ${isDark ? styles.dark : ''}`}>
-            <form onSubmit={handleSearch}>
-              <div className={`${styles.searchContainer} ${isDark ? styles.dark : ''}`}>
-                <svg className={styles.searchIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <input
-                  type="text"
-                  className={styles.searchInput}
-                  placeholder="Search XRPL News"
-                  aria-label="Search news articles"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                />
-                {searchInput && (
-                  <>
-                    <button
-                      type="button"
-                      className={styles.clearButton}
-                      onClick={() => {
-                        setSearchInput('');
-                        setSearchQuery('');
-                        setSearchSentimentScore(null);
-                        setCurrentPage(1);
-                        const query = { page: 1 };
-                        if (itemsPerPage !== 10) query.limit = itemsPerPage;
-                        if (selectedSource) query.source = selectedSource;
-                        router.push({ pathname: '/news', query }, undefined, { shallow: true });
-                      }}
-                    >
-                      ×
-                    </button>
-                    <button
-                      type="submit"
-                      className={styles.searchButton}
-                      style={{
-                        background: theme.palette.primary.main,
-                        color: theme.palette.primary.contrastText
-                      }}
-                    >
-                      Search
-                    </button>
-                  </>
-                )}
+          <div className={`${styles.compactHeader} ${isDark ? styles.dark : ''}`}>
+            <div className={styles.headerContent}>
+              <div className={styles.titleSection}>
+                <h1 className={styles.compactTitle} style={{ color: theme.palette.primary.main }}>
+                  XRP News
+                  {totalCount > 0 && (
+                    <span className={styles.compactCount} style={{ color: theme.palette.text.secondary }}>
+                      {totalCount.toLocaleString()}
+                    </span>
+                  )}
+                </h1>
               </div>
-            </form>
+              <form onSubmit={handleSearch} className={styles.searchForm}>
+                <div className={`${styles.compactSearchContainer} ${isDark ? styles.dark : ''}`}>
+                  <svg className={styles.searchIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <input
+                    type="text"
+                    className={styles.compactSearchInput}
+                    placeholder="Search news..."
+                    aria-label="Search news articles"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                  />
+                  {searchInput && (
+                    <>
+                      <button
+                        type="button"
+                        className={styles.clearButton}
+                        onClick={() => {
+                          setSearchInput('');
+                          setSearchQuery('');
+                          setSearchSentimentScore(null);
+                          setCurrentPage(1);
+                          const query = { page: 1 };
+                          if (itemsPerPage !== 10) query.limit = itemsPerPage;
+                          if (selectedSource) query.source = selectedSource;
+                          router.push({ pathname: '/news', query }, undefined, { shallow: true });
+                        }}
+                      >
+                        ×
+                      </button>
+                      <button
+                        type="submit"
+                        className={styles.searchButton}
+                        style={{
+                          background: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText
+                        }}
+                      >
+                        Search
+                      </button>
+                    </>
+                  )}
+                </div>
+              </form>
+            </div>
           </div>
 
           <SourcesMenu
