@@ -2,28 +2,6 @@ import React, { useState, useContext, useEffect, useMemo, useCallback, lazy, Sus
 import dynamic from 'next/dynamic';
 import Decimal from 'decimal.js';
 import 'src/utils/i18n';
-import {
-  alpha,
-  styled,
-  Box,
-  Container,
-  Stack,
-  Tooltip,
-  Typography,
-  useTheme,
-  useMediaQuery,
-  IconButton,
-  CircularProgress,
-  MenuItem,
-  Select,
-  FormControl,
-  Chip,
-  Skeleton,
-  Card
-} from '@mui/material';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import CloseIcon from '@mui/icons-material/Close';
-import LinkIcon from '@mui/icons-material/Link';
 import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
@@ -32,288 +10,393 @@ import { AppContext } from 'src/AppContext';
 import { currencySymbols, getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 import axios from 'axios';
 import { throttle } from 'lodash';
-
-// Lazy load drawer component
-const Drawer = dynamic(() => import('@mui/material/Drawer'), { ssr: false });
-const List = dynamic(() => import('@mui/material/List'), { ssr: false });
-const ListItem = dynamic(() => import('@mui/material/ListItem'), { ssr: false });
+import styled from '@emotion/styled';
 
 // Lazy load switchers
-const CurrencySwithcer = dynamic(() => import('./CurrencySwitcher'), { 
-  loading: () => <Skeleton variant="rectangular" width={100} height={32} />,
+const CurrencySwitcher = dynamic(() => import('./CurrencySwitcher'), { 
+  loading: () => <SkeletonLoader style={{ width: '100px', height: '32px' }} />,
   ssr: false 
 });
 const ThemeSwitcher = dynamic(() => import('./ThemeSwitcher'), { 
-  loading: () => <Skeleton variant="circular" width={32} height={32} />,
+  loading: () => <SkeletonLoader style={{ width: '32px', height: '32px', borderRadius: '50%' }} />,
   ssr: false 
 });
 
-const TopWrapper = styled('header')(
-  ({ theme }) => `
-    width: 100%;
-    display: flex;
-    align-items: center;
-    height: ${theme.spacing(4.5)};
-    background: ${theme.palette.mode === 'dark' ? theme.palette.background.default : theme.palette.background.paper};
-    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.1)};
-    position: relative;
-    z-index: 1099;
-    box-shadow: 0 1px 2px ${alpha(theme.palette.common.black, 0.05)};
-    contain: layout style;
-`
+// Helper function for responsive breakpoints
+const breakpoints = {
+  sm: '640px',
+  md: '768px',
+  lg: '1024px',
+  xl: '1280px'
+};
+
+const media = {
+  up: (breakpoint) => `@media (min-width: ${breakpoints[breakpoint]})`,
+  down: (breakpoint) => `@media (max-width: ${breakpoints[breakpoint]})`
+};
+
+// Skeleton loader component
+const SkeletonLoader = styled.div`
+  background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+`;
+
+// Custom styled components
+const TopWrapper = styled.header`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  height: 36px;
+  background: ${props => props.darkMode ? '#1a1a1a' : '#ffffff'};
+  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  position: relative;
+  z-index: 1099;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  contain: layout style;
+`;
+
+const Container = styled.div`
+  width: 100%;
+  max-width: 100%;
+  padding: 0 16px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  
+  ${media.down('md')} {
+    padding: 0;
+  }
+`;
+
+const ContentWrapper = styled.nav`
+  display: flex;
+  gap: 4px;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: auto;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  scrollbar-width: none;
+  contain: layout style;
+`;
+
+const APILabel = styled.button`
+  font-size: 11px;
+  font-weight: 600;
+  color: ${props => props.darkMode ? '#ffffff' : '#000000'};
+  text-decoration: none;
+  margin-left: 4px;
+  background: ${props => props.primaryColor ? `${props.primaryColor}14` : 'rgba(0,128,255,0.08)'};
+  padding: 4px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 26px;
+  border: 1px solid ${props => props.primaryColor ? `${props.primaryColor}26` : 'rgba(0,128,255,0.15)'};
+  cursor: pointer;
+  transition: background 0.2s;
+  
+  &:hover {
+    background: ${props => props.primaryColor ? `${props.primaryColor}1f` : 'rgba(0,128,255,0.12)'};
+  }
+  
+  &:focus {
+    outline: 2px solid ${props => props.primaryColor || '#0080ff'};
+    outline-offset: 2px;
+  }
+`;
+
+const MobileMetric = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  min-height: 28px;
+`;
+
+const H24Style = styled.div`
+  cursor: pointer;
+  padding: 2px 4px;
+  background: ${props => props.primaryColor || '#0080ff'};
+  border-radius: 4px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  transition: background 0.2s;
+  
+  &:hover {
+    filter: brightness(0.9);
+  }
+`;
+
+const PulsatingCircle = styled.div`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  position: relative;
+  animation: pulse 2s infinite;
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+  }
+`;
+
+const MetricContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: transparent;
+  min-width: auto;
+  position: relative;
+  transition: background 0.2s;
+  
+  &:hover {
+    background: rgba(0,0,0,0.04);
+  }
+`;
+
+const MetricLabel = styled.span`
+  color: ${props => props.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
+  font-weight: 600;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+`;
+
+const MetricValue = styled.span`
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+  color: ${props => props.color || (props.darkMode ? '#ffffff' : '#000000')};
+`;
+
+const Drawer = styled.div`
+  position: fixed;
+  top: 0;
+  right: ${props => props.open ? '0' : '-100%'};
+  width: ${props => props.isMobile ? '100%' : '400px'};
+  height: 100vh;
+  background: ${props => props.darkMode ? '#1a1a1a' : '#ffffff'};
+  box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+`;
+
+const DrawerHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: ${props => props.darkMode ? '#1a1a1a' : '#ffffff'};
+  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  position: sticky;
+  top: 0;
+  z-index: 1;
+`;
+
+const DrawerOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: ${props => props.open ? 'block' : 'none'};
+  z-index: 1199;
+`;
+
+const IconButton = styled.button`
+  background: transparent;
+  border: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+  color: ${props => props.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
+  transition: all 0.2s;
+  
+  &:hover {
+    background: ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+    color: ${props => props.darkMode ? '#ffffff' : '#000000'};
+  }
+`;
+
+const Select = styled.select`
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  border: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'};
+  border-radius: 6px;
+  background: ${props => props.darkMode ? '#2a2a2a' : '#ffffff'};
+  color: ${props => props.darkMode ? '#ffffff' : '#000000'};
+  cursor: pointer;
+  min-width: 100px;
+  height: 28px;
+  transition: border-color 0.2s;
+  
+  &:hover {
+    border-color: ${props => props.primaryColor || '#0080ff'};
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: ${props => props.primaryColor || '#0080ff'};
+  }
+`;
+
+const TradeList = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: ${props => props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: ${props => props.darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'};
+    border-radius: 3px;
+    
+    &:hover {
+      background: ${props => props.darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+    }
+  }
+`;
+
+const TradeItem = styled.a`
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
+  text-decoration: none;
+  color: inherit;
+  background: ${props => props.isBuy 
+    ? `rgba(16, 185, 129, ${props.opacity})` 
+    : `rgba(239, 68, 68, ${props.opacity})`};
+  transition: background 0.2s;
+  
+  &:hover {
+    background: ${props => props.isBuy 
+      ? `rgba(16, 185, 129, ${props.opacity * 1.5})` 
+      : `rgba(239, 68, 68, ${props.opacity * 1.5})`};
+  }
+`;
+
+const TokenImage = styled.img`
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: ${props => props.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'};
+  object-fit: cover;
+`;
+
+const Typography = styled.span`
+  font-family: 'Inter', sans-serif;
+  font-size: ${props => props.variant === 'caption' ? '0.75rem' : '0.875rem'};
+  font-weight: ${props => props.fontWeight || 400};
+  color: ${props => props.color || 'inherit'};
+`;
+
+const Box = styled.div`
+  display: ${props => props.display || 'block'};
+  align-items: ${props => props.alignItems || 'stretch'};
+  justify-content: ${props => props.justifyContent || 'flex-start'};
+  gap: ${props => props.gap ? `${props.gap * 4}px` : '0'};
+  padding: ${props => props.p ? `${props.p * 8}px` : '0'};
+  margin: ${props => props.m ? `${props.m * 8}px` : '0'};
+  text-align: ${props => props.textAlign || 'left'};
+  flex: ${props => props.flex || 'initial'};
+  width: ${props => props.width || 'auto'};
+  min-width: ${props => props.minWidth || 'auto'};
+`;
+
+const Stack = styled.div`
+  display: flex;
+  flex-direction: ${props => props.direction === 'row' ? 'row' : 'column'};
+  gap: ${props => props.spacing ? `${props.spacing * 4}px` : '0'};
+  align-items: ${props => props.alignItems || 'stretch'};
+  width: ${props => props.width || 'auto'};
+  flex: ${props => props.flex || 'initial'};
+`;
+
+const CircularProgress = styled.div`
+  width: ${props => props.size || 40}px;
+  height: ${props => props.size || 40}px;
+  border: 3px solid ${props => props.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border-top-color: ${props => props.primaryColor || '#0080ff'};
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+`;
+
+// Icons as React components
+const SwapHorizIcon = ({ style }) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={style}>
+    <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
+  </svg>
 );
 
-const ContentWrapper = styled('nav')(({ theme }) => ({
-  display: 'flex',
-  gap: theme.spacing(0.5),
-  paddingTop: 0,
-  paddingBottom: 0,
-  overflow: 'auto',
-  width: '100%',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  '& > *': {
-    scrollSnapAlign: 'center'
-  },
-  '::-webkit-scrollbar': { display: 'none' },
-  scrollbarWidth: 'none',
-  contain: 'layout style'
-}));
+const CloseIcon = ({ style }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={style}>
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+  </svg>
+);
 
+const LinkIcon = ({ style }) => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={style}>
+    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+  </svg>
+);
 
-const APILabel = styled('button')(({ theme }) => ({
-  fontSize: '11px',
-  fontWeight: 600,
-  color: theme.palette.text.primary,
-  textDecoration: 'none',
-  marginLeft: theme.spacing(0.5),
-  background: alpha(theme.palette.primary.main, 0.08),
-  padding: '4px 10px',
-  borderRadius: '8px',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '4px',
-  minHeight: '26px',
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-  cursor: 'pointer',
-  '&:hover': {
-    background: alpha(theme.palette.primary.main, 0.12)
-  },
-  '&:focus': {
-    outline: `2px solid ${theme.palette.primary.main}`,
-    outlineOffset: '2px'
-  }
-}));
-
-const MobileMetric = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: theme.spacing(0.5),
-  width: '100%',
-  padding: theme.spacing(0.5, 0.75),
-  borderRadius: 0,
-  background: 'transparent',
-  border: 'none',
-  minHeight: theme.spacing(3.5)
-}));
-
-const H24Style = styled('div')(({ theme }) => ({
-  cursor: 'pointer',
-  padding: theme.spacing(0.25, 0.5),
-  background: theme.palette.primary.main,
-  borderRadius: theme.spacing(0.5),
-  minWidth: '24px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  boxShadow: `0 1px 2px ${alpha(theme.palette.primary.main, 0.2)}`,
-  '&:hover': {
-    background: theme.palette.primary.dark
-  }
-}));
-
-const SWITCH_INTERVAL = 3000; // 3 seconds between switches
-
-const StyledContainer = styled(Container)(({ theme }) => ({
-  paddingTop: 0,
-  paddingBottom: 0,
-  height: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  [theme.breakpoints.down('md')]: {
-    paddingLeft: 0,
-    paddingRight: 0
-  }
-}));
-
-const TradeButton = styled(IconButton)(({ theme }) => ({
-  marginLeft: theme.spacing(1),
-  padding: theme.spacing(1.5),
-  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-    ? alpha('#030310', 0.7)
-    : alpha(theme.palette.primary.main, 0.1),
-  borderRadius: theme.spacing(1.5),
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-      ? alpha(theme.palette.primary.main, 0.04)
-      : alpha(theme.palette.primary.main, 0.15),
-    transform: 'translateY(-1px)'
-  }
-}));
-
-const PulsatingCircle = styled('div')(({ theme }) => ({
-  width: '6px',
-  height: '6px',
-  borderRadius: '50%',
-  background: theme.palette.success.main,
-  position: 'relative'
-}));
-
-const LiveIndicator = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  padding: theme.spacing(0.5, 1.5),
-  borderRadius: '20px',
-  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-    ? alpha('#030310', 0.7)
-    : theme.palette.primary.main === '#0080ff'
-      ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`
-      : `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.15)} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`,
-  border: `1px solid ${theme.palette.primary.main === '#0080ff' ? alpha(theme.palette.primary.main, 0.25) : alpha(theme.palette.success.main, 0.25)}`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  boxShadow: `0 4px 12px ${theme.palette.primary.main === '#0080ff' ? alpha(theme.palette.primary.main, 0.15) : alpha(theme.palette.success.main, 0.15)}`,
-  '&:hover': {
-    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-      ? alpha(theme.palette.primary.main, 0.04)
-      : theme.palette.primary.main === '#0080ff'
-        ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.primary.main, 0.12)} 100%)`
-        : `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.2)} 0%, ${alpha(theme.palette.success.main, 0.12)} 100%)`,
-    transform: 'translateY(-1px)'
-  }
-}));
-
-const LiveCircle = styled('div')(({ theme }) => ({
-  width: '6px',
-  height: '6px',
-  borderRadius: '50%',
-  background: theme.palette.success.main,
-  position: 'relative'
-}));
-
-
-const MetricContainer = styled(Stack)(({ theme }) => ({
-  padding: theme.spacing(0.5, 0.75),
-  borderRadius: theme.spacing(0.75),
-  background: 'transparent',
-  minWidth: 'auto',
-  position: 'relative',
-  '&:hover': {
-    background: alpha(theme.palette.action.hover, 0.04)
-  }
-}));
-
-const MetricLabel = styled(Typography)(({ theme }) => ({
-  color: alpha(theme.palette.text.secondary, 0.7),
-  fontWeight: 600,
-  fontSize: '0.6rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px',
-  lineHeight: 1,
-  fontFamily: 'Inter, sans-serif'
-}));
-
-const MetricValue = styled(Typography)(({ theme }) => ({
-  fontWeight: 600,
-  fontSize: '0.85rem',
-  lineHeight: 1,
-  fontFamily: 'Inter, sans-serif',
-  letterSpacing: '-0.01em'
-}));
-
-const TradeCard = styled(Card)(({ theme }) => ({
-  margin: theme.spacing(0.5, 1),
-  borderRadius: theme.spacing(2),
-  background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-    ? alpha('#030310', 0.7)
-    : theme.palette.background.paper,
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  transition: 'all 0.2s ease',
-  position: 'relative',
-  overflow: 'hidden',
-  '&:hover': {
-    transform: 'translateY(-1px)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
-  }
-}));
-
-const TokenImage = styled('img')(({ theme }) => ({
-  width: 20,
-  height: 20,
-  borderRadius: '50%',
-  backgroundColor: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.grey[800], 0.5)
-    : alpha(theme.palette.grey[100], 0.8),
-  objectFit: 'cover',
-  loading: 'lazy',
-  decoding: 'async'
-}));
-
-const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
-  height: 18,
-  fontSize: '0.65rem',
-  fontWeight: 600,
-  borderRadius: '4px',
-  minWidth: '20px',
-  fontFamily: 'Inter, sans-serif',
-  ...(tradetype === 'BUY' && {
-    background: alpha(theme.palette.success.main, 0.1),
-    color: theme.palette.success.dark,
-    border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
-    '& .MuiChip-label': {
-      paddingLeft: '4px',
-      paddingRight: '4px'
-    }
-  }),
-  ...(tradetype === 'SELL' && {
-    background: alpha(theme.palette.error.main, 0.1),
-    color: theme.palette.error.dark,
-    border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
-    '& .MuiChip-label': {
-      paddingLeft: '4px',
-      paddingRight: '4px'
-    }
-  })
-}));
-
-const DrawerHeader = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: theme.spacing(2, 2.5),
-  background: theme.palette.mode === 'dark' 
-    ? theme.palette.background.default
-    : theme.palette.background.paper,
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  position: 'sticky',
-  top: 0,
-  zIndex: 1
-}));
-
-const StyledDrawer = styled(Drawer)(({ theme }) => ({
-  '& .MuiDrawer-paper': {
-    background: theme.palette.mode === 'dark'
-      ? theme.palette.background.default
-      : theme.palette.background.paper,
-    borderLeft: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    boxShadow: theme.shadows[4]
-  }
-}));
-
-// Add filter state and filter options - move this outside the component to prevent recreation
+// Constants
+const SWITCH_INTERVAL = 3000;
 const FILTER_OPTIONS = [
   { value: 'All', label: 'All Trades', icon: '🔄' },
   { value: '500+', label: '500+ XRP', icon: '🐟' },
@@ -323,10 +406,7 @@ const FILTER_OPTIONS = [
   { value: '10000+', label: '10000+ XRP', icon: '🐳' }
 ];
 
-// Create a fetcher function for useSWR
-const fetcher = (url) => axios.get(url).then((res) => res.data);
-
-// Add this utility function at the top of the file
+// Helper functions
 const formatRelativeTime = (timestamp) => {
   const now = Date.now();
   const diffInSeconds = Math.floor((now - timestamp) / 1000);
@@ -345,7 +425,6 @@ const formatRelativeTime = (timestamp) => {
   }
 };
 
-// Add this helper function
 const getTradeSizeEmoji = (value) => {
   const xrpValue = parseFloat(value);
   if (xrpValue < 500) return '🦐';
@@ -356,7 +435,6 @@ const getTradeSizeEmoji = (value) => {
   return '🐳';
 };
 
-// Add this helper function near the top of the file
 const abbreviateNumber = (num) => {
   if (Math.abs(num) < 1000) return num.toFixed(1);
   const suffixes = ['', 'k', 'M', 'B', 'T'];
@@ -365,37 +443,21 @@ const abbreviateNumber = (num) => {
   return scaled.toFixed(2).replace(/\.?0+$/, '') + suffixes[magnitude];
 };
 
-// Update formatTradeValue function
 const formatTradeValue = (value) => {
-  // Convert to number if it's a string
   const numValue = typeof value === 'string' ? Number(value) : value;
-
-  // Very small numbers (use 8 decimal places)
   if (Math.abs(numValue) < 0.0001) {
     return numValue.toFixed(8);
   }
-
-  // Small numbers (use 4 decimal places)
   if (Math.abs(numValue) < 1) {
     return numValue.toFixed(4);
   }
-
   return abbreviateNumber(numValue);
-};
-
-// Add this helper function near the top of the file
-const getTradeColor = (xrpValue) => {
-  if (xrpValue < 500) return '#4CAF50'; // Green for small trades
-  if (xrpValue >= 500 && xrpValue < 5000) return '#2196F3'; // Blue for medium trades
-  if (xrpValue >= 5000 && xrpValue < 10000) return '#FFC107'; // Yellow for large trades
-  return '#F44336'; // Red for whale trades
 };
 
 const getXRPAmount = (trade) => {
   if (!trade || (!trade.paid && !trade.got)) {
     return 0;
   }
-
   let xrpValue = 0;
   try {
     if (trade.paid && trade.paid.currency === 'XRP') {
@@ -407,7 +469,6 @@ const getXRPAmount = (trade) => {
     console.error('Error parsing XRP amount:', error);
     return 0;
   }
-
   return xrpValue;
 };
 
@@ -415,13 +476,10 @@ const parseValue = (value) => {
   if (!value && value !== 0) {
     return 0;
   }
-
   try {
     if (typeof value === 'string' && value.includes('e')) {
-      // Handle scientific notation
       return parseFloat(Number(value).toFixed(8));
     }
-
     const parsed = parseFloat(value);
     return isNaN(parsed) ? 0 : parsed;
   } catch (error) {
@@ -430,45 +488,40 @@ const parseValue = (value) => {
   }
 };
 
-// Get API URL based on filter
 const getTradeApiUrl = (filter) => {
   const baseUrl = 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=200';
-  
   if (filter === 'All') {
     return baseUrl;
   }
-  
-  // Extract XRP amount from filter (e.g., "500+" -> "500")
   const xrpAmount = filter.replace('+', '');
   return `${baseUrl}&xrpAmount=${xrpAmount}`;
 };
 
-// Add this constant before the Topbar component
-const BOT_ADDRESSES = [
-  'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6',
-  'rfmdBKhtJw2J22rw1JxQcchQTM68qzE4N2',
-  'rpiFwLYi6Gb1ESHYorn2QG1WU5vw2u4exQ',
-  'rpP3jobib3bCGbK1EHUsyeFJF1LXcUBymq',
-  'rhubarbMVC2nzASf3qSGQcUKtLnAzqcBjp',
-  'rBYuQZgRnsSNTuGsxz7wmGt53GYDEg1qzf',
-  'rippLE4uy7r898MzuHTeTe7sPfuUDafLB',
-  'raKT8yExRhuK9xAqYeWezH8RAp6vNoU3Jo',
-  'rhB5snxAxsZ2cKf8iDJYiBpX8nrTxJfHoH',
-  'rN7SthSu7RZXo2LNmsh4QPgXcBzhTgmDDg',
-  'raKTPwoUnGbdSquoiZLX5bLZwY2JAvS5o9'
-];
+// Custom hook for media queries
+const useMediaQuery = (query) => {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(query.replace('@media ', ''));
+    setMatches(mediaQuery.matches);
+
+    const handler = (e) => setMatches(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, [query]);
+
+  return matches;
+};
 
 const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
-
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { darkMode, activeFiatCurrency } = useContext(AppContext);
+  const { darkMode, activeFiatCurrency, theme } = useContext(AppContext);
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
   const iconColor = darkMode ? '#FFFFFF' : '#000000';
   const [fullSearch, setFullSearch] = useState(false);
-  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const [currentMetricIndex, setCurrentMetricIndex] = useState(0);
   const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
   const router = useRouter();
@@ -476,6 +529,10 @@ const Topbar = () => {
   const [trades, setTrades] = useState([]);
   const [wsError, setWsError] = useState(null);
   const [isWsLoading, setIsWsLoading] = useState(false);
+  const [tradeFilter, setTradeFilter] = useState('All');
+
+  // Get primary color from theme context
+  const primaryColor = theme?.primaryColor || '#0080ff';
 
   // Check if metrics are properly loaded
   const metricsLoaded = useMemo(() => {
@@ -508,7 +565,7 @@ const Topbar = () => {
     }
   }, [metricsLoaded, dispatch]);
 
-  // Memoize the mobile metrics to prevent recreation on every render
+  // Memoize the mobile metrics
   const mobileMetrics = useMemo(
     () => {
       if (!metricsLoaded) {
@@ -518,7 +575,7 @@ const Topbar = () => {
           { label: 'Offers', value: '...', color: '#FFC107', loading: true },
           { label: 'Trustlines', value: '...', color: '#FFA48D', loading: true },
           { label: 'Trades', value: '...', color: '#74CAFF', loading: true },
-          { label: 'Vol', value: '...', color: theme.palette.error.main, loading: true },
+          { label: 'Vol', value: '...', color: '#ef4444', loading: true },
           { label: 'Tokens Traded', value: '...', color: '#3366FF', loading: true },
           { label: 'Active Addresses', value: '...', color: '#54D62C', loading: true },
           { label: 'Unique Traders', value: '...', color: '#2196F3', loading: true },
@@ -561,7 +618,7 @@ const Topbar = () => {
                   .toNumber()
               : 0
           )}`,
-          color: theme.palette.error.main
+          color: '#ef4444'
         },
         {
           label: 'Tokens Traded',
@@ -591,17 +648,15 @@ const Topbar = () => {
         }
       ];
     },
-    [metrics, activeFiatCurrency, theme.palette.error.main, metricsLoaded]
+    [metrics, activeFiatCurrency, metricsLoaded]
   );
 
-  // Add useEffect for auto-switching
+  // Auto-switch metrics on mobile
   useEffect(() => {
     if (!isMobile) return;
-
     const interval = setInterval(() => {
       setCurrentMetricIndex((prev) => (prev + 1) % mobileMetrics.length);
     }, SWITCH_INTERVAL);
-
     return () => clearInterval(interval);
   }, [isMobile, mobileMetrics.length]);
 
@@ -617,16 +672,13 @@ const Topbar = () => {
     }
   };
 
-  // Add filter state - use useCallback to prevent recreation
-  const [tradeFilter, setTradeFilter] = useState('All');
-
   const handleFilterChange = useCallback((event) => {
     setTrades([]);
     setIsWsLoading(true);
     setTradeFilter(event.target.value);
   }, []);
 
-  // Move throttled functions outside of useEffect
+  // Throttled functions
   const throttledSetTrades = useMemo(
     () => throttle((newTrades) => {
       setTrades(newTrades);
@@ -641,6 +693,7 @@ const Topbar = () => {
     []
   );
 
+  // WebSocket connection for live trades
   useEffect(() => {
     if (!tradeDrawerOpen) {
       return;
@@ -650,7 +703,7 @@ const Topbar = () => {
     setTrades([]);
     setWsError(null);
 
-    // First, load initial data from REST API
+    // Load initial data
     const loadInitialData = async () => {
       try {
         const apiUrl = getTradeApiUrl(tradeFilter);
@@ -699,202 +752,148 @@ const Topbar = () => {
 
     return () => {
       ws.close();
-      throttledSetTrades.cancel(); // Cancel any pending throttled calls
-      throttledAddTrade.cancel(); // Cancel any pending throttled calls
+      throttledSetTrades.cancel();
+      throttledAddTrade.cancel();
     };
   }, [tradeDrawerOpen, tradeFilter, throttledSetTrades, throttledAddTrade]);
 
-  // Since API filtering is now handled server-side, just sort trades
+  // Filter and sort trades
   const filteredTrades = useMemo(() => {
     if (!trades) return [];
-    // Just sort by time since filtering is handled by API
     return [...trades].sort((a, b) => b.time - a.time);
   }, [trades]);
 
-  // Memoize the filter select component to prevent re-renders
-  const FilterSelect = useMemo(
-    () => (
-      <FormControl
-        size="small"
-        sx={{
-          minWidth: 100,
-          '& .MuiSelect-select': {
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.5,
-            paddingY: '4px',
-            paddingX: '8px',
-            fontSize: '0.75rem'
-          }
-        }}
-      >
-        <Select
-          value={tradeFilter}
-          onChange={handleFilterChange}
-          displayEmpty
-          inputProps={{ 'aria-label': 'Filter trades' }}
-          sx={{
-            borderRadius: 1.5,
-            height: 28,
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: alpha(theme.palette.divider, 0.3)
-            },
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: alpha(theme.palette.primary.main, 0.5)
-            },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: theme.palette.primary.main
-            }
-          }}
-        >
-          {FILTER_OPTIONS.map((option) => (
-            <MenuItem key={option.value} value={option.value} sx={{ fontSize: '0.75rem', paddingY: 0.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography component="span" sx={{ fontSize: '0.7rem' }}>{option.icon}</Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>{option.label}</Typography>
-              </Box>
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    ),
-    [tradeFilter, handleFilterChange]
-  );
-
   return (
-    <TopWrapper>
-      <StyledContainer maxWidth={false} disableGutters={isMobile}>
-        <ContentWrapper>
-          {isMobile ? (
-            <MobileMetric>
-              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ width: '100%' }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.75,
-                    p: 0.75,
-                    borderRadius: 1,
-                    background: `linear-gradient(135deg, ${alpha(mobileMetrics[currentMetricIndex].color, 0.12)} 0%, ${alpha(mobileMetrics[currentMetricIndex].color, 0.06)} 100%)`,
-                    border: `1px solid ${alpha(mobileMetrics[currentMetricIndex].color, 0.15)}`,
-                    flex: 1,
-                    boxShadow: `inset 0 1px 2px ${alpha(mobileMetrics[currentMetricIndex].color, 0.08)}`,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{
-                      fontWeight: 500,
-                      fontSize: '0.7rem',
-                      textTransform: 'uppercase'
+    <>
+      <TopWrapper darkMode={darkMode}>
+        <Container>
+          <ContentWrapper>
+            {isMobile ? (
+              <MobileMetric>
+                <Stack direction="row" spacing={0.5} alignItems="center" width="100%">
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    gap={0.75}
+                    style={{
+                      padding: '6px',
+                      borderRadius: '4px',
+                      background: `linear-gradient(135deg, ${mobileMetrics[currentMetricIndex].color}1f 0%, ${mobileMetrics[currentMetricIndex].color}0f 100%)`,
+                      border: `1px solid ${mobileMetrics[currentMetricIndex].color}26`,
+                      flex: 1,
+                      boxShadow: `inset 0 1px 2px ${mobileMetrics[currentMetricIndex].color}14`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   >
-                    {t(mobileMetrics[currentMetricIndex].label)}
-                  </Typography>
-                  {mobileMetrics[currentMetricIndex].loading ? (
-                    <Skeleton 
-                      variant="text" 
-                      width={50} 
-                      height={16} 
-                      sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} 
-                    />
-                  ) : (
                     <Typography
                       variant="caption"
-                      color={mobileMetrics[currentMetricIndex].color}
-                      sx={{
-                        fontWeight: 700,
-                        fontSize: '0.8rem'
+                      color={darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'}
+                      style={{
+                        fontWeight: 500,
+                        fontSize: '0.7rem',
+                        textTransform: 'uppercase'
                       }}
                     >
-                      {mobileMetrics[currentMetricIndex].value}
+                      {t(mobileMetrics[currentMetricIndex].label)}
                     </Typography>
+                    {mobileMetrics[currentMetricIndex].loading ? (
+                      <SkeletonLoader style={{ width: '50px', height: '16px' }} />
+                    ) : (
+                      <Typography
+                        variant="caption"
+                        color={mobileMetrics[currentMetricIndex].color}
+                        style={{
+                          fontWeight: 700,
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                        {mobileMetrics[currentMetricIndex].value}
+                      </Typography>
+                    )}
+                  </Box>
+                  {currentMetricIndex >= 3 && (
+                    <H24Style primaryColor={primaryColor}>
+                      <Typography
+                        variant="caption"
+                        color="#ffffff"
+                        style={{
+                          fontWeight: 600,
+                          fontSize: '0.6rem',
+                          lineHeight: 1
+                        }}
+                      >
+                        24h
+                      </Typography>
+                    </H24Style>
                   )}
-                </Box>
-                {currentMetricIndex >= 3 && (
-                  <H24Style>
-                    <Typography
-                      variant="caption"
-                      color="#ffffff"
-                      sx={{
-                        fontWeight: 600,
-                        fontSize: '0.6rem',
-                        lineHeight: 1
-                      }}
-                    >
-                      24h
+                  <APILabel
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleTradeDrawerOpen();
+                    }}
+                    aria-label="Open live trades"
+                    type="button"
+                    darkMode={darkMode}
+                    primaryColor={primaryColor}
+                  >
+                    <PulsatingCircle />
+                    <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
+                      Live
                     </Typography>
-                  </H24Style>
-                )}
-                <APILabel
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleTradeDrawerOpen();
-                  }}
-                  aria-label="Open live trades"
-                  type="button"
-                >
-                  <PulsatingCircle />
-                  <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
-                    Live
-                  </Typography>
-                </APILabel>
-              </Stack>
-            </MobileMetric>
-          ) : (
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: 1 }}>
-              <MetricContainer direction="row" spacing={1} alignItems="center">
-                <MetricLabel>{t('Addresses')}</MetricLabel>
-                {metricsLoaded ? (
-                  <MetricValue sx={{ color: '#54D62C' }}>
-                    {abbreviateNumber(metrics.global?.totalAddresses || 0)}
-                  </MetricValue>
-                ) : (
-                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
-                )}
-              </MetricContainer>
+                  </APILabel>
+                </Stack>
+              </MobileMetric>
+            ) : (
+              <Stack direction="row" spacing={1} alignItems="center" flex={1}>
+                <MetricContainer>
+                  <MetricLabel darkMode={darkMode}>{t('Addresses')}</MetricLabel>
+                  {metricsLoaded ? (
+                    <MetricValue color="#54D62C">
+                      {abbreviateNumber(metrics.global?.totalAddresses || 0)}
+                    </MetricValue>
+                  ) : (
+                    <SkeletonLoader style={{ width: '60px', height: '20px' }} />
+                  )}
+                </MetricContainer>
 
-              <MetricContainer direction="row" spacing={1} alignItems="center">
-                <MetricLabel>{t('Tokens')}</MetricLabel>
-                {metricsLoaded ? (
-                  <MetricValue sx={{ color: '#FF6B6B' }}>
-                    {abbreviateNumber(metrics.global?.total || 0)}
-                  </MetricValue>
-                ) : (
-                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
-                )}
-              </MetricContainer>
+                <MetricContainer>
+                  <MetricLabel darkMode={darkMode}>{t('Tokens')}</MetricLabel>
+                  {metricsLoaded ? (
+                    <MetricValue color="#FF6B6B">
+                      {abbreviateNumber(metrics.global?.total || 0)}
+                    </MetricValue>
+                  ) : (
+                    <SkeletonLoader style={{ width: '60px', height: '20px' }} />
+                  )}
+                </MetricContainer>
 
-              <MetricContainer direction="row" spacing={1} alignItems="center">
-                <MetricLabel>{t('Offers')}</MetricLabel>
-                {metricsLoaded ? (
-                  <MetricValue sx={{ color: '#FFC107' }}>
-                    {abbreviateNumber(metrics.global?.totalOffers || 0)}
-                  </MetricValue>
-                ) : (
-                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
-                )}
-              </MetricContainer>
+                <MetricContainer>
+                  <MetricLabel darkMode={darkMode}>{t('Offers')}</MetricLabel>
+                  {metricsLoaded ? (
+                    <MetricValue color="#FFC107">
+                      {abbreviateNumber(metrics.global?.totalOffers || 0)}
+                    </MetricValue>
+                  ) : (
+                    <SkeletonLoader style={{ width: '60px', height: '20px' }} />
+                  )}
+                </MetricContainer>
 
-              <MetricContainer direction="row" spacing={1} alignItems="center">
-                <MetricLabel>{t('Trustlines')}</MetricLabel>
-                {metricsLoaded ? (
-                  <MetricValue sx={{ color: '#FFA48D' }}>
-                    {abbreviateNumber(metrics.global?.totalTrustLines || 0)}
-                  </MetricValue>
-                ) : (
-                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
-                )}
-              </MetricContainer>
+                <MetricContainer>
+                  <MetricLabel darkMode={darkMode}>{t('Trustlines')}</MetricLabel>
+                  {metricsLoaded ? (
+                    <MetricValue color="#FFA48D">
+                      {abbreviateNumber(metrics.global?.totalTrustLines || 0)}
+                    </MetricValue>
+                  ) : (
+                    <SkeletonLoader style={{ width: '60px', height: '20px' }} />
+                  )}
+                </MetricContainer>
 
-              <H24Style>
-                <Tooltip title="Statistics from the past 24 hours" arrow>
+                <H24Style primaryColor={primaryColor} title="Statistics from the past 24 hours">
                   <Typography
                     variant="body2"
                     color="#ffffff"
-                    sx={{
+                    style={{
                       fontWeight: 600,
                       fontSize: '0.7rem',
                       lineHeight: 1
@@ -902,219 +901,192 @@ const Topbar = () => {
                   >
                     24h
                   </Typography>
-                </Tooltip>
-              </H24Style>
+                </H24Style>
 
-              <MetricContainer direction="row" spacing={1} alignItems="center">
-                <MetricLabel>{t('Trades')}</MetricLabel>
-                {metricsLoaded ? (
-                  <MetricValue sx={{ color: '#74CAFF' }}>
-                    {abbreviateNumber(metrics.H24?.transactions24H || 0)}
-                  </MetricValue>
-                ) : (
-                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
-                )}
-              </MetricContainer>
+                <MetricContainer>
+                  <MetricLabel darkMode={darkMode}>{t('Trades')}</MetricLabel>
+                  {metricsLoaded ? (
+                    <MetricValue color="#74CAFF">
+                      {abbreviateNumber(metrics.H24?.transactions24H || 0)}
+                    </MetricValue>
+                  ) : (
+                    <SkeletonLoader style={{ width: '60px', height: '20px' }} />
+                  )}
+                </MetricContainer>
 
-              <MetricContainer direction="row" spacing={1} alignItems="center">
-                <MetricLabel>{t('Vol')}</MetricLabel>
-                {metricsLoaded ? (
-                  <MetricValue sx={{ color: theme.palette.error.main }}>
-                    {currencySymbols[activeFiatCurrency]}
-                    {abbreviateNumber(
-                      metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
-                        ? new Decimal(metrics.H24.tradedXRP24H || 0)
-                            .div(new Decimal(metrics[activeFiatCurrency] || 1))
-                            .toNumber()
-                        : 0
-                    )}
-                  </MetricValue>
-                ) : (
-                  <Skeleton variant="text" width={80} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
-                )}
-              </MetricContainer>
+                <MetricContainer>
+                  <MetricLabel darkMode={darkMode}>{t('Vol')}</MetricLabel>
+                  {metricsLoaded ? (
+                    <MetricValue color="#ef4444">
+                      {currencySymbols[activeFiatCurrency]}
+                      {abbreviateNumber(
+                        metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
+                          ? new Decimal(metrics.H24.tradedXRP24H || 0)
+                              .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                              .toNumber()
+                          : 0
+                      )}
+                    </MetricValue>
+                  ) : (
+                    <SkeletonLoader style={{ width: '80px', height: '20px' }} />
+                  )}
+                </MetricContainer>
 
-              <MetricContainer direction="row" spacing={1} alignItems="center">
-                <MetricLabel>{t('Tokens Traded')}</MetricLabel>
-                {metricsLoaded ? (
-                  <MetricValue sx={{ color: '#3366FF' }}>
-                    {abbreviateNumber(metrics.H24?.tradedTokens24H || 0)}
-                  </MetricValue>
-                ) : (
-                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
-                )}
-              </MetricContainer>
+                <MetricContainer>
+                  <MetricLabel darkMode={darkMode}>{t('Tokens Traded')}</MetricLabel>
+                  {metricsLoaded ? (
+                    <MetricValue color="#3366FF">
+                      {abbreviateNumber(metrics.H24?.tradedTokens24H || 0)}
+                    </MetricValue>
+                  ) : (
+                    <SkeletonLoader style={{ width: '60px', height: '20px' }} />
+                  )}
+                </MetricContainer>
 
-              <MetricContainer direction="row" spacing={1} alignItems="center">
-                <MetricLabel>{t('Active Addresses')}</MetricLabel>
-                {metricsLoaded ? (
-                  <MetricValue sx={{ color: '#54D62C' }}>
-                    {abbreviateNumber(metrics.H24?.activeAddresses24H || 0)}
-                  </MetricValue>
-                ) : (
-                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
-                )}
-              </MetricContainer>
+                <MetricContainer>
+                  <MetricLabel darkMode={darkMode}>{t('Active Addresses')}</MetricLabel>
+                  {metricsLoaded ? (
+                    <MetricValue color="#54D62C">
+                      {abbreviateNumber(metrics.H24?.activeAddresses24H || 0)}
+                    </MetricValue>
+                  ) : (
+                    <SkeletonLoader style={{ width: '60px', height: '20px' }} />
+                  )}
+                </MetricContainer>
 
-              <MetricContainer direction="row" spacing={1} alignItems="center">
-                <MetricLabel>{t('Unique Traders')}</MetricLabel>
-                {metricsLoaded ? (
-                  <MetricValue sx={{ color: '#2196F3' }}>
-                    {abbreviateNumber(metrics?.H24?.uniqueTraders24H || 0)}
-                  </MetricValue>
-                ) : (
-                  <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
-                )}
-              </MetricContainer>
+                <MetricContainer>
+                  <MetricLabel darkMode={darkMode}>{t('Unique Traders')}</MetricLabel>
+                  {metricsLoaded ? (
+                    <MetricValue color="#2196F3">
+                      {abbreviateNumber(metrics?.H24?.uniqueTraders24H || 0)}
+                    </MetricValue>
+                  ) : (
+                    <SkeletonLoader style={{ width: '60px', height: '20px' }} />
+                  )}
+                </MetricContainer>
 
-              <MetricContainer direction="row" spacing={1} alignItems="center">
-                <MetricLabel>{t('Total TVL')}</MetricLabel>
-                {metricsLoaded ? (
-                  <MetricValue sx={{ color: '#8E44AD' }}>
-                    {currencySymbols[activeFiatCurrency]}
-                    {abbreviateNumber(
-                      metrics?.H24?.totalTVL && metrics[activeFiatCurrency]
-                        ? new Decimal(metrics.H24.totalTVL || 0)
-                            .div(new Decimal(metrics[activeFiatCurrency] || 1))
-                            .toNumber()
-                        : 0
-                    )}
-                  </MetricValue>
-                ) : (
-                  <Skeleton variant="text" width={80} height={20} sx={{ bgcolor: alpha(theme.palette.action.hover, 0.1) }} />
-                )}
-              </MetricContainer>
-            </Stack>
-          )}
-          {!isMobile && (
-            <Box sx={{ paddingLeft: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <CurrencySwithcer />
-              <ThemeSwitcher />
-              <APILabel
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleTradeDrawerOpen();
-                }}
-                aria-label="Open live trades"
-                type="button"
-              >
-                <PulsatingCircle />
-                <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
-                  Live Trades
-                </Typography>
-              </APILabel>
-              <APILabel
-                as="a"
-                href="/api-docs"
-                sx={{ ml: 1 }}
-                aria-label="API documentation"
-              >
-                <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
-                  API
-                </Typography>
-              </APILabel>
-            </Box>
-          )}
-        </ContentWrapper>
-      </StyledContainer>
-      <StyledDrawer
-        anchor="right"
-        open={Boolean(tradeDrawerOpen)}
-        onClose={handleTradeDrawerClose}
-        keepMounted={false}
-        sx={{
-          '& .MuiDrawer-paper': {
-            width: isMobile ? '100%' : '400px',
-            padding: 0
-          }
-        }}
-      >
-        <DrawerHeader>
+                <MetricContainer>
+                  <MetricLabel darkMode={darkMode}>{t('Total TVL')}</MetricLabel>
+                  {metricsLoaded ? (
+                    <MetricValue color="#8E44AD">
+                      {currencySymbols[activeFiatCurrency]}
+                      {abbreviateNumber(
+                        metrics?.H24?.totalTVL && metrics[activeFiatCurrency]
+                          ? new Decimal(metrics.H24.totalTVL || 0)
+                              .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                              .toNumber()
+                          : 0
+                      )}
+                    </MetricValue>
+                  ) : (
+                    <SkeletonLoader style={{ width: '80px', height: '20px' }} />
+                  )}
+                </MetricContainer>
+              </Stack>
+            )}
+            {!isMobile && (
+              <Box display="flex" alignItems="center" gap={0.5} style={{ paddingLeft: '8px' }}>
+                <CurrencySwitcher />
+                <ThemeSwitcher />
+                <APILabel
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleTradeDrawerOpen();
+                  }}
+                  aria-label="Open live trades"
+                  type="button"
+                  darkMode={darkMode}
+                  primaryColor={primaryColor}
+                >
+                  <PulsatingCircle />
+                  <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
+                    Live Trades
+                  </Typography>
+                </APILabel>
+                <APILabel
+                  as="a"
+                  href="/api-docs"
+                  style={{ marginLeft: '4px' }}
+                  aria-label="API documentation"
+                  darkMode={darkMode}
+                  primaryColor={primaryColor}
+                >
+                  <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
+                    API
+                  </Typography>
+                </APILabel>
+              </Box>
+            )}
+          </ContentWrapper>
+        </Container>
+      </TopWrapper>
+
+      <DrawerOverlay open={tradeDrawerOpen} onClick={handleTradeDrawerClose} />
+      <Drawer open={tradeDrawerOpen} darkMode={darkMode} isMobile={isMobile}>
+        <DrawerHeader darkMode={darkMode}>
           <Box display="flex" alignItems="center" gap={0.5}>
-            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+            <Typography variant="h6" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
               Global Trades
             </Typography>
-            <LiveCircle />
+            <PulsatingCircle />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {FilterSelect}
-            <IconButton
-              onClick={handleTradeDrawerClose}
-              size="small"
-              sx={{
-                color: 'text.secondary',
-                '&:hover': {
-                  color: 'text.primary',
-                  backgroundColor: alpha(theme.palette.text.primary, 0.08)
-                }
-              }}
+          <Box display="flex" alignItems="center" gap={1}>
+            <Select
+              value={tradeFilter}
+              onChange={handleFilterChange}
+              darkMode={darkMode}
+              primaryColor={primaryColor}
             >
-              <CloseIcon fontSize="small" />
+              {FILTER_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.icon} {option.label}
+                </option>
+              ))}
+            </Select>
+            <IconButton onClick={handleTradeDrawerClose} darkMode={darkMode}>
+              <CloseIcon />
             </IconButton>
           </Box>
         </DrawerHeader>
 
         {wsError ? (
           <Box p={3} textAlign="center">
-            <Typography color="error" variant="h6" gutterBottom>
+            <Typography color="#ef4444" variant="h6" style={{ marginBottom: '8px', fontWeight: 600 }}>
               Failed to load trades
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color={darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'}>
               {wsError}
             </Typography>
           </Box>
         ) : isWsLoading ? (
           <Box p={3}>
-            <Box display="flex" justifyContent="center" mb={2}>
-              <CircularProgress size={40} />
+            <Box display="flex" justifyContent="center" style={{ marginBottom: '16px' }}>
+              <CircularProgress size={40} darkMode={darkMode} primaryColor={primaryColor} />
             </Box>
-            <Typography variant="body2" color="text.secondary" textAlign="center">
+            <Typography variant="body2" color={darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'} textAlign="center">
               Connecting to live trades...
             </Typography>
-            <Box mt={2}>
+            <Box style={{ marginTop: '16px' }}>
               {[...Array(5)].map((_, i) => (
-                <Box key={i} sx={{ mb: 1 }}>
-                  <Skeleton variant="rectangular" height={60} sx={{ borderRadius: 2 }} />
+                <Box key={i} style={{ marginBottom: '8px' }}>
+                  <SkeletonLoader style={{ height: '60px', borderRadius: '8px' }} />
                 </Box>
               ))}
             </Box>
           </Box>
         ) : (
-          <List
-            sx={{
-              width: '100%',
-              padding: 0,
-              maxHeight: 'calc(100vh - 100px)',
-              overflow: 'auto',
-              '&::-webkit-scrollbar': {
-                width: '6px'
-              },
-              '&::-webkit-scrollbar-track': {
-                backgroundColor: alpha(theme.palette.divider, 0.1)
-              },
-              '&::-webkit-scrollbar-thumb': {
-                backgroundColor: alpha(theme.palette.text.secondary, 0.3),
-                borderRadius: '3px',
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.text.secondary, 0.5)
-                }
-              }
-            }}
-          >
+          <TradeList darkMode={darkMode}>
             {filteredTrades.map((trade, index) => {
-              // Determine which currency is not XRP to link to
               const tokenCurrency = trade.paid?.currency === 'XRP' ? trade.got : trade.paid;
               const tokenPath = tokenCurrency?.issuer && tokenCurrency?.currency 
                 ? `/token/${tokenCurrency.issuer}-${tokenCurrency.currency}` 
                 : '#';
               const txPath = trade.hash ? `/tx/${trade.hash}` : '#';
               
-              // Calculate background opacity based on XRP volume
               const xrpAmount = getXRPAmount(trade);
               const isBuy = trade.paid?.currency === 'XRP';
               
-              // Calculate opacity based on XRP amount (adjusted for smaller amounts)
-              let opacity = 0.05; // base opacity
+              let opacity = 0.05;
               if (xrpAmount > 0) {
                 if (xrpAmount < 10) opacity = 0.05;
                 else if (xrpAmount < 50) opacity = 0.07;
@@ -1122,123 +1094,98 @@ const Topbar = () => {
                 else if (xrpAmount < 500) opacity = 0.11;
                 else if (xrpAmount < 1000) opacity = 0.13;
                 else if (xrpAmount < 5000) opacity = 0.15;
-                else opacity = 0.18; // whale trades
+                else opacity = 0.18;
               }
               
               return (
-              <ListItem
-                key={`${trade.time}-${trade.maker}-${trade.taker}-${trade.paid?.value}-${trade.got?.value}-${index}`}
-                component="a"
-                href={tokenPath}
-                sx={{
-                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
-                  position: 'relative',
-                  padding: '8px 12px',
-                  width: '100%',
-                  margin: 0,
-                  borderRadius: 0,
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  background: isBuy 
-                    ? alpha(theme.palette.success.main, opacity)
-                    : alpha(theme.palette.error.main, opacity),
-                  cursor: 'pointer',
-                  '&:hover': {
-                    background: isBuy
-                      ? alpha(theme.palette.success.main, opacity * 1.5)
-                      : alpha(theme.palette.error.main, opacity * 1.5)
-                  }
-                }}
-              >
-
-                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
-                  {/* Time Column */}
-                  <Box sx={{ minWidth: 55, textAlign: 'left' }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', opacity: 0.8 }}>
-                      {formatRelativeTime(trade.time)}
-                    </Typography>
-                  </Box>
-
-                  {/* Type Column (Buy/Sell) */}
-                  <Box sx={{ minWidth: 35, textAlign: 'center' }}>
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
-                        fontSize: '0.7rem', 
-                        fontWeight: 700,
-                        color: isBuy ? theme.palette.success.main : theme.palette.error.main
-                      }}
-                    >
-                      {isBuy ? 'BUY' : 'SELL'}
-                    </Typography>
-                  </Box>
-
-                  {/* Amount/Price Column */}
-                  <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
-                      <TokenImage
-                        src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
-                        alt={decodeCurrency(trade.paid.currency)}
-                        loading="lazy"
-                        decoding="async"
-                      />
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.1 }}>
-                          {formatTradeValue(trade.paid.value)} {decodeCurrency(trade.paid.currency)}
-                        </Typography>
-                      </Box>
+                <TradeItem
+                  key={`${trade.time}-${trade.maker}-${trade.taker}-${trade.paid?.value}-${trade.got?.value}-${index}`}
+                  href={tokenPath}
+                  darkMode={darkMode}
+                  isBuy={isBuy}
+                  opacity={opacity}
+                >
+                  <Box display="flex" alignItems="center" width="100%" gap={1}>
+                    <Box minWidth={55} textAlign="left">
+                      <Typography variant="caption" color={darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'} style={{ fontSize: '0.65rem', opacity: 0.8 }}>
+                        {formatRelativeTime(trade.time)}
+                      </Typography>
                     </Box>
 
-                    <SwapHorizIcon sx={{ color: alpha(theme.palette.text.secondary, 0.3), fontSize: '0.8rem' }} />
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.1 }}>
-                          {formatTradeValue(trade.got.value)} {decodeCurrency(trade.got.currency)}
-                        </Typography>
-                      </Box>
-                      <TokenImage
-                        src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
-                        alt={decodeCurrency(trade.got.currency)}
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </Box>
-                  </Box>
-
-                  {/* Size Emoji & Link */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, minWidth: 35 }}>
-                    <Typography component="span" sx={{ fontSize: '0.85rem' }}>
-                      {getTradeSizeEmoji(getXRPAmount(trade))}
-                    </Typography>
-                    {trade.hash && (
-                      <IconButton
-                        component="a"
-                        href={txPath}
-                        size="small"
-                        sx={{
-                          width: 14,
-                          height: 14,
-                          padding: 0,
-                          color: 'text.secondary',
-                          '&:hover': {
-                            color: 'primary.main'
-                          }
+                    <Box minWidth={35} textAlign="center">
+                      <Typography 
+                        variant="caption" 
+                        style={{ 
+                          fontSize: '0.7rem', 
+                          fontWeight: 700,
+                          color: isBuy ? '#10b981' : '#ef4444'
                         }}
-                        onClick={(e) => e.stopPropagation()}
                       >
-                        <LinkIcon sx={{ fontSize: '0.6rem' }} />
-                      </IconButton>
-                    )}
+                        {isBuy ? 'BUY' : 'SELL'}
+                      </Typography>
+                    </Box>
+
+                    <Box flex={1} display="flex" alignItems="center" gap={0.75}>
+                      <Box display="flex" alignItems="center" gap={0.5} flex={1}>
+                        <TokenImage
+                          src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
+                          alt={decodeCurrency(trade.paid.currency)}
+                          loading="lazy"
+                          darkMode={darkMode}
+                        />
+                        <Box minWidth={0}>
+                          <Typography variant="body2" style={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.1 }}>
+                            {formatTradeValue(trade.paid.value)} {decodeCurrency(trade.paid.currency)}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      <SwapHorizIcon style={{ color: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', fontSize: '0.8rem' }} />
+
+                      <Box display="flex" alignItems="center" gap={0.5} flex={1}>
+                        <Box minWidth={0}>
+                          <Typography variant="body2" style={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.1 }}>
+                            {formatTradeValue(trade.got.value)} {decodeCurrency(trade.got.currency)}
+                          </Typography>
+                        </Box>
+                        <TokenImage
+                          src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
+                          alt={decodeCurrency(trade.got.currency)}
+                          loading="lazy"
+                          darkMode={darkMode}
+                        />
+                      </Box>
+                    </Box>
+
+                    <Box display="flex" alignItems="center" gap={0.25} minWidth={35}>
+                      <Typography component="span" style={{ fontSize: '0.85rem' }}>
+                        {getTradeSizeEmoji(getXRPAmount(trade))}
+                      </Typography>
+                      {trade.hash && (
+                        <a
+                          href={txPath}
+                          style={{
+                            width: '14px',
+                            height: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <LinkIcon />
+                        </a>
+                      )}
+                    </Box>
                   </Box>
-                </Box>
-              </ListItem>
+                </TradeItem>
               );
             })}
-          </List>
+          </TradeList>
         )}
-      </StyledDrawer>
-    </TopWrapper>
+      </Drawer>
+    </>
   );
 };
 
