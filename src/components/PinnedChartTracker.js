@@ -208,6 +208,8 @@ export const PinChartButton = memo(({ token, chartType, range, indicators, activ
           md5: token.md5,
           name: token.name,
           symbol: token.symbol || token.code,
+          code: token.code,
+          slug: token.slug,
           logo: token.logo
         },
         chartType,
@@ -517,7 +519,12 @@ export const FloatingPinnedChart = memo(() => {
 
   const handleOpenFull = () => {
     if (activePinnedChart) {
-      router.push(`/token/${activePinnedChart.token.symbol || activePinnedChart.token.md5}`);
+      // Use slug if available, otherwise fall back to symbol or code
+      const slug = activePinnedChart.token.slug || 
+                   activePinnedChart.token.symbol || 
+                   activePinnedChart.token.code ||
+                   activePinnedChart.token.md5;
+      router.push(`/token/${slug}`);
     }
     setAnchorEl(null);
   };
