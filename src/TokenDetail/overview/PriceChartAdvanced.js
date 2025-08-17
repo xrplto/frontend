@@ -9,6 +9,8 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import GroupIcon from '@mui/icons-material/Group';
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 
 // Performance: Throttle chart updates
 const throttle = (func, delay) => {
@@ -60,6 +62,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [holderData, setHolderData] = useState(null);
   const [userTrades, setUserTrades] = useState([]);
   const [isUserZoomed, setIsUserZoomed] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const zoomStateRef = useRef(null);
   const isUserZoomedRef = useRef(false);
   const crosshairPositionRef = useRef(null);
@@ -443,7 +446,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     // Create new chart
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: isMobile ? 380 : 550,
+      height: isFullscreen ? window.innerHeight - 120 : (isMobile ? 380 : 550),
       layout: {
         background: {
           type: 'solid',
@@ -729,6 +732,17 @@ const PriceChartAdvanced = memo(({ token }) => {
     };
   }, [chartType, theme, isDark, isMobile, data, loading]); // Include data and loading for proper initialization
 
+  // Handle fullscreen resize
+  useEffect(() => {
+    if (chartRef.current && chartContainerRef.current) {
+      const newHeight = isFullscreen ? window.innerHeight - 120 : (isMobile ? 380 : 550);
+      chartRef.current.applyOptions({ 
+        width: chartContainerRef.current.clientWidth,
+        height: newHeight 
+      });
+    }
+  }, [isFullscreen, isMobile]);
+
   // Separate effect to update data on chart series
   useEffect(() => {
     console.log('📊 [PriceChartAdvanced] Data update effect triggered', {
@@ -924,6 +938,10 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
   };
 
+  const handleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
   return (
     <Paper 
       elevation={0} 
@@ -938,7 +956,20 @@ const PriceChartAdvanced = memo(({ token }) => {
           : '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
         border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`,
         borderRadius: 2,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        ...(isFullscreen && {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 9999,
+          borderRadius: 0,
+          width: '100vw',
+          height: '100vh',
+          maxWidth: '100vw',
+          maxHeight: '100vh',
+        })
       }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -1010,6 +1041,15 @@ const PriceChartAdvanced = memo(({ token }) => {
 
           <IconButton
             size="small"
+            onClick={handleFullscreen}
+            sx={{ ml: 1 }}
+            title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+          >
+            {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+          </IconButton>
+
+          <IconButton
+            size="small"
             onClick={(e) => setAnchorEl(e.currentTarget)}
             sx={{ ml: 1 }}
           >
@@ -1061,7 +1101,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
       <Box sx={{ 
         position: 'relative', 
-        height: isMobile ? 380 : 550,
+        height: isFullscreen ? 'calc(100vh - 120px)' : (isMobile ? 380 : 550),
         borderRadius: 1,
         overflow: 'hidden'
       }}>
