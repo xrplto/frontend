@@ -4,6 +4,7 @@ import { createChart, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
+import { PinChartButton } from 'src/components/PinnedChartTracker';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
@@ -1038,6 +1039,14 @@ const PriceChartAdvanced = memo(({ token }) => {
               </Button>
             ))}
           </ButtonGroup>
+
+          <PinChartButton
+            token={token}
+            chartType={chartType}
+            range={range}
+            indicators={indicators}
+            activeFiatCurrency={activeFiatCurrency}
+          />
 
           <IconButton
             size="small"
