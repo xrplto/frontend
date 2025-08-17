@@ -443,14 +443,14 @@ const PriceChartAdvanced = memo(({ token }) => {
     // Create new chart
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: isMobile ? 280 : 400,
+      height: isMobile ? 320 : 480,
       layout: {
         background: {
           type: 'solid',
           color: 'transparent'
         },
         textColor: theme.palette.text.primary,
-        fontSize: 12,
+        fontSize: 13,
         fontFamily: "'Segoe UI', Roboto, Arial, sans-serif",
       },
       grid: {
@@ -479,8 +479,8 @@ const PriceChartAdvanced = memo(({ token }) => {
       rightPriceScale: {
         borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
         scaleMargins: {
-          top: 0.1,
-          bottom: 0.2,
+          top: 0.05,
+          bottom: 0.15,
         },
         mode: isMobile ? 2 : 0,
         autoScale: true,
@@ -521,7 +521,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         timeVisible: true,
         secondsVisible: false,
         rightOffset: 12,
-        barSpacing: 6,
+        barSpacing: 8,
         fixLeftEdge: true,
         fixRightEdge: true,
       },
@@ -635,12 +635,14 @@ const PriceChartAdvanced = memo(({ token }) => {
     
     if (chartType === 'candles') {
       const candleSeries = chart.addSeries(CandlestickSeries, {
-        upColor: '#4caf50',
-        downColor: '#f44336',
-        borderUpColor: '#4caf50',
-        borderDownColor: '#f44336',
-        wickUpColor: '#4caf50',
-        wickDownColor: '#f44336',
+        upColor: '#26a69a',
+        downColor: '#ef5350',
+        borderUpColor: '#26a69a',
+        borderDownColor: '#ef5350',
+        wickUpColor: '#26a69a',
+        wickDownColor: '#ef5350',
+        borderVisible: true,
+        wickVisible: true,
       });
       candleSeriesRef.current = candleSeries;
       console.log('✅ [PriceChartAdvanced] Candlestick series created');
@@ -681,15 +683,23 @@ const PriceChartAdvanced = memo(({ token }) => {
         priceFormat: {
           type: 'volume',
         },
-        priceScaleId: '',
+        priceScaleId: 'volume',
+        scaleMargins: {
+          top: 0.85,
+          bottom: 0,
+        },
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+      volumeSeriesRef.current = volumeSeries;
+      
+      // Configure volume scale separately
+      chart.priceScale('volume').applyOptions({
         scaleMargins: {
           top: 0.9,
           bottom: 0,
         },
-        priceLineVisible: false,
-        lastValueVisible: !isMobile,
       });
-      volumeSeriesRef.current = volumeSeries;
       console.log('✅ [PriceChartAdvanced] Volume series created');
     }
 
@@ -766,12 +776,14 @@ const PriceChartAdvanced = memo(({ token }) => {
     if (chartType === 'candles' && !candleSeriesRef.current) {
       console.log('🔧 [PriceChartAdvanced] Creating missing candle series');
       const candleSeries = chartRef.current.addSeries(CandlestickSeries, {
-        upColor: '#4caf50',
-        downColor: '#f44336',
-        borderUpColor: '#4caf50',
-        borderDownColor: '#f44336',
-        wickUpColor: '#4caf50',
-        wickDownColor: '#f44336',
+        upColor: '#26a69a',
+        downColor: '#ef5350',
+        borderUpColor: '#26a69a',
+        borderDownColor: '#ef5350',
+        wickUpColor: '#26a69a',
+        wickDownColor: '#ef5350',
+        borderVisible: true,
+        wickVisible: true,
       });
       candleSeriesRef.current = candleSeries;
     }
@@ -801,12 +813,20 @@ const PriceChartAdvanced = memo(({ token }) => {
       const volumeSeries = chartRef.current.addSeries(HistogramSeries, {
         color: '#26a69a',
         priceFormat: { type: 'volume' },
-        priceScaleId: '',
-        scaleMargins: { top: 0.9, bottom: 0 },
+        priceScaleId: 'volume',
+        scaleMargins: { top: 0.85, bottom: 0 },
         priceLineVisible: false,
-        lastValueVisible: !isMobile,
+        lastValueVisible: false,
       });
       volumeSeriesRef.current = volumeSeries;
+      
+      // Configure volume scale separately
+      chartRef.current.priceScale('volume').applyOptions({
+        scaleMargins: {
+          top: 0.9,
+          bottom: 0,
+        },
+      });
     }
 
     // Check if this is a range change
@@ -855,8 +875,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         time: d.time,
         value: d.volume || 0,
         color: d.close >= d.open 
-          ? (isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.5)')
-          : (isDark ? 'rgba(244, 67, 54, 0.3)' : 'rgba(244, 67, 54, 0.5)')
+          ? (isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.3)')
+          : (isDark ? 'rgba(244, 67, 54, 0.2)' : 'rgba(244, 67, 54, 0.3)')
       }));
       if (isAutoUpdate && volumeData.length > 0) {
         const lastVolume = volumeData[volumeData.length - 1];
@@ -1040,7 +1060,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
       <Box sx={{ 
         position: 'relative', 
-        height: isMobile ? 280 : 400,
+        height: isMobile ? 320 : 480,
         borderRadius: 1,
         overflow: 'hidden'
       }}>

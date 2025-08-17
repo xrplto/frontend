@@ -47,6 +47,113 @@ import { alpha } from '@mui/material/styles';
 import Link from 'next/link';
 import Head from 'next/head';
 
+// Styled components for cleaner table styling
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  borderRadius: '12px',
+  overflow: 'hidden',
+  background: 'transparent',
+  border: 'none',
+  boxShadow: 'none'
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  borderBottom: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
+  transition: 'background-color 0.15s ease',
+  cursor: 'pointer',
+  '&:hover': {
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'
+  },
+  '&:last-child': {
+    borderBottom: 'none'
+  },
+  'td': {
+    borderBottom: 'none'
+  }
+}));
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  padding: '12px 8px',
+  whiteSpace: 'nowrap',
+  fontSize: '13px',
+  color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+  verticalAlign: 'middle',
+  borderBottom: 'none',
+  backgroundColor: 'transparent'
+}));
+
+const StyledTableHead = styled(TableHead)(({ theme }) => ({
+  background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
+  'th': {
+    fontWeight: 600,
+    fontSize: '12px',
+    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+    padding: '14px 8px',
+    borderBottom: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`,
+    backgroundColor: 'transparent'
+  }
+}));
+
+const AddressCell = styled('div')(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px'
+}));
+
+const TraderAvatar = styled('div')(({ theme }) => ({
+  width: '32px',
+  height: '32px',
+  borderRadius: '50%',
+  background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontWeight: 600,
+  fontSize: '14px',
+  color: theme.palette.primary.main,
+  flexShrink: 0
+}));
+
+const TraderInfo = styled('div')(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2px',
+  minWidth: 0
+}));
+
+const TraderAddress = styled('a')(({ theme }) => ({
+  fontWeight: 600,
+  fontSize: '14px',
+  color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+  textDecoration: 'none',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  maxWidth: '200px',
+  display: 'block',
+  '&:hover': {
+    color: theme.palette.primary.main,
+    textDecoration: 'underline'
+  }
+}));
+
+const TraderLabel = styled('span')(({ theme }) => ({
+  fontSize: '11px',
+  color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+  fontWeight: 400
+}));
+
+const ValueText = styled('span')(({ theme, bold, small }) => ({
+  fontWeight: bold ? '600' : '500',
+  fontSize: small ? '12px' : '14px',
+  color: theme.palette.mode === 'dark' ? '#fff' : '#000'
+}));
+
+const PercentText = styled('span')(({ theme, value }) => ({
+  fontWeight: 600,
+  fontSize: '13px',
+  color: value >= 0 ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C') : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F')
+}));
+
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -132,7 +239,7 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
         position: 'sticky',
         zIndex: 1001,
         left: 0,
-        background: theme.palette.background.default,
+        backgroundColor: 'transparent',
         width: isMobile ? '10px' : '40px',
         minWidth: isMobile ? '10px' : '40px',
         padding: isMobile ? '0px' : '12px 4px'
@@ -141,7 +248,7 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
         position: 'sticky',
         zIndex: 1001,
         left: isMobile ? '10px' : '40px',
-        background: theme.palette.background.default,
+        backgroundColor: 'transparent',
         width: isMobile ? '14px' : '50px',
         minWidth: isMobile ? '14px' : '50px',
         padding: isMobile ? '1px 1px' : '12px 8px'
@@ -150,7 +257,7 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
         position: 'sticky',
         zIndex: 1001,
         left: isMobile ? '24px' : '90px',
-        background: theme.palette.background.default,
+        backgroundColor: 'transparent',
         minWidth: isMobile ? '80px' : '250px',
         maxWidth: isMobile ? '100px' : 'none',
         padding: isMobile ? '1px 4px' : '12px 8px',
@@ -173,93 +280,28 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
     [theme, isMobile, scrollLeft]
   );
 
-  const tableRowStyle = useMemo(
-    () => ({
-      borderBottom: 'none',
-      position: 'relative',
-      transition: 'background-color 0.15s ease',
-      backgroundColor: 'transparent',
-      width: '100%',
-      height: isMobile ? '32px' : 'auto',
-      contain: 'layout',
-      '&:after': isMobile ? {} : {
-        content: '""',
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '1px',
-        background: alpha(theme.palette.divider, 0.05)
-      },
-      '&:hover': {
-        backgroundColor: alpha(theme.palette.primary.main, 0.04),
-        cursor: 'pointer',
-        '&:after': {
-          opacity: 0
-        }
-      },
-      '& .MuiTypography-root': {
-        fontSize: isMobile ? '10px' : '13px',
-        fontWeight: '500',
-        letterSpacing: '-0.01em'
-      },
-      '& .MuiTableCell-root': {
-        padding: isMobile ? '4px' : '12px',
-        whiteSpace: 'nowrap',
-        borderBottom: 'none',
-        backgroundColor: 'transparent',
-        height: isMobile ? '32px' : 'auto'
-      }
-    }),
-    [isMobile, theme]
-  );
+  // Removed - using styled components instead
 
   const handleRowClick = useCallback(() => {
     onRoiClick(trader);
   }, [onRoiClick, trader]);
 
   return (
-    <TableRow
+    <StyledTableRow
       key={trader._id}
-      sx={tableRowStyle}
       onClick={handleRowClick}
     >
-      <TableCell align="left" sx={stickyCellStyles.first}>
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: '600',
-            fontSize: isMobile ? '9px' : '13px',
-            color: alpha(theme.palette.text.secondary, 0.7),
-            textAlign: 'center',
-            fontFamily: 'Inter, sans-serif'
-          }}
-        >
+      <StyledTableCell align="center" style={{ width: '50px' }}>
+        <ValueText style={{ fontWeight: '600', color: theme.palette.mode === 'dark' ? '#999' : '#666' }}>
           {index + 1}
-        </Typography>
-      </TableCell>
-      {!isMobile && (
-        <TableCell align="center" sx={stickyCellStyles.second}>
-          <StarOutlineIcon
-            sx={{ 
-              cursor: 'pointer', 
-              color: alpha(theme.palette.text.primary, 0.3),
-              fontSize: '18px',
-              transition: 'all 0.3s ease',
-              '&:hover': { 
-                color: '#FFB800',
-                transform: 'scale(1.1)'
-              }
-            }}
-          />
-        </TableCell>
-      )}
-      <TableCell 
+        </ValueText>
+      </StyledTableCell>
+      <StyledTableCell 
         component="th" 
         scope="row"
-        sx={stickyCellStyles.third}
+        style={{ width: '250px' }}
       >
-        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
+        <AddressCell>
           {isMobile && (
             <Typography
               variant="h4"
@@ -275,169 +317,54 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
               {index + 1}
             </Typography>
           )}
-          <Box
-            sx={{
-              width: isMobile ? 20 : 32,
-              height: isMobile ? 20 : 32,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              borderRadius: '50%',
-              backgroundColor: theme.palette.mode === 'dark' 
-                ? alpha(theme.palette.grey[800], 0.5)
-                : alpha(theme.palette.grey[100], 0.8),
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              '&:hover': {
-                transform: 'scale(1.05)',
-                boxShadow: `0 8px 16px ${alpha(theme.palette.common.black, 0.1)}`
-              }
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: isMobile ? '10px' : '14px',
-                fontWeight: '600',
-                color: theme.palette.primary.main
-              }}
+          <TraderAvatar>
+            {trader.address.slice(0, 1).toUpperCase()}
+          </TraderAvatar>
+          <TraderInfo>
+            <TraderAddress
+              href={`/profile/${trader.address}`}
+              onClick={(e) => e.stopPropagation()}
             >
-              {trader.address.slice(0, 1).toUpperCase()}
-            </Typography>
-          </Box>
-          <Stack direction="column" spacing={0} sx={{ overflow: 'hidden', flexGrow: 1 }}>
-            <Typography
-              variant="p2"
-              sx={{
-                fontWeight: '400',
-                fontSize: isMobile ? '9px' : '12px',
-                lineHeight: 1.3,
-                color: theme.palette.text.secondary,
-                fontFamily: 'Inter, sans-serif'
-              }}
-              noWrap
-            >
+              {isMobile ? `${trader.address.slice(0, 6)}...${trader.address.slice(-4)}` : `${trader.address.slice(0, 12)}...${trader.address.slice(-6)}`}
+            </TraderAddress>
+            <TraderLabel>
               Trader
-            </Typography>
-            <Stack direction="row" spacing={isMobile ? 0.2 : 0.5} alignItems="center" sx={{ marginTop: '2px' }}>
-              <Typography
-                component="a"
-                href={`/profile/${trader.address}`}
-                sx={{
-                  textDecoration: 'none',
-                  color: theme.palette.text.primary,
-                  fontFamily: 'Inter, sans-serif',
-                  fontSize: isMobile ? '11px' : '14px',
-                  fontWeight: 600,
-                  letterSpacing: '-0.01em',
-                  cursor: 'pointer',
-                  lineHeight: 1.2,
-                  '&:hover': {
-                    color: theme.palette.primary.main,
-                    textDecoration: 'underline'
-                  }
-                }}
-                onClick={(e) => e.stopPropagation()}
-                noWrap
-              >
-                {isMobile ? `${trader.address.slice(0, 6)}...${trader.address.slice(-4)}` : `${trader.address.slice(0, 12)}...${trader.address.slice(-6)}`}
-              </Typography>
-              {trader.AMM && (
-                <Chip
-                  label="AMM"
-                  size="small"
-                  sx={{
-                    height: isMobile ? 16 : 20,
-                    fontSize: isMobile ? '0.55rem' : '0.65rem',
-                    fontWeight: 600,
-                    background: alpha(theme.palette.secondary.main, 0.1),
-                    color: theme.palette.secondary.main,
-                    '& .MuiChip-label': {
-                      px: isMobile ? 0.5 : 0.75
-                    }
-                  }}
-                />
-              )}
-            </Stack>
-          </Stack>
-        </Stack>
-      </TableCell>
-      <TableCell align="right" sx={{ minWidth: isMobile ? '32px' : '100px', padding: isMobile ? '1px 2px' : '12px 8px' }}>
-        <Typography 
-          variant="h4" 
-          noWrap
-          sx={{ 
-            fontWeight: 600,
-            fontSize: isMobile ? '12px' : '16px',
-            fontFamily: 'Inter, sans-serif',
-            letterSpacing: '-0.01em'
-          }}
-        >
+            </TraderLabel>
+          </TraderInfo>
+        </AddressCell>
+      </StyledTableCell>
+      <StyledTableCell align="right">
+        <ValueText bold>
           {formatCurrency(trader.volume24h)}
-        </Typography>
-      </TableCell>
-      <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px', padding: isMobile ? '1px 2px' : '12px 8px' }}>
-        <Typography 
-          variant="h4" 
-          noWrap
-          sx={{ 
-            color: trader.profit24h >= 0 
-              ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C')
-              : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F'),
-            fontWeight: 600,
-            fontSize: isMobile ? '11px' : '13px',
-            textShadow: isMobile ? 'none' : (trader.profit24h >= 0 
-              ? '0 0 8px rgba(102, 187, 106, 0.3)' 
-              : '0 0 8px rgba(255, 82, 82, 0.3)')
-          }}
-        >
+        </ValueText>
+      </StyledTableCell>
+      <StyledTableCell align="right">
+        <PercentText value={trader.profit24h}>
           {trader.profit24h >= 0 ? '+' : ''}{formatCurrency(trader.profit24h)}
-        </Typography>
-      </TableCell>
-      <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px', padding: isMobile ? '1px 2px' : '12px 8px' }}>
-        <Typography variant="h4" noWrap sx={{ fontSize: isMobile ? '11px' : '13px', fontWeight: '500' }}>
+        </PercentText>
+      </StyledTableCell>
+      <StyledTableCell align="right">
+        <ValueText>
           {trader.totalTrades >= 1000000
             ? `${(trader.totalTrades / 1000000).toFixed(1)}M`
             : trader.totalTrades >= 1000
               ? `${(trader.totalTrades / 1000).toFixed(1)}K`
               : trader.totalTrades.toLocaleString()}
-        </Typography>
-      </TableCell>
+        </ValueText>
+      </StyledTableCell>
       {!isMobile && (
-        <TableCell align="right" sx={{ minWidth: '80px', padding: '12px 8px' }}>
-          <Typography 
-            variant="h4" 
-            noWrap
-            sx={{ 
-              color: trader.totalProfit >= 0 
-                ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C')
-                : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F'),
-              fontWeight: 600,
-              fontSize: '13px'
-            }}
-          >
+        <StyledTableCell align="right">
+          <PercentText value={trader.totalProfit}>
             {trader.totalProfit >= 0 ? '+' : ''}{formatCurrency(trader.totalProfit)}
-          </Typography>
-        </TableCell>
+          </PercentText>
+        </StyledTableCell>
       )}
-      <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px', padding: isMobile ? '1px 2px' : '12px 8px' }}>
-        <Typography 
-          variant="h4" 
-          noWrap
-          sx={{ 
-            color: trader.avgROI >= 0 
-              ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C')
-              : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F'),
-            fontWeight: 600,
-            fontSize: isMobile ? '11px' : '13px',
-            textShadow: isMobile ? 'none' : (trader.avgROI >= 0 
-              ? '0 0 8px rgba(102, 187, 106, 0.3)' 
-              : '0 0 8px rgba(255, 82, 82, 0.3)')
-          }}
-        >
+      <StyledTableCell align="right">
+        <PercentText value={trader.avgROI}>
           {formatPercentage(trader.avgROI)}
-        </Typography>
-      </TableCell>
-      <TableCell align="center" sx={{ padding: isMobile ? '4px' : '8px' }}>
+        </PercentText>
+      </StyledTableCell>
+      <StyledTableCell align="center">
         <IconButton
           size="small"
           onClick={(e) => onRoiClick(trader, e)}
@@ -452,8 +379,8 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
         >
           <ShowChartIcon sx={{ fontSize: isMobile ? '16px' : '20px' }} />
         </IconButton>
-      </TableCell>
-    </TableRow>
+      </StyledTableCell>
+    </StyledTableRow>
   );
 });
 
@@ -1514,103 +1441,22 @@ export default function Analytics({ initialData, initialError }) {
                       </Box>
                     </Box>
 
-                    <TableContainer sx={{ 
-                      borderRadius: '16px', 
-                      overflow: 'hidden',
-                      backgroundColor: 'transparent',
-                      background: theme.palette.mode === 'dark'
-                        ? alpha(theme.palette.background.paper, 0.05)
-                        : alpha(theme.palette.background.paper, 0.4),
-                      backdropFilter: 'blur(20px)',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-                    }} onScroll={handleScroll}>
+                    <StyledTableContainer onScroll={handleScroll}>
                       <Table
-                        sx={{
-                          minWidth: 650,
-                          backgroundColor: 'transparent',
-                          '& .MuiTableCell-root': {
-                            padding: isMobile ? '8px 6px' : '18px 16px',
-                            whiteSpace: 'nowrap',
-                            borderBottom: 'none',
-                            backgroundColor: 'transparent',
-                            '&:not(:first-of-type)': {
-                              paddingLeft: isMobile ? '6px' : '12px'
-                            }
-                          },
-                          '& .MuiTableHead-root': {
-                            backgroundColor: 'transparent',
-                            '& .MuiTableCell-root': {
-                              fontWeight: 600,
-                              fontSize: isMobile ? '10px' : '12px',
-                              textTransform: 'none',
-                              letterSpacing: '-0.01em',
-                              padding: isMobile ? '8px 4px' : '16px 12px',
-                              color: theme.palette.text.secondary,
-                              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                              backgroundColor: 'transparent !important'
-                            },
-                            '& .MuiTableSortLabel-root': {
-                              fontSize: isMobile ? '10px' : '12px',
-                              fontWeight: '600',
-                              color: 'inherit',
-                              letterSpacing: '-0.01em',
-                              '&:hover': {
-                                color: theme.palette.primary.main
-                              },
-                              '&.Mui-active': {
-                                color: theme.palette.primary.main,
-                                '& .MuiTableSortLabel-icon': {
-                                  color: 'inherit'
-                                }
-                              },
-                              '& .MuiTableSortLabel-icon': {
-                                fontSize: isMobile ? '14px' : '16px',
-                                opacity: 0.5
-                              }
-                            }
-                          },
-                          '& .MuiTableBody-root': {
-                            backgroundColor: 'transparent'
-                          },
-                          '& .MuiTypography-root': {
-                            fontSize: isMobile ? '11px' : '14px',
-                            fontWeight: '500'
-                          }
-                        }}
                         size="medium"
                         aria-label="trader analytics table"
+                        style={{ minWidth: 650, backgroundColor: 'transparent' }}
                       >
-                        <TableHead>
+                        <StyledTableHead>
                           <TableRow>
                             <TableCell sx={{ 
-                              position: 'sticky', 
-                              left: 0, 
-                              zIndex: 1002, 
-                              backgroundColor: `${theme.palette.background.default} !important`,
                               width: isMobile ? '10px' : '40px',
                               minWidth: isMobile ? '10px' : '40px',
                               padding: isMobile ? '8px 0px' : '16px 4px'
                             }}>
                               #
                             </TableCell>
-                            {!isMobile && (
-                              <TableCell sx={{ 
-                                position: 'sticky', 
-                                left: '40px', 
-                                zIndex: 1002, 
-                                backgroundColor: `${theme.palette.background.default} !important`,
-                                width: '50px',
-                                minWidth: '50px',
-                                padding: '16px 8px'
-                              }}>
-                                Watch
-                              </TableCell>
-                            )}
                             <TableCell sx={{ 
-                              position: 'sticky', 
-                              left: isMobile ? '10px' : '90px', 
-                              zIndex: 1002, 
-                              backgroundColor: `${theme.palette.background.default} !important`,
                               minWidth: isMobile ? '120px' : '250px',
                               padding: isMobile ? '8px 4px' : '16px 8px'
                             }}>
@@ -1671,7 +1517,7 @@ export default function Analytics({ initialData, initialError }) {
                             </TableCell>
                             <TableCell align="right" />
                           </TableRow>
-                        </TableHead>
+                        </StyledTableHead>
                         <TableBody>
                           {sortedTraders.map((trader, index) => (
                             <TraderRow
@@ -1688,125 +1534,235 @@ export default function Analytics({ initialData, initialError }) {
                           ))}
                         </TableBody>
                       </Table>
-                    </TableContainer>
+                    </StyledTableContainer>
 
                     <Box
                       sx={{
-                        py: 4,
                         display: 'flex',
-                        justifyContent: 'space-between',
                         alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '4px 0',
+                        gap: '6px',
+                        flexWrap: 'wrap',
                         mt: 4,
-                        px: 2,
-                        borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                        '@media (max-width: 900px)': {
+                          flexDirection: 'row',
+                          alignItems: 'stretch',
+                          flexWrap: 'wrap',
+                          gap: '2px',
+                          padding: '2px'
+                        }
                       }}
                     >
-                      <Typography sx={{ 
-                        fontSize: '0.9rem',
-                        fontWeight: 600,
-                        color: theme.palette.text.secondary 
+                      <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        flexWrap: 'wrap',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                        borderRadius: '16px',
+                        background: theme.palette.background.paper,
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.04)',
+                        padding: '4px 8px',
+                        backdropFilter: 'blur(10px)',
+                        '@media (max-width: 900px)': {
+                          flex: 1,
+                          minWidth: 'calc(50% - 8px)',
+                          justifyContent: 'flex-start',
+                          gap: '4px',
+                          padding: '4px 8px'
+                        }
                       }}>
-                        Showing{' '}
-                        <Box component="span" sx={{ 
-                          color: theme.palette.text.primary,
-                          fontWeight: 700
+                        <Box sx={{
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          padding: '2px 6px',
+                          border: `1px solid ${alpha(theme.palette.divider, 0.32)}`,
+                          borderRadius: '6px',
+                          color: theme.palette.text.primary
                         }}>
                           {`${(page - 1) * itemsPerPage + 1}-${Math.min(
                             page * itemsPerPage,
                             totalItems
-                          )}`}
+                          )} of ${totalItems.toLocaleString()}`}
                         </Box>
-                        {' '}of{' '}
-                        <Box component="span" sx={{ 
-                          color: theme.palette.primary.main,
-                          fontWeight: 700
+                        <Typography sx={{
+                          fontSize: '12px',
+                          color: theme.palette.text.secondary,
+                          fontWeight: 500
                         }}>
-                          {totalItems.toLocaleString()}
-                        </Box>
-                        {' '}traders
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button
-                          onClick={handlePrevPage}
-                          disabled={page === 1}
-                          variant="outlined"
-                          size="small"
-                          sx={{
-                            borderRadius: '12px',
-                            borderWidth: 2,
-                            px: 2,
-                            py: 1,
-                            minWidth: 'auto',
-                            borderColor: alpha(theme.palette.divider, 0.3),
-                            '&:hover': {
-                              borderWidth: 2,
-                              borderColor: theme.palette.primary.main,
-                              background: alpha(theme.palette.primary.main, 0.05)
-                            },
-                            '&.Mui-disabled': {
-                              borderWidth: 2
-                            }
-                          }}
-                        >
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path
-                              d="M15 18L9 12L15 6"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </Button>
+                          traders
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
                         <Box sx={{
                           display: 'flex',
                           alignItems: 'center',
-                          px: 2,
-                          py: 1,
-                          borderRadius: '12px',
-                          background: alpha(theme.palette.primary.main, 0.1),
-                          border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                          gap: '4px',
+                          padding: '4px 8px',
+                          borderRadius: '16px',
+                          background: theme.palette.background.paper,
+                          border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.04)',
+                          backdropFilter: 'blur(10px)',
+                          '@media (max-width: 900px)': {
+                            width: '100%',
+                            justifyContent: 'center',
+                            padding: '2px 4px'
+                          }
                         }}>
-                          <Typography sx={{ 
-                            fontSize: '0.875rem',
-                            fontWeight: 700,
-                            color: theme.palette.primary.main
-                          }}>
-                            {page} / {totalPages}
-                          </Typography>
-                        </Box>
-                        <Button
-                          onClick={handleNextPage}
-                          disabled={page >= totalPages}
-                          variant="outlined"
-                          size="small"
-                          sx={{
-                            borderRadius: '12px',
-                            borderWidth: 2,
-                            px: 2,
-                            py: 1,
-                            minWidth: 'auto',
-                            borderColor: alpha(theme.palette.divider, 0.3),
-                            '&:hover': {
-                              borderWidth: 2,
-                              borderColor: theme.palette.primary.main,
-                              background: alpha(theme.palette.primary.main, 0.05)
-                            },
-                            '&.Mui-disabled': {
-                              borderWidth: 2
+                          <IconButton
+                            onClick={() => {
+                              setPage(1);
+                              setIsFirstLoad(false);
+                            }}
+                            disabled={page === 1}
+                            size="small"
+                            sx={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              padding: 0,
+                              '&:hover:not(:disabled)': {
+                                background: alpha(theme.palette.primary.main, 0.08)
+                              },
+                              '&:disabled': {
+                                color: alpha(theme.palette.text.primary, 0.48)
+                              }
+                            }}
+                            title="First page"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/>
+                            </svg>
+                          </IconButton>
+
+                          {(() => {
+                            const pages = [];
+                            const current = page;
+                            const total = totalPages;
+                            
+                            if (total <= 7) {
+                              for (let i = 1; i <= total; i++) {
+                                pages.push(i);
+                              }
+                            } else {
+                              if (current <= 3) {
+                                for (let i = 1; i <= 5; i++) pages.push(i);
+                                pages.push('...');
+                                pages.push(total);
+                              } else if (current >= total - 2) {
+                                pages.push(1);
+                                pages.push('...');
+                                for (let i = total - 4; i <= total; i++) pages.push(i);
+                              } else {
+                                pages.push(1);
+                                pages.push('...');
+                                for (let i = current - 1; i <= current + 1; i++) pages.push(i);
+                                pages.push('...');
+                                pages.push(total);
+                              }
                             }
-                          }}
-                        >
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path
-                              d="M9 6L15 12L9 18"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </Button>
+                            
+                            return pages.map((pageNum, idx) => {
+                              if (pageNum === '...') {
+                                return <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', fontSize: '12px' }}>...</span>;
+                              }
+                              return (
+                                <Button
+                                  key={pageNum}
+                                  onClick={() => {
+                                    setPage(pageNum);
+                                    setIsFirstLoad(false);
+                                  }}
+                                  sx={{
+                                    minWidth: '20px',
+                                    height: '20px',
+                                    borderRadius: '6px',
+                                    border: 'none',
+                                    background: pageNum === page ? theme.palette.primary.main : 'transparent',
+                                    color: pageNum === page ? 'white' : 'inherit',
+                                    padding: '0 4px',
+                                    margin: 0,
+                                    fontSize: '12px',
+                                    fontWeight: pageNum === page ? 600 : 500,
+                                    '&:hover:not(:disabled)': {
+                                      background: pageNum === page 
+                                        ? theme.palette.primary.dark
+                                        : alpha(theme.palette.primary.main, 0.08)
+                                    }
+                                  }}
+                                >
+                                  {pageNum}
+                                </Button>
+                              );
+                            });
+                          })()}
+
+                          <IconButton
+                            onClick={() => {
+                              setPage(totalPages);
+                              setIsFirstLoad(false);
+                            }}
+                            disabled={page === totalPages}
+                            size="small"
+                            sx={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              padding: 0,
+                              '&:hover:not(:disabled)': {
+                                background: alpha(theme.palette.primary.main, 0.08)
+                              },
+                              '&:disabled': {
+                                color: alpha(theme.palette.text.primary, 0.48)
+                              }
+                            }}
+                            title="Last page"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/>
+                            </svg>
+                          </IconButton>
+                        </Box>
+                      </Box>
+
+                      <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 8px',
+                        borderRadius: '16px',
+                        background: theme.palette.background.paper,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.04)',
+                        backdropFilter: 'blur(10px)',
+                        '@media (max-width: 900px)': {
+                          flex: 1,
+                          minWidth: 'calc(50% - 8px)',
+                          justifyContent: 'center',
+                          padding: '4px 8px',
+                          gap: '2px'
+                        }
+                      }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+                        </svg>
+                        <Typography sx={{
+                          fontSize: '12px',
+                          color: theme.palette.text.secondary,
+                          fontWeight: 500
+                        }}>
+                          Rows
+                        </Typography>
+                        <Typography sx={{
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          color: theme.palette.primary.main
+                        }}>
+                          {itemsPerPage}
+                        </Typography>
                       </Box>
                     </Box>
                   </>
