@@ -54,11 +54,11 @@ const TopWrapper = styled.header`
   display: flex;
   align-items: center;
   height: 36px;
-  background: ${props => props.darkMode ? '#1a1a1a' : '#ffffff'};
-  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  background: ${props => props.backgroundColor};
+  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
   position: relative;
   z-index: 1099;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
   contain: layout style;
 `;
 
@@ -96,7 +96,7 @@ const ContentWrapper = styled.nav`
 const APILabel = styled.button`
   font-size: 11px;
   font-weight: 600;
-  color: ${props => props.darkMode ? '#ffffff' : '#000000'};
+  color: ${props => props.textColor};
   text-decoration: none;
   margin-left: 4px;
   background: ${props => props.primaryColor ? `${props.primaryColor}14` : 'rgba(0,128,255,0.08)'};
@@ -108,10 +108,11 @@ const APILabel = styled.button`
   min-height: 26px;
   border: 1px solid ${props => props.primaryColor ? `${props.primaryColor}26` : 'rgba(0,128,255,0.15)'};
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
   
   &:hover {
     background: ${props => props.primaryColor ? `${props.primaryColor}1f` : 'rgba(0,128,255,0.12)'};
+    transform: translateY(-1px);
   }
   
   &:focus {
@@ -154,19 +155,19 @@ const PulsatingCircle = styled.div`
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #10b981;
+  background: ${props => props.primaryColor || '#10b981'};
   position: relative;
   animation: pulse 2s infinite;
   
   @keyframes pulse {
     0% {
-      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      box-shadow: 0 0 0 0 ${props => props.primaryColor ? `${props.primaryColor}b3` : 'rgba(16, 185, 129, 0.7)'};
     }
     70% {
-      box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+      box-shadow: 0 0 0 10px ${props => props.primaryColor ? `${props.primaryColor}00` : 'rgba(16, 185, 129, 0)'};
     }
     100% {
-      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+      box-shadow: 0 0 0 0 ${props => props.primaryColor ? `${props.primaryColor}00` : 'rgba(16, 185, 129, 0)'};
     }
   }
 `;
@@ -188,7 +189,7 @@ const MetricContainer = styled.div`
 `;
 
 const MetricLabel = styled.span`
-  color: ${props => props.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
+  color: ${props => props.textSecondary};
   font-weight: 600;
   font-size: 0.6rem;
   text-transform: uppercase;
@@ -203,7 +204,7 @@ const MetricValue = styled.span`
   line-height: 1;
   font-family: 'Inter', sans-serif;
   letter-spacing: -0.01em;
-  color: ${props => props.color || (props.darkMode ? '#ffffff' : '#000000')};
+  color: ${props => props.color || props.textPrimary};
 `;
 
 const Drawer = styled.div`
@@ -212,8 +213,8 @@ const Drawer = styled.div`
   right: ${props => props.open ? '0' : '-100%'};
   width: ${props => props.isMobile ? '100%' : '400px'};
   height: 100vh;
-  background: ${props => props.darkMode ? '#1a1a1a' : '#ffffff'};
-  box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+  background: ${props => props.backgroundColor};
+  box-shadow: -4px 0 16px rgba(0,0,0,0.25);
   transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1200;
   display: flex;
@@ -225,8 +226,8 @@ const DrawerHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  background: ${props => props.darkMode ? '#1a1a1a' : '#ffffff'};
-  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  background: ${props => props.paperBackground};
+  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
   position: sticky;
   top: 0;
   z-index: 1;
@@ -253,22 +254,22 @@ const IconButton = styled.button`
   justify-content: center;
   cursor: pointer;
   border-radius: 4px;
-  color: ${props => props.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
+  color: ${props => props.textSecondary};
   transition: all 0.2s;
   
   &:hover {
     background: ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-    color: ${props => props.darkMode ? '#ffffff' : '#000000'};
+    color: ${props => props.textPrimary};
   }
 `;
 
 const Select = styled.select`
   padding: 4px 8px;
   font-size: 0.75rem;
-  border: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'};
+  border: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)'};
   border-radius: 6px;
-  background: ${props => props.darkMode ? '#2a2a2a' : '#ffffff'};
-  color: ${props => props.darkMode ? '#ffffff' : '#000000'};
+  background: ${props => props.paperBackground};
+  color: ${props => props.textPrimary};
   cursor: pointer;
   min-width: 100px;
   height: 28px;
@@ -281,6 +282,11 @@ const Select = styled.select`
   &:focus {
     outline: none;
     border-color: ${props => props.primaryColor || '#0080ff'};
+  }
+  
+  option {
+    background: ${props => props.paperBackground};
+    color: ${props => props.textPrimary};
   }
 `;
 
@@ -298,11 +304,11 @@ const TradeList = styled.div`
   }
   
   &::-webkit-scrollbar-thumb {
-    background: ${props => props.darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'};
+    background: ${props => props.primaryColor ? `${props.primaryColor}40` : 'rgba(0,128,255,0.25)'};
     border-radius: 3px;
     
     &:hover {
-      background: ${props => props.darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+      background: ${props => props.primaryColor ? `${props.primaryColor}60` : 'rgba(0,128,255,0.4)'};
     }
   }
 `;
@@ -330,7 +336,7 @@ const TokenImage = styled.img`
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: ${props => props.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'};
+  background: ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'};
   object-fit: cover;
 `;
 
@@ -517,7 +523,7 @@ const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
-  const { darkMode, activeFiatCurrency, theme } = useContext(AppContext);
+  const { darkMode, activeFiatCurrency, themeName } = useContext(AppContext);
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const iconColor = darkMode ? '#FFFFFF' : '#000000';
@@ -531,8 +537,38 @@ const Topbar = () => {
   const [isWsLoading, setIsWsLoading] = useState(false);
   const [tradeFilter, setTradeFilter] = useState('All');
 
-  // Get primary color from theme context
-  const primaryColor = theme?.primaryColor || '#0080ff';
+  // Get theme-specific colors
+  const getThemeColors = () => {
+    switch(themeName) {
+      case 'SyncWaveTheme':
+        return {
+          primaryColor: '#00ffff',
+          backgroundColor: '#030310',
+          paperBackground: 'rgba(26, 0, 51, 0.8)',
+          textPrimary: '#00ffff',
+          textSecondary: 'rgba(0, 255, 255, 0.7)'
+        };
+      case 'XrplToDarkTheme':
+        return {
+          primaryColor: '#147DFE',
+          backgroundColor: '#000000',
+          paperBackground: '#111827',
+          textPrimary: '#ffffff',
+          textSecondary: 'rgba(255, 255, 255, 0.7)'
+        };
+      default:
+        return {
+          primaryColor: '#0080ff',
+          backgroundColor: darkMode ? '#000000' : '#ffffff',
+          paperBackground: darkMode ? '#0a0a0a' : '#f5f5f5',
+          textPrimary: darkMode ? '#ffffff' : '#000000',
+          textSecondary: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'
+        };
+    }
+  };
+
+  const themeColors = getThemeColors();
+  const primaryColor = themeColors.primaryColor;
 
   // Check if metrics are properly loaded
   const metricsLoaded = useMemo(() => {
@@ -765,7 +801,7 @@ const Topbar = () => {
 
   return (
     <>
-      <TopWrapper darkMode={darkMode}>
+      <TopWrapper darkMode={darkMode} backgroundColor={themeColors.backgroundColor}>
         <Container>
           <ContentWrapper>
             {isMobile ? (
@@ -787,7 +823,7 @@ const Topbar = () => {
                   >
                     <Typography
                       variant="caption"
-                      color={darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'}
+                      color={themeColors.textSecondary}
                       style={{
                         fontWeight: 500,
                         fontSize: '0.7rem',
@@ -833,10 +869,10 @@ const Topbar = () => {
                     }}
                     aria-label="Open live trades"
                     type="button"
-                    darkMode={darkMode}
+                    textColor={themeColors.textPrimary}
                     primaryColor={primaryColor}
                   >
-                    <PulsatingCircle />
+                    <PulsatingCircle primaryColor={primaryColor} />
                     <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
                       Live
                     </Typography>
@@ -846,7 +882,7 @@ const Topbar = () => {
             ) : (
               <Stack direction="row" spacing={1} alignItems="center" flex={1}>
                 <MetricContainer>
-                  <MetricLabel darkMode={darkMode}>{t('Addresses')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Addresses')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#54D62C">
                       {abbreviateNumber(metrics.global?.totalAddresses || 0)}
@@ -857,7 +893,7 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer>
-                  <MetricLabel darkMode={darkMode}>{t('Tokens')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Tokens')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#FF6B6B">
                       {abbreviateNumber(metrics.global?.total || 0)}
@@ -868,7 +904,7 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer>
-                  <MetricLabel darkMode={darkMode}>{t('Offers')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Offers')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#FFC107">
                       {abbreviateNumber(metrics.global?.totalOffers || 0)}
@@ -879,7 +915,7 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer>
-                  <MetricLabel darkMode={darkMode}>{t('Trustlines')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Trustlines')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#FFA48D">
                       {abbreviateNumber(metrics.global?.totalTrustLines || 0)}
@@ -904,7 +940,7 @@ const Topbar = () => {
                 </H24Style>
 
                 <MetricContainer>
-                  <MetricLabel darkMode={darkMode}>{t('Trades')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Trades')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#74CAFF">
                       {abbreviateNumber(metrics.H24?.transactions24H || 0)}
@@ -915,7 +951,7 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer>
-                  <MetricLabel darkMode={darkMode}>{t('Vol')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Vol')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#ef4444">
                       {currencySymbols[activeFiatCurrency]}
@@ -933,7 +969,7 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer>
-                  <MetricLabel darkMode={darkMode}>{t('Tokens Traded')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Tokens Traded')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#3366FF">
                       {abbreviateNumber(metrics.H24?.tradedTokens24H || 0)}
@@ -944,7 +980,7 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer>
-                  <MetricLabel darkMode={darkMode}>{t('Active Addresses')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Active Addresses')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#54D62C">
                       {abbreviateNumber(metrics.H24?.activeAddresses24H || 0)}
@@ -955,7 +991,7 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer>
-                  <MetricLabel darkMode={darkMode}>{t('Unique Traders')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Unique Traders')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#2196F3">
                       {abbreviateNumber(metrics?.H24?.uniqueTraders24H || 0)}
@@ -966,7 +1002,7 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer>
-                  <MetricLabel darkMode={darkMode}>{t('Total TVL')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Total TVL')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#8E44AD">
                       {currencySymbols[activeFiatCurrency]}
@@ -995,10 +1031,10 @@ const Topbar = () => {
                   }}
                   aria-label="Open live trades"
                   type="button"
-                  darkMode={darkMode}
+                  textColor={themeColors.textPrimary}
                   primaryColor={primaryColor}
                 >
-                  <PulsatingCircle />
+                  <PulsatingCircle primaryColor={primaryColor} />
                   <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
                     Live Trades
                   </Typography>
@@ -1008,7 +1044,7 @@ const Topbar = () => {
                   href="/api-docs"
                   style={{ marginLeft: '4px' }}
                   aria-label="API documentation"
-                  darkMode={darkMode}
+                  textColor={themeColors.textPrimary}
                   primaryColor={primaryColor}
                 >
                   <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
@@ -1022,13 +1058,13 @@ const Topbar = () => {
       </TopWrapper>
 
       <DrawerOverlay open={tradeDrawerOpen} onClick={handleTradeDrawerClose} />
-      <Drawer open={tradeDrawerOpen} darkMode={darkMode} isMobile={isMobile}>
-        <DrawerHeader darkMode={darkMode}>
+      <Drawer open={tradeDrawerOpen} backgroundColor={themeColors.backgroundColor} isMobile={isMobile}>
+        <DrawerHeader darkMode={darkMode} paperBackground={themeColors.paperBackground}>
           <Box display="flex" alignItems="center" gap={0.5}>
             <Typography variant="h6" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
               Global Trades
             </Typography>
-            <PulsatingCircle />
+            <PulsatingCircle primaryColor={primaryColor} />
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <Select
@@ -1036,6 +1072,8 @@ const Topbar = () => {
               onChange={handleFilterChange}
               darkMode={darkMode}
               primaryColor={primaryColor}
+              paperBackground={themeColors.paperBackground}
+              textPrimary={themeColors.textPrimary}
             >
               {FILTER_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -1043,7 +1081,7 @@ const Topbar = () => {
                 </option>
               ))}
             </Select>
-            <IconButton onClick={handleTradeDrawerClose} darkMode={darkMode}>
+            <IconButton onClick={handleTradeDrawerClose} darkMode={darkMode} textSecondary={themeColors.textSecondary} textPrimary={themeColors.textPrimary}>
               <CloseIcon />
             </IconButton>
           </Box>
@@ -1054,7 +1092,7 @@ const Topbar = () => {
             <Typography color="#ef4444" variant="h6" style={{ marginBottom: '8px', fontWeight: 600 }}>
               Failed to load trades
             </Typography>
-            <Typography variant="body2" color={darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'}>
+            <Typography variant="body2" color={themeColors.textSecondary}>
               {wsError}
             </Typography>
           </Box>
@@ -1063,7 +1101,7 @@ const Topbar = () => {
             <Box display="flex" justifyContent="center" style={{ marginBottom: '16px' }}>
               <CircularProgress size={40} darkMode={darkMode} primaryColor={primaryColor} />
             </Box>
-            <Typography variant="body2" color={darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'} textAlign="center">
+            <Typography variant="body2" color={themeColors.textSecondary} textAlign="center">
               Connecting to live trades...
             </Typography>
             <Box style={{ marginTop: '16px' }}>
@@ -1075,7 +1113,7 @@ const Topbar = () => {
             </Box>
           </Box>
         ) : (
-          <TradeList darkMode={darkMode}>
+          <TradeList darkMode={darkMode} primaryColor={primaryColor}>
             {filteredTrades.map((trade, index) => {
               const tokenCurrency = trade.paid?.currency === 'XRP' ? trade.got : trade.paid;
               const tokenPath = tokenCurrency?.issuer && tokenCurrency?.currency 
@@ -1107,7 +1145,7 @@ const Topbar = () => {
                 >
                   <Box display="flex" alignItems="center" width="100%" gap={1}>
                     <Box minWidth={55} textAlign="left">
-                      <Typography variant="caption" color={darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'} style={{ fontSize: '0.65rem', opacity: 0.8 }}>
+                      <Typography variant="caption" color={themeColors.textSecondary} style={{ fontSize: '0.65rem', opacity: 0.8 }}>
                         {formatRelativeTime(trade.time)}
                       </Typography>
                     </Box>
@@ -1140,7 +1178,7 @@ const Topbar = () => {
                         </Box>
                       </Box>
 
-                      <SwapHorizIcon style={{ color: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', fontSize: '0.8rem' }} />
+                      <SwapHorizIcon style={{ color: themeColors.textSecondary, opacity: 0.4, fontSize: '0.8rem' }} />
 
                       <Box display="flex" alignItems="center" gap={0.5} flex={1}>
                         <Box minWidth={0}>
@@ -1170,7 +1208,7 @@ const Topbar = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'
+                            color: themeColors.textSecondary
                           }}
                           onClick={(e) => e.stopPropagation()}
                         >
