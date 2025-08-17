@@ -3056,7 +3056,6 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Box>
             </Box>
 
-
             {/* Order Type Toggle */}
             <Box sx={{ mt: 3, mb: 2 }}>
               <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
@@ -3776,6 +3775,77 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 </Box>
               )}
             </Box>
+
+            {/* Chart Display */}
+            {(token1 || token2) && (
+              <Box sx={{ mt: 3 }}>
+                <Grid container spacing={2}>
+                  {token1 && (
+                    <Grid item xs={12} md={6}>
+                      <Box
+                        sx={{
+                          p: 2,
+                          borderRadius: '20px',
+                          border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                          backgroundColor: alpha(theme.palette.background.paper, 0.3),
+                          backdropFilter: 'blur(10px)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.background.paper, 0.4),
+                            borderColor: alpha(theme.palette.primary.main, 0.1)
+                          }
+                        }}
+                      >
+                        <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                          {token1.name} Price (24h)
+                        </Typography>
+                        <Box sx={{ height: '120px' }}>
+                          <LoadChart
+                            url={`${BASE_URL}/sparkline/${token1.md5}?period=24h`}
+                            style={{ width: '100%', height: '100%' }}
+                            showGradient={true}
+                            lineWidth={2}
+                            animation={true}
+                          />
+                        </Box>
+                      </Box>
+                    </Grid>
+                  )}
+                  
+                  {token2 && (
+                    <Grid item xs={12} md={6}>
+                      <Box
+                        sx={{
+                          p: 2,
+                          borderRadius: '20px',
+                          border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                          backgroundColor: alpha(theme.palette.background.paper, 0.3),
+                          backdropFilter: 'blur(10px)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.background.paper, 0.4),
+                            borderColor: alpha(theme.palette.primary.main, 0.1)
+                          }
+                        }}
+                      >
+                        <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                          {token2.name} Price (24h)
+                        </Typography>
+                        <Box sx={{ height: '120px' }}>
+                          <LoadChart
+                            url={`${BASE_URL}/sparkline/${token2.md5}?period=24h`}
+                            style={{ width: '100%', height: '100%' }}
+                            showGradient={true}
+                            lineWidth={2}
+                            animation={true}
+                          />
+                        </Box>
+                      </Box>
+                    </Grid>
+                  )}
+                </Grid>
+              </Box>
+            )}
           </Box>
         </Box>
 

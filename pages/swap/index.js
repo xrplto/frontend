@@ -153,17 +153,6 @@ function Overview({ data }) {
             pt: { xs: 1, sm: 0 }
           }}
         >
-          <Typography
-            variant="h3"
-            component="h1"
-            sx={{
-              fontSize: { xs: '2rem', sm: '2.5rem' },
-              fontWeight: 500,
-              mb: 1
-            }}
-          >
-            Swap
-          </Typography>
           <Box 
             sx={(theme) => ({ 
               width: '100%', 
