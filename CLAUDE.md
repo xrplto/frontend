@@ -2,6 +2,78 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## CRITICAL INSTRUCTIONS - MUST FOLLOW
+
+### Understanding User Requirements
+1. **Read the ENTIRE request carefully**
+   - Pay attention to specific words like "directly", "only", "do not hardcode"
+   - If user says "use API", that means fetch from API, not create local logic
+   - Understand the difference between using API data vs creating local interpretations
+
+2. **Ask for clarification if needed**
+   - If requirements seem ambiguous, ask before implementing
+   - Don't make assumptions about what would be "better" or "more helpful"
+   - Implement exactly what was asked, nothing more, nothing less
+
+### API Integration Rules
+1. **NEVER hardcode values that should come from APIs**
+   - Categories, tags, and filters must ALWAYS be fetched from API endpoints
+   - Do not hardcode category names, icons, or filtering logic
+   - Let the API be the single source of truth for all dynamic data
+
+2. **Follow user instructions EXACTLY**
+   - Read requirements carefully and implement precisely what is asked
+   - Do not add "helpful" additions that weren't requested
+   - If the user says "use API directly", do NOT create local filtering or categorization
+
+3. **API-First Approach**
+   - Always check if data can be fetched from an API endpoint before creating local logic
+   - Use API parameters for filtering instead of client-side filtering when possible
+   - Trust the API's categorization and data structure
+
+### Common API Endpoints
+- `/tags` - Get available tags/categories
+- `/tokens` - Get tokens with various filters and sorting
+- `/trending` - Get trending tokens
+- `/spotlight` - Get spotlight tokens
+- `/gainers/[period]` - Get top gainers
+- `/new` - Get new tokens
+- `/most-viewed` - Get most viewed tokens
+
+### Implementation Patterns to AVOID
+```javascript
+// ❌ WRONG - Hardcoding categories
+const categories = [
+  { value: 'trending', label: 'Trending', icon: '🔥' },
+  { value: 'stable', label: 'Stablecoins', icon: '💵' }
+];
+
+// ❌ WRONG - Local filtering logic
+if (t.name.includes('usd') || t.name.includes('stable')) {
+  // Don't do this
+}
+
+// ❌ WRONG - Assuming tag structure
+if (tagLower.some(t => t.includes('meme'))) {
+  // Don't interpret tags locally
+}
+```
+
+### Implementation Patterns to USE
+```javascript
+// ✅ CORRECT - Fetch from API
+const tagsRes = await axios.get(`${BASE_URL}/tags`);
+const categories = tagsRes.data; // Use as-is from API
+
+// ✅ CORRECT - Let API do filtering
+const filtered = await axios.get(
+  `${BASE_URL}/tokens?tag=${selectedTag}`
+);
+
+// ✅ CORRECT - Use API response directly
+setTokens(apiResponse.data.tokens); // Don't transform
+```
+
 ## Project Overview
 
 XRPL.to is a comprehensive XRP Ledger analytics and trading platform built with Next.js. It provides real-time token prices, NFT marketplace functionality, DEX trading interfaces, and portfolio management.

@@ -631,14 +631,9 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   const [selectedCategory, setSelectedCategory] = useState('all');
   const searchInputRef = useRef(null);
   
-  // Categories for filtering
-  const categories = [
-    { value: 'all', label: 'All Tokens', icon: '🌐' },
-    { value: 'trending', label: 'Trending', icon: '🔥' },
-    { value: 'stable', label: 'Stablecoins', icon: '💵' },
-    { value: 'defi', label: 'DeFi', icon: '🏦' },
-    { value: 'meme', label: 'Meme', icon: '🐕' },
-  ];
+  // Categories will be populated from API
+  const [categories, setCategories] = useState([]);
+  const [apiTags, setApiTags] = useState([]);
 
   const amount = revert ? amount2 : amount1;
   let value = revert ? amount1 : amount2;
@@ -2234,6 +2229,50 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     }
   };
 
+  // Fetch categories from API on component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        // Fetch tags from API
+        const tagsRes = await axios.get(`${BASE_URL}/tags`);
+        if (tagsRes.status === 200 && tagsRes.data) {
+          setApiTags(tagsRes.data);
+          
+          // Build categories from API response
+          const dynamicCategories = [
+            { value: 'all', label: 'All Tokens' },
+            { value: 'trending', label: 'Trending' },
+            { value: 'spotlight', label: 'Spotlight' },
+            { value: 'new', label: 'New' },
+            { value: 'gainers-24h', label: 'Gainers 24h' },
+            { value: 'most-viewed', label: 'Most Viewed' }
+          ];
+          
+          // Add tag-based categories from API
+          if (tagsRes.data && Array.isArray(tagsRes.data)) {
+            tagsRes.data.forEach(tag => {
+              dynamicCategories.push({
+                value: tag,
+                label: tag
+              });
+            });
+          }
+          
+          setCategories(dynamicCategories);
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        // Set basic categories as fallback
+        setCategories([
+          { value: 'all', label: 'All Tokens' },
+          { value: 'trending', label: 'Trending' }
+        ]);
+      }
+    };
+    
+    fetchCategories();
+  }, [BASE_URL]);
+
   // Token Selector Functions
   useEffect(() => {
     if (panel1Open || panel2Open) {
@@ -2310,69 +2349,103 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   };
 
   const filterSelectorTokens = async () => {
-    let filtered = [...selectorTokens];
-
-    // Apply category filter
-    if (selectedCategory === 'trending') {
-      filtered = filtered.sort((a, b) => (b.vol24h || 0) - (a.vol24h || 0)).slice(0, 20);
-    } else if (selectedCategory === 'stable') {
-      filtered = filtered.filter(t => 
-        t.name?.toLowerCase().includes('usd') || 
-        t.name?.toLowerCase().includes('stable') ||
-        t.currency === 'USD'
-      );
-    } else if (selectedCategory === 'defi') {
-      filtered = filtered.filter(t => 
-        t.category === 'defi' || 
-        t.name?.toLowerCase().includes('swap') ||
-        t.name?.toLowerCase().includes('lend')
-      );
-    } else if (selectedCategory === 'meme') {
-      filtered = filtered.filter(t => 
-        t.category === 'meme' || 
-        t.name?.toLowerCase().includes('doge') ||
-        t.name?.toLowerCase().includes('shib') ||
-        t.name?.toLowerCase().includes('pepe')
-      );
-    }
-
-    // Apply search filter
+    // If searching, apply search filter on current tokens
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(token => 
+      let filtered = selectorTokens.filter(token => 
         token.name?.toLowerCase().includes(query) ||
         token.currency?.toLowerCase().includes(query) ||
         token.user?.toLowerCase().includes(query)
       );
 
-      // If searching and have API access, also search remotely
+      // Also search via API for more results
       if (searchQuery.length > 2) {
         try {
-          const res = await axios.get(`${BASE_URL}/xrpnft/tokens?filter=${searchQuery}`);
+          const res = await axios.get(`${BASE_URL}/tokens?filter=${encodeURIComponent(searchQuery)}&limit=50`);
           if (res.status === 200 && res.data?.tokens) {
             const remoteTokens = res.data.tokens || [];
-            const mergedTokens = [...filtered];
+            const existingMd5s = new Set(filtered.map(t => t.md5));
             remoteTokens.forEach(rt => {
-              if (!mergedTokens.find(t => t.md5 === rt.md5)) {
-                mergedTokens.push(rt);
+              if (!existingMd5s.has(rt.md5)) {
+                filtered.push(rt);
               }
             });
-            filtered = mergedTokens;
           }
         } catch (err) {
           console.error('Search error:', err);
         }
       }
+
+      setFilteredTokens(filtered);
+      return;
     }
 
-    // Sort to put XRP first
-    filtered.sort((a, b) => {
-      if (a.currency === 'XRP') return -1;
-      if (b.currency === 'XRP') return 1;
-      return 0;
-    });
+    // For categories, fetch from appropriate API endpoint
+    if (selectedCategory && selectedCategory !== 'all') {
+      setLoadingTokens(true);
+      try {
+        let apiUrl = '';
+        
+        // Use specific endpoints for known categories - matching the dedicated pages
+        if (selectedCategory === 'trending') {
+          apiUrl = `${BASE_URL}/tokens?start=0&limit=50&sortBy=trendingScore&sortType=desc`;
+        } else if (selectedCategory === 'spotlight') {
+          apiUrl = `${BASE_URL}/tokens?start=0&limit=50&sortBy=assessmentScore&sortType=desc`;
+        } else if (selectedCategory === 'new') {
+          apiUrl = `${BASE_URL}/tokens?start=0&limit=50&sortBy=dateon&sortType=desc`;
+        } else if (selectedCategory === 'gainers-24h') {
+          apiUrl = `${BASE_URL}/tokens?start=0&limit=50&sortBy=pro24h&sortType=desc`;
+        } else if (selectedCategory === 'most-viewed') {
+          apiUrl = `${BASE_URL}/tokens?start=0&limit=50&sortBy=nginxScore&sortType=desc`;
+        } else {
+          // For tag-based categories, use tag parameter
+          apiUrl = `${BASE_URL}/tokens?tag=${encodeURIComponent(selectedCategory)}&start=0&limit=50`;
+        }
 
-    setFilteredTokens(filtered);
+        const res = await axios.get(apiUrl);
+        if (res.status === 200 && res.data?.tokens) {
+          const tokens = res.data.tokens || [];
+          
+          // Check if we should exclude XRP for specific categories
+          const excludeXrpCategories = ['trending', 'spotlight', 'new', 'gainers-24h', 'most-viewed'];
+          
+          if (excludeXrpCategories.includes(selectedCategory)) {
+            // For these categories, don't add XRP and filter out any XRP entries
+            const nonXrpTokens = tokens.filter(t => t.currency !== 'XRP');
+            setFilteredTokens(nonXrpTokens);
+          } else {
+            // For 'all' and tag-based categories, include XRP at the top
+            const xrpToken = {
+              md5: '84e5efeb89c4eae8f68188982dc290d8',
+              name: 'XRP',
+              user: 'XRP',
+              issuer: 'XRPL',
+              currency: 'XRP',
+              ext: 'png',
+              isOMCF: 'yes',
+              marketcap: 0,
+              vol24hxrp: 0,
+              exch: 1
+            };
+            
+            // Filter out any duplicate XRP entries
+            const nonXrpTokens = tokens.filter(t => t.currency !== 'XRP');
+            setFilteredTokens([xrpToken, ...nonXrpTokens]);
+          }
+        } else {
+          setFilteredTokens(selectorTokens);
+        }
+      } catch (err) {
+        console.error('Category filter error:', err);
+        // Fall back to showing all tokens
+        setFilteredTokens(selectorTokens);
+      } finally {
+        setLoadingTokens(false);
+      }
+    } else {
+      // Show all tokens
+      setFilteredTokens(selectorTokens);
+    }
   };
 
   const handleSelectToken = (token, isToken1) => {
@@ -2456,19 +2529,43 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
 
       <Box sx={{ flex: '0 0 20%', textAlign: 'right' }}>
         <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
-          ${token.usd ? parseFloat(token.usd).toFixed(4) : (token.exch ? (token.exch / (metrics?.USD || 0.35)).toFixed(4) : '0.0000')}
+          {(() => {
+            if (!token.exch) return '0 XRP';
+            const price = parseFloat(token.exch);
+            if (price >= 1) return `${price.toFixed(4)} XRP`;
+            if (price >= 0.01) return `${price.toFixed(6)} XRP`;
+            if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
+            if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
+            if (price >= 0.0000001) return `${price.toFixed(12)} XRP`;
+            // For extremely small values, show up to 15 decimal places
+            return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
+          })()}
         </Typography>
       </Box>
 
       <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
         <Typography variant="caption" sx={{ fontSize: '0.75rem', color: theme.palette.success.main }}>
-          ${token.vol24h ? `${(token.vol24h / 1000).toFixed(0)}K` : (token.vol24hxrp ? `${(token.vol24hxrp / (metrics?.USD || 0.35) / 1000).toFixed(0)}K` : '0')}
+          {(() => {
+            if (!token.vol24hxrp) return '0 XRP';
+            const vol = parseFloat(token.vol24hxrp);
+            if (vol >= 1000000) return `${(vol / 1000000).toFixed(2)}M XRP`;
+            if (vol >= 1000) return `${(vol / 1000).toFixed(2)}K XRP`;
+            if (vol >= 1) return `${vol.toFixed(2)} XRP`;
+            return `${vol.toFixed(4)} XRP`;
+          })()}
         </Typography>
       </Box>
 
       <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
         <Typography variant="caption" sx={{ fontSize: '0.75rem', color: theme.palette.info.main }}>
-          {token.marketcap ? `$${(token.marketcap / (metrics?.USD || 0.35) / 1000000).toFixed(1)}M` : '$0M'}
+          {(() => {
+            if (!token.marketcap) return '0 XRP';
+            const mcap = parseFloat(token.marketcap);
+            if (mcap >= 1000000) return `${(mcap / 1000000).toFixed(2)}M XRP`;
+            if (mcap >= 1000) return `${(mcap / 1000).toFixed(2)}K XRP`;
+            if (mcap >= 1) return `${mcap.toFixed(2)} XRP`;
+            return `${mcap.toFixed(4)} XRP`;
+          })()}
         </Typography>
       </Box>
 
@@ -2689,12 +2786,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
             {categories.map(cat => (
               <CategoryChip
                 key={cat.value}
-                label={
-                  <Stack direction="row" alignItems="center" spacing={0.5}>
-                    <span>{cat.icon}</span>
-                    <span>{cat.label}</span>
-                  </Stack>
-                }
+                label={cat.label}
                 onClick={() => setSelectedCategory(cat.value)}
                 color={selectedCategory === cat.value ? 'primary' : 'default'}
                 variant={selectedCategory === cat.value ? 'filled' : 'outlined'}
@@ -2782,17 +2874,17 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                     </Box>
                     <Box sx={{ flex: '0 0 20%', textAlign: 'right' }}>
                       <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                        PRICE (USD)
+                        PRICE (XRP)
                       </Typography>
                     </Box>
                     <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
                       <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                        24H VOL (USD)
+                        24H VOL (XRP)
                       </Typography>
                     </Box>
                     <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
                       <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                        MARKET CAP
+                        MARKET CAP (XRP)
                       </Typography>
                     </Box>
                   </Box>
