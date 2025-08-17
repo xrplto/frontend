@@ -3036,7 +3036,10 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 <Button
                   size="small"
                   variant={orderType === 'market' ? 'contained' : 'text'}
-                  onClick={() => setOrderType('market')}
+                  onClick={() => {
+                    setOrderType('market');
+                    setShowOrders(false);  // Reset orders view when switching tabs
+                  }}
                   sx={{
                     px: 2,
                     py: 0.75,
@@ -3058,7 +3061,10 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 <Button
                   size="small"
                   variant={orderType === 'limit' ? 'contained' : 'text'}
-                  onClick={() => setOrderType('limit')}
+                  onClick={() => {
+                    setOrderType('limit');
+                    setShowOrders(false);  // Reset orders view when switching tabs
+                  }}
                   sx={{
                     px: 2,
                     py: 0.75,
