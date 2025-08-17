@@ -33,6 +33,7 @@ import Image from 'next/image';
 import { PuffLoader } from 'react-spinners';
 import { enqueueSnackbar } from 'notistack';
 import OrderBook from 'src/TokenDetail/trade/OrderBook';
+const Orders = React.lazy(() => import('src/TokenDetail/trade/account/Orders'));
 
 const pulse = keyframes`
   0% {
@@ -254,6 +255,7 @@ const Swap = ({ token }) => {
   
   // Add state for orderbook visibility
   const [showOrderbook, setShowOrderbook] = useState(false);
+  const [showOrders, setShowOrders] = useState(false);
 
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
@@ -1474,9 +1476,9 @@ const Swap = ({ token }) => {
                   width: '100%',
                   input: {
                     autoComplete: 'off',
-                    padding: '0px 0 6px 0px',
+                    padding: '0px',
                     border: 'none',
-                    fontSize: { xs: '18px', sm: '16px' },
+                    fontSize: { xs: '14px', sm: '16px' },
                     textAlign: 'end',
                     appearance: 'none',
                     fontWeight: 700
@@ -1541,9 +1543,9 @@ const Swap = ({ token }) => {
                   width: '100%',
                   input: {
                     autoComplete: 'off',
-                    padding: '0px 0 6px 0px',
+                    padding: '0px',
                     border: 'none',
-                    fontSize: { xs: '18px', sm: '16px' },
+                    fontSize: { xs: '14px', sm: '16px' },
                     textAlign: 'end',
                     appearance: 'none',
                     fontWeight: 700
@@ -1639,70 +1641,14 @@ const Swap = ({ token }) => {
             </Stack>
           </Box>
 
-          {/* Order Type Toggle */}
-          <Box sx={{ px: 1.5, py: 1 }}>
-            <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
-              <Button
-                size="small"
-                variant={orderType === 'market' ? 'contained' : 'outlined'}
-                onClick={() => {
-                  setOrderType('market');
-                  setShowOrderbook(false); // Hide orderbook when switching to market
-                }}
-                sx={{
-                  minWidth: { xs: '80px', sm: '90px' },
-                  height: { xs: '28px', sm: '32px' },
-                  fontSize: { xs: '0.75rem', sm: '0.8rem' },
-                  textTransform: 'none',
-                  borderRadius: '8px'
-                }}
-              >
-                Market
-              </Button>
-              <Button
-                size="small"
-                variant={orderType === 'limit' ? 'contained' : 'outlined'}
-                onClick={() => setOrderType('limit')}
-                sx={{
-                  minWidth: { xs: '80px', sm: '90px' },
-                  height: { xs: '28px', sm: '32px' },
-                  fontSize: { xs: '0.75rem', sm: '0.8rem' },
-                  textTransform: 'none',
-                  borderRadius: '8px'
-                }}
-              >
-                Limit
-              </Button>
-            </Stack>
-          </Box>
 
-          {/* Limit Price Input */}
+          {/* Limit Order Settings */}
           {orderType === 'limit' && (
-            <Box sx={{ px: 1.5, py: 1 }}>
-              <Stack spacing={1}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                    Limit Price ({revert ? curr1.name : curr2.name} per {revert ? curr2.name : curr1.name})
-                  </Typography>
-                  <Button
-                    variant="text"
-                    size="small"
-                    onClick={() => setShowOrderbook(!showOrderbook)}
-                    sx={{
-                      fontSize: { xs: '0.65rem', sm: '0.7rem' },
-                      textTransform: 'none',
-                      color: showOrderbook ? theme.palette.primary.main : theme.palette.text.secondary,
-                      minWidth: 'auto',
-                      px: 1,
-                      py: 0.25,
-                      '&:hover': {
-                        backgroundColor: alpha(theme.palette.primary.main, 0.05)
-                      }
-                    }}
-                  >
-                    {showOrderbook ? 'Hide' : 'View'} Orderbook
-                  </Button>
-                </Stack>
+            <Box sx={{ px: 1, py: 0.5 }}>
+              <Stack spacing={0.5}>
+                <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.7rem' }}>
+                  Limit Price ({curr2.name} per {curr1.name})
+                </Typography>
                 <Input
                   placeholder="0.00"
                   fullWidth
@@ -1720,16 +1666,139 @@ const Swap = ({ token }) => {
                   }}
                   sx={{
                     backgroundColor: alpha(theme.palette.background.paper, 0.05),
-                    borderRadius: '8px',
-                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    padding: '4px 8px',
                     input: {
-                      fontSize: { xs: '14px', sm: '16px' },
+                      fontSize: '14px',
                       fontWeight: 600
                     }
                   }}
                 />
+                
+                {/* Order Expiration */}
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.7rem' }}>
+                    Expiration
+                  </Typography>
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Select
+                      value={orderExpiry}
+                      onChange={(e) => {
+                        setOrderExpiry(e.target.value);
+                        if (e.target.value === '1h') setExpiryHours(1);
+                        else if (e.target.value === '24h') setExpiryHours(24);
+                        else if (e.target.value === '7d') setExpiryHours(168);
+                      }}
+                      size="small"
+                      sx={{
+                        fontSize: '0.7rem',
+                        height: '22px',
+                        '& .MuiSelect-select': {
+                          py: 0,
+                          fontSize: '0.7rem'
+                        }
+                      }}
+                    >
+                      <MenuItem value="never">Never</MenuItem>
+                      <MenuItem value="1h">1 Hour</MenuItem>
+                      <MenuItem value="24h">24 Hours</MenuItem>
+                      <MenuItem value="7d">7 Days</MenuItem>
+                      <MenuItem value="custom">Custom</MenuItem>
+                    </Select>
+                    {orderExpiry === 'custom' && (
+                      <Input
+                        value={expiryHours}
+                        onChange={(e) => setExpiryHours(Number(e.target.value))}
+                        type="number"
+                        disableUnderline
+                        sx={{
+                          width: '50px',
+                          input: {
+                            fontSize: '0.7rem',
+                            padding: '2px 4px',
+                            border: '1px solid rgba(0,0,0,0.2)',
+                            borderRadius: '3px'
+                          }
+                        }}
+                        endAdornment={<Typography variant="caption" sx={{ fontSize: '0.65rem' }}>hrs</Typography>}
+                      />
+                    )}
+                  </Stack>
+                </Stack>
               </Stack>
             </Box>
+          )}
+          
+          {/* Show/Hide Buttons */}
+          <Box sx={{ px: 1, py: 0.5 }}>
+            <Stack direction="row" spacing={0.5} justifyContent="center">
+              <Button
+                size="small"
+                variant="text"
+                onClick={() => setShowOrderbook(!showOrderbook)}
+                sx={{
+                  fontSize: '0.65rem',
+                  textTransform: 'none',
+                  py: 0,
+                  minHeight: '24px'
+                }}
+              >
+                {showOrderbook ? 'Hide' : 'Show'} Book
+              </Button>
+              <Button
+                size="small"
+                variant="text"
+                onClick={() => setShowOrders(!showOrders)}
+                sx={{
+                  fontSize: '0.65rem',
+                  textTransform: 'none',
+                  py: 0,
+                  minHeight: '24px'
+                }}
+              >
+                {showOrders ? 'Hide' : 'Show'} Orders
+              </Button>
+            </Stack>
+          </Box>
+          
+          {/* Transaction Summary */}
+          {orderType === 'limit' && amount1 && amount2 && limitPrice && (
+            <SummaryBox>
+              <Typography variant="caption" sx={{ fontSize: '0.7rem', fontWeight: 600, mb: 0.5 }}>
+                Order Summary
+              </Typography>
+              <Stack spacing={0.25}>
+                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                  Type: <strong>Limit {revert ? 'Buy' : 'Sell'}</strong>
+                </Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                  Amount: <strong>{amount1} {curr1.name}</strong>
+                </Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                  Price: <strong>{limitPrice} {curr2.name}/{curr1.name}</strong>
+                </Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                  Total: <strong>{(() => {
+                    const limitPriceDecimal = new Decimal(limitPrice || 0);
+                    const amount1Decimal = new Decimal(amount1 || 0);
+                    let total;
+                    if (curr1.currency === 'XRP' && curr2.currency !== 'XRP') {
+                      total = amount1Decimal.div(limitPriceDecimal).toFixed(6);
+                    } else if (curr1.currency !== 'XRP' && curr2.currency === 'XRP') {
+                      total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
+                    } else {
+                      total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
+                    }
+                    return `${total} ${curr2.name}`;
+                  })()}</strong>
+                </Typography>
+                {orderExpiry !== 'never' && (
+                  <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                    Expires: <strong>In {expiryHours} hours</strong>
+                  </Typography>
+                )}
+              </Stack>
+            </SummaryBox>
           )}
 
         </ConverterFrame>
@@ -1924,7 +1993,7 @@ const Swap = ({ token }) => {
             mt: 2,
             width: '100%',
             backgroundColor: theme.palette.background.paper,
-            borderRadius: '16px',
+            borderRadius: '12px',
             border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
             overflow: 'hidden',
             boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`
@@ -1935,16 +2004,16 @@ const Swap = ({ token }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              p: 2,
+              p: 1.5,
               borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
               background: alpha(theme.palette.background.paper, 0.02)
             }}
           >
-            <Typography variant="h6" sx={{ fontSize: '0.95rem', fontWeight: 600, color: theme.palette.text.primary }}>
+            <Typography variant="h6" sx={{ fontSize: '0.85rem', fontWeight: 600, color: theme.palette.text.primary }}>
               Orderbook
             </Typography>
             <Stack direction="row" spacing={1} alignItems="center">
-              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.75rem' }}>
+              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
                 {curr1.name}/{curr2.name}
               </Typography>
               <IconButton
@@ -1952,19 +2021,20 @@ const Swap = ({ token }) => {
                 onClick={() => setShowOrderbook(false)}
                 sx={{ 
                   color: theme.palette.text.secondary,
+                  p: 0.5,
                   '&:hover': {
                     backgroundColor: alpha(theme.palette.action.active, 0.08)
                   }
                 }}
               >
-                <Icon icon="mdi:close" width={18} height={18} />
+                <Icon icon="mdi:close" width={16} height={16} />
               </IconButton>
             </Stack>
           </Box>
           
           <Box sx={{ 
-            height: { xs: '300px', md: '400px' }, 
-            maxHeight: '500px',
+            height: { xs: '250px', md: '350px' }, 
+            maxHeight: '400px',
             overflow: 'auto',
             backgroundColor: alpha(theme.palette.background.default, 0.01)
           }}>
@@ -1991,6 +2061,57 @@ const Swap = ({ token }) => {
               }}
             />
           </Box>
+        </Box>
+      )}
+      
+      {/* Orders Display */}
+      {showOrders && (
+        <Box
+          sx={{
+            mt: 2,
+            width: '100%',
+            backgroundColor: theme.palette.background.paper,
+            borderRadius: '12px',
+            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+            overflow: 'hidden',
+            boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 1.5,
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+              background: alpha(theme.palette.background.paper, 0.02)
+            }}
+          >
+            <Typography variant="h6" sx={{ fontSize: '0.85rem', fontWeight: 600, color: theme.palette.text.primary }}>
+              Your Orders
+            </Typography>
+            <IconButton
+              size="small"
+              onClick={() => setShowOrders(false)}
+              sx={{ 
+                color: theme.palette.text.secondary,
+                p: 0.5,
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.action.active, 0.08)
+                }
+              }}
+            >
+              <Icon icon="mdi:close" width={16} height={16} />
+            </IconButton>
+          </Box>
+          
+          <React.Suspense fallback={
+            <Box sx={{ p: 3, display: 'flex', justifyContent: 'center' }}>
+              <PuffLoader color={theme.palette.primary.main} size={30} />
+            </Box>
+          }>
+            <Orders pair={{ curr1, curr2 }} />
+          </React.Suspense>
         </Box>
       )}
     </Stack>
