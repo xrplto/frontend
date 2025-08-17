@@ -3152,55 +3152,57 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
             </Box>
 
 
-            {/* View Buttons - Shows for both Market and Limit */}
-            <Box sx={{ mt: 2, mb: 1 }}>
-              <Stack direction="row" spacing={1}>
-                <Button
-                  fullWidth
-                  size="small"
-                  variant="outlined"
-                  onClick={() => setShowOrderbook(!showOrderbook)}
-                  startIcon={<Icon icon={showOrderbook ? "mdi:chart-box-outline" : "mdi:chart-box"} width={14} height={14} />}
-                  sx={{
-                    py: 0.6,
-                    fontSize: '0.7rem',
-                    textTransform: 'none',
-                    borderColor: showOrderbook ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2),
-                    color: showOrderbook ? theme.palette.primary.main : theme.palette.text.secondary,
-                    backgroundColor: showOrderbook ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
-                    '&:hover': {
-                      borderColor: theme.palette.primary.main,
-                      backgroundColor: alpha(theme.palette.primary.main, 0.08)
-                    }
-                  }}
-                >
-                  {showOrderbook ? 'Hide' : 'Show'} Book
-                </Button>
-                {accountProfile?.account && (
+            {/* View Buttons - Shows only for Limit orders */}
+            {orderType === 'limit' && (
+              <Box sx={{ mt: 2, mb: 1 }}>
+                <Stack direction="row" spacing={1}>
                   <Button
                     fullWidth
                     size="small"
                     variant="outlined"
-                    onClick={() => setShowOrders(!showOrders)}
-                    startIcon={<Icon icon="mdi:format-list-bulleted" width={14} height={14} />}
+                    onClick={() => setShowOrderbook(!showOrderbook)}
+                    startIcon={<Icon icon={showOrderbook ? "mdi:chart-box-outline" : "mdi:chart-box"} width={14} height={14} />}
                     sx={{
                       py: 0.6,
                       fontSize: '0.7rem',
                       textTransform: 'none',
-                      borderColor: showOrders ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2),
-                      color: showOrders ? theme.palette.primary.main : theme.palette.text.secondary,
-                      backgroundColor: showOrders ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
+                      borderColor: showOrderbook ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2),
+                      color: showOrderbook ? theme.palette.primary.main : theme.palette.text.secondary,
+                      backgroundColor: showOrderbook ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
                       '&:hover': {
                         borderColor: theme.palette.primary.main,
                         backgroundColor: alpha(theme.palette.primary.main, 0.08)
                       }
                     }}
                   >
-                    {showOrders ? 'Hide' : 'Show'} Orders
+                    {showOrderbook ? 'Hide' : 'Show'} Book
                   </Button>
-                )}
-              </Stack>
-            </Box>
+                  {accountProfile?.account && (
+                    <Button
+                      fullWidth
+                      size="small"
+                      variant="outlined"
+                      onClick={() => setShowOrders(!showOrders)}
+                      startIcon={<Icon icon="mdi:format-list-bulleted" width={14} height={14} />}
+                      sx={{
+                        py: 0.6,
+                        fontSize: '0.7rem',
+                        textTransform: 'none',
+                        borderColor: showOrders ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2),
+                        color: showOrders ? theme.palette.primary.main : theme.palette.text.secondary,
+                        backgroundColor: showOrders ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
+                        '&:hover': {
+                          borderColor: theme.palette.primary.main,
+                          backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                        }
+                      }}
+                    >
+                      {showOrders ? 'Hide' : 'Show'} Orders
+                    </Button>
+                  )}
+                </Stack>
+              </Box>
+            )}
 
             {/* Market Order UI */}
             {orderType === 'market' && (
