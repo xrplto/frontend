@@ -443,7 +443,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     // Create new chart
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: isMobile ? 320 : 480,
+      height: isMobile ? 380 : 550,
       layout: {
         background: {
           type: 'solid',
@@ -521,7 +521,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         timeVisible: true,
         secondsVisible: false,
         rightOffset: 12,
-        barSpacing: 8,
+        barSpacing: 10,
+        minBarSpacing: 0.5,
         fixLeftEdge: true,
         fixRightEdge: true,
       },
@@ -1060,7 +1061,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
       <Box sx={{ 
         position: 'relative', 
-        height: isMobile ? 320 : 480,
+        height: isMobile ? 380 : 550,
         borderRadius: 1,
         overflow: 'hidden'
       }}>
