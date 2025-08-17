@@ -1,17 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Container,
-  Grid,
-  Toolbar,
-  Typography,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  Stack,
-  useTheme
-} from '@mui/material';
+import styled from '@emotion/styled';
 import axios from 'axios';
 // import { performance } from 'perf_hooks';
 import Topbar from 'src/components/Topbar';
@@ -19,310 +7,300 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
 
-function AboutPage() {
-  const theme = useTheme();
+// Styled components
+const PageWrapper = styled.div`
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
 
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  width: 100%;
+`;
+
+const PageHeader = styled.div`
+  text-align: center;
+  margin: 48px 0;
+`;
+
+const PageTitle = styled.h1`
+  margin-bottom: 16px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #1976d2, #42a5f5);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  
+  @media (min-width: 768px) {
+    font-size: 3.5rem;
+  }
+`;
+
+const PageSubtitle = styled.h5`
+  color: rgba(0, 0, 0, 0.6);
+  max-width: 600px;
+  margin: 0 auto;
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.6;
+  
+  @media (prefers-color-scheme: dark) {
+    color: rgba(255, 255, 255, 0.7);
+  }
+`;
+
+const GridContainer = styled.div`
+  display: grid;
+  gap: 32px;
+  margin-bottom: 48px;
+`;
+
+const TwoColumnGrid = styled.div`
+  display: grid;
+  gap: 32px;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const ThreeColumnGrid = styled.div`
+  display: grid;
+  gap: 32px;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+`;
+
+const Card = styled.div`
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.04), rgba(156, 39, 176, 0.04));
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  
+  @media (prefers-color-scheme: dark) {
+    background: linear-gradient(135deg, rgba(25, 118, 210, 0.08), rgba(156, 39, 176, 0.08));
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+`;
+
+const CardTitle = styled.h4`
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: ${props => props.color || '#1976d2'};
+  font-size: 1.5rem;
+  line-height: 1.334;
+`;
+
+const BodyText = styled.p`
+  line-height: 1.7;
+  font-size: 1.1rem;
+  margin: 0;
+  color: ${props => props.theme?.palette?.text?.primary || '#212121'};
+  
+  @media (prefers-color-scheme: dark) {
+    color: rgba(255, 255, 255, 0.9);
+  }
+`;
+
+const TimelineContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+`;
+
+const TimelineItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 0.9rem;
+`;
+
+const TimelineDate = styled.div`
+  min-width: 100px;
+  padding: 2px 8px;
+  background: rgba(0, 204, 136, 0.1);
+  border-radius: 4px;
+  color: #00cc88;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-align: center;
+  white-space: nowrap;
+  
+  @media (prefers-color-scheme: dark) {
+    background: rgba(0, 204, 136, 0.15);
+  }
+`;
+
+const TimelineEvent = styled.div`
+  flex: 1;
+  line-height: 1.4;
+  font-size: 0.85rem;
+  color: ${props => props.theme?.palette?.text?.primary || '#212121'};
+  
+  @media (prefers-color-scheme: dark) {
+    color: rgba(255, 255, 255, 0.9);
+  }
+`;
+
+const StyledLink = styled.a`
+  color: #1976d2;
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const InlineSpan = styled.span`
+  color: #1976d2;
+  font-weight: 600;
+`;
+
+function AboutPage() {
   const timelineData = [
-    { date: 'November 2021', event: 'XRPL.to Launches' },
-    {
-      date: 'December 2021',
-      event: 'xrpl.to concludes the year with a monthly page view count of 55,000.'
-    },
-    { date: 'July 2022', event: 'XRPL Grants Wave 3 Recipient' },
-    { date: 'August 2022', event: 'On-Ramp Fiat Integration' },
-    {
-      date: 'October 2022',
-      event: 'XRPL.to introduces a weighted market cap for tokens with low liquidity.'
-    },
-    { date: 'February 2023', event: 'Full XRPL History Implemented' },
-    { date: 'April 2023', event: 'Public API Documentation Released' }
+    { date: 'Nov 2021', event: 'XRPL.to Launches' },
+    { date: 'Dec 2021', event: 'Reached 55,000 monthly page views' },
+    { date: 'Jul 2022', event: 'XRPL Grants Wave 3 Recipient' },
+    { date: 'Aug 2022', event: 'On-Ramp Fiat Integration' },
+    { date: 'Oct 2022', event: 'Weighted market cap for low liquidity tokens' },
+    { date: 'Feb 2023', event: 'Full XRPL History Implemented' },
+    { date: 'Apr 2023', event: 'Public API Documentation Released' },
+    { date: 'Aug 2025', event: 'Reached 40,000 unique monthly users' }
   ];
 
   return (
-    <Box>
-      <Toolbar id="back-to-top-anchor" />
+    <PageWrapper>
       <Topbar />
       <Header />
 
-      <Container maxWidth="xl">
-        <Grid container spacing={4}>
-          <Grid item xs={12}>
-            <Box sx={{ textAlign: 'center', my: 6 }}>
-              <Typography
-                variant="h1"
-                sx={{
-                  mb: 2,
-                  fontSize: { xs: '2.5rem', md: '3.5rem' },
-                  fontWeight: 700,
-                  background: 'linear-gradient(45deg, #1976d2, #42a5f5)',
-                  backgroundClip: 'text',
-                  textFillColor: 'transparent',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}
-              >
-                About xrpl.to
-              </Typography>
-              <Typography variant="h5" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
-                The largest price-tracking onchain app for tokenized assets on the XRPL ecosystem
-              </Typography>
-            </Box>
+      <Container>
+        <PageHeader>
+          <PageTitle>About xrpl.to</PageTitle>
+          <PageSubtitle>
+            The largest price-tracking onchain app for tokenized assets on the XRPL ecosystem
+          </PageSubtitle>
+        </PageHeader>
 
-            <Grid container spacing={4}>
-              {/* Mission Statement Card */}
-              <Grid item xs={12} md={6}>
-                <Card
-                  elevation={3}
-                  sx={{
-                    height: '100%',
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main}10, ${theme.palette.secondary.main}10)`,
-                    border: `1px solid ${theme.palette.divider}`
-                  }}
-                >
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography
-                      variant="h4"
-                      gutterBottom
-                      sx={{ fontWeight: 600, color: 'primary.main' }}
-                    >
-                      Our Mission
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7, fontSize: '1.1rem' }}>
-                      At XRPL.to, we make XRPL tokens discoverable and efficient globally by
-                      empowering retail users with unbiased, high-quality, and accurate information.
-                      We strive to provide all relevant and current information on XRPL tokens,
-                      currencies, and assets in a single, easy-to-find location.
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
+        <GridContainer>
+          <ThreeColumnGrid>
+            {/* Mission Statement Card */}
+            <Card>
+              <CardTitle color="#1976d2">Our Mission</CardTitle>
+              <BodyText>
+                At XRPL.to, we make XRPL tokens discoverable and efficient globally by
+                empowering retail users with unbiased, high-quality, and accurate information.
+                We strive to provide all relevant and current information on XRPL tokens,
+                currencies, and assets in a single, easy-to-find location.
+              </BodyText>
+            </Card>
 
-              {/* Company Info Card */}
-              <Grid item xs={12} md={6}>
-                <Card
-                  elevation={3}
-                  sx={{
-                    height: '100%',
-                    background: `linear-gradient(135deg, ${theme.palette.secondary.main}10, ${theme.palette.primary.main}10)`,
-                    border: `1px solid ${theme.palette.divider}`
-                  }}
-                >
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography
-                      variant="h4"
-                      gutterBottom
-                      sx={{ fontWeight: 600, color: 'secondary.main' }}
-                    >
-                      Our Story
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7, fontSize: '1.1rem' }}>
-                      Founded in November 2021 by NFT Labs, XRPL.to provides up-to-date XRPL token
-                      prices, charts, and data for emerging XRPL DEX markets. Our efforts have been
-                      recognized by Bloomberg, New York Times, and Digital Trends.
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
+            {/* Company Info Card */}
+            <Card>
+              <CardTitle color="#9c27b0">Our Story</CardTitle>
+              <BodyText>
+                Founded in November 2021 by NFT Labs, XRPL.to provides up-to-date XRPL token
+                prices, charts, and data for emerging XRPL DEX markets. Our efforts have been
+                recognized by Bloomberg, New York Times, and Digital Trends.
+              </BodyText>
+            </Card>
 
-              {/* Timeline Section */}
-              <Grid item xs={12}>
-                <Card elevation={2} sx={{ mt: 4 }}>
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography
-                      variant="h4"
-                      gutterBottom
-                      sx={{ fontWeight: 600, textAlign: 'center', mb: 4 }}
-                    >
-                      Our Journey
-                    </Typography>
-                    <Stack spacing={3}>
-                      {timelineData.map((item) => (
-                        <Box
-                          key={item.date}
-                          sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}
-                        >
-                          <Chip
-                            label={item.date}
-                            color="primary"
-                            variant="outlined"
-                            sx={{
-                              minWidth: 140,
-                              fontWeight: 600,
-                              fontSize: '0.875rem'
-                            }}
-                          />
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              flex: 1,
-                              pt: 0.5,
-                              lineHeight: 1.6,
-                              fontSize: '1rem'
-                            }}
-                          >
-                            {item.event}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
+            {/* Timeline Section */}
+            <Card>
+              <CardTitle color="#00cc88">Our Journey</CardTitle>
+              <TimelineContainer>
+                {timelineData.map((item) => (
+                  <TimelineItem key={item.date}>
+                    <TimelineDate>{item.date}</TimelineDate>
+                    <TimelineEvent>{item.event}</TimelineEvent>
+                  </TimelineItem>
+                ))}
+              </TimelineContainer>
+            </Card>
+          </ThreeColumnGrid>
 
-              {/* How We Work Section */}
-              <Grid item xs={12}>
-                <Card elevation={2} sx={{ mt: 2 }}>
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 3, color: 'primary.main' }}>
-                      How XRPL.to Works
-                    </Typography>
-                    
-                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-                      Comprehensive XRPL Market Insights
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7, mb: 3 }}>
-                      At XRPL.to, we aggregate and present up-to-date information on all tokens, currencies, and
-                      assets within the XRP Ledger ecosystem. Our goal is to serve as your all-in-one resource
-                      for XRPL market data, providing the tools and insights needed to navigate the
-                      decentralized finance landscape effectively.
-                    </Typography>
+          {/* Platform Features Row */}
+          <ThreeColumnGrid>
+            {/* Market Insights Card */}
+            <Card>
+              <CardTitle color="#ff6b6b">Market Insights</CardTitle>
+              <BodyText>
+                We aggregate real-time data from the XRP Ledger DEX, providing comprehensive 
+                market insights for over 9,750 tokens. Our platform offers interactive charts, 
+                historical data analysis, and transparent price calculations sourced directly 
+                from on-chain data.
+              </BodyText>
+            </Card>
 
-                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-                      Interactive Live & Historical Token Charts
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7, mb: 3 }}>
-                      Each token's dedicated page features dynamic charts showcasing both live and historical
-                      price movements. Customize your view by selecting specific date ranges to analyze trends
-                      from an asset's inception to the present. These charts are freely accessible to all users,
-                      offering valuable insights at no cost.
-                    </Typography>
+            {/* Trading Tools Card */}
+            <Card>
+              <CardTitle color="#4ecdc4">Trading & Portfolio</CardTitle>
+              <BodyText>
+                Advanced trading tools including real-time order books, direct DEX trading, 
+                and portfolio tracking. Monitor your holdings, execute trades, and manage 
+                your digital assets with professional-grade tools designed for traders at 
+                every level of expertise.
+              </BodyText>
+            </Card>
 
-                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-                      Transparent Token Price Calculations
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7, mb: 3 }}>
-                      Our token prices reflect real-time data from the XRP Ledger DEX, ensuring transparency and
-                      accuracy. This means that as the XRP Ledger produces new ledgers, our platform updates to
-                      provide the latest information. For developers and analysts seeking programmatic access,
-                      our comprehensive{' '}
-                      <Typography component="a" href="/api-docs" sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
-                        XRPL API documentation
-                      </Typography>{' '}
-                      provides detailed guidance on integrating and utilizing our data feeds.
-                    </Typography>
+            {/* NFT Marketplace Card */}
+            <Card>
+              <CardTitle color="#ffe66d">NFT Marketplace</CardTitle>
+              <BodyText>
+                Explore, buy, and sell NFTs directly on the XRP Ledger. Browse collections, 
+                view ownership history, and participate in the growing XRPL NFT ecosystem 
+                with detailed analytics and seamless trading experiences for digital 
+                collectibles.
+              </BodyText>
+            </Card>
+          </ThreeColumnGrid>
 
-                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-                      XRPL Token Valuation Methodology
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7, mb: 3 }}>
-                      We calculate the market capitalization of XRPL tokens by multiplying the total circulating
-                      supply by the current reference price. This approach offers a clear and consistent metric
-                      for assessing the value of individual assets within the XRP Ledger.
-                    </Typography>
+          {/* Community Row */}
+          <TwoColumnGrid>
+            {/* How It Works Card */}
+            <Card>
+              <CardTitle color="#1976d2">How XRPL.to Works</CardTitle>
+              <BodyText>
+                Our platform connects directly to the XRP Ledger, processing real-time data 
+                from every new ledger. Token prices are calculated using actual DEX trading 
+                data, ensuring accuracy and transparency. We automatically list all tokens 
+                on the ledger, providing comprehensive coverage of the ecosystem. Developers 
+                can access our data through our{' '}
+                <StyledLink href="/api-docs">comprehensive API</StyledLink>
+                {' '}for integration into their applications.
+              </BodyText>
+            </Card>
 
-                    <Divider sx={{ my: 3 }} />
-                    
-                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-                      Global XRPL Token Market Overview
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7, mb: 3 }}>
-                      As of June 1, 2025, the XRP Ledger hosts approximately 9,752 tokens, encompassing a
-                      diverse array of currencies and projects. XRPL.to automatically lists all tokens available
-                      on the ledger, providing a comprehensive view of the ecosystem. While we strive to present
-                      accurate information, we encourage users to conduct their own research to assess the
-                      legitimacy and potential of each project.
-                    </Typography>
-
-                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-                      Understanding XRPL Tokens
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7, mb: 3 }}>
-                      Within the XRP Ledger, assets other than XRP are represented as tokens, which can be
-                      either fungible or non-fungible. These tokens facilitate a wide range of applications,
-                      including stablecoins backed by external assets, community credits, and unique digital
-                      collectibles. The ledger's design ensures that tokens are issued and held through{' '}
-                      <Typography component="a" href="https://xrpl.org/trust-lines-and-issuing.html" target="_blank" rel="noopener noreferrer" sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
-                        trust lines
-                      </Typography>
-                      , providing flexibility and security for various use cases.
-                    </Typography>
-
-                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-                      NFT Trading on the XRP Ledger
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7, mb: 3 }}>
-                      XRPL.to offers a seamless NFT trading experience, allowing users to explore, buy, and
-                      sell non-fungible tokens directly on the XRP Ledger. Our platform provides detailed
-                      information about collections, individual NFTs, ownership history, and current market
-                      offers, making it easy to participate in the growing XRPL NFT ecosystem.
-                    </Typography>
-
-                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-                      Advanced Trading & Portfolio Management
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7, mb: 3 }}>
-                      Beyond market data, XRPL.to features comprehensive trading tools including real-time
-                      order books, trade execution capabilities, and portfolio tracking. Monitor your token
-                      holdings, track transaction history, and manage your digital assets all in one place.
-                      Our platform supports both casual investors and professional traders with tools designed
-                      for every level of expertise.
-                    </Typography>
-
-                    <Divider sx={{ my: 3 }} />
-
-                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-                      Stay Informed with XRPL.to
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7, mb: 3 }}>
-                      Join our growing community of XRPL enthusiasts and stay updated with the latest market
-                      trends, token launches, and ecosystem developments. XRPL.to is committed to being your
-                      trusted companion in the XRP Ledger journey, providing the data, tools, and insights
-                      you need to make informed decisions in the evolving world of decentralized finance.
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-
-              {/* Additional Info Card */}
-              <Grid item xs={12}>
-                <Card elevation={2} sx={{ mt: 2 }}>
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                      Get Involved
-                    </Typography>
-                    <Stack spacing={2}>
-                      <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
-                        To understand the process of listing tokens projects and exchanges on
-                        xrpl.to, please refer to our listing policy and frequently asked questions.
-                      </Typography>
-                      <Divider sx={{ my: 2 }} />
-                      <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
-                        xrpl.to attracts millions of users annually through web, mobile platforms,
-                        and social media including Twitter, Telegram, Facebook, and Instagram. We
-                        also host Twitter spaces for community engagement.
-                      </Typography>
-                      <Divider sx={{ my: 2 }} />
-                      <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
-                        For advertising opportunities or business inquiries, contact us at{' '}
-                        <Typography
-                          component="span"
-                          sx={{ color: 'primary.main', fontWeight: 600 }}
-                        >
-                          hello@xrpl.to
-                        </Typography>
-                        . Visit our careers page to discover job openings.
-                      </Typography>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-          </Grid>
-        </Grid>
+            {/* Get Involved Card */}
+            <Card>
+              <CardTitle color="#9c27b0">Get Involved</CardTitle>
+              <BodyText>
+                Join millions of users tracking XRPL tokens with us. Connect through our 
+                social channels on Twitter, Telegram, Facebook, and Instagram. For token 
+                listing inquiries, refer to our listing policy and FAQ. Business partnerships 
+                and advertising opportunities are available - contact us at{' '}
+                <InlineSpan>hello@xrpl.to</InlineSpan>. 
+                Check our careers page for open positions.
+              </BodyText>
+            </Card>
+          </TwoColumnGrid>
+        </GridContainer>
       </Container>
 
       <Footer />
-    </Box>
+    </PageWrapper>
   );
 }
 
