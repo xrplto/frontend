@@ -369,18 +369,20 @@ function NewsPage() {
     
     return (
       <div className={`${styles.sentimentSummary} ${isDark ? styles.dark : ''}`}>
-        <h3 className={styles.sentimentPeriod}>
+        <span className={styles.sentimentPeriod}>
           {period}
-        </h3>
-        <div className={styles.sentimentChips}>
-          <span className={`${styles.sentimentChip} ${styles.bullishChip}`}>
-            Bullish {stats.bullish || 0}%
+        </span>
+        <div className={styles.sentimentValues}>
+          <span className={`${styles.sentimentValue} ${styles.bullish}`}>
+            {stats.bullish || 0}%
           </span>
-          <span className={`${styles.sentimentChip} ${styles.bearishChip}`}>
-            Bearish {stats.bearish || 0}%
+          <span className={styles.sentimentDivider}>·</span>
+          <span className={`${styles.sentimentValue} ${styles.bearish}`}>
+            {stats.bearish || 0}%
           </span>
-          <span className={`${styles.sentimentChip} ${styles.neutralChip}`}>
-            Neutral {stats.neutral || 0}%
+          <span className={styles.sentimentDivider}>·</span>
+          <span className={`${styles.sentimentValue} ${styles.neutral}`}>
+            {stats.neutral || 0}%
           </span>
         </div>
       </div>
@@ -501,34 +503,38 @@ function NewsPage() {
           />
 
           <div 
-            className={`${styles.sentimentContainer} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
+            className={`${styles.compactSentiment} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
             style={{
               background: 'transparent',
               border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
               color: theme.palette.text.primary
             }}
           >
-            <h2 className={styles.sentimentTitle} style={{ color: theme.palette.text.primary }}>
-              Sentiment Analysis
-              {searchQuery && searchSentimentScore !== null && (
-                <span className={styles.sentimentScore} style={{ color: theme.palette.primary.main }}>
-                  (Score: {searchSentimentScore})
-                </span>
-              )}
-              {selectedSource && (
-                <span className={styles.sentimentSource} style={{ color: theme.palette.text.secondary }}>
-                  ({selectedSource})
-                </span>
-              )}
-            </h2>
+            <div className={styles.sentimentHeader}>
+              <span className={styles.sentimentLabel}>
+                SENTIMENT
+                {searchQuery && searchSentimentScore !== null && (
+                  <span className={styles.sentimentScore} style={{ color: theme.palette.primary.main }}>
+                    {searchSentimentScore}
+                  </span>
+                )}
+                {selectedSource && (
+                  <span className={styles.sentimentSource} style={{ color: theme.palette.text.secondary }}>
+                    {selectedSource}
+                  </span>
+                )}
+              </span>
+              <div className={styles.sentimentLegend}>
+                <span className={`${styles.legendItem} ${styles.bullish}`}>Bullish</span>
+                <span className={`${styles.legendItem} ${styles.bearish}`}>Bearish</span>
+                <span className={`${styles.legendItem} ${styles.neutral}`}>Neutral</span>
+              </div>
+            </div>
             <div className={`${styles.sentimentGrid} ${isMobile ? styles.mobile : ''}`}>
-              <SentimentSummary period="Last 24h" stats={sentimentStats.last24h} />
-              {!isMobile && <div className={styles.divider}></div>}
+              <SentimentSummary period="24h" stats={sentimentStats.last24h} />
               <SentimentSummary period="7d" stats={sentimentStats.last7d} />
-              {!isMobile && <div className={styles.divider}></div>}
               <SentimentSummary period="30d" stats={sentimentStats.last30d} />
-              {!isMobile && <div className={styles.divider}></div>}
-              <SentimentSummary period="All Time" stats={sentimentStats.all} />
+              <SentimentSummary period="All" stats={sentimentStats.all} />
             </div>
           </div>
 

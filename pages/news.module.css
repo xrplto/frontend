@@ -360,35 +360,49 @@
   font-size: 0.7rem;
 }
 
-/* Sentiment Analysis */
-.sentimentContainer {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  border-radius: 4px;
+/* Compact Sentiment Analysis */
+.compactSentiment {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 6px;
   transition: background-color 0.15s ease;
   /* Background and border set inline from theme */
 }
 
-.sentimentTitle {
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.9);
+.sentimentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
-.dark .sentimentTitle {
-  color: rgba(255, 255, 255, 0.9);
+.sentimentLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dark .sentimentLabel {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .sentimentScore {
-  margin-left: 0.5rem;
+  background: rgba(59, 130, 246, 0.1);
   color: #3b82f6;
-  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
 }
 
 .sentimentSource {
-  margin-left: 0.5rem;
   color: rgba(0, 0, 0, 0.5);
+  font-size: 0.65rem;
   font-weight: 400;
 }
 
@@ -396,114 +410,157 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
-.sentimentGrid {
+.sentimentLegend {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.legendItem {
+  font-size: 0.65rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.legendItem::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.25rem;
+}
+
+.legendItem.bullish::before {
+  background: #10B981;
+}
+
+.legendItem.bearish::before {
+  background: #EF4444;
+}
+
+.legendItem.neutral::before {
+  background: #F59E0B;
+}
+
+.sentimentGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
 }
 
 .sentimentGrid.mobile {
-  flex-direction: column;
-  gap: 0.5rem;
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .sentimentSummary {
-  flex: 1;
-  padding: 1.5rem;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.02);
-  transition: all 0.3s ease;
+  padding: 0.5rem;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
-.sentimentSummary:hover {
-  background: rgba(0, 0, 0, 0.04);
-  transform: translateY(-2px);
+.sentimentSummary:last-child {
+  border-right: none;
 }
 
 .dark .sentimentSummary {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.dark .sentimentSummary:hover {
-  background: rgba(255, 255, 255, 0.05);
+  border-right-color: rgba(255, 255, 255, 0.08);
 }
 
 .sentimentPeriod {
-  margin: 0 0 1rem 0;
-  font-size: 0.875rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  letter-spacing: 0.025em;
-  color: rgba(0, 0, 0, 0.7);
+  color: rgba(0, 0, 0, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
 }
 
 .dark .sentimentPeriod {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.sentimentChips {
+.sentimentValues {
   display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
 }
 
-.sentimentChip {
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+.sentimentValue {
   font-size: 0.75rem;
   font-weight: 600;
-  color: white;
-  transition: transform 0.2s ease;
 }
 
-.sentimentChip:hover {
-  transform: scale(1.05);
+.sentimentValue.bullish {
+  color: #10B981;
 }
 
-.sentimentChip.bullishChip {
-  background: linear-gradient(90deg, #10B981 0%, #059669 100%);
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+.sentimentValue.bearish {
+  color: #EF4444;
 }
 
-.sentimentChip.bullishChip:hover {
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+.sentimentValue.neutral {
+  color: #F59E0B;
 }
 
-.sentimentChip.bearishChip {
-  background: linear-gradient(90deg, #EF4444 0%, #DC2626 100%);
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+.sentimentDivider {
+  color: rgba(0, 0, 0, 0.2);
+  font-size: 0.75rem;
 }
 
-.sentimentChip.bearishChip:hover {
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+.dark .sentimentDivider {
+  color: rgba(255, 255, 255, 0.2);
 }
 
-.sentimentChip.neutralChip {
-  background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%);
-  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25);
+/* SyncWave theme overrides for sentiment */
+.syncwave .compactSentiment {
+  background: rgba(26, 0, 51, 0.3);
+  border-color: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
 }
 
-.sentimentChip.neutralChip:hover {
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+.syncwave .sentimentLabel {
+  color: #00ffff;
+  text-shadow: 0 0 5px currentColor;
 }
 
-/* SyncWave theme overrides for sentiment chips */
-.syncwave .sentimentChip.bullishChip {
+.syncwave .sentimentScore {
+  background: rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.syncwave .legendItem.bullish::before {
   background: #00ff00;
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), 0 0 40px rgba(0, 255, 0, 0.3);
-  text-shadow: 0 0 10px currentColor;
+  box-shadow: 0 0 10px #00ff00;
 }
 
-.syncwave .sentimentChip.bearishChip {
+.syncwave .legendItem.bearish::before {
   background: #ff0066;
-  box-shadow: 0 0 20px rgba(255, 0, 102, 0.5), 0 0 40px rgba(255, 0, 102, 0.3);
-  text-shadow: 0 0 10px currentColor;
+  box-shadow: 0 0 10px #ff0066;
 }
 
-.syncwave .sentimentChip.neutralChip {
+.syncwave .legendItem.neutral::before {
   background: #ffff00;
-  box-shadow: 0 0 20px rgba(255, 255, 0, 0.5), 0 0 40px rgba(255, 255, 0, 0.3);
-  text-shadow: 0 0 10px currentColor;
-  color: #000;
+  box-shadow: 0 0 10px #ffff00;
+}
+
+.syncwave .sentimentValue.bullish {
+  color: #00ff00;
+  text-shadow: 0 0 5px currentColor;
+}
+
+.syncwave .sentimentValue.bearish {
+  color: #ff0066;
+  text-shadow: 0 0 5px currentColor;
+}
+
+.syncwave .sentimentValue.neutral {
+  color: #ffff00;
+  text-shadow: 0 0 5px currentColor;
 }
 
 .divider {
@@ -953,6 +1010,24 @@
   .compactCount {
     font-size: 0.7rem;
     padding: 0.1rem 0.4rem;
+  }
+
+  .compactSentiment {
+    padding: 0.5rem;
+  }
+
+  .sentimentHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .sentimentGrid.mobile {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sentimentSummary:nth-child(2) {
+    border-right: none;
   }
 
   .articleTitle {
