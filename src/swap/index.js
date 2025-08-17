@@ -1443,6 +1443,10 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
         const sendAmount = amount1;
         const receiveAmount = amount2;
         
+        // Check if we're selling 100% of the balance
+        const accountBalance = revert ? accountPairBalance?.curr2?.value : accountPairBalance?.curr1?.value;
+        const isSelling100Percent = accountBalance && sendAmount === accountBalance.toString();
+        
         // Build SendMax (what we're spending) - handle XRP special case
         if (sendCurrency.currency === 'XRP') {
           SendMax = new Decimal(sendAmount).mul(1000000).toFixed(0, Decimal.ROUND_DOWN); // Convert to drops
@@ -1450,7 +1454,10 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           SendMax = {
             currency: sendCurrency.currency,
             issuer: sendCurrency.issuer,
-            value: new Decimal(sendAmount).toFixed(6, Decimal.ROUND_DOWN)
+            // For 100% sells, use more precision to ensure all tokens are sold
+            value: isSelling100Percent 
+              ? sendAmount  // Use exact balance string
+              : new Decimal(sendAmount).toFixed(15, Decimal.ROUND_DOWN)  // Use higher precision
           };
         }
         
@@ -1461,7 +1468,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           Amount = {
             currency: receiveCurrency.currency,
             issuer: receiveCurrency.issuer,
-            value: new Decimal(receiveAmount).toFixed(6, Decimal.ROUND_DOWN)
+            value: new Decimal(receiveAmount).toFixed(15, Decimal.ROUND_DOWN)  // Use higher precision
           };
         }
 
@@ -1475,7 +1482,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           DeliverMin = {
             currency: Amount.currency,
             issuer: Amount.issuer,
-            value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(6, Decimal.ROUND_DOWN)
+            value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(15, Decimal.ROUND_DOWN)  // Higher precision
           };
         } else {
           // For XRP amounts (strings) - Amount is already in drops
@@ -1664,7 +1671,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
         return '';
       }
       
-      return result.toFixed(6, Decimal.ROUND_DOWN);
+      // Use higher precision to avoid truncation issues
+      return result.toFixed(15, Decimal.ROUND_DOWN);
     } catch (e) {
       return '';
     }
@@ -3044,7 +3052,10 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                             size="small"
                             onClick={() => {
                               const balance = revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value;
-                              const newAmount = (balance * percent / 100).toFixed(6);
+                              // For 100%, use the exact balance to avoid leaving dust
+                              const newAmount = percent === 100 
+                                ? balance.toString()  // Use exact balance string
+                                : (balance * percent / 100).toFixed(6);
                               handleChangeAmount1({ target: { value: newAmount } });
                             }}
                             sx={{
