@@ -717,11 +717,14 @@ const Topbar = () => {
       <FormControl
         size="small"
         sx={{
-          minWidth: 140,
+          minWidth: 100,
           '& .MuiSelect-select': {
             display: 'flex',
             alignItems: 'center',
-            gap: 1
+            gap: 0.5,
+            paddingY: '4px',
+            paddingX: '8px',
+            fontSize: '0.75rem'
           }
         }}
       >
@@ -731,7 +734,8 @@ const Topbar = () => {
           displayEmpty
           inputProps={{ 'aria-label': 'Filter trades' }}
           sx={{
-            borderRadius: 2,
+            borderRadius: 1.5,
+            height: 28,
             '& .MuiOutlinedInput-notchedOutline': {
               borderColor: alpha(theme.palette.divider, 0.3)
             },
@@ -744,10 +748,10 @@ const Topbar = () => {
           }}
         >
           {FILTER_OPTIONS.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography component="span">{option.icon}</Typography>
-                <Typography variant="body2">{option.label}</Typography>
+            <MenuItem key={option.value} value={option.value} sx={{ fontSize: '0.75rem', paddingY: 0.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Typography component="span" sx={{ fontSize: '0.7rem' }}>{option.icon}</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>{option.label}</Typography>
               </Box>
             </MenuItem>
           ))}
