@@ -607,8 +607,6 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   
   // Add state for orderbook modal
   const [showOrderbook, setShowOrderbook] = useState(false);
-  const [showChart1, setShowChart1] = useState(false);
-  const [showChart2, setShowChart2] = useState(false);
   // Add state for showing user orders
   const [showOrders, setShowOrders] = useState(false);
   
@@ -1118,7 +1116,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   const fetchLatestSparklinePrice = async (token, setPriceFunction) => {
     try {
       const response = await axios.get(
-        `${BASE_URL}/sparkline/${token.md5}?period=24h&${token.pro24h}`
+        `${BASE_URL}/sparkline/${token.md5}?period=24h`
       );
 
       if (response.data && response.data.data && response.data.data.prices) {
@@ -1756,8 +1754,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     // Check for missing trustlines
     if (isLoggedIn && ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))) {
       const missingToken = !hasTrustline1 && curr1.currency !== 'XRP' 
-        ? getCurrencyDisplayName(curr1.currency, token1?.name)
-        : getCurrencyDisplayName(curr2.currency, token2?.name);
+        ? getCurrencyDisplayName(curr1.currency, curr1?.name)
+        : getCurrencyDisplayName(curr2.currency, curr2?.name);
       return `Set Trustline for ${missingToken}`;
     }
     
@@ -2864,13 +2862,38 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 transition: 'all 0.3s ease',
                 backgroundColor: alpha(theme.palette.background.paper, 0.3),
                 backdropFilter: 'blur(10px)',
+                overflow: 'hidden',
                 '&:hover': {
                   backgroundColor: alpha(theme.palette.background.paper, 0.4),
                   borderColor: alpha(theme.palette.primary.main, 0.1)
                 }
               }}
             >
-              <Box sx={{ p: { xs: 2, sm: 3 } }}>
+              {/* Embedded sparkline background */}
+              {token1 && token1.md5 && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    width: '60%',
+                    height: '100%',
+                    opacity: 0.15,
+                    pointerEvents: 'none',
+                    maskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)',
+                    WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)'
+                  }}
+                >
+                  <LoadChart
+                    url={`${BASE_URL}/sparkline/${token1.md5}?period=24h&lightweight=true`}
+                    style={{ width: '100%', height: '100%' }}
+                    showGradient={false}
+                    lineWidth={1.5}
+                    animation={false}
+                  />
+                </Box>
+              )}
+              <Box sx={{ p: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>You pay</Typography>
@@ -2939,30 +2962,6 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Box>
             </Box>
 
-            {/* Chart for Token 1 */}
-            {showChart1 && token1 && (
-              <Box
-                sx={{
-                  mt: 2,
-                  p: 2,
-                  borderRadius: '12px',
-                  backgroundColor: alpha(theme.palette.background.paper, 0.03),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
-                }}
-              >
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
-                  {token1.name} Price Chart (24h)
-                </Typography>
-                <Box sx={{ height: { xs: '150px', sm: '200px' } }}>
-                  <LoadChart
-                    url={`${BASE_URL}/sparkline/${token1.md5}?period=24h&${token1.pro24h}`}
-                    style={{ width: '100%', height: '100%' }}
-                    showGradient={true}
-                    lineWidth={2}
-                  />
-                </Box>
-              </Box>
-            )}
 
             {/* Clean Swap Button */}
             <Box sx={{ position: 'relative', height: '20px', my: 1 }}>
@@ -2985,13 +2984,38 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 transition: 'all 0.3s ease',
                 backgroundColor: alpha(theme.palette.background.paper, 0.3),
                 backdropFilter: 'blur(10px)',
+                overflow: 'hidden',
                 '&:hover': {
                   backgroundColor: alpha(theme.palette.background.paper, 0.4),
                   borderColor: alpha(theme.palette.primary.main, 0.1)
                 }
               }}
             >
-              <Box sx={{ p: { xs: 2, sm: 3 } }}>
+              {/* Embedded sparkline background */}
+              {token2 && token2.md5 && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    width: '60%',
+                    height: '100%',
+                    opacity: 0.15,
+                    pointerEvents: 'none',
+                    maskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)',
+                    WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)'
+                  }}
+                >
+                  <LoadChart
+                    url={`${BASE_URL}/sparkline/${token2.md5}?period=24h&lightweight=true`}
+                    style={{ width: '100%', height: '100%' }}
+                    showGradient={false}
+                    lineWidth={1.5}
+                    animation={false}
+                  />
+                </Box>
+              )}
+              <Box sx={{ p: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>You receive</Typography>
@@ -3032,30 +3056,6 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Box>
             </Box>
 
-            {/* Chart for Token 2 */}
-            {showChart2 && token2 && (
-              <Box
-                sx={{
-                  mt: 2,
-                  p: 2,
-                  borderRadius: '12px',
-                  backgroundColor: alpha(theme.palette.background.paper, 0.03),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
-                }}
-              >
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
-                  {token2.name} Price Chart (24h)
-                </Typography>
-                <Box sx={{ height: { xs: '150px', sm: '200px' } }}>
-                  <LoadChart
-                    url={`${BASE_URL}/sparkline/${token2.md5}?period=24h&${token2.pro24h}`}
-                    style={{ width: '100%', height: '100%' }}
-                    showGradient={true}
-                    lineWidth={2}
-                  />
-                </Box>
-              </Box>
-            )}
 
             {/* Order Type Toggle */}
             <Box sx={{ mt: 3, mb: 2 }}>
