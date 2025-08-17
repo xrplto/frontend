@@ -4181,6 +4181,19 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                         {token1.currency === 'XRP' 
                           ? `$${fNumber(latestPrice1 || token1.exch || tokenExch1)}`
                           : (() => {
+                              // Special handling for RLUSD when paired with XRP
+                              if ((token1.currency === 'RLUSD' || token1.name === 'RLUSD') && token2.currency === 'XRP') {
+                                // tokenExch1 contains XRP per RLUSD rate
+                                let price = Number(tokenExch1);
+                                if (isNaN(price) || price === 0) {
+                                  // If no rate1, try to calculate from rate2
+                                  price = tokenExch2 > 0 ? 1 / tokenExch2 : 0;
+                                }
+                                if (price > 0) {
+                                  return `${price.toFixed(4)} XRP`;
+                                }
+                              }
+                              
                               // Use token.exch first, then tokenExch1, then latestPrice1
                               let price = Number(token1.exch || tokenExch1 || latestPrice1);
                               if (isNaN(price) || price === 0) return '0 XRP';
@@ -4250,6 +4263,19 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                         {token2.currency === 'XRP' 
                           ? `$${fNumber(latestPrice2 || token2.exch || tokenExch2)}`
                           : (() => {
+                              // Special handling for RLUSD when paired with XRP
+                              if ((token2.currency === 'RLUSD' || token2.name === 'RLUSD') && token1.currency === 'XRP') {
+                                // tokenExch2 contains XRP per RLUSD rate
+                                let price = Number(tokenExch2);
+                                if (isNaN(price) || price === 0) {
+                                  // If no rate2, try to calculate from rate1
+                                  price = tokenExch1 > 0 ? 1 / tokenExch1 : 0;
+                                }
+                                if (price > 0) {
+                                  return `${price.toFixed(4)} XRP`;
+                                }
+                              }
+                              
                               // Use token.exch first, then tokenExch2, then latestPrice2
                               let price = Number(token2.exch || tokenExch2 || latestPrice2);
                               if (isNaN(price) || price === 0) return '0 XRP';
