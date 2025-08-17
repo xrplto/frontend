@@ -613,6 +613,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   const [showOrderbook, setShowOrderbook] = useState(false);
   // Add state for showing user orders
   const [showOrders, setShowOrders] = useState(false);
+  // Add state for order summary collapse
+  const [showOrderSummary, setShowOrderSummary] = useState(false);
   
   // Use orderbook data from props
   const bids = propsBids || [];
@@ -3688,9 +3690,24 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                     border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
                   }}
                 >
-                  <Typography variant="caption" sx={{ fontSize: '0.65rem', color: theme.palette.text.secondary, mb: 1, display: 'block' }}>
-                    ORDER SUMMARY
-                  </Typography>
+                  <Stack 
+                    direction="row" 
+                    justifyContent="space-between" 
+                    alignItems="center"
+                    onClick={() => setShowOrderSummary(!showOrderSummary)}
+                    sx={{ cursor: 'pointer', mb: showOrderSummary ? 1 : 0 }}
+                  >
+                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: theme.palette.text.secondary }}>
+                      ORDER SUMMARY
+                    </Typography>
+                    <Icon 
+                      icon={showOrderSummary ? "mdi:chevron-up" : "mdi:chevron-down"} 
+                      width={16} 
+                      height={16}
+                      style={{ color: theme.palette.text.secondary }}
+                    />
+                  </Stack>
+                  {showOrderSummary && (
                   <Stack spacing={0.75}>
                     {/* Sell Amount */}
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -3798,6 +3815,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                       </Typography>
                     </Stack>
                   </Stack>
+                  )}
                 </Box>
               </Box>
             )}
@@ -3820,193 +3838,45 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               }
               
               return (
-                <Box 
+                <Stack direction="row" justifyContent="space-between" alignItems="center" 
                   sx={{ 
                     mt: 1,
-                    p: 1.5,
-                    borderRadius: '12px',
-                    backgroundColor: alpha(
-                      getPriceImpactColor(Math.abs(priceImpact)), 
-                      0.08
-                    ),
-                    border: `1px solid ${alpha(
-                      getPriceImpactColor(Math.abs(priceImpact)), 
-                      0.2
-                    )}`,
-                    transition: 'all 0.3s ease'
+                    p: 1,
+                    borderRadius: '8px',
+                    backgroundColor: alpha(theme.palette.background.paper, 0.03),
+                    border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
                   }}
                 >
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  sx={{ width: '100%' }}
-                >
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Box
+                  <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+                    Price Impact
+                  </Typography>
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <Typography
+                      variant="caption"
                       sx={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        backgroundColor: getPriceImpactColor(Math.abs(priceImpact)),
-                        animation: Math.abs(priceImpact) > 3 ? 'pulse 2s infinite' : 'none',
-                        '@keyframes pulse': {
-                          '0%': {
-                            opacity: 1,
-                            transform: 'scale(1)'
-                          },
-                          '50%': {
-                            opacity: 0.5,
-                            transform: 'scale(1.2)'
-                          },
-                          '100%': {
-                            opacity: 1,
-                            transform: 'scale(1)'
-                          }
-                        }
-                      }}
-                    />
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        fontWeight: 500,
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                        color: getPriceImpactColor(Math.abs(priceImpact)),
+                        fontWeight: 600,
+                        fontSize: '0.75rem'
                       }}
                     >
-                      Price Impact
+                      {priceImpact > 0 ? '+' : ''}{priceImpact}%
                     </Typography>
-                  </Stack>
-                  
-                  {loadingPrice ? (
-                    <ClipLoader color={getPriceImpactColor(0)} size={14} />
-                  ) : (
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography
-                        sx={{
-                          color: getPriceImpactColor(Math.abs(priceImpact)),
-                          fontWeight: 700,
-                          fontSize: { xs: '0.875rem', sm: '1rem' }
-                        }}
-                      >
-                        {priceImpact > 0 ? '+' : ''}{priceImpact}%
-                      </Typography>
-                      <Box
-                        sx={{
-                          px: 1,
-                          py: 0.25,
-                          borderRadius: '6px',
-                          backgroundColor: alpha(
-                            getPriceImpactColor(Math.abs(priceImpact)), 
-                            0.15
-                          ),
-                          border: `1px solid ${alpha(
-                            getPriceImpactColor(Math.abs(priceImpact)), 
-                            0.3
-                          )}`
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: getPriceImpactColor(Math.abs(priceImpact)),
-                            fontWeight: 600,
-                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px'
-                          }}
-                        >
-                          {getPriceImpactSeverity(Math.abs(priceImpact))}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  )}
-                </Stack>
-
-                {/* Warning message for high impact */}
-                {Math.abs(priceImpact) > 5 && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      display: 'block',
-                      mt: 1,
-                      color: getPriceImpactColor(Math.abs(priceImpact)),
-                      fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                      lineHeight: 1.4
-                    }}
-                  >
-                    {Math.abs(priceImpact) > 10 
-                      ? '⚠️ Very high price impact! Consider reducing your trade size.'
-                      : 'High price impact. You may receive less than expected.'}
-                  </Typography>
-                )}
-              </Box>
-            );
-          })()}
-
-            {/* Fee Estimation */}
-            {amount1 && amount2 && (
-              <Box 
-                sx={{ 
-                  mt: 2,
-                  p: 1.5,
-                  borderRadius: '8px',
-                  backgroundColor: alpha(theme.palette.background.paper, 0.02),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
-                }}
-              >
-                <Stack spacing={1}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <Typography variant="caption" color="text.secondary">
-                        Network Fee
-                      </Typography>
-                      <Tooltip title="XRP Ledger transaction fee" arrow>
-                        <Icon
-                          icon={infoFill}
-                          width={14}
-                          height={14}
-                          style={{ opacity: 0.5 }}
+                    {Math.abs(priceImpact) > 5 && (
+                      <Tooltip title={Math.abs(priceImpact) > 10 
+                        ? "Very high impact! Consider reducing size" 
+                        : "High impact detected"} arrow>
+                        <Icon 
+                          icon="mdi:alert-circle" 
+                          width={14} 
+                          height={14} 
+                          style={{ color: getPriceImpactColor(Math.abs(priceImpact)) }}
                         />
                       </Tooltip>
-                    </Stack>
-                    <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                      ~0.000012 XRP
-                    </Typography>
+                    )}
                   </Stack>
-                  
-                  {/* Xaman wallet additional fee notice */}
-                  {accountProfile?.wallet_type === 'xaman' && (
-                    <Box
-                      sx={{
-                        p: 1,
-                        borderRadius: '6px',
-                        backgroundColor: alpha(theme.palette.warning.main, 0.08),
-                        border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
-                      }}
-                    >
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <Icon
-                          icon="mdi:information-outline"
-                          width={16}
-                          height={16}
-                          style={{ color: theme.palette.warning.main }}
-                        />
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
-                            color: theme.palette.warning.dark,
-                            fontWeight: 500,
-                            fontSize: '0.75rem'
-                          }}
-                        >
-                          Additional Xaman fees may apply
-                        </Typography>
-                      </Stack>
-                    </Box>
-                  )}
                 </Stack>
-              </Box>
-            )}
+            );
+          })()}
 
             {/* Action Button */}
             <Box sx={{ mt: 3 }}>
