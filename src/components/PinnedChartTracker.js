@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo, useCallback, createContext, useContext } from 'react';
+import { useState, useEffect, useRef, memo, useCallback, createContext, useContext, useMemo } from 'react';
 import { 
   Box, 
   Paper, 
@@ -172,7 +172,7 @@ export const PinnedChartProvider = ({ children }) => {
     setActivePinnedChart(null);
   }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     pinnedCharts,
     activePinnedChart,
     miniChartPosition,
@@ -186,7 +186,21 @@ export const PinnedChartProvider = ({ children }) => {
     unpinChart,
     unpinChartByToken,
     clearAllPinnedCharts,
-  };
+  }), [
+    pinnedCharts,
+    activePinnedChart,
+    miniChartPosition,
+    isMinimized,
+    isVisible,
+    setActivePinnedChart,
+    setMiniChartPosition,
+    setIsMinimized,
+    setIsVisible,
+    pinChart,
+    unpinChart,
+    unpinChartByToken,
+    clearAllPinnedCharts,
+  ]);
 
   return (
     <PinnedChartContext.Provider value={value}>

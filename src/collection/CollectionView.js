@@ -2237,7 +2237,7 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
 }
 
 // Export components for external use
-export { AttributeFilter, FilterDetail, FilterAttribute, CollectionCard };
+export { AttributeFilter, FilterDetail, FilterAttribute, CollectionCard, NFTCard };
 
 // Main Collection View Component
 export default function CollectionView({ collection }) {
