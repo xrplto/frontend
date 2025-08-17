@@ -292,6 +292,8 @@ export const FloatingPinnedChart = memo(() => {
   const [swapFromXRP, setSwapFromXRP] = useState(true); // XRP at top by default
   const [hasTrustline, setHasTrustline] = useState(null); // null = not checked, true/false = result
   const [tokenExchangeRate, setTokenExchangeRate] = useState({ rate1: 0, rate2: 0 }); // Exchange rates
+  const [accountBalances, setAccountBalances] = useState({ xrp: '0', token: '0' }); // Account balances
+  const [loadingBalances, setLoadingBalances] = useState(false);
   const [openScanQR, setOpenScanQR] = useState(false);
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
@@ -815,6 +817,58 @@ export const FloatingPinnedChart = memo(() => {
     
     fetchRates();
   }, [activePinnedChart, showSwap, BASE_URL]);
+
+  // Fetch account balances
+  useEffect(() => {
+    if (!accountProfile?.account || !activePinnedChart?.token || !showSwap) {
+      return;
+    }
+
+    const fetchBalances = async () => {
+      setLoadingBalances(true);
+      try {
+        // Parse currency and issuer from token
+        let tokenCurrency = activePinnedChart.token.currency || activePinnedChart.token.code;
+        let tokenIssuer = activePinnedChart.token.issuer;
+        
+        if (!tokenCurrency && activePinnedChart.token.slug && activePinnedChart.token.slug.includes('-')) {
+          const parts = activePinnedChart.token.slug.split('-');
+          if (parts.length === 2) {
+            tokenIssuer = parts[0];
+            tokenCurrency = parts[1];
+          }
+        }
+        
+        // Use the same endpoint as Swap.js to get balances
+        const res = await axios.get(
+          `${BASE_URL}/account/info/${accountProfile.account}?curr1=XRP&issuer1=&curr2=${tokenCurrency}&issuer2=${tokenIssuer}`
+        );
+        
+        if (res.status === 200 && res.data?.pair) {
+          const pair = res.data.pair;
+          setAccountBalances({
+            xrp: pair.curr1?.value || '0',
+            token: pair.curr2?.value || '0'
+          });
+        } else {
+          setAccountBalances({
+            xrp: '0',
+            token: '0'
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching balances:', error);
+        setAccountBalances({
+          xrp: '0',
+          token: '0'
+        });
+      } finally {
+        setLoadingBalances(false);
+      }
+    };
+    
+    fetchBalances();
+  }, [accountProfile, activePinnedChart, showSwap, BASE_URL, sync]);
 
   // Check trustline when account or token changes
   useEffect(() => {
@@ -1465,36 +1519,57 @@ export const FloatingPinnedChart = memo(() => {
                   borderRadius: 1,
                   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
                 }}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Box sx={{ width: 28, height: 28 }}>
-                      <img 
-                        src={swapFromXRP ? 'https://s1.xrpl.to/token/xrp' : `https://s1.xrpl.to/token/${activePinnedChart.token.md5}`}
-                        width={28}
-                        height={28}
-                        style={{ borderRadius: '50%' }}
-                        onError={(e) => e.target.src = '/static/alt.webp'}
-                        alt="From"
+                  <Stack spacing={0.5}>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
+                        Balance: {loadingBalances ? '...' : (swapFromXRP ? accountBalances.xrp : accountBalances.token)}
+                      </Typography>
+                      <Button
+                        size="small"
+                        onClick={() => setSwapAmount(swapFromXRP ? accountBalances.xrp : accountBalances.token)}
+                        disabled={loadingBalances || (swapFromXRP ? accountBalances.xrp === '0' : accountBalances.token === '0')}
+                        sx={{ 
+                          minWidth: 'auto', 
+                          padding: '0px 4px',
+                          fontSize: '0.6rem',
+                          height: 16,
+                          textTransform: 'none'
+                        }}
+                      >
+                        MAX
+                      </Button>
+                    </Stack>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Box sx={{ width: 28, height: 28 }}>
+                        <img 
+                          src={swapFromXRP ? 'https://s1.xrpl.to/token/xrp' : `https://s1.xrpl.to/token/${activePinnedChart.token.md5}`}
+                          width={28}
+                          height={28}
+                          style={{ borderRadius: '50%' }}
+                          onError={(e) => e.target.src = '/static/alt.webp'}
+                          alt="From"
+                        />
+                      </Box>
+                      <TextField
+                        value={swapAmount}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === '' || (!isNaN(Number(val)) && Number(val) >= 0)) {
+                            setSwapAmount(val);
+                          }
+                        }}
+                        placeholder="0.00"
+                        variant="standard"
+                        InputProps={{
+                          disableUnderline: true,
+                          sx: { fontSize: '0.85rem', fontWeight: 600 }
+                        }}
+                        sx={{ flex: 1 }}
                       />
-                    </Box>
-                    <TextField
-                      value={swapAmount}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (val === '' || (!isNaN(Number(val)) && Number(val) >= 0)) {
-                          setSwapAmount(val);
-                        }
-                      }}
-                      placeholder="0.00"
-                      variant="standard"
-                      InputProps={{
-                        disableUnderline: true,
-                        sx: { fontSize: '0.85rem', fontWeight: 600 }
-                      }}
-                      sx={{ flex: 1 }}
-                    />
-                    <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                      {swapFromXRP ? 'XRP' : activePinnedChart.token.symbol || activePinnedChart.token.code}
-                    </Typography>
+                      <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                        {swapFromXRP ? 'XRP' : activePinnedChart.token.symbol || activePinnedChart.token.code}
+                      </Typography>
+                    </Stack>
                   </Stack>
                 </Box>
 
@@ -1517,19 +1592,23 @@ export const FloatingPinnedChart = memo(() => {
                   borderRadius: 1,
                   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
                 }}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Box sx={{ width: 28, height: 28 }}>
-                      <img 
-                        src={!swapFromXRP ? 'https://s1.xrpl.to/token/xrp' : `https://s1.xrpl.to/token/${activePinnedChart.token.md5}`}
-                        width={28}
-                        height={28}
-                        style={{ borderRadius: '50%' }}
-                        onError={(e) => e.target.src = '/static/alt.webp'}
-                        alt="To"
-                      />
-                    </Box>
-                    <Typography variant="body2" sx={{ flex: 1, fontSize: '0.85rem', fontWeight: 600 }}>
-                      {(() => {
+                  <Stack spacing={0.5}>
+                    <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
+                      You receive: {!swapFromXRP ? accountBalances.xrp : accountBalances.token} available
+                    </Typography>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Box sx={{ width: 28, height: 28 }}>
+                        <img 
+                          src={!swapFromXRP ? 'https://s1.xrpl.to/token/xrp' : `https://s1.xrpl.to/token/${activePinnedChart.token.md5}`}
+                          width={28}
+                          height={28}
+                          style={{ borderRadius: '50%' }}
+                          onError={(e) => e.target.src = '/static/alt.webp'}
+                          alt="To"
+                        />
+                      </Box>
+                      <Typography variant="body2" sx={{ flex: 1, fontSize: '0.85rem', fontWeight: 600 }}>
+                        {(() => {
                         if (!swapAmount || swapAmount === '0') return '0.00';
                         const amount = new Decimal(swapAmount);
                         
@@ -1564,10 +1643,11 @@ export const FloatingPinnedChart = memo(() => {
                         console.log('[PinnedChartTracker] No valid rates, returning 0.00');
                         return '0.00';
                       })()}
-                    </Typography>
-                    <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                      {!swapFromXRP ? 'XRP' : activePinnedChart.token.symbol || activePinnedChart.token.code}
-                    </Typography>
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                        {!swapFromXRP ? 'XRP' : activePinnedChart.token.symbol || activePinnedChart.token.code}
+                      </Typography>
+                    </Stack>
                   </Stack>
                 </Box>
 
