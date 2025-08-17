@@ -545,6 +545,7 @@ export default function Orders({ pair }) {
                   <TableCell align="left">Price</TableCell>
                   <TableCell align="left">Taker Gets</TableCell>
                   <TableCell align="left">Taker Pays</TableCell>
+                  <TableCell align="left">Expires</TableCell>
                   <TableCell align="center">Action</TableCell>
                 </TableRow>
               </TableHead>
@@ -617,6 +618,63 @@ export default function Orders({ pair }) {
                           <ValueTypography>{formatNumber(pays.value)}</ValueTypography>
                           <TokenNameChip label={truncate(pays.name, 8)} size="small" />
                         </Box>
+                      </TableCell>
+                      <TableCell align="left">
+                        {expire ? (
+                          <Chip
+                            label={(() => {
+                              // XRPL uses Ripple Epoch (Jan 1, 2000 00:00 UTC)
+                              const RIPPLE_EPOCH = 946684800;
+                              const expirationDate = new Date((expire + RIPPLE_EPOCH) * 1000);
+                              const now = new Date();
+                              const diffMs = expirationDate - now;
+                              
+                              if (diffMs <= 0) {
+                                return 'Expired';
+                              }
+                              
+                              const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                              const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                              
+                              if (diffHours < 1) {
+                                const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                                return `${diffMinutes}m`;
+                              } else if (diffHours < 24) {
+                                return `${diffHours}h`;
+                              } else if (diffDays < 7) {
+                                return `${diffDays}d`;
+                              } else {
+                                return expirationDate.toLocaleDateString();
+                              }
+                            })()}
+                            size="small"
+                            sx={{
+                              height: '20px',
+                              fontSize: '0.7rem',
+                              backgroundColor: expired 
+                                ? alpha(theme.palette.error.main, 0.1)
+                                : expire && ((expire + 946684800) * 1000 - Date.now()) < 3600000 // Less than 1 hour
+                                  ? alpha(theme.palette.warning.main, 0.1)
+                                  : alpha(theme.palette.info.main, 0.1),
+                              color: expired 
+                                ? theme.palette.error.main
+                                : expire && ((expire + 946684800) * 1000 - Date.now()) < 3600000
+                                  ? theme.palette.warning.main
+                                  : theme.palette.info.main,
+                              border: `1px solid ${
+                                expired 
+                                  ? alpha(theme.palette.error.main, 0.3)
+                                  : expire && ((expire + 946684800) * 1000 - Date.now()) < 3600000
+                                    ? alpha(theme.palette.warning.main, 0.3)
+                                    : alpha(theme.palette.info.main, 0.3)
+                              }`
+                            }}
+                          />
+                        ) : (
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                            Never
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell align="center">
                         <CancelButton
