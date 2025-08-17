@@ -27,6 +27,15 @@ export const XrplToDarkTheme = createTheme({
   spacing: 9,
   shape: { borderRadius: 10 },
   
+  pagination: {
+    background: alpha('#111827', 0.5),
+    backgroundHover: alpha('#147DFE', 0.15),
+    border: alpha('#1F2937', 0.3),
+    textColor: themeColors.white,
+    selectedBackground: themeColors.primary,
+    selectedTextColor: themeColors.white
+  },
+  
   palette: {
     mode: 'dark',
     common: {
@@ -305,6 +314,53 @@ export const XrplToDarkTheme = createTheme({
         },
         maxWidthXl: {
           maxWidth: '2000px !important'
+        }
+      }
+    },
+    MuiPagination: {
+      styleOverrides: {
+        root: {
+          '& .MuiPaginationItem-root': {
+            backgroundColor: alpha('#111827', 0.6),
+            color: themeColors.white,
+            border: `1px solid ${alpha('#1F2937', 0.3)}`,
+            backdropFilter: 'blur(10px)',
+            '&:hover': {
+              backgroundColor: alpha('#147DFE', 0.15),
+              borderColor: alpha('#147DFE', 0.5)
+            },
+            '&.Mui-selected': {
+              backgroundColor: themeColors.primary,
+              color: themeColors.white,
+              borderColor: themeColors.primary,
+              '&:hover': {
+                backgroundColor: alpha(themeColors.primary, 0.8)
+              }
+            }
+          }
+        }
+      }
+    },
+    MuiTablePagination: {
+      styleOverrides: {
+        root: {
+          backgroundColor: alpha('#111827', 0.5),
+          backdropFilter: 'blur(10px)',
+          borderTop: `1px solid ${alpha('#1F2937', 0.15)}`,
+          color: themeColors.white
+        },
+        selectIcon: {
+          color: alpha(themeColors.white, 0.7)
+        },
+        select: {
+          color: themeColors.white
+        },
+        menuItem: {
+          backgroundColor: '#111827',
+          color: themeColors.white,
+          '&:hover': {
+            backgroundColor: alpha('#147DFE', 0.15)
+          }
         }
       }
     }

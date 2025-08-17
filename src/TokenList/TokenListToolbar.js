@@ -3,6 +3,7 @@ import { Icon } from '@iconify/react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectFilteredCount } from 'src/redux/statusSlice';
 import { useCallback, memo, useState, useRef, useEffect } from 'react';
+import { alpha } from '@mui/material';
 
 // Styled Components
 const StyledToolbar = styled.div`
@@ -28,9 +29,10 @@ const PaginationContainer = styled.div`
   gap: 4px;
   padding: 4px 8px;
   border-radius: 16px;
-  background: white;
-  border: 1px solid rgba(145, 158, 171, 0.12);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
+  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
+  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
+  backdrop-filter: blur(10px);
   
   @media (max-width: 900px) {
     width: 100%;
@@ -45,9 +47,10 @@ const RowsSelector = styled.div`
   gap: 4px;
   padding: 4px 8px;
   border-radius: 16px;
-  background: white;
-  border: 1px solid rgba(145, 158, 171, 0.12);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
+  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
+  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
+  backdrop-filter: blur(10px);
   
   @media (max-width: 900px) {
     flex: 1;
@@ -63,11 +66,12 @@ const InfoBox = styled.div`
   align-items: center;
   gap: 4px;
   flex-wrap: wrap;
-  border: 1px solid rgba(145, 158, 171, 0.12);
+  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
   border-radius: 16px;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
+  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
   padding: 4px 8px;
+  backdrop-filter: blur(10px);
   
   @media (max-width: 900px) {
     flex: 1;
@@ -82,14 +86,14 @@ const Chip = styled.span`
   font-size: 12px;
   font-weight: 600;
   padding: 2px 6px;
-  border: 1px solid rgba(145, 158, 171, 0.32);
+  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.32)};
   border-radius: 6px;
-  color: #212B36;
+  color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.primary};
 `;
 
 const Text = styled.span`
   font-size: 12px;
-  color: rgba(145, 158, 171, 0.8);
+  color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.secondary};
   font-weight: ${props => props.fontWeight || 500};
 `;
 
@@ -107,11 +111,11 @@ const NavButton = styled.button`
   padding: 0;
   
   &:hover:not(:disabled) {
-    background: rgba(33, 150, 243, 0.08);
+    background: ${({ theme }) => theme.pagination?.backgroundHover || alpha(theme.palette.primary.main, 0.08)};
   }
   
   &:disabled {
-    color: rgba(145, 158, 171, 0.48);
+    color: ${({ theme }) => alpha(theme.pagination?.textColor || theme.palette.text.primary, 0.48)};
     cursor: not-allowed;
   }
 `;
@@ -121,8 +125,8 @@ const PageButton = styled.button`
   height: 20px;
   border-radius: 6px;
   border: none;
-  background: ${props => props.selected ? '#2196F3' : 'transparent'};
-  color: ${props => props.selected ? 'white' : 'inherit'};
+  background: ${props => props.selected ? props.theme.pagination?.selectedBackground || props.theme.palette.primary.main : 'transparent'};
+  color: ${props => props.selected ? (props.theme.pagination?.selectedTextColor || 'white') : 'inherit'};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -133,7 +137,7 @@ const PageButton = styled.button`
   font-weight: ${props => props.selected ? 600 : 500};
   
   &:hover:not(:disabled) {
-    background: ${props => props.selected ? '#1976D2' : 'rgba(33, 150, 243, 0.08)'};
+    background: ${props => props.selected ? (props.theme.palette.primary.dark || '#1976D2') : (props.theme.pagination?.backgroundHover || alpha(props.theme.palette.primary.main, 0.08))};
   }
   
   &:disabled {
@@ -150,7 +154,7 @@ const Select = styled.div`
 const SelectButton = styled.button`
   background: transparent;
   border: none;
-  color: #2196F3;
+  color: ${({ theme }) => theme.palette.primary.main};
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
@@ -161,7 +165,7 @@ const SelectButton = styled.button`
   min-width: 40px;
   
   &:hover {
-    background: rgba(33, 150, 243, 0.04);
+    background: ${({ theme }) => alpha(theme.palette.primary.main, 0.04)};
     border-radius: 4px;
     padding: 2px 4px;
     margin: -2px -4px;
@@ -173,12 +177,13 @@ const SelectMenu = styled.div`
   top: 100%;
   right: 0;
   margin-top: 4px;
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: ${({ theme }) => theme.palette.background.paper};
+  border: 1px solid ${({ theme }) => alpha(theme.palette.divider, 0.12)};
   border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: ${({ theme }) => theme.shadows?.[4] || '0 4px 12px rgba(0, 0, 0, 0.15)'};
   z-index: 1000;
   min-width: 60px;
+  backdrop-filter: blur(10px);
 `;
 
 const SelectOption = styled.button`
@@ -190,10 +195,10 @@ const SelectOption = styled.button`
   text-align: left;
   cursor: pointer;
   font-size: 12px;
-  color: #212B36;
+  color: ${({ theme }) => theme.palette.text.primary};
   
   &:hover {
-    background: rgba(0, 0, 0, 0.04);
+    background: ${({ theme }) => alpha(theme.palette.action.hover, 0.04)};
   }
 `;
 
@@ -331,7 +336,7 @@ const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, s
       </CenterBox>
 
       <RowsSelector>
-        <Icon icon="material-symbols:view-list" width="14" height="14" style={{ color: 'rgba(0, 0, 0, 0.54)' }} />
+        <Icon icon="material-symbols:view-list" width="14" height="14" />
         <Text>Rows</Text>
         <Select ref={selectRef}>
           <SelectButton onClick={() => setSelectOpen(!selectOpen)}>

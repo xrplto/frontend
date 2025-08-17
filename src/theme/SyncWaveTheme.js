@@ -137,6 +137,15 @@ export const SyncWaveTheme = createTheme({
     error: colors.error,
     info: colors.info
   },
+  pagination: {
+    background: alpha('#1a0033', 0.6),
+    backgroundHover: alpha('#00ffff', 0.15),
+    border: alpha('#00ffff', 0.2),
+    textColor: '#00ffff',
+    selectedBackground: 'linear-gradient(135deg, #00ffff 0%, #0080ff 100%)',
+    selectedTextColor: themeColors.black,
+    boxShadow: '0px 0px 15px rgba(0, 255, 255, 0.2)'
+  },
   general: {
     reactFrameworkColor: '#00ffff80',
     borderRadiusSm: '4px',
@@ -456,6 +465,63 @@ export const SyncWaveTheme = createTheme({
           '&:hover': {
             color: lighten(themeColors.primary, 0.2),
             textShadow: '0 0 20px currentColor'
+          }
+        }
+      }
+    },
+    MuiPagination: {
+      styleOverrides: {
+        root: {
+          '& .MuiPaginationItem-root': {
+            backgroundColor: alpha('#1a0033', 0.6),
+            color: '#00ffff',
+            border: `1px solid ${alpha('#00ffff', 0.2)}`,
+            backdropFilter: 'blur(10px)',
+            textShadow: '0 0 5px currentColor',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              backgroundColor: alpha('#00ffff', 0.15),
+              borderColor: alpha('#00ffff', 0.5),
+              boxShadow: '0px 0px 15px rgba(0, 255, 255, 0.3)',
+              transform: 'scale(1.05)'
+            },
+            '&.Mui-selected': {
+              background: 'linear-gradient(135deg, #00ffff 0%, #0080ff 100%)',
+              color: themeColors.black,
+              borderColor: '#00ffff',
+              boxShadow: '0px 0px 20px rgba(0, 255, 255, 0.5)',
+              textShadow: 'none',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #00ffff 0%, #00ccff 100%)',
+                boxShadow: '0px 0px 25px rgba(0, 255, 255, 0.7)'
+              }
+            }
+          }
+        }
+      }
+    },
+    MuiTablePagination: {
+      styleOverrides: {
+        root: {
+          backgroundColor: alpha('#1a0033', 0.6),
+          backdropFilter: 'blur(10px)',
+          borderTop: `1px solid ${alpha('#00ffff', 0.2)}`,
+          color: '#00ffff',
+          boxShadow: '0px 0px 10px rgba(0, 255, 255, 0.1)'
+        },
+        selectIcon: {
+          color: alpha('#00ffff', 0.7)
+        },
+        select: {
+          color: '#00ffff',
+          textShadow: '0 0 5px currentColor'
+        },
+        menuItem: {
+          backgroundColor: alpha('#1a0033', 0.95),
+          color: '#00ffff',
+          '&:hover': {
+            backgroundColor: alpha('#00ffff', 0.15),
+            boxShadow: '0px 0px 10px rgba(0, 255, 255, 0.3)'
           }
         }
       }
