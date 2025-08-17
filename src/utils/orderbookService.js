@@ -76,14 +76,8 @@ export const processOrderbookOffers = (offers, orderType = 'bids') => {
   // XRP is represented in drops (1 XRP = 1,000,000 drops)
   const XRP_MULTIPLIER = 1000000;
 
-  // Sort offers by price
-  const sortedOffers = [...offers].sort((a, b) => {
-    const priceA = parseFloat(a.quality) || 0;
-    const priceB = parseFloat(b.quality) || 0;
-    return orderType === 'bids' ? priceB - priceA : priceA - priceB;
-  });
-
-  sortedOffers.forEach((offer) => {
+  // Process offers first without sorting
+  offers.forEach((offer) => {
     let price = parseFloat(offer.quality) || 1;
     let quantity = 0;
     let total = 0;
@@ -149,9 +143,30 @@ export const processOrderbookOffers = (offers, orderType = 'bids') => {
     }
   });
 
+  // Sort the processed offers by price
+  // For bids: highest price first (descending)
+  // For asks: lowest price first (ascending)
+  processed.sort((a, b) => {
+    return orderType === 'bids' ? b.price - a.price : a.price - b.price;
+  });
+
+  // Recalculate cumulative sums after sorting
+  let cumSum = 0;
+  let cumValue = 0;
+  processed.forEach(order => {
+    cumSum += order.amount;
+    cumValue += order.total;
+    order.sumAmount = cumSum;
+    order.sumValue = cumValue;
+    order.avgPrice = cumSum > 0 ? cumValue / cumSum : 0;
+  });
+
   console.log(`[processOrderbookOffers] Processed ${orderType}:`, processed.length, 'valid offers');
   if (processed.length > 0) {
     console.log(`[processOrderbookOffers] First processed ${orderType}:`, processed[0]);
+    if (orderType === 'bids' && processed.length > 1) {
+      console.log(`[processOrderbookOffers] Bid prices (should be descending):`, processed.slice(0, 5).map(p => p.price));
+    }
   }
 
   return processed;
