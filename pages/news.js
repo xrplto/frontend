@@ -4,11 +4,145 @@ import dynamic from 'next/dynamic';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { useSelector } from 'react-redux';
 import { useTheme } from '@mui/material/styles';
+import styled from '@emotion/styled';
+import { alpha } from '@mui/material';
+import { Icon } from '@iconify/react';
 import styles from './news.module.css';
 
 const Header = dynamic(() => import('../src/components/Header'), { ssr: true });
 const Footer = dynamic(() => import('../src/components/Footer'), { ssr: true });
 const Topbar = dynamic(() => import('../src/components/Topbar'), { ssr: true });
+
+// Styled Components for Pagination (matching TokenList)
+const PaginationContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
+  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
+  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
+  backdrop-filter: blur(10px);
+  
+  @media (max-width: 900px) {
+    width: 100%;
+    justify-content: center;
+    padding: 2px 4px;
+  }
+`;
+
+const NavButton = styled.button`
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.palette.text.primary || 'inherit'};
+  padding: 0;
+  
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.pagination?.backgroundHover || alpha(theme.palette.primary.main, 0.08)};
+  }
+  
+  &:disabled {
+    color: ${({ theme }) => alpha(theme.pagination?.textColor || theme.palette.text.primary, 0.48)};
+    cursor: not-allowed;
+  }
+`;
+
+const PageButton = styled.button`
+  min-width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: none;
+  background: ${props => props.selected ? props.theme.pagination?.selectedBackground || props.theme.palette.primary.main : 'transparent'};
+  color: ${props => props.selected ? (props.theme.pagination?.selectedTextColor || 'white') : (props.theme.palette.text.primary || 'inherit')};
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: ${props => props.selected ? 600 : 500};
+  
+  &:hover:not(:disabled) {
+    background: ${props => props.selected ? (props.theme.palette.primary.dark || '#1976D2') : (props.theme.pagination?.backgroundHover || alpha(props.theme.palette.primary.main, 0.08))};
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+`;
+
+const PageEllipsis = styled.span`
+  padding: 0 4px;
+  font-size: 12px;
+  color: ${({ theme }) => theme.palette.text.secondary};
+`;
+
+const InfoBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
+  border-radius: 16px;
+  background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
+  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
+  padding: 4px 8px;
+  backdrop-filter: blur(10px);
+  
+  @media (max-width: 900px) {
+    flex: 1;
+    min-width: calc(50% - 8px);
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 4px 8px;
+  }
+`;
+
+const Chip = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.32)};
+  border-radius: 6px;
+  color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.primary};
+`;
+
+const Text = styled.span`
+  font-size: 12px;
+  color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.secondary};
+  font-weight: ${props => props.fontWeight || 500};
+`;
+
+const PaginationWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+  
+  @media (max-width: 900px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+const CenterBox = styled.div`
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+`;
 
 
 const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave }) => {
@@ -630,119 +764,85 @@ function NewsPage() {
           </div>
 
           {totalCount > 0 && (
-            <div className={`${styles.paginationContainer} ${isDark ? styles.dark : ''}`}>
-              <p className={styles.resultsInfo} style={{ color: theme.palette.text.secondary }}>
-                {searchQuery && `Found ${totalCount} articles for "${searchQuery}"`}
-                {selectedSource && !searchQuery && `Showing ${totalCount} articles from ${selectedSource}`}
-                {!searchQuery && !selectedSource && `Showing ${currentItems.length} of ${totalCount} articles`}
-              </p>
+            <PaginationWrapper>
+              <InfoBox>
+                <Chip>{`${((currentPage - 1) * itemsPerPage) + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount.toLocaleString()}`}</Chip>
+                <Text>articles</Text>
+                {searchQuery && (
+                  <>
+                    <Text fontWeight={400}>for</Text>
+                    <Text fontWeight={600}>"{searchQuery}"</Text>
+                  </>
+                )}
+                {selectedSource && !searchQuery && (
+                  <>
+                    <Text fontWeight={400}>from</Text>
+                    <Text fontWeight={600}>{selectedSource}</Text>
+                  </>
+                )}
+              </InfoBox>
+
               {totalPages > 1 && (
-                <div 
-                  className={`${styles.paginationBox} ${isSyncWave ? styles.syncwave : ''}`}
-                  style={{
-                    background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
-                    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
-                    color: theme.palette.text.primary
-                  }}
-                >
-                  <button
-                    className={`${styles.paginationButton} ${currentPage === 1 ? styles.disabled : ''}`}
-                    onClick={() => handlePageChange(null, 1)}
-                    disabled={currentPage === 1}
-                    style={{
-                      color: currentPage === 1 
-                        ? theme.palette.text.disabled 
-                        : theme.palette.primary.main
-                    }}
-                  >
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+                <CenterBox>
+                  <PaginationContainer>
+                    <NavButton
+                      onClick={() => handlePageChange(null, 1)}
+                      disabled={currentPage === 1}
+                      title="First page"
                     >
-                      <path
-                        d="M18.41 16.59L13.82 12L18.41 7.41L17 6L11 12L17 18L18.41 16.59Z"
-                        fill="currentColor"
-                      />
-                      <path
-                        d="M12.41 16.59L7.82 12L12.41 7.41L11 6L5 12L11 18L12.41 16.59Z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </button>
-                  <div className={styles.paginationNumbers}>
-                    {[...Array(totalPages)].map((_, index) => {
-                      const page = index + 1;
-                      // Show first page, last page, current page, and pages around current
-                      if (
-                        page === 1 ||
-                        page === totalPages ||
-                        page === currentPage ||
-                        (page >= currentPage - 1 && page <= currentPage + 1)
-                      ) {
+                      <Icon icon="material-symbols:first-page" width="14" height="14" />
+                    </NavButton>
+
+                    {(() => {
+                      const pages = [];
+                      if (totalPages <= 7) {
+                        for (let i = 1; i <= totalPages; i++) {
+                          pages.push(i);
+                        }
+                      } else {
+                        if (currentPage <= 3) {
+                          for (let i = 1; i <= 5; i++) pages.push(i);
+                          pages.push('...');
+                          pages.push(totalPages);
+                        } else if (currentPage >= totalPages - 2) {
+                          pages.push(1);
+                          pages.push('...');
+                          for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
+                        } else {
+                          pages.push(1);
+                          pages.push('...');
+                          for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+                          pages.push('...');
+                          pages.push(totalPages);
+                        }
+                      }
+                      return pages.map((pageNum, idx) => {
+                        if (pageNum === '...') {
+                          return <PageEllipsis key={`ellipsis-${idx}`}>...</PageEllipsis>;
+                        }
                         return (
-                          <button
-                            key={page}
-                            className={`${styles.pageNumber} ${page === currentPage ? styles.active : ''}`}
-                            onClick={() => handlePageChange(null, page)}
-                            style={{
-                              color: page === currentPage 
-                                ? (theme.palette.mode === 'dark' ? '#000' : '#fff')
-                                : theme.palette.text.primary,
-                              background: page === currentPage 
-                                ? theme.palette.primary.main 
-                                : 'transparent',
-                              borderColor: page === currentPage 
-                                ? theme.palette.primary.main 
-                                : (theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)')
-                            }}
+                          <PageButton
+                            key={pageNum}
+                            selected={pageNum === currentPage}
+                            onClick={() => handlePageChange(null, pageNum)}
                           >
-                            {page}
-                          </button>
+                            {pageNum}
+                          </PageButton>
                         );
-                      }
-                      // Show ellipsis
-                      if (page === 2 && currentPage > 4) {
-                        return <span key={page} className={styles.ellipsis} style={{ color: theme.palette.text.secondary }}>...</span>;
-                      }
-                      if (page === totalPages - 1 && currentPage < totalPages - 3) {
-                        return <span key={page} className={styles.ellipsis} style={{ color: theme.palette.text.secondary }}>...</span>;
-                      }
-                      return null;
-                    })}
-                  </div>
-                  <button
-                    className={`${styles.paginationButton} ${currentPage === totalPages ? styles.disabled : ''}`}
-                    onClick={() => handlePageChange(null, totalPages)}
-                    disabled={currentPage === totalPages}
-                    style={{
-                      color: currentPage === totalPages 
-                        ? theme.palette.text.disabled 
-                        : theme.palette.primary.main
-                    }}
-                  >
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+                      });
+                    })()}
+
+                    <NavButton
+                      onClick={() => handlePageChange(null, totalPages)}
+                      disabled={currentPage === totalPages}
+                      title="Last page"
                     >
-                      <path
-                        d="M5.59 7.41L10.18 12L5.59 16.59L7 18L13 12L7 6L5.59 7.41Z"
-                        fill="currentColor"
-                      />
-                      <path
-                        d="M11.59 7.41L16.18 12L11.59 16.59L13 18L19 12L13 6L11.59 7.41Z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </button>
-                </div>
+                      <Icon icon="material-symbols:last-page" width="14" height="14" />
+                    </NavButton>
+                  </PaginationContainer>
+                </CenterBox>
               )}
-            </div>
+            </PaginationWrapper>
           )}
         </div>
       </div>
