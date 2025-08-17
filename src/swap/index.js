@@ -82,8 +82,8 @@ const CurrencyContent = styled('div')(
     display: flex;
     flex: 1 1 0%;
     flex-direction: row;
-    padding: 20px;
-    border-radius: 16px;
+    padding: 12px;
+    border-radius: 10px;
     align-items: center;
     background: ${alpha(theme.palette.background.paper, 0.6)};
     backdrop-filter: blur(10px);
@@ -97,12 +97,12 @@ const CurrencyContent = styled('div')(
     }
     
     &:not(:first-of-type) {
-      margin-top: 12px;
+      margin-top: 6px;
     }
     
     @media (max-width: 600px) {
-      padding: 16px;
-      border-radius: 14px;
+      padding: 10px;
+      border-radius: 8px;
     }
 `
 );
@@ -130,21 +130,21 @@ const OverviewWrapper = styled('div')(
   ({ theme }) => `
     flex-direction: column;
     box-sizing: border-box;
-    border-radius: 24px;
+    border-radius: 16px;
     display: flex;
     background: ${alpha(theme.palette.background.paper, 0.95)};
     backdrop-filter: blur(20px);
     border: 1px solid ${alpha(theme.palette.divider, 0.08)};
     width: 100%;
-    max-width: 480px;
+    max-width: 380px;
     margin: 0 auto;
-    box-shadow: 0 20px 60px ${alpha(theme.palette.common.black, 0.1)};
+    box-shadow: 0 10px 30px ${alpha(theme.palette.common.black, 0.08)};
     overflow: hidden;
 
     @media (max-width: 600px) {
-        border-radius: 20px;
-        margin: 0 12px;
-        box-shadow: 0 10px 30px ${alpha(theme.palette.common.black, 0.08)};
+        border-radius: 12px;
+        margin: 0 8px;
+        box-shadow: 0 5px 15px ${alpha(theme.palette.common.black, 0.06)};
     }
 `
 );
@@ -161,11 +161,11 @@ const ConverterFrame = styled('div')(
 const ExchangeButton = styled(Button)(
   ({ theme }) => `
     width: 100%;
-    padding: 18px 24px;
-    border-radius: 16px;
-    font-size: 16px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
     font-weight: 600;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: ${theme.palette.primary.main};
     color: white;
@@ -188,12 +188,12 @@ const ExchangeButton = styled(Button)(
     
     &:hover:not(:disabled) {
       background: ${theme.palette.primary.dark};
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px ${alpha(theme.palette.primary.main, 0.3)};
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px ${alpha(theme.palette.primary.main, 0.25)};
       
       &::after {
-        width: 300px;
-        height: 300px;
+        width: 250px;
+        height: 250px;
       }
     }
     
@@ -208,17 +208,17 @@ const ExchangeButton = styled(Button)(
     }
     
     @media (max-width: 600px) {
-      padding: 16px 20px;
-      font-size: 15px;
+      padding: 10px 14px;
+      font-size: 13px;
     }
 `
 );
 
 const AllowButton = styled(Button)(
   ({ theme }) => `
-    padding: 6px 14px;
-    border-radius: 12px;
-    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 11px;
     font-weight: 600;
     text-transform: none;
     transition: all 0.2s ease;
@@ -237,22 +237,22 @@ const AllowButton = styled(Button)(
 const ToggleButton = styled(IconButton)(
   ({ theme }) => `
     background: ${theme.palette.background.paper};
-    border: 2px solid ${alpha(theme.palette.divider, 0.12)};
-    width: 36px;
-    height: 36px;
+    border: 1px solid ${alpha(theme.palette.divider, 0.12)};
+    width: 28px;
+    height: 28px;
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     z-index: 2;
     transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    box-shadow: 0 2px 8px ${alpha(theme.palette.common.black, 0.1)};
+    box-shadow: 0 1px 4px ${alpha(theme.palette.common.black, 0.08)};
     
     &:hover {
       background: ${theme.palette.primary.main};
       border-color: ${theme.palette.primary.main};
-      transform: translate(-50%, -50%) rotate(180deg) scale(1.1);
-      box-shadow: 0 4px 12px ${alpha(theme.palette.primary.main, 0.3)};
+      transform: translate(-50%, -50%) rotate(180deg) scale(1.05);
+      box-shadow: 0 2px 8px ${alpha(theme.palette.primary.main, 0.25)};
       
       svg {
         color: white;
@@ -282,9 +282,9 @@ const WalletDisplay = styled('div')(
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    border-radius: 14px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    border-radius: 8px;
     background: ${alpha(theme.palette.success.main, 0.05)};
     border: 1px solid ${alpha(theme.palette.success.main, 0.15)};
     transition: all 0.3s ease;
@@ -295,8 +295,8 @@ const WalletDisplay = styled('div')(
     }
     
     @media (max-width: 600px) {
-      padding: 10px 14px;
-      margin-bottom: 12px;
+      padding: 6px 8px;
+      margin-bottom: 6px;
     }
 `
 );
@@ -305,15 +305,15 @@ const WalletInfo = styled('div')(
   ({ theme }) => `
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
 `
 );
 
 const WalletIcon = styled('div')(
   ({ theme }) => `
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
     background: ${alpha(theme.palette.success.main, 0.15)};
     display: flex;
     align-items: center;
@@ -326,36 +326,38 @@ const WalletDetails = styled('div')(
   ({ theme }) => `
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0;
 `
 );
 
 const WalletAddress = styled(Typography)(
   ({ theme }) => `
     font-family: 'Courier New', monospace;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: ${theme.palette.mode === 'dark' ? 'white' : 'black'};
+    line-height: 1.2;
     
     @media (max-width: 600px) {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
     }
 `
 );
 
 const WalletType = styled(Typography)(
   ({ theme }) => `
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: ${theme.palette.success.main};
     font-weight: 500;
     text-transform: capitalize;
+    line-height: 1.2;
 `
 );
 
 const StatusIndicator = styled('div')(
   ({ theme }) => `
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: ${theme.palette.success.main};
     animation: pulse 2s infinite;
@@ -365,7 +367,7 @@ const StatusIndicator = styled('div')(
         box-shadow: 0 0 0 0 ${alpha(theme.palette.success.main, 0.7)};
       }
       70% {
-        box-shadow: 0 0 0 4px ${alpha(theme.palette.success.main, 0)};
+        box-shadow: 0 0 0 3px ${alpha(theme.palette.success.main, 0)};
       }
       100% {
         box-shadow: 0 0 0 0 ${alpha(theme.palette.success.main, 0)};
@@ -377,12 +379,12 @@ const StatusIndicator = styled('div')(
 
 const ShareButton = styled(Button)(
   ({ theme }) => `
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
     font-weight: 600;
-    min-width: 60px;
-    height: 32px;
+    min-width: 45px;
+    height: 24px;
     text-transform: none;
     position: relative;
     overflow: hidden;
@@ -437,8 +439,8 @@ const TokenImage = styled(Image)(({ theme }) => ({
 }));
 
 const SelectTokenButton = styled(Stack)(({ theme }) => ({
-  padding: '10px 14px',
-  borderRadius: '14px',
+  padding: '6px 10px',
+  borderRadius: '8px',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
   backgroundColor: alpha(theme.palette.background.paper, 0.5),
@@ -459,26 +461,26 @@ const SelectTokenButton = styled(Stack)(({ theme }) => ({
 
 const PanelContainer = styled(Box)(({ theme }) => ({
   width: '100%',
-  minHeight: '500px',
-  maxHeight: '80vh',
+  minHeight: '400px',
+  maxHeight: '70vh',
   backgroundColor: alpha(theme.palette.background.paper, 0.98),
-  borderRadius: '24px',
+  borderRadius: '16px',
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  boxShadow: `0 20px 60px ${alpha(theme.palette.common.black, 0.15)}`,
+  boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.12)}`,
   backdropFilter: 'blur(20px)'
 }));
 
 const PanelHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(1.5),
+  padding: theme.spacing(1),
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   background: alpha(theme.palette.background.paper, 0.02)
 }));
 
 const SearchContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(1.5),
+  padding: theme.spacing(1),
   backgroundColor: alpha(theme.palette.background.default, 0.02),
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
 }));
@@ -487,8 +489,8 @@ const ScrollableContent = styled(Box)(({ theme }) => ({
   flex: 1,
   overflowY: 'auto',
   overflowX: 'hidden',
-  padding: theme.spacing(1.5),
-  paddingBottom: theme.spacing(3),
+  padding: theme.spacing(1),
+  paddingBottom: theme.spacing(2),
   '&::-webkit-scrollbar': {
     width: '6px'
   },
@@ -505,8 +507,8 @@ const ScrollableContent = styled(Box)(({ theme }) => ({
 }));
 
 const TokenCard = styled(Box)(({ theme }) => ({
-  padding: '12px',
-  borderRadius: '12px',
+  padding: '8px',
+  borderRadius: '8px',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
   '&:hover': {
@@ -519,10 +521,10 @@ const TokenCard = styled(Box)(({ theme }) => ({
 }));
 
 const CategoryChip = styled(Chip)(({ theme }) => ({
-  borderRadius: '10px',
+  borderRadius: '6px',
   fontWeight: 600,
-  fontSize: '0.8rem',
-  height: 32,
+  fontSize: '0.7rem',
+  height: 24,
   transition: 'all 0.2s ease',
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   '&:hover': {
@@ -530,21 +532,21 @@ const CategoryChip = styled(Chip)(({ theme }) => ({
     borderColor: theme.palette.primary.main
   },
   '& .MuiChip-label': {
-    paddingLeft: '12px',
-    paddingRight: '12px'
+    paddingLeft: '8px',
+    paddingRight: '8px'
   }
 }));
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
   fontWeight: 700,
-  fontSize: '0.75rem',
+  fontSize: '0.65rem',
   textTransform: 'uppercase',
-  letterSpacing: '0.08em',
+  letterSpacing: '0.06em',
   color: theme.palette.text.secondary,
-  marginBottom: theme.spacing(1),
+  marginBottom: theme.spacing(0.5),
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(0.5)
+  gap: theme.spacing(0.25)
 }));
 
 function truncate(str, n) {
@@ -2804,21 +2806,6 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
             maxWidth: showOrderbook ? '480px' : '100%',
             transition: 'all 0.3s ease' 
           }}>
-        {accountProfile && accountProfile.account && (
-          <WalletDisplay>
-            <WalletInfo>
-              <WalletIcon>
-                <AccountBalanceWalletIcon fontSize="small" />
-              </WalletIcon>
-              <WalletDetails>
-                <WalletAddress>{formatAddress(accountProfile.account)}</WalletAddress>
-                <WalletType>{getWalletTypeDisplay(accountProfile.wallet_type)}</WalletType>
-              </WalletDetails>
-            </WalletInfo>
-            <StatusIndicator />
-          </WalletDisplay>
-        )}
-
         {/* Minimalist Swap Container */}
         <Box 
           sx={{ 
@@ -2839,7 +2826,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           {/* Header Bar */}
           <Box
             sx={{
-              p: 2,
+              p: 1.5,
               borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
               background: alpha(theme.palette.background.paper, 0.02)
             }}
@@ -2852,7 +2839,7 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
             </Stack>
           </Box>
 
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ p: 2 }}>
             {/* First Token - Clean Card Design */}
             <Box
               sx={{
@@ -3775,77 +3762,6 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
                 </Box>
               )}
             </Box>
-
-            {/* Chart Display */}
-            {(token1 || token2) && (
-              <Box sx={{ mt: 3 }}>
-                <Grid container spacing={2}>
-                  {token1 && (
-                    <Grid item xs={12} md={6}>
-                      <Box
-                        sx={{
-                          p: 2,
-                          borderRadius: '20px',
-                          border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                          backgroundColor: alpha(theme.palette.background.paper, 0.3),
-                          backdropFilter: 'blur(10px)',
-                          transition: 'all 0.3s ease',
-                          '&:hover': {
-                            backgroundColor: alpha(theme.palette.background.paper, 0.4),
-                            borderColor: alpha(theme.palette.primary.main, 0.1)
-                          }
-                        }}
-                      >
-                        <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                          {token1.name} Price (24h)
-                        </Typography>
-                        <Box sx={{ height: '120px' }}>
-                          <LoadChart
-                            url={`${BASE_URL}/sparkline/${token1.md5}?period=24h`}
-                            style={{ width: '100%', height: '100%' }}
-                            showGradient={true}
-                            lineWidth={2}
-                            animation={true}
-                          />
-                        </Box>
-                      </Box>
-                    </Grid>
-                  )}
-                  
-                  {token2 && (
-                    <Grid item xs={12} md={6}>
-                      <Box
-                        sx={{
-                          p: 2,
-                          borderRadius: '20px',
-                          border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                          backgroundColor: alpha(theme.palette.background.paper, 0.3),
-                          backdropFilter: 'blur(10px)',
-                          transition: 'all 0.3s ease',
-                          '&:hover': {
-                            backgroundColor: alpha(theme.palette.background.paper, 0.4),
-                            borderColor: alpha(theme.palette.primary.main, 0.1)
-                          }
-                        }}
-                      >
-                        <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                          {token2.name} Price (24h)
-                        </Typography>
-                        <Box sx={{ height: '120px' }}>
-                          <LoadChart
-                            url={`${BASE_URL}/sparkline/${token2.md5}?period=24h`}
-                            style={{ width: '100%', height: '100%' }}
-                            showGradient={true}
-                            lineWidth={2}
-                            animation={true}
-                          />
-                        </Box>
-                      </Box>
-                    </Grid>
-                  )}
-                </Grid>
-              </Box>
-            )}
           </Box>
         </Box>
 
@@ -3952,6 +3868,103 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
         </Stack>
         </Box>
       </Box>
+
+      {/* Chart Display - At the bottom of the UI */}
+      {(token1 || token2) && !showTokenSelector && (
+        <Box sx={{ mt: 4, width: '100%', maxWidth: '800px', margin: '40px auto 20px' }}>
+          <Grid container spacing={2}>
+            {token1 && (
+              <Grid item xs={12} md={6}>
+                <Box
+                  sx={{
+                    p: 2.5,
+                    borderRadius: '20px',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                    backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.06)}`,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.background.paper, 0.7),
+                      borderColor: alpha(theme.palette.primary.main, 0.15),
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 12px 32px ${alpha(theme.palette.common.black, 0.08)}`
+                    }
+                  }}
+                >
+                  <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 1.5 }}>
+                    <Typography variant="subtitle2" color="text.secondary" fontWeight={500}>
+                      {token1.name} Price (24h)
+                    </Typography>
+                    {latestPrice1 && (
+                      <Typography variant="h6" fontWeight={700} color="text.primary">
+                        {token1.currency === 'XRP' 
+                          ? `$${fNumber(latestPrice1)}`
+                          : `${fNumber(latestPrice1)} XRP`
+                        }
+                      </Typography>
+                    )}
+                  </Stack>
+                  <Box sx={{ height: '140px' }}>
+                    <LoadChart
+                      url={`${BASE_URL}/sparkline/${token1.md5}?period=24h`}
+                      style={{ width: '100%', height: '100%' }}
+                      showGradient={true}
+                      lineWidth={2}
+                      animation={true}
+                    />
+                  </Box>
+                </Box>
+              </Grid>
+            )}
+            
+            {token2 && (
+              <Grid item xs={12} md={6}>
+                <Box
+                  sx={{
+                    p: 2.5,
+                    borderRadius: '20px',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                    backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.06)}`,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.background.paper, 0.7),
+                      borderColor: alpha(theme.palette.primary.main, 0.15),
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 12px 32px ${alpha(theme.palette.common.black, 0.08)}`
+                    }
+                  }}
+                >
+                  <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 1.5 }}>
+                    <Typography variant="subtitle2" color="text.secondary" fontWeight={500}>
+                      {token2.name} Price (24h)
+                    </Typography>
+                    {latestPrice2 && (
+                      <Typography variant="h6" fontWeight={700} color="text.primary">
+                        {token2.currency === 'XRP' 
+                          ? `$${fNumber(latestPrice2)}`
+                          : `${fNumber(latestPrice2)} XRP`
+                        }
+                      </Typography>
+                    )}
+                  </Stack>
+                  <Box sx={{ height: '140px' }}>
+                    <LoadChart
+                      url={`${BASE_URL}/sparkline/${token2.md5}?period=24h`}
+                      style={{ width: '100%', height: '100%' }}
+                      showGradient={true}
+                      lineWidth={2}
+                      animation={true}
+                    />
+                  </Box>
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+        </Box>
+      )}
     </Box>
   );
 }
