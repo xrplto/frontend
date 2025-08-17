@@ -602,6 +602,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
   const [slippage, setSlippage] = useState(3); // Default 3% slippage
   const [orderType, setOrderType] = useState('market'); // 'market' or 'limit'
   const [limitPrice, setLimitPrice] = useState('');
+  const [orderExpiry, setOrderExpiry] = useState('never'); // 'never', '1h', '24h', '7d', '30d', 'custom'
+  const [customExpiry, setCustomExpiry] = useState(24); // hours for custom expiry
 
   // Add state for latest sparkline prices
   const [latestPrice1, setLatestPrice1] = useState(null);
@@ -1372,6 +1374,27 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           TakerPays = new Decimal(TakerPays.value).mul(1000000).toString();
         }
 
+        // Calculate expiration if not "never"
+        let expiration = null;
+        if (orderExpiry !== 'never') {
+          // XRPL uses Ripple Epoch (Jan 1, 2000 00:00 UTC)
+          const RIPPLE_EPOCH = 946684800;
+          const now = Math.floor(Date.now() / 1000) - RIPPLE_EPOCH;
+          
+          let expiryHours = 0;
+          switch(orderExpiry) {
+            case '1h': expiryHours = 1; break;
+            case '24h': expiryHours = 24; break;
+            case '7d': expiryHours = 24 * 7; break;
+            case '30d': expiryHours = 24 * 30; break;
+            case 'custom': expiryHours = customExpiry; break;
+          }
+          
+          if (expiryHours > 0) {
+            expiration = now + (expiryHours * 60 * 60);
+          }
+        }
+
         transactionData = {
           TransactionType: 'OfferCreate',
           Account,
@@ -1381,6 +1404,11 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           Fee: '12',
           SourceTag: 93339333
         };
+        
+        // Add expiration if set
+        if (expiration) {
+          transactionData.Expiration = expiration;
+        }
       } else {
         // Use Payment transaction for market orders
         const PaymentFlags = {
@@ -2859,18 +2887,62 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
             }
           }}
         >
-          {/* Header Bar */}
+          {/* Header with Market/Limit Tabs */}
           <Box
             sx={{
-              p: 1.5,
               borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
               background: alpha(theme.palette.background.paper, 0.02)
             }}
           >
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" fontWeight={600}>Swap</Typography>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ p: 1 }}>
+              <Stack direction="row" spacing={0.5}>
+                <Button
+                  size="small"
+                  variant={orderType === 'market' ? 'contained' : 'text'}
+                  onClick={() => setOrderType('market')}
+                  sx={{
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: '8px',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    backgroundColor: orderType === 'market' ? theme.palette.primary.main : 'transparent',
+                    color: orderType === 'market' ? 'white' : theme.palette.text.secondary,
+                    '&:hover': {
+                      backgroundColor: orderType === 'market' 
+                        ? theme.palette.primary.dark 
+                        : alpha(theme.palette.primary.main, 0.08)
+                    }
+                  }}
+                >
+                  Market
+                </Button>
+                <Button
+                  size="small"
+                  variant={orderType === 'limit' ? 'contained' : 'text'}
+                  onClick={() => setOrderType('limit')}
+                  sx={{
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: '8px',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    backgroundColor: orderType === 'limit' ? theme.palette.primary.main : 'transparent',
+                    color: orderType === 'limit' ? 'white' : theme.palette.text.secondary,
+                    '&:hover': {
+                      backgroundColor: orderType === 'limit' 
+                        ? theme.palette.primary.dark 
+                        : alpha(theme.palette.primary.main, 0.08)
+                    }
+                  }}
+                >
+                  Limit
+                </Button>
+              </Stack>
               <IconButton size="small" onClick={handleShareUrl}>
-                <Icon icon={shareIcon} width={18} height={18} />
+                <Icon icon={shareIcon} width={16} height={16} />
               </IconButton>
             </Stack>
           </Box>
@@ -3079,104 +3151,273 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Box>
             </Box>
 
-            {/* Order Type Toggle */}
-            <Box sx={{ mt: 3, mb: 2 }}>
-              <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
-                <Tooltip title="Execute immediately at the best available price" arrow>
-                  <Button
-                    size="small"
-                    variant={orderType === 'market' ? 'contained' : 'outlined'}
-                    onClick={() => setOrderType('market')}
+
+            {/* View Buttons - Shows for both Market and Limit */}
+            <Box sx={{ mt: 2, mb: 1 }}>
+              <Stack direction="row" spacing={1}>
+                <Button
+                  fullWidth
+                  size="small"
+                  variant="outlined"
+                  onClick={() => setShowOrderbook(!showOrderbook)}
+                  startIcon={<Icon icon={showOrderbook ? "mdi:chart-box-outline" : "mdi:chart-box"} width={14} height={14} />}
                   sx={{
-                    minWidth: { xs: '80px', sm: '90px' },
-                    height: { xs: '28px', sm: '32px' },
-                    fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                    py: 0.6,
+                    fontSize: '0.7rem',
                     textTransform: 'none',
-                    borderRadius: '8px'
+                    borderColor: showOrderbook ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2),
+                    color: showOrderbook ? theme.palette.primary.main : theme.palette.text.secondary,
+                    backgroundColor: showOrderbook ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
+                    '&:hover': {
+                      borderColor: theme.palette.primary.main,
+                      backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                    }
                   }}
-                  >
-                    Market
-                  </Button>
-                </Tooltip>
-                <Tooltip title="Set a specific price for your order" arrow>
+                >
+                  {showOrderbook ? 'Hide' : 'Show'} Book
+                </Button>
+                {accountProfile?.account && (
                   <Button
+                    fullWidth
                     size="small"
-                    variant={orderType === 'limit' ? 'contained' : 'outlined'}
-                    onClick={() => setOrderType('limit')}
-                  sx={{
-                    minWidth: { xs: '80px', sm: '90px' },
-                    height: { xs: '28px', sm: '32px' },
-                    fontSize: { xs: '0.75rem', sm: '0.8rem' },
-                    textTransform: 'none',
-                    borderRadius: '8px'
-                  }}
+                    variant="outlined"
+                    onClick={() => setShowOrders(!showOrders)}
+                    startIcon={<Icon icon="mdi:format-list-bulleted" width={14} height={14} />}
+                    sx={{
+                      py: 0.6,
+                      fontSize: '0.7rem',
+                      textTransform: 'none',
+                      borderColor: showOrders ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2),
+                      color: showOrders ? theme.palette.primary.main : theme.palette.text.secondary,
+                      backgroundColor: showOrders ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
+                      '&:hover': {
+                        borderColor: theme.palette.primary.main,
+                        backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                      }
+                    }}
                   >
-                    Limit
+                    {showOrders ? 'Hide' : 'Show'} Orders
                   </Button>
-                </Tooltip>
+                )}
               </Stack>
             </Box>
 
-            {/* Limit Price Input */}
-            {orderType === 'limit' && (
+            {/* Market Order UI */}
+            {orderType === 'market' && (
               <Box sx={{ mb: 2 }}>
                 <Stack spacing={1}>
-                  <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    <Typography variant="caption" color="text.secondary">
-                      Limit Price ({revert ? curr1.name : curr2.name} per {revert ? curr2.name : curr1.name})
+                  {/* Slippage Setting */}
+                  <Box sx={{ 
+                    p: 1.5, 
+                    borderRadius: '10px', 
+                    backgroundColor: alpha(theme.palette.background.paper, 0.03),
+                    border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
+                  }}>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                      <Stack direction="row" alignItems="center" spacing={0.5}>
+                        <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+                          Slippage Tolerance
+                        </Typography>
+                        <Tooltip title="Maximum price change you accept" arrow>
+                          <Icon icon={infoFill} width={12} height={12} style={{ opacity: 0.5 }} />
+                        </Tooltip>
+                      </Stack>
+                      <Stack direction="row" spacing={0.5}>
+                        {[0.5, 1, 3].map(val => (
+                          <Chip
+                            key={val}
+                            label={`${val}%`}
+                            size="small"
+                            onClick={() => setSlippage(val)}
+                            sx={{
+                              height: '18px',
+                              fontSize: '0.6rem',
+                              cursor: 'pointer',
+                              backgroundColor: slippage === val 
+                                ? theme.palette.primary.main 
+                                : alpha(theme.palette.action.selected, 0.08),
+                              color: slippage === val ? 'white' : theme.palette.text.secondary,
+                              '&:hover': {
+                                backgroundColor: slippage === val 
+                                  ? theme.palette.primary.dark 
+                                  : alpha(theme.palette.action.selected, 0.16)
+                              }
+                            }}
+                          />
+                        ))}
+                      </Stack>
+                    </Stack>
+                  </Box>
+                  
+                  {/* Min Received */}
+                  {amount2 && (
+                    <Box sx={{ 
+                      p: 1,
+                      borderRadius: '8px',
+                      backgroundColor: alpha(theme.palette.info.main, 0.05),
+                      border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`
+                    }}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Typography variant="caption" color="text.secondary" fontSize="0.65rem">
+                          Minimum Received
+                        </Typography>
+                        <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                          {new Decimal(amount2).mul(1 - slippage/100).toFixed(4)} {token2.name}
+                        </Typography>
+                      </Stack>
+                    </Box>
+                  )}
+                </Stack>
+              </Box>
+            )}
+
+            {/* Limit Order UI */}
+            {orderType === 'limit' && (
+              <Box sx={{ mt: 2, mb: 2 }}>
+                <Stack spacing={1.5}>
+                  {/* Limit Price Input */}
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" fontSize="0.7rem" sx={{ mb: 0.5 }}>
+                      Limit Price ({token2.name || token2.currency} per {token1.name || token1.currency})
                     </Typography>
-                    <Button
-                      size="small"
-                      variant="text"
-                      onClick={() => {
-                        setShowOrderbook(!showOrderbook);
-                      }}
-                      sx={{
-                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                        textTransform: 'none',
-                        color: showOrderbook ? theme.palette.primary.main : theme.palette.text.secondary,
-                        backgroundColor: showOrderbook ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
-                        border: `1px solid ${showOrderbook ? theme.palette.primary.main : alpha(theme.palette.divider, 0.3)}`,
-                        px: 1.5,
-                        py: 0.5,
-                        minWidth: 'auto',
-                        '&:hover': {
-                          backgroundColor: showOrderbook 
-                            ? alpha(theme.palette.primary.main, 0.2) 
-                            : alpha(theme.palette.primary.main, 0.05),
-                          borderColor: theme.palette.primary.main,
-                          color: theme.palette.primary.main
+                    <Input
+                      placeholder="Enter price"
+                      fullWidth
+                      disableUnderline
+                      value={limitPrice}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '.') {
+                          setLimitPrice('0.');
+                          return;
+                        }
+                        if (!isNaN(Number(val)) || val === '') {
+                          setLimitPrice(val);
                         }
                       }}
-                    >
-                      {showOrderbook ? 'Hide' : 'View'} Orderbook
-                    </Button>
-                  </Stack>
-                  <Input
-                    placeholder="0.00"
-                    fullWidth
-                    disableUnderline
-                    value={limitPrice}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val === '.') {
-                        setLimitPrice('0.');
-                        return;
-                      }
-                      if (!isNaN(Number(val)) || val === '') {
-                        setLimitPrice(val);
-                      }
-                    }}
-                    sx={{
-                      backgroundColor: alpha(theme.palette.background.paper, 0.05),
-                      borderRadius: '8px',
-                      padding: '8px 12px',
-                      input: {
-                        fontSize: { xs: '14px', sm: '16px' },
-                        fontWeight: 600
-                      }
-                    }}
-                  />
+                      sx={{
+                        backgroundColor: alpha(theme.palette.background.paper, 0.05),
+                        borderRadius: '8px',
+                        padding: '8px 12px',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                        input: {
+                          fontSize: '0.85rem',
+                          fontWeight: 600
+                        },
+                        '&:hover': {
+                          borderColor: alpha(theme.palette.primary.main, 0.2)
+                        },
+                        '&:focus-within': {
+                          borderColor: theme.palette.primary.main,
+                          backgroundColor: alpha(theme.palette.background.paper, 0.08)
+                        }
+                      }}
+                    />
+                  </Box>
+                  
+                  {/* Quick Price Select */}
+                  {(bids[0] || asks[0]) && (
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <Typography variant="caption" color="text.secondary" fontSize="0.65rem">
+                        Quick:
+                      </Typography>
+                      {bids[0] && (
+                        <Chip
+                          label={`Bid: ${bids[0].price.toFixed(3)}`}
+                          size="small"
+                          onClick={() => setLimitPrice(bids[0].price.toFixed(6))}
+                          sx={{
+                            height: '18px',
+                            fontSize: '0.6rem',
+                            cursor: 'pointer',
+                            backgroundColor: alpha(theme.palette.success.main, 0.1),
+                            color: theme.palette.success.main,
+                            '&:hover': {
+                              backgroundColor: alpha(theme.palette.success.main, 0.2)
+                            }
+                          }}
+                        />
+                      )}
+                      {asks[0] && (
+                        <Chip
+                          label={`Ask: ${asks[0].price.toFixed(3)}`}
+                          size="small"
+                          onClick={() => setLimitPrice(asks[0].price.toFixed(6))}
+                          sx={{
+                            height: '18px',
+                            fontSize: '0.6rem',
+                            cursor: 'pointer',
+                            backgroundColor: alpha(theme.palette.error.main, 0.1),
+                            color: theme.palette.error.main,
+                            '&:hover': {
+                              backgroundColor: alpha(theme.palette.error.main, 0.2)
+                            }
+                          }}
+                        />
+                      )}
+                    </Stack>
+                  )}
+                  
+                  {/* Expiration Setting */}
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" fontSize="0.7rem" sx={{ mb: 0.5 }}>
+                      Order Expiration
+                    </Typography>
+                    <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                      {[
+                        { value: 'never', label: 'Never' },
+                        { value: '1h', label: '1 Hour' },
+                        { value: '24h', label: '1 Day' },
+                        { value: '7d', label: '7 Days' },
+                        { value: '30d', label: '30 Days' }
+                      ].map(exp => (
+                        <Chip
+                          key={exp.value}
+                          label={exp.label}
+                          size="small"
+                          onClick={() => setOrderExpiry(exp.value)}
+                          sx={{
+                            height: '20px',
+                            fontSize: '0.6rem',
+                            cursor: 'pointer',
+                            backgroundColor: orderExpiry === exp.value 
+                              ? theme.palette.primary.main 
+                              : alpha(theme.palette.action.selected, 0.08),
+                            color: orderExpiry === exp.value ? 'white' : theme.palette.text.secondary,
+                            mb: 0.5,
+                            '&:hover': {
+                              backgroundColor: orderExpiry === exp.value 
+                                ? theme.palette.primary.dark 
+                                : alpha(theme.palette.action.selected, 0.16)
+                            }
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                    {orderExpiry === 'custom' && (
+                      <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Input
+                          type="number"
+                          value={customExpiry}
+                          onChange={(e) => setCustomExpiry(Math.max(1, parseInt(e.target.value) || 1))}
+                          disableUnderline
+                          sx={{
+                            width: '60px',
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            backgroundColor: alpha(theme.palette.background.paper, 0.05),
+                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                            input: {
+                              fontSize: '0.7rem',
+                              textAlign: 'center'
+                            }
+                          }}
+                        />
+                        <Typography variant="caption" fontSize="0.7rem">hours</Typography>
+                      </Box>
+                    )}
+                  </Box>
+                  
                   {/* Price difference from market and warnings */}
                   {limitPrice && parseFloat(limitPrice) > 0 && (() => {
                     const limit = parseFloat(limitPrice);
@@ -3246,8 +3487,8 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Box>
             )}
 
-            {/* Minimalist Settings - Only show for market orders */}
-            {orderType !== 'limit' && (
+            {/* OLD Minimalist Settings - REMOVED */}
+            {false && orderType !== 'limit' && (
               <Box
               sx={{
                 mt: 2,
@@ -3378,45 +3619,10 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
             </Box>
             )}
 
-            {/* User's Open Orders - Show only for limit orders */}
-            {orderType === 'limit' && accountProfile?.account && (
+            {/* User's Open Orders - Display when button is clicked */}
+            {showOrders && accountProfile?.account && (
               <Box sx={{ mb: 2 }}>
-                <Stack 
-                  direction="row" 
-                  alignItems="center" 
-                  justifyContent="space-between" 
-                  sx={{ mb: 1 }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    Your Open Orders
-                  </Typography>
-                  <Button
-                    size="small"
-                    variant="text"
-                    onClick={() => setShowOrders(!showOrders)}
-                    endIcon={
-                      <Icon 
-                        icon={showOrders ? "mdi:chevron-up" : "mdi:chevron-down"} 
-                        width={16} 
-                        height={16} 
-                      />
-                    }
-                    sx={{
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      color: theme.palette.text.secondary,
-                      px: 1,
-                      py: 0.5,
-                      '&:hover': {
-                        backgroundColor: alpha(theme.palette.action.hover, 0.08)
-                      }
-                    }}
-                  >
-                    {showOrders ? 'Hide' : 'Show'}
-                  </Button>
-                </Stack>
-                
-                {showOrders && (
+                {(
                   <Box 
                     sx={{ 
                       borderRadius: '12px',
@@ -3449,103 +3655,131 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
               </Box>
             )}
 
-            {/* Conversion Rate Display */}
-            <Box sx={{ mt: 2, mb: 1 }}>
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="center"
-                spacing={1}
-                sx={{
-                  p: 1.5,
-                  borderRadius: '12px',
-                  backgroundColor: alpha(theme.palette.background.paper, 0.03),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
-                }}
-              >
-                {loadingPrice ? (
-                  <ClipLoader color={theme.palette.primary.main} size={16} />
-                ) : (
-                  <>
-                    <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                      1 {token1.name} = 
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        fontWeight: 700,
-                        color: theme.palette.primary.main,
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                      }}
-                    >
-                      {(() => {
-                        // Show conversion rate from token1 to token2
-                        const token1IsXRP = token1?.currency === 'XRP';
-                        const token2IsXRP = token2?.currency === 'XRP';
-                        
-                        if (token1IsXRP && !token2IsXRP) {
-                          // XRP -> Token: 1 XRP = 1/rate2 Token
-                          return tokenExch2 > 0 ? (1 / tokenExch2).toFixed(6) : '0';
-                        } else if (!token1IsXRP && token2IsXRP) {
-                          // Token -> XRP: 1 Token = rate1 XRP
-                          return tokenExch1 > 0 ? tokenExch1.toFixed(6) : '0';
-                        } else {
-                          // Non-XRP pairs
-                          return tokenExch1 > 0 && tokenExch2 > 0 ? (tokenExch1 / tokenExch2).toFixed(6) : '0';
+            {/* Transaction Summary */}
+            {amount1 && amount2 && (
+              <Box sx={{ mt: 2, mb: 1 }}>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: '12px',
+                    backgroundColor: alpha(theme.palette.background.paper, 0.03),
+                    border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
+                  }}
+                >
+                  <Typography variant="caption" sx={{ fontSize: '0.65rem', color: theme.palette.text.secondary, mb: 1, display: 'block' }}>
+                    ORDER SUMMARY
+                  </Typography>
+                  <Stack spacing={0.75}>
+                    {/* Sell Amount */}
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+                        {orderType === 'limit' ? 'Sell Order' : 'You Pay'}
+                      </Typography>
+                      <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                        {amount1} {token1.name || token1.currency}
+                      </Typography>
+                    </Stack>
+                    
+                    {/* Buy Amount */}
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+                        {orderType === 'limit' ? 'To Buy' : 'You Receive'}
+                      </Typography>
+                      <Typography variant="caption" fontWeight={600} fontSize="0.75rem" color="primary.main">
+                        {orderType === 'limit' && limitPrice 
+                          ? (() => {
+                              const limitPriceDecimal = new Decimal(limitPrice);
+                              const amount1Decimal = new Decimal(amount1);
+                              if (token1.currency === 'XRP' && token2.currency !== 'XRP') {
+                                return amount1Decimal.mul(limitPriceDecimal).toFixed(6);
+                              } else if (token1.currency !== 'XRP' && token2.currency === 'XRP') {
+                                return amount1Decimal.div(limitPriceDecimal).toFixed(6);
+                              } else {
+                                return amount1Decimal.mul(limitPriceDecimal).toFixed(6);
+                              }
+                            })()
+                          : amount2} {token2.name || token2.currency}
+                      </Typography>
+                    </Stack>
+                    
+                    {/* Rate */}
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+                        {orderType === 'limit' ? `${token1.name} at Rate` : 'Exchange Rate'}
+                      </Typography>
+                      <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                        {orderType === 'limit' && limitPrice
+                          ? `${limitPrice} ${token2.name || token2.currency}`
+                          : (() => {
+                              const token1IsXRP = token1?.currency === 'XRP';
+                              const token2IsXRP = token2?.currency === 'XRP';
+                              
+                              if (token1IsXRP && !token2IsXRP) {
+                                return tokenExch2 > 0 ? `${(1 / tokenExch2).toFixed(6)} ${token2.name}` : '0';
+                              } else if (!token1IsXRP && token2IsXRP) {
+                                return tokenExch1 > 0 ? `${tokenExch1.toFixed(6)} ${token2.name}` : '0';
+                              } else {
+                                return tokenExch1 > 0 && tokenExch2 > 0 ? `${(tokenExch1 / tokenExch2).toFixed(6)} ${token2.name}` : '0';
+                              }
+                            })()
                         }
-                      })()} {token2.name}
-                    </Typography>
-                  </>
-                )}
-              </Stack>
-            </Box>
-
-            {/* Min/Max Received Display - Only for market orders */}
-            {orderType === 'market' && amount1 && amount2 && (
-              <Box
-                sx={{
-                  mt: 2,
-                  p: 1.5,
-                  borderRadius: '12px',
-                  backgroundColor: alpha(theme.palette.background.paper, 0.03),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
-                }}
-              >
-                <Stack spacing={1}>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    sx={{ width: '100%' }}
-                  >
-                    <Typography variant="caption" color="text.secondary">
-                      Minimum received ({slippage}% slippage)
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {(() => {
-                        const minAmount = new Decimal(amount2)
-                          .mul(1 - slippage / 100)
-                          .toFixed(6);
-                        return `${minAmount} ${token2.name}`;
-                      })()}
-                    </Typography>
+                      </Typography>
+                    </Stack>
+                    
+                    {/* Order Type & Expiry for Limit Orders */}
+                    {orderType === 'limit' && (
+                      <>
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                          <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+                            Order Type
+                          </Typography>
+                          <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                            Limit Order
+                          </Typography>
+                        </Stack>
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                          <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+                            Expiry
+                          </Typography>
+                          <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                            {orderExpiry === 'never' ? 'Never' :
+                             orderExpiry === '1h' ? '1 Hour' :
+                             orderExpiry === '24h' ? '1 Day' :
+                             orderExpiry === '7d' ? '7 Days' :
+                             orderExpiry === '30d' ? '30 Days' :
+                             orderExpiry === 'custom' ? `${customExpiry} Hours` : 'Never'}
+                          </Typography>
+                        </Stack>
+                      </>
+                    )}
+                    
+                    {/* Slippage for Market Orders */}
+                    {orderType === 'market' && (
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+                          Max Slippage
+                        </Typography>
+                        <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                          {slippage}%
+                        </Typography>
+                      </Stack>
+                    )}
+                    
+                    {/* Platform Fee */}
+                    <Divider sx={{ my: 0.5, borderColor: alpha(theme.palette.divider, 0.05) }} />
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+                        Network Fee
+                      </Typography>
+                      <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                        ~0.000012 XRP
+                      </Typography>
+                    </Stack>
                   </Stack>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    sx={{ width: '100%' }}
-                  >
-                    <Typography variant="caption" color="text.secondary">
-                      Expected amount
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-                      {amount2} {token2.name}
-                    </Typography>
-                  </Stack>
-                </Stack>
+                </Box>
               </Box>
             )}
+
 
             {/* Price Impact Row - Only show for market orders or limit orders that will execute immediately */}
             {amount1 && amount2 && (() => {
