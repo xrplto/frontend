@@ -1302,6 +1302,42 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
 
         let TakerGets, TakerPays;
 
+        // For limit orders, recalculate amount2 based on the limit price
+        let limitAmount2;
+        if (limitPrice && amount1) {
+          const limitPriceDecimal = new Decimal(limitPrice);
+          const amount1Decimal = new Decimal(amount1);
+          
+          console.log('=== LIMIT ORDER CALCULATION ===');
+          console.log('Limit Price Entered:', limitPrice);
+          console.log('Amount1 (input):', amount1);
+          console.log('Curr1:', curr1.currency);
+          console.log('Curr2:', curr2.currency);
+          
+          // Determine which direction to calculate based on currencies
+          if (curr1.currency === 'XRP' && curr2.currency !== 'XRP') {
+            // XRP -> Token: multiply XRP amount by limit price (Token per XRP)
+            // If limit price is "3.06 RLUSD per XRP", then 1 XRP * 3.06 = 3.06 RLUSD
+            limitAmount2 = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
+            console.log('XRP -> Token: Multiplying', amount1, 'XRP by', limitPrice, 'Token/XRP =', limitAmount2, curr2.currency);
+          } else if (curr1.currency !== 'XRP' && curr2.currency === 'XRP') {
+            // Token -> XRP: divide token amount by limit price (Token per XRP)
+            // If limit price is "3.06 RLUSD per XRP", then to get XRP: RLUSD amount / 3.06
+            limitAmount2 = amount1Decimal.div(limitPriceDecimal).toFixed(6);
+            console.log('Token -> XRP: Dividing', amount1, curr1.currency, 'by', limitPrice, 'Token/XRP =', limitAmount2, 'XRP');
+          } else {
+            // Non-XRP pair: use limit price as direct exchange rate
+            limitAmount2 = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
+            console.log('Non-XRP pair: Multiplying', amount1, 'by', limitPrice, '=', limitAmount2);
+          }
+          console.log('Calculated limitAmount2:', limitAmount2);
+          console.log('==============================');
+        } else {
+          // Fallback to calculated amount2 if no limit price
+          limitAmount2 = amount2;
+          console.log('No limit price provided, using market amount2:', amount2);
+        }
+
         if (revert) {
           // Selling curr2 to get curr1
           TakerGets = {
@@ -1312,14 +1348,14 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
           TakerPays = {
             currency: curr2.currency,
             issuer: curr2.issuer,
-            value: amount2.toString()
+            value: limitAmount2.toString()
           };
         } else {
           // Selling curr1 to get curr2
           TakerGets = {
             currency: curr2.currency,
             issuer: curr2.issuer,
-            value: amount2.toString()
+            value: limitAmount2.toString()
           };
           TakerPays = {
             currency: curr1.currency,
