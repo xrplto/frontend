@@ -189,7 +189,7 @@ const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, 
         left: 0,
         right: 0,
         height: '1px',
-        background: alpha(theme.palette.divider, 0.08)
+        background: alpha(theme.palette.divider, 0.05)
       },
       '&:hover': {
         backgroundColor: alpha(theme.palette.primary.main, 0.04),
@@ -1309,21 +1309,11 @@ export default function Analytics({ initialData, initialError }) {
             }}
           >
 
-            <Card
+            <Box
               sx={{
-                borderRadius: '24px',
-                p: { xs: 2, sm: 3 },
-                backgroundColor: theme.palette.mode === 'dark'
-                  ? alpha(theme.palette.background.paper, 0.8)
-                  : theme.palette.background.paper,
-                backdropFilter: 'blur(20px)',
-                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                boxShadow: theme.palette.mode === 'dark'
-                  ? `0 20px 60px ${alpha(theme.palette.common.black, 0.3)}`
-                  : `0 20px 60px ${alpha(theme.palette.common.black, 0.08)}`
+                p: { xs: 2, sm: 3, md: 4 }
               }}
             >
-              <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
                 {loading && !isFirstLoad && (
                   <Box
                     sx={{
@@ -1524,14 +1514,25 @@ export default function Analytics({ initialData, initialError }) {
                       </Box>
                     </Box>
 
-                    <TableContainer sx={{ borderRadius: '16px', overflow: 'hidden' }} onScroll={handleScroll}>
+                    <TableContainer sx={{ 
+                      borderRadius: '16px', 
+                      overflow: 'hidden',
+                      backgroundColor: 'transparent',
+                      background: theme.palette.mode === 'dark'
+                        ? alpha(theme.palette.background.paper, 0.05)
+                        : alpha(theme.palette.background.paper, 0.4),
+                      backdropFilter: 'blur(20px)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                    }} onScroll={handleScroll}>
                       <Table
                         sx={{
                           minWidth: 650,
+                          backgroundColor: 'transparent',
                           '& .MuiTableCell-root': {
                             padding: isMobile ? '8px 6px' : '18px 16px',
                             whiteSpace: 'nowrap',
                             borderBottom: 'none',
+                            backgroundColor: 'transparent',
                             '&:not(:first-of-type)': {
                               paddingLeft: isMobile ? '6px' : '12px'
                             }
@@ -1545,7 +1546,7 @@ export default function Analytics({ initialData, initialError }) {
                               letterSpacing: '-0.01em',
                               padding: isMobile ? '8px 4px' : '16px 12px',
                               color: theme.palette.text.secondary,
-                              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
                               backgroundColor: 'transparent !important'
                             },
                             '& .MuiTableSortLabel-root': {
@@ -1810,8 +1811,7 @@ export default function Analytics({ initialData, initialError }) {
                     </Box>
                   </>
                 )}
-              </CardContent>
-            </Card>
+            </Box>
           </Container>
         </Box>
 

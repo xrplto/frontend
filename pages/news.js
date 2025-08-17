@@ -5,7 +5,7 @@ import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { useSelector } from 'react-redux';
 import { useTheme } from '@mui/material/styles';
 import styled from '@emotion/styled';
-import { alpha } from '@mui/material';
+import { alpha, Container } from '@mui/material';
 import { Icon } from '@iconify/react';
 import styles from './news.module.css';
 
@@ -525,34 +525,6 @@ function NewsPage() {
   
   SentimentSummary.displayName = 'SentimentSummary';
 
-  if (loading) {
-    return (
-      <div style={{ background: theme.palette.background.default, minHeight: '100vh', color: theme.palette.text.primary }}>
-        <Topbar />
-        <Header />
-        <div className={`${styles.container} ${isDark ? styles.dark : ''}`}>
-          <div className={styles.loadingContainer}>
-            <div className={styles.spinner}></div>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={{ background: theme.palette.background.default, minHeight: '100vh', color: theme.palette.text.primary }}>
-        <Topbar />
-        <Header />
-        <div className={`${styles.container} ${isDark ? styles.dark : ''}`}>
-          <div className={styles.errorMessage} style={{ color: theme.palette.error.main }}>Error: {error}</div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
   // Get background and text styles from theme
   const backgroundStyle = {
     background: theme.palette.background.default,
@@ -567,8 +539,15 @@ function NewsPage() {
     >
       <Topbar />
       <Header />
-      <div className={styles.mainContent}>
-        <div className={`${styles.container} ${isDark ? styles.dark : ''}`}>
+      <Container maxWidth="xl">
+        {loading ? (
+          <div className={styles.loadingContainer}>
+            <div className={styles.spinner}></div>
+          </div>
+        ) : error ? (
+          <div className={styles.errorMessage} style={{ color: theme.palette.error.main }}>Error: {error}</div>
+        ) : (
+          <>
           <div className={`${styles.compactHeader} ${isDark ? styles.dark : ''}`}>
             <div className={styles.headerContent}>
               <div className={styles.titleSection}>
@@ -844,8 +823,9 @@ function NewsPage() {
               )}
             </PaginationWrapper>
           )}
-        </div>
-      </div>
+          </>
+        )}
+      </Container>
       <Footer />
     </div>
   );
