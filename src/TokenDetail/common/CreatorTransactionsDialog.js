@@ -118,7 +118,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
             }
             const attemptedCurrency = attempted.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(attempted.currency);
             
-            return `${fNumber(sendValue)} ${sendCurrency} ⇸ ${fNumber(attemptedValue)} ${attemptedCurrency}`;
+            return `${fNumber(sendValue)} ${sendCurrency} > ${fNumber(attemptedValue)} ${attemptedCurrency}`;
           }
           
           // For successful transactions
@@ -146,7 +146,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
           }
           const deliveredCurrency = delivered.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(delivered.currency);
           
-          return `${fNumber(sentValue)} ${sentCurrency} → ${fNumber(deliveredValue)} ${deliveredCurrency}`;
+          return `${fNumber(sentValue)} ${sentCurrency} for ${fNumber(deliveredValue)} ${deliveredCurrency}`;
         }
         
         // Regular payment
@@ -313,10 +313,10 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
 
   const getTxIcon = () => {
     if (isTokenToXrpConversion) {
-      return 'mdi:fire';
+      return 'mdi:trending-down';
     }
     if (isXrpToTokenConversion) {
-      return 'mdi:diamond-stone';
+      return 'mdi:trending-up';
     }
     if (isCurrencyConversion) {
       return 'mdi:swap-horizontal-circle';
@@ -410,9 +410,9 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
           overflow: 'hidden',
           cursor: 'pointer',
           background: isTokenToXrpConversion
-            ? 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)'
+            ? alpha('#ff6347', 0.04)
             : isXrpToTokenConversion
-              ? 'linear-gradient(135deg, #0a0a2a 0%, #1a1a3a 100%)'
+              ? alpha('#4169e1', 0.04)
               : isNew 
                 ? alpha(theme.palette.primary.main, 0.08)
                 : alpha(theme.palette.background.default, 0.5),
@@ -424,112 +424,12 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
           transition: 'all 0.2s ease',
           '&:hover': {
             background: isTokenToXrpConversion
-              ? 'linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%)'
+              ? alpha('#ff6347', 0.08)
               : isXrpToTokenConversion
-                ? 'linear-gradient(135deg, #1a1a3a 0%, #2a2a4a 100%)'
+                ? alpha('#4169e1', 0.08)
                 : alpha(theme.palette.background.paper, 0.8),
-            borderColor: alpha(getTxColor(), 0.3)
+            borderColor: alpha(getTxColor(), 0.2)
           },
-          // Lava flow holographic effect for token-to-XRP conversions
-          ...(isTokenToXrpConversion && {
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: '-200%',
-              width: '200%',
-              height: '100%',
-              background: `linear-gradient(
-                105deg,
-                transparent 40%,
-                ${alpha('#ff4500', 0.3)} 45%,
-                ${alpha('#ff6347', 0.4)} 50%,
-                ${alpha('#ff8c00', 0.3)} 55%,
-                transparent 60%
-              )`,
-              animation: 'lavaFlow 3s linear infinite',
-              pointerEvents: 'none'
-            },
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: `linear-gradient(
-                45deg,
-                ${alpha('#ff4500', 0.1)} 0%,
-                ${alpha('#ff6347', 0.15)} 25%,
-                ${alpha('#ffa500', 0.1)} 50%,
-                ${alpha('#ff8c00', 0.15)} 75%,
-                ${alpha('#ff4500', 0.1)} 100%
-              )`,
-              backgroundSize: '400% 400%',
-              animation: 'holographic 8s ease infinite',
-              pointerEvents: 'none',
-              mixBlendMode: 'overlay'
-            },
-            '@keyframes lavaFlow': {
-              '0%': { transform: 'translateX(0) skewX(-20deg)' },
-              '100%': { transform: 'translateX(200%) skewX(-20deg)' }
-            },
-            '@keyframes holographic': {
-              '0%': { backgroundPosition: '0% 50%' },
-              '50%': { backgroundPosition: '100% 50%' },
-              '100%': { backgroundPosition: '0% 50%' }
-            }
-          }),
-          // Aurora holographic effect for XRP-to-token conversions
-          ...(isXrpToTokenConversion && {
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: '-200%',
-              width: '200%',
-              height: '100%',
-              background: `linear-gradient(
-                105deg,
-                transparent 40%,
-                ${alpha('#00bfff', 0.3)} 45%,
-                ${alpha('#4169e1', 0.4)} 50%,
-                ${alpha('#9370db', 0.3)} 55%,
-                transparent 60%
-              )`,
-              animation: 'auroraFlow 3s linear infinite',
-              pointerEvents: 'none'
-            },
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: `linear-gradient(
-                45deg,
-                ${alpha('#00bfff', 0.1)} 0%,
-                ${alpha('#4169e1', 0.15)} 25%,
-                ${alpha('#9370db', 0.1)} 50%,
-                ${alpha('#00ffff', 0.15)} 75%,
-                ${alpha('#00bfff', 0.1)} 100%
-              )`,
-              backgroundSize: '400% 400%',
-              animation: 'auroraShimmer 8s ease infinite',
-              pointerEvents: 'none',
-              mixBlendMode: 'overlay'
-            },
-            '@keyframes auroraFlow': {
-              '0%': { transform: 'translateX(0) skewX(-20deg)' },
-              '100%': { transform: 'translateX(200%) skewX(-20deg)' }
-            },
-            '@keyframes auroraShimmer': {
-              '0%': { backgroundPosition: '0% 50%' },
-              '50%': { backgroundPosition: '100% 50%' },
-              '100%': { backgroundPosition: '0% 50%' }
-            }
-          })
         }}
       >
         <Stack direction="row" spacing={1} alignItems="center">
@@ -542,107 +442,52 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
               alignItems: 'center',
               justifyContent: 'center',
               background: isTokenToXrpConversion
-                ? `linear-gradient(135deg, ${alpha('#ff4500', 0.2)}, ${alpha('#ffa500', 0.2)})`
+                ? alpha('#ff6347', 0.08)
                 : isXrpToTokenConversion
-                  ? `linear-gradient(135deg, ${alpha('#00bfff', 0.2)}, ${alpha('#9370db', 0.2)})`
-                  : alpha(getTxColor(), 0.1),
-              border: `1px solid ${isTokenToXrpConversion ? alpha('#ff6347', 0.4) : isXrpToTokenConversion ? alpha('#4169e1', 0.4) : alpha(getTxColor(), 0.2)}`,
+                  ? alpha('#4169e1', 0.08)
+                  : alpha(getTxColor(), 0.08),
+              border: `1px solid ${isTokenToXrpConversion ? alpha('#ff6347', 0.2) : isXrpToTokenConversion ? alpha('#4169e1', 0.2) : alpha(getTxColor(), 0.15)}`,
               position: 'relative',
-              zIndex: 1,
-              ...(isTokenToXrpConversion && {
-                boxShadow: `0 0 20px ${alpha('#ff4500', 0.4)}`,
-                animation: 'pulse 2s ease-in-out infinite',
-                '@keyframes pulse': {
-                  '0%, 100%': { boxShadow: `0 0 20px ${alpha('#ff4500', 0.4)}` },
-                  '50%': { boxShadow: `0 0 30px ${alpha('#ffa500', 0.6)}` }
-                }
-              }),
-              ...(isXrpToTokenConversion && {
-                boxShadow: `0 0 20px ${alpha('#00bfff', 0.4)}`,
-                animation: 'auraPulse 2s ease-in-out infinite',
-                '@keyframes auraPulse': {
-                  '0%, 100%': { boxShadow: `0 0 20px ${alpha('#00bfff', 0.4)}` },
-                  '50%': { boxShadow: `0 0 30px ${alpha('#9370db', 0.6)}` }
-                }
-              })
+              zIndex: 1
             }}
           >
             <Icon 
               icon={getTxIcon()} 
               style={{ 
                 fontSize: '16px', 
-                color: isTokenToXrpConversion ? '#ff6347' : isXrpToTokenConversion ? '#4169e1' : getTxColor(),
-                filter: isTokenToXrpConversion ? 'drop-shadow(0 0 3px rgba(255, 99, 71, 0.6))' : isXrpToTokenConversion ? 'drop-shadow(0 0 3px rgba(65, 105, 225, 0.6))' : 'none'
+                color: isTokenToXrpConversion ? '#ff6347' : isXrpToTokenConversion ? '#4169e1' : getTxColor()
               }} 
             />
           </Box>
 
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  fontWeight: 600,
-                  fontSize: '0.8rem',
-                  color: meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' ? theme.palette.error.main : 'inherit'
-                }}
-              >
-                {isTokenToXrpConversion ? '→ XRP' : isXrpToTokenConversion ? 'XRP →' : isCurrencyConversion ? 'Swap' : 
-                  txType === 'Payment' ? (isIncoming ? 'Received' : 'Sent') :
-                  txType === 'OfferCreate' ? 'Offer' :
-                  txType === 'TrustSet' ? 'Trust' :
-                  txType === 'NFTokenMint' ? 'NFT Mint' :
-                  txType === 'NFTokenCreateOffer' ? 'NFT Offer' :
-                  txType === 'NFTokenAcceptOffer' ? 'NFT Accept' :
-                  txType === 'NFTokenCancelOffer' ? 'NFT Cancel' :
-                  txType === 'AMMDeposit' ? 'AMM +' :
-                  txType === 'AMMWithdraw' ? 'AMM -' :
-                  txType
-                }
-                {meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' && ' ✗'}
-              </Typography>
-              {isTokenToXrpConversion && (
-                <Chip
-                  label="🔥 Sold"
-                  size="small"
-                  sx={{
-                    height: '14px',
-                    fontSize: '0.6rem',
-                    px: 0.5,
-                    fontWeight: 700,
-                    background: 'linear-gradient(135deg, #ff4500, #ffa500)',
-                    color: 'white',
-                    border: 'none',
-                    animation: 'shimmer 2s linear infinite',
-                    '@keyframes shimmer': {
-                      '0%': { backgroundPosition: '0% 50%' },
-                      '100%': { backgroundPosition: '200% 50%' }
-                    },
-                    backgroundSize: '200% 100%'
+          <Box sx={{ minWidth: '50px', maxWidth: '70px', flexShrink: 0 }}>
+            <Stack direction="column" spacing={0}>
+              <Stack direction="row" alignItems="center" spacing={0.5}>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontWeight: 600,
+                    fontSize: '0.75rem',
+                    color: meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' ? theme.palette.error.main : 'inherit',
+                    lineHeight: 1.2,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
                   }}
-                />
-              )}
-              {isXrpToTokenConversion && (
-                <Chip
-                  label="💎 Bought"
-                  size="small"
-                  sx={{
-                    height: '14px',
-                    fontSize: '0.6rem',
-                    px: 0.5,
-                    fontWeight: 700,
-                    background: 'linear-gradient(135deg, #00bfff, #9370db)',
-                    color: 'white',
-                    border: 'none',
-                    animation: 'shimmer 2s linear infinite',
-                    '@keyframes shimmer': {
-                      '0%': { backgroundPosition: '0% 50%' },
-                      '100%': { backgroundPosition: '200% 50%' }
-                    },
-                    backgroundSize: '200% 100%'
-                  }}
-                />
-              )}
+                >
+                  {isTokenToXrpConversion ? 'Sell' : isXrpToTokenConversion ? 'Buy' : isCurrencyConversion ? 'Swap' : 
+                    txType === 'Payment' ? (isIncoming ? 'Received' : 'Sent') :
+                    txType === 'OfferCreate' ? 'Offer' :
+                    txType === 'TrustSet' ? 'Trust' :
+                    txType === 'NFTokenMint' ? 'NFT Mint' :
+                    txType === 'NFTokenCreateOffer' ? 'NFT Offer' :
+                    txType === 'NFTokenAcceptOffer' ? 'NFT Accept' :
+                    txType === 'NFTokenCancelOffer' ? 'NFT Cancel' :
+                    txType === 'AMMDeposit' ? 'AMM +' :
+                    txType === 'AMMWithdraw' ? 'AMM -' :
+                    txType
+                  }
+                </Typography>
               {isNew && (
                 <Chip
                   label="NEW"
@@ -669,141 +514,39 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                   }}
                 />
               )}
-              {validated && meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' && (
-                <Tooltip 
-                  title={
-                    <Box sx={{ p: 1 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
-                        {getFailureDescription(meta.TransactionResult)}
-                      </Typography>
-                      {isCurrencyConversion && (
-                        <>
-                          <Typography variant="caption" sx={{ display: 'block', mt: 1, mb: 0.5 }}>
-                            Transaction Details:
-                          </Typography>
-                          {tx.SendMax && (
-                            <Typography variant="caption" sx={{ display: 'block', color: 'error.light' }}>
-                              • Tried to spend: {(() => {
-                                const sendMax = parseAmount(tx.SendMax);
-                                if (!sendMax || typeof sendMax !== 'object') return 'N/A';
-                                const currency = sendMax.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(sendMax.currency);
-                                return `${fNumber(sendMax.value)} ${currency}`;
-                              })()}
-                            </Typography>
-                          )}
-                          {tx.Amount && (
-                            <Typography variant="caption" sx={{ display: 'block', color: 'warning.light' }}>
-                              • Expected to receive: {(() => {
-                                const amount = parseAmount(tx.Amount);
-                                if (!amount || typeof amount !== 'object') return 'N/A';
-                                const currency = amount.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(amount.currency);
-                                return `${fNumber(amount.value)} ${currency}`;
-                              })()}
-                            </Typography>
-                          )}
-                          {tx.DeliverMin && (
-                            <Typography variant="caption" sx={{ display: 'block', color: 'info.light' }}>
-                              • Minimum acceptable: {(() => {
-                                const deliverMin = parseAmount(tx.DeliverMin);
-                                if (!deliverMin || typeof deliverMin !== 'object') return 'N/A';
-                                const currency = deliverMin.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(deliverMin.currency);
-                                return `${fNumber(deliverMin.value)} ${currency}`;
-                              })()}
-                            </Typography>
-                          )}
-                          {meta.TransactionResult === 'tecPATH_PARTIAL' && (
-                            <Typography variant="caption" sx={{ display: 'block', mt: 1, fontStyle: 'italic' }}>
-                              The exchange rate or liquidity was insufficient to complete this swap.
-                            </Typography>
-                          )}
-                        </>
-                      )}
-                    </Box>
-                  }
-                  arrow
-                  placement="left"
-                >
-                  <Chip
-                    label={`FAILED: ${meta.TransactionResult}`}
-                    size="small"
-                    color="error"
-                    sx={{
-                      height: '14px',
-                      fontSize: '0.6rem',
-                      px: 0.5,
-                      cursor: 'help'
-                    }}
-                  />
-                </Tooltip>
-              )}
+              </Stack>
+              
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  color: alpha(theme.palette.text.secondary, 0.6),
+                  fontSize: '0.7rem',
+                  lineHeight: 1,
+                  display: 'block',
+                  mt: 0.25
+                }}
+              >
+                {formatTime()}
+              </Typography>
             </Stack>
-            
-            <Typography 
-              variant="caption" 
-              sx={{ 
-                color: alpha(theme.palette.text.secondary, 0.6),
-                fontSize: '0.7rem',
-                lineHeight: 1
-              }}
-            >
-              {formatTime()}
-            </Typography>
           </Box>
 
-          <Box sx={{ minWidth: '80px', textAlign: 'right' }}>
+          <Box sx={{ flex: 1, textAlign: 'right', minWidth: 0 }}>
             <Typography
               variant="body2"
               sx={{
                 fontWeight: 600,
                 color: getTxColor(),
-                fontSize: '0.8rem',
-                lineHeight: 1.2
+                fontSize: '0.75rem',
+                lineHeight: 1.2,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
               }}
             >
               {txType === 'Payment' && !isIncoming && !isCurrencyConversion && '-'}
               {formatTxAmount()}
             </Typography>
-            {/* Show additional details for failed currency conversions */}
-            {isCurrencyConversion && meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS' && (
-              <Stack spacing={0.5} sx={{ mt: 0.5 }}>
-                {tx.SendMax && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: alpha(theme.palette.error.main, 0.8),
-                      fontSize: '0.65rem',
-                      display: 'block',
-                      lineHeight: 1.1
-                    }}
-                  >
-                    {(() => {
-                      const sendMax = parseAmount(tx.SendMax);
-                      if (!sendMax || typeof sendMax !== 'object') return 'N/A';
-                      const currency = sendMax.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(sendMax.currency);
-                      return `${fNumber(sendMax.value)} ${currency}`;
-                    })()}
-                  </Typography>
-                )}
-                {tx.DeliverMin && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: alpha(theme.palette.warning.main, 0.8),
-                      fontSize: '0.65rem',
-                      display: 'block',
-                      lineHeight: 1.1
-                    }}
-                  >
-                    Min: {(() => {
-                      const deliverMin = parseAmount(tx.DeliverMin);
-                      if (!deliverMin || typeof deliverMin !== 'object') return 'N/A';
-                      const currency = deliverMin.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(deliverMin.currency);
-                      return `${fNumber(deliverMin.value)} ${currency}`;
-                    })()}
-                  </Typography>
-                )}
-              </Stack>
-            )}
             {txType === 'Payment' && tx.SendMax && tx.SendMax !== tx.Amount && !isCurrencyConversion && (
               <Typography
                 variant="caption"

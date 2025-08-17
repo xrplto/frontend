@@ -730,16 +730,36 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                     minWidth: 24,
                     height: 24,
                     borderRadius: '6px',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                     background: (() => {
-                      if (!latestCreatorTx) return alpha(theme.palette.background.paper, 0.8);
+                      if (!latestCreatorTx) return alpha(theme.palette.background.paper, 0.5);
                       const tx = latestCreatorTx.tx;
+                      const deliveredAmount = latestCreatorTx.meta?.delivered_amount || latestCreatorTx.meta?.DeliveredAmount;
+                      const sentAmount = tx.SendMax || tx.Amount;
+                      
                       const isTokenToXrp = tx.TransactionType === 'Payment' && 
                         tx.Account === tx.Destination && 
-                        (tx.SendMax || (tx.Paths && tx.Paths.length > 0));
-                      return isTokenToXrp 
-                        ? 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)' 
-                        : alpha(theme.palette.background.paper, 0.8);
+                        (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                        (() => {
+                          if (!deliveredAmount || !sentAmount) return false;
+                          const isReceivedXRP = typeof deliveredAmount === 'string';
+                          const isSentToken = typeof sentAmount === 'object' && sentAmount.currency && sentAmount.currency !== 'XRP';
+                          return isReceivedXRP && isSentToken;
+                        })();
+                        
+                      const isXrpToToken = tx.TransactionType === 'Payment' && 
+                        tx.Account === tx.Destination && 
+                        (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                        (() => {
+                          if (!deliveredAmount || !sentAmount) return false;
+                          const isSentXRP = typeof sentAmount === 'string';
+                          const isReceivedToken = typeof deliveredAmount === 'object' && deliveredAmount.currency && deliveredAmount.currency !== 'XRP';
+                          return isSentXRP && isReceivedToken;
+                        })();
+                      
+                      if (isTokenToXrp) return alpha('#ff6347', 0.08);
+                      if (isXrpToToken) return alpha('#4169e1', 0.08);
+                      return alpha(theme.palette.background.paper, 0.5);
                     })(),
                     transition: 'all 0.2s ease',
                     padding: '4px',
@@ -748,56 +768,111 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                     overflow: 'hidden',
                     '&:hover': {
                       transform: 'translateY(-1px)',
-                      background: alpha(theme.palette.info.main, 0.08),
-                      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                      background: (() => {
+                        if (!latestCreatorTx) return alpha(theme.palette.primary.main, 0.08);
+                        const tx = latestCreatorTx.tx;
+                        const deliveredAmount = latestCreatorTx.meta?.delivered_amount || latestCreatorTx.meta?.DeliveredAmount;
+                        const sentAmount = tx.SendMax || tx.Amount;
+                        
+                        const isTokenToXrp = tx.TransactionType === 'Payment' && 
+                          tx.Account === tx.Destination && 
+                          (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                          (() => {
+                            if (!deliveredAmount || !sentAmount) return false;
+                            const isReceivedXRP = typeof deliveredAmount === 'string';
+                            const isSentToken = typeof sentAmount === 'object' && sentAmount.currency && sentAmount.currency !== 'XRP';
+                            return isReceivedXRP && isSentToken;
+                          })();
+                          
+                        const isXrpToToken = tx.TransactionType === 'Payment' && 
+                          tx.Account === tx.Destination && 
+                          (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                          (() => {
+                            if (!deliveredAmount || !sentAmount) return false;
+                            const isSentXRP = typeof sentAmount === 'string';
+                            const isReceivedToken = typeof deliveredAmount === 'object' && deliveredAmount.currency && deliveredAmount.currency !== 'XRP';
+                            return isSentXRP && isReceivedToken;
+                          })();
+                        
+                        if (isTokenToXrp) return alpha('#ff6347', 0.12);
+                        if (isXrpToToken) return alpha('#4169e1', 0.12);
+                        return alpha(theme.palette.primary.main, 0.08);
+                      })(),
+                      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`
                     },
                     '& .MuiSvgIcon-root': {
                       fontSize: '14px',
                       color: alpha(theme.palette.text.primary, 0.7)
-                    },
-                    // Lava holographic effect for sold transactions
-                    ...(latestCreatorTx && (() => {
-                      const tx = latestCreatorTx.tx;
-                      const isTokenToXrp = tx.TransactionType === 'Payment' && 
-                        tx.Account === tx.Destination && 
-                        (tx.SendMax || (tx.Paths && tx.Paths.length > 0));
-                      return isTokenToXrp ? {
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          top: 0,
-                          left: '-200%',
-                          width: '200%',
-                          height: '100%',
-                          background: `linear-gradient(
-                            105deg,
-                            transparent 40%,
-                            ${alpha('#ff4500', 0.3)} 45%,
-                            ${alpha('#ff6347', 0.4)} 50%,
-                            ${alpha('#ff8c00', 0.3)} 55%,
-                            transparent 60%
-                          )`,
-                          animation: 'lavaFlow 3s linear infinite',
-                          pointerEvents: 'none'
-                        },
-                        '@keyframes lavaFlow': {
-                          '0%': { transform: 'translateX(0) skewX(-20deg)' },
-                          '100%': { transform: 'translateX(200%) skewX(-20deg)' }
-                        }
-                      } : {};
-                    })())
+                    }
                   }}
                 >
                   <Stack direction="row" alignItems="center" spacing={0.5}>
-                    <TimelineIcon />
+                    {!latestCreatorTx && <TimelineIcon />}
                     {latestCreatorTx && (
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.65rem',
-                          color: theme.palette.text.primary,
-                          fontWeight: 600,
-                          display: { xs: 'none', sm: 'block' }
+                          fontSize: '0.7rem',
+                          color: (() => {
+                            const tx = latestCreatorTx.tx;
+                            const deliveredAmount = latestCreatorTx.meta?.delivered_amount || latestCreatorTx.meta?.DeliveredAmount;
+                            const sentAmount = tx.SendMax || tx.Amount;
+                            
+                            const isTokenToXrp = tx.TransactionType === 'Payment' && 
+                              tx.Account === tx.Destination && 
+                              (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                              (() => {
+                                if (!deliveredAmount || !sentAmount) return false;
+                                const isReceivedXRP = typeof deliveredAmount === 'string';
+                                const isSentToken = typeof sentAmount === 'object' && sentAmount.currency && sentAmount.currency !== 'XRP';
+                                return isReceivedXRP && isSentToken;
+                              })();
+                              
+                            const isXrpToToken = tx.TransactionType === 'Payment' && 
+                              tx.Account === tx.Destination && 
+                              (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                              (() => {
+                                if (!deliveredAmount || !sentAmount) return false;
+                                const isSentXRP = typeof sentAmount === 'string';
+                                const isReceivedToken = typeof deliveredAmount === 'object' && deliveredAmount.currency && deliveredAmount.currency !== 'XRP';
+                                return isSentXRP && isReceivedToken;
+                              })();
+                            
+                            if (isTokenToXrp) return '#ff6347';
+                            if (isXrpToToken) return '#4169e1';
+                            return theme.palette.text.primary;
+                          })(),
+                          fontWeight: 700,
+                          display: { xs: 'none', sm: 'block' },
+                          textShadow: (() => {
+                            const tx = latestCreatorTx.tx;
+                            const deliveredAmount = latestCreatorTx.meta?.delivered_amount || latestCreatorTx.meta?.DeliveredAmount;
+                            const sentAmount = tx.SendMax || tx.Amount;
+                            
+                            const isTokenToXrp = tx.TransactionType === 'Payment' && 
+                              tx.Account === tx.Destination && 
+                              (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                              (() => {
+                                if (!deliveredAmount || !sentAmount) return false;
+                                const isReceivedXRP = typeof deliveredAmount === 'string';
+                                const isSentToken = typeof sentAmount === 'object' && sentAmount.currency && sentAmount.currency !== 'XRP';
+                                return isReceivedXRP && isSentToken;
+                              })();
+                              
+                            const isXrpToToken = tx.TransactionType === 'Payment' && 
+                              tx.Account === tx.Destination && 
+                              (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                              (() => {
+                                if (!deliveredAmount || !sentAmount) return false;
+                                const isSentXRP = typeof sentAmount === 'string';
+                                const isReceivedToken = typeof deliveredAmount === 'object' && deliveredAmount.currency && deliveredAmount.currency !== 'XRP';
+                                return isSentXRP && isReceivedToken;
+                              })();
+                            
+                            if (isTokenToXrp) return '0 0 3px rgba(255, 99, 71, 0.5)';
+                            if (isXrpToToken) return '0 0 3px rgba(65, 105, 225, 0.5)';
+                            return 'none';
+                          })()
                         }}
                       >
                         {(() => {
@@ -817,7 +892,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                             
                           if (isTokenToXrp) {
                             const xrpAmount = parseInt(deliveredAmount) / 1000000;
-                            return `🔥 ${fNumber(xrpAmount)}`;
+                            return `${fNumber(xrpAmount)} XRP`;
                           }
                           
                           const isXrpToToken = tx.TransactionType === 'Payment' && 
@@ -832,10 +907,10 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                             
                           if (isXrpToToken) {
                             const xrpAmount = parseInt(sentAmount) / 1000000;
-                            return `💎 ${fNumber(xrpAmount)}`;
+                            return `${fNumber(xrpAmount)} XRP`;
                           }
                           
-                          return '📊';
+                          return '📊 Activity';
                         })()}
                       </Typography>
                     )}
@@ -1233,16 +1308,36 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                             minWidth: 32,
                             height: 32,
                             borderRadius: '8px',
-                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                             background: (() => {
-                              if (!latestCreatorTx) return alpha(theme.palette.background.paper, 0.8);
+                              if (!latestCreatorTx) return alpha(theme.palette.background.paper, 0.5);
                               const tx = latestCreatorTx.tx;
+                              const deliveredAmount = latestCreatorTx.meta?.delivered_amount || latestCreatorTx.meta?.DeliveredAmount;
+                              const sentAmount = tx.SendMax || tx.Amount;
+                              
                               const isTokenToXrp = tx.TransactionType === 'Payment' && 
                                 tx.Account === tx.Destination && 
-                                (tx.SendMax || (tx.Paths && tx.Paths.length > 0));
-                              return isTokenToXrp 
-                                ? 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)' 
-                                : alpha(theme.palette.background.paper, 0.8);
+                                (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                                (() => {
+                                  if (!deliveredAmount || !sentAmount) return false;
+                                  const isReceivedXRP = typeof deliveredAmount === 'string';
+                                  const isSentToken = typeof sentAmount === 'object' && sentAmount.currency && sentAmount.currency !== 'XRP';
+                                  return isReceivedXRP && isSentToken;
+                                })();
+                                
+                              const isXrpToToken = tx.TransactionType === 'Payment' && 
+                                tx.Account === tx.Destination && 
+                                (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                                (() => {
+                                  if (!deliveredAmount || !sentAmount) return false;
+                                  const isSentXRP = typeof sentAmount === 'string';
+                                  const isReceivedToken = typeof deliveredAmount === 'object' && deliveredAmount.currency && deliveredAmount.currency !== 'XRP';
+                                  return isSentXRP && isReceivedToken;
+                                })();
+                              
+                              if (isTokenToXrp) return alpha('#ff6347', 0.08);
+                              if (isXrpToToken) return alpha('#4169e1', 0.08);
+                              return alpha(theme.palette.background.paper, 0.5);
                             })(),
                             transition: 'all 0.2s ease',
                             padding: '6px',
@@ -1251,80 +1346,110 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                             overflow: 'hidden',
                             '&:hover': {
                               transform: 'translateY(-1px)',
-                              background: alpha(theme.palette.info.main, 0.08),
-                              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                              background: (() => {
+                                if (!latestCreatorTx) return alpha(theme.palette.primary.main, 0.08);
+                                const tx = latestCreatorTx.tx;
+                                const deliveredAmount = latestCreatorTx.meta?.delivered_amount || latestCreatorTx.meta?.DeliveredAmount;
+                                const sentAmount = tx.SendMax || tx.Amount;
+                                
+                                const isTokenToXrp = tx.TransactionType === 'Payment' && 
+                                  tx.Account === tx.Destination && 
+                                  (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                                  (() => {
+                                    if (!deliveredAmount || !sentAmount) return false;
+                                    const isReceivedXRP = typeof deliveredAmount === 'string';
+                                    const isSentToken = typeof sentAmount === 'object' && sentAmount.currency && sentAmount.currency !== 'XRP';
+                                    return isReceivedXRP && isSentToken;
+                                  })();
+                                  
+                                const isXrpToToken = tx.TransactionType === 'Payment' && 
+                                  tx.Account === tx.Destination && 
+                                  (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                                  (() => {
+                                    if (!deliveredAmount || !sentAmount) return false;
+                                    const isSentXRP = typeof sentAmount === 'string';
+                                    const isReceivedToken = typeof deliveredAmount === 'object' && deliveredAmount.currency && deliveredAmount.currency !== 'XRP';
+                                    return isSentXRP && isReceivedToken;
+                                  })();
+                                
+                                if (isTokenToXrp) return alpha('#ff6347', 0.12);
+                                if (isXrpToToken) return alpha('#4169e1', 0.12);
+                                return alpha(theme.palette.primary.main, 0.08);
+                              })(),
+                              boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`
                             },
                             '& .MuiSvgIcon-root': {
                               fontSize: '18px',
                               color: alpha(theme.palette.text.primary, 0.7)
-                            },
-                            // Lava holographic effect for sold transactions
-                            ...(latestCreatorTx && (() => {
-                              const tx = latestCreatorTx.tx;
-                              const isTokenToXrp = tx.TransactionType === 'Payment' && 
-                                tx.Account === tx.Destination && 
-                                (tx.SendMax || (tx.Paths && tx.Paths.length > 0));
-                              return isTokenToXrp ? {
-                                '&::before': {
-                                  content: '""',
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: '-200%',
-                                  width: '200%',
-                                  height: '100%',
-                                  background: `linear-gradient(
-                                    105deg,
-                                    transparent 40%,
-                                    ${alpha('#ff4500', 0.3)} 45%,
-                                    ${alpha('#ff6347', 0.4)} 50%,
-                                    ${alpha('#ff8c00', 0.3)} 55%,
-                                    transparent 60%
-                                  )`,
-                                  animation: 'lavaFlow 3s linear infinite',
-                                  pointerEvents: 'none'
-                                },
-                                '&::after': {
-                                  content: '""',
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  background: `linear-gradient(
-                                    45deg,
-                                    ${alpha('#ff4500', 0.1)} 0%,
-                                    ${alpha('#ff6347', 0.15)} 25%,
-                                    ${alpha('#ffa500', 0.1)} 50%,
-                                    ${alpha('#ff8c00', 0.15)} 75%,
-                                    ${alpha('#ff4500', 0.1)} 100%
-                                  )`,
-                                  backgroundSize: '400% 400%',
-                                  animation: 'holographic 8s ease infinite',
-                                  pointerEvents: 'none',
-                                  mixBlendMode: 'overlay'
-                                },
-                                '@keyframes lavaFlow': {
-                                  '0%': { transform: 'translateX(0) skewX(-20deg)' },
-                                  '100%': { transform: 'translateX(200%) skewX(-20deg)' }
-                                },
-                                '@keyframes holographic': {
-                                  '0%': { backgroundPosition: '0% 50%' },
-                                  '50%': { backgroundPosition: '100% 50%' },
-                                  '100%': { backgroundPosition: '0% 50%' }
-                                }
-                              } : {};
-                            })())
+                            }
                           }}
                         >
                           <Stack direction="row" alignItems="center" spacing={0.5}>
-                            <TimelineIcon />
+                            {!latestCreatorTx && <TimelineIcon />}
                             {latestCreatorTx && (
                               <Typography
                                 variant="caption"
                                 sx={{
-                                  fontSize: '0.7rem',
-                                  color: theme.palette.text.primary,
-                                  fontWeight: 600
+                                  fontSize: '0.75rem',
+                                  color: (() => {
+                                    const tx = latestCreatorTx.tx;
+                                    const deliveredAmount = latestCreatorTx.meta?.delivered_amount || latestCreatorTx.meta?.DeliveredAmount;
+                                    const sentAmount = tx.SendMax || tx.Amount;
+                                    
+                                    const isTokenToXrp = tx.TransactionType === 'Payment' && 
+                                      tx.Account === tx.Destination && 
+                                      (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                                      (() => {
+                                        if (!deliveredAmount || !sentAmount) return false;
+                                        const isReceivedXRP = typeof deliveredAmount === 'string';
+                                        const isSentToken = typeof sentAmount === 'object' && sentAmount.currency && sentAmount.currency !== 'XRP';
+                                        return isReceivedXRP && isSentToken;
+                                      })();
+                                      
+                                    const isXrpToToken = tx.TransactionType === 'Payment' && 
+                                      tx.Account === tx.Destination && 
+                                      (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                                      (() => {
+                                        if (!deliveredAmount || !sentAmount) return false;
+                                        const isSentXRP = typeof sentAmount === 'string';
+                                        const isReceivedToken = typeof deliveredAmount === 'object' && deliveredAmount.currency && deliveredAmount.currency !== 'XRP';
+                                        return isSentXRP && isReceivedToken;
+                                      })();
+                                    
+                                    if (isTokenToXrp) return '#ff6347';
+                                    if (isXrpToToken) return '#4169e1';
+                                    return theme.palette.text.primary;
+                                  })(),
+                                  fontWeight: 700,
+                                  textShadow: (() => {
+                                    const tx = latestCreatorTx.tx;
+                                    const deliveredAmount = latestCreatorTx.meta?.delivered_amount || latestCreatorTx.meta?.DeliveredAmount;
+                                    const sentAmount = tx.SendMax || tx.Amount;
+                                    
+                                    const isTokenToXrp = tx.TransactionType === 'Payment' && 
+                                      tx.Account === tx.Destination && 
+                                      (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                                      (() => {
+                                        if (!deliveredAmount || !sentAmount) return false;
+                                        const isReceivedXRP = typeof deliveredAmount === 'string';
+                                        const isSentToken = typeof sentAmount === 'object' && sentAmount.currency && sentAmount.currency !== 'XRP';
+                                        return isReceivedXRP && isSentToken;
+                                      })();
+                                      
+                                    const isXrpToToken = tx.TransactionType === 'Payment' && 
+                                      tx.Account === tx.Destination && 
+                                      (tx.SendMax || (tx.Paths && tx.Paths.length > 0)) &&
+                                      (() => {
+                                        if (!deliveredAmount || !sentAmount) return false;
+                                        const isSentXRP = typeof sentAmount === 'string';
+                                        const isReceivedToken = typeof deliveredAmount === 'object' && deliveredAmount.currency && deliveredAmount.currency !== 'XRP';
+                                        return isSentXRP && isReceivedToken;
+                                      })();
+                                    
+                                    if (isTokenToXrp) return '0 0 3px rgba(255, 99, 71, 0.5)';
+                                    if (isXrpToToken) return '0 0 3px rgba(65, 105, 225, 0.5)';
+                                    return 'none';
+                                  })()
                                 }}
                               >
                                 {(() => {
@@ -1344,7 +1469,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                                     
                                   if (isTokenToXrp) {
                                     const xrpAmount = parseInt(deliveredAmount) / 1000000;
-                                    return `🔥 Sold ${fNumber(xrpAmount)} XRP`;
+                                    return `🔥 ${fNumber(xrpAmount)} XRP`;
                                   }
                                   
                                   const isXrpToToken = tx.TransactionType === 'Payment' && 
@@ -1359,7 +1484,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                                     
                                   if (isXrpToToken) {
                                     const xrpAmount = parseInt(sentAmount) / 1000000;
-                                    return `💎 Bought ${fNumber(xrpAmount)} XRP`;
+                                    return `${fNumber(xrpAmount)} XRP`;
                                   }
                                   
                                   // Regular payment
