@@ -821,11 +821,13 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     isSufficientBalance = false;
 
     // Check trustlines first
+    // Note: hasTrustline1/2 correspond to curr1/2 from the pair, not token1/2
+    // But for error messages, we want to show what the user sees (token1/2)
     if (!hasTrustline1 && curr1.currency !== 'XRP') {
-      const displayName = getCurrencyDisplayName(curr1.currency, token1?.name);
+      const displayName = getCurrencyDisplayName(curr1.currency, curr1?.name);
       errMsg = `No trustline for ${displayName}`;
     } else if (!hasTrustline2 && curr2.currency !== 'XRP') {
-      const displayName = getCurrencyDisplayName(curr2.currency, token2?.name);
+      const displayName = getCurrencyDisplayName(curr2.currency, curr2?.name);
       errMsg = `No trustline for ${displayName}`;
     } else {
       // Check balance if trustlines exist
@@ -1285,8 +1287,15 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
 
   const onSwap = async () => {
     try {
-      const curr1 = pair.curr1;
-      const curr2 = pair.curr2;
+      // IMPORTANT FIX: The UI always shows:
+      // - Top field (amount1): What you pay
+      // - Bottom field (amount2): What you receive
+      // But when revert=false, the displayed tokens are token1/token2
+      // When revert=true, the displayed tokens are actually swapped internally
+      
+      // We should always use what the user sees in the UI
+      const curr1 = token1;  // Top field token ("You pay")
+      const curr2 = token2;  // Bottom field token ("You receive")
       const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
