@@ -910,6 +910,32 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                             return `${fNumber(xrpAmount)} XRP`;
                           }
                           
+                          // Regular payment
+                          if (tx.TransactionType === 'Payment') {
+                            const isIncoming = tx.Destination === creator;
+                            const deliveredAmount = latestCreatorTx.meta?.delivered_amount || latestCreatorTx.meta?.DeliveredAmount;
+                            const amountToShow = deliveredAmount || tx.Amount;
+                            
+                            if (typeof amountToShow === 'string') {
+                              const xrpAmount = parseInt(amountToShow) / 1000000;
+                              return `${isIncoming ? '💰' : '📤'} ${fNumber(xrpAmount)} XRP`;
+                            } else if (amountToShow && typeof amountToShow === 'object') {
+                              // Token payment
+                              const { parseAmount } = require('src/utils/parse/amount');
+                              const { normalizeCurrencyCode } = require('src/utils/parse/utils');
+                              const amount = parseAmount(amountToShow);
+                              if (amount && typeof amount === 'object') {
+                                const currency = amount.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(amount.currency);
+                                return `${isIncoming ? '💰' : '📤'} ${fNumber(amount.value)} ${currency}`;
+                              }
+                            }
+                          }
+                          
+                          // Other transaction types
+                          if (tx.TransactionType === 'OfferCreate') return '📊 Offer';
+                          if (tx.TransactionType === 'TrustSet') return '🔗 Trust';
+                          if (tx.TransactionType === 'NFTokenMint') return '🎨 NFT';
+                          
                           return '📊 Activity';
                         })()}
                       </Typography>
@@ -1489,12 +1515,31 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                                   
                                   // Regular payment
                                   if (tx.TransactionType === 'Payment') {
-                                    const amount = tx.Amount;
-                                    if (typeof amount === 'string') {
-                                      const xrpAmount = parseInt(amount) / 1000000;
-                                      return `Payment ${fNumber(xrpAmount)} XRP`;
+                                    const isIncoming = tx.Destination === creator;
+                                    const deliveredAmount = latestCreatorTx.meta?.delivered_amount || latestCreatorTx.meta?.DeliveredAmount;
+                                    const amountToShow = deliveredAmount || tx.Amount;
+                                    
+                                    if (typeof amountToShow === 'string') {
+                                      const xrpAmount = parseInt(amountToShow) / 1000000;
+                                      return `${isIncoming ? 'Received' : 'Sent'} ${fNumber(xrpAmount)} XRP`;
+                                    } else if (amountToShow && typeof amountToShow === 'object') {
+                                      // Token payment
+                                      const { parseAmount } = require('src/utils/parse/amount');
+                                      const { normalizeCurrencyCode } = require('src/utils/parse/utils');
+                                      const amount = parseAmount(amountToShow);
+                                      if (amount && typeof amount === 'object') {
+                                        const currency = amount.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(amount.currency);
+                                        return `${isIncoming ? 'Received' : 'Sent'} ${fNumber(amount.value)} ${currency}`;
+                                      }
                                     }
                                   }
+                                  
+                                  // Other transaction types
+                                  if (tx.TransactionType === 'OfferCreate') return 'Offer';
+                                  if (tx.TransactionType === 'TrustSet') return 'Trust';
+                                  if (tx.TransactionType === 'NFTokenMint') return 'NFT Mint';
+                                  if (tx.TransactionType === 'AMMDeposit') return 'AMM +';
+                                  if (tx.TransactionType === 'AMMWithdraw') return 'AMM -';
                                   
                                   return tx.TransactionType;
                                 })()}
