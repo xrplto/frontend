@@ -6,7 +6,6 @@ import Footer from 'src/components/Footer';
 import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
-import HowWeWork from 'src/TokenList/HowWeWork';
 import { useRouter } from 'next/router';
 import { getTokens } from 'src/utils/extra';
 
@@ -78,9 +77,6 @@ function GainersPage({ data, period }) {
             ) : (
               <></>
             )}
-          </Grid>
-          <Grid item xs={12} md={12} lg={12}>
-            <HowWeWork />
           </Grid>
         </Grid>
       </Container>

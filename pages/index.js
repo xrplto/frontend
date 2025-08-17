@@ -13,7 +13,6 @@ const Topbar = dynamic(() => import('src/components/Topbar'), { ssr: false });
 const Footer = dynamic(() => import('src/components/Footer'), { ssr: false });
 const ScrollToTop = dynamic(() => import('src/components/ScrollToTop'), { ssr: false });
 const Summary = dynamic(() => import('src/TokenList/Summary'));
-const HowWeWork = dynamic(() => import('src/TokenList/HowWeWork'));
 
 // Defer i18n loading
 if (typeof window !== 'undefined') {
@@ -148,9 +147,6 @@ function Overview({ data }) {
             ) : (
               <></>
             )}
-          </Grid>
-          <Grid item xs={12} md={12} lg={12}>
-            <HowWeWork />
           </Grid>
         </Grid>
       </Container>
