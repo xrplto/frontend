@@ -263,6 +263,7 @@ export const FloatingPinnedChart = memo(() => {
   const dragRef = useRef(null);
   const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
+  const [isDraggingState, setIsDraggingState] = useState(false);
   
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -460,48 +461,89 @@ export const FloatingPinnedChart = memo(() => {
     };
   }, [data, activePinnedChart, theme, isDark, isMinimized]);
 
-  // Handle dragging
+  // Handle dragging with mouse and touch support
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isDragging.current || !dragRef.current) return;
+    const handleMove = (e) => {
+      if (!isDragging.current) return;
       
-      const newX = e.clientX - dragStart.current.x;
-      const newY = e.clientY - dragStart.current.y;
+      // Get coordinates from mouse or touch event
+      const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+      const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
       
-      // Constrain to viewport
-      const maxX = window.innerWidth - 320;
-      const maxY = window.innerHeight - 250;
-      const constrainedX = Math.max(0, Math.min(newX, maxX));
-      const constrainedY = Math.max(0, Math.min(newY, maxY));
+      const newX = clientX - dragStart.current.x;
+      const newY = clientY - dragStart.current.y;
+      
+      // Get current chart dimensions
+      const chartWidth = 320;
+      const chartHeight = isMinimized ? 60 : 450; // Approximate heights
+      
+      // Constrain to viewport with smart edge detection
+      const padding = 10;
+      const maxX = window.innerWidth - chartWidth - padding;
+      const maxY = window.innerHeight - chartHeight - padding;
+      
+      // Add magnetic edge snapping
+      const snapThreshold = 15;
+      let constrainedX = Math.max(padding, Math.min(newX, maxX));
+      let constrainedY = Math.max(padding, Math.min(newY, maxY));
+      
+      // Snap to edges if close enough
+      if (constrainedX < snapThreshold) constrainedX = padding;
+      if (constrainedX > maxX - snapThreshold) constrainedX = maxX;
+      if (constrainedY < snapThreshold) constrainedY = padding;
+      if (constrainedY > maxY - snapThreshold) constrainedY = maxY;
       
       setMiniChartPosition({ x: constrainedX, y: constrainedY });
     };
 
-    const handleMouseUp = () => {
+    const handleEnd = () => {
       isDragging.current = false;
+      setIsDraggingState(false);
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
+      // Remove dragging styles
+      if (dragRef.current) {
+        dragRef.current.style.opacity = '';
+      }
     };
 
-    if (isDragging.current) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
+    // Add both mouse and touch event listeners
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchmove', handleMove, { passive: false });
+    document.addEventListener('touchend', handleEnd);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleEnd);
+      document.removeEventListener('touchmove', handleMove);
+      document.removeEventListener('touchend', handleEnd);
     };
-  }, [setMiniChartPosition]);
+  }, [setMiniChartPosition, isMinimized]);
 
   const handleDragStart = (e) => {
+    // Prevent default to avoid text selection on mobile
+    e.preventDefault();
+    
     isDragging.current = true;
+    setIsDraggingState(true);
+    
+    // Get starting coordinates from mouse or touch event
+    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+    
     dragStart.current = {
-      x: e.clientX - miniChartPosition.x,
-      y: e.clientY - miniChartPosition.y
+      x: clientX - miniChartPosition.x,
+      y: clientY - miniChartPosition.y
     };
+    
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'move';
+    
+    // Add visual feedback
+    if (dragRef.current) {
+      dragRef.current.style.opacity = '0.95';
+    }
   };
 
   const handleClose = () => {
@@ -540,7 +582,7 @@ export const FloatingPinnedChart = memo(() => {
 
   return (
     <Paper
-      elevation={6}
+      elevation={isDraggingState ? 12 : 6}
       sx={{
         position: 'fixed',
         left: miniChartPosition.x,
@@ -552,13 +594,18 @@ export const FloatingPinnedChart = memo(() => {
         border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
         borderRadius: 2,
         overflow: 'hidden',
-        transition: 'height 0.3s ease',
+        transition: isDraggingState ? 'none' : 'all 0.3s ease',
+        transform: isDraggingState ? 'scale(1.02)' : 'scale(1)',
+        boxShadow: isDraggingState 
+          ? '0 10px 40px rgba(0,0,0,0.3)' 
+          : undefined,
       }}
     >
       {/* Header */}
       <Box
         ref={dragRef}
         onMouseDown={handleDragStart}
+        onTouchStart={handleDragStart}
         sx={{
           display: 'flex',
           alignItems: 'center',
@@ -568,6 +615,10 @@ export const FloatingPinnedChart = memo(() => {
           borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`,
           cursor: 'move',
           userSelect: 'none',
+          touchAction: 'none',
+          '&:active': {
+            bgcolor: isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+          },
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
