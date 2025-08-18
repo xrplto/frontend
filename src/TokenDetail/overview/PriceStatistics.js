@@ -548,7 +548,7 @@ export default function PriceStatistics({ token }) {
                       </IconButton>
                     </Tooltip>
                   </CopyToClipboard>
-                  {creations > 0 && (
+                  {creations > 0 ? (
                     <Tooltip title="Number of tokens created by this creator.">
                       <Chip
                         label={
@@ -575,7 +575,7 @@ export default function PriceStatistics({ token }) {
                         }}
                       />
                     </Tooltip>
-                  )}
+                  ) : null}
                 </Stack>
               </ModernTableCell>
             </TableRow>
@@ -688,7 +688,7 @@ export default function PriceStatistics({ token }) {
           </TableRow>
 
           {/* Supply Row */}
-          {amount && (
+          {amount ? (
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
@@ -719,10 +719,10 @@ export default function PriceStatistics({ token }) {
                 </Typography>
               </ModernTableCell>
             </TableRow>
-          )}
+          ) : null}
 
           {/* Holders Row */}
-          {holders && (
+          {holders ? (
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
@@ -753,10 +753,10 @@ export default function PriceStatistics({ token }) {
                 </Typography>
               </ModernTableCell>
             </TableRow>
-          )}
+          ) : null}
 
           {/* Trustlines Row */}
-          {trustlines && (
+          {trustlines ? (
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
@@ -787,10 +787,10 @@ export default function PriceStatistics({ token }) {
                 </Typography>
               </ModernTableCell>
             </TableRow>
-          )}
+          ) : null}
 
           {/* Unique Traders (24h) Row */}
-          {uniqueTraders24h && (
+          {uniqueTraders24h ? (
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
@@ -821,10 +821,10 @@ export default function PriceStatistics({ token }) {
                 </Typography>
               </ModernTableCell>
             </TableRow>
-          )}
+          ) : null}
 
           {/* Trades (24h) Row */}
-          {vol24htx && (
+          {vol24htx ? (
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
@@ -855,10 +855,10 @@ export default function PriceStatistics({ token }) {
                 </Typography>
               </ModernTableCell>
             </TableRow>
-          )}
+          ) : null}
 
           {/* Created Date Row */}
-          {(date || dateon) && (
+          {(date || dateon) ? (
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
@@ -886,10 +886,10 @@ export default function PriceStatistics({ token }) {
                 </Typography>
               </ModernTableCell>
             </TableRow>
-          )}
+          ) : null}
 
           {/* Social Links & Tags Row */}
-          {(social || enhancedTags.length > 0) && (
+          {(social || enhancedTags.length > 0) ? (
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
@@ -917,7 +917,7 @@ export default function PriceStatistics({ token }) {
                 </Stack>
               </ModernTableCell>
             </TableRow>
-          )}
+          ) : null}
         </TableBody>
       </StyledTable>
     </Box>
