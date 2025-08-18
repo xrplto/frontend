@@ -94,7 +94,7 @@ export default function CurrencySwithcer() {
     const defaultIndex = availableFiatCurrencies?.indexOf(activeFiatCurrency);
     defaultIndex > -1
       ? setActiveCurrency(availableFiatCurrencies[defaultIndex])
-      : setActiveCurrency(availableFiatCurrencies[0]);
+      : setActiveCurrency('XRP');
   }, [activeFiatCurrency]);
 
   const handleClick = (event) => {

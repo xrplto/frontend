@@ -439,7 +439,7 @@ export const currencySymbols = {
 
 export const currencyConfig = {
   availableFiatCurrencies: ['XRP', 'USD', 'EUR', 'JPY', 'CNY'],
-  activeFiatCurrency: 'USD'
+  activeFiatCurrency: 'XRP'
 };
 
 export const persistJWT = 'UDnaYthx9EJaulSkvfH5qE0q98tp3twQ';

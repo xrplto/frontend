@@ -21,7 +21,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
   const [connecting, setConnecting] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [themeName, setThemeName] = useState('XrplToLightTheme');
-  const [activeFiatCurrency, setActiveFiatCurrency] = useState('USD');
+  const [activeFiatCurrency, setActiveFiatCurrency] = useState('XRP');
   const [accountProfile, setAccountProfile] = useState(null);
   const [profiles, setProfiles] = useState([]);
   const [deletingNfts, setDeletingNfts] = useState([]);
@@ -62,6 +62,10 @@ export function ContextProvider({ children, data, openSnackbar }) {
     
     if (fiatCurrency) {
       setActiveFiatCurrency(fiatCurrency);
+    } else {
+      // Set XRP as default and save to localStorage
+      setActiveFiatCurrency('XRP');
+      window.localStorage.setItem('appFiatCurrency', 'XRP');
     }
     
     // Load the theme
