@@ -574,8 +574,8 @@ const PriceChartAdvanced = memo(({ token }) => {
       
       if (candle) {
         const formatPrice = (p) => {
-          // Scale back the price for tooltip display
-          const actualPrice = p / scaleFactorRef.current;
+          // The candle data is original unscaled data, so don't scale back
+          const actualPrice = p;
           if (actualPrice < 0.000000000001) return actualPrice.toFixed(16);
           if (actualPrice < 0.00000000001) return actualPrice.toFixed(15);
           if (actualPrice < 0.0000000001) return actualPrice.toFixed(14);
