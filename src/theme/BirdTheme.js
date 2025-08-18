@@ -126,6 +126,18 @@ const colors = {
 };
 
 export const BirdTheme = createTheme({
+  typography: {
+    fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+    fontSize: 14,
+    h1: { fontFamily: "'JetBrains Mono', monospace" },
+    h2: { fontFamily: "'JetBrains Mono', monospace" },
+    h3: { fontFamily: "'JetBrains Mono', monospace" },
+    h4: { fontFamily: "'JetBrains Mono', monospace" },
+    h5: { fontFamily: "'JetBrains Mono', monospace" },
+    h6: { fontFamily: "'JetBrains Mono', monospace" },
+    body1: { fontVariantNumeric: "tabular-nums" },
+    body2: { fontVariantNumeric: "tabular-nums" }
+  },
   colors: {
     gradients: colors.gradients,
     shadows: colors.shadows,
@@ -538,35 +550,6 @@ export const BirdTheme = createTheme({
   },
   shape: {
     borderRadius: 4
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontWeight: 600,
-      fontSize: '2rem'
-    },
-    h2: {
-      fontWeight: 500,
-      fontSize: '1.5rem'
-    },
-    h3: {
-      fontWeight: 500,
-      fontSize: '1.25rem'
-    },
-    h4: {
-      fontWeight: 500,
-      fontSize: '1rem'
-    },
-    body1: {
-      fontSize: '0.875rem'
-    },
-    body2: {
-      fontSize: '0.875rem'
-    },
-    button: {
-      fontWeight: 500,
-      letterSpacing: '0.01em'
-    }
   },
   shadows: [
     'none',

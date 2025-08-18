@@ -24,6 +24,18 @@ const createAlphaColors = (color) => ({
 });
 
 export const XrplToDarkTheme = createTheme({
+  typography: {
+    fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+    fontSize: 14,
+    h1: { fontFamily: "'JetBrains Mono', monospace" },
+    h2: { fontFamily: "'JetBrains Mono', monospace" },
+    h3: { fontFamily: "'JetBrains Mono', monospace" },
+    h4: { fontFamily: "'JetBrains Mono', monospace" },
+    h5: { fontFamily: "'JetBrains Mono', monospace" },
+    h6: { fontFamily: "'JetBrains Mono', monospace" },
+    body1: { fontVariantNumeric: "tabular-nums" },
+    body2: { fontVariantNumeric: "tabular-nums" }
+  },
   spacing: 9,
   shape: { borderRadius: 10 },
   

@@ -126,6 +126,18 @@ const colors = {
 };
 
 export const rippleBlueTheme = createTheme({
+  typography: {
+    fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+    fontSize: 14,
+    h1: { fontFamily: "'JetBrains Mono', monospace" },
+    h2: { fontFamily: "'JetBrains Mono', monospace" },
+    h3: { fontFamily: "'JetBrains Mono', monospace" },
+    h4: { fontFamily: "'JetBrains Mono', monospace" },
+    h5: { fontFamily: "'JetBrains Mono', monospace" },
+    h6: { fontFamily: "'JetBrains Mono', monospace" },
+    body1: { fontVariantNumeric: "tabular-nums" },
+    body2: { fontVariantNumeric: "tabular-nums" }
+  },
   colors: {
     gradients: colors.gradients,
     shadows: colors.shadows,
@@ -212,20 +224,6 @@ export const rippleBlueTheme = createTheme({
       lg: 1280,
       xl: 1920
     }
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h1: { fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.02em' },
-    h2: { fontWeight: 700, fontSize: '1.5rem', letterSpacing: '-0.01em' },
-    h3: { fontWeight: 600, fontSize: '1.25rem', letterSpacing: '-0.01em' },
-    h4: { fontWeight: 600, fontSize: '1rem' },
-    h5: { fontWeight: 600, fontSize: '0.875rem' },
-    h6: { fontWeight: 600, fontSize: '0.75rem' },
-    subtitle1: { fontWeight: 500, letterSpacing: '0.01em' },
-    subtitle2: { fontWeight: 500, letterSpacing: '0.01em' },
-    body1: { fontSize: '0.875rem', letterSpacing: '0.005em' },
-    body2: { fontSize: '0.875rem', letterSpacing: '0.005em' },
-    button: { fontWeight: 600, textTransform: 'none', letterSpacing: '0.02em' }
   },
   shape: { borderRadius: 14 },
   shadows: [

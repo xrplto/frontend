@@ -132,6 +132,18 @@ const colors = {
 };
 
 export const BoredApeTheme = createTheme({
+  typography: {
+    fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+    fontSize: 14,
+    h1: { fontFamily: "'JetBrains Mono', monospace" },
+    h2: { fontFamily: "'JetBrains Mono', monospace" },
+    h3: { fontFamily: "'JetBrains Mono', monospace" },
+    h4: { fontFamily: "'JetBrains Mono', monospace" },
+    h5: { fontFamily: "'JetBrains Mono', monospace" },
+    h6: { fontFamily: "'JetBrains Mono', monospace" },
+    body1: { fontVariantNumeric: "tabular-nums" },
+    body2: { fontVariantNumeric: "tabular-nums" }
+  },
   colors: {
     gradients: colors.gradients,
     shadows: colors.shadows,
@@ -639,35 +651,6 @@ export const BoredApeTheme = createTheme({
   },
   shape: {
     borderRadius: 12
-  },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontWeight: 700,
-      fontSize: '2rem'
-    },
-    h2: {
-      fontWeight: 600,
-      fontSize: '1.5rem'
-    },
-    h3: {
-      fontWeight: 600,
-      fontSize: '1.25rem'
-    },
-    h4: {
-      fontWeight: 600,
-      fontSize: '1rem'
-    },
-    body1: {
-      fontSize: '0.875rem'
-    },
-    body2: {
-      fontSize: '0.875rem'
-    },
-    button: {
-      fontWeight: 600,
-      letterSpacing: '0.02em'
-    }
   },
   shadows: [
     'none',

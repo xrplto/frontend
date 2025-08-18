@@ -134,6 +134,18 @@ const colors = {
 };
 
 export const LiquidLedgerTheme = createTheme({
+  typography: {
+    fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+    fontSize: 14,
+    h1: { fontFamily: "'JetBrains Mono', monospace" },
+    h2: { fontFamily: "'JetBrains Mono', monospace" },
+    h3: { fontFamily: "'JetBrains Mono', monospace" },
+    h4: { fontFamily: "'JetBrains Mono', monospace" },
+    h5: { fontFamily: "'JetBrains Mono', monospace" },
+    h6: { fontFamily: "'JetBrains Mono', monospace" },
+    body1: { fontVariantNumeric: "tabular-nums" },
+    body2: { fontVariantNumeric: "tabular-nums" }
+  },
   colors: {
     gradients: colors.gradients,
     shadows: colors.shadows,
@@ -220,34 +232,6 @@ export const LiquidLedgerTheme = createTheme({
       lg: 1280,
       xl: 1920
     }
-  },
-  typography: {
-    fontFamily: '"Inter", "SF Pro Display", "Segoe UI", "Roboto", "Arial", sans-serif',
-    h1: { 
-      fontWeight: 700, 
-      fontSize: '2.5rem', 
-      letterSpacing: '-0.03em',
-      background: colors.gradients.blue1,
-      backgroundClip: 'text',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      textShadow: '0 2px 10px rgba(0,212,230,0.3)'
-    },
-    h2: { 
-      fontWeight: 600, 
-      fontSize: '1.75rem', 
-      letterSpacing: '-0.025em',
-      color: themeColors.primary
-    },
-    h3: { fontWeight: 500, fontSize: '1.25rem', letterSpacing: '-0.015em' },
-    h4: { fontWeight: 500, fontSize: '1rem' },
-    h5: { fontWeight: 500, fontSize: '0.875rem' },
-    h6: { fontWeight: 500, fontSize: '0.75rem' },
-    subtitle1: { fontWeight: 400, letterSpacing: '0.01em' },
-    subtitle2: { fontWeight: 400, letterSpacing: '0.01em' },
-    body1: { fontSize: '0.875rem', letterSpacing: '0.005em', lineHeight: 1.6 },
-    body2: { fontSize: '0.875rem', letterSpacing: '0.005em', lineHeight: 1.6 },
-    button: { fontWeight: 600, textTransform: 'none', letterSpacing: '0.02em' }
   },
   shape: { borderRadius: 12 },
   shadows: [
