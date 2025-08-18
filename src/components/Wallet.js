@@ -178,20 +178,19 @@ const BalanceCard = styled(Card)(({ theme }) => ({
 
 const ReserveCard = styled(Box)(({ theme }) => ({
   background: theme.palette.mode === 'dark' 
-    ? alpha(theme.palette.warning.light, 0.08)
-    : alpha(theme.palette.warning.light, 0.08),
-  border: `2px solid ${alpha(theme.palette.warning.main, 0.15)}`,
-  borderRadius: 16,
-  padding: theme.spacing(2),
+    ? alpha(theme.palette.warning.light, 0.06)
+    : alpha(theme.palette.warning.light, 0.06),
+  border: `1px solid ${alpha(theme.palette.warning.main, 0.12)}`,
+  borderRadius: 12,
+  padding: theme.spacing(1.5),
   backdropFilter: 'blur(20px)',
   boxShadow: `
-    0 8px 24px ${alpha(theme.palette.warning.main, 0.06)}, 
-    0 4px 12px ${alpha(theme.palette.common.black, 0.04)},
-    inset 0 1px 0 ${alpha(theme.palette.common.white, 0.05)}
+    0 4px 12px ${alpha(theme.palette.warning.main, 0.04)}, 
+    inset 0 1px 0 ${alpha(theme.palette.common.white, 0.03)}
   `,
   position: 'relative',
   overflow: 'hidden',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'all 0.2s ease',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -204,15 +203,13 @@ const ReserveCard = styled(Box)(({ theme }) => ({
       ${theme.palette.warning.light} 50%, 
       ${theme.palette.warning.main} 100%
     )`,
-    borderRadius: '16px 16px 0 0',
-    opacity: 0.6,
+    opacity: 0.5,
     zIndex: 1
   },
   '&:hover': {
-    border: `2px solid ${alpha(theme.palette.warning.main, 0.25)}`,
+    border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
     boxShadow: `
-      0 12px 32px ${alpha(theme.palette.warning.main, 0.1)}, 
-      0 6px 16px ${alpha(theme.palette.common.black, 0.06)}
+      0 6px 16px ${alpha(theme.palette.warning.main, 0.08)}
     `
   }
 }));
@@ -501,49 +498,45 @@ export default function Wallet({ style }) {
                 </CardContent>
               </BalanceCard>
 
-              {/* Reserve Information */}
-              <ReserveCard sx={{ mt: 2 }}>
+              {/* Reserve Information - Compact */}
+              <ReserveCard sx={{ mt: 1.5, py: 1, px: 2 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Stack direction="row" alignItems="center" spacing={1}>
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
                     <Typography
-                      variant="body2"
+                      variant="caption"
                       sx={{
                         color: theme.palette.warning.main,
-                        fontWeight: 500,
-                        fontSize: '0.85rem'
+                        fontWeight: 600,
+                        fontSize: '0.75rem'
                       }}
                     >
-                      Account Reserve
+                      Reserve
                     </Typography>
                     <Tooltip
-                      title="The XRP Ledger requires a base reserve of 1 XRP to activate accounts, plus 0.2 XRP for each owned object. This reserve is locked but can be used for transaction fees."
+                      title="XRP Ledger base reserve (1 XRP + 0.2 XRP per object)"
                       arrow
                       placement="top"
                     >
                       <HelpIcon
                         sx={{
-                          width: 16,
-                          height: 16,
+                          width: 14,
+                          height: 14,
                           color: theme.palette.warning.main,
-                          opacity: 0.7
+                          opacity: 0.6
                         }}
                       />
                     </Tooltip>
                   </Stack>
-                  <Box sx={{ textAlign: 'right' }}>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontWeight: 600,
-                        color: theme.palette.warning.main
-                      }}
-                    >
-                      {Number(accountTotalXrp) - Number(accountBalance?.curr1?.value) || '0'} XRP
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Reserved
-                    </Typography>
-                  </Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: 700,
+                      color: theme.palette.warning.main,
+                      fontSize: '0.8rem'
+                    }}
+                  >
+                    {Number(accountTotalXrp) - Number(accountBalance?.curr1?.value) || '0'} XRP
+                  </Typography>
                 </Stack>
               </ReserveCard>
 
