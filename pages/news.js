@@ -677,140 +677,87 @@ function NewsPage() {
             </div>
           </div>
 
+          <Box
+            sx={{
+              background: 'transparent',
+              border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
+              borderRadius: '8px',
+              p: 1.5,
+              mb: 2
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ fontSize: '0.75rem', fontWeight: 600, color: theme.palette.text.secondary, textTransform: 'uppercase' }}>
+                  Market Sentiment
+                </Box>
+                {searchQuery && searchSentimentScore !== null && (
+                  <Box sx={{ 
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    color: theme.palette.primary.main,
+                    px: 0.75,
+                    py: 0.25,
+                    borderRadius: 0.5,
+                    fontSize: '0.65rem',
+                    fontWeight: 600
+                  }}>
+                    {searchSentimentScore}
+                  </Box>
+                )}
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1.5, fontSize: '0.65rem', color: theme.palette.text.secondary }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ width: 6, height: 6, backgroundColor: '#10B981', borderRadius: '50%' }} />
+                  Bull
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ width: 6, height: 6, backgroundColor: '#EF4444', borderRadius: '50%' }} />
+                  Bear
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ width: 6, height: 6, backgroundColor: '#F59E0B', borderRadius: '50%' }} />
+                  Neutral
+                </Box>
+              </Box>
+            </Box>
+            
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1 }}>
+              {[
+                { period: '24H', stats: sentimentStats.last24h },
+                { period: '7D', stats: sentimentStats.last7d },
+                { period: '30D', stats: sentimentStats.last30d },
+                { period: 'ALL', stats: sentimentStats.all }
+              ].map((item) => (
+                <Box key={item.period} sx={{ 
+                  backgroundColor: alpha(theme.palette.background.paper, 0.3),
+                  borderRadius: '6px',
+                  p: 1,
+                  textAlign: 'center'
+                }}>
+                  <Box sx={{ 
+                    fontSize: '0.7rem', 
+                    fontWeight: 700, 
+                    color: theme.palette.text.primary,
+                    mb: 0.5
+                  }}>
+                    {item.period}
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5, fontSize: '0.7rem', fontWeight: 600 }}>
+                    <Box sx={{ color: '#10B981' }}>{item.stats?.bullish || 0}%</Box>
+                    <Box sx={{ color: '#EF4444' }}>{item.stats?.bearish || 0}%</Box>
+                    <Box sx={{ color: '#F59E0B' }}>{item.stats?.neutral || 0}%</Box>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+
           <SourcesMenu
             sources={sourcesStats}
             selectedSource={selectedSource}
             onSourceSelect={handleSourceSelect}
             isSyncWave={isSyncWave}
           />
-
-          <div 
-            className={`${styles.compactSentiment} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
-            style={{
-              background: 'transparent',
-              border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
-              color: theme.palette.text.primary
-            }}
-          >
-            <div className={styles.sentimentHeader}>
-              <span className={styles.sentimentLabel}>
-                SENTIMENT
-                {searchQuery && searchSentimentScore !== null && (
-                  <span className={styles.sentimentScore} style={{ color: theme.palette.primary.main }}>
-                    {searchSentimentScore}
-                  </span>
-                )}
-                {selectedSource && (
-                  <span className={styles.sentimentSource} style={{ color: theme.palette.text.secondary }}>
-                    {selectedSource}
-                  </span>
-                )}
-              </span>
-              <div className={styles.sentimentLegend}>
-                <span className={`${styles.legendItem} ${styles.bullish}`}>Bullish</span>
-                <span className={`${styles.legendItem} ${styles.bearish}`}>Bearish</span>
-                <span className={`${styles.legendItem} ${styles.neutral}`}>Neutral</span>
-              </div>
-            </div>
-            <div className={`${styles.sentimentGrid} ${isMobile ? styles.mobile : ''}`}>
-              <div className={styles.sentimentSummary}>
-                <span 
-                  className={styles.sentimentPeriod}
-                  style={{ 
-                    color: theme.palette.mode === 'dark' ? '#ffffff' : 'rgba(0, 0, 0, 0.7)',
-                    fontWeight: 700
-                  }}
-                >
-                  24H
-                </span>
-                <div className={styles.sentimentValues}>
-                  <span className={`${styles.sentimentValue} ${styles.bullish}`}>
-                    {sentimentStats.last24h?.bullish || 0}%
-                  </span>
-                  <span className={styles.sentimentDivider}>·</span>
-                  <span className={`${styles.sentimentValue} ${styles.bearish}`}>
-                    {sentimentStats.last24h?.bearish || 0}%
-                  </span>
-                  <span className={styles.sentimentDivider}>·</span>
-                  <span className={`${styles.sentimentValue} ${styles.neutral}`}>
-                    {sentimentStats.last24h?.neutral || 0}%
-                  </span>
-                </div>
-              </div>
-              <div className={styles.sentimentSummary}>
-                <span 
-                  className={styles.sentimentPeriod}
-                  style={{ 
-                    color: theme.palette.mode === 'dark' ? '#ffffff' : 'rgba(0, 0, 0, 0.7)',
-                    fontWeight: 700
-                  }}
-                >
-                  7D
-                </span>
-                <div className={styles.sentimentValues}>
-                  <span className={`${styles.sentimentValue} ${styles.bullish}`}>
-                    {sentimentStats.last7d?.bullish || 0}%
-                  </span>
-                  <span className={styles.sentimentDivider}>·</span>
-                  <span className={`${styles.sentimentValue} ${styles.bearish}`}>
-                    {sentimentStats.last7d?.bearish || 0}%
-                  </span>
-                  <span className={styles.sentimentDivider}>·</span>
-                  <span className={`${styles.sentimentValue} ${styles.neutral}`}>
-                    {sentimentStats.last7d?.neutral || 0}%
-                  </span>
-                </div>
-              </div>
-              <div className={styles.sentimentSummary}>
-                <span 
-                  className={styles.sentimentPeriod}
-                  style={{ 
-                    color: theme.palette.mode === 'dark' ? '#ffffff' : 'rgba(0, 0, 0, 0.7)',
-                    fontWeight: 700
-                  }}
-                >
-                  30D
-                </span>
-                <div className={styles.sentimentValues}>
-                  <span className={`${styles.sentimentValue} ${styles.bullish}`}>
-                    {sentimentStats.last30d?.bullish || 0}%
-                  </span>
-                  <span className={styles.sentimentDivider}>·</span>
-                  <span className={`${styles.sentimentValue} ${styles.bearish}`}>
-                    {sentimentStats.last30d?.bearish || 0}%
-                  </span>
-                  <span className={styles.sentimentDivider}>·</span>
-                  <span className={`${styles.sentimentValue} ${styles.neutral}`}>
-                    {sentimentStats.last30d?.neutral || 0}%
-                  </span>
-                </div>
-              </div>
-              <div className={styles.sentimentSummary}>
-                <span 
-                  className={styles.sentimentPeriod}
-                  style={{ 
-                    color: theme.palette.mode === 'dark' ? '#ffffff' : 'rgba(0, 0, 0, 0.7)',
-                    fontWeight: 700
-                  }}
-                >
-                  ALL
-                </span>
-                <div className={styles.sentimentValues}>
-                  <span className={`${styles.sentimentValue} ${styles.bullish}`}>
-                    {sentimentStats.all?.bullish || 0}%
-                  </span>
-                  <span className={styles.sentimentDivider}>·</span>
-                  <span className={`${styles.sentimentValue} ${styles.bearish}`}>
-                    {sentimentStats.all?.bearish || 0}%
-                  </span>
-                  <span className={styles.sentimentDivider}>·</span>
-                  <span className={`${styles.sentimentValue} ${styles.neutral}`}>
-                    {sentimentStats.all?.neutral || 0}%
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <div className={`${styles.newsGrid} ${isDark ? styles.dark : ''}`}>
             {currentItems.map((article) => (
