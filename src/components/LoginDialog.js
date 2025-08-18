@@ -1,17 +1,15 @@
 import React, { useContext, useState } from 'react';
 import { useRouter } from 'next/router';
-import {
-  Box,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Link,
-  Typography,
-  CircularProgress,
-  styled,
-  Stack,
-  Skeleton
-} from '@mui/material';
+import Box from '@mui/material/Box';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import Stack from '@mui/material/Stack';
+import Skeleton from '@mui/material/Skeleton';
+import { styled } from '@mui/material/styles';
 import { isMobile } from 'react-device-detect';
 import { AppContext } from 'src/AppContext';
 

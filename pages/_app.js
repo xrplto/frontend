@@ -43,7 +43,7 @@ if (typeof window !== 'undefined') {
       filename: e.filename,
       lineno: e.lineno,
       colno: e.colno,
-      error: e.error?.stack || e.error,
+      error: e.error?.stack || (typeof e.error === 'object' ? JSON.stringify(e.error) : e.error),
       userAgent: navigator.userAgent,
       timestamp: new Date().toISOString()
     };
@@ -67,7 +67,7 @@ if (typeof window !== 'undefined') {
   window.addEventListener('unhandledrejection', (e) => {
     const errorInfo = {
       type: 'unhandledrejection',
-      reason: e.reason?.toString() || e.reason,
+      reason: typeof e.reason === 'object' ? JSON.stringify(e.reason) : (e.reason?.toString() || e.reason),
       stack: e.reason?.stack,
       userAgent: navigator.userAgent,
       timestamp: new Date().toISOString()

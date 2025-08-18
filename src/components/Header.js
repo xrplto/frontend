@@ -557,14 +557,14 @@ function Header(props) {
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box
-                      component="img"
-                      src="/magneticx-logo.webp"
+                    <Image
+                      src="/magneticx-logo.webp?v=1"
                       alt="Magnetic X"
+                      width={16}
+                      height={16}
+                      quality={85}
                       loading="lazy"
-                      width="16"
-                      height="16"
-                      sx={{ width: 16, height: 16, objectFit: 'contain' }}
+                      style={{ width: 16, height: 16, objectFit: 'contain' }}
                     />
                     <Typography variant="body2" fontSize={14}>Magnetic X</Typography>
                   </Box>
@@ -596,13 +596,14 @@ function Header(props) {
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Image
-                      src="/static/aigentrun.gif"
+                      src="/static/aigentrun.gif?v=1"
                       alt="Aigent.Run"
                       width={16}
                       height={16}
                       sizes="16px"
                       quality={85}
                       loading="lazy"
+                      unoptimized={true}
                       style={{ objectFit: 'contain' }}
                     />
                     <Typography variant="body2" fontSize={14}>aigent.run</Typography>

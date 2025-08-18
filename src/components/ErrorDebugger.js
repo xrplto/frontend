@@ -219,7 +219,7 @@ Thanks!`;
                     borderRadius: 1
                   }}
                 >
-                  {error.error || error.stack}
+                  {typeof error.error === 'object' ? JSON.stringify(error.error, null, 2) : (error.error || error.stack)}
                 </Typography>
               </Box>
             )}

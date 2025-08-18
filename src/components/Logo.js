@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useMemo } from 'react';
 import { Box, useTheme } from '@mui/material';
 import Image from 'next/image';
 
@@ -9,8 +9,12 @@ function Logo({ style }) {
   const theme = useTheme();
   const [imageError, setImageError] = useState(false);
 
-  const img_black = '/logo/xrpl-to-logo-black.svg';
-  const img_white = '/logo/xrpl-to-logo-white.svg';
+  // Memoize logo paths with cache buster for long-term caching
+  const { img_black, img_white } = useMemo(() => ({
+    img_black: '/logo/xrpl-to-logo-black.svg?v=1',
+    img_white: '/logo/xrpl-to-logo-white.svg?v=1'
+  }), []);
+  
   // Use theme.palette.mode as primary check, fallback to darkMode
   const isDark = theme.palette.mode === 'dark' || darkMode;
   const img = isDark ? img_white : img_black;
@@ -54,9 +58,13 @@ function Logo({ style }) {
           height={46}
           alt="XRPL.to Logo"
           priority={true}
+          quality={100}
+          unoptimized={false}
           onError={handleImageError}
           style={{
-            objectFit: 'contain'
+            objectFit: 'contain',
+            width: '100%',
+            height: 'auto'
           }}
         />
       )}
