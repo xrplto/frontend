@@ -14,14 +14,12 @@ import {
   MenuItem,
   Box,
   Typography,
-  Stack,
   Chip,
   styled,
   alpha,
   useTheme
 } from '@mui/material';
 
-// Enhanced styled components
 const SelectorWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -29,65 +27,6 @@ const SelectorWrapper = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(3),
   flexWrap: 'wrap',
   gap: theme.spacing(2)
-}));
-
-const ModernSelect = styled(Select)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.6
-  )} 100%)`,
-  backdropFilter: 'blur(10px)',
-  borderRadius: '12px',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  minWidth: '180px',
-  '& .MuiSelect-select': {
-    padding: theme.spacing(1.5, 2),
-    fontWeight: 600,
-    fontSize: '0.9rem'
-  },
-  '& .MuiOutlinedInput-notchedOutline': {
-    border: 'none'
-  },
-  '&:hover': {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.7
-    )} 100%)`,
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
-  }
-}));
-
-const HeatmapTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '1.2rem',
-  fontWeight: 700,
-  color: theme.palette.text.primary,
-  marginBottom: theme.spacing(1),
-  letterSpacing: '-0.01em'
-}));
-
-const ChartContainer = styled(Box)(({ theme }) => ({
-  borderRadius: '16px',
-  overflow: 'hidden',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.3)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.1
-  )} 100%)`,
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  position: 'relative',
-
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '1px',
-    background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.3)}, ${alpha(
-      theme.palette.success.main,
-      0.3
-    )}, ${alpha(theme.palette.error.main, 0.3)})`,
-    zIndex: 1
-  }
 }));
 
 function CryptoHeatmap({ exchRate }) {
@@ -106,7 +45,7 @@ function CryptoHeatmap({ exchRate }) {
       try {
         const BASE_URL = process.env.API_URL;
         const res = await axios.get(
-          `${BASE_URL}/tokens?start=1&limit=100&sortBy=${sortBy}&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
+          `${BASE_URL}/tokens?start=1&limit=50&sortBy=${sortBy}&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
         );
 
         let data = res.data;
@@ -271,16 +210,18 @@ function CryptoHeatmap({ exchRate }) {
   }), [markets, sortBy, activeFiatCurrency]);
 
   return (
-    <Stack spacing={3}>
+    <>
       <SelectorWrapper>
         <Box>
-          <HeatmapTitle>Token Performance Heatmap</HeatmapTitle>
-          <Typography variant="body2" sx={{ opacity: 0.8, fontSize: '0.85rem' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+            Token Performance Heatmap
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
             Interactive visualization of XRPL token performance
           </Typography>
         </Box>
 
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <Chip
             label={`${markets.length} Tokens`}
             size="small"
@@ -291,15 +232,15 @@ function CryptoHeatmap({ exchRate }) {
             }}
           />
           <FormControl>
-            <ModernSelect value={sortBy} onChange={handleSortChange} displayEmpty size="small">
+            <Select value={sortBy} onChange={handleSortChange} size="small">
               <MenuItem value="vol24hxrp">📊 Sort by Volume</MenuItem>
               <MenuItem value="marketcap">💎 Sort by Market Cap</MenuItem>
-            </ModernSelect>
+            </Select>
           </FormControl>
-        </Stack>
+        </Box>
       </SelectorWrapper>
 
-      <ChartContainer>
+      <Box sx={{ borderRadius: 2, overflow: 'hidden' }}>
         <HighchartsReact
           highcharts={Highcharts}
           options={options}
@@ -310,8 +251,8 @@ function CryptoHeatmap({ exchRate }) {
             }
           }}
         />
-      </ChartContainer>
-    </Stack>
+      </Box>
+    </>
   );
 }
 
