@@ -198,7 +198,7 @@ const RichList = ({ token, amm }) => {
               </TableCell>
               <TableCell align="right">
                 <Typography variant="subtitle2" fontWeight="bold">
-                  24h Balance
+                  24h Change
                 </Typography>
               </TableCell>
             </TableRow>
@@ -308,9 +308,33 @@ const RichList = ({ token, amm }) => {
                     </Typography>
                   </TableCell>
                   <TableCell align="right">
-                    <Typography variant="body2" color="text.secondary">
-                      {holder.balance24h ? formatNumber(holder.balance24h) : '-'}
-                    </Typography>
+                    {holder.balance24h !== undefined && holder.balance24h !== null ? (
+                      (() => {
+                        const change = parseFloat(holder.balance) - parseFloat(holder.balance24h);
+                        const changePercent = holder.balance24h > 0 
+                          ? ((change / parseFloat(holder.balance24h)) * 100).toFixed(2)
+                          : 0;
+                        const isPositive = change >= 0;
+                        
+                        return (
+                          <Typography 
+                            variant="body2" 
+                            fontWeight="600"
+                            sx={{ 
+                              color: isPositive 
+                                ? theme.palette.success.main 
+                                : theme.palette.error.main 
+                            }}
+                          >
+                            {isPositive ? '▲' : '▼'} {formatNumber(Math.abs(change))} ({isPositive ? '+' : ''}{changePercent}%)
+                          </Typography>
+                        );
+                      })()
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        -
+                      </Typography>
+                    )}
                   </TableCell>
                 </TableRow>
               );
