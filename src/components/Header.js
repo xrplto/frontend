@@ -152,7 +152,10 @@ const HeaderWrapper = styled(Box)(
     height: ${theme.spacing(7)};
     margin-bottom: ${theme.spacing(0)};
     border-radius: 0px;
-    position: relative;
+    position: fixed;
+    top: 36px;
+    left: 0;
+    right: 0;
     z-index: 1100;
     background: transparent;
     backdrop-filter: none;
@@ -865,7 +868,7 @@ function Header(props) {
                     />
                   </Link>
                 )}
-                <Wallet style={{ marginRight: '4px' }} />
+                <Wallet style={{ marginRight: '4px' }} buttonOnly={true} />
               </Stack>
             )}
 

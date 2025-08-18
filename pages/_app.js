@@ -8,6 +8,7 @@ import { useSnackbar } from 'src/components/useSnackbar';
 import './zMain.css';
 import { SnackbarProvider } from 'notistack';
 import i18n from 'src/utils/i18n';
+import PageLayout from 'src/components/PageLayout';
 
 // Polyfills for Safari iOS compatibility
 if (typeof window !== 'undefined') {
@@ -91,6 +92,7 @@ const XSnackbar = dynamic(() => import('src/components/Snackbar'), { ssr: false 
 const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), { ssr: false });
 const NextNProgress = dynamic(() => import('nextjs-progressbar'), { ssr: false });
 const PinnedChartTracker = dynamic(() => import('src/components/PinnedChartTracker'), { ssr: false });
+const Wallet = dynamic(() => import('src/components/Wallet'), { ssr: false });
 const ErrorDebugger = dynamic(() => import('src/components/ErrorDebugger').catch(() => null), { 
   ssr: false,
   loading: () => null 
@@ -221,7 +223,9 @@ function XRPLToApp({ Component, pageProps, router }) {
           >
             <PinnedChartTracker>
               <CssBaseline />
-              <Component {...pageProps} />
+              <PageLayout>
+                <Component {...pageProps} />
+              </PageLayout>
               <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
               <TransactionAlert />
               {typeof window !== 'undefined' && ErrorDebugger && <ErrorDebugger />}

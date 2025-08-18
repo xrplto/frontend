@@ -56,7 +56,10 @@ const TopWrapper = styled.header`
   height: 36px;
   background: ${props => props.backgroundColor};
   border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 1099;
   box-shadow: 0 1px 3px rgba(0,0,0,0.12);
   contain: layout style;

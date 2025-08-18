@@ -225,7 +225,7 @@ function truncateAccount(str, length = 9) {
   return str.slice(0, length) + '...' + str.slice(length * -1);
 }
 
-export default function Wallet({ style }) {
+export default function Wallet({ style, embedded = false, onClose, buttonOnly = false }) {
   const theme = useTheme();
   const { t } = useTranslation();
   // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -258,13 +258,318 @@ export default function Wallet({ style }) {
       : getHashIcon(accountLogin);
   }
 
+  // Embedded panel mode - positioned by PageLayout
+  if (embedded && accountProfile && open) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          background: theme.palette.background.paper,
+          borderLeft: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          boxShadow: theme.shadows[2],
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Header Section */}
+        <Box
+          sx={{
+            p: 1.5,
+            pb: 1,
+            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            flexShrink: 0
+          }}
+        >
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+                Wallet Details
+              </Typography>
+            </Stack>
+            
+            <Stack direction="row" spacing={0.5}>
+              <CopyToClipboard
+                text={accountLogin}
+                onCopy={() => openSnackbar('Address copied!', 'success')}
+              >
+                <Tooltip title="Copy Address">
+                  <IconButton 
+                    size="small" 
+                    sx={{ 
+                      '&:hover': { 
+                        background: alpha(theme.palette.primary.main, 0.1) 
+                      }
+                    }}
+                  >
+                    <ContentCopyIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </Tooltip>
+              </CopyToClipboard>
+              <Link
+                underline="none"
+                color="inherit"
+                href={`/setting`}
+                rel="noreferrer noopener nofollow"
+              >
+                <Tooltip title="Settings">
+                  <IconButton 
+                    size="small" 
+                    onClick={() => setOpen(false)}
+                    sx={{ 
+                      '&:hover': { 
+                        background: alpha(theme.palette.primary.main, 0.1) 
+                      }
+                    }}
+                  >
+                    <SettingsIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </Tooltip>
+              </Link>
+              <IconButton 
+                size="small" 
+                onClick={onClose || handleClose}
+                sx={{ 
+                  '&:hover': { 
+                    background: alpha(theme.palette.error.main, 0.1) 
+                  }
+                }}
+              >
+                <CloseIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Stack>
+          </Stack>
+          
+          {accountLogin && (
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                color: alpha(theme.palette.text.secondary, 0.7),
+                fontSize: '0.7rem',
+                display: 'block',
+                mt: 0.25,
+                fontFamily: 'monospace',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+            >
+              {accountLogin.slice(0, 16)}...{accountLogin.slice(-8)}
+            </Typography>
+          )}
+        </Box>
+
+        {/* Scrollable Content */}
+        <Box sx={{ p: 1.5, flex: 1, overflowY: 'auto' }}>
+          {/* Account Info */}
+          <Stack spacing={2}>
+            <Box>
+              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), mb: 0.5, display: 'block' }}>
+                Account
+              </Typography>
+              <Stack direction="row" alignItems="center" spacing={1.5}>
+                <TokenImage
+                  alt="photoURL" 
+                  src={logoImageUrl} 
+                  width={32} 
+                  height={32}
+                />
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {truncateAccount(accountLogin)}
+                  </Typography>
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    <ActiveIndicator />
+                    <Typography variant="caption" sx={{ color: theme.palette.success.main }}>
+                      Active
+                    </Typography>
+                  </Stack>
+                </Box>
+              </Stack>
+            </Box>
+
+            <Divider />
+
+          {/* Balance Section */}
+          <Box>
+            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), mb: 0.5, display: 'block' }}>
+              Portfolio Balance
+            </Typography>
+            <Stack spacing={0.5}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="caption" color="text.secondary">Available</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                  {accountBalance?.curr1?.value || '0'} XRP
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="caption" color="text.secondary">Reserve</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.warning.main }}>
+                  {Number(accountTotalXrp) - Number(accountBalance?.curr1?.value) || '0'} XRP
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="caption" color="text.secondary">Total</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                  {accountTotalXrp || '0'} XRP
+                </Typography>
+              </Box>
+            </Stack>
+
+          </Box>
+
+          <Divider />
+
+          {/* Other Accounts Section */}
+          {profiles.filter((profile) => profile.account !== accountLogin).length > 0 && (
+            <>
+              <Box>
+                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), mb: 0.5, display: 'block' }}>
+                  Other Accounts
+                </Typography>
+              {profiles.map((profile, idx) => {
+                const account = profile.account;
+
+                if (account === accountLogin) return null;
+
+                const accountLogo = profile.logo;
+                const logoImageUrl = accountLogo
+                  ? `https://s1.xrpl.to/profile/${accountLogo}`
+                  : getHashIcon(account);
+
+                return (
+                  <Box
+                    key={'account' + idx}
+                    sx={{
+                      p: 1,
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        background: alpha(theme.palette.primary.main, 0.08)
+                      }
+                    }}
+                    onClick={() => {
+                      setActiveProfile(account);
+                      setOpen(false);
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <TokenImage alt="photoURL" src={logoImageUrl} width={24} height={24} />
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 500, display: 'block' }}>
+                          {truncateAccount(account, 8)}
+                        </Typography>
+                      </Box>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeProfile(account);
+                        }}
+                        sx={{
+                          padding: '2px',
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.error.main, 0.1)
+                          }
+                        }}
+                      >
+                        <CloseIcon sx={{ fontSize: 14 }} />
+                      </IconButton>
+                    </Stack>
+                  </Box>
+                );
+              })}
+              </Box>
+              <Divider />
+            </>
+          )}
+
+          {/* Actions Section */}
+          <Box>
+            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), mb: 0.5, display: 'block' }}>
+              Quick Actions
+            </Typography>
+            <Stack spacing={1}>
+              <Link
+                underline="none"
+                color="inherit"
+                href={`/profile/${accountLogin}`}
+                rel="noreferrer noopener nofollow"
+              >
+                <Button
+                  size="small"
+                  startIcon={<VisibilityIcon />}
+                  onClick={() => setOpen(false)}
+                  sx={{
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    textTransform: 'none',
+                    color: theme.palette.text.primary,
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                    }
+                  }}
+                >
+                  View Full Profile
+                </Button>
+              </Link>
+              
+              <Button
+                size="small"
+                startIcon={<AddCircleOutlineIcon />}
+                onClick={() => setOpenWalletModal(true)}
+                sx={{
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                  textTransform: 'none',
+                  color: theme.palette.text.primary,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                  }
+                }}
+              >
+                Add Account
+              </Button>
+
+              <Button
+                size="small"
+                startIcon={<LogoutIcon />}
+                onClick={handleLogout}
+                sx={{
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                  textTransform: 'none',
+                  color: theme.palette.error.main,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.error.main, 0.08)
+                  }
+                }}
+              >
+                Logout
+              </Button>
+            </Stack>
+          </Box>
+          </Stack>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Default button mode with popover
   return (
     <Box style={style}>
       <Tooltip title={accountProfile ? 'Account Details' : t('Connect Wallet')} arrow>
         <Button
           onClick={() => {
             if (accountProfile) {
-              handleOpen();
+              // If buttonOnly, don't open popover, just toggle the embedded panel
+              if (buttonOnly) {
+                // Just toggle the embedded panel state
+                setOpen(!open);
+              } else {
+                handleOpen();
+              }
             } else {
               setOpenWalletModal(true);
             }
@@ -321,13 +626,15 @@ export default function Wallet({ style }) {
           }}
         >
           <AccountBalanceWalletIcon fontSize="small" sx={{ color: theme.palette.common.white }} />
-          <Typography variant="body2" sx={{ color: theme.palette.common.white, fontWeight: 500 }}>
-            {accountProfile ? truncateAccount(accountLogin, 6) : t('Connect Wallet')}
-          </Typography>
+          {!buttonOnly && (
+            <Typography variant="body2" sx={{ color: theme.palette.common.white, fontWeight: 500 }}>
+              {accountProfile ? truncateAccount(accountLogin, 6) : t('Connect Wallet')}
+            </Typography>
+          )}
         </Button>
       </Tooltip>
 
-      {accountProfile && (
+      {accountProfile && !buttonOnly && (
         <Popover
           open={open}
           onClose={handleClose}
