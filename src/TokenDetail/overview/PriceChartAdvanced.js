@@ -470,19 +470,19 @@ const PriceChartAdvanced = memo(({ token }) => {
           const actualPrice = price / scaleFactorRef.current;
           const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
           
-          // Format based on the actual (unscaled) price
+          // Format based on the actual (unscaled) price with higher precision
           if (actualPrice < 0.000000001) {
-            return symbol + actualPrice.toFixed(6);
+            return symbol + actualPrice.toFixed(10);
           } else if (actualPrice < 0.00001) {
-            return symbol + actualPrice.toFixed(5);
+            return symbol + actualPrice.toFixed(8);
           } else if (actualPrice < 0.001) {
-            return symbol + actualPrice.toFixed(5);
+            return symbol + actualPrice.toFixed(8);
           } else if (actualPrice < 0.01) {
-            return symbol + actualPrice.toFixed(4);
+            return symbol + actualPrice.toFixed(6);
           } else if (actualPrice < 1) {
-            return symbol + actualPrice.toFixed(4);
+            return symbol + actualPrice.toFixed(6);
           } else if (actualPrice < 100) {
-            return symbol + actualPrice.toFixed(3);
+            return symbol + actualPrice.toFixed(4);
           } else {
             return symbol + actualPrice.toFixed(2);
           }
