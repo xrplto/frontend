@@ -401,7 +401,7 @@ export default function Summary() {
         {/* Main Metrics Section */}
         {isLoading ? (
           <div style={{ width: '100%', paddingBottom: '0' }}>
-            <Grid cols={8} mdCols={4} smCols={2}>
+            <Grid cols={8} mdCols={4} smCols={3}>
               {[...Array(7)].map((_, i) => (
                 <MetricBox key={i}>
                   <Skeleton height="12px" width="60%" style={{ marginBottom: '4px' }} />
@@ -412,7 +412,7 @@ export default function Summary() {
           </div>
         ) : (
           <div style={{ width: '100%' }}>
-            <Grid cols={8} mdCols={4} smCols={2}>
+            <Grid cols={8} mdCols={4} smCols={3}>
               <MetricBox>
                 <MetricTitle>Market Cap</MetricTitle>
                 <MetricValue>
@@ -473,19 +473,55 @@ export default function Summary() {
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>Sentiment</MetricTitle>
-                <MetricValue>
-                  {(metrics.global?.sentimentScore || 0).toFixed(1)}
-                </MetricValue>
-                <Stack direction="row" spacing="4px">
+                <MetricTitle>Market Sentiment</MetricTitle>
+                <Stack direction="row" alignItems="center" spacing="8px" style={{ marginBottom: '8px' }}>
+                  <MetricValue style={{ margin: 0, fontSize: '1.25rem' }}>
+                    {(metrics.global?.sentimentScore || 0).toFixed(1)}
+                  </MetricValue>
+                  <div style={{ 
+                    background: `conic-gradient(${
+                      metrics.global?.sentimentScore >= 70 ? '#4ade80' : 
+                      metrics.global?.sentimentScore >= 50 ? '#fbbf24' : '#ef4444'
+                    } ${(metrics.global?.sentimentScore || 0) * 3.6}deg, rgba(255,255,255,0.1) 0deg)`,
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '10px'
+                  }}>
+                    <div style={{
+                      background: darkMode ? '#1c1c1c' : 'white',
+                      borderRadius: '50%',
+                      width: '16px',
+                      height: '16px'
+                    }}></div>
+                  </div>
+                </Stack>
+                <Stack direction="row" alignItems="center" spacing="6px">
                   <Icon 
-                    icon={metrics.global?.sentimentScore >= 50 ? "mdi:emoticon-happy" : "mdi:emoticon-sad"} 
-                    width="14" 
-                    height="14" 
-                    style={{ color: metrics.global?.sentimentScore >= 50 ? '#4ECDC4' : '#f87171' }} 
+                    icon={
+                      metrics.global?.sentimentScore >= 70 ? "mdi:trending-up" :
+                      metrics.global?.sentimentScore >= 50 ? "mdi:trending-neutral" : "mdi:trending-down"
+                    } 
+                    width="16" 
+                    height="16" 
+                    style={{ color: 
+                      metrics.global?.sentimentScore >= 70 ? '#4ade80' :
+                      metrics.global?.sentimentScore >= 50 ? '#fbbf24' : '#ef4444'
+                    }} 
                   />
-                  <ContentTypography>
-                    {metrics.global?.sentimentScore >= 50 ? 'Bullish' : 'Bearish'}
+                  <ContentTypography style={{ 
+                    color: 
+                      metrics.global?.sentimentScore >= 70 ? '#4ade80' :
+                      metrics.global?.sentimentScore >= 50 ? '#fbbf24' : '#ef4444',
+                    fontWeight: 600
+                  }}>
+                    {
+                      metrics.global?.sentimentScore >= 70 ? 'Very Bullish' :
+                      metrics.global?.sentimentScore >= 50 ? 'Bullish' : 'Bearish'
+                    }
                   </ContentTypography>
                 </Stack>
               </MetricBox>
