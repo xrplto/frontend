@@ -14,10 +14,6 @@ const Footer = dynamic(() => import('src/components/Footer'), { ssr: false });
 const ScrollToTop = dynamic(() => import('src/components/ScrollToTop'), { ssr: false });
 const Summary = dynamic(() => import('src/TokenList/Summary'));
 
-// Defer i18n loading
-if (typeof window !== 'undefined') {
-  import('src/utils/i18n');
-}
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `

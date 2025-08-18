@@ -9,9 +9,6 @@ import Summary from 'src/TokenList/Summary';
 import { useRouter } from 'next/router';
 import { getTokens } from 'src/utils/extra';
 
-// import i18n (needs to be bundled ;))
-import 'src/utils/i18n';
-
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
     overflow: hidden;

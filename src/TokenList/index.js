@@ -137,9 +137,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   }, []);
   const router = useRouter();
 
-  // Disable WebSocket in development if causing issues
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  const WSS_FEED_URL = isDevelopment ? null : 'wss://api.xrpl.to/ws/sync';
+  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
   const BASE_URL = process.env.API_URL;
 
   const [filterName, setFilterName] = useState('');

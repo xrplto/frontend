@@ -7,7 +7,7 @@ import { ContextProvider } from 'src/AppContext';
 import { useSnackbar } from 'src/components/useSnackbar';
 import './zMain.css';
 import { SnackbarProvider } from 'notistack';
-import 'src/utils/i18n';
+import i18n from 'src/utils/i18n';
 
 // Polyfills for Safari iOS compatibility
 if (typeof window !== 'undefined') {

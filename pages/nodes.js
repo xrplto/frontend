@@ -28,7 +28,6 @@ import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import 'src/utils/i18n';
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
