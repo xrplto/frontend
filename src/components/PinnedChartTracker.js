@@ -65,6 +65,8 @@ const saveState = (state) => {
     const serializedState = JSON.stringify({
       pinnedCharts: state.pinnedCharts,
       miniChartPosition: state.miniChartPosition,
+      isVisible: state.isVisible,
+      isMinimized: state.isMinimized,
     });
     localStorage.setItem('pinnedChartsTracker', serializedState);
   } catch (err) {
@@ -81,13 +83,13 @@ export const PinnedChartProvider = ({ children }) => {
   const [miniChartPosition, setMiniChartPosition] = useState(
     persistedState?.miniChartPosition || { x: 20, y: 80 }
   );
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
+  const [isMinimized, setIsMinimized] = useState(persistedState?.isMinimized || false);
+  const [isVisible, setIsVisible] = useState(persistedState?.isVisible !== false);
 
   // Save to localStorage whenever state changes
   useEffect(() => {
-    saveState({ pinnedCharts, miniChartPosition });
-  }, [pinnedCharts, miniChartPosition]);
+    saveState({ pinnedCharts, miniChartPosition, isVisible, isMinimized });
+  }, [pinnedCharts, miniChartPosition, isVisible, isMinimized]);
 
   // Rehydrate on mount
   useEffect(() => {
@@ -96,6 +98,8 @@ export const PinnedChartProvider = ({ children }) => {
       setPinnedCharts(saved.pinnedCharts || []);
       setActivePinnedChart(saved.pinnedCharts?.[0] || null);
       setMiniChartPosition(saved.miniChartPosition || { x: 20, y: 80 });
+      setIsVisible(saved.isVisible !== false);
+      setIsMinimized(saved.isMinimized || false);
     }
   }, []);
 
@@ -395,7 +399,7 @@ export const FloatingPinnedChart = memo(() => {
 
   // Fetch data for active chart
   useEffect(() => {
-    if (!activePinnedChart || isMinimized) return;
+    if (!activePinnedChart) return;
     
     const controller = new AbortController();
     
@@ -439,7 +443,7 @@ export const FloatingPinnedChart = memo(() => {
       controller.abort();
       clearInterval(interval);
     };
-  }, [activePinnedChart, selectedRange, BASE_URL, isMinimized]);
+  }, [activePinnedChart, selectedRange, BASE_URL]);
 
   // Swap execution function - following exact pattern from swap/index.js
   const onSwap = async () => {
@@ -1327,7 +1331,7 @@ export const FloatingPinnedChart = memo(() => {
     setAnchorEl(null);
   };
 
-  if (!isVisible || pinnedCharts.length === 0 || !activePinnedChart) {
+  if (pinnedCharts.length === 0 || !activePinnedChart) {
     return null;
   }
 
@@ -1344,7 +1348,7 @@ export const FloatingPinnedChart = memo(() => {
         position: 'fixed',
         left: miniChartPosition.x,
         top: miniChartPosition.y,
-        width: 320,
+        width: isVisible ? 320 : 160,
         zIndex: 1300,
         bgcolor: isDark ? 'rgba(18, 18, 18, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(10px)',
@@ -1398,14 +1402,18 @@ export const FloatingPinnedChart = memo(() => {
         </Box>
         
         <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <IconButton size="small" onClick={handleMinimize}>
-            {isMinimized ? <ExpandMoreIcon fontSize="small" /> : <ExpandLessIcon fontSize="small" />}
-          </IconButton>
-          <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)}>
-            <MoreVertIcon fontSize="small" />
-          </IconButton>
+          {isVisible && (
+            <>
+              <IconButton size="small" onClick={handleMinimize}>
+                {isMinimized ? <ExpandMoreIcon fontSize="small" /> : <ExpandLessIcon fontSize="small" />}
+              </IconButton>
+              <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)}>
+                <MoreVertIcon fontSize="small" />
+              </IconButton>
+            </>
+          )}
           <IconButton size="small" onClick={handleClose}>
-            <CloseIcon fontSize="small" />
+            {isVisible ? <CloseIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
           </IconButton>
         </Box>
       </Box>
@@ -1461,7 +1469,7 @@ export const FloatingPinnedChart = memo(() => {
       </Menu>
 
       {/* Chart Content */}
-      <Collapse in={!isMinimized}>
+      {isVisible && <Collapse in={!isMinimized}>
         <Box sx={{ p: 1 }}>
           {/* Range selector */}
           <ButtonGroup size="small" fullWidth sx={{ mb: 1 }}>
@@ -1726,7 +1734,7 @@ export const FloatingPinnedChart = memo(() => {
             </Box>
           )}
         </Box>
-      </Collapse>
+      </Collapse>}
     </Paper>
 
     {/* QR Dialog for xaman/xumm transactions */}
