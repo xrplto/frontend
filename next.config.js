@@ -186,32 +186,6 @@ module.exports = {
       }
     ];
   },
-  // Commented out broken rewrites - these destinations don't exist
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: '/most-viewed-tokens',
-  //       destination: '/rankings/most-viewed-tokens'
-  //     },
-  //     {
-  //       source: '/best-tokens',
-  //       destination: '/rankings/best-tokens'
-  //     },
-  //     {
-  //       source: '/trending-tokens',
-  //       destination: '/rankings/trending-tokens'
-  //     },
-  //     {
-  //       source: '/gainers-losers',
-  //       destination: '/rankings/gainers-losers'
-  //     },
-  //     {
-  //       source: '/new',
-  //       destination: '/rankings/new'
-  //     }
-  //   ];
-  // },
-  // Add performance optimizations
   reactStrictMode: true,
   compress: true,
   // Webpack config - keep it simple to avoid conflicts
