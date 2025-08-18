@@ -478,7 +478,19 @@ const PriceChartAdvanced = memo(({ token }) => {
           const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
           
           // Format based on the actual (unscaled) price with higher precision
-          if (actualPrice < 0.000000001) {
+          if (actualPrice < 0.000000000001) {
+            return symbol + actualPrice.toFixed(16);
+          } else if (actualPrice < 0.00000000001) {
+            return symbol + actualPrice.toFixed(15);
+          } else if (actualPrice < 0.0000000001) {
+            return symbol + actualPrice.toFixed(14);
+          } else if (actualPrice < 0.000000001) {
+            return symbol + actualPrice.toFixed(13);
+          } else if (actualPrice < 0.00000001) {
+            return symbol + actualPrice.toFixed(12);
+          } else if (actualPrice < 0.0000001) {
+            return symbol + actualPrice.toFixed(11);
+          } else if (actualPrice < 0.000001) {
             return symbol + actualPrice.toFixed(10);
           } else if (actualPrice < 0.00001) {
             return symbol + actualPrice.toFixed(8);
@@ -561,7 +573,23 @@ const PriceChartAdvanced = memo(({ token }) => {
       const candle = currentData ? currentData.find(d => d.time === param.time) : null;
       
       if (candle) {
-        const formatPrice = (p) => p < 0.01 ? p.toFixed(8) : p.toFixed(4);
+        const formatPrice = (p) => {
+          // Scale back the price for tooltip display
+          const actualPrice = p / scaleFactorRef.current;
+          if (actualPrice < 0.000000000001) return actualPrice.toFixed(16);
+          if (actualPrice < 0.00000000001) return actualPrice.toFixed(15);
+          if (actualPrice < 0.0000000001) return actualPrice.toFixed(14);
+          if (actualPrice < 0.000000001) return actualPrice.toFixed(13);
+          if (actualPrice < 0.00000001) return actualPrice.toFixed(12);
+          if (actualPrice < 0.0000001) return actualPrice.toFixed(11);
+          if (actualPrice < 0.000001) return actualPrice.toFixed(10);
+          if (actualPrice < 0.00001) return actualPrice.toFixed(8);
+          if (actualPrice < 0.001) return actualPrice.toFixed(8);
+          if (actualPrice < 0.01) return actualPrice.toFixed(6);
+          if (actualPrice < 1) return actualPrice.toFixed(6);
+          if (actualPrice < 100) return actualPrice.toFixed(4);
+          return actualPrice.toFixed(2);
+        };
         
         if (chartType === 'candles') {
           const change = ((candle.close - candle.open) / candle.open * 100).toFixed(2);
