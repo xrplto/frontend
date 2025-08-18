@@ -50,8 +50,27 @@ const ErrorDebugger = () => {
   }, []);
 
   // Show debug floating button only if there are errors
+  // On mobile, auto-open dialog if there are recent errors (within last 30 seconds)
   useEffect(() => {
     setShowDebugInfo(errors.length > 0);
+    
+    // Auto-open on mobile for recent errors to replace generic Next.js message
+    if (errors.length > 0) {
+      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+      const recentErrors = errors.filter(error => {
+        if (!error.timestamp) return false;
+        const errorTime = new Date(error.timestamp);
+        const now = new Date();
+        return (now - errorTime) < 30000; // Within last 30 seconds
+      });
+      
+      if (isMobile && recentErrors.length > 0) {
+        // Small delay to ensure error logging is complete
+        setTimeout(() => {
+          setOpen(true);
+        }, 1000);
+      }
+    }
   }, [errors.length]);
 
   const clearErrors = () => {
@@ -272,6 +291,18 @@ const ErrorDebugger = () => {
                 <Typography variant="body2" color="text.secondary">
                   Tip: Press Ctrl/Cmd + Shift + D to open this debugger anytime
                 </Typography>
+                
+                {/* Show latest error message prominently on mobile */}
+                {/Mobi|Android/i.test(navigator.userAgent) && errors.length > 0 && (
+                  <Box sx={{ mt: 2, p: 2, bgcolor: 'error.light', borderRadius: 1 }}>
+                    <Typography variant="subtitle2" gutterBottom color="error.dark">
+                      Latest Error:
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                      {errors[errors.length - 1].message || errors[errors.length - 1].reason || 'Unknown error occurred'}
+                    </Typography>
+                  </Box>
+                )}
               </Box>
               
               {errors.slice().reverse().map((error, index) => formatError(error, index))}
