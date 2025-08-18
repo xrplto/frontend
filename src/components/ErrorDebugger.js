@@ -17,6 +17,8 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import EmailIcon from '@mui/icons-material/Email';
 
 const ErrorDebugger = () => {
   const [open, setOpen] = useState(false);
@@ -123,6 +125,44 @@ const ErrorDebugger = () => {
     return JSON.stringify(report, null, 2);
   };
 
+  const generateErrorSummary = () => {
+    if (errors.length === 0) return 'No errors found';
+    
+    const latestError = errors[errors.length - 1];
+    const errorMsg = latestError.message || latestError.reason || 'Unknown error';
+    const deviceInfo = `${getDeviceInfo().platform} ${getDeviceInfo().userAgent.split(' ')[0]}`;
+    
+    return `Error on xrpl.to: ${errorMsg.substring(0, 100)}${errorMsg.length > 100 ? '...' : ''} (${deviceInfo})`;
+  };
+
+  const reportToTwitter = () => {
+    const summary = generateErrorSummary();
+    const tweetText = `@xrplto Hey we found an error: ${summary}`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+    window.open(twitterUrl, '_blank');
+  };
+
+  const reportToEmail = () => {
+    const summary = generateErrorSummary();
+    const fullReport = generateReport();
+    const subject = 'Error Report from xrpl.to';
+    const body = `Hi XRPL.to team,
+
+We found an error on your site:
+
+${summary}
+
+Full Error Report:
+${fullReport}
+
+Please let us know if you need any additional information.
+
+Thanks!`;
+    
+    const mailtoUrl = `mailto:hello@xrpl.to?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+  };
+
   const formatError = (error, index) => {
     const timeAgo = error.timestamp ? 
       new Date(Date.now() - new Date(error.timestamp).getTime()).toISOString().substr(11, 8) : 
@@ -191,13 +231,56 @@ const ErrorDebugger = () => {
               </Typography>
             </Box>
             
-            <Button 
-              size="small" 
-              onClick={() => copyToClipboard(JSON.stringify(error, null, 2))}
-              variant="outlined"
-            >
-              Copy Error Details
-            </Button>
+            <Stack direction="row" spacing={1} flexWrap="wrap">
+              <Button 
+                size="small" 
+                onClick={() => copyToClipboard(JSON.stringify(error, null, 2))}
+                variant="outlined"
+              >
+                Copy Details
+              </Button>
+              <Button 
+                size="small"
+                startIcon={<TwitterIcon />}
+                onClick={() => {
+                  const errorMsg = error.message || error.reason || 'Unknown error';
+                  const tweetText = `@xrplto Hey we found an error: ${errorMsg.substring(0, 100)}${errorMsg.length > 100 ? '...' : ''}`;
+                  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+                  window.open(twitterUrl, '_blank');
+                }}
+                variant="outlined"
+                sx={{ color: '#1DA1F2', borderColor: '#1DA1F2' }}
+              >
+                Tweet
+              </Button>
+              <Button 
+                size="small"
+                startIcon={<EmailIcon />}
+                onClick={() => {
+                  const errorMsg = error.message || error.reason || 'Unknown error';
+                  const subject = 'Error Report from xrpl.to';
+                  const body = `Hi XRPL.to team,
+
+We found this error on your site:
+
+Error: ${errorMsg}
+File: ${error.filename || 'Unknown'}:${error.lineno || 0}:${error.colno || 0}
+User Agent: ${error.userAgent || navigator.userAgent}
+Timestamp: ${error.timestamp || new Date().toISOString()}
+
+Stack Trace:
+${error.error || error.stack || 'No stack trace available'}
+
+Thanks!`;
+                  
+                  const mailtoUrl = `mailto:hello@xrpl.to?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                  window.location.href = mailtoUrl;
+                }}
+                variant="outlined"
+              >
+                Email
+              </Button>
+            </Stack>
           </Stack>
         </AccordionDetails>
       </Accordion>
@@ -311,15 +394,43 @@ const ErrorDebugger = () => {
         </DialogContent>
         
         <DialogActions>
-          <Button onClick={() => copyToClipboard(generateReport())}>
-            Copy Full Report
-          </Button>
-          <Button onClick={clearErrors} color="warning">
-            Clear All Errors
-          </Button>
-          <Button onClick={() => setOpen(false)} variant="contained">
-            Close
-          </Button>
+          <Stack direction="row" spacing={1} sx={{ width: '100%', justifyContent: 'space-between' }}>
+            <Stack direction="row" spacing={1}>
+              {errors.length > 0 && (
+                <>
+                  <Button 
+                    startIcon={<TwitterIcon />}
+                    onClick={reportToTwitter}
+                    size="small"
+                    variant="outlined"
+                    sx={{ color: '#1DA1F2', borderColor: '#1DA1F2' }}
+                  >
+                    Tweet Error
+                  </Button>
+                  <Button 
+                    startIcon={<EmailIcon />}
+                    onClick={reportToEmail}
+                    size="small"
+                    variant="outlined"
+                  >
+                    Email Error
+                  </Button>
+                </>
+              )}
+              <Button onClick={() => copyToClipboard(generateReport())} size="small">
+                Copy Report
+              </Button>
+            </Stack>
+            
+            <Stack direction="row" spacing={1}>
+              <Button onClick={clearErrors} color="warning" size="small">
+                Clear All
+              </Button>
+              <Button onClick={() => setOpen(false)} variant="contained" size="small">
+                Close
+              </Button>
+            </Stack>
+          </Stack>
         </DialogActions>
       </Dialog>
     </>
