@@ -332,7 +332,7 @@ const WalletDetails = styled('div')(
 
 const WalletAddress = styled(Typography)(
   ({ theme }) => `
-    font-family: 'Courier New', monospace;
+    font-family: inherit;
     font-size: 0.75rem;
     font-weight: 600;
     color: ${theme.palette.mode === 'dark' ? 'white' : 'black'};

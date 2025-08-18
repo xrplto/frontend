@@ -7,8 +7,6 @@ export default function Document() {
         {/* Critical preconnects for performance */}
         <link rel="preconnect" href="https://api.xrpnft.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://s1.xrpnft.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
         {/* DNS prefetch for additional resources */}
         <link rel="dns-prefetch" href="https://xrpl.to" />

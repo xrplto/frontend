@@ -132,7 +132,7 @@ const MetricValue = styled.span`
   color: ${props => props.theme?.palette?.text?.primary || '#212B36'};
   line-height: 1.2;
   margin-bottom: 4px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: inherit;
   letter-spacing: -0.02em;
   
   @media (max-width: 600px) {
@@ -150,7 +150,7 @@ const PercentageChange = styled.span`
   align-items: flex-start;
   gap: 3px;
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: inherit;
   
   @media (max-width: 600px) {
     font-size: 0.7rem;

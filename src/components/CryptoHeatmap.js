@@ -245,7 +245,7 @@ function CryptoHeatmap({ exchRate }) {
         }${Math.abs(priceChange).toFixed(1)}%</span>`;
 
         return `
-          <div style="color:#fff;font-family:system-ui,-apple-system,sans-serif;font-size:12px;padding:16px;min-width:200px;">
+          <div style="color:#fff;font-family:inherit;font-size:12px;padding:16px;min-width:200px;">
             <div style="font-weight:700;margin-bottom:12px;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;">
               ${verifiedBadge}${nameDisplay}
             </div>

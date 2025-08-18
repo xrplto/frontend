@@ -189,7 +189,7 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
             color: '#ffffff',
             fontSize: 13,
             fontWeight: 600,
-            fontFamily: 'monospace'
+            fontFamily: 'inherit'
           },
           formatter: function (params) {
             if (!params || !params[0]) return '';
@@ -220,12 +220,12 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, animation = true, 
 
             return `
               <div style="padding: 8px 12px; background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(15,15,35,0.95) 100%); border: 1px solid ${glowColor}; border-radius: 8px; box-shadow: 0 0 20px ${alpha(glowColor, 0.3)};">
-                <div style="color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-family: monospace;">
+                <div style="color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-family: inherit;">
                   ${formattedDate}
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="color: ${trendColor}; font-size: 16px; text-shadow: 0 0 10px ${trendColor};">${trendIcon}</span>
-                  <span style="font-weight: 700; color: #ffffff; font-family: monospace; text-shadow: 0 0 10px ${glowColor};">
+                  <span style="font-weight: 700; color: #ffffff; font-family: inherit; text-shadow: 0 0 10px ${glowColor};">
                     ${originalPrice}
                   </span>
                 </div>

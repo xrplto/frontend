@@ -195,14 +195,14 @@ const MetricLabel = styled.span`
   text-transform: uppercase;
   letter-spacing: 0.5px;
   line-height: 1;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
 `;
 
 const MetricValue = styled.span`
   font-weight: 600;
   font-size: 0.85rem;
   line-height: 1;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   letter-spacing: -0.01em;
   color: ${props => props.color || props.textPrimary};
 `;
@@ -341,7 +341,7 @@ const TokenImage = styled.img`
 `;
 
 const Typography = styled.span`
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   font-size: ${props => props.variant === 'caption' ? '0.75rem' : '0.875rem'};
   font-weight: ${props => props.fontWeight || 400};
   color: ${props => props.color || 'inherit'};
