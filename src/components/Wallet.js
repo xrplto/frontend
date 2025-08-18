@@ -558,86 +558,63 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // Default button mode with popover
   return (
-    <Box style={style}>
-      <Tooltip title={accountProfile ? 'Account Details' : t('Connect Wallet')} arrow>
-        <Button
-          onClick={() => {
-            if (accountProfile) {
-              // If buttonOnly, don't open popover, just toggle the embedded panel
-              if (buttonOnly) {
-                // Just toggle the embedded panel state
-                setOpen(!open);
-              } else {
-                handleOpen();
-              }
+    <div style={style}>
+      <button
+        onClick={() => {
+          if (accountProfile) {
+            // If buttonOnly, don't open popover, just toggle the embedded panel
+            if (buttonOnly) {
+              // Just toggle the embedded panel state
+              setOpen(!open);
             } else {
-              setOpenWalletModal(true);
+              handleOpen();
             }
-          }}
-          ref={anchorRef}
-          sx={{
-            background: accountProfile
-              ? `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`
-              : theme.palette.mode === 'dark' ? theme.palette.common.black : theme.palette.background.paper,
-            backdropFilter: 'blur(10px)',
-            border: accountProfile
-              ? `1px solid ${alpha(theme.palette.success.main, 0.3)}`
-              : `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
-            borderRadius: '12px',
-            height: '32px',
-            minWidth: 'unset',
-            padding: '6px 12px',
-            color: theme.palette.common.white,
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            fontSize: '0.875rem',
-            fontWeight: 500,
-            position: 'relative',
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: '-100%',
-              width: '100%',
-              height: '100%',
-              background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.common.white, 0.1)}, transparent)`,
-              transition: 'left 0.6s ease'
-            },
-            '&:hover': {
-              color: theme.palette.common.white,
-              background: accountProfile
-                ? `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`
-                : theme.palette.mode === 'dark' ? alpha(theme.palette.common.black, 0.8) : alpha(theme.palette.background.paper, 0.8),
-              border: accountProfile
-                ? `1px solid ${alpha(theme.palette.success.main, 0.5)}`
-                : `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
-              transform: 'translateY(-2px)',
-              boxShadow: accountProfile
-                ? `0 8px 24px ${alpha(theme.palette.success.main, 0.4)}, 0 4px 12px ${alpha(theme.palette.success.main, 0.2)}`
-                : `0 8px 24px ${alpha(theme.palette.common.black, 0.4)}, 0 4px 12px ${alpha(theme.palette.common.black, 0.2)}`,
-              cursor: 'pointer',
-              '&::before': {
-                left: '100%'
-              }
-            },
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}
-        >
-          <AccountBalanceWalletIcon fontSize="small" sx={{ color: theme.palette.common.white }} />
-          {accountProfile && (
-            <Typography variant="body2" sx={{ color: theme.palette.common.white, fontWeight: 500 }}>
-              {truncateAccount(accountLogin, 6)}
-            </Typography>
-          )}
-          {!accountProfile && !buttonOnly && (
-            <Typography variant="body2" sx={{ color: theme.palette.common.white, fontWeight: 500 }}>
-              {t('Connect Wallet')}
-            </Typography>
-          )}
-        </Button>
-      </Tooltip>
+          } else {
+            setOpenWalletModal(true);
+          }
+        }}
+        ref={anchorRef}
+        style={{
+          background: accountProfile ? '#00b894' : theme.palette.mode === 'dark' ? '#2d3436' : '#ffffff',
+          border: accountProfile ? '1px solid #00a085' : `1px solid ${theme.palette.mode === 'dark' ? '#636e72' : '#ddd'}`,
+          borderRadius: '6px',
+          height: '32px',
+          padding: '0 12px',
+          color: accountProfile ? '#ffffff' : theme.palette.mode === 'dark' ? '#ffffff' : '#2d3436',
+          fontSize: '14px',
+          fontWeight: '500',
+          fontFamily: 'inherit',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          transition: 'all 0.2s ease',
+          outline: 'none'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.opacity = '0.9';
+          e.target.style.transform = 'translateY(-1px)';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }}
+        title={accountProfile ? 'Account Details' : t('Connect Wallet')}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21,18V19A2,2 0 0,1 19,21H5C3.89,21 3,20.1 3,19V5A2,2 0 0,1 5,3H19A2,2 0 0,1 21,5V6H12C10.89,6 10,6.9 10,8V16A2,2 0 0,0 12,18M12,16H22V8H12M16,13.5A1.5,1.5 0 0,1 14.5,12A1.5,1.5 0 0,1 16,10.5A1.5,1.5 0 0,1 17.5,12A1.5,1.5 0 0,1 16,13.5Z" />
+        </svg>
+        {accountProfile && (
+          <span style={{ fontFamily: 'monospace' }}>
+            {truncateAccount(accountLogin, 6)}
+          </span>
+        )}
+        {!accountProfile && !buttonOnly && (
+          <span>
+            {t('Connect Wallet')}
+          </span>
+        )}
+      </button>
 
       {accountProfile && !buttonOnly && (
         <Popover
@@ -1152,6 +1129,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           </StyledPopoverPaper>
         </Popover>
       )}
-    </Box>
+    </div>
   );
 }
