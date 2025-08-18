@@ -9,11 +9,64 @@ import './zMain.css';
 import { SnackbarProvider } from 'notistack';
 import 'src/utils/i18n';
 
+// Error logging for mobile debugging
+if (typeof window !== 'undefined') {
+  // Capture and log unhandled errors
+  window.addEventListener('error', (e) => {
+    const errorInfo = {
+      message: e.message,
+      filename: e.filename,
+      lineno: e.lineno,
+      colno: e.colno,
+      error: e.error?.stack || e.error,
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Log to console for mobile Safari debugging
+    console.error('Global Error:', errorInfo);
+    
+    // Store error in localStorage for later retrieval
+    try {
+      const errors = JSON.parse(localStorage.getItem('errorLogs') || '[]');
+      errors.push(errorInfo);
+      // Keep only last 10 errors
+      if (errors.length > 10) errors.shift();
+      localStorage.setItem('errorLogs', JSON.stringify(errors));
+    } catch (err) {
+      console.error('Failed to log error to localStorage:', err);
+    }
+  });
+
+  // Capture unhandled promise rejections
+  window.addEventListener('unhandledrejection', (e) => {
+    const errorInfo = {
+      type: 'unhandledrejection',
+      reason: e.reason?.toString() || e.reason,
+      stack: e.reason?.stack,
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString()
+    };
+    
+    console.error('Unhandled Rejection:', errorInfo);
+    
+    try {
+      const errors = JSON.parse(localStorage.getItem('errorLogs') || '[]');
+      errors.push(errorInfo);
+      if (errors.length > 10) errors.shift();
+      localStorage.setItem('errorLogs', JSON.stringify(errors));
+    } catch (err) {
+      console.error('Failed to log rejection to localStorage:', err);
+    }
+  });
+}
+
 // Lazy load non-critical components
 const XSnackbar = dynamic(() => import('src/components/Snackbar'), { ssr: false });
 const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), { ssr: false });
 const NextNProgress = dynamic(() => import('nextjs-progressbar'), { ssr: false });
 const PinnedChartTracker = dynamic(() => import('src/components/PinnedChartTracker'), { ssr: false });
+const ErrorDebugger = dynamic(() => import('src/components/ErrorDebugger'), { ssr: false });
 
 // Move static schema outside component to prevent recreation
 const jsonLdSchema = {
@@ -65,7 +118,7 @@ function XRPLToApp({ Component, pageProps, router }) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta
           name="viewport"
-          content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, user-scalable=0"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
         />
         <meta name="robots" content="index, follow" />
         <meta name="language" content="en" />
@@ -143,6 +196,7 @@ function XRPLToApp({ Component, pageProps, router }) {
               <Component {...pageProps} />
               <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
               <TransactionAlert />
+              <ErrorDebugger />
             </PinnedChartTracker>
           </SnackbarProvider>
         </ThemeProvider>
