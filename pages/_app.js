@@ -91,7 +91,10 @@ const XSnackbar = dynamic(() => import('src/components/Snackbar'), { ssr: false 
 const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), { ssr: false });
 const NextNProgress = dynamic(() => import('nextjs-progressbar'), { ssr: false });
 const PinnedChartTracker = dynamic(() => import('src/components/PinnedChartTracker'), { ssr: false });
-const ErrorDebugger = dynamic(() => import('src/components/ErrorDebugger'), { ssr: false });
+const ErrorDebugger = dynamic(() => import('src/components/ErrorDebugger').catch(() => null), { 
+  ssr: false,
+  loading: () => null 
+});
 
 // Move static schema outside component to prevent recreation
 const jsonLdSchema = {
@@ -221,7 +224,7 @@ function XRPLToApp({ Component, pageProps, router }) {
               <Component {...pageProps} />
               <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
               <TransactionAlert />
-              <ErrorDebugger />
+              {typeof window !== 'undefined' && ErrorDebugger && <ErrorDebugger />}
             </PinnedChartTracker>
           </SnackbarProvider>
         </ThemeProvider>

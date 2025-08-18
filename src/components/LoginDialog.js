@@ -79,7 +79,7 @@ export default function LoginDialog(props) {
   
 
   return (
-    <Stack onClose={handleClose} open={open}>
+    <Dialog onClose={handleClose} open={open}>
       <DialogTitle>
         <Typography variant="modal" align="center" gutterBottom>
           Xaman Wallet
@@ -136,6 +136,6 @@ export default function LoginDialog(props) {
           )}
         </StyledDialogContent>
       </Dialog>
-    </Stack>
+    </Dialog>
   );
 }
