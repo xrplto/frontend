@@ -1,18 +1,15 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo } from 'react';
 import { Box, Container, Grid, styled, Toolbar, useMediaQuery } from '@mui/material';
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { getTokens } from 'src/utils/extra';
 
-// Eager load critical components
+// Import all components directly
 import Header from 'src/components/Header';
 import TokenList from 'src/TokenList';
-
-// Lazy load non-critical components
-const Topbar = dynamic(() => import('src/components/Topbar'), { ssr: false });
-const Footer = dynamic(() => import('src/components/Footer'), { ssr: false });
-const ScrollToTop = dynamic(() => import('src/components/ScrollToTop'), { ssr: false });
-const Summary = dynamic(() => import('src/TokenList/Summary'));
+import Topbar from 'src/components/Topbar';
+import Footer from 'src/components/Footer';
+import ScrollToTop from 'src/components/ScrollToTop';
+import Summary from 'src/TokenList/Summary';
 
 
 const OverviewWrapper = styled(Box)(

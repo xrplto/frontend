@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { performance } from 'perf_hooks';
 import { useState, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
 
@@ -133,7 +132,8 @@ export async function getServerSideProps(ctx) {
     slug = params[0];
     tab = params[1];
 
-    var t1 = performance.now();
+    // Use performance API if available (Node.js 16+ has it globally)
+    const t1 = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
     // https://api.xrpl.to/api/token/bitstamp-usd
     const res = await axios.get(`${BASE_URL}/token/${slug}?desc=yes`);
@@ -141,8 +141,8 @@ export async function getServerSideProps(ctx) {
     data = res.data;
     if (tab) data.tab = tab;
 
-    var t2 = performance.now();
-    var dt = (t2 - t1).toFixed(2);
+    const t2 = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const dt = (t2 - t1).toFixed(2);
 
     console.log(`2. getServerSideProps slug: ${slug}${tab ? `/${tab}` : ''} took: ${dt}ms`);
   } catch (e) {
