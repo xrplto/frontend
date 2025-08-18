@@ -185,8 +185,8 @@ const OptimizedImage = ({ src, alt, size, onError, priority = false, md5 }) => {
         }
       },
       { 
-        rootMargin: '50px',
-        threshold: 0.01 
+        rootMargin: '100px',
+        threshold: 0 
       }
     );
     
@@ -226,11 +226,13 @@ const OptimizedImage = ({ src, alt, size, onError, priority = false, md5 }) => {
         alt={alt}
         width={size}
         height={size}
-        quality={75}
+        quality={60}
         priority={priority}
         loading={priority ? 'eager' : 'lazy'}
         onError={handleError}
-        unoptimized={true}
+        unoptimized={false}
+        placeholder="blur"
+        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxNiIgZmlsbD0iIzk5OSIgb3BhY2l0eT0iMC4xIi8+PC9zdmc+"
         style={{ 
           width: '100%', 
           height: '100%', 
@@ -256,7 +258,11 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
     return () => clearTimeout(timer);
   }, [token.bearbull]);
 
-  const imgUrl = useMemo(() => `https://s1.xrpl.to/token/${md5}`, [md5]);
+  const imgUrl = useMemo(() => {
+    // Add cache parameter for 1 hour caching
+    const cacheTime = Math.floor(Date.now() / (1000 * 60 * 60));
+    return `https://s1.xrpl.to/token/${md5}?v=${cacheTime}`;
+  }, [md5]);
 
   // Using flexbox layout instead of table
   return (
@@ -327,7 +333,11 @@ const DesktopTokenRow = ({
     return () => clearTimeout(timer);
   }, [token.bearbull]);
 
-  const imgUrl = useMemo(() => `https://s1.xrpl.to/token/${md5}`, [md5]);
+  const imgUrl = useMemo(() => {
+    // Add cache parameter for 1 hour caching
+    const cacheTime = Math.floor(Date.now() / (1000 * 60 * 60));
+    return `https://s1.xrpl.to/token/${md5}?v=${cacheTime}`;
+  }, [md5]);
 
   return (
     <StyledRow darkMode={darkMode} onClick={handleRowClick}>
@@ -537,7 +547,11 @@ const FTokenRow = React.memo(function FTokenRow({
   
   const sparklineUrl = useMemo(() => {
     if (!BASE_URL || !md5 || isMobile) return null;
-    return `${BASE_URL}/sparkline/${md5}?period=24h&lightweight=true&maxPoints=20`;
+    // Use 15 second cache for /new page, 5 minutes for others
+    const isNewPage = window.location.pathname === '/new';
+    const cacheMs = isNewPage ? 15000 : 300000; // 15s or 5min
+    const cacheTime = Math.floor(Date.now() / cacheMs);
+    return `${BASE_URL}/sparkline/${md5}?period=24h&lightweight=true&maxPoints=15&cache=${cacheTime}`;
   }, [BASE_URL, md5, isMobile]);
   
   if (isMobile) {
@@ -576,13 +590,20 @@ const FTokenRow = React.memo(function FTokenRow({
   const prev = prevProps.token;
   const next = nextProps.token;
   
+  // Only re-render if critical data changes
   if (prev.exch !== next.exch) return false;
   if (prev.pro24h !== next.pro24h) return false;
   if (prev.pro5m !== next.pro5m) return false;
   if (prev.pro1h !== next.pro1h) return false;
-  if (prev.time !== next.time) return false;
+  if (prev.pro7d !== next.pro7d) return false;
+  if (prev.bearbull !== next.bearbull) return false;
+  if (prev.vol24hxrp !== next.vol24hxrp) return false;
+  if (prev.marketcap !== next.marketcap) return false;
+  if (prev.tvl !== next.tvl) return false;
   if (prevProps.exchRate !== nextProps.exchRate) return false;
   if (prevProps.isLoggedIn !== nextProps.isLoggedIn) return false;
+  if (prevProps.darkMode !== nextProps.darkMode) return false;
+  if (prevProps.isMobile !== nextProps.isMobile) return false;
   
   if (prevProps.watchList !== nextProps.watchList) {
     const prevInWatchlist = prevProps.watchList.includes(prev.md5);
