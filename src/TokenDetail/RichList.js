@@ -85,15 +85,6 @@ const RichList = ({ token, amm }) => {
   
   // Use AMM from prop or from token object
   const ammAccount = amm || token?.AMM;
-  
-  // Debug special accounts
-  useEffect(() => {
-    console.log('RichList - Special Accounts:', {
-      AMM: ammAccount,
-      Issuer: token?.issuer,
-      Creator: token?.creator
-    });
-  }, [ammAccount, token]);
 
   useEffect(() => {
     const fetchRichList = async () => {
@@ -122,14 +113,6 @@ const RichList = ({ token, amm }) => {
           const trustlineCount = token?.trustlines || token?.holders || 0;
           setTotalTrustlines(trustlineCount);
           
-          console.log('Rich List Data:', {
-            dataLength: data.length,
-            actualHolders: actualHolders,
-            tokenHolders: token?.holders,
-            tokenTrustlines: token?.trustlines,
-            usingTrustlines: trustlineCount
-          });
-          
           // Calculate total supply from token or sum of holdings
           const supply = token.supply || token.total_supply || 
             (data.richList && data.richList.length > 0 && data.richList[0].holding 
@@ -146,7 +129,7 @@ const RichList = ({ token, amm }) => {
     };
 
     fetchRichList();
-  }, [token, page]);
+  }, [token?.md5, page]); // Only refetch when token ID or page changes
 
   const handlePageChange = (event, newPage) => {
     setPage(newPage);
@@ -189,30 +172,6 @@ const RichList = ({ token, amm }) => {
 
   return (
     <Stack spacing={2}>
-      <Box sx={{ mb: 2 }}>
-        <Stack direction="row" spacing={2} sx={{ mb: 2 }} flexWrap="wrap">
-          <Chip 
-            label={`Holders: ${formatNumber(totalHolders)}`}
-            color="primary"
-            variant="outlined"
-            title="Accounts with balance > 0"
-          />
-          {totalTrustlines > 0 && (
-            <Chip 
-              label={`Trustlines: ${formatNumber(totalTrustlines)}`}
-              variant="outlined"
-              title="Total trustlines including zero balances"
-            />
-          )}
-          {totalSupply > 0 && (
-            <Chip 
-              label={`Supply: ${formatNumber(totalSupply)}`}
-              variant="outlined"
-            />
-          )}
-        </Stack>
-      </Box>
-
       <StyledTableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -250,11 +209,6 @@ const RichList = ({ token, amm }) => {
               const percentOfSupply = holder.holding || (totalSupply > 0 
                 ? ((parseFloat(holder.balance) / parseFloat(totalSupply)) * 100).toFixed(2)
                 : '0');
-              
-              // Debug AMM matching for first few items
-              if (index < 3 && ammAccount) {
-                console.log(`Holder ${rank}: ${holder.account}, AMM: ${ammAccount}, Match: ${holder.account === ammAccount}`);
-              }
               
               return (
                 <TableRow 
