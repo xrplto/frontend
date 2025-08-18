@@ -529,20 +529,6 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     <Grid container spacing={{ xs: 1, sm: 1.5 }}>
       {/* Asset Distribution Chart */}
       <Grid item xs={12} md={4}>
-        <Box
-          sx={{
-            p: { xs: 1, sm: 1.25 },
-            borderRadius: '16px',
-            background: 'transparent',
-            backdropFilter: 'blur(40px) saturate(150%)',
-            WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-            border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
           <Box
             sx={{
               display: 'flex',
@@ -814,7 +800,6 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
               </Box>
             </Box>
           )}
-        </Box>
       </Grid>
 
       {/* Trustlines */}

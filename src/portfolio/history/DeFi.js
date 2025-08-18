@@ -200,30 +200,22 @@ const DeFiHistory = ({ account }) => {
     <Box
       sx={{
         background: 'transparent',
-        borderRadius: isSmallScreen ? 2 : 3,
-        p: isSmallScreen ? 0.5 : 2,
-        border: `1px solid ${alpha(theme.palette.primary.main, darkMode ? 0.2 : 0.1)}`,
+        backdropFilter: 'blur(40px) saturate(150%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+        borderRadius: '16px',
+        p: isSmallScreen ? 1.5 : 2.5,
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: darkMode ? theme.shadows[4] : theme.shadows[2],
+        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
         position: 'relative',
         overflow: 'hidden',
-        ml: isSmallScreen ? -0.5 : 0,
-        mr: isSmallScreen ? -0.5 : 0,
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '3px',
-          background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-          opacity: 0.8
-        }
+        ml: isSmallScreen ? 0 : 0,
+        mr: isSmallScreen ? 0 : 0
       }}
     >
       {loading ? (
-        <Stack alignItems="center" sx={{ py: isSmallScreen ? 4 : 8 }}>
+        <Stack alignItems="center" sx={{ py: isSmallScreen ? 6 : 10 }}>
           <Box sx={{ mb: 2 }}>
             <PulseLoader color={theme.palette.primary.main} size={isSmallScreen ? 10 : 12} margin={4} />
           </Box>
@@ -239,8 +231,8 @@ const DeFiHistory = ({ account }) => {
             justifyContent="center"
             spacing={2}
             sx={{
-              py: isSmallScreen ? 4 : 8,
-              px: isSmallScreen ? 2 : 3
+              py: isSmallScreen ? 6 : 10,
+              px: isSmallScreen ? 3 : 4
             }}
           >
             <Box
@@ -272,32 +264,57 @@ const DeFiHistory = ({ account }) => {
             size="small"
             sx={{
               '& .MuiTableCell-root': {
-                py: isSmallScreen ? 0.5 : 1,
-                px: isSmallScreen ? 0.5 : 2,
+                py: isSmallScreen ? 1 : 1.5,
+                px: isSmallScreen ? 1 : 2.5,
                 fontSize: isSmallScreen ? '0.75rem' : '0.875rem',
-                lineHeight: 1.4
+                lineHeight: 1.5
               },
               '& .MuiTableRow-root': {
+                minHeight: isSmallScreen ? '56px' : '64px',
                 '&:hover': {
-                  backgroundColor: 'transparent',
-                  transition: 'background-color 0.2s ease'
+                  backgroundColor: alpha(theme.palette.background.paper, 0.3),
+                  backdropFilter: 'blur(20px)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
+                  transition: 'all 0.2s ease'
+                },
+                '&:last-child .MuiTableCell-root': {
+                  borderBottom: 'none',
+                  '&:first-of-type': {
+                    borderBottomLeftRadius: '8px'
+                  },
+                  '&:last-child': {
+                    borderBottomRightRadius: '8px'
+                  }
                 }
               }
             }}
           >
             <TableHead>
-              <TableRow>
+              <TableRow
+                sx={{
+                  background: alpha(theme.palette.background.paper, 0.5),
+                  backdropFilter: 'blur(10px)',
+                  '&:hover': {
+                    background: alpha(theme.palette.background.paper, 0.7)
+                  }
+                }}
+              >
                 <TableCell
                   sx={{
-                    color: theme.palette.primary.main,
-                    fontWeight: 'bold',
-                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    color: theme.palette.text.primary,
+                    fontWeight: 700,
+                    fontSize: isSmallScreen ? '0.8rem' : '0.9rem',
+                    letterSpacing: '0.02em',
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                     background: 'transparent',
+                    py: isSmallScreen ? 1.5 : 2,
+                    px: isSmallScreen ? 1.5 : 2.5,
                     '&:first-of-type': {
-                      borderTopLeftRadius: 8
+                      borderTopLeftRadius: '12px'
                     },
                     '&:last-child': {
-                      borderTopRightRadius: 8
+                      borderTopRightRadius: '12px'
                     }
                   }}
                 >
@@ -306,13 +323,13 @@ const DeFiHistory = ({ account }) => {
                 <TableCell
                   sx={{
                     color: theme.palette.text.primary,
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    borderBottom: `2px solid ${alpha(theme.palette.divider, 0.8)}`,
+                    fontWeight: 700,
+                    fontSize: isSmallScreen ? '0.8rem' : '0.9rem',
+                    letterSpacing: '0.02em',
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                     background: 'transparent',
-                    backdropFilter: 'blur(8px)',
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase',
+                    py: isSmallScreen ? 1.5 : 2,
+                    px: isSmallScreen ? 1.5 : 2.5,
                     display: isSmallScreen ? 'none' : 'table-cell'
                   }}
                 >
@@ -321,13 +338,13 @@ const DeFiHistory = ({ account }) => {
                 <TableCell
                   sx={{
                     color: theme.palette.text.primary,
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    borderBottom: `2px solid ${alpha(theme.palette.divider, 0.8)}`,
+                    fontWeight: 700,
+                    fontSize: isSmallScreen ? '0.8rem' : '0.9rem',
+                    letterSpacing: '0.02em',
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                     background: 'transparent',
-                    backdropFilter: 'blur(8px)',
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase'
+                    py: isSmallScreen ? 1.5 : 2,
+                    px: isSmallScreen ? 1.5 : 2.5
                   }}
                 >
                   Amount
@@ -335,13 +352,13 @@ const DeFiHistory = ({ account }) => {
                 <TableCell
                   sx={{
                     color: theme.palette.text.primary,
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    borderBottom: `2px solid ${alpha(theme.palette.divider, 0.8)}`,
+                    fontWeight: 700,
+                    fontSize: isSmallScreen ? '0.8rem' : '0.9rem',
+                    letterSpacing: '0.02em',
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                     background: 'transparent',
-                    backdropFilter: 'blur(8px)',
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase'
+                    py: isSmallScreen ? 1.5 : 2,
+                    px: isSmallScreen ? 1.5 : 2.5
                   }}
                 >
                   Source
@@ -349,14 +366,15 @@ const DeFiHistory = ({ account }) => {
                 <TableCell
                   sx={{
                     color: theme.palette.text.primary,
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    borderBottom: `2px solid ${alpha(theme.palette.divider, 0.8)}`,
+                    fontWeight: 700,
+                    fontSize: isSmallScreen ? '0.8rem' : '0.9rem',
+                    letterSpacing: '0.02em',
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                     background: 'transparent',
-                    backdropFilter: 'blur(8px)',
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase',
-                    width: '64px'
+                    py: isSmallScreen ? 1.5 : 2,
+                    px: isSmallScreen ? 1.5 : 2.5,
+                    width: isSmallScreen ? '48px' : '64px',
+                    textAlign: 'center'
                   }}
                 >
                   View
@@ -372,15 +390,17 @@ const DeFiHistory = ({ account }) => {
           <Box
             sx={{
               display: 'flex',
-              justifyContent: isSmallScreen ? 'flex-start' : 'space-between',
+              justifyContent: isSmallScreen ? 'center' : 'space-between',
               alignItems: 'center',
-              borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-              px: isSmallScreen ? 1 : 3,
-              py: isSmallScreen ? 1 : 2,
-              gap: isSmallScreen ? 1 : 2,
-              background: 'transparent',
-              backdropFilter: 'blur(10px)',
-              flexWrap: 'wrap'
+              borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              px: isSmallScreen ? 2 : 3,
+              py: isSmallScreen ? 2 : 2.5,
+              gap: isSmallScreen ? 2 : 3,
+              background: alpha(theme.palette.background.paper, 0.6),
+              backdropFilter: 'blur(40px) saturate(150%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+              flexWrap: 'wrap',
+              mt: 1
             }}
           >
             <Box
@@ -388,22 +408,23 @@ const DeFiHistory = ({ account }) => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1.5,
-                background: 'transparent',
-                backdropFilter: 'blur(8px)',
-                borderRadius: 1.5,
-                px: isSmallScreen ? 0.75 : 1.5,
-                py: isSmallScreen ? 0.25 : 0.5,
-                minHeight: isSmallScreen ? '32px' : '40px',
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                boxShadow: theme.shadows[1]
+                background: alpha(theme.palette.background.paper, 0.9),
+                backdropFilter: 'blur(20px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+                borderRadius: 2,
+                px: isSmallScreen ? 1.5 : 2,
+                py: isSmallScreen ? 0.75 : 1,
+                minHeight: isSmallScreen ? '40px' : '48px',
+                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                boxShadow: theme.shadows[2]
               }}
             >
               <Typography
                 variant="body2"
                 sx={{
                   color: theme.palette.text.primary,
-                  fontWeight: 500,
-                  fontSize: isSmallScreen ? '0.75rem' : '0.875rem'
+                  fontWeight: 600,
+                  fontSize: isSmallScreen ? '0.8rem' : '0.9rem'
                 }}
               >
                 {isSmallScreen 
@@ -424,9 +445,9 @@ const DeFiHistory = ({ account }) => {
                   size="small"
                   sx={{
                     color: theme.palette.text.primary,
-                    width: isSmallScreen ? '28px' : '36px',
-                    height: isSmallScreen ? '28px' : '36px',
-                    borderRadius: '8px',
+                    width: isSmallScreen ? '32px' : '40px',
+                    height: isSmallScreen ? '32px' : '40px',
+                    borderRadius: '10px',
                     border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
                     background: 'transparent',
                     boxShadow: theme.shadows[1],
@@ -456,9 +477,9 @@ const DeFiHistory = ({ account }) => {
                   size="small"
                   sx={{
                     color: theme.palette.text.primary,
-                    width: isSmallScreen ? '28px' : '36px',
-                    height: isSmallScreen ? '28px' : '36px',
-                    borderRadius: '8px',
+                    width: isSmallScreen ? '32px' : '40px',
+                    height: isSmallScreen ? '32px' : '40px',
+                    borderRadius: '10px',
                     border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
                     background: 'transparent',
                     boxShadow: theme.shadows[1],
@@ -541,11 +562,11 @@ const DeFiHistory = ({ account }) => {
                   PaperProps: {
                     sx: {
                       mt: 1,
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       boxShadow: theme.shadows[2],
                       border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
                       '.MuiMenuItem-root': {
-                        color: theme.palette.primary.main,
+                        color: theme.palette.text.primary,
                         justifyContent: 'center',
                         fontSize: '0.875rem',
                         letterSpacing: '0.5px',
@@ -574,7 +595,7 @@ const DeFiHistory = ({ account }) => {
                 <Typography
                   variant="body2"
                   sx={{
-                    color: theme.palette.primary.main,
+                    color: theme.palette.text.primary,
                     fontWeight: 500,
                     fontSize: '0.875rem',
                     whiteSpace: 'nowrap',
@@ -965,16 +986,22 @@ const HistoryRow = (props) => {
     <TableRow
       sx={{
         '& .MuiTableCell-root': {
-          py: props.isSmallScreen ? 0.5 : 1,
-          px: props.isSmallScreen ? 0.5 : 1.5,
-          minHeight: props.isSmallScreen ? '36px' : '48px',
+          py: props.isSmallScreen ? 1.5 : 2,
+          px: props.isSmallScreen ? 1.5 : 2.5,
+          minHeight: props.isSmallScreen ? '48px' : '64px',
           whiteSpace: 'nowrap',
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          verticalAlign: 'middle',
+          background: 'transparent',
+          backdropFilter: 'blur(10px)',
+          transition: 'all 0.2s ease',
           '&:first-of-type': {
-            pl: props.isSmallScreen ? 0.5 : 2
+            pl: props.isSmallScreen ? 1.5 : 2.5,
+            borderBottomLeftRadius: 0
           },
           '&:last-child': {
-            pr: props.isSmallScreen ? 0.5 : 2
+            pr: props.isSmallScreen ? 1.5 : 2.5,
+            borderBottomRightRadius: 0
           }
         },
         '&:last-child .MuiTableCell-root': {
@@ -982,8 +1009,8 @@ const HistoryRow = (props) => {
         }
       }}
     >
-      <TableCell sx={{ color: theme.palette.text.primary, minWidth: props.isSmallScreen ? '80px' : '140px' }}>
-        <Stack direction="row" spacing={0.25} alignItems="center">
+      <TableCell sx={{ color: theme.palette.text.primary, minWidth: props.isSmallScreen ? '100px' : '160px' }}>
+        <Stack direction="row" spacing={props.isSmallScreen ? 0.5 : 1} alignItems="center" sx={{ py: 0.5 }}>
           {TransactionType === 'Payment' &&
             (typeof Amount !== 'string' ? (
               <Chip
@@ -991,15 +1018,16 @@ const HistoryRow = (props) => {
                 label="Buy"
                 size="small"
                 sx={{
-                  height: props.isSmallScreen ? '20px' : '24px',
+                  height: props.isSmallScreen ? '22px' : '26px',
                   backgroundColor: alpha('#00AB55', 0.15),
                   color: '#00AB55',
                   fontWeight: 600,
-                  borderRadius: '6px',
+                  borderRadius: '8px',
+                  border: `1px solid ${alpha('#00AB55', 0.2)}`,
                   '& .MuiChip-label': {
-                    px: props.isSmallScreen ? 0.75 : 1.5,
-                    fontSize: props.isSmallScreen ? '0.65rem' : '0.75rem',
-                    lineHeight: 1.2,
+                    px: props.isSmallScreen ? 1 : 1.5,
+                    fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
+                    lineHeight: 1.3,
                     letterSpacing: '0.3px'
                   }
                 }}
@@ -1027,13 +1055,15 @@ const HistoryRow = (props) => {
               label="Add"
               size="small"
               sx={{
-                height: '18px',
+                height: props.isSmallScreen ? '22px' : '26px',
                 backgroundColor: alpha('#6D1FEE', 0.1),
                 color: '#6D1FEE',
+                borderRadius: '8px',
+                border: `1px solid ${alpha('#6D1FEE', 0.2)}`,
                 '& .MuiChip-label': {
-                  px: 0.75,
-                  fontSize: '0.7rem',
-                  lineHeight: 1
+                  px: props.isSmallScreen ? 1 : 1.5,
+                  fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
+                  lineHeight: 1.3
                 }
               }}
             />
@@ -1044,13 +1074,15 @@ const HistoryRow = (props) => {
               label="Remove"
               size="small"
               sx={{
-                height: '18px',
+                height: props.isSmallScreen ? '22px' : '26px',
                 backgroundColor: alpha('#FFA000', 0.1),
                 color: '#FFA000',
+                borderRadius: '8px',
+                border: `1px solid ${alpha('#FFA000', 0.2)}`,
                 '& .MuiChip-label': {
-                  px: 0.75,
-                  fontSize: '0.7rem',
-                  lineHeight: 1
+                  px: props.isSmallScreen ? 1 : 1.5,
+                  fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
+                  lineHeight: 1.3
                 }
               }}
             />
@@ -1061,13 +1093,15 @@ const HistoryRow = (props) => {
               label="Trust"
               size="small"
               sx={{
-                height: '18px',
+                height: props.isSmallScreen ? '22px' : '26px',
                 backgroundColor: alpha('#0C53B7', 0.1),
                 color: '#0C53B7',
+                borderRadius: '8px',
+                border: `1px solid ${alpha('#0C53B7', 0.2)}`,
                 '& .MuiChip-label': {
-                  px: 0.75,
-                  fontSize: '0.7rem',
-                  lineHeight: 1
+                  px: props.isSmallScreen ? 1 : 1.5,
+                  fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
+                  lineHeight: 1.3
                 }
               }}
             />
@@ -1080,13 +1114,15 @@ const HistoryRow = (props) => {
                   label="Buy"
                   size="small"
                   sx={{
-                    height: '18px',
+                    height: props.isSmallScreen ? '22px' : '26px',
                     backgroundColor: alpha('#00AB55', 0.1),
                     color: '#00AB55',
+                    borderRadius: '10px',
+                    border: `1px solid ${alpha('#00AB55', 0.2)}`,
                     '& .MuiChip-label': {
-                      px: 0.75,
-                      fontSize: '0.7rem',
-                      lineHeight: 1
+                      px: props.isSmallScreen ? 1 : 1.5,
+                      fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
+                      lineHeight: 1.3
                     }
                   }}
                 />
@@ -1097,13 +1133,15 @@ const HistoryRow = (props) => {
                   label="Sell"
                   size="small"
                   sx={{
-                    height: '18px',
+                    height: props.isSmallScreen ? '22px' : '26px',
                     backgroundColor: alpha('#B72136', 0.1),
                     color: '#B72136',
+                    borderRadius: '10px',
+                    border: `1px solid ${alpha('#B72136', 0.2)}`,
                     '& .MuiChip-label': {
-                      px: 0.75,
-                      fontSize: '0.7rem',
-                      lineHeight: 1
+                      px: props.isSmallScreen ? 1 : 1.5,
+                      fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
+                      lineHeight: 1.3
                     }
                   }}
                 />
@@ -1114,13 +1152,15 @@ const HistoryRow = (props) => {
                   label="Trade"
                   size="small"
                   sx={{
-                    height: '18px',
+                    height: props.isSmallScreen ? '22px' : '26px',
                     backgroundColor: alpha('#8B5CF6', 0.1),
                     color: '#8B5CF6',
+                    borderRadius: '10px',
+                    border: `1px solid ${alpha('#8B5CF6', 0.2)}`,
                     '& .MuiChip-label': {
-                      px: 0.75,
-                      fontSize: '0.7rem',
-                      lineHeight: 1
+                      px: props.isSmallScreen ? 1 : 1.5,
+                      fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
+                      lineHeight: 1.3
                     }
                   }}
                 />
@@ -1131,13 +1171,15 @@ const HistoryRow = (props) => {
                   label="Offer"
                   size="small"
                   sx={{
-                    height: '18px',
+                    height: props.isSmallScreen ? '22px' : '26px',
                     backgroundColor: alpha('#8B5CF6', 0.1),
                     color: '#8B5CF6',
+                    borderRadius: '10px',
+                    border: `1px solid ${alpha('#8B5CF6', 0.2)}`,
                     '& .MuiChip-label': {
-                      px: 0.75,
-                      fontSize: '0.7rem',
-                      lineHeight: 1
+                      px: props.isSmallScreen ? 1 : 1.5,
+                      fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
+                      lineHeight: 1.3
                     }
                   }}
                 />
@@ -1150,47 +1192,48 @@ const HistoryRow = (props) => {
               label="Cancel"
               size="small"
               sx={{
-                height: '18px',
+                height: props.isSmallScreen ? '22px' : '26px',
                 backgroundColor: alpha('#B72136', 0.1),
                 color: '#B72136',
+                borderRadius: '8px',
+                border: `1px solid ${alpha('#B72136', 0.2)}`,
                 '& .MuiChip-label': {
-                  px: 0.75,
-                  fontSize: '0.7rem',
-                  lineHeight: 1
+                  px: props.isSmallScreen ? 1 : 1.5,
+                  fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
+                  lineHeight: 1.3
                 }
               }}
             />
           )}
         </Stack>
       </TableCell>
-      <TableCell sx={{ color: theme.palette.text.primary, width: props.isSmallScreen ? '50px' : '70px', display: props.isSmallScreen ? 'none' : 'table-cell' }}>
-        <Typography sx={{ fontSize: props.isSmallScreen ? '0.65rem' : '0.75rem', color: alpha(theme.palette.text.primary, 0.7) }}>
+      <TableCell sx={{ color: theme.palette.text.primary, width: props.isSmallScreen ? '60px' : '80px', display: props.isSmallScreen ? 'none' : 'table-cell' }}>
+        <Typography sx={{ fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem', color: alpha(theme.palette.text.primary, 0.7), fontWeight: 500 }}>
           {props.isSmallScreen ? getRelativeTime(rippleEpoch).replace(' ago', '') : getRelativeTime(rippleEpoch)}
         </Typography>
       </TableCell>
-      <TableCell sx={{ color: theme.palette.text.primary }}>
+      <TableCell sx={{ color: theme.palette.text.primary, minWidth: props.isSmallScreen ? '140px' : '200px' }}>
         {TransactionType === 'AMMDeposit' && (
-          <Stack direction="row" alignItems="center" spacing={props.isSmallScreen ? 0.125 : 0.25} sx={{ typography: 'body2' }}>
+          <Stack direction="row" alignItems="center" spacing={props.isSmallScreen ? 0.5 : 1} sx={{ typography: 'body2', py: 0.5 }}>
             <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
+              <Typography sx={{ fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
               {assetValue.valueAfterDot !== '' && (
-                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
+                <Typography sx={{ fontSize: props.isSmallScreen ? '0.75rem' : '0.8rem', opacity: 0.8 }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
             {tokenImageUrl && (
               <Avatar 
                 src={tokenImageUrl} 
                 sx={{ 
-                  width: props.isSmallScreen ? 14 : 20, 
-                  height: props.isSmallScreen ? 14 : 20, 
-                  mr: props.isSmallScreen ? 0.25 : 0.5,
+                  width: props.isSmallScreen ? 18 : 24, 
+                  height: props.isSmallScreen ? 18 : 24,
                   border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                   boxShadow: theme.shadows[1]
                 }} 
                 alt={assetName} 
               />
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>
               {assetName}
             </Typography>
             <Typography sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '0.75rem' }}>
@@ -1206,9 +1249,8 @@ const HistoryRow = (props) => {
               <Avatar
                 src={tokenImageUrl2}
                 sx={{ 
-                  width: props.isSmallScreen ? 14 : 20, 
-                  height: props.isSmallScreen ? 14 : 20, 
-                  mr: props.isSmallScreen ? 0.25 : 0.5,
+                  width: props.isSmallScreen ? 18 : 24, 
+                  height: props.isSmallScreen ? 18 : 24,
                   border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                   boxShadow: theme.shadows[1]
                 }}
@@ -1253,7 +1295,7 @@ const HistoryRow = (props) => {
             ) : (
               <Stack direction="row" spacing={0.25}>
                 <Stack direction="row" alignItems="baseline">
-                  <Typography sx={{ fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
+                  <Typography sx={{ fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
                   {assetValue.valueAfterDot !== '' && (
                     <Typography sx={{ fontSize: '0.75rem' }}>
                       .{assetValue.valueAfterDot}
@@ -1300,25 +1342,24 @@ const HistoryRow = (props) => {
         {TransactionType === 'Payment' && (
           <Stack direction="row" alignItems="center" spacing={props.isSmallScreen ? 0.125 : 0.25} sx={{ typography: 'body2' }}>
             <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
+              <Typography sx={{ fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
               {assetValue.valueAfterDot && (
-                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
+                <Typography sx={{ fontSize: props.isSmallScreen ? '0.75rem' : '0.8rem', opacity: 0.8 }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
             {tokenImageUrl && (
               <Avatar 
                 src={tokenImageUrl} 
                 sx={{ 
-                  width: props.isSmallScreen ? 14 : 20, 
-                  height: props.isSmallScreen ? 14 : 20, 
-                  mr: props.isSmallScreen ? 0.25 : 0.5,
+                  width: props.isSmallScreen ? 18 : 24, 
+                  height: props.isSmallScreen ? 18 : 24,
                   border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                   boxShadow: theme.shadows[1]
                 }} 
                 alt={assetName} 
               />
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>
               {assetName}
             </Typography>
             <EastIcon sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '1rem' }} />
@@ -1332,9 +1373,8 @@ const HistoryRow = (props) => {
               <Avatar
                 src={tokenImageUrl2}
                 sx={{ 
-                  width: props.isSmallScreen ? 14 : 20, 
-                  height: props.isSmallScreen ? 14 : 20, 
-                  mr: props.isSmallScreen ? 0.25 : 0.5,
+                  width: props.isSmallScreen ? 18 : 24, 
+                  height: props.isSmallScreen ? 18 : 24,
                   border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                   boxShadow: theme.shadows[1]
                 }}
@@ -1350,25 +1390,24 @@ const HistoryRow = (props) => {
           <Stack direction="row" alignItems="center" spacing={props.isSmallScreen ? 0.125 : 0.25} sx={{ typography: 'body2' }}>
             <Typography sx={{ fontSize: '0.75rem', color: '#0C53B7' }}>Trustline for</Typography>
             <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
+              <Typography sx={{ fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
               {assetValue.valueAfterDot && (
-                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
+                <Typography sx={{ fontSize: props.isSmallScreen ? '0.75rem' : '0.8rem', opacity: 0.8 }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
             {tokenImageUrl && (
               <Avatar 
                 src={tokenImageUrl} 
                 sx={{ 
-                  width: props.isSmallScreen ? 14 : 20, 
-                  height: props.isSmallScreen ? 14 : 20, 
-                  mr: props.isSmallScreen ? 0.25 : 0.5,
+                  width: props.isSmallScreen ? 18 : 24, 
+                  height: props.isSmallScreen ? 18 : 24,
                   border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                   boxShadow: theme.shadows[1]
                 }} 
                 alt={assetName} 
               />
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>
               {assetName}
             </Typography>
           </Stack>
@@ -1376,25 +1415,24 @@ const HistoryRow = (props) => {
         {TransactionType === 'OfferCreate' && (
           <Stack direction="row" alignItems="center" spacing={props.isSmallScreen ? 0.125 : 0.25} sx={{ typography: 'body2' }}>
             <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
+              <Typography sx={{ fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
               {assetValue.valueAfterDot !== '' && (
-                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
+                <Typography sx={{ fontSize: props.isSmallScreen ? '0.75rem' : '0.8rem', opacity: 0.8 }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
             {tokenImageUrl && (
               <Avatar 
                 src={tokenImageUrl} 
                 sx={{ 
-                  width: props.isSmallScreen ? 14 : 20, 
-                  height: props.isSmallScreen ? 14 : 20, 
-                  mr: props.isSmallScreen ? 0.25 : 0.5,
+                  width: props.isSmallScreen ? 18 : 24, 
+                  height: props.isSmallScreen ? 18 : 24,
                   border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                   boxShadow: theme.shadows[1]
                 }} 
                 alt={assetName} 
               />
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>
               {assetName}
             </Typography>
             <EastIcon sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '1rem' }} />
@@ -1408,9 +1446,8 @@ const HistoryRow = (props) => {
               <Avatar
                 src={tokenImageUrl2}
                 sx={{ 
-                  width: props.isSmallScreen ? 14 : 20, 
-                  height: props.isSmallScreen ? 14 : 20, 
-                  mr: props.isSmallScreen ? 0.25 : 0.5,
+                  width: props.isSmallScreen ? 18 : 24, 
+                  height: props.isSmallScreen ? 18 : 24,
                   border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                   boxShadow: theme.shadows[1]
                 }}
@@ -1498,17 +1535,19 @@ const HistoryRow = (props) => {
           </Tooltip>
         )}
       </TableCell>
-      <TableCell sx={{ width: props.isSmallScreen ? '28px' : '32px', p: props.isSmallScreen ? 0 : 0.25 }}>
+      <TableCell sx={{ width: props.isSmallScreen ? '32px' : '40px', p: props.isSmallScreen ? 0.5 : 0.75 }}>
         <IconButton
           size="small"
           onClick={handleViewClick}
           sx={{
-            p: props.isSmallScreen ? 0.25 : 0.5,
-            width: props.isSmallScreen ? '24px' : '28px',
-            height: props.isSmallScreen ? '24px' : '28px',
+            p: props.isSmallScreen ? 0.5 : 0.75,
+            width: props.isSmallScreen ? '28px' : '32px',
+            height: props.isSmallScreen ? '28px' : '32px',
             color: theme.palette.primary.main,
             border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-            borderRadius: '6px',
+            borderRadius: '10px',
+            background: alpha(theme.palette.background.paper, 0.8),
+            backdropFilter: 'blur(10px)',
             transition: 'all 0.2s ease',
             '&:hover': {
               backgroundColor: 'transparent',
@@ -1517,7 +1556,7 @@ const HistoryRow = (props) => {
               boxShadow: theme.shadows[1]
             },
             '& .MuiSvgIcon-root': {
-              fontSize: '1rem'
+              fontSize: props.isSmallScreen ? '1rem' : '1.1rem'
             }
           }}
         >
