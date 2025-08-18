@@ -31,7 +31,7 @@ import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumberWithCurreny } from 'src/utils/formatNumber';
 
-const API_URL = process.env.API_URL;
+const API_URL = process.env.API_URL || '';
 const NFT_API_URL = 'https://api.xrpnft.com/api';
 
 // Memoized price formatter
@@ -45,7 +45,7 @@ const formatPrice = (price) => {
   return parseFloat(price).toFixed(2);
 };
 
-const SearchModal = memo(function SearchModal({ open, onClose }) {
+function SearchModal({ open, onClose }) {
   const theme = useTheme();
   const router = useRouter();
   const inputRef = useRef(null);
@@ -192,9 +192,16 @@ const SearchModal = memo(function SearchModal({ open, onClose }) {
     setRecentSearches(updated);
     
     // Defer localStorage write
-    requestIdleCallback(() => {
-      localStorage.setItem('recentSearches', JSON.stringify(updated));
-    });
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(() => {
+        localStorage.setItem('recentSearches', JSON.stringify(updated));
+      });
+    } else {
+      // Fallback for environments without requestIdleCallback
+      setTimeout(() => {
+        localStorage.setItem('recentSearches', JSON.stringify(updated));
+      }, 0);
+    }
     
     // Navigate to result
     if (type === 'token') {
@@ -526,6 +533,6 @@ const SearchModal = memo(function SearchModal({ open, onClose }) {
       </Paper>
     </Modal>
   );
-});
+}
 
-export default SearchModal;
+export default memo(SearchModal);

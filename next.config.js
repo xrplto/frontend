@@ -16,7 +16,8 @@ module.exports = {
     MAINTENANCE: process.env.MAINTENANCE
   },
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    // Disable removeConsole as it can cause issues with module resolution
+    // removeConsole: process.env.NODE_ENV === 'production',
   },
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -213,8 +214,16 @@ module.exports = {
   // Add performance optimizations
   reactStrictMode: true,
   compress: true,
-  // Simplified webpack config - removed aggressive splitting that may cause issues with Next.js 15
+  // Webpack config - keep it simple to avoid conflicts
   webpack: (config, { isServer }) => {
+    // Ensure proper handling of dynamic imports
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+      };
+    }
+    
     return config;
   }
 };

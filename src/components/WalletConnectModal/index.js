@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, lazy, Suspense } from 'react';
 
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -7,6 +7,8 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import styled from '@emotion/styled';
@@ -18,7 +20,7 @@ import { enqueueSnackbar } from 'notistack';
 import { isInstalled, getPublicKey, signMessage } from '@gemwallet/api';
 import sdk from '@crossmarkio/sdk';
 
-import LoginDialog from '../LoginDialog';
+const LoginDialog = lazy(() => import('../LoginDialog'));
 import { AppContext } from 'src/AppContext';
 import axios from 'axios';
 
@@ -293,12 +295,18 @@ const WalletConnectModal = () => {
 
       <StyledDialogContent>
         {openLogin ? (
-          <LoginDialog
-            open={openLogin}
-            handleClose={handleLoginClose}
-            qrUrl={qrUrl}
-            nextUrl={nextUrl}
-          />
+          <Suspense fallback={
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
+              <CircularProgress />
+            </Box>
+          }>
+            <LoginDialog
+              open={openLogin}
+              handleClose={handleLoginClose}
+              qrUrl={qrUrl}
+              nextUrl={nextUrl}
+            />
+          </Suspense>
         ) : (
           <>
             <ModalTitle variant="modal">Connect Wallet</ModalTitle>

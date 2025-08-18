@@ -42,7 +42,7 @@ const StyledLinkTypography = styled(Typography)(({ theme }) => ({
   }
 }));
 
-export default function LoginDialog(props) {
+const LoginDialog = (props) => {
   const { qrUrl, nextUrl, open, handleClose } = props;
   const { connecting } = useContext(AppContext);
   const [openDialog, setOpenDialog] = useState(false);
@@ -139,3 +139,5 @@ export default function LoginDialog(props) {
     </Dialog>
   );
 }
+
+export default LoginDialog;
