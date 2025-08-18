@@ -5,7 +5,6 @@ import { Icon } from '@iconify/react';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import dynamic from 'next/dynamic';
-import { createPortal } from 'react-dom';
 
 const CategoriesDrawer = dynamic(() => import('src/components/CategoriesDrawer'));
 
@@ -317,47 +316,6 @@ const AllTagsButton = styled.button`
   }
 `;
 
-const Dropdown = styled.div`
-  position: relative;
-`;
-
-const DropdownMenu = styled.div`
-  position: fixed;
-  background: ${props => props.darkMode ? '#1a1a1a' : '#ffffff'};
-  border: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
-  z-index: 99999;
-  overflow: visible;
-  padding: 8px 0;
-`;
-
-const MenuItem = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 10px 16px;
-  border: none;
-  background: ${props => props.selected ? 'rgba(33, 150, 243, 0.06)' : 'transparent'};
-  color: inherit;
-  font-size: 14px;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    background: rgba(145, 158, 171, 0.06);
-    padding-left: 20px;
-  }
-`;
-
-const MenuDivider = styled.div`
-  height: 1px;
-  background: rgba(145, 158, 171, 0.12);
-  margin: 4px 0;
-`;
 
 const SearchToolbar = memo(function SearchToolbar({
   tags,
@@ -384,12 +342,7 @@ const SearchToolbar = memo(function SearchToolbar({
   const router = useRouter();
   const { darkMode } = useContext(AppContext);
   
-  const [mainMenuOpen, setMainMenuOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
-  const mainMenuRef = useRef(null);
-  const dropdownMenuRef = useRef(null);
-  const buttonRef = useRef(null);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const containerRef = useRef(null);
   const [visibleTagCount, setVisibleTagCount] = useState(8);
 
@@ -445,23 +398,6 @@ const SearchToolbar = memo(function SearchToolbar({
     };
   }, [tags]);
 
-  // Close dropdowns on outside click
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Check if click is outside both the button and the dropdown menu
-      const isOutsideButton = buttonRef.current && !buttonRef.current.contains(event.target);
-      const isOutsideMenu = dropdownMenuRef.current && !dropdownMenuRef.current.contains(event.target);
-      
-      if (isOutsideButton && isOutsideMenu) {
-        setMainMenuOpen(false);
-      }
-    };
-    
-    if (mainMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [mainMenuOpen]);
 
   // Determine current view
   const currentView = useMemo(() => {
@@ -488,71 +424,10 @@ const SearchToolbar = memo(function SearchToolbar({
     return '24h';
   }, [currentOrderBy, router.pathname]);
 
-  const handleViewChange = useCallback((path) => {
-    if (path.startsWith('http')) {
-      window.location.href = path;
-    } else if (path === '/') {
-      window.location.href = '/';
-    } else {
-      window.location.href = path;
-    }
-    setMainMenuOpen(false);
-  }, []);
 
-  const getViewIcon = (view) => {
-    switch(view) {
-      case 'tokens': return 'material-symbols:apps';
-      case 'nfts': return 'material-symbols:collections';
-      case 'trending': return 'material-symbols:local-fire-department';
-      case 'gainers': return 'material-symbols:trending-up';
-      case 'new': return 'material-symbols:new-releases';
-      case 'spotlight': return 'material-symbols:star';
-      case 'most-viewed': return 'material-symbols:visibility';
-      default: return 'material-symbols:apps';
-    }
-  };
-
-  const getViewLabel = (view) => {
-    switch(view) {
-      case 'tokens': return 'Tokens';
-      case 'nfts': return 'NFTs';
-      case 'trending': return 'Trending';
-      case 'gainers': return 'Gainers';
-      case 'new': return 'New';
-      case 'spotlight': return 'Spotlight';
-      case 'most-viewed': return 'Most Viewed';
-      default: return 'Tokens';
-    }
-  };
 
   return (
     <Container darkMode={darkMode} ref={containerRef}>
-      {/* View Selector */}
-      <Dropdown ref={mainMenuRef}>
-        <Button
-          ref={buttonRef}
-          variant="contained"
-          size="small"
-          onClick={(e) => {
-            if (buttonRef.current) {
-              const rect = buttonRef.current.getBoundingClientRect();
-              setMenuPosition({ 
-                top: rect.bottom + 4, 
-                left: rect.left 
-              });
-            }
-            setMainMenuOpen(!mainMenuOpen);
-          }}
-          minWidth="80"
-          theme={{ palette: { mode: darkMode ? 'dark' : 'light' } }}
-        >
-          <Icon icon={getViewIcon(currentView)} width="16" height="16" />
-          <span>{getViewLabel(currentView)}</span>
-          <Icon icon="material-symbols:keyboard-arrow-down" width="18" height="18" />
-        </Button>
-      </Dropdown>
-
-      <Divider />
 
       {/* View Type Toggle */}
       <ButtonGroup>
@@ -749,73 +624,6 @@ const SearchToolbar = memo(function SearchToolbar({
         />
       )}
       
-      {/* Dropdown Menu Portal */}
-      {mainMenuOpen && typeof document !== 'undefined' && createPortal(
-        <DropdownMenu 
-          ref={dropdownMenuRef}
-          darkMode={darkMode}
-          style={{ 
-            top: `${menuPosition.top}px`, 
-            left: `${menuPosition.left}px` 
-          }}
-        >
-          <MenuItem 
-            onClick={(e) => { 
-              e.preventDefault();
-              e.stopPropagation();
-              window.location.href = '/'; 
-            }} 
-            selected={currentView === 'tokens'}
-          >
-            <Icon icon="material-symbols:apps" width="18" height="18" />
-            All Tokens
-          </MenuItem>
-          <MenuItem 
-            onClick={(e) => { 
-              e.preventDefault();
-              e.stopPropagation();
-              window.location.href = '/collections'; 
-            }} 
-            selected={currentView === 'nfts'}
-          >
-            <Icon icon="material-symbols:collections" width="18" height="18" />
-            NFT Collections
-          </MenuItem>
-          <MenuDivider />
-          <MenuItem 
-            onClick={(e) => { 
-              e.preventDefault();
-              e.stopPropagation();
-              window.location.href = '/watchlist'; 
-            }}
-          >
-            <Icon icon="material-symbols:star" width="18" height="18" style={{ color: '#ffc107' }} />
-            My Watchlist
-          </MenuItem>
-          <MenuDivider />
-          <MenuItem 
-            onClick={(e) => { 
-              e.preventDefault();
-              e.stopPropagation();
-              window.location.href = '/tokens-heatmap'; 
-            }}
-          >
-            <Icon icon="material-symbols:grid-view" width="18" height="18" style={{ color: '#ff5722' }} />
-            Heatmap View
-          </MenuItem>
-          <MenuItem 
-            onClick={(e) => { 
-              e.preventDefault();
-              e.stopPropagation();
-              window.location.href = '/top-traders'; 
-            }}
-          >
-            <Icon icon="material-symbols:leaderboard" width="18" height="18" style={{ color: '#2196f3' }} />
-            Top Traders
-          </MenuItem>
-        </DropdownMenu>,
-        document.body
-      )}
     </Container>
   );
 });
