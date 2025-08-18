@@ -235,14 +235,14 @@ const DESKTOP_TABLE_HEAD = [
     tooltip: 'Number of holders'
   },
   {
-    id: 'supply',
-    label: 'SUPPLY',
+    id: 'origin',
+    label: 'ORIGIN',
     align: 'right',
     width: '13%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: 'Circulating supply'
+    tooltip: 'Token origin'
   },
   {
     id: 'historyGraph',

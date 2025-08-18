@@ -312,7 +312,7 @@ const DesktopTokenRow = ({
 }) => {
   const { 
     name, user, md5, slug, pro24h, pro7d, pro1h, pro5m, exch, 
-    vol24htx, tvl, holders, amount, dateon, date 
+    vol24htx, tvl, holders, amount, dateon, date, origin 
   } = token;
   const [priceColor, setPriceColor] = useState('');
   
@@ -463,7 +463,7 @@ const DesktopTokenRow = ({
       </StyledCell>
       
       <StyledCell align="right" darkMode={darkMode}>
-        {formatValue(amount)} {truncate(name, 6)}
+        {origin || 'XRPL'}
       </StyledCell>
       
       <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px' }}>
