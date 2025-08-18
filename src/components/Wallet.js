@@ -626,9 +626,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           }}
         >
           <AccountBalanceWalletIcon fontSize="small" sx={{ color: theme.palette.common.white }} />
-          {!buttonOnly && (
+          {accountProfile && (
             <Typography variant="body2" sx={{ color: theme.palette.common.white, fontWeight: 500 }}>
-              {accountProfile ? truncateAccount(accountLogin, 6) : t('Connect Wallet')}
+              {truncateAccount(accountLogin, 6)}
+            </Typography>
+          )}
+          {!accountProfile && !buttonOnly && (
+            <Typography variant="body2" sx={{ color: theme.palette.common.white, fontWeight: 500 }}>
+              {t('Connect Wallet')}
             </Typography>
           )}
         </Button>
