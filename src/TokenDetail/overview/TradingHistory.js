@@ -50,6 +50,7 @@ import TradePanel from 'src/TokenDetail/trade/TradePanel';
 import BidAskChart from 'src/TokenDetail/trade/BidAskChart';
 import PairsSelect from 'src/TokenDetail/trade/PairsSelect';
 import { lazy, Suspense } from 'react';
+import RichList from 'src/TokenDetail/RichList';
 
 
 // Performance utilities
@@ -1250,7 +1251,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
       
       {tabValue === 4 && token && (
         <Suspense fallback={<CircularProgress />}>
-          {/* Rich list removed */}
+          <RichList token={token} amm={amm} />
         </Suspense>
       )}
     </Stack>
