@@ -288,7 +288,13 @@ export const XrplToLightTheme = createTheme({
     background1: '#E9ECEF',
     background2: '#F8F9FA', 
     border: '1px solid #E0E7EC'
-},
+  },
+  
+  walletDialog: {
+    background: '#FFFFFF',
+    backgroundSecondary: alpha('#F8F9FA', 0.95),
+    border: alpha('#E5E7EB', 0.2)
+  },
 
   palette: {
     common: {

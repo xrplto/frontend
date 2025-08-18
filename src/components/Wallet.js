@@ -94,12 +94,11 @@ const TokenImage = styled(Image)(({ theme }) => ({
 }));
 
 const StyledPopoverPaper = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.95
-  )} 50%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
+  background: theme.walletDialog?.background || (theme.palette.mode === 'dark' 
+    ? alpha(theme.palette.background.paper, 0.95)
+    : alpha(theme.palette.background.paper, 0.98)),
   backdropFilter: 'blur(40px)',
-  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
+  border: `2px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.1)}`,
   borderRadius: 20,
   boxShadow: `
     0 24px 48px ${alpha(theme.palette.common.black, 0.12)}, 
@@ -135,10 +134,9 @@ const StyledPopoverPaper = styled(Box)(({ theme }) => ({
 }));
 
 const BalanceCard = styled(Card)(({ theme }) => ({
-  background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
-    theme.palette.background.paper,
-    0.95
-  )} 50%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
+  background: theme.walletDialog?.backgroundSecondary || (theme.palette.mode === 'dark' 
+    ? alpha(theme.palette.background.paper, 0.4)
+    : alpha(theme.palette.background.paper, 0.98)),
   border: `2px solid ${alpha(theme.palette.primary.main, 0.12)}`,
   borderRadius: 16,
   backdropFilter: 'blur(40px)',
@@ -179,10 +177,9 @@ const BalanceCard = styled(Card)(({ theme }) => ({
 }));
 
 const ReserveCard = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(145deg, ${alpha(theme.palette.warning.light, 0.08)} 0%, ${alpha(
-    theme.palette.warning.light,
-    0.05
-  )} 50%, ${alpha(theme.palette.warning.light, 0.08)} 100%)`,
+  background: theme.palette.mode === 'dark' 
+    ? alpha(theme.palette.warning.light, 0.08)
+    : alpha(theme.palette.warning.light, 0.08),
   border: `2px solid ${alpha(theme.palette.warning.main, 0.15)}`,
   borderRadius: 16,
   padding: theme.spacing(2),
@@ -279,7 +276,7 @@ export default function Wallet({ style }) {
           sx={{
             background: accountProfile
               ? `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`
-              : theme.palette.common.black,
+              : theme.palette.mode === 'dark' ? theme.palette.common.black : theme.palette.background.paper,
             backdropFilter: 'blur(10px)',
             border: accountProfile
               ? `1px solid ${alpha(theme.palette.success.main, 0.3)}`
@@ -308,7 +305,7 @@ export default function Wallet({ style }) {
               color: theme.palette.common.white,
               background: accountProfile
                 ? `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`
-                : alpha(theme.palette.common.black, 0.8),
+                : theme.palette.mode === 'dark' ? alpha(theme.palette.common.black, 0.8) : alpha(theme.palette.background.paper, 0.8),
               border: accountProfile
                 ? `1px solid ${alpha(theme.palette.success.main, 0.5)}`
                 : `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
@@ -789,9 +786,9 @@ export default function Wallet({ style }) {
                   position: 'relative',
                   overflow: 'hidden',
                   background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.error.main,
+                    theme.palette.success.main,
                     0.06
-                  )} 0%, ${alpha(theme.palette.error.main, 0.02)} 100%)`,
+                  )} 0%, ${alpha(theme.palette.success.main, 0.02)} 100%)`,
                   backdropFilter: 'blur(10px)',
                   border: `1px solid ${alpha(theme.palette.error.main, 0.12)}`,
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -824,10 +821,10 @@ export default function Wallet({ style }) {
                     transition: 'left 0.4s ease'
                   },
                   '&:hover': {
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.error.main,
+                    backgroundColor: `linear-gradient(135deg, ${alpha(
+                      theme.palette.success.main,
                       0.12
-                    )} 0%, ${alpha(theme.palette.error.main, 0.06)} 100%)`,
+                    )} 0%, ${alpha(theme.palette.success.main, 0.06)} 100%)`,
                     border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
                     color: theme.palette.error.main,
                     transform: 'translateY(-2px)',

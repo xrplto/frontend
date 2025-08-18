@@ -195,6 +195,12 @@ export const SyncWaveTheme = createTheme({
     background2: alpha('#ff00ff', 0.1), 
     border: `1px solid ${alpha('#00ffff', 0.3)}`
   },
+  
+  walletDialog: {
+    background: alpha('#1a0033', 0.95),
+    backgroundSecondary: alpha('#1a0033', 0.6),
+    border: alpha('#00ffff', 0.2)
+  },
   palette: {
     common: {
       black: themeColors.white,

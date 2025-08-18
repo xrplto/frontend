@@ -156,6 +156,12 @@ export const XrplToDarkTheme = createTheme({
     textColor: themeColors.secondary,
     width: '290px'
   },
+  
+  walletDialog: {
+    background: 'rgba(0, 0, 0, 0.95)',
+    backgroundSecondary: 'rgba(0, 0, 0, 0.6)',
+    border: alpha('#ffffff', 0.1)
+  },
 
   typography: {
     fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',

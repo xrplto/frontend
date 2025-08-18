@@ -33,12 +33,10 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   },
   '& .MuiDialog-paper': {
     borderRadius: '16px',
-    background: theme.palette.mode === 'dark' 
-      ? alpha(theme.palette.background.paper, 0.95)
-      : alpha(theme.palette.background.paper, 0.98),
+    background: theme.walletDialog?.background || (theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.95)' : '#FFFFFF'),
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
-    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+    border: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.2)}`,
     boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.25)}`,
     overflow: 'hidden',
     width: '100%',
@@ -49,20 +47,16 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
 
 const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
   padding: theme.spacing(2, 2.5),
-  background: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.background.default, 0.4)
-    : alpha(theme.palette.background.default, 0.6),
+  background: theme.walletDialog?.backgroundSecondary || (theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : alpha(theme.palette.background.default, 0.6)),
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+  borderBottom: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.15)}`,
   position: 'relative'
 }));
 
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   padding: theme.spacing(2.5),
-  background: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.background.default, 0.3)
-    : alpha(theme.palette.background.default, 0.4),
+  background: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.3)' : 'transparent',
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
   position: 'relative'
@@ -87,7 +81,7 @@ const WalletItem = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(1.5, 2),
   cursor: 'pointer',
   borderRadius: '12px',
-  background: theme.palette.mode === 'dark'
+  background: theme.palette.mode === 'dark' 
     ? alpha(theme.palette.background.paper, 0.4)
     : alpha(theme.palette.background.paper, 0.6),
   backdropFilter: 'blur(10px)',
