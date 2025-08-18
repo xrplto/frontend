@@ -26,15 +26,17 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(20px)',
   WebkitBackdropFilter: 'blur(20px)',
   '& .MuiBackdrop-root': {
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(0, 0, 0, 0.3)'
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.5)'
   },
   '& .MuiDialog-paper': {
     borderRadius: '16px',
-    background: 'transparent',
+    background: theme.palette.mode === 'dark' 
+      ? alpha(theme.palette.background.paper, 0.95)
+      : alpha(theme.palette.background.paper, 0.98),
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
-    border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.25)}`,
     overflow: 'hidden',
     width: '100%',
     maxWidth: '420px',
@@ -44,16 +46,20 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
 
 const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
   padding: theme.spacing(2, 2.5),
-  background: 'transparent',
+  background: theme.palette.mode === 'dark'
+    ? alpha(theme.palette.background.default, 0.4)
+    : alpha(theme.palette.background.default, 0.6),
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   position: 'relative'
 }));
 
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   padding: theme.spacing(2.5),
-  background: 'transparent',
+  background: theme.palette.mode === 'dark'
+    ? alpha(theme.palette.background.default, 0.3)
+    : alpha(theme.palette.background.default, 0.4),
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
   position: 'relative'
@@ -78,13 +84,17 @@ const WalletItem = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(1.5, 2),
   cursor: 'pointer',
   borderRadius: '12px',
-  background: 'transparent',
+  background: theme.palette.mode === 'dark'
+    ? alpha(theme.palette.background.paper, 0.4)
+    : alpha(theme.palette.background.paper, 0.6),
   backdropFilter: 'blur(10px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
   transition: 'all 0.2s ease',
   '&:hover': {
-    background: 'transparent',
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+    background: theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.paper, 0.6)
+      : alpha(theme.palette.background.paper, 0.8),
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.4)}`,
     transform: 'translateY(-1px)',
     '& .wallet-name': {
       color: theme.palette.primary.main
