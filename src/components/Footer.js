@@ -47,7 +47,7 @@ function Footer() {
               underline="none"
               rel="noreferrer noopener nofollow"
             >
-              <Image src={img} width={100} height={37} alt="XRPL.to Logo" />
+              <Image src={img} width={100} height={37} alt="XRPL.to Logo" priority />
             </Link>
           </Grid>
 

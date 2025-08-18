@@ -53,7 +53,7 @@ function Logo({ style }) {
           width={125}
           height={46}
           alt="XRPL.to Logo"
-          priority
+          priority={true}
           onError={handleImageError}
           style={{
             objectFit: 'contain'
