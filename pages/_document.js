@@ -15,6 +15,15 @@ export default function Document() {
         <link rel="dns-prefetch" href="https://s1.xrpl.to" />
         <link rel="dns-prefetch" href="https://api.xrpl.to" />
         
+        {/* Preload critical font for faster LCP */}
+        <link 
+          rel="preload" 
+          href="/fonts/inter.woff2" 
+          as="font" 
+          type="font/woff2" 
+          crossOrigin="anonymous"
+        />
+        
         {/* Optimize font loading */}
         <link 
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" 
@@ -50,6 +59,7 @@ export default function Document() {
               font-weight: 400 700;
               font-display: swap;
               src: local('Inter'), url('/fonts/inter.woff2') format('woff2');
+              unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
             }
             body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
           `

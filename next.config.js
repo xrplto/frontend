@@ -63,8 +63,9 @@ module.exports = {
           }
         ]
       },
+      // Immutable assets - 1 year cache
       {
-        source: '/static/:path*',
+        source: '/fonts/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -73,7 +74,7 @@ module.exports = {
         ]
       },
       {
-        source: '/fonts/:path*',
+        source: '/static/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -91,11 +92,94 @@ module.exports = {
         ]
       },
       {
+        source: '/icons/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      // Semi-static assets - 1 week cache with revalidation
+      {
         source: '/logo/:path*',
         headers: [
           {
             key: 'Cache-Control',
             value: 'public, max-age=604800, stale-while-revalidate=86400'
+          }
+        ]
+      },
+      {
+        source: '/(.*).webp',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      {
+        source: '/(.*).svg',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      // SSR pages - short cache with revalidation
+      {
+        source: '/',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=10, stale-while-revalidate=59'
+          }
+        ]
+      },
+      {
+        source: '/token/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=10, stale-while-revalidate=59'
+          }
+        ]
+      },
+      {
+        source: '/trending',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=60, stale-while-revalidate=300'
+          }
+        ]
+      },
+      {
+        source: '/gainers/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=60, stale-while-revalidate=300'
+          }
+        ]
+      },
+      {
+        source: '/new',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=60, stale-while-revalidate=300'
+          }
+        ]
+      },
+      {
+        source: '/most-viewed',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=60, stale-while-revalidate=300'
           }
         ]
       }
