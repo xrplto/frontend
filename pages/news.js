@@ -5,7 +5,8 @@ import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { useSelector } from 'react-redux';
 import { useTheme } from '@mui/material/styles';
 import styled from '@emotion/styled';
-import { alpha, Container } from '@mui/material';
+import { alpha, Container, Box, IconButton } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import { Icon } from '@iconify/react';
 import styles from './news.module.css';
 
@@ -561,23 +562,64 @@ function NewsPage() {
                 </h1>
               </div>
               <form onSubmit={handleSearch} className={styles.searchForm}>
-                <div className={`${styles.compactSearchContainer} ${isDark ? styles.dark : ''}`}>
-                  <svg className={styles.searchIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderRadius: '14px',
+                    px: 2.5,
+                    py: 1.5,
+                    height: '46px',
+                    minWidth: { xs: '100%', sm: '320px' },
+                    backgroundColor: 'transparent',
+                    backdropFilter: 'blur(10px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(10px) saturate(150%)',
+                    border: `0.5px solid ${alpha(theme.palette.primary.main, isDark ? 0.12 : 0.18)}`,
+                    boxShadow: 'none',
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                      border: `0.5px solid ${alpha(theme.palette.primary.main, isDark ? 0.25 : 0.35)}`,
+                      boxShadow: 'none',
+                      transform: 'translateY(-1px)'
+                    },
+                    '&:focus-within': {
+                      border: `0.5px solid ${alpha(theme.palette.primary.main, isDark ? 0.35 : 0.45)}`,
+                      transform: 'translateY(-1px)'
+                    }
+                  }}
+                >
+                  <SearchIcon
+                    sx={{
+                      fontSize: '1.3rem',
+                      mr: 2,
+                      color: alpha(theme.palette.primary.main, 0.6),
+                      transition: 'all 0.25s ease'
+                    }}
+                  />
                   <input
                     type="text"
-                    className={styles.compactSearchInput}
                     placeholder="Search news..."
                     aria-label="Search news articles"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
+                    style={{
+                      flex: 1,
+                      border: 'none',
+                      outline: 'none',
+                      background: 'transparent',
+                      fontSize: '0.96rem',
+                      color: theme.palette.text.primary,
+                      fontWeight: 500,
+                      letterSpacing: '0.02em',
+                      lineHeight: 1.2
+                    }}
                   />
                   {searchInput && (
                     <>
-                      <button
+                      <IconButton
                         type="button"
-                        className={styles.clearButton}
                         onClick={() => {
                           setSearchInput('');
                           setSearchQuery('');
@@ -588,22 +630,49 @@ function NewsPage() {
                           if (selectedSource) query.source = selectedSource;
                           router.push({ pathname: '/news', query }, undefined, { shallow: true });
                         }}
+                        sx={{
+                          p: 0.5,
+                          mr: 1,
+                          color: alpha(theme.palette.text.primary, 0.5),
+                          '&:hover': {
+                            color: theme.palette.text.primary,
+                            backgroundColor: alpha(theme.palette.action.hover, 0.08)
+                          }
+                        }}
                       >
-                        ×
-                      </button>
-                      <button
+                        <Icon icon="material-symbols:close" width="18" height="18" />
+                      </IconButton>
+                      <Box
+                        component="button"
                         type="submit"
-                        className={styles.searchButton}
-                        style={{
-                          background: theme.palette.primary.main,
-                          color: theme.palette.primary.contrastText
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          px: 2,
+                          py: 0.75,
+                          borderRadius: '8px',
+                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText,
+                          border: 'none',
+                          fontSize: '0.875rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            backgroundColor: theme.palette.primary.dark,
+                            transform: 'scale(1.02)'
+                          },
+                          '&:active': {
+                            transform: 'scale(0.98)'
+                          }
                         }}
                       >
                         Search
-                      </button>
+                      </Box>
                     </>
                   )}
-                </div>
+                </Box>
               </form>
             </div>
           </div>
