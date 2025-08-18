@@ -713,10 +713,102 @@ function NewsPage() {
               </div>
             </div>
             <div className={`${styles.sentimentGrid} ${isMobile ? styles.mobile : ''}`}>
-              <SentimentSummary period="24h" stats={sentimentStats.last24h} />
-              <SentimentSummary period="7d" stats={sentimentStats.last7d} />
-              <SentimentSummary period="30d" stats={sentimentStats.last30d} />
-              <SentimentSummary period="All" stats={sentimentStats.all} />
+              <div className={styles.sentimentSummary}>
+                <span 
+                  className={styles.sentimentPeriod}
+                  style={{ 
+                    color: theme.palette.mode === 'dark' ? '#ffffff' : 'rgba(0, 0, 0, 0.7)',
+                    fontWeight: 700
+                  }}
+                >
+                  24H
+                </span>
+                <div className={styles.sentimentValues}>
+                  <span className={`${styles.sentimentValue} ${styles.bullish}`}>
+                    {sentimentStats.last24h?.bullish || 0}%
+                  </span>
+                  <span className={styles.sentimentDivider}>·</span>
+                  <span className={`${styles.sentimentValue} ${styles.bearish}`}>
+                    {sentimentStats.last24h?.bearish || 0}%
+                  </span>
+                  <span className={styles.sentimentDivider}>·</span>
+                  <span className={`${styles.sentimentValue} ${styles.neutral}`}>
+                    {sentimentStats.last24h?.neutral || 0}%
+                  </span>
+                </div>
+              </div>
+              <div className={styles.sentimentSummary}>
+                <span 
+                  className={styles.sentimentPeriod}
+                  style={{ 
+                    color: theme.palette.mode === 'dark' ? '#ffffff' : 'rgba(0, 0, 0, 0.7)',
+                    fontWeight: 700
+                  }}
+                >
+                  7D
+                </span>
+                <div className={styles.sentimentValues}>
+                  <span className={`${styles.sentimentValue} ${styles.bullish}`}>
+                    {sentimentStats.last7d?.bullish || 0}%
+                  </span>
+                  <span className={styles.sentimentDivider}>·</span>
+                  <span className={`${styles.sentimentValue} ${styles.bearish}`}>
+                    {sentimentStats.last7d?.bearish || 0}%
+                  </span>
+                  <span className={styles.sentimentDivider}>·</span>
+                  <span className={`${styles.sentimentValue} ${styles.neutral}`}>
+                    {sentimentStats.last7d?.neutral || 0}%
+                  </span>
+                </div>
+              </div>
+              <div className={styles.sentimentSummary}>
+                <span 
+                  className={styles.sentimentPeriod}
+                  style={{ 
+                    color: theme.palette.mode === 'dark' ? '#ffffff' : 'rgba(0, 0, 0, 0.7)',
+                    fontWeight: 700
+                  }}
+                >
+                  30D
+                </span>
+                <div className={styles.sentimentValues}>
+                  <span className={`${styles.sentimentValue} ${styles.bullish}`}>
+                    {sentimentStats.last30d?.bullish || 0}%
+                  </span>
+                  <span className={styles.sentimentDivider}>·</span>
+                  <span className={`${styles.sentimentValue} ${styles.bearish}`}>
+                    {sentimentStats.last30d?.bearish || 0}%
+                  </span>
+                  <span className={styles.sentimentDivider}>·</span>
+                  <span className={`${styles.sentimentValue} ${styles.neutral}`}>
+                    {sentimentStats.last30d?.neutral || 0}%
+                  </span>
+                </div>
+              </div>
+              <div className={styles.sentimentSummary}>
+                <span 
+                  className={styles.sentimentPeriod}
+                  style={{ 
+                    color: theme.palette.mode === 'dark' ? '#ffffff' : 'rgba(0, 0, 0, 0.7)',
+                    fontWeight: 700
+                  }}
+                >
+                  ALL
+                </span>
+                <div className={styles.sentimentValues}>
+                  <span className={`${styles.sentimentValue} ${styles.bullish}`}>
+                    {sentimentStats.all?.bullish || 0}%
+                  </span>
+                  <span className={styles.sentimentDivider}>·</span>
+                  <span className={`${styles.sentimentValue} ${styles.bearish}`}>
+                    {sentimentStats.all?.bearish || 0}%
+                  </span>
+                  <span className={styles.sentimentDivider}>·</span>
+                  <span className={`${styles.sentimentValue} ${styles.neutral}`}>
+                    {sentimentStats.all?.neutral || 0}%
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
