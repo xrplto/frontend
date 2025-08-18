@@ -3038,48 +3038,6 @@ export default function Portfolio({ account, limit, collection, type }) {
                       backdropFilter: 'blur(10px)'
                     }}
                   >
-                    <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-                      <Box
-                        sx={{
-                          p: 1.5,
-                          borderRadius: '16px',
-                          background: 'transparent',
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
-                        }}
-                      >
-                        <AccountBalanceWalletIcon
-                          sx={{
-                            color: theme.palette.primary.main,
-                            fontSize: '1.5rem',
-                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                          }}
-                        />
-                      </Box>
-                      <Box>
-                        <Typography
-                          sx={{
-                            color: theme.palette.text.primary,
-                            fontSize: '1.4rem',
-                            fontWeight: 700,
-                            lineHeight: 1.2,
-                            letterSpacing: '-0.02em',
-                            background: `linear-gradient(135deg, ${
-                              theme.palette.text.primary
-                            } 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
-                            backgroundClip: 'text',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                          }}
-                          variant="h5"
-                        >
-                          Portfolio Assets
-                        </Typography>
-                      </Box>
-                    </Stack>
 
                     <ToggleButtonGroup
                       value={activeTab}
@@ -3087,92 +3045,41 @@ export default function Portfolio({ account, limit, collection, type }) {
                       onChange={(e, newValue) => newValue !== null && handleChange(e, newValue)}
                       size="medium"
                       sx={{
-                        bgcolor: alpha(theme.palette.background.paper, 0.6),
-                        borderRadius: '16px',
-                        padding: '4px',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                        boxShadow: `inset 0 2px 4px ${alpha(theme.palette.common.black, 0.06)}`,
+                        bgcolor: 'transparent',
+                        borderRadius: '8px',
+                        padding: 0,
+                        border: 'none',
                         '& .MuiToggleButton-root': {
                           border: 'none',
-                          borderRadius: '12px !important',
-                          color: alpha(theme.palette.text.secondary, 0.8),
-                          fontSize: '0.85rem',
+                          borderRadius: '6px',
+                          color: theme.palette.text.secondary,
+                          fontSize: '0.8rem',
                           fontWeight: 500,
                           textTransform: 'none',
-                          px: 2,
-                          py: 1,
-                          minWidth: '80px',
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                          position: 'relative',
+                          px: 1.5,
+                          py: 0.75,
+                          minWidth: '70px',
+                          transition: 'all 0.2s ease',
                           '&.Mui-selected': {
-                            bgcolor: theme.palette.background.paper,
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
                             color: theme.palette.primary.main,
-                            fontWeight: 600,
-                            boxShadow: `0 4px 12px ${alpha(
-                              theme.palette.primary.main,
-                              0.15
-                            )}, 0 2px 4px ${alpha(theme.palette.common.black, 0.1)}`,
-                            transform: 'translateY(-1px)',
-                            '&::before': {
-                              content: '""',
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              height: '2px',
-                              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
-                              borderRadius: '12px 12px 0 0'
-                            }
+                            fontWeight: 600
                           },
                           '&:hover': {
-                            bgcolor: alpha(theme.palette.background.paper, 0.8),
-                            color: theme.palette.primary.main,
-                            transform: 'translateY(-1px)'
+                            bgcolor: alpha(theme.palette.primary.main, 0.05),
+                            color: theme.palette.primary.main
                           }
                         }
                       }}
                     >
                       <ToggleButton value="0">
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box
-                            sx={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: '50%',
-                              bgcolor: theme.palette.primary.main,
-                              opacity: activeTab === '0' ? 1 : 0.4
-                            }}
-                          />
-                          Tokens
-                        </Box>
+                        Tokens
                       </ToggleButton>
                       <ToggleButton value="1">
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box
-                            sx={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: '50%',
-                              bgcolor: theme.palette.success.main,
-                              opacity: activeTab === '1' ? 1 : 0.4
-                            }}
-                          />
-                          NFTs
-                        </Box>
+                        NFTs
                       </ToggleButton>
                       <ToggleButton value="2">
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box
-                            sx={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: '50%',
-                              bgcolor: theme.palette.warning.main,
-                              opacity: activeTab === '2' ? 1 : 0.4
-                            }}
-                          />
-                          Ranks
-                        </Box>
+                        Ranks
                       </ToggleButton>
                     </ToggleButtonGroup>
                   </Box>

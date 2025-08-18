@@ -222,21 +222,21 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
           }
         }}
       >
-        <Box sx={{ p: { xs: 0.75, sm: 1 } }}>
-          <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} alignItems="center">
+        <Box sx={{ p: { xs: 0.5, sm: 0.75 } }}>
+          <Stack direction="row" spacing={{ xs: 0.75, sm: 1 }} alignItems="center">
             {/* Left side - Token info */}
-            <Stack direction="row" spacing={1} alignItems="center" flex={1}>
+            <Stack direction="row" spacing={0.75} alignItems="center" flex={1}>
               <Avatar
                 src={isXRP ? '/xrp.svg' : `https://s1.xrpl.to/token/${token.md5}`}
                 sx={{
-                  width: { xs: 28, sm: 32 },
-                  height: { xs: 28, sm: 32 },
+                  width: { xs: 24, sm: 28 },
+                  height: { xs: 24, sm: 28 },
                   borderRadius: 1,
                   backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : '#fff',
                   boxShadow: theme.shadows[1],
                   '& img': {
                     objectFit: 'contain',
-                    padding: 0.5
+                    padding: 0.25
                   }
                 }}
               />
@@ -246,8 +246,8 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                   <Typography
                     variant="body1"
                     sx={{
-                      fontSize: { xs: '0.75rem', sm: '0.85rem' },
-                      fontWeight: 700,
+                      fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                      fontWeight: 600,
                       color: theme.palette.text.primary,
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -276,7 +276,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                   <Typography 
                     variant="caption" 
                     sx={{ 
-                      fontSize: { xs: '0.6rem', sm: '0.65rem' },
+                      fontSize: { xs: '0.55rem', sm: '0.6rem' },
                       color: theme.palette.text.secondary,
                       fontFamily: 'monospace'
                     }}
@@ -290,32 +290,32 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
             {/* Right side - Stats grid */}
             <Stack 
               direction="row" 
-              spacing={{ xs: 1.5, sm: 2 }} 
+              spacing={{ xs: 1, sm: 1.25 }} 
               alignItems="center"
               sx={{ 
                 ml: 'auto'
               }}
             >
               <Box sx={{ textAlign: 'right', minWidth: { xs: 60, sm: 80 } }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', display: 'block', lineHeight: 1.2 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem', display: 'block', lineHeight: 1.1 }}>
                   Balance
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.7rem', sm: '0.8rem' }, lineHeight: 1.3 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.65rem', sm: '0.75rem' }, lineHeight: 1.2 }}>
                   {formatBalance(token.balance)}
                 </Typography>
               </Box>
               
               <Box sx={{ textAlign: 'right', minWidth: { xs: 50, sm: 70 } }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', display: 'block', lineHeight: 1.2 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem', display: 'block', lineHeight: 1.1 }}>
                   Value
                 </Typography>
                 <Typography 
                   variant="body2" 
                   sx={{ 
                     fontWeight: 700, 
-                    fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                    fontSize: { xs: '0.65rem', sm: '0.75rem' },
                     color: theme.palette.primary.main,
-                    lineHeight: 1.3
+                    lineHeight: 1.2
                   }}
                 >
                   {currencySymbols[activeFiatCurrency]}{value.toFixed(2)}
@@ -323,7 +323,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
               </Box>
               
               <Box sx={{ textAlign: 'right', display: { xs: 'none', sm: 'block' }, minWidth: 50 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', display: 'block', lineHeight: 1.2 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem', display: 'block', lineHeight: 1.1 }}>
                   % Owned
                 </Typography>
                 <Typography 
@@ -526,12 +526,12 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   }
 
   return (
-    <Grid container spacing={{ xs: 1.5, sm: 2 }}>
+    <Grid container spacing={{ xs: 1, sm: 1.5 }}>
       {/* Asset Distribution Chart */}
       <Grid item xs={12} md={4}>
         <Box
           sx={{
-            p: { xs: 1.5, sm: 2 },
+            p: { xs: 1, sm: 1.25 },
             borderRadius: '16px',
             background: 'transparent',
             backdropFilter: 'blur(40px) saturate(150%)',
@@ -577,8 +577,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
               alignItems: 'center',
               justifyContent: 'center',
               position: 'relative',
-              minHeight: 220,
-              maxHeight: 240
+              minHeight: 180,
+              maxHeight: 200
             }}
           >
             {(() => {
@@ -639,7 +639,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                           chart: {
                             type: 'pie',
                             backgroundColor: 'transparent',
-                            height: 220,
+                            height: 180,
                             animation: {
                               duration: 1000
                             }
@@ -751,7 +751,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           </Box>
 
           {assetDistribution && assetDistribution.labels && (
-            <Box sx={{ mt: 2 }}>
+            <Box sx={{ mt: 1.5 }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {assetDistribution.labels.slice(0, 3).map((label, index) => (
                   <Box
@@ -819,11 +819,11 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
 
       {/* Trustlines */}
       <Grid item xs={12} md={8}>
-        <Stack spacing={1}>
+        <Stack spacing={0.75}>
           {/* Summary Card */}
           <Card
             sx={{
-              p: { xs: 0.75, sm: 1 },
+              p: { xs: 0.5, sm: 0.75 },
               background: 'transparent',
               border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
               borderRadius: 1.5
@@ -865,7 +865,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           </Card>
 
           {/* Token List */}
-          <Stack spacing={0.5}>
+          <Stack spacing={0.25}>
             {displayedAssets.map((asset, index) => {
               // Handle XRP differently from trustlines
               if (asset.isXRP) {
@@ -909,7 +909,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
 
           {/* Show More Button */}
           {hasMore && (
-            <Box sx={{ textAlign: 'center', mt: 1 }}>
+            <Box sx={{ textAlign: 'center', mt: 0.75 }}>
               <Button
                 size="small"
                 variant="outlined"
@@ -918,7 +918,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                   borderRadius: 1,
                   textTransform: 'none',
                   fontSize: { xs: '0.7rem', sm: '0.8rem' },
-                  py: 0.5,
+                  py: 0.25,
                   px: 2,
                   borderColor: alpha(theme.palette.primary.main, 0.3),
                   '&:hover': {
