@@ -40,9 +40,12 @@ import Ranks from './Ranks';
 import { activeRankColors, rankGlowEffect } from 'src/components/Chatbox/RankStyles';
 import axios from 'axios';
 
+// Get base URL from environment
+const BASE_URL = process.env.API_URL;
+
 // Configure axios defaults with timeout
 const axiosInstance = axios.create({
-  timeout: 10000 // 10 second timeout
+  timeout: 30000 // 30 second timeout for analytics calls
 });
 
 import Highcharts from 'highcharts';
@@ -164,7 +167,7 @@ export default function Portfolio({ account, limit, collection, type }) {
     const fetchTraderStats = async () => {
       try {
         const response = await axiosInstance.get(
-          `https://api.xrpl.to/api/analytics/trader-stats/${account}`
+          `${BASE_URL}/analytics/trader-stats/${account}`
         );
         setTraderStats(response.data);
         // Set AMM status based on response

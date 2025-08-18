@@ -42,7 +42,8 @@ import {
 
 // Helper function to format balance
 const formatBalance = (balance) => {
-  const num = Number(balance);
+  // For XRPL trustlines, negative balance means the user holds that amount
+  const num = Math.abs(Number(balance));
   if (num === 0) return '0';
   if (num < 0.000001) return num.toExponential(2);
   if (num < 1) return num.toFixed(6).replace(/\.?0+$/, '');
@@ -68,8 +69,8 @@ const processAssetDistribution = async (trustlines, theme) => {
   const topAssets = sortedTrustlines.slice(0, 10);
   const otherAssets = sortedTrustlines.slice(10);
 
-  // Ensure we have valid numeric values
-  const labels = topAssets.map((asset) => asset.currency);
+  // Ensure we have valid numeric values - use token name if available, fallback to currency
+  const labels = topAssets.map((asset) => asset.token?.name || asset.currency);
   const data = topAssets.map((asset) => parseFloat(asset.value) || 0);
 
   // Add "Others" category if there are more than 10 assets
@@ -87,20 +88,21 @@ const processAssetDistribution = async (trustlines, theme) => {
 
   for (let i = 0; i < topAssets.length; i++) {
     const asset = topAssets[i];
-    let color = getTokenFallbackColor(asset.currency, i);
+    let color = getTokenFallbackColor(asset.token?.name || asset.currency, i);
 
     if (asset.currency === 'XRP') {
       color = theme.palette.primary.main; // Use a specific color for XRP
     } else {
       try {
         // Try to extract color from token icon if md5 exists
-        if (asset.md5) {
-          const imageUrl = getTokenImageUrl(asset.md5);
+        const md5 = asset.token?.md5 || asset.md5;
+        if (md5) {
+          const imageUrl = getTokenImageUrl(md5);
           const extractedColor = await extractDominantColor(imageUrl);
           color = rgbToHex(extractedColor);
         }
       } catch (error) {
-        console.warn(`Failed to extract color for ${asset.currency}:`, error);
+        console.warn(`Failed to extract color for ${asset.token?.name || asset.currency}:`, error);
         // Keep the fallback color
       }
     }
@@ -190,7 +192,15 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
 
   const percentOwned = useMemo(() => {
     if (isXRP) {
-      return ((parseFloat(token.balance) / 99_990_000_000) * 100).toFixed(8);
+      // Use supply from xrpToken data if available, otherwise fallback to hardcoded value
+      const xrpSupply = parseFloat(token.supply) || 99_990_000_000;
+      return ((parseFloat(token.balance) / xrpSupply) * 100).toFixed(8);
+    }
+    // Calculate percentage owned for trustlines using supply from API
+    if (token.supply && token.balance) {
+      const supply = parseFloat(token.supply);
+      const balance = Math.abs(parseFloat(token.balance)); // Use absolute value for XRPL trustlines
+      return supply > 0 ? ((balance / supply) * 100).toFixed(8) : '0';
     }
     return token.percentOwned || '0';
   }, [token, isXRP]);
@@ -244,7 +254,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    {isXRP ? 'XRP' : (token.currencyName || token.currency)}
+                    {isXRP ? 'XRP' : (token.user || token.name || token.currencyName || token.currency)}
                   </Typography>
                   {(isXRP || token.verified) && (
                     <VerifiedIcon sx={{ fontSize: 12, color: theme.palette.success.main }} />
@@ -378,6 +388,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   const { sync, activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency];
+  const BASE_URL = process.env.API_URL;
   
   const [loading, setLoading] = useState(false);
   const [lines, setLines] = useState([]);
@@ -403,9 +414,18 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     const fetchLines = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`https://api.xrpl.to/api/trustlines?account=${account}&includeRates=true&limit=400`);
-        if (res.data?.success) {
-          setLines(res.data.trustlines);
+        const res = await axios.get(`${BASE_URL}/trustlines/${account}?sortByValue=true&limit=200&page=0`);
+        if (res.data?.result === 'success') {
+          const trustlines = res.data.lines || [];
+          console.log('Fetched trustlines count:', trustlines.length);
+          console.log('First few trustlines:', trustlines.slice(0, 3));
+          setLines(trustlines);
+          
+          // Store XRP token data from API response
+          if (res.data.xrpToken) {
+            setXrpTokenData(res.data.xrpToken);
+            console.log('XRP token data:', res.data.xrpToken);
+          }
         }
       } catch (err) {
         console.error('Error fetching trustlines:', err);
@@ -419,6 +439,9 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     }
   }, [account, sync]);
 
+  // Store XRP token data from API response
+  const [xrpTokenData, setXrpTokenData] = useState(null);
+  
   // Calculate total value and process asset distribution
   useEffect(() => {
     const processData = async () => {
@@ -443,14 +466,28 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
         onUpdateTotalValue(totalSum);
       }
       
-      // Prepare assets data including XRP
-      const allAssets = xrpBalance
-        ? [{ currency: 'XRP', balance: xrpBalance, value: xrpBalance, exch: 1, exchRate }, ...lines]
-        : lines;
+      // Create the complete assets list - XRP first (if exists), then trustlines
+      const allAssets = [];
+      
+      // Add XRP as first item if balance exists (API provides XRP data separately)
+      if (xrpBalance > 0 && xrpTokenData) {
+        allAssets.push({
+          ...xrpTokenData,
+          balance: xrpBalance,
+          value: xrpValue,
+          isXRP: true
+        });
+      }
+      
+      // Add all trustlines
+      allAssets.push(...lines);
       
       if (onTrustlinesData) {
         onTrustlinesData(allAssets);
       }
+      
+      // Set the sorted assets for display
+      setSortedAssets(allAssets);
       
       // Process asset distribution for pie chart
       const pieData = await processAssetDistribution(allAssets, theme);
@@ -458,10 +495,15 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     };
     
     processData();
-  }, [lines, xrpBalance, exchRate, onUpdateTotalValue, onTrustlinesData, theme]);
+  }, [lines, xrpBalance, exchRate, onUpdateTotalValue, onTrustlinesData, theme, xrpTokenData]);
 
-  const displayedLines = showAll ? lines : lines.slice(0, 6);
-  const hasMore = lines.length > 6;
+  // We need to use the properly sorted array that includes XRP
+  const [sortedAssets, setSortedAssets] = useState([]);
+  
+  const displayedAssets = showAll ? sortedAssets : sortedAssets.slice(0, 6);
+  const hasMore = sortedAssets.length > 6;
+  
+  console.log('Component state - sortedAssets.length:', sortedAssets.length, 'showAll:', showAll, 'displayedAssets.length:', displayedAssets.length);
 
   if (loading) {
     return (
@@ -471,7 +513,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     );
   }
 
-  if (!loading && lines.length === 0 && !xrpBalance) {
+  if (!loading && sortedAssets.length === 0) {
     return (
       <Card sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
         <WalletIcon sx={{ fontSize: 48, color: theme.palette.text.secondary, mb: 2 }} />
@@ -795,7 +837,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                     Portfolio Overview
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>
-                    {lines.length + (xrpBalance ? 1 : 0)} assets
+                    {sortedAssets.length} assets
                   </Typography>
                 </Box>
               </Stack>
@@ -824,26 +866,45 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
 
           {/* Token List */}
           <Stack spacing={0.5}>
-            {xrpBalance > 0 && (
-              <Fade in timeout={300}>
-                <Box>
-                  <TokenCard
-                    token={{ balance: xrpBalance }}
-                    account={account}
-                    isXRP
-                    exchRate={exchRate}
-                  />
-                </Box>
-              </Fade>
-            )}
-            
-            {displayedLines.map((line, index) => (
-              <Fade in timeout={300 + index * 50} key={`${line.currency}-${line.issuer}`}>
-                <Box>
-                  <TokenCard token={line} account={account} exchRate={exchRate} />
-                </Box>
-              </Fade>
-            ))}
+            {displayedAssets.map((asset, index) => {
+              // Handle XRP differently from trustlines
+              if (asset.isXRP) {
+                return (
+                  <Fade in timeout={300 + index * 50} key="XRP">
+                    <Box>
+                      <TokenCard
+                        token={{ balance: asset.balance }}
+                        account={account}
+                        isXRP
+                        exchRate={exchRate}
+                      />
+                    </Box>
+                  </Fade>
+                );
+              }
+              
+              // Merge asset data with token data for proper display
+              const tokenData = {
+                ...asset,
+                // Use the direct fields from API response
+                currencyName: asset.name || asset.currency,
+                verified: asset.verified || false,
+                md5: asset.md5, // Use md5 from API response
+                supply: asset.supply, // Use supply from API response
+                origin: asset.origin,
+                user: asset.user, // Use user from top level
+                name: asset.name, // Use name from top level
+                exch: asset.exch || 0
+              };
+              
+              return (
+                <Fade in timeout={300 + index * 50} key={`${asset.currency}-${asset.issuer}`}>
+                  <Box>
+                    <TokenCard token={tokenData} account={account} exchRate={exchRate} />
+                  </Box>
+                </Fade>
+              );
+            })}
           </Stack>
 
           {/* Show More Button */}
@@ -866,7 +927,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                   }
                 }}
               >
-                {showAll ? 'Show Less' : `Show ${lines.length - 6} More`}
+                {showAll ? 'Show Less' : `Show ${sortedAssets.length - 6} More`}
               </Button>
             </Box>
           )}
