@@ -68,9 +68,6 @@ module.exports = {
   // Add performance optimizations
   reactStrictMode: true,
   compress: true,
-  experimental: {
-    esmExternals: false,
-  },
   // Optimize webpack bundle
   webpack: (config, { isServer }) => {
     // Split chunks more aggressively
