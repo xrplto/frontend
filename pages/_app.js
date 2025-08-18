@@ -9,6 +9,31 @@ import './zMain.css';
 import { SnackbarProvider } from 'notistack';
 import 'src/utils/i18n';
 
+// Polyfills for Safari iOS compatibility
+if (typeof window !== 'undefined') {
+  // Add requestIdleCallback polyfill for Safari
+  if (!window.requestIdleCallback) {
+    window.requestIdleCallback = function(callback, options) {
+      const timeout = options?.timeout || 0;
+      const startTime = Date.now();
+      return setTimeout(function() {
+        callback({
+          didTimeout: timeout > 0 && (Date.now() - startTime) > timeout,
+          timeRemaining: function() {
+            return Math.max(0, 50 - (Date.now() - startTime));
+          }
+        });
+      }, 1);
+    };
+  }
+  
+  if (!window.cancelIdleCallback) {
+    window.cancelIdleCallback = function(id) {
+      clearTimeout(id);
+    };
+  }
+}
+
 // Error logging for mobile debugging
 if (typeof window !== 'undefined') {
   // Capture and log unhandled errors
