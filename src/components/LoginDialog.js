@@ -14,7 +14,7 @@ import { isMobile } from 'react-device-detect';
 import { AppContext } from 'src/AppContext';
 
 const QRDialog = styled(Dialog)(({ theme }) => ({
-  zIndex: 1302
+  zIndex: 10002
 }));
 
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
@@ -79,7 +79,19 @@ const LoginDialog = (props) => {
   
 
   return (
-    <Dialog onClose={handleClose} open={open}>
+    <Dialog 
+      onClose={handleClose} 
+      open={open}
+      sx={{ 
+        zIndex: 10000,
+        '& .MuiBackdrop-root': {
+          zIndex: 10000
+        },
+        '& .MuiDialog-paper': {
+          zIndex: 10001
+        }
+      }}
+    >
       <DialogTitle>
         <Typography variant="modal" align="center" gutterBottom>
           Xaman Wallet

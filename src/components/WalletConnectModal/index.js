@@ -1,4 +1,4 @@
-import { useContext, useState, lazy, Suspense } from 'react';
+import { useContext, useState } from 'react';
 
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -9,6 +9,8 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
+import Link from '@mui/material/Link';
+import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import styled from '@emotion/styled';
@@ -20,7 +22,6 @@ import { enqueueSnackbar } from 'notistack';
 import { isInstalled, getPublicKey, signMessage } from '@gemwallet/api';
 import sdk from '@crossmarkio/sdk';
 
-const LoginDialog = lazy(() => import('../LoginDialog'));
 import { AppContext } from 'src/AppContext';
 import axios from 'axios';
 
@@ -163,6 +164,38 @@ const RecommendedChip = styled('div')(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
 }));
 
+const QRContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+  padding: theme.spacing(2, 0)
+}));
+
+const StyledQRImage = styled('img')({
+  maxWidth: '200px',
+  width: '100%',
+  height: 'auto',
+  borderRadius: '8px'
+});
+
+const OpenXamanButton = styled(Link)(({ theme }) => ({
+  borderRadius: '8px',
+  border: `1px solid ${theme.palette.primary.main}`,
+  padding: theme.spacing(1.5, 3),
+  marginTop: theme.spacing(1),
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  textDecoration: 'none',
+  display: 'inline-block',
+  color: theme.palette.primary.main,
+  fontWeight: 500,
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+    transform: 'translateY(-1px)'
+  }
+}));
+
 const WalletConnectModal = () => {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
@@ -174,6 +207,7 @@ const WalletConnectModal = () => {
     openLogin,
     qrUrl,
     nextUrl,
+    connecting,
     handleLoginClose,
     handleLogin,
     onLogoutXumm,
@@ -295,18 +329,28 @@ const WalletConnectModal = () => {
 
       <StyledDialogContent>
         {openLogin ? (
-          <Suspense fallback={
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
-              <CircularProgress />
-            </Box>
-          }>
-            <LoginDialog
-              open={openLogin}
-              handleClose={handleLoginClose}
-              qrUrl={qrUrl}
-              nextUrl={nextUrl}
-            />
-          </Suspense>
+          <>
+            <ModalTitle variant="modal">Xaman Wallet</ModalTitle>
+            <Typography variant="body1" align="center" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+              Please log in with your Xaman (Xumm) app
+            </Typography>
+            <QRContainer>
+              <Box sx={{ width: '200px', height: '200px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                {connecting ? (
+                  <Skeleton variant="rectangular" width={200} height={200} sx={{ borderRadius: '8px' }} />
+                ) : (
+                  <StyledQRImage alt="Xaman QR" src={qrUrl} />
+                )}
+              </Box>
+              <OpenXamanButton
+                href={nextUrl}
+                target="_blank"
+                rel="noreferrer noopener nofollow"
+              >
+                Open in Xaman
+              </OpenXamanButton>
+            </QRContainer>
+          </>
         ) : (
           <>
             <ModalTitle variant="modal">Connect Wallet</ModalTitle>
