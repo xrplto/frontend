@@ -70,6 +70,8 @@ const PriceChartAdvanced = memo(({ token }) => {
   const dataRef = useRef(null);
   const holderDataRef = useRef(null);
   const activeFiatCurrencyRef = useRef(activeFiatCurrency);
+  const chartCreatedRef = useRef(false);
+  const scaleFactorRef = useRef(1);
   
   const BASE_URL = process.env.API_URL;
   const isDark = theme.palette.mode === 'dark';
@@ -105,6 +107,16 @@ const PriceChartAdvanced = memo(({ token }) => {
       value = parseFloat(value);
     }
     return Number(value);
+  };
+
+  // Scale factor for very small prices to help with tick generation
+  const getScaleFactor = (data) => {
+    if (!data || data.length === 0) return 1;
+    const maxPrice = Math.max(...data.map(d => Math.max(d.high || d.close || d.value || d.open || 0)));
+    if (maxPrice < 0.01) return 1000000; // Scale up by 1 million
+    if (maxPrice < 0.1) return 10000;   // Scale up by 10 thousand  
+    if (maxPrice < 1) return 1000;     // Scale up by 1 thousand
+    return 1; // No scaling needed
   };
 
   const calculateSMA = (data, period) => {
@@ -222,15 +234,8 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   // Fetch price data
   useEffect(() => {
-    console.log('📊 [PriceChartAdvanced] Data fetch effect triggered', {
-      tokenMd5: token?.md5,
-      range,
-      activeFiatCurrency,
-      BASE_URL
-    });
     
     if (!token?.md5) {
-      console.warn('⚠️ [PriceChartAdvanced] No token.md5 available, skipping fetch');
       return;
     }
     
@@ -246,17 +251,9 @@ const PriceChartAdvanced = memo(({ token }) => {
         const apiRange = range === 'ALL' ? '1Y' : range;
         const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?range=${apiRange}&vs_currency=${activeFiatCurrency}`;
         
-        console.log('🔄 [PriceChartAdvanced] Fetching data from:', endpoint);
         
         const response = await axios.get(endpoint, { signal: controller.signal });
         
-        console.log('✅ [PriceChartAdvanced] API Response received:', {
-          status: response.status,
-          hasData: !!response.data,
-          hasOhlc: !!response.data?.ohlc,
-          ohlcLength: response.data?.ohlc?.length || 0,
-          sampleData: response.data?.ohlc?.slice(0, 3)
-        });
         
         if (response.data?.ohlc && response.data.ohlc.length > 0) {
           const processedData = response.data.ohlc.map(candle => ({
@@ -269,15 +266,6 @@ const PriceChartAdvanced = memo(({ token }) => {
             volume: convertScientificToRegular(candle[5]) || 0
           })).sort((a, b) => a.time - b.time); // Ensure chronological order
           
-          console.log('📈 [PriceChartAdvanced] Processed data:', {
-            dataPoints: processedData.length,
-            firstPoint: processedData[0],
-            lastPoint: processedData[processedData.length - 1],
-            timeRange: {
-              start: new Date(processedData[0].time * 1000).toISOString(),
-              end: new Date(processedData[processedData.length - 1].time * 1000).toISOString()
-            }
-          });
           
           setData(processedData);
           dataRef.current = processedData;
@@ -288,11 +276,6 @@ const PriceChartAdvanced = memo(({ token }) => {
           const currentPrice = processedData[processedData.length - 1].close;
           const percentFromATH = ((currentPrice - allTimeHigh) / allTimeHigh * 100).toFixed(2);
           
-          console.log('📊 [PriceChartAdvanced] ATH calculated:', {
-            allTimeHigh,
-            currentPrice,
-            percentFromATH
-          });
           
           setAthData({
             price: allTimeHigh,
@@ -310,17 +293,12 @@ const PriceChartAdvanced = memo(({ token }) => {
           setLoading(false);
           setIsUpdating(false);
         } else {
-          console.warn('⚠️ [PriceChartAdvanced] No OHLC data in response');
           setLoading(false);
           setIsUpdating(false);
         }
       } catch (error) {
         if (!axios.isCancel(error)) {
-          console.error('❌ [PriceChartAdvanced] Chart fetch error:', {
-            message: error.message,
-            response: error.response?.data,
-            status: error.response?.status
-          });
+          console.error('Chart fetch error:', error.message);
         }
         setLoading(false);
         setIsUpdating(false);
@@ -333,8 +311,6 @@ const PriceChartAdvanced = memo(({ token }) => {
     const interval = setInterval(() => {
       if (!isUserZoomedRef.current) {
         fetchData(true);
-      } else {
-        console.log('⏸️ [PriceChartAdvanced] Auto-update paused - user is zoomed');
       }
     }, 4000);
     
@@ -393,37 +369,22 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   // Create chart only when chart type changes AND data is available
   useEffect(() => {
-    console.log('🎨 [PriceChartAdvanced] Chart creation effect triggered', {
-      hasContainer: !!chartContainerRef.current,
-      currentChartType: chartType,
-      lastChartType: lastChartTypeRef.current,
-      hasExistingChart: !!chartRef.current,
-      hasData: !!data,
-      dataLength: data?.length || 0,
-      loading
-    });
     
     // Wait for container and data to be available
     if (!chartContainerRef.current || loading || !data || data.length === 0) {
-      console.warn('⚠️ [PriceChartAdvanced] Waiting for container and data', {
-        hasContainer: !!chartContainerRef.current,
-        loading,
-        hasData: !!data,
-        dataLength: data?.length || 0
-      });
       return;
     }
     
-    // Only recreate chart if chart type changed (and we already have a chart)
-    if (chartRef.current && lastChartTypeRef.current === chartType) {
-      console.log('ℹ️ [PriceChartAdvanced] Chart already exists and type unchanged, skipping recreation');
+    // Only create chart once per chart type, prevent flickering
+    if (chartCreatedRef.current && lastChartTypeRef.current === chartType) {
       return;
     }
+    
+    console.log('🎯 Chart creating with data points:', data.length);
     
     // Clean up existing chart when chart type changes
     if (chartRef.current) {
       try {
-        console.log('🧹 [PriceChartAdvanced] Removing existing chart');
         chartRef.current.remove();
       } catch (e) {
         console.error('Error removing chart:', e);
@@ -432,17 +393,11 @@ const PriceChartAdvanced = memo(({ token }) => {
       candleSeriesRef.current = null;
       lineSeriesRef.current = null;
       volumeSeriesRef.current = null;
+      chartCreatedRef.current = false;
     }
     
     lastChartTypeRef.current = chartType;
 
-    console.log('🔨 [PriceChartAdvanced] Creating new chart', {
-      chartType,
-      containerWidth: chartContainerRef.current.clientWidth,
-      containerHeight: isMobile ? 280 : 400,
-      isDark,
-      isMobile
-    });
 
     // Create new chart
     const chart = createChart(chartContainerRef.current, {
@@ -486,10 +441,18 @@ const PriceChartAdvanced = memo(({ token }) => {
           top: 0.05,
           bottom: 0.15,
         },
-        mode: isMobile ? 2 : 0,
+        mode: 0, // Back to normal mode - logarithmic was showing percentages
         autoScale: true,
-        borderVisible: false,
-        visible: !isMobile,
+        borderVisible: true, // Make border visible for debugging
+        visible: true,
+        minimumWidth: 150, // Even wider
+        entireTextOnly: false, // Allow partial text
+        drawTicks: true,
+        ticksVisible: true,
+        alignLabels: true,
+        // Force more aggressive settings
+        tickMarkMaxCharacterLength: 12,
+        textColor: isDark ? '#ffffff' : '#000000',
       },
       localization: {
         priceFormatter: (price) => {
@@ -503,20 +466,25 @@ const PriceChartAdvanced = memo(({ token }) => {
             }
           }
           
+          // Scale the price back down to original value
+          const actualPrice = price / scaleFactorRef.current;
           const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
           
-          if (price < 0.000000001) {
-            return symbol + price.toFixed(12);
-          } else if (price < 0.00001) {
-            return symbol + price.toFixed(10);
-          } else if (price < 0.01) {
-            return symbol + price.toFixed(8);
-          } else if (price < 1) {
-            return symbol + price.toFixed(6);
-          } else if (price < 100) {
-            return symbol + price.toFixed(4);
+          // Format based on the actual (unscaled) price
+          if (actualPrice < 0.000000001) {
+            return symbol + actualPrice.toFixed(6);
+          } else if (actualPrice < 0.00001) {
+            return symbol + actualPrice.toFixed(5);
+          } else if (actualPrice < 0.001) {
+            return symbol + actualPrice.toFixed(5);
+          } else if (actualPrice < 0.01) {
+            return symbol + actualPrice.toFixed(4);
+          } else if (actualPrice < 1) {
+            return symbol + actualPrice.toFixed(4);
+          } else if (actualPrice < 100) {
+            return symbol + actualPrice.toFixed(3);
           } else {
-            return symbol + price.toFixed(2);
+            return symbol + actualPrice.toFixed(2);
           }
         },
       },
@@ -533,6 +501,8 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
 
     chartRef.current = chart;
+    chartCreatedRef.current = true;
+
 
     // Add zoom/scroll detection with debouncing
     let zoomCheckTimeout;
@@ -551,7 +521,6 @@ const PriceChartAdvanced = memo(({ token }) => {
           const shouldPauseUpdates = isZoomed || isScrolledAway;
           
           if (shouldPauseUpdates !== isUserZoomedRef.current) {
-            console.log(shouldPauseUpdates ? '🔍 User zoomed/scrolled - pausing updates' : '🔎 Full view restored - resuming updates');
             setIsUserZoomed(shouldPauseUpdates);
             isUserZoomedRef.current = shouldPauseUpdates;
           }
@@ -636,7 +605,6 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
 
     // Add series based on chart type (they'll get data in the update effect)
-    console.log('📐 [PriceChartAdvanced] Adding chart series for type:', chartType);
     
     if (chartType === 'candles') {
       const candleSeries = chart.addSeries(CandlestickSeries, {
@@ -650,7 +618,6 @@ const PriceChartAdvanced = memo(({ token }) => {
         wickVisible: true,
       });
       candleSeriesRef.current = candleSeries;
-      console.log('✅ [PriceChartAdvanced] Candlestick series created');
     } else if (chartType === 'line') {
       const areaSeries = chart.addSeries(AreaSeries, {
         lineColor: theme.palette.primary.main,
@@ -664,7 +631,6 @@ const PriceChartAdvanced = memo(({ token }) => {
         crosshairMarkerBackgroundColor: theme.palette.background.paper,
       });
       lineSeriesRef.current = areaSeries;
-      console.log('✅ [PriceChartAdvanced] Line/Area series created');
     } else if (chartType === 'holders') {
       const holdersSeries = chart.addSeries(AreaSeries, {
         lineColor: '#9c27b0',
@@ -678,7 +644,6 @@ const PriceChartAdvanced = memo(({ token }) => {
         crosshairMarkerBackgroundColor: theme.palette.background.paper,
       });
       lineSeriesRef.current = holdersSeries;
-      console.log('✅ [PriceChartAdvanced] Holders series created');
     }
 
     // Add volume series for non-holder charts
@@ -705,7 +670,6 @@ const PriceChartAdvanced = memo(({ token }) => {
           bottom: 0,
         },
       });
-      console.log('✅ [PriceChartAdvanced] Volume series created');
     }
 
     const handleResize = () => {
@@ -731,7 +695,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         chartRef.current = null;
       }
     };
-  }, [chartType, theme, isDark, isMobile, data, loading]); // Include data and loading for proper initialization
+  }, [chartType, isDark, isMobile, data]); // Need data dependency but prevent unnecessary recreations
 
   // Handle fullscreen resize
   useEffect(() => {
@@ -746,34 +710,15 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   // Separate effect to update data on chart series
   useEffect(() => {
-    console.log('📊 [PriceChartAdvanced] Data update effect triggered', {
-      hasChart: !!chartRef.current,
-      chartType,
-      dataLength: data?.length || 0,
-      holderDataLength: holderData?.length || 0,
-      hasCandleSeries: !!candleSeriesRef.current,
-      hasLineSeries: !!lineSeriesRef.current,
-      hasVolumeSeries: !!volumeSeriesRef.current
-    });
-    
     // Skip if chart isn't ready yet - the chart creation effect will handle initial data
     if (!chartRef.current) {
-      console.log('ℹ️ [PriceChartAdvanced] Chart not ready yet, skipping data update');
       return;
     }
     
     const chartData = chartType === 'holders' ? holderData : data;
     if (!chartData || chartData.length === 0) {
-      console.log('ℹ️ [PriceChartAdvanced] No data available for chart type:', chartType);
       return;
     }
-
-    console.log('🔄 [PriceChartAdvanced] Updating chart with data', {
-      chartType,
-      dataPoints: chartData.length,
-      firstDataPoint: chartData[0],
-      lastDataPoint: chartData[chartData.length - 1]
-    });
 
     // Save current zoom state before updating
     if (chartRef.current && chartRef.current.timeScale) {
@@ -781,16 +726,14 @@ const PriceChartAdvanced = memo(({ token }) => {
         const visibleRange = chartRef.current.timeScale().getVisibleRange();
         if (visibleRange) {
           zoomStateRef.current = visibleRange;
-          console.log('💾 [PriceChartAdvanced] Saved zoom state:', visibleRange);
         }
       } catch (e) {
-        console.log('ℹ️ [PriceChartAdvanced] Could not save zoom state');
+        // Could not save zoom state
       }
     }
 
     // Create series if they don't exist yet
     if (chartType === 'candles' && !candleSeriesRef.current) {
-      console.log('🔧 [PriceChartAdvanced] Creating missing candle series');
       const candleSeries = chartRef.current.addSeries(CandlestickSeries, {
         upColor: '#26a69a',
         downColor: '#ef5350',
@@ -852,37 +795,58 @@ const PriceChartAdvanced = memo(({ token }) => {
     const isAutoUpdate = !isRangeChange && dataRef.current && chartData.length > 0;
     
     if (chartType === 'candles' && candleSeriesRef.current) {
-      if (isAutoUpdate && chartData.length > 0) {
-        // Update only the last few bars for smoother updates
-        const lastBar = chartData[chartData.length - 1];
-        console.log('📈 [PriceChartAdvanced] Updating last candlestick bar');
+      // Calculate scale factor for small prices
+      const scaleFactor = getScaleFactor(chartData);
+      scaleFactorRef.current = scaleFactor;
+      
+      // Scale the data if needed
+      const scaledData = scaleFactor === 1 ? chartData : chartData.map(d => ({
+        time: d.time,
+        open: d.open * scaleFactor,
+        high: d.high * scaleFactor, 
+        low: d.low * scaleFactor,
+        close: d.close * scaleFactor,
+        volume: d.volume
+      }));
+      
+      if (isAutoUpdate && scaledData.length > 0) {
+        const lastBar = scaledData[scaledData.length - 1];
         candleSeriesRef.current.update(lastBar);
       } else {
-        console.log('📈 [PriceChartAdvanced] Setting candlestick data:', chartData.length, 'points');
-        candleSeriesRef.current.setData(chartData);
+        candleSeriesRef.current.setData(scaledData);
+        
+        if (scaleFactor > 1) {
+          console.log('🔍 [PriceScale] Applied scaling factor:', scaleFactor, 'for small prices');
+        }
       }
     } else if (chartType === 'line' && lineSeriesRef.current) {
-      const lineData = chartData.map(d => ({ time: d.time, value: d.close || d.value }));
+      // Calculate scale factor for small prices
+      const scaleFactor = getScaleFactor(chartData);
+      scaleFactorRef.current = scaleFactor;
+      
+      const lineData = chartData.map(d => ({ 
+        time: d.time, 
+        value: (d.close || d.value) * scaleFactor 
+      }));
+      
       if (isAutoUpdate && lineData.length > 0) {
         const lastPoint = lineData[lineData.length - 1];
-        console.log('📈 [PriceChartAdvanced] Updating last line point');
         lineSeriesRef.current.update(lastPoint);
       } else {
-        console.log('📈 [PriceChartAdvanced] Setting line data:', lineData.length, 'points');
         lineSeriesRef.current.setData(lineData);
+        
+        if (scaleFactor > 1) {
+          console.log('🔍 [PriceScale] Line: Applied scaling factor:', scaleFactor, 'for small prices');
+        }
       }
     } else if (chartType === 'holders' && lineSeriesRef.current) {
       const holdersLineData = chartData.map(d => ({ time: d.time, value: d.value || d.holders }));
       if (isAutoUpdate && holdersLineData.length > 0) {
         const lastPoint = holdersLineData[holdersLineData.length - 1];
-        console.log('📈 [PriceChartAdvanced] Updating last holders point');
         lineSeriesRef.current.update(lastPoint);
       } else {
-        console.log('📈 [PriceChartAdvanced] Setting holders data:', holdersLineData.length, 'points');
         lineSeriesRef.current.setData(holdersLineData);
       }
-    } else {
-      console.warn('⚠️ [PriceChartAdvanced] No matching series ref for chart type:', chartType);
     }
 
     // Update volume series
@@ -896,10 +860,8 @@ const PriceChartAdvanced = memo(({ token }) => {
       }));
       if (isAutoUpdate && volumeData.length > 0) {
         const lastVolume = volumeData[volumeData.length - 1];
-        console.log('📊 [PriceChartAdvanced] Updating last volume bar');
         volumeSeriesRef.current.update(lastVolume);
       } else {
-        console.log('📊 [PriceChartAdvanced] Setting volume data:', volumeData.length, 'points');
         volumeSeriesRef.current.setData(volumeData);
       }
     }
@@ -908,18 +870,16 @@ const PriceChartAdvanced = memo(({ token }) => {
     // Only fit content on initial load or range change
     if (isRangeChange) {
       // This is a range change or initial load, fit content
-      console.log('📐 [PriceChartAdvanced] Range changed or initial load, fitting content to view');
       chartRef.current.timeScale().fitContent();
       lastChartTypeRef.current = `${chartType}-${range}`;
     } else if (zoomStateRef.current) {
       // This is an auto-update, restore the saved zoom
-      console.log('🔍 [PriceChartAdvanced] Auto-update detected, restoring zoom state');
       setTimeout(() => {
         if (chartRef.current && chartRef.current.timeScale && zoomStateRef.current) {
           try {
             chartRef.current.timeScale().setVisibleRange(zoomStateRef.current);
           } catch (e) {
-            console.log('ℹ️ [PriceChartAdvanced] Could not restore zoom');
+            // Could not restore zoom
           }
         }
       }, 0);
@@ -1115,15 +1075,6 @@ const PriceChartAdvanced = memo(({ token }) => {
         overflow: 'hidden'
       }}>
         {(() => {
-          const renderState = {
-            loading,
-            hasData: !!data,
-            dataLength: data?.length || 0,
-            chartType,
-            hasHolderData: !!holderData,
-            holderDataLength: holderData?.length || 0
-          };
-          console.log('🖼️ [PriceChartAdvanced] Rendering chart container:', renderState);
           
           if (loading) {
             return (
