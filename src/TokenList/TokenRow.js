@@ -1,10 +1,8 @@
 import Decimal from 'decimal.js';
-import { useState, useEffect, useContext, memo, useMemo, useCallback } from 'react';
+import { useState, useEffect, useContext, memo, useMemo, useCallback, useRef } from 'react';
 import React from 'react';
-import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import styled from '@emotion/styled';
-
-const Image = dynamic(() => import('next/image'));
 
 import { AppContext } from 'src/AppContext';
 import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
@@ -167,6 +165,82 @@ const formatTimeAgo = (dateValue, fallbackValue) => {
   return `${days}d`;
 };
 
+// Optimized image component with intersection observer for lazy loading
+const OptimizedImage = ({ src, alt, size, onError, priority = false, md5 }) => {
+  const [imgSrc, setImgSrc] = useState(src);
+  const [isInView, setIsInView] = useState(priority);
+  const imgRef = useRef(null);
+  const observerRef = useRef(null);
+  
+  useEffect(() => {
+    if (priority || !imgRef.current) return;
+    
+    observerRef.current = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          if (observerRef.current) {
+            observerRef.current.disconnect();
+          }
+        }
+      },
+      { 
+        rootMargin: '50px',
+        threshold: 0.01 
+      }
+    );
+    
+    observerRef.current.observe(imgRef.current);
+    
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [priority]);
+  
+  const handleError = useCallback(() => {
+    setImgSrc('/static/alt.webp');
+    if (onError) onError();
+  }, [onError]);
+  
+  // Show placeholder until in view
+  if (!isInView) {
+    return (
+      <div 
+        ref={imgRef}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          background: 'rgba(128, 128, 128, 0.1)'
+        }} 
+      />
+    );
+  }
+  
+  return (
+    <div ref={imgRef} style={{ width: size, height: size, borderRadius: '50%', overflow: 'hidden' }}>
+      <Image
+        src={imgSrc}
+        alt={alt}
+        width={size}
+        height={size}
+        quality={75}
+        priority={priority}
+        loading={priority ? 'eager' : 'lazy'}
+        onError={handleError}
+        unoptimized={true}
+        style={{ 
+          width: '100%', 
+          height: '100%', 
+          objectFit: 'cover'
+        }}
+      />
+    </div>
+  );
+};
+
 const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleRowClick, imgError, setImgError }) => {
   const { name, user, md5, slug, pro24h, exch } = token;
   const [priceColor, setPriceColor] = useState('');
@@ -182,20 +256,20 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
     return () => clearTimeout(timer);
   }, [token.bearbull]);
 
-  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+  const imgUrl = useMemo(() => `https://s1.xrpl.to/token/${md5}`, [md5]);
 
   // Using flexbox layout instead of table
   return (
     <MobileTokenCard darkMode={darkMode} onClick={handleRowClick}>
       <MobileTokenInfo darkMode={darkMode}>
         <TokenImage darkMode={darkMode} isMobile={true}>
-          <Image
+          <OptimizedImage
             src={imgError ? '/static/alt.webp' : imgUrl}
-            alt={name}
-            width={24}
-            height={24}
+            alt={name || 'Token'}
+            size={24}
             onError={() => setImgError(true)}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            priority={false}
+            md5={md5}
           />
         </TokenImage>
         <TokenDetails>
@@ -253,7 +327,7 @@ const DesktopTokenRow = ({
     return () => clearTimeout(timer);
   }, [token.bearbull]);
 
-  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+  const imgUrl = useMemo(() => `https://s1.xrpl.to/token/${md5}`, [md5]);
 
   return (
     <StyledRow darkMode={darkMode} onClick={handleRowClick}>
@@ -307,13 +381,13 @@ const DesktopTokenRow = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <TokenImage darkMode={darkMode}>
-            <Image
+            <OptimizedImage
               src={imgError ? '/static/alt.webp' : imgUrl}
-              alt={name}
-              width={32}
-              height={32}
+              alt={name || 'Token'}
+              size={32}
               onError={() => setImgError(true)}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              priority={false}
+              md5={md5}
             />
           </TokenImage>
           <div style={{ minWidth: 0, flex: 1 }}>
