@@ -113,9 +113,16 @@ const PriceChartAdvanced = memo(({ token }) => {
   const getScaleFactor = (data) => {
     if (!data || data.length === 0) return 1;
     const maxPrice = Math.max(...data.map(d => Math.max(d.high || d.close || d.value || d.open || 0)));
-    if (maxPrice < 0.01) return 1000000; // Scale up by 1 million
-    if (maxPrice < 0.1) return 10000;   // Scale up by 10 thousand  
-    if (maxPrice < 1) return 1000;     // Scale up by 1 thousand
+    if (maxPrice < 0.000000001) return 1000000000000; // Scale up by 1 trillion
+    if (maxPrice < 0.00000001) return 100000000000;   // Scale up by 100 billion
+    if (maxPrice < 0.0000001) return 10000000000;     // Scale up by 10 billion
+    if (maxPrice < 0.000001) return 1000000000;       // Scale up by 1 billion
+    if (maxPrice < 0.00001) return 100000000;         // Scale up by 100 million
+    if (maxPrice < 0.0001) return 10000000;           // Scale up by 10 million
+    if (maxPrice < 0.001) return 1000000;             // Scale up by 1 million
+    if (maxPrice < 0.01) return 100000;               // Scale up by 100 thousand
+    if (maxPrice < 0.1) return 10000;                 // Scale up by 10 thousand  
+    if (maxPrice < 1) return 1000;                    // Scale up by 1 thousand
     return 1; // No scaling needed
   };
 
