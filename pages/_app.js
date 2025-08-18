@@ -165,7 +165,7 @@ function XRPLToApp({ Component, pageProps, router }) {
           content="hh6F1f8GQ-_d3L7eGAcBc9G020PM2jSDzIjT12_I-Mc"
         />
         <meta name="msapplication-TileColor" content="#000000" />
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#147DFE" />
         <link rel="icon" type="image/webp" sizes="32x32" href="/icons/favicon-32x32.webp" />
         <link rel="icon" type="image/webp" sizes="16x16" href="/icons/favicon-16x16.webp" />
         <link rel="manifest" href="/icons/site.webmanifest" />

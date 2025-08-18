@@ -72,18 +72,18 @@ const ActiveIndicator = styled(Box)(({ theme }) => ({
   height: 8,
   borderRadius: '50%',
   flexShrink: 0,
-  backgroundColor: '#00D4AA',
-  boxShadow: `0 0 0 2px ${alpha('#00D4AA', 0.2)}`,
+  backgroundColor: theme.palette.success.main,
+  boxShadow: `0 0 0 2px ${alpha(theme.palette.success.main, 0.2)}`,
   animation: 'pulse 2s infinite',
   '@keyframes pulse': {
     '0%': {
-      boxShadow: `0 0 0 0 ${alpha('#00D4AA', 0.7)}`
+      boxShadow: `0 0 0 0 ${alpha(theme.palette.success.main, 0.7)}`
     },
     '70%': {
-      boxShadow: `0 0 0 4px ${alpha('#00D4AA', 0)}`
+      boxShadow: `0 0 0 4px ${alpha(theme.palette.success.main, 0)}`
     },
     '100%': {
-      boxShadow: `0 0 0 0 ${alpha('#00D4AA', 0)}`
+      boxShadow: `0 0 0 0 ${alpha(theme.palette.success.main, 0)}`
     }
   }
 }));
@@ -98,7 +98,7 @@ const StyledPopoverPaper = styled(Box)(({ theme }) => ({
     ? alpha(theme.palette.background.paper, 0.95)
     : alpha(theme.palette.background.paper, 0.98)),
   backdropFilter: 'blur(40px)',
-  border: `2px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.1)}`,
+  border: `2px solid ${theme.walletDialog?.border || alpha(theme.palette.primary.main, 0.15)}`,
   borderRadius: 20,
   boxShadow: `
     0 24px 48px ${alpha(theme.palette.common.black, 0.12)}, 
@@ -137,7 +137,7 @@ const BalanceCard = styled(Card)(({ theme }) => ({
   background: theme.walletDialog?.backgroundSecondary || (theme.palette.mode === 'dark' 
     ? alpha(theme.palette.background.paper, 0.4)
     : alpha(theme.palette.background.paper, 0.98)),
-  border: `2px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+  border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
   borderRadius: 16,
   backdropFilter: 'blur(40px)',
   boxShadow: `
@@ -172,7 +172,7 @@ const BalanceCard = styled(Card)(({ theme }) => ({
       0 8px 24px ${alpha(theme.palette.common.black, 0.08)},
       0 4px 12px ${alpha(theme.palette.primary.main, 0.08)}
     `,
-    border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`
+    border: `2px solid ${alpha(theme.palette.primary.main, 0.35)}`
   }
 }));
 
@@ -265,9 +265,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         sx={{
           width: '100%',
           height: '100%',
-          background: theme.palette.background.paper,
-          borderLeft: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          boxShadow: theme.shadows[2],
+          background: theme.palette.background.default,
+          borderLeft: `1px solid ${alpha(theme.palette.divider, 0.2)} !important`,
+          boxShadow: 'none !important',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden'
@@ -278,7 +278,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           sx={{
             p: 1.5,
             pb: 1,
-            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)} !important`,
             flexShrink: 0
           }}
         >
@@ -575,8 +575,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }}
         ref={anchorRef}
         style={{
-          background: accountProfile ? '#00b894' : theme.palette.mode === 'dark' ? '#2d3436' : '#ffffff',
-          border: accountProfile ? '1px solid #00a085' : `1px solid ${theme.palette.mode === 'dark' ? '#636e72' : '#ddd'}`,
+          background: accountProfile ? theme.palette.primary.main : theme.palette.mode === 'dark' ? '#2d3436' : '#ffffff',
+          border: accountProfile ? `1px solid ${theme.palette.primary.dark}` : `1px solid ${theme.palette.mode === 'dark' ? '#636e72' : '#ddd'}`,
           borderRadius: '6px',
           height: '32px',
           padding: '0 12px',
