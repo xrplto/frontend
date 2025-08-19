@@ -35,11 +35,10 @@ import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import dynamic from 'next/dynamic';
 
-const HighchartsReact = dynamic(
-  () => import('highcharts-react-official'),
+const ReactECharts = dynamic(
+  () => import('echarts-for-react'),
   { ssr: false, loading: () => <div>Loading chart...</div> }
 );
-let Highcharts = null;
 
 // Generate color from string hash
 const generateColorFromString = (str, saturation = 70, lightness = 50) => {
@@ -618,10 +617,12 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                   const value = parseFloat(assetDistribution.series[index]) || 0;
                   return {
                     name: label,
-                    y: value,
-                    color: assetDistribution.colors[index]
+                    value: value,
+                    itemStyle: {
+                      color: assetDistribution.colors[index]
+                    }
                   };
-                }).filter(item => item.y > 0) || [];
+                }).filter(item => item.value > 0) || [];
 
                 if (chartData.length === 0) {
                   return (
@@ -636,44 +637,58 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                 return (
                   <>
                     <Box sx={{ position: 'relative', width: '100%', height: '100%', zIndex: 1 }}>
-                      <HighchartsReact
-                        highcharts={Highcharts || (Highcharts = require('highcharts'))}
-                        options={{
-                          chart: {
-                            type: 'pie',
-                            backgroundColor: 'transparent',
-                            height: 220,
-                            animation: { duration: 1000 }
-                          },
-                          title: { text: null },
-                          credits: { enabled: false },
-                          plotOptions: {
-                            pie: {
-                              innerSize: '60%',
-                              dataLabels: { enabled: false },
-                              states: {
-                                hover: { brightness: 0.1 }
-                              }
-                            }
-                          },
+                      <ReactECharts
+                        style={{ height: '220px', width: '100%' }}
+                        option={{
+                          backgroundColor: 'transparent',
                           tooltip: {
+                            trigger: 'item',
                             backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
                             borderColor: theme.palette.divider,
+                            borderWidth: 1,
                             borderRadius: 8,
-                            style: { color: theme.palette.text.primary },
-                            formatter: function() {
-                              const total = this.series.data.reduce((sum, point) => sum + point.y, 0);
-                              const percentage = total > 0 ? ((this.y / total) * 100).toFixed(1) : '0.0';
-                              return `<b style="font-size: 11px">${this.point.name}</b><br/><span style="font-size: 10px">Amount: ${this.y.toLocaleString()} XRP<br/>Percentage: ${percentage}%</span>`;
+                            textStyle: { 
+                              color: theme.palette.text.primary,
+                              fontSize: 11
                             },
-                            useHTML: true
+                            formatter: function(params) {
+                              const percentage = params.percent || 0;
+                              return `<div style="padding: 4px;">
+                                <b style="font-size: 11px">${params.name}</b><br/>
+                                <span style="font-size: 10px">Amount: ${params.value.toLocaleString()} XRP<br/>
+                                Percentage: ${percentage.toFixed(1)}%</span>
+                              </div>`;
+                            }
                           },
                           series: [{
                             name: 'Assets',
                             type: 'pie',
-                            data: chartData
+                            radius: ['60%', '85%'], // Inner and outer radius for donut chart
+                            center: ['50%', '50%'],
+                            data: chartData,
+                            label: {
+                              show: false
+                            },
+                            emphasis: {
+                              itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                              }
+                            },
+                            itemStyle: {
+                              borderRadius: 2,
+                              borderColor: theme.palette.background.paper,
+                              borderWidth: 1
+                            },
+                            animationType: 'scale',
+                            animationEasing: 'elasticOut',
+                            animationDelay: function (idx) {
+                              return Math.random() * 200;
+                            }
                           }]
                         }}
+                        opts={{ renderer: 'svg' }}
                       />
                     </Box>
                     <Box
