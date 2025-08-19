@@ -451,7 +451,7 @@ const FILTER_OPTIONS = [
   { value: '1000+', label: '1000+ XRP', icon: 'game-icons:dolphin' },
   { value: '2500+', label: '2500+ XRP', icon: 'game-icons:octopus' },
   { value: '5000+', label: '5000+ XRP', icon: 'game-icons:shark-fin' },
-  { value: '10000+', label: '10000+ XRP', icon: 'ic:round-pool' }
+  { value: '10000+', label: '10000+ XRP', icon: 'game-icons:sperm-whale' }
 ];
 
 // Helper functions
@@ -480,7 +480,7 @@ const getTradeSizeIcon = (value) => {
   if (xrpValue < 2500) return 'game-icons:dolphin';  // Dolphin
   if (xrpValue < 5000) return 'game-icons:octopus';  // Octopus
   if (xrpValue < 10000) return 'game-icons:shark-fin';  // Shark
-  return 'ic:round-pool';  // Using pool icon as fallback for whale
+  return 'game-icons:sperm-whale';  // Whale for largest
 };
 
 const abbreviateNumber = (num) => {
