@@ -26,6 +26,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Verified as VerifiedIcon } from '@mui/icons-material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import styled from '@emotion/styled';
 import { getHashIcon } from 'src/utils/extra';
 import TrustLines from './TrustLines';
@@ -1515,15 +1516,14 @@ export default function Portfolio({ account, limit, collection, type }) {
                       }
                     }}
                   >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 2 } }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
                         <Box sx={{ position: 'relative' }}>
                           <Avatar
                             src={getHashIcon(account)}
                             sx={{
-                              width: { xs: 36, sm: 56 },
-                              height: { xs: 36, sm: 56 },
-                              border: `3px solid ${activeRankColors[activeRanks[account]] || '#808080'}`,
-                              boxShadow: `0 0 20px ${alpha(activeRankColors[activeRanks[account]] || '#808080', 0.4)}, 0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
+                              width: { xs: 32, sm: 40 },
+                              height: { xs: 32, sm: 40 },
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`,
                               transition: 'all 0.3s ease'
                             }}
                           />
@@ -1533,19 +1533,19 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 position: 'absolute',
                                 bottom: -2,
                                 right: -2,
-                                width: 20,
-                                height: 20,
+                                width: 16,
+                                height: 16,
                                 borderRadius: '50%',
                                 background: 'linear-gradient(135deg, #1DA1F2 0%, #0d8bd9 100%)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                boxShadow: `0 2px 8px ${alpha('#1DA1F2', 0.3)}`
+                                boxShadow: `0 2px 6px ${alpha('#1DA1F2', 0.3)}`
                               }}
                             >
                               <VerifiedIcon
                                 sx={{
-                                  fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                                  fontSize: { xs: '0.6rem', sm: '0.65rem' },
                                   color: 'white'
                                 }}
                               />
@@ -1553,40 +1553,57 @@ export default function Portfolio({ account, limit, collection, type }) {
                           )}
                         </Box>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography
-                            variant="h6"
-                            sx={{
-                              color:
-                                activeRankColors[activeRanks[account]] ||
-                                theme.palette.text.primary,
-                              fontWeight: 700,
-                              fontSize: { xs: '0.8rem', sm: '1.1rem' },
-                              letterSpacing: '-0.01em',
-                              mb: 0.5,
-                              textOverflow: 'ellipsis',
-                              overflow: 'hidden',
-                              whiteSpace: 'nowrap'
-                            }}
-                          >
-                            {account}
-                          </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.25 }}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: theme.palette.text.primary,
+                                fontWeight: 600,
+                                fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                                letterSpacing: '-0.01em',
+                                textOverflow: 'ellipsis',
+                                overflow: 'hidden',
+                                whiteSpace: 'nowrap',
+                                maxWidth: { xs: '140px', sm: '100%' }
+                              }}
+                            >
+                              {isMobile ? `${account.substring(0, 8)}...${account.substring(account.length - 6)}` : account}
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              onClick={() => navigator.clipboard.writeText(account)}
+                              sx={{
+                                p: 0.25,
+                                color: alpha(theme.palette.text.secondary, 0.6),
+                                '&:hover': {
+                                  color: theme.palette.primary.main,
+                                  bgcolor: alpha(theme.palette.primary.main, 0.08)
+                                }
+                              }}
+                            >
+                              <ContentCopyIcon sx={{ fontSize: '0.75rem' }} />
+                            </IconButton>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <Chip
                               label={
-                                activeRanks[account] === 'verified' ? 'Verified Account' : 'Trader'
+                                activeRanks[account] === 'verified' ? 'Verified' : 'Trader'
                               }
                               size="small"
                               sx={{
-                                bgcolor: 'transparent',
+                                bgcolor: alpha(
+                                  activeRankColors[activeRanks[account]] || theme.palette.primary.main,
+                                  0.08
+                                ),
                                 color:
                                   activeRankColors[activeRanks[account]] ||
                                   theme.palette.primary.main,
-                                border: `1px solid ${activeRankColors[activeRanks[account]] || theme.palette.primary.main}`,
+                                border: 'none',
                                 fontWeight: 600,
-                                fontSize: '0.7rem',
-                                height: 24,
+                                fontSize: '0.65rem',
+                                height: 20,
                                 '& .MuiChip-label': {
-                                  px: 1.5
+                                  px: 1
                                 }
                               }}
                             />
@@ -1595,14 +1612,14 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 label="AMM"
                                 size="small"
                                 sx={{
-                                  bgcolor: 'transparent',
+                                  bgcolor: alpha(theme.palette.warning.main, 0.08),
                                   color: theme.palette.warning.main,
-                                  border: `1px solid ${theme.palette.warning.main}`,
+                                  border: 'none',
                                   fontWeight: 600,
-                                  fontSize: '0.7rem',
-                                  height: 24,
+                                  fontSize: '0.65rem',
+                                  height: 20,
                                   '& .MuiChip-label': {
-                                    px: 1.5
+                                    px: 1
                                   }
                                 }}
                               />
