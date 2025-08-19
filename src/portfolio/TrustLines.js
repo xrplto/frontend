@@ -33,12 +33,18 @@ import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import {
-  extractDominantColor,
-  rgbToHex,
-  getTokenImageUrl,
-  getTokenFallbackColor
-} from 'src/utils/colorExtractor';
+// Generate color from string hash
+const generateColorFromString = (str, saturation = 70, lightness = 50) => {
+  if (!str) return '#007B55';
+  
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
 
 // Helper function to format balance
 const formatBalance = (balance) => {
@@ -88,23 +94,14 @@ const processAssetDistribution = async (trustlines, theme) => {
 
   for (let i = 0; i < topAssets.length; i++) {
     const asset = topAssets[i];
-    let color = getTokenFallbackColor(asset.token?.name || asset.currency, i);
+    let color;
 
     if (asset.currency === 'XRP') {
       color = theme.palette.primary.main; // Use a specific color for XRP
     } else {
-      try {
-        // Try to extract color from token icon if md5 exists
-        const md5 = asset.token?.md5 || asset.md5;
-        if (md5) {
-          const imageUrl = getTokenImageUrl(md5);
-          const extractedColor = await extractDominantColor(imageUrl);
-          color = rgbToHex(extractedColor);
-        }
-      } catch (error) {
-        console.warn(`Failed to extract color for ${asset.token?.name || asset.currency}:`, error);
-        // Keep the fallback color
-      }
+      // Generate color based on token name
+      const tokenName = asset.token?.name || asset.currency;
+      color = generateColorFromString(tokenName + i.toString(), 65, 55);
     }
 
     backgroundColors.push(alpha(color, 0.8));
