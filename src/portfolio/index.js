@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import {
   useTheme,
@@ -48,8 +48,7 @@ const axiosInstance = axios.create({
   timeout: 30000 // 30 second timeout for analytics calls
 });
 
-import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official';
+import { createChart, LineSeries, HistogramSeries, AreaSeries } from 'lightweight-charts';
 
 // Format holding time from seconds to human readable format
 const formatHoldingTime = (seconds) => {
@@ -1256,189 +1255,187 @@ export default function Portfolio({ account, limit, collection, type }) {
     }
   };
 
-  const renderChart = (chartData, options, type = 'line') => {
-    try {
-      if (!chartData || !chartData.series) {
-        return (
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            height: '100%',
-            color: theme.palette.text.secondary
-          }}>
-            <Typography variant="body2">Loading chart data...</Typography>
-          </Box>
-        );
+  // Create a separate component for the chart
+  const LightweightChart = React.memo(({ chartData, isMobile }) => {
+    const chartContainerRef = useRef(null);
+    const chartRef = useRef(null);
+    const isDark = theme.palette.mode === 'dark';
+
+    useEffect(() => {
+      if (!chartContainerRef.current || !chartData || !chartData.series) return;
+
+      // Clean up existing chart
+      if (chartRef.current) {
+        try {
+          chartRef.current.remove();
+        } catch (e) {
+          console.error('Error removing chart:', e);
+        }
+        chartRef.current = null;
       }
 
-      // Convert ApexCharts series to Highcharts format
-      const highchartsSeries = chartData.series.map((serie) => {
-        const seriesData = serie.data.map((value, index) => {
-          const timestamp = new Date(chartData.xaxis.categories[index]).getTime();
-          return [
-            timestamp,
-            value
-          ];
-        });
-
-        const seriesConfig = {
-          name: serie.name,
-          type: serie.type || type,
-          data: seriesData,
-          ...(serie.type === 'column' && {
-            borderRadius: 6,
-            borderWidth: 0
-          })
-        };
-
-        // Map series to correct yAxis based on series name
-        if (options.yAxis && Array.isArray(options.yAxis) && options.yAxis.length > 1) {
-          if (serie.name === 'Volume' || serie.name === 'Cumulative Volume' || serie.name === 'Cumulative Trades' || serie.name === 'Cumulative ROI') {
-            seriesConfig.yAxis = 1;
-          } else {
-            seriesConfig.yAxis = 0;
-          }
-        }
-
-        return seriesConfig;
+      // Create new chart
+      const chart = createChart(chartContainerRef.current, {
+        width: chartContainerRef.current.clientWidth,
+        height: isMobile ? 180 : 200,
+        layout: {
+          background: { type: 'solid', color: 'transparent' },
+          textColor: theme.palette.text.primary,
+          fontSize: 11,
+        },
+        grid: {
+          vertLines: {
+            color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+          },
+          horzLines: {
+            color: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+          },
+        },
+        crosshair: {
+          mode: 0,
+          vertLine: {
+            color: theme.palette.primary.main,
+            width: 1,
+            labelBackgroundColor: theme.palette.primary.main,
+          },
+          horzLine: {
+            color: theme.palette.primary.main,
+            width: 1,
+            labelBackgroundColor: theme.palette.primary.main,
+          },
+        },
+        rightPriceScale: {
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+          scaleMargins: { top: 0.1, bottom: 0.2 },
+        },
+        timeScale: {
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+          timeVisible: true,
+          secondsVisible: false,
+        },
       });
 
-      // Ensure basic Highcharts configuration
-      const highchartsOptions = {
-        chart: {
-          type: type,
-          backgroundColor: 'transparent',
-          height: isMobile ? 180 : 200,
-          margin: [10, 10, 70, isMobile ? 35 : 45],
-          spacing: [5, 5, 5, 5],
-          animation: {
-            duration: 800
-          }
-        },
-        title: {
-          text: null
-        },
-        credits: {
-          enabled: false
-        },
-        xAxis: {
-          type: 'datetime',
-          labels: {
-            style: {
-              color: theme.palette.text.secondary,
-              fontSize: '10px'
-            },
-            rotation: -45,
-            align: 'right',
-            y: 40,
-            formatter: function() {
-              // Format based on data range
-              const range = this.axis.max - this.axis.min;
-              const days = range / (24 * 3600 * 1000);
-              
-              if (days > 180) {
-                return Highcharts.dateFormat('%b %Y', this.value);
-              } else if (days > 60) {
-                return Highcharts.dateFormat('%b %d', this.value);
-              } else {
-                return Highcharts.dateFormat('%m/%d', this.value);
-              }
-            }
-          },
-          tickPixelInterval: 80, // Dynamic spacing based on chart width
-          minPadding: 0.05,
-          maxPadding: 0.05
-        },
-        yAxis: options.yAxis || {
-          title: {
-            text: null
-          },
-          labels: {
-            style: {
-              color: theme.palette.text.secondary,
-              fontSize: '10px'
-            }
-          },
-          gridLineWidth: 1,
-          gridLineColor: alpha(theme.palette.divider, 0.1)
-        },
-        tooltip: {
-          shared: true,
-          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
-          borderColor: theme.palette.divider,
-          borderRadius: 8,
-          style: {
-            color: theme.palette.text.primary,
-            fontSize: '11px'
-          },
-          formatter: function() {
-            let tooltip = '<b>' + Highcharts.dateFormat('%b %d, %Y', this.x) + '</b><br/>';
-            
-            this.points.forEach(point => {
-              const value = point.y;
-              let formattedValue;
-              
-              if (point.series.name.includes('ROI') || point.series.name.includes('%')) {
-                formattedValue = value.toFixed(2) + '%';
-              } else if (point.series.name.includes('Volume')) {
-                formattedValue = value.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' XRP';
-              } else if (point.series.name.includes('Trades')) {
-                formattedValue = value.toLocaleString();
-              } else {
-                formattedValue = value.toLocaleString();
-              }
-              
-              tooltip += '<span style="color:' + point.color + '">●</span> ' + 
-                        point.series.name + ': <b>' + formattedValue + '</b><br/>';
-            });
-            
-            return tooltip;
-          }
-        },
-        plotOptions: options.plotOptions || {},
-        legend: options.legend || {
-          enabled: true,
-          itemStyle: {
-            color: theme.palette.text.primary,
-            fontSize: '11px'
-          },
-          margin: 5,
-          padding: 2,
-          itemMarginTop: 2,
-          itemMarginBottom: 2
-        },
-        colors: [
-          theme.palette.primary.main,
-          theme.palette.success.main,
-          alpha(theme.palette.info.main, 0.6),
-          theme.palette.warning.main,
-          theme.palette.error.main
-        ],
-        ...options,
-        series: highchartsSeries
-      };
+      chartRef.current = chart;
 
-      return <HighchartsReact highcharts={Highcharts} options={highchartsOptions} />;
-    } catch (error) {
-      console.warn('Error rendering chart:', error.message || error);
+      // Add series
+      const seriesRefs = [];
+      chartData.series.forEach((serie, index) => {
+        let series;
+        if (serie.type === 'column') {
+          series = chart.addSeries(HistogramSeries, {
+            color: index === 0 ? theme.palette.primary.main : theme.palette.info.main,
+            priceFormat: { type: 'volume' },
+          });
+        } else {
+          series = chart.addSeries(LineSeries, {
+            color: index === 0 ? theme.palette.primary.main : theme.palette.success.main,
+            lineWidth: 2,
+          });
+        }
+
+        // Convert data to lightweight-charts format and sort by time
+        const data = serie.data
+          .map((value, idx) => {
+            const timestamp = new Date(chartData.xaxis.categories[idx]).getTime() / 1000;
+            // Validate timestamp
+            if (isNaN(timestamp) || !isFinite(timestamp)) {
+              return null;
+            }
+            return {
+              time: Math.floor(timestamp),
+              value: value || 0
+            };
+          })
+          .filter(item => item !== null) // Remove invalid entries
+          .sort((a, b) => a.time - b.time) // Sort in ascending order by time
+          .filter((item, index, array) => {
+            // Remove duplicates - keep only the first occurrence of each timestamp
+            return index === 0 || item.time !== array[index - 1].time;
+          });
+        
+        if (data.length > 0) {
+          series.setData(data);
+        }
+        seriesRefs.push(series);
+      });
+
+      // Add tooltip
+      const toolTip = document.createElement('div');
+      toolTip.style = `position: absolute; display: none; padding: 8px; font-size: 12px; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 4px; background: ${isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`;
+      chartContainerRef.current.appendChild(toolTip);
+
+      chart.subscribeCrosshairMove(param => {
+        if (!param.time || param.point.x < 0 || param.point.y < 0) {
+          toolTip.style.display = 'none';
+          return;
+        }
+
+        const dateStr = new Date(param.time * 1000).toLocaleDateString();
+        let html = `<div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>`;
+        
+        seriesRefs.forEach((series, idx) => {
+          const data = param.seriesData.get(series);
+          if (data) {
+            const seriesName = chartData.series[idx].name;
+            const value = data.value;
+            let formattedValue = value.toFixed(2);
+            if (seriesName.includes('ROI')) formattedValue += '%';
+            else if (seriesName.includes('Volume')) formattedValue = value.toLocaleString() + ' XRP';
+            else if (seriesName.includes('Trades')) formattedValue = value.toLocaleString();
+            
+            html += `<div>${seriesName}: ${formattedValue}</div>`;
+          }
+        });
+
+        toolTip.innerHTML = html;
+        toolTip.style.display = 'block';
+        toolTip.style.left = Math.min(param.point.x + 10, chartContainerRef.current.clientWidth - 150) + 'px';
+        toolTip.style.top = '12px';
+      });
+
+      chart.timeScale().fitContent();
+
+      const handleResize = () => {
+        if (chartContainerRef.current && chart) {
+          chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+        }
+      };
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        if (chartContainerRef.current) {
+          const tooltips = chartContainerRef.current.querySelectorAll('div[style*="position: absolute"]');
+          tooltips.forEach(tooltip => tooltip.remove());
+        }
+        if (chartRef.current) {
+          try {
+            chartRef.current.remove();
+          } catch (e) {}
+          chartRef.current = null;
+        }
+      };
+    }, [chartData, isDark, theme]);
+
+    if (!chartData || !chartData.series) {
       return (
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
-          height: { xs: 200, sm: 300 },
-          color: theme.palette.error.main,
-          flexDirection: 'column',
-          gap: 1
+          height: isMobile ? 180 : 200,
+          color: theme.palette.text.secondary
         }}>
-          <Typography variant="body2">Error loading chart</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {error?.message || 'Please try again later'}
-          </Typography>
+          <Typography variant="body2">Loading chart data...</Typography>
         </Box>
       );
     }
+
+    return <div ref={chartContainerRef} style={{ width: '100%', height: isMobile ? 180 : 200 }} />;
+  });
+
+  const renderChart = (chartData, options, type = 'line') => {
+    return <LightweightChart chartData={chartData} isMobile={isMobile} />;
   };
 
   useEffect(() => {
