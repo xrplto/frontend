@@ -19,10 +19,8 @@ function getTagValue(tags, tagName) {
 // Styled Components
 const Container = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 8px;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
   border-radius: 12px;
   border: 1px solid ${props => props.darkMode 
     ? 'rgba(255, 255, 255, 0.03)'
@@ -33,10 +31,7 @@ const Container = styled.div`
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
-  flex-wrap: wrap;
-  flex-direction: row;
-  overflow-x: hidden;
-  overflow-y: visible;
+  padding: 8px;
   position: relative;
   transition: all 0.3s ease;
   
@@ -51,6 +46,21 @@ const Container = styled.div`
   
   @media (max-width: 600px) {
     padding: 6px;
+    gap: 6px;
+  }
+`;
+
+const Row = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex-direction: row;
+  overflow-x: hidden;
+  overflow-y: visible;
+  
+  @media (max-width: 600px) {
     gap: 6px;
     overflow-x: auto;
     flex-wrap: nowrap;
@@ -370,24 +380,15 @@ const SearchToolbar = memo(function SearchToolbar({
       const containerWidth = container.offsetWidth;
       const isMobile = window.innerWidth <= 600;
       
-      // Get fixed elements (non-tag elements)
-      const fixedElements = container.querySelectorAll('button:not([data-tag]), div');
-      let fixedWidth = 0;
+      // Since tags are in their own row, we don't need to account for fixed elements
+      // Reserve space for "All Tags" button (approx 100px on desktop, 75px mobile)
+      const allTagsWidth = isMobile ? 75 : 100;
       
-      fixedElements.forEach(el => {
-        if (el.offsetWidth && !el.hasAttribute('data-tag')) {
-          fixedWidth += el.offsetWidth + (isMobile ? 6 : 10); // gap
-        }
-      });
-      
-      // Reserve space for "All Tags" button (approx 85px on desktop, 65px mobile)
-      const allTagsWidth = isMobile ? 65 : 85;
-      
-      // Available width for tags
-      const availableWidth = containerWidth - fixedWidth - allTagsWidth - 20; // 20px buffer
+      // Available width for tags - use most of the container width for tags
+      const availableWidth = containerWidth - allTagsWidth - 30; // 30px buffer for All Tags button and spacing
       
       if (availableWidth <= 100) {
-        setVisibleTagCount(isMobile ? 0 : 2);
+        setVisibleTagCount(isMobile ? 2 : 5);
         return;
       }
       
@@ -430,7 +431,7 @@ const SearchToolbar = memo(function SearchToolbar({
           `;
           
           const emojis = ['🏷️', '📍', '⭐', '💫', '🎯', '🔖', '🎨', '🌟', '🏆', '💡'];
-          tempTag.innerHTML = `<span>${emojis[i % 10]}</span> <span>${tag}</span>`;
+          tempTag.innerHTML = `<span>${emojis[i % emojis.length]}</span> <span>${tag}</span>`;
           tempContainer.appendChild(tempTag);
           
           tagWidth = tempTag.offsetWidth + (isMobile ? 6 : 10); // gap
@@ -459,8 +460,8 @@ const SearchToolbar = memo(function SearchToolbar({
         document.body.removeChild(tempContainer);
       }
       
-      // Set the visible count
-      setVisibleTagCount(Math.max(isMobile ? 0 : 2, Math.min(count, tags.length)));
+      // Set the visible count - show more tags by default
+      setVisibleTagCount(Math.max(isMobile ? 3 : 8, Math.min(count, tags.length)));
       setMeasuredTags(true);
     };
     
@@ -521,178 +522,18 @@ const SearchToolbar = memo(function SearchToolbar({
   return (
     <Container darkMode={darkMode} ref={containerRef}>
 
-      <ButtonGroup>
-        <button
-          className={currentView === 'tokens' ? 'selected' : ''}
-          onClick={() => window.location.href = '/'}
-          style={{ minWidth: '70px' }}
-        >
-          <Icon icon="carbon:grid" width="14" height="14" style={{ marginRight: '4px' }} />
-          Tokens
-        </button>
-        <button
-          className={router.pathname === '/view/firstledger' ? 'selected' : ''}
-          onClick={() => window.location.href = '/view/firstledger'}
-          style={{ minWidth: '90px' }}
-        >
-          <span style={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: '4px',
-            fontSize: '12px'
-          }}>
-            FirstLedger
-            <Icon 
-              icon="material-symbols:open-in-new" 
-              width="12" 
-              height="12" 
-              style={{ opacity: 0.7 }}
-            />
-          </span>
-        </button>
-      </ButtonGroup>
-
-      <Divider />
-
-      {/* Period selector for gainers or price change sorting */}
-      {(currentView === 'gainers' || ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentOrderBy)) && (
-        <>
-          <ButtonGroup>
-            <button
-              className={currentPeriod === '5m' ? 'selected' : ''}
-              onClick={() => {
-                if (currentView === 'gainers') {
-                  window.location.href = '/gainers/5m';
-                } else {
-                  setOrderBy('pro5m');
-                  setSync(prev => prev + 1);
-                }
-              }}
-            >
-              5m
-            </button>
-            <button
-              className={currentPeriod === '1h' ? 'selected' : ''}
-              onClick={() => {
-                if (currentView === 'gainers') {
-                  window.location.href = '/gainers/1h';
-                } else {
-                  setOrderBy('pro1h');
-                  setSync(prev => prev + 1);
-                }
-              }}
-            >
-              1h
-            </button>
-            <button
-              className={currentPeriod === '24h' ? 'selected' : ''}
-              onClick={() => {
-                if (currentView === 'gainers') {
-                  window.location.href = '/gainers/24h';
-                } else {
-                  setOrderBy('pro24h');
-                  setSync(prev => prev + 1);
-                }
-              }}
-            >
-              24h
-            </button>
-            <button
-              className={currentPeriod === '7d' ? 'selected' : ''}
-              onClick={() => {
-                if (currentView === 'gainers') {
-                  window.location.href = '/gainers/7d';
-                } else {
-                  setOrderBy('pro7d');
-                  setSync(prev => prev + 1);
-                }
-              }}
-            >
-              7d
-            </button>
-          </ButtonGroup>
-          <Divider />
-        </>
-      )}
-
-      <Chip
-        onClick={() => window.location.href = '/trending'}
-        background={currentView === 'trending' 
-          ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
-          : 'rgba(255, 87, 34, 0.1)'}
-        color={currentView === 'trending' ? '#fff' : '#ff5722'}
-        hoverBackground={currentView === 'trending'
-          ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
-          : 'rgba(255, 87, 34, 0.25)'}
-      >
-        🔥 Hot
-      </Chip>
-
-      <Chip
-        onClick={() => window.location.href = '/spotlight'}
-        background={currentView === 'spotlight' 
-          ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
-          : 'rgba(33, 150, 243, 0.1)'}
-        color={currentView === 'spotlight' ? '#fff' : '#2196f3'}
-        hoverBackground={currentView === 'spotlight'
-          ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
-          : 'rgba(33, 150, 243, 0.25)'}
-      >
-        💎 Gems
-      </Chip>
-
-      <Chip
-        onClick={() => window.location.href = '/gainers/24h'}
-        background={currentView === 'gainers' 
-          ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
-          : 'rgba(76, 175, 80, 0.1)'}
-        color={currentView === 'gainers' ? '#fff' : '#4caf50'}
-        hoverBackground={currentView === 'gainers'
-          ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
-          : 'rgba(76, 175, 80, 0.25)'}
-        hideOnMobile
-      >
-        🚀 Gainers
-      </Chip>
-
-      <Chip
-        onClick={() => window.location.href = '/new'}
-        background={currentView === 'new' 
-          ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
-          : 'rgba(255, 152, 0, 0.1)'}
-        color={currentView === 'new' ? '#fff' : '#ff9800'}
-        hoverBackground={currentView === 'new'
-          ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
-          : 'rgba(255, 152, 0, 0.25)'}
-      >
-        ✨ New
-      </Chip>
-
-      <Chip
-        onClick={() => window.location.href = '/most-viewed'}
-        background={currentView === 'most-viewed' 
-          ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
-          : 'rgba(156, 39, 176, 0.1)'}
-        color={currentView === 'most-viewed' ? '#fff' : '#9c27b0'}
-        hoverBackground={currentView === 'most-viewed'
-          ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
-          : 'rgba(156, 39, 176, 0.25)'}
-        hideOnMobile
-      >
-        👁️ Popular
-      </Chip>
-
-      {/* Top Categories */}
+      {/* Top Categories - first row */}
       {tags && tags.length > 0 && (
-        <>
-          <Divider />
-          
+        <Row>
           {/* Display categories dynamically based on available space */}
           {tags.slice(0, visibleTagCount).map((tag, index) => {
             const normalizedTag = tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
             const colors = ['#e91e63', '#00bcd4', '#4caf50', '#673ab7', '#ff9800', '#795548', '#607d8b', '#3f51b5', '#009688', '#ff5722'];
             const emojis = ['🏷️', '📍', '⭐', '💫', '🎯', '🔖', '🎨', '🌟', '🏆', '💡'];
             const isSelected = tagName === tag;
+            // Use modulo to cycle through colors and emojis if we have more than 10 tags
+            const colorIndex = index % colors.length;
+            const emojiIndex = index % emojis.length;
             
             return (
               <TagChip
@@ -700,13 +541,13 @@ const SearchToolbar = memo(function SearchToolbar({
                 data-tag="true"
                 show={measuredTags}
                 onClick={() => window.location.href = `/view/${normalizedTag}`}
-                borderColor={`${colors[index]}4D`}
-                background={isSelected ? `${colors[index]}33` : 'transparent'}
+                borderColor={`${colors[colorIndex]}4D`}
+                background={isSelected ? `${colors[colorIndex]}33` : 'transparent'}
                 color={darkMode ? '#fff' : '#333'}
-                hoverBackground={`${colors[index]}4D`}
+                hoverBackground={`${colors[colorIndex]}4D`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <span>{emojis[index]}</span>
+                <span>{emojis[emojiIndex]}</span>
                 <span>{tag}</span>
               </TagChip>
             );
@@ -719,8 +560,172 @@ const SearchToolbar = memo(function SearchToolbar({
               <span>All Tags ({tags.length})</span>
             </AllTagsButton>
           )}
-        </>
+        </Row>
       )}
+
+      {/* Navigation buttons and chips - second row */}
+      <Row>
+        <ButtonGroup>
+          <button
+            className={currentView === 'tokens' ? 'selected' : ''}
+            onClick={() => window.location.href = '/'}
+            style={{ minWidth: '70px' }}
+          >
+            <Icon icon="carbon:grid" width="14" height="14" style={{ marginRight: '4px' }} />
+            Tokens
+          </button>
+          <button
+            className={router.pathname === '/view/firstledger' ? 'selected' : ''}
+            onClick={() => window.location.href = '/view/firstledger'}
+            style={{ minWidth: '90px' }}
+          >
+            <span style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '4px',
+              fontSize: '12px'
+            }}>
+              FirstLedger
+              <Icon 
+                icon="material-symbols:open-in-new" 
+                width="12" 
+                height="12" 
+                style={{ opacity: 0.7 }}
+              />
+            </span>
+          </button>
+        </ButtonGroup>
+
+        <Divider />
+
+        {/* Period selector for gainers or price change sorting */}
+        {(currentView === 'gainers' || ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentOrderBy)) && (
+          <>
+            <ButtonGroup>
+              <button
+                className={currentPeriod === '5m' ? 'selected' : ''}
+                onClick={() => {
+                  if (currentView === 'gainers') {
+                    window.location.href = '/gainers/5m';
+                  } else {
+                    setOrderBy('pro5m');
+                    setSync(prev => prev + 1);
+                  }
+                }}
+              >
+                5m
+              </button>
+              <button
+                className={currentPeriod === '1h' ? 'selected' : ''}
+                onClick={() => {
+                  if (currentView === 'gainers') {
+                    window.location.href = '/gainers/1h';
+                  } else {
+                    setOrderBy('pro1h');
+                    setSync(prev => prev + 1);
+                  }
+                }}
+              >
+                1h
+              </button>
+              <button
+                className={currentPeriod === '24h' ? 'selected' : ''}
+                onClick={() => {
+                  if (currentView === 'gainers') {
+                    window.location.href = '/gainers/24h';
+                  } else {
+                    setOrderBy('pro24h');
+                    setSync(prev => prev + 1);
+                  }
+                }}
+              >
+                24h
+              </button>
+              <button
+                className={currentPeriod === '7d' ? 'selected' : ''}
+                onClick={() => {
+                  if (currentView === 'gainers') {
+                    window.location.href = '/gainers/7d';
+                  } else {
+                    setOrderBy('pro7d');
+                    setSync(prev => prev + 1);
+                  }
+                }}
+              >
+                7d
+              </button>
+            </ButtonGroup>
+            <Divider />
+          </>
+        )}
+
+        <Chip
+          onClick={() => window.location.href = '/trending'}
+          background={currentView === 'trending' 
+            ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
+            : 'rgba(255, 87, 34, 0.1)'}
+          color={currentView === 'trending' ? '#fff' : '#ff5722'}
+          hoverBackground={currentView === 'trending'
+            ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
+            : 'rgba(255, 87, 34, 0.25)'}
+        >
+          🔥 Hot
+        </Chip>
+
+        <Chip
+          onClick={() => window.location.href = '/spotlight'}
+          background={currentView === 'spotlight' 
+            ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
+            : 'rgba(33, 150, 243, 0.1)'}
+          color={currentView === 'spotlight' ? '#fff' : '#2196f3'}
+          hoverBackground={currentView === 'spotlight'
+            ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
+            : 'rgba(33, 150, 243, 0.25)'}
+        >
+          💎 Gems
+        </Chip>
+
+        <Chip
+          onClick={() => window.location.href = '/gainers/24h'}
+          background={currentView === 'gainers' 
+            ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
+            : 'rgba(76, 175, 80, 0.1)'}
+          color={currentView === 'gainers' ? '#fff' : '#4caf50'}
+          hoverBackground={currentView === 'gainers'
+            ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
+            : 'rgba(76, 175, 80, 0.25)'}
+          hideOnMobile
+        >
+          🚀 Gainers
+        </Chip>
+
+        <Chip
+          onClick={() => window.location.href = '/new'}
+          background={currentView === 'new' 
+            ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
+            : 'rgba(255, 152, 0, 0.1)'}
+          color={currentView === 'new' ? '#fff' : '#ff9800'}
+          hoverBackground={currentView === 'new'
+            ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
+            : 'rgba(255, 152, 0, 0.25)'}
+        >
+          ✨ New
+        </Chip>
+
+        <Chip
+          onClick={() => window.location.href = '/most-viewed'}
+          background={currentView === 'most-viewed' 
+            ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
+            : 'rgba(156, 39, 176, 0.1)'}
+          color={currentView === 'most-viewed' ? '#fff' : '#9c27b0'}
+          hoverBackground={currentView === 'most-viewed'
+            ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
+            : 'rgba(156, 39, 176, 0.25)'}
+          hideOnMobile
+        >
+          👁️ Popular
+        </Chip>
+      </Row>
 
       {/* Categories Drawer */}
       {categoriesOpen && (
