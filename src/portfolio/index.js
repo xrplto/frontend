@@ -1618,138 +1618,54 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                 <Card
                     sx={{
-                      borderRadius: { xs: '12px', sm: '16px' },
+                      borderRadius: '10px',
                       background: 'transparent',
                       backdropFilter: 'none',
                       WebkitBackdropFilter: 'none',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      boxShadow: `
-                        0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                        0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
                       overflow: 'hidden',
-                      position: 'relative',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: `linear-gradient(
-                          135deg,
-                          ${alpha(theme.palette.success.main, 0.05)} 0%,
-                          transparent 50%,
-                          ${alpha(theme.palette.success.light, 0.05)} 100%
-                        )`,
-                        pointerEvents: 'none'
-                      },
+                      transition: 'all 0.2s ease',
                       '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `
-                          0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-                          0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-                        border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
+                        transform: 'translateY(-1px)',
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
                       }
                     }}
                   >
-                    <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 2 }, mb: { xs: 1, sm: 2 } }}>
-                        <Box
-                          sx={{
-                            p: { xs: 0.8, sm: 1.2 },
-                            borderRadius: '14px',
-                            background: 'transparent',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: `0 6px 20px ${alpha(theme.palette.success.main, 0.3)}`,
-                            position: 'relative',
-                            '&::after': {
-                              content: '""',
-                              position: 'absolute',
-                              inset: 0,
-                              borderRadius: '14px',
-                              background: 'transparent',
-                              pointerEvents: 'none'
-                            }
-                          }}
-                        >
+                    <Box sx={{ p: 1.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <TrendingUpIcon
                             sx={{
-                              fontSize: '1.4rem',
-                              color: 'white',
-                              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+                              fontSize: '1rem',
+                              color: theme.palette.success.main
                             }}
                           />
-                        </Box>
-                        <Box sx={{ flex: 1 }}>
                           <Typography
-                            variant="h6"
+                            variant="caption"
                             sx={{
-                              color: theme.palette.text.primary,
-                              fontWeight: 700,
-                              fontSize: '1.1rem',
-                              letterSpacing: '-0.01em',
-                              mb: 0.5
+                              color: alpha(theme.palette.text.secondary, 0.9),
+                              fontWeight: 600,
+                              fontSize: '0.75rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.3px'
                             }}
                           >
-                            Total Trading Volume
+                            Trading Volume
                           </Typography>
+                        </Box>
+                        {loading ? (
+                          <Skeleton width={80} height={20} sx={{ borderRadius: '4px' }} />
+                        ) : (
                           <Typography
                             variant="body2"
                             sx={{
-                              color: alpha(theme.palette.text.secondary, 0.8),
-                              fontSize: '0.8rem'
-                            }}
-                          >
-                            Lifetime trading activity
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      <Box
-                        sx={{
-                          p: 2,
-                          borderRadius: '12px',
-                          background: 'transparent',
-                          border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
-                          textAlign: 'center'
-                        }}
-                      >
-                        {loading ? (
-                          <Skeleton
-                            width={120}
-                            height={32}
-                            sx={{ mx: 'auto', borderRadius: '8px' }}
-                          />
-                        ) : (
-                          <Typography
-                            variant="h4"
-                            sx={{
                               color: theme.palette.success.main,
-                              fontWeight: 800,
-                              fontSize: { xs: '1.4rem', sm: '1.8rem' },
-                              letterSpacing: '-0.02em',
-                              mb: 0.5
+                              fontWeight: 700,
+                              fontSize: '0.95rem'
                             }}
                           >
-                            {`${traderStats?.totalVolume?.toLocaleString() || 0} `}
-                            <Typography
-                              component="span"
-                              variant="caption"
-                              sx={{
-                                color: alpha(theme.palette.success.main, 0.7),
-                                fontWeight: 600,
-                                fontSize: { xs: '0.7rem', sm: '0.8rem' },
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
-                              }}
-                            >
-                              XRP
-                            </Typography>
+                            {`${(traderStats?.totalVolume || 0).toLocaleString()} XRP`}
                           </Typography>
                         )}
                       </Box>
@@ -1759,289 +1675,179 @@ export default function Portfolio({ account, limit, collection, type }) {
                   {/* XRP Balance Display */}
                   <Card
                     sx={{
-                      mt: { xs: 0.75, sm: 1.5 },
-                      borderRadius: { xs: '12px', sm: '16px' },
+                      mt: 1,
+                      borderRadius: '10px',
                       background: 'transparent',
-                      backdropFilter: 'blur(40px) saturate(150%)',
-                      WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      boxShadow: `
-                        0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                        0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+                      backdropFilter: 'none',
+                      WebkitBackdropFilter: 'none',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
                       overflow: 'hidden',
-                      position: 'relative',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: `linear-gradient(
-                          135deg,
-                          ${alpha(theme.palette.primary.main, 0.05)} 0%,
-                          transparent 50%,
-                          ${alpha(theme.palette.warning.main, 0.05)} 100%
-                        )`,
-                        pointerEvents: 'none'
-                      },
+                      transition: 'all 0.2s ease',
                       '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `
-                          0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-                          0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-                        border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
+                        transform: 'translateY(-1px)',
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
                       }
                     }}
                   >
-                    {/* Header Section */}
-                    <Box
-                      sx={{
-                        p: 2.5,
-                        background: 'transparent',
-                        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between'
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                          <Box
+                    <Box sx={{ p: 1.5 }}>
+                      {/* Main Balance Row */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <AccountBalanceWalletIcon
                             sx={{
-                              p: 1,
-                              borderRadius: '12px',
-                              background: 'transparent',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+                              fontSize: '1rem',
+                              color: theme.palette.primary.main
                             }}
-                          >
-                            <AccountBalanceWalletIcon
-                              sx={{
-                                fontSize: '1.2rem',
-                                color: 'white',
-                                filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))'
-                              }}
-                            />
-                          </Box>
+                          />
                           <Typography
-                            variant="h6"
+                            variant="caption"
                             sx={{
+                              color: alpha(theme.palette.text.secondary, 0.9),
                               fontWeight: 600,
-                              color: theme.palette.text.primary,
-                              fontSize: '1.1rem',
-                              letterSpacing: '-0.01em'
+                              fontSize: '0.75rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.3px'
                             }}
                           >
                             XRP Balance
                           </Typography>
                         </Box>
                         {loadingBalance ? (
-                          <Skeleton width={120} height={32} sx={{ borderRadius: '8px' }} />
+                          <Skeleton width={80} height={20} sx={{ borderRadius: '4px' }} />
                         ) : (
-                          <Box sx={{ textAlign: 'right' }}>
-                            <Typography
-                              variant="h5"
-                              sx={{
-                                fontWeight: 700,
-                                color: theme.palette.primary.main,
-                                fontSize: '1.4rem',
-                                letterSpacing: '-0.02em',
-                                lineHeight: 1.2
-                              }}
-                            >
-                              {xrpBalance !== null
-                                ? xrpBalance.toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                  })
-                                : '0.00'}{' '}
-                              <Typography
-                                component="span"
-                                variant="caption"
-                                sx={{
-                                  color: alpha(theme.palette.text.secondary, 0.8),
-                                  fontWeight: 500,
-                                  fontSize: '0.75rem',
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.5px'
-                                }}
-                              >
-                                XRP
-                              </Typography>
-                            </Typography>
-                          </Box>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontWeight: 700,
+                              color: theme.palette.primary.main,
+                              fontSize: '0.95rem'
+                            }}
+                          >
+                            {xrpBalance !== null
+                              ? xrpBalance.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })
+                              : '0.00'}{' '}
+                            XRP
+                          </Typography>
                         )}
                       </Box>
-                    </Box>
 
-                    {/* Stats Section */}
-                    <Box sx={{ p: 2.5 }}>
-                      <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                          <Box
+                      {/* Buy/Sell Volume Row */}
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Box
+                          sx={{
+                            flex: 1,
+                            p: 1,
+                            borderRadius: '6px',
+                            background: alpha(theme.palette.success.main, 0.05),
+                            border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
                             sx={{
-                              p: 2,
-                              borderRadius: '12px',
-                              background: 'transparent',
-                              border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                transform: 'translateY(-1px)',
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.15)}`
-                              }
+                              color: alpha(theme.palette.text.secondary, 0.8),
+                              fontSize: '0.65rem',
+                              display: 'block'
                             }}
                           >
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: alpha(theme.palette.text.secondary, 0.9),
-                                fontWeight: 600,
-                                fontSize: '0.7rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: { xs: '0.3px', sm: '0.4px' },
-                                mb: 0.5,
-                                display: 'block'
-                              }}
-                            >
-                              Buy Volume
-                            </Typography>
-                            <Typography
-                              variant="h6"
-                              sx={{
-                                color: theme.palette.success.main,
-                                fontWeight: 700,
-                                fontSize: '1rem',
-                                letterSpacing: '-0.01em'
-                              }}
-                            >
-                              {`${(traderStats?.buyVolume || 0).toLocaleString()} `}
-                              <Typography
-                                component="span"
-                                variant="caption"
-                                sx={{
-                                  color: alpha(theme.palette.success.main, 0.7),
-                                  fontWeight: 500,
-                                  fontSize: '0.7rem'
-                                }}
-                              >
-                                XRP
-                              </Typography>
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={6}>
-                          <Box
+                            Buy
+                          </Typography>
+                          <Typography
+                            variant="caption"
                             sx={{
-                              p: 2,
-                              borderRadius: '12px',
-                              background: 'transparent',
-                              border: `1px solid ${alpha(theme.palette.error.main, 0.1)}`,
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                transform: 'translateY(-1px)',
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.15)}`
-                              }
+                              color: theme.palette.success.main,
+                              fontWeight: 600,
+                              fontSize: '0.75rem'
                             }}
                           >
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: alpha(theme.palette.text.secondary, 0.9),
-                                fontWeight: 600,
-                                fontSize: '0.7rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: { xs: '0.3px', sm: '0.4px' },
-                                mb: 0.5,
-                                display: 'block'
-                              }}
-                            >
-                              Sell Volume
-                            </Typography>
-                            <Typography
-                              variant="h6"
-                              sx={{
-                                color: theme.palette.error.main,
-                                fontWeight: 700,
-                                fontSize: '1rem',
-                                letterSpacing: '-0.01em'
-                              }}
-                            >
-                              {`${(traderStats?.sellVolume || 0).toLocaleString()} `}
-                              <Typography
-                                component="span"
-                                variant="caption"
-                                sx={{
-                                  color: alpha(theme.palette.error.main, 0.7),
-                                  fontWeight: 500,
-                                  fontSize: '0.7rem'
-                                }}
-                              >
-                                XRP
-                              </Typography>
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Box
+                            {(traderStats?.buyVolume || 0).toLocaleString()}
+                          </Typography>
+                        </Box>
+                        <Box
+                          sx={{
+                            flex: 1,
+                            p: 1,
+                            borderRadius: '6px',
+                            background: alpha(theme.palette.error.main, 0.05),
+                            border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
                             sx={{
-                              p: 2,
-                              borderRadius: '12px',
-                              background: 'transparent',
-                              border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                transform: 'translateY(-1px)',
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.info.main, 0.15)}`
-                              }
+                              color: alpha(theme.palette.text.secondary, 0.8),
+                              fontSize: '0.65rem',
+                              display: 'block'
                             }}
                           >
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between'
-                              }}
-                            >
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  color: alpha(theme.palette.text.secondary, 0.9),
-                                  fontWeight: 600,
-                                  fontSize: '0.7rem',
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.5px'
-                                }}
-                              >
-                                Avg Holding Time
-                              </Typography>
-                              <Box sx={{ textAlign: 'right' }}>
-                                <Typography
-                                  variant="h6"
-                                  sx={{
-                                    color: theme.palette.info.main,
-                                    fontWeight: 700,
-                                    fontSize: '1.1rem',
-                                    letterSpacing: '-0.01em'
-                                  }}
-                                >
-                                  {formatHoldingTime(traderStats?.avgHoldingTime || 0)}
-                                </Typography>
-                              </Box>
-                            </Box>
-                          </Box>
-                        </Grid>
-                      </Grid>
+                            Sell
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: theme.palette.error.main,
+                              fontWeight: 600,
+                              fontSize: '0.75rem'
+                            }}
+                          >
+                            {(traderStats?.sellVolume || 0).toLocaleString()}
+                          </Typography>
+                        </Box>
+                      </Box>
                     </Box>
                   </Card>
+
+                  {/* Additional Stats - Compact card */}
+                  <Box
+                    sx={{
+                      mt: 1,
+                      p: 1.5,
+                      borderRadius: '10px',
+                      background: 'transparent',
+                      border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
+                      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        transform: 'translateY(-1px)',
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                      }
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: alpha(theme.palette.text.secondary, 0.9),
+                          fontWeight: 600,
+                          fontSize: '0.75rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.3px'
+                        }}
+                      >
+                        Avg Holding Time
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: theme.palette.info.main,
+                          fontWeight: 700,
+                          fontSize: '0.95rem'
+                        }}
+                      >
+                        {formatHoldingTime(traderStats?.avgHoldingTime || 0)}
+                      </Typography>
+                    </Box>
+                  </Box>
 
                 <Box sx={{ mt: { xs: 0.75, sm: 1.5 } }}>
                   <Card
