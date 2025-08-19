@@ -157,22 +157,26 @@ const HeaderWrapper = styled(Box)(
     left: 0;
     right: 0;
     z-index: 1100;
-    background: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.2)};
-    box-shadow: 
-      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)};
+    background: ${theme.palette.mode === 'dark' 
+      ? '#000000'
+      : '#ffffff'};
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid ${theme.palette.mode === 'dark'
+      ? 'rgba(255,255,255,0.08)'
+      : 'rgba(0,0,0,0.1)'};
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     will-change: transform;
     
     ${theme.breakpoints.down('sm')} {
       height: ${theme.spacing(6)};
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
+      background: ${theme.palette.mode === 'dark'
+        ? '#000000'
+        : '#ffffff'};
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
     
     &::before {
