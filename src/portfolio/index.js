@@ -2137,10 +2137,13 @@ export default function Portfolio({ account, limit, collection, type }) {
                   <Box
                     sx={{
                       p: 1.5,
-                      borderRadius: '12px',
-                      background: 'transparent',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                      transition: 'all 0.2s ease'
+                      borderRadius: '4px',
+                      background: theme.palette.mode === 'dark' 
+                        ? 'linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.02) 100%)'
+                        : 'linear-gradient(135deg, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0.02) 100%)',
+                      border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
+                      transition: 'all 0.2s ease',
+                      overflow: 'hidden'
                     }}
                   >
                     {/* Header with Time Toggle */}
@@ -2320,25 +2323,17 @@ export default function Portfolio({ account, limit, collection, type }) {
                   sx={{
                     p: { xs: 1, sm: 1.5 },
                     height: '100%',
-                    borderRadius: { xs: '12px', sm: '16px' },
-                    background: 'transparent',
-                    backdropFilter: 'none',
-                    WebkitBackdropFilter: 'none',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    boxShadow: `
-                      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+                    borderRadius: '4px',
+                    background: theme.palette.mode === 'dark' 
+                      ? 'linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.02) 100%)'
+                      : 'linear-gradient(135deg, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0.02) 100%)',
+                    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
                     position: 'relative',
                     overflow: 'hidden',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
                       transform: 'translateY(-2px)',
-                      boxShadow: `
-                        0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-                        0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-                      border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
+                      border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
                     }
                   }}
                 >

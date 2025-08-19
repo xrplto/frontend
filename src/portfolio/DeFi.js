@@ -243,34 +243,36 @@ const DeFiHistory = ({ account }) => {
           <Table
             size="small"
             sx={{
+              backgroundColor: 'transparent',
               '& .MuiTableCell-root': {
                 py: 1.5,
                 px: isSmallScreen ? 1 : 2,
                 fontSize: isSmallScreen ? '0.75rem' : '0.813rem',
-                borderBottom: darkMode ? '1px solid rgba(255,255,255,0.03)' : '1px solid rgba(0,0,0,0.03)'
+                borderBottom: darkMode ? '1px solid rgba(255,255,255,0.03)' : '1px solid rgba(0,0,0,0.03)',
+                backgroundColor: 'transparent'
               }
             }}
           >
             <TableHead>
-              <TableRow>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400 }}>
+              <TableRow sx={{ backgroundColor: 'transparent' }}>
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400, backgroundColor: 'transparent' }}>
                   Type
                 </TableCell>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400 }}>
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400, backgroundColor: 'transparent' }}>
                   {isSmallScreen ? 'Time' : 'Date'}
                 </TableCell>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400 }}>
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400, backgroundColor: 'transparent' }}>
                   Amount
                 </TableCell>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400 }}>
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400, backgroundColor: 'transparent' }}>
                   Source
                 </TableCell>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400, textAlign: 'center' }}>
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400, textAlign: 'center', backgroundColor: 'transparent' }}>
                   <OpenInNewIcon sx={{ fontSize: '14px' }} />
                 </TableCell>
               </TableRow>
             </TableHead>
-            <TableBody>
+            <TableBody sx={{ backgroundColor: 'transparent' }}>
               {paginatedHistory.map((item, index) => (
                 <HistoryRow key={index} {...item} isSmallScreen={isSmallScreen} darkMode={darkMode} />
               ))}
