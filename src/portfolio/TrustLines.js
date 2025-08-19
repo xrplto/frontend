@@ -254,7 +254,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    {isXRP ? 'XRP' : (token.user || token.name || token.currencyName || token.currency)}
+                    {isXRP ? 'XRP' : (token.name || token.currencyName || token.currency)}
                   </Typography>
                   {(isXRP || token.verified) && (
                     <VerifiedIcon sx={{ fontSize: 12, color: theme.palette.success.main }} />
