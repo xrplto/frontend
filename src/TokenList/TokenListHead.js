@@ -241,7 +241,8 @@ const DESKTOP_TABLE_HEAD = [
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: 'Token origin'
+    tooltip: 'Token origin',
+    style: { paddingRight: '16px' }
   },
   {
     id: 'historyGraph',
@@ -250,7 +251,8 @@ const DESKTOP_TABLE_HEAD = [
     width: '15%',
     order: false,
     sticky: false,
-    mobileHide: true
+    mobileHide: true,
+    style: { paddingLeft: '16px' }
   },
 ];
 

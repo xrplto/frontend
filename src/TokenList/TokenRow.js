@@ -809,10 +809,10 @@ const DesktopTokenRow = ({
             <StyledCell align="right" darkMode={darkMode}>
               {formatValue(holders, 'int')}
             </StyledCell>
-            <StyledCell align="right" darkMode={darkMode}>
+            <StyledCell align="right" darkMode={darkMode} style={{ paddingRight: '16px' }}>
               {origin || 'XRPL'}
             </StyledCell>
-            <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px' }}>
+            <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px', paddingLeft: '16px' }}>
               {sparklineUrl ? (
                 <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
                   <LoadChart
