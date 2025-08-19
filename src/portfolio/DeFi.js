@@ -45,7 +45,7 @@ const DeFiHistory = ({ account }) => {
   const [activityHistory, setActivityHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(50);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [abortController, setAbortController] = useState(null);
 
