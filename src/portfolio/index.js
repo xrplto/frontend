@@ -677,8 +677,9 @@ export default function Portfolio({ account, limit, collection, type }) {
       lineCap: 'round'
     },
     legend: {
-      position: 'bottom',
+      position: 'top',
       horizontalAlign: 'center',
+      offsetY: -30,
       markers: {
         radius: 12,
         strokeWidth: 2,
@@ -973,8 +974,9 @@ export default function Portfolio({ account, limit, collection, type }) {
       lineCap: 'round'
     },
     legend: {
-      position: 'bottom',
+      position: 'top',
       horizontalAlign: 'center',
+      offsetY: -30,
       markers: {
         radius: 12,
         strokeWidth: 2,
@@ -2952,14 +2954,115 @@ export default function Portfolio({ account, limit, collection, type }) {
                       </IconButton>
                     </Box>
                   </Box>
-                  <Box sx={{ height: { xs: 180, sm: 250 }, position: 'relative', minHeight: { xs: 180, sm: 250 } }}>
+                  {/* Legend Section */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: 2, 
+                    mb: 2,
+                    justifyContent: 'center',
+                    px: 1
+                  }}>
+                    {chartView === 'roi' && (
+                      <>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box sx={{ 
+                            width: 12, 
+                            height: 12, 
+                            bgcolor: theme.palette.primary.main, 
+                            borderRadius: '2px' 
+                          }} />
+                          <Typography variant="caption" color="text.secondary">
+                            Daily ROI
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box sx={{ 
+                            width: 12, 
+                            height: 2, 
+                            bgcolor: theme.palette.secondary.main, 
+                            borderRadius: '1px' 
+                          }} />
+                          <Typography variant="caption" color="text.secondary">
+                            Cumulative ROI
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box sx={{ 
+                            width: 12, 
+                            height: 12, 
+                            bgcolor: theme.palette.info.main, 
+                            borderRadius: '2px' 
+                          }} />
+                          <Typography variant="caption" color="text.secondary">
+                            Volume
+                          </Typography>
+                        </Box>
+                      </>
+                    )}
+                    {chartView === 'activity' && (
+                      <>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box sx={{ 
+                            width: 12, 
+                            height: 12, 
+                            bgcolor: theme.palette.primary.main, 
+                            borderRadius: '2px' 
+                          }} />
+                          <Typography variant="caption" color="text.secondary">
+                            Daily Trades
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box sx={{ 
+                            width: 12, 
+                            height: 2, 
+                            bgcolor: theme.palette.secondary.main, 
+                            borderRadius: '1px' 
+                          }} />
+                          <Typography variant="caption" color="text.secondary">
+                            Cumulative Trades
+                          </Typography>
+                        </Box>
+                      </>
+                    )}
+                    {chartView === 'volume' && (
+                      <>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box sx={{ 
+                            width: 12, 
+                            height: 12, 
+                            bgcolor: theme.palette.info.main, 
+                            borderRadius: '2px' 
+                          }} />
+                          <Typography variant="caption" color="text.secondary">
+                            Daily Volume
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box sx={{ 
+                            width: 12, 
+                            height: 2, 
+                            bgcolor: theme.palette.warning.main, 
+                            borderRadius: '1px' 
+                          }} />
+                          <Typography variant="caption" color="text.secondary">
+                            Cumulative Volume
+                          </Typography>
+                        </Box>
+                      </>
+                    )}
+                  </Box>
+                  
+                  {/* Chart Section */}
+                  <Box sx={{ height: { xs: 160, sm: 220 }, position: 'relative', minHeight: { xs: 160, sm: 220 } }}>
                     {loading ? (
                       <Skeleton variant="rectangular" height="100%" sx={{ borderRadius: '12px' }} />
                     ) : (
                       <>
-                        {chartView === 'roi' && renderChart(processChartData(), chartOptions)}
-                        {chartView === 'activity' && renderChart(processTradeHistoryData(), tradeHistoryOptions)}
-                        {chartView === 'volume' && renderChart(processVolumeHistoryData(), volumeHistoryOptions)}
+                        {chartView === 'roi' && renderChart(processChartData(), { ...chartOptions, legend: { enabled: false } })}
+                        {chartView === 'activity' && renderChart(processTradeHistoryData(), { ...tradeHistoryOptions, legend: { enabled: false } })}
+                        {chartView === 'volume' && renderChart(processVolumeHistoryData(), { ...volumeHistoryOptions, legend: { enabled: false } })}
                       </>
                     )}
                   </Box>
