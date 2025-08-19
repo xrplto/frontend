@@ -544,7 +544,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           : 'linear-gradient(135deg, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0.02) 100%)',
         borderRadius: '4px',
         border: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        p: { xs: 2, sm: 3, md: 4 }
       }}
     >
       <Grid container spacing={{ xs: 1, sm: 1.5 }}>
