@@ -1,3 +1,4 @@
+import React from 'react';
 import axios from 'axios';
 import { useState, useEffect, useContext, useMemo } from 'react';
 import {
@@ -31,8 +32,13 @@ import CustomDialog from 'src/components/Dialog';
 import useWebSocket from 'react-use-websocket';
 import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official';
+// Lazy load Highcharts only when needed
+import dynamic from 'next/dynamic';
+const HighchartsReact = dynamic(
+  () => import('highcharts-react-official'),
+  { ssr: false, loading: () => <div>Loading chart...</div> }
+);
+let Highcharts = null;
 // Generate color from string hash
 const generateColorFromString = (str, saturation = 70, lightness = 50) => {
   if (!str) return '#007B55';
@@ -420,26 +426,28 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     shouldReconnect: () => true
   });
 
-  // Fetch trustlines
+  // Optimized fetch with AbortController
   useEffect(() => {
+    const controller = new AbortController();
     const fetchLines = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`${BASE_URL}/trustlines/${account}?sortByValue=true&limit=200&page=0`);
+        const res = await axios.get(`${BASE_URL}/trustlines/${account}?sortByValue=true&limit=200&page=0`, {
+          signal: controller.signal
+        });
         if (res.data?.result === 'success') {
           const trustlines = res.data.lines || [];
-          console.log('Fetched trustlines count:', trustlines.length);
-          console.log('First few trustlines:', trustlines.slice(0, 3));
           setLines(trustlines);
           
           // Store XRP token data from API response
           if (res.data.xrpToken) {
             setXrpTokenData(res.data.xrpToken);
-            console.log('XRP token data:', res.data.xrpToken);
           }
         }
       } catch (err) {
-        console.error('Error fetching trustlines:', err);
+        if (!axios.isCancel(err)) {
+          console.error('Error fetching trustlines:', err);
+        }
       } finally {
         setLoading(false);
       }
@@ -448,7 +456,9 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     if (account) {
       fetchLines();
     }
-  }, [account, sync]);
+    
+    return () => controller.abort();
+  }, [account, sync, BASE_URL]);
 
   // Store XRP token data from API response
   const [xrpTokenData, setXrpTokenData] = useState(null);
@@ -511,7 +521,10 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   // We need to use the properly sorted array that includes XRP
   const [sortedAssets, setSortedAssets] = useState([]);
   
-  const displayedAssets = showAll ? sortedAssets : sortedAssets.slice(0, 6);
+  const displayedAssets = React.useMemo(() => 
+    showAll ? sortedAssets : sortedAssets.slice(0, 6),
+    [showAll, sortedAssets]
+  );
   const hasMore = sortedAssets.length > 6;
   
   console.log('Component state - sortedAssets.length:', sortedAssets.length, 'showAll:', showAll, 'displayedAssets.length:', displayedAssets.length);
@@ -642,7 +655,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                       }}
                     >
                       <HighchartsReact
-                        highcharts={Highcharts}
+                        highcharts={Highcharts || (Highcharts = require('highcharts'))}
                         options={{
                           chart: {
                             type: 'pie',

@@ -49,7 +49,17 @@ const axiosInstance = axios.create({
   timeout: 30000 // 30 second timeout for analytics calls
 });
 
-import { createChart, LineSeries, HistogramSeries, AreaSeries } from 'lightweight-charts';
+// Lazy load chart library only when needed
+let createChart, LineSeries, HistogramSeries;
+// Dynamically import chart libraries when component mounts
+const loadChartLibraries = async () => {
+  if (!createChart) {
+    const charts = await import('lightweight-charts');
+    createChart = charts.createChart;
+    LineSeries = charts.LineSeries;
+    HistogramSeries = charts.HistogramSeries;
+  }
+};
 
 // Format holding time from seconds to human readable format
 const formatHoldingTime = (seconds) => {
@@ -1265,18 +1275,32 @@ export default function Portfolio({ account, limit, collection, type }) {
     useEffect(() => {
       if (!chartContainerRef.current || !chartData || !chartData.series) return;
 
-      // Clean up existing chart
-      if (chartRef.current) {
-        try {
-          chartRef.current.remove();
-        } catch (e) {
-          console.error('Error removing chart:', e);
+      const initChart = async () => {
+        // Load chart libraries first
+        await loadChartLibraries();
+        
+        if (!createChart) {
+          console.error('Chart library failed to load');
+          return;
         }
-        chartRef.current = null;
-      }
 
-      // Create new chart
-      const chart = createChart(chartContainerRef.current, {
+        // Check if container still exists after async operation
+        if (!chartContainerRef.current) {
+          return;
+        }
+
+        // Clean up existing chart
+        if (chartRef.current) {
+          try {
+            chartRef.current.remove();
+          } catch (e) {
+            console.error('Error removing chart:', e);
+          }
+          chartRef.current = null;
+        }
+
+        // Create new chart
+        const chart = createChart(chartContainerRef.current, {
         width: chartContainerRef.current.clientWidth,
         height: isMobile ? 180 : 200,
         layout: {
@@ -1416,6 +1440,9 @@ export default function Portfolio({ account, limit, collection, type }) {
           chartRef.current = null;
         }
       };
+      };
+      
+      initChart();
     }, [chartData, isDark, theme]);
 
     if (!chartData || !chartData.series) {
@@ -1481,153 +1508,117 @@ export default function Portfolio({ account, limit, collection, type }) {
                   }}
                   spacing={{ xs: 1, sm: 1.5 }}
                 >
-                  <Box
-                    sx={{
-                      p: { xs: 1.5, sm: 2 },
-                      borderRadius: { xs: '12px', sm: '16px' },
-                      background: 'transparent',
-                      backdropFilter: 'none',
-                      WebkitBackdropFilter: 'none',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      boxShadow: `
-                        0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                        0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-                      mb: { xs: 1, sm: 2 },
-                      position: 'relative',
-                      overflow: 'hidden',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        display: 'none',
-                        pointerEvents: 'none'
-                      },
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `
-                          0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-                          0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-                        border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
-                      }
-                    }}
-                  >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
-                        <Box sx={{ position: 'relative' }}>
-                          <Avatar
-                            src={getHashIcon(account)}
+                  {/* XRP Address Section - removed nested container */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, p: { xs: 1.5, sm: 2 } }}>
+                    <Box sx={{ position: 'relative' }}>
+                      <Avatar
+                        src={getHashIcon(account)}
+                        sx={{
+                          width: { xs: 32, sm: 40 },
+                          height: { xs: 32, sm: 40 },
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`,
+                          transition: 'all 0.3s ease'
+                        }}
+                      />
+                      {activeRanks[account] === 'verified' && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            bottom: -2,
+                            right: -2,
+                            width: 16,
+                            height: 16,
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #1DA1F2 0%, #0d8bd9 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: `0 2px 6px ${alpha('#1DA1F2', 0.3)}`
+                          }}
+                        >
+                          <VerifiedIcon
                             sx={{
-                              width: { xs: 32, sm: 40 },
-                              height: { xs: 32, sm: 40 },
-                              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`,
-                              transition: 'all 0.3s ease'
+                              fontSize: { xs: '0.6rem', sm: '0.65rem' },
+                              color: 'white'
                             }}
                           />
-                          {activeRanks[account] === 'verified' && (
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                bottom: -2,
-                                right: -2,
-                                width: 16,
-                                height: 16,
-                                borderRadius: '50%',
-                                background: 'linear-gradient(135deg, #1DA1F2 0%, #0d8bd9 100%)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                boxShadow: `0 2px 6px ${alpha('#1DA1F2', 0.3)}`
-                              }}
-                            >
-                              <VerifiedIcon
-                                sx={{
-                                  fontSize: { xs: '0.6rem', sm: '0.65rem' },
-                                  color: 'white'
-                                }}
-                              />
-                            </Box>
-                          )}
                         </Box>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.25 }}>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: theme.palette.text.primary,
-                                fontWeight: 600,
-                                fontSize: { xs: '0.75rem', sm: '0.85rem' },
-                                letterSpacing: '-0.01em',
-                                textOverflow: 'ellipsis',
-                                overflow: 'hidden',
-                                whiteSpace: 'nowrap',
-                                maxWidth: { xs: '140px', sm: '100%' }
-                              }}
-                            >
-                              {isMobile ? `${account.substring(0, 8)}...${account.substring(account.length - 6)}` : account}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={() => navigator.clipboard.writeText(account)}
-                              sx={{
-                                p: 0.25,
-                                color: alpha(theme.palette.text.secondary, 0.6),
-                                '&:hover': {
-                                  color: theme.palette.primary.main,
-                                  bgcolor: alpha(theme.palette.primary.main, 0.08)
-                                }
-                              }}
-                            >
-                              <ContentCopyIcon sx={{ fontSize: '0.75rem' }} />
-                            </IconButton>
-                          </Box>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            <Chip
-                              label={
-                                activeRanks[account] === 'verified' ? 'Verified' : 'Trader'
-                              }
-                              size="small"
-                              sx={{
-                                bgcolor: alpha(
-                                  activeRankColors[activeRanks[account]] || theme.palette.primary.main,
-                                  0.08
-                                ),
-                                color:
-                                  activeRankColors[activeRanks[account]] ||
-                                  theme.palette.primary.main,
-                                border: 'none',
-                                fontWeight: 600,
-                                fontSize: '0.65rem',
-                                height: 20,
-                                '& .MuiChip-label': {
-                                  px: 1
-                                }
-                              }}
-                            />
-                            {isAmm && (
-                              <Chip
-                                label="AMM"
-                                size="small"
-                                sx={{
-                                  bgcolor: alpha(theme.palette.warning.main, 0.08),
-                                  color: theme.palette.warning.main,
-                                  border: 'none',
-                                  fontWeight: 600,
-                                  fontSize: '0.65rem',
-                                  height: 20,
-                                  '& .MuiChip-label': {
-                                    px: 1
-                                  }
-                                }}
-                              />
-                            )}
-                          </Box>
-                        </Box>
+                      )}
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.25 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: theme.palette.text.primary,
+                            fontWeight: 600,
+                            fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                            letterSpacing: '-0.01em',
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap',
+                            maxWidth: { xs: '140px', sm: '100%' }
+                          }}
+                        >
+                          {isMobile ? `${account.substring(0, 8)}...${account.substring(account.length - 6)}` : account}
+                        </Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() => navigator.clipboard.writeText(account)}
+                          sx={{
+                            p: 0.25,
+                            color: alpha(theme.palette.text.secondary, 0.6),
+                            '&:hover': {
+                              color: theme.palette.primary.main,
+                              bgcolor: alpha(theme.palette.primary.main, 0.08)
+                            }
+                          }}
+                        >
+                          <ContentCopyIcon sx={{ fontSize: '0.75rem' }} />
+                        </IconButton>
                       </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Chip
+                          label={
+                            activeRanks[account] === 'verified' ? 'Verified' : 'Trader'
+                          }
+                          size="small"
+                          sx={{
+                            bgcolor: alpha(
+                              activeRankColors[activeRanks[account]] || theme.palette.primary.main,
+                              0.08
+                            ),
+                            color:
+                              activeRankColors[activeRanks[account]] ||
+                              theme.palette.primary.main,
+                            border: 'none',
+                            fontWeight: 600,
+                            fontSize: '0.65rem',
+                            height: 20,
+                            '& .MuiChip-label': {
+                              px: 1
+                            }
+                          }}
+                        />
+                        {isAmm && (
+                          <Chip
+                            label="AMM"
+                            size="small"
+                            sx={{
+                              bgcolor: alpha(theme.palette.warning.main, 0.08),
+                              color: theme.palette.warning.main,
+                              border: 'none',
+                              fontWeight: 600,
+                              fontSize: '0.65rem',
+                              height: 20,
+                              '& .MuiChip-label': {
+                                px: 1
+                              }
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
                   </Box>
                 </Stack>
 

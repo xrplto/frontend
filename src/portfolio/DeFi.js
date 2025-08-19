@@ -19,8 +19,9 @@ import {
   Tooltip,
   Avatar
 } from '@mui/material';
+import React from 'react';
 import { Client } from 'xrpl';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { AppContext } from 'src/AppContext';
 import { PulseLoader } from 'react-spinners';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -46,16 +47,40 @@ const DeFiHistory = ({ account }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const [abortController, setAbortController] = useState(null);
 
   useEffect(() => {
-    accountHistory();
+    if (account) {
+      accountHistory();
+    }
+    
+    return () => {
+      // Cleanup: disconnect client on unmount
+      if (client.isConnected()) {
+        client.disconnect();
+      }
+      if (abortController) {
+        abortController.abort();
+      }
+    };
   }, [account]);
 
-  const accountHistory = async () => {
-    if (account === undefined) return;
+  const accountHistory = useCallback(async () => {
+    if (!account) return;
+    
+    // Cancel previous request if exists
+    if (abortController) {
+      abortController.abort();
+    }
+    
+    const newAbortController = new AbortController();
+    setAbortController(newAbortController);
+    
     setLoading(true);
     try {
-      await client.connect();
+      if (!client.isConnected()) {
+        await client.connect();
+      }
       const transaction = {
         command: 'account_tx',
         account: account,
@@ -66,8 +91,9 @@ const DeFiHistory = ({ account }) => {
         forward: false
       };
       const response = await client.request(transaction);
-      console.log('Full API Response:', JSON.stringify(response, null, 2));
-      console.log('All Transactions:', JSON.stringify(response.result.transactions, null, 2));
+      
+      // Check if request was aborted
+      if (newAbortController.signal.aborted) return;
       const totalTransactions = response.result.transactions;
       const filteredTransactions = totalTransactions.filter((item) => {
         const transactionType = item.tx.TransactionType;
@@ -177,23 +203,29 @@ const DeFiHistory = ({ account }) => {
       });
       setActivityHistory(filteredData);
     } catch (error) {
-      console.log('The error is occurred in my transaction history', error);
+      if (error.name !== 'AbortError') {
+        console.error('Transaction history error:', error);
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, [account, abortController]);
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = useCallback((event, newPage) => {
     setPage(newPage);
-  };
+  }, []);
 
-  const handleChangeRowsPerPage = (event) => {
+  const handleChangeRowsPerPage = useCallback((event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-  };
+  }, []);
 
-  const paginatedHistory = activityHistory.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
+  const paginatedHistory = useMemo(() => 
+    activityHistory.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    ),
+    [activityHistory, page, rowsPerPage]
   );
 
   return (
@@ -430,7 +462,7 @@ const SOURCE_TAGS = {
   }
 };
 
-const HistoryRow = (props) => {
+const HistoryRow = React.memo((props) => {
   const {
     TransactionType,
     Amount,
@@ -940,6 +972,8 @@ const HistoryRow = (props) => {
       </TableCell>
     </TableRow>
   );
-};
+});
 
-export default DeFiHistory;
+HistoryRow.displayName = 'HistoryRow';
+
+export default React.memo(DeFiHistory);
