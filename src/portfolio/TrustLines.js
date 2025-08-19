@@ -21,8 +21,11 @@ import {
   Verified as VerifiedIcon,
   AccountBalanceWallet as WalletIcon,
   TrendingUp as TrendingIcon,
-  PieChart as PieChartIcon
+  PieChart as PieChartIcon,
+  NavigateBefore as NavigateBeforeIcon,
+  NavigateNext as NavigateNextIcon
 } from '@mui/icons-material';
+import Pagination from '@mui/material/Pagination';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
 import CustomQRDialog from 'src/components/QRDialog';
@@ -385,6 +388,14 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   const [assetDistribution, setAssetDistribution] = useState(null);
   const [xrpTokenData, setXrpTokenData] = useState(null);
   const [sortedAssets, setSortedAssets] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [allLines, setAllLines] = useState([]);
+  const [loadingMore, setLoadingMore] = useState(false);
+  
+  const ITEMS_PER_PAGE = 10;
+  const DISPLAY_PER_PAGE = 5;
   
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
   
@@ -400,18 +411,25 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     shouldReconnect: () => true
   });
 
-  // Fetch trustlines
+  // Fetch trustlines with pagination
   useEffect(() => {
     const controller = new AbortController();
     const fetchLines = async () => {
       setLoading(true);
+      setCurrentPage(0);
+      setAllLines([]);
       try {
-        const res = await axios.get(`${BASE_URL}/trustlines/${account}?sortByValue=true&limit=200&page=0`, {
+        const res = await axios.get(`${BASE_URL}/trustlines/${account}?sortByValue=true&limit=${ITEMS_PER_PAGE}&page=0`, {
           signal: controller.signal
         });
         if (res.data?.result === 'success') {
           const trustlines = res.data.lines || [];
+          setAllLines(trustlines);
           setLines(trustlines);
+          
+          const total = res.data.totalCount || res.data.total || trustlines.length;
+          setTotalCount(total);
+          setTotalPages(Math.ceil(total / ITEMS_PER_PAGE));
           
           if (res.data.xrpToken) {
             setXrpTokenData(res.data.xrpToken);
@@ -432,6 +450,48 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     
     return () => controller.abort();
   }, [account, sync, BASE_URL]);
+  
+  // Function to load more pages
+  const loadMorePages = async (pageNum) => {
+    if (loadingMore || pageNum >= totalPages) return;
+    
+    setLoadingMore(true);
+    try {
+      const res = await axios.get(`${BASE_URL}/trustlines/${account}?sortByValue=true&limit=${ITEMS_PER_PAGE}&page=${pageNum}`);
+      if (res.data?.result === 'success' && res.data.lines) {
+        const newLines = res.data.lines;
+        const updatedLines = [...allLines, ...newLines];
+        setAllLines(updatedLines);
+        
+        // Update displayed lines based on current view
+        const startIdx = currentPage * DISPLAY_PER_PAGE;
+        const endIdx = startIdx + DISPLAY_PER_PAGE;
+        setLines(updatedLines.slice(startIdx, endIdx));
+      }
+    } catch (err) {
+      console.error('Error loading more trustlines:', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+  
+  // Handle page change
+  const handlePageChange = async (newPage) => {
+    if (newPage < 0 || newPage >= Math.ceil(totalCount / DISPLAY_PER_PAGE)) return;
+    
+    setCurrentPage(newPage);
+    const startIdx = newPage * DISPLAY_PER_PAGE;
+    const endIdx = startIdx + DISPLAY_PER_PAGE;
+    
+    // Check if we need to load more data from API
+    const apiPageNeeded = Math.floor(endIdx / ITEMS_PER_PAGE);
+    if (apiPageNeeded * ITEMS_PER_PAGE >= allLines.length && allLines.length < totalCount) {
+      await loadMorePages(apiPageNeeded);
+    } else {
+      // Use already loaded data
+      setLines(allLines.slice(startIdx, endIdx));
+    }
+  };
 
   // Calculate total value and process asset distribution
   useEffect(() => {
@@ -479,11 +539,9 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     processData();
   }, [lines, xrpBalance, exchRate, onUpdateTotalValue, onTrustlinesData, theme, xrpTokenData]);
 
-  const displayedAssets = React.useMemo(() => 
-    showAll ? sortedAssets : sortedAssets.slice(0, 6),
-    [showAll, sortedAssets]
-  );
-  const hasMore = sortedAssets.length > 6;
+  const displayedAssets = React.useMemo(() => sortedAssets, [sortedAssets]);
+  const totalDisplayPages = Math.ceil(totalCount / DISPLAY_PER_PAGE);
+  const hasMorePages = totalDisplayPages > 1;
 
   if (loading) {
     return (
@@ -754,7 +812,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                       Portfolio Overview
                     </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>
-                      {sortedAssets.length} assets
+                      {totalCount > 0 ? totalCount : sortedAssets.length} assets {currentPage > 0 && `(Page ${currentPage + 1}/${totalDisplayPages})`}
                     </Typography>
                   </Box>
                 </Stack>
@@ -824,28 +882,141 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
               })}
             </Stack>
 
-            {/* Show More Button */}
-            {hasMore && (
-              <Box sx={{ textAlign: 'center', mt: 0.75 }}>
-                <Button
+            {/* Pagination Controls */}
+            {hasMorePages && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                gap: 2,
+                mt: 1.5 
+              }}>
+                <IconButton
                   size="small"
-                  variant="outlined"
-                  onClick={() => setShowAll(!showAll)}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 0 || loadingMore}
                   sx={{
-                    borderRadius: 1,
-                    textTransform: 'none',
-                    fontSize: { xs: '0.7rem', sm: '0.8rem' },
-                    py: 0.25,
-                    px: 2,
-                    borderColor: alpha(theme.palette.primary.main, 0.3),
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
                     '&:hover': {
-                      borderColor: theme.palette.primary.main,
                       backgroundColor: alpha(theme.palette.primary.main, 0.05)
+                    },
+                    '&.Mui-disabled': {
+                      opacity: 0.3
                     }
                   }}
                 >
-                  {showAll ? 'Show Less' : `Show ${sortedAssets.length - 6} More`}
-                </Button>
+                  <NavigateBeforeIcon sx={{ fontSize: 20 }} />
+                </IconButton>
+                
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  {/* Page numbers */}
+                  {(() => {
+                    const pages = [];
+                    const maxVisible = 5;
+                    let start = Math.max(0, currentPage - Math.floor(maxVisible / 2));
+                    let end = Math.min(totalDisplayPages, start + maxVisible);
+                    
+                    if (end - start < maxVisible) {
+                      start = Math.max(0, end - maxVisible);
+                    }
+                    
+                    if (start > 0) {
+                      pages.push(
+                        <Button
+                          key={0}
+                          size="small"
+                          onClick={() => handlePageChange(0)}
+                          sx={{ 
+                            minWidth: 32, 
+                            height: 28,
+                            fontSize: '0.75rem',
+                            px: 1
+                          }}
+                        >
+                          1
+                        </Button>
+                      );
+                      if (start > 1) {
+                        pages.push(
+                          <Typography key="dots1" variant="caption" sx={{ px: 0.5 }}>...</Typography>
+                        );
+                      }
+                    }
+                    
+                    for (let i = start; i < end; i++) {
+                      pages.push(
+                        <Button
+                          key={i}
+                          size="small"
+                          variant={currentPage === i ? 'contained' : 'text'}
+                          onClick={() => handlePageChange(i)}
+                          disabled={loadingMore}
+                          sx={{ 
+                            minWidth: 32, 
+                            height: 28,
+                            fontSize: '0.75rem',
+                            px: 1,
+                            ...(currentPage === i && {
+                              backgroundColor: theme.palette.primary.main,
+                              color: theme.palette.primary.contrastText,
+                              '&:hover': {
+                                backgroundColor: theme.palette.primary.dark
+                              }
+                            })
+                          }}
+                        >
+                          {i + 1}
+                        </Button>
+                      );
+                    }
+                    
+                    if (end < totalDisplayPages) {
+                      if (end < totalDisplayPages - 1) {
+                        pages.push(
+                          <Typography key="dots2" variant="caption" sx={{ px: 0.5 }}>...</Typography>
+                        );
+                      }
+                      pages.push(
+                        <Button
+                          key={totalDisplayPages - 1}
+                          size="small"
+                          onClick={() => handlePageChange(totalDisplayPages - 1)}
+                          sx={{ 
+                            minWidth: 32, 
+                            height: 28,
+                            fontSize: '0.75rem',
+                            px: 1
+                          }}
+                        >
+                          {totalDisplayPages}
+                        </Button>
+                      );
+                    }
+                    
+                    return pages;
+                  })()}
+                </Stack>
+                
+                <IconButton
+                  size="small"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalDisplayPages - 1 || loadingMore}
+                  sx={{
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.05)
+                    },
+                    '&.Mui-disabled': {
+                      opacity: 0.3
+                    }
+                  }}
+                >
+                  <NavigateNextIcon sx={{ fontSize: 20 }} />
+                </IconButton>
+                
+                {loadingMore && (
+                  <CircularProgress size={20} sx={{ ml: 1 }} />
+                )}
               </Box>
             )}
           </Stack>
