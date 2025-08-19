@@ -216,11 +216,9 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
       const mobile = window.innerWidth < 960;
       if (saved) {
         const parsed = JSON.parse(saved);
-        // On mobile, ensure only price + one percentage column
-        if (mobile) {
-          const percentCols = ['pro5m', 'pro1h', 'pro24h', 'pro7d', 'pro30d'];
-          const selectedPercent = percentCols.find(col => parsed.includes(col)) || 'pro24h';
-          return ['price', selectedPercent];
+        // On mobile, allow any combination of fields
+        if (mobile && parsed.length >= 2) {
+          return [parsed[0], parsed[1]];
         }
         return parsed;
       }
