@@ -11,6 +11,7 @@ import { currencySymbols, getTokenImageUrl, decodeCurrency } from 'src/utils/con
 import axios from 'axios';
 import { throttle } from 'lodash';
 import styled from '@emotion/styled';
+import { Icon } from '@iconify/react';
 
 // Lazy load switchers
 const CurrencySwitcher = dynamic(() => import('./CurrencySwitcher'), { 
@@ -266,7 +267,10 @@ const IconButton = styled.button`
   }
 `;
 
-const Select = styled.select`
+const SelectButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 4px 8px;
   font-size: 0.75rem;
   border: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)'};
@@ -274,9 +278,10 @@ const Select = styled.select`
   background: ${props => props.paperBackground};
   color: ${props => props.textPrimary};
   cursor: pointer;
-  min-width: 100px;
+  min-width: 120px;
   height: 28px;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
+  position: relative;
   
   &:hover {
     border-color: ${props => props.primaryColor || '#0080ff'};
@@ -286,10 +291,43 @@ const Select = styled.select`
     outline: none;
     border-color: ${props => props.primaryColor || '#0080ff'};
   }
+`;
+
+const SelectDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: ${props => props.paperBackground};
+  border: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)'};
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1000;
+  overflow: hidden;
+`;
+
+const SelectOption = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 0.75rem;
+  background: transparent;
+  color: ${props => props.textPrimary};
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-align: left;
   
-  option {
-    background: ${props => props.paperBackground};
-    color: ${props => props.textPrimary};
+  &:hover {
+    background: ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  }
+  
+  &.selected {
+    background: ${props => props.primaryColor ? `${props.primaryColor}1a` : 'rgba(0,128,255,0.1)'};
+    color: ${props => props.primaryColor || '#0080ff'};
   }
 `;
 
@@ -297,6 +335,7 @@ const TradeList = styled.div`
   flex: 1;
   overflow-y: auto;
   padding: 0;
+  background: ${props => props.backgroundColor};
   
   &::-webkit-scrollbar {
     width: 6px;
@@ -407,12 +446,12 @@ const LinkIcon = ({ style }) => (
 // Constants
 const SWITCH_INTERVAL = 3000;
 const FILTER_OPTIONS = [
-  { value: 'All', label: 'All Trades', icon: '🔄' },
-  { value: '500+', label: '500+ XRP', icon: '🐟' },
-  { value: '1000+', label: '1000+ XRP', icon: '🐬' },
-  { value: '2500+', label: '2500+ XRP', icon: '🦈' },
-  { value: '5000+', label: '5000+ XRP', icon: '🐋' },
-  { value: '10000+', label: '10000+ XRP', icon: '🐳' }
+  { value: 'All', label: 'All Trades', icon: 'ic:round-water' },
+  { value: '500+', label: '500+ XRP', icon: 'ic:round-water' },
+  { value: '1000+', label: '1000+ XRP', icon: 'ic:round-waves' },
+  { value: '2500+', label: '2500+ XRP', icon: 'ic:round-pool' },
+  { value: '5000+', label: '5000+ XRP', icon: 'ic:round-tsunami' },
+  { value: '10000+', label: '10000+ XRP', icon: 'ic:round-scuba-diving' }
 ];
 
 // Helper functions
@@ -434,14 +473,14 @@ const formatRelativeTime = (timestamp) => {
   }
 };
 
-const getTradeSizeEmoji = (value) => {
+const getTradeSizeIcon = (value) => {
   const xrpValue = parseFloat(value);
-  if (xrpValue < 500) return '🦐';
-  if (xrpValue < 1000) return '🐟';
-  if (xrpValue < 2500) return '🐬';
-  if (xrpValue < 5000) return '🦈';
-  if (xrpValue < 10000) return '🐋';
-  return '🐳';
+  if (xrpValue < 500) return 'ic:round-water-drop';  // Small drop
+  if (xrpValue < 1000) return 'ic:round-water';  // Small wave
+  if (xrpValue < 2500) return 'ic:round-waves';  // Medium waves
+  if (xrpValue < 5000) return 'ic:round-pool';  // Pool/larger body
+  if (xrpValue < 10000) return 'ic:round-tsunami';  // Tsunami/big wave
+  return 'ic:round-scuba-diving';  // Deep dive for largest
 };
 
 const abbreviateNumber = (num) => {
@@ -539,6 +578,7 @@ const Topbar = () => {
   const [wsError, setWsError] = useState(null);
   const [isWsLoading, setIsWsLoading] = useState(false);
   const [tradeFilter, setTradeFilter] = useState('All');
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
 
   // Get theme-specific colors
   const getThemeColors = () => {
@@ -1062,7 +1102,7 @@ const Topbar = () => {
 
       <DrawerOverlay open={tradeDrawerOpen} onClick={handleTradeDrawerClose} />
       <Drawer open={tradeDrawerOpen} backgroundColor={themeColors.backgroundColor} isMobile={isMobile}>
-        <DrawerHeader darkMode={darkMode} paperBackground={themeColors.paperBackground}>
+        <DrawerHeader darkMode={darkMode} paperBackground={themeColors.backgroundColor}>
           <Box display="flex" alignItems="center" gap={0.5}>
             <Typography variant="h6" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
               Global Trades
@@ -1070,20 +1110,45 @@ const Topbar = () => {
             <PulsatingCircle primaryColor={primaryColor} />
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
-            <Select
-              value={tradeFilter}
-              onChange={handleFilterChange}
-              darkMode={darkMode}
-              primaryColor={primaryColor}
-              paperBackground={themeColors.paperBackground}
-              textPrimary={themeColors.textPrimary}
-            >
-              {FILTER_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.icon} {option.label}
-                </option>
-              ))}
-            </Select>
+            <Box style={{ position: 'relative' }}>
+              <SelectButton
+                onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                darkMode={darkMode}
+                primaryColor={primaryColor}
+                paperBackground={themeColors.backgroundColor}
+                textPrimary={themeColors.textPrimary}
+              >
+                <Icon 
+                  icon={FILTER_OPTIONS.find(opt => opt.value === tradeFilter)?.icon || 'ic:round-water'} 
+                  width="16" 
+                  height="16" 
+                />
+                <span>{FILTER_OPTIONS.find(opt => opt.value === tradeFilter)?.label || 'All Trades'}</span>
+              </SelectButton>
+              {filterDropdownOpen && (
+                <SelectDropdown
+                  darkMode={darkMode}
+                  paperBackground={themeColors.backgroundColor}
+                >
+                  {FILTER_OPTIONS.map((option) => (
+                    <SelectOption
+                      key={option.value}
+                      className={option.value === tradeFilter ? 'selected' : ''}
+                      onClick={() => {
+                        handleFilterChange({ target: { value: option.value } });
+                        setFilterDropdownOpen(false);
+                      }}
+                      darkMode={darkMode}
+                      primaryColor={primaryColor}
+                      textPrimary={themeColors.textPrimary}
+                    >
+                      <Icon icon={option.icon} width="16" height="16" />
+                      <span>{option.label}</span>
+                    </SelectOption>
+                  ))}
+                </SelectDropdown>
+              )}
+            </Box>
             <IconButton onClick={handleTradeDrawerClose} darkMode={darkMode} textSecondary={themeColors.textSecondary} textPrimary={themeColors.textPrimary}>
               <CloseIcon />
             </IconButton>
@@ -1116,7 +1181,7 @@ const Topbar = () => {
             </Box>
           </Box>
         ) : (
-          <TradeList darkMode={darkMode} primaryColor={primaryColor}>
+          <TradeList darkMode={darkMode} primaryColor={primaryColor} backgroundColor={themeColors.backgroundColor}>
             {filteredTrades.map((trade, index) => {
               const tokenCurrency = trade.paid?.currency === 'XRP' ? trade.got : trade.paid;
               const tokenPath = tokenCurrency?.issuer && tokenCurrency?.currency 
@@ -1199,9 +1264,12 @@ const Topbar = () => {
                     </Box>
 
                     <Box display="flex" alignItems="center" gap={0.25} minWidth={35}>
-                      <Typography component="span" style={{ fontSize: '0.85rem' }}>
-                        {getTradeSizeEmoji(getXRPAmount(trade))}
-                      </Typography>
+                      <Icon 
+                        icon={getTradeSizeIcon(getXRPAmount(trade))} 
+                        width="16" 
+                        height="16"
+                        style={{ color: themeColors.textSecondary }}
+                      />
                       {trade.hash && (
                         <a
                           href={txPath}
