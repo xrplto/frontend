@@ -31,7 +31,7 @@ import { getHashIcon } from 'src/utils/extra';
 import TrustLines from './TrustLines';
 import { TabContext, TabPanel } from '@mui/lab';
 import NFTPortfolio from './NFTPortfolio';
-import History from './History';
+import DeFiHistory from './DeFi';
 import { alpha } from '@mui/material/styles';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -2705,7 +2705,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                 </TabContext>
               </CardContent>
             </Card>
-            <History account={account} />
+            <DeFiHistory account={account} />
           </Grid>
         </Grid>
       </Container>

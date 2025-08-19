@@ -32,7 +32,6 @@ import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 import { getMinterName } from 'src/utils/constants';
 import { fNumber, fIntNumber } from 'src/utils/formatNumber';
 import { getNftCoverUrl } from 'src/utils/parse/utils';
-import Label from './Label';
 
 // NFT Card Wrapper
 const NFTCardWrapper = styled(Card)(({ theme }) => ({
