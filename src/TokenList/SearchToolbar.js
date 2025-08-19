@@ -273,6 +273,19 @@ const TagChip = styled.button`
   white-space: nowrap;
   height: 30px;
   flex-shrink: 0;
+  opacity: ${props => props.show ? 1 : 0};
+  animation: ${props => props.show ? 'fadeIn 0.3s ease-out' : 'none'};
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
   
   &:hover {
     background: ${props => props.hoverBackground || 'rgba(33, 150, 243, 0.06)'};
@@ -344,57 +357,136 @@ const SearchToolbar = memo(function SearchToolbar({
   
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const containerRef = useRef(null);
-  const [visibleTagCount, setVisibleTagCount] = useState(8);
+  const [visibleTagCount, setVisibleTagCount] = useState(0);
+  const [measuredTags, setMeasuredTags] = useState(false);
+  const tagWidthCache = useRef(new Map());
 
-  // Calculate how many tags can fit without scrolling
+  // Calculate how many tags can fit dynamically
   useEffect(() => {
     const calculateVisibleTags = () => {
       if (!containerRef.current || !tags || tags.length === 0) return;
       
       const container = containerRef.current;
       const containerWidth = container.offsetWidth;
+      const isMobile = window.innerWidth <= 600;
       
-      // Get all non-tag elements' total width
-      const children = Array.from(container.children);
-      let fixedElementsWidth = 0;
+      // Get fixed elements (non-tag elements)
+      const fixedElements = container.querySelectorAll('button:not([data-tag]), div');
+      let fixedWidth = 0;
       
-      children.forEach(child => {
-        // Count width of all elements except tag chips
-        const isTagChip = child.textContent && tags.some(tag => child.textContent.includes(tag));
-        if (!isTagChip && child.offsetWidth) {
-          fixedElementsWidth += child.offsetWidth + 10; // 10px for gap
+      fixedElements.forEach(el => {
+        if (el.offsetWidth && !el.hasAttribute('data-tag')) {
+          fixedWidth += el.offsetWidth + (isMobile ? 6 : 10); // gap
         }
       });
       
-      // Available width for tags (with some buffer)
-      const availableWidth = containerWidth - fixedElementsWidth - 100; // 100px for "All Tags" button
+      // Reserve space for "All Tags" button (approx 85px on desktop, 65px mobile)
+      const allTagsWidth = isMobile ? 65 : 85;
       
-      if (availableWidth <= 0) {
-        setVisibleTagCount(3); // Minimum tags to show
+      // Available width for tags
+      const availableWidth = containerWidth - fixedWidth - allTagsWidth - 20; // 20px buffer
+      
+      if (availableWidth <= 100) {
+        setVisibleTagCount(isMobile ? 0 : 2);
         return;
       }
       
-      // Estimate average tag width (roughly 80-120px per tag depending on text)
-      const avgTagWidth = 90;
-      const possibleTags = Math.floor(availableWidth / avgTagWidth);
+      // Measure actual tag widths
+      let totalTagWidth = 0;
+      let count = 0;
       
-      // Set the visible count, with min of 3 and max of 8 tags
-      const optimalCount = Math.max(3, Math.min(possibleTags, Math.min(8, tags.length)));
-      setVisibleTagCount(optimalCount);
+      // Create cache key based on viewport
+      const cacheKey = isMobile ? 'mobile' : 'desktop';
+      
+      // Create temporary container only if we need to measure new tags
+      let tempContainer = null;
+      
+      for (let i = 0; i < tags.length; i++) {
+        const tag = tags[i];
+        const tagCacheKey = `${cacheKey}-${tag}`;
+        
+        let tagWidth;
+        
+        // Check cache first
+        if (tagWidthCache.current.has(tagCacheKey)) {
+          tagWidth = tagWidthCache.current.get(tagCacheKey);
+        } else {
+          // Create temp container if not already created
+          if (!tempContainer) {
+            tempContainer = document.createElement('div');
+            tempContainer.style.cssText = 'position:absolute;visibility:hidden;display:flex;gap:4px';
+            document.body.appendChild(tempContainer);
+          }
+          
+          // Measure the tag
+          const tempTag = document.createElement('button');
+          tempTag.className = 'measure-tag';
+          tempTag.style.cssText = `
+            padding: ${isMobile ? '2px 6px' : '4px 10px'};
+            font-size: ${isMobile ? '0.65rem' : '0.75rem'};
+            font-weight: 500;
+            white-space: nowrap;
+            border: 1px solid transparent;
+          `;
+          
+          const emojis = ['🏷️', '📍', '⭐', '💫', '🎯', '🔖', '🎨', '🌟', '🏆', '💡'];
+          tempTag.innerHTML = `<span>${emojis[i % 10]}</span> <span>${tag}</span>`;
+          tempContainer.appendChild(tempTag);
+          
+          tagWidth = tempTag.offsetWidth + (isMobile ? 6 : 10); // gap
+          
+          // Cache the width (limit cache size to 100 entries)
+          if (tagWidthCache.current.size > 100) {
+            const firstKey = tagWidthCache.current.keys().next().value;
+            tagWidthCache.current.delete(firstKey);
+          }
+          tagWidthCache.current.set(tagCacheKey, tagWidth);
+          
+          // Clean up temp tag
+          tempContainer.removeChild(tempTag);
+        }
+        
+        if (totalTagWidth + tagWidth <= availableWidth) {
+          totalTagWidth += tagWidth;
+          count++;
+        } else {
+          break;
+        }
+      }
+      
+      // Clean up temp container if created
+      if (tempContainer) {
+        document.body.removeChild(tempContainer);
+      }
+      
+      // Set the visible count
+      setVisibleTagCount(Math.max(isMobile ? 0 : 2, Math.min(count, tags.length)));
+      setMeasuredTags(true);
     };
     
-    // Delay initial calculation to ensure DOM is ready
-    const timeoutId = setTimeout(calculateVisibleTags, 100);
+    // Initial calculation
+    const timeoutId = setTimeout(calculateVisibleTags, 50);
     
-    // Recalculate on window resize
+    // Debounced resize handler
+    let resizeTimeout;
     const handleResize = () => {
-      calculateVisibleTags();
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(calculateVisibleTags, 150);
     };
     
     window.addEventListener('resize', handleResize);
+    
+    // Also recalculate when container might change
+    const observer = new ResizeObserver(handleResize);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    
     return () => {
       clearTimeout(timeoutId);
+      clearTimeout(resizeTimeout);
       window.removeEventListener('resize', handleResize);
+      observer.disconnect();
     };
   }, [tags]);
 
@@ -594,11 +686,14 @@ const SearchToolbar = memo(function SearchToolbar({
             return (
               <TagChip
                 key={tag}
+                data-tag="true"
+                show={measuredTags}
                 onClick={() => window.location.href = `/view/${normalizedTag}`}
                 borderColor={`${colors[index]}4D`}
                 background={isSelected ? `${colors[index]}33` : 'transparent'}
                 color={darkMode ? '#fff' : '#333'}
                 hoverBackground={`${colors[index]}4D`}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <span>{emojis[index]}</span>
                 <span>{tag}</span>
@@ -606,11 +701,13 @@ const SearchToolbar = memo(function SearchToolbar({
             );
           })}
           
-          {/* All Tags Button */}
-          <AllTagsButton onClick={() => setCategoriesOpen(true)}>
-            <Icon icon="material-symbols:category" width="14" height="14" />
-            <span>All Tags</span>
-          </AllTagsButton>
+          {/* All Tags Button - show only if there are more tags than visible */}
+          {tags.length > visibleTagCount && (
+            <AllTagsButton onClick={() => setCategoriesOpen(true)}>
+              <Icon icon="material-symbols:category" width="14" height="14" />
+              <span>All Tags ({tags.length})</span>
+            </AllTagsButton>
+          )}
         </>
       )}
 
