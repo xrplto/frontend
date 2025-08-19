@@ -329,11 +329,10 @@ const DeFiHistory = ({ account }) => {
                     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                     background: 'transparent',
                     py: isSmallScreen ? 1.5 : 2,
-                    px: isSmallScreen ? 1.5 : 2.5,
-                    display: isSmallScreen ? 'none' : 'table-cell'
+                    px: isSmallScreen ? 1.5 : 2.5
                   }}
                 >
-                  Date
+                  {isSmallScreen ? 'Time' : 'Date'}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -1207,7 +1206,7 @@ const HistoryRow = (props) => {
           )}
         </Stack>
       </TableCell>
-      <TableCell sx={{ color: theme.palette.text.primary, width: props.isSmallScreen ? '60px' : '80px', display: props.isSmallScreen ? 'none' : 'table-cell' }}>
+      <TableCell sx={{ color: theme.palette.text.primary, width: props.isSmallScreen ? '60px' : '80px' }}>
         <Typography sx={{ fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem', color: alpha(theme.palette.text.primary, 0.7), fontWeight: 500 }}>
           {props.isSmallScreen ? getRelativeTime(rippleEpoch).replace(' ago', '') : getRelativeTime(rippleEpoch)}
         </Typography>

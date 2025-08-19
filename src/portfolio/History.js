@@ -1,4 +1,4 @@
-import DeFiHistory from './history/DeFi';
+import DeFiHistory from './DeFi';
 
 const History = ({ account }) => {
   return <DeFiHistory account={account} />;

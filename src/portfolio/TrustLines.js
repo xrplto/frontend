@@ -384,6 +384,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
 // Main TrustLines Component
 export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, onTrustlinesData }) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const dispatch = useDispatch();
   const { sync, activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
@@ -526,9 +527,24 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   }
 
   return (
-    <Grid container spacing={{ xs: 1, sm: 1.5 }}>
-      {/* Asset Distribution Chart */}
-      <Grid item xs={12} md={4}>
+    <Box
+      sx={{
+        background: 'transparent',
+        backdropFilter: 'blur(40px) saturate(150%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+        borderRadius: '16px',
+        p: isMobile ? 1.5 : 2.5,
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+    >
+      <Grid container spacing={{ xs: 1, sm: 1.5 }}>
+        {/* Asset Distribution Chart */}
+        <Grid item xs={12} md={4}>
           <Box
             sx={{
               display: 'flex',
@@ -919,5 +935,6 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
         </Stack>
       </Grid>
     </Grid>
+    </Box>
   );
 }
