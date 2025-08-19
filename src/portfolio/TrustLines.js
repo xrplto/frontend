@@ -386,7 +386,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const dispatch = useDispatch();
-  const { sync, activeFiatCurrency } = useContext(AppContext);
+  const { sync, activeFiatCurrency, darkMode } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency];
   const BASE_URL = process.env.API_URL;
@@ -529,16 +529,11 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   return (
     <Box
       sx={{
-        background: 'transparent',
-        backdropFilter: 'blur(40px) saturate(150%)',
-        WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-        borderRadius: '16px',
-        p: isMobile ? 1.5 : 2.5,
-        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
-        position: 'relative',
+        background: darkMode 
+          ? 'linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.02) 100%)'
+          : 'linear-gradient(135deg, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0.02) 100%)',
+        borderRadius: '4px',
+        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
         overflow: 'hidden'
       }}
     >

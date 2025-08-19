@@ -199,27 +199,20 @@ const DeFiHistory = ({ account }) => {
   return (
     <Box
       sx={{
-        background: 'transparent',
-        backdropFilter: 'blur(40px) saturate(150%)',
-        WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-        borderRadius: '16px',
-        p: isSmallScreen ? 1.5 : 2.5,
-        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
-        position: 'relative',
-        overflow: 'hidden',
-        ml: isSmallScreen ? 0 : 0,
-        mr: isSmallScreen ? 0 : 0
+        background: darkMode 
+          ? 'linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.02) 100%)'
+          : 'linear-gradient(135deg, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0.02) 100%)',
+        borderRadius: '4px',
+        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
+        overflow: 'hidden'
       }}
     >
       {loading ? (
         <Stack alignItems="center" sx={{ py: isSmallScreen ? 6 : 10 }}>
           <Box sx={{ mb: 2 }}>
-            <PulseLoader color={theme.palette.primary.main} size={isSmallScreen ? 10 : 12} margin={4} />
+            <PulseLoader color={theme.palette.text.secondary} size={isSmallScreen ? 8 : 10} margin={3} />
           </Box>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.4) }}>
             Loading transaction history...
           </Typography>
         </Stack>
@@ -235,25 +228,12 @@ const DeFiHistory = ({ account }) => {
               px: isSmallScreen ? 3 : 4
             }}
           >
-            <Box
-              sx={{
-                width: isSmallScreen ? 48 : 64,
-                height: isSmallScreen ? 48 : 64,
-                borderRadius: '50%',
-                background: 'transparent',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 1
-              }}
-            >
-              <ErrorOutlineIcon sx={{ fontSize: isSmallScreen ? 24 : 32, color: theme.palette.primary.main }} />
-            </Box>
-            <Typography variant={isSmallScreen ? 'body1' : 'h6'} color="text.primary" fontWeight={600}>
+            <ErrorOutlineIcon sx={{ fontSize: isSmallScreen ? 32 : 40, color: alpha(theme.palette.text.primary, 0.2) }} />
+            <Typography variant={isSmallScreen ? 'body2' : 'body1'} sx={{ color: alpha(theme.palette.text.primary, 0.6) }}>
               No Transaction History
             </Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ fontSize: isSmallScreen ? '0.75rem' : '0.875rem' }}>
-              Your DeFi transactions will appear here once you start trading
+            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.3) }}>
+              Your DeFi transactions will appear here
             </Typography>
           </Stack>
         )
@@ -264,347 +244,115 @@ const DeFiHistory = ({ account }) => {
             size="small"
             sx={{
               '& .MuiTableCell-root': {
-                py: isSmallScreen ? 1 : 1.5,
-                px: isSmallScreen ? 1 : 2.5,
-                fontSize: isSmallScreen ? '0.75rem' : '0.875rem',
-                lineHeight: 1.5
-              },
-              '& .MuiTableRow-root': {
-                minHeight: isSmallScreen ? '56px' : '64px',
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.background.paper, 0.3),
-                  backdropFilter: 'blur(20px)',
-                  transform: 'translateY(-1px)',
-                  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
-                  transition: 'all 0.2s ease'
-                },
-                '&:last-child .MuiTableCell-root': {
-                  borderBottom: 'none',
-                  '&:first-of-type': {
-                    borderBottomLeftRadius: '8px'
-                  },
-                  '&:last-child': {
-                    borderBottomRightRadius: '8px'
-                  }
-                }
+                py: 1.5,
+                px: isSmallScreen ? 1 : 2,
+                fontSize: isSmallScreen ? '0.75rem' : '0.813rem',
+                borderBottom: darkMode ? '1px solid rgba(255,255,255,0.03)' : '1px solid rgba(0,0,0,0.03)'
               }
             }}
           >
             <TableHead>
-              <TableRow
-                sx={{
-                  background: alpha(theme.palette.background.paper, 0.5),
-                  backdropFilter: 'blur(10px)',
-                  '&:hover': {
-                    background: alpha(theme.palette.background.paper, 0.7)
-                  }
-                }}
-              >
-                <TableCell
-                  sx={{
-                    color: theme.palette.text.primary,
-                    fontWeight: 700,
-                    fontSize: isSmallScreen ? '0.8rem' : '0.9rem',
-                    letterSpacing: '0.02em',
-                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    background: 'transparent',
-                    py: isSmallScreen ? 1.5 : 2,
-                    px: isSmallScreen ? 1.5 : 2.5,
-                    '&:first-of-type': {
-                      borderTopLeftRadius: '12px'
-                    },
-                    '&:last-child': {
-                      borderTopRightRadius: '12px'
-                    }
-                  }}
-                >
+              <TableRow>
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400 }}>
                   Type
                 </TableCell>
-                <TableCell
-                  sx={{
-                    color: theme.palette.text.primary,
-                    fontWeight: 700,
-                    fontSize: isSmallScreen ? '0.8rem' : '0.9rem',
-                    letterSpacing: '0.02em',
-                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    background: 'transparent',
-                    py: isSmallScreen ? 1.5 : 2,
-                    px: isSmallScreen ? 1.5 : 2.5
-                  }}
-                >
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400 }}>
                   {isSmallScreen ? 'Time' : 'Date'}
                 </TableCell>
-                <TableCell
-                  sx={{
-                    color: theme.palette.text.primary,
-                    fontWeight: 700,
-                    fontSize: isSmallScreen ? '0.8rem' : '0.9rem',
-                    letterSpacing: '0.02em',
-                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    background: 'transparent',
-                    py: isSmallScreen ? 1.5 : 2,
-                    px: isSmallScreen ? 1.5 : 2.5
-                  }}
-                >
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400 }}>
                   Amount
                 </TableCell>
-                <TableCell
-                  sx={{
-                    color: theme.palette.text.primary,
-                    fontWeight: 700,
-                    fontSize: isSmallScreen ? '0.8rem' : '0.9rem',
-                    letterSpacing: '0.02em',
-                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    background: 'transparent',
-                    py: isSmallScreen ? 1.5 : 2,
-                    px: isSmallScreen ? 1.5 : 2.5
-                  }}
-                >
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400 }}>
                   Source
                 </TableCell>
-                <TableCell
-                  sx={{
-                    color: theme.palette.text.primary,
-                    fontWeight: 700,
-                    fontSize: isSmallScreen ? '0.8rem' : '0.9rem',
-                    letterSpacing: '0.02em',
-                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    background: 'transparent',
-                    py: isSmallScreen ? 1.5 : 2,
-                    px: isSmallScreen ? 1.5 : 2.5,
-                    width: isSmallScreen ? '48px' : '64px',
-                    textAlign: 'center'
-                  }}
-                >
-                  View
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400, textAlign: 'center' }}>
+                  <OpenInNewIcon sx={{ fontSize: '14px' }} />
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {paginatedHistory.map((item, index) => (
-                <HistoryRow key={index} {...item} isSmallScreen={isSmallScreen} />
+                <HistoryRow key={index} {...item} isSmallScreen={isSmallScreen} darkMode={darkMode} />
               ))}
             </TableBody>
           </Table>
           <Box
             sx={{
               display: 'flex',
-              justifyContent: isSmallScreen ? 'center' : 'space-between',
+              justifyContent: 'space-between',
               alignItems: 'center',
-              borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              px: isSmallScreen ? 2 : 3,
-              py: isSmallScreen ? 2 : 2.5,
-              gap: isSmallScreen ? 2 : 3,
-              background: alpha(theme.palette.background.paper, 0.6),
-              backdropFilter: 'blur(40px) saturate(150%)',
-              WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-              flexWrap: 'wrap',
-              mt: 1
+              p: 1.5,
+              background: darkMode 
+                ? 'rgba(255,255,255,0.01)'
+                : 'rgba(0,0,0,0.01)',
+              borderTop: darkMode ? '1px solid rgba(255,255,255,0.03)' : '1px solid rgba(0,0,0,0.03)'
             }}
           >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.5,
-                background: alpha(theme.palette.background.paper, 0.9),
-                backdropFilter: 'blur(20px) saturate(150%)',
-                WebkitBackdropFilter: 'blur(20px) saturate(150%)',
-                borderRadius: 2,
-                px: isSmallScreen ? 1.5 : 2,
-                py: isSmallScreen ? 0.75 : 1,
-                minHeight: isSmallScreen ? '40px' : '48px',
-                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                boxShadow: theme.shadows[2]
-              }}
-            >
-              <Typography
-                variant="body2"
-                sx={{
-                  color: theme.palette.text.primary,
-                  fontWeight: 600,
-                  fontSize: isSmallScreen ? '0.8rem' : '0.9rem'
-                }}
-              >
-                {isSmallScreen 
-                  ? `${page + 1}/${Math.ceil(activityHistory.length / rowsPerPage)}` 
-                  : `Page ${page + 1} of ${Math.ceil(activityHistory.length / rowsPerPage)}`}
-              </Typography>
-              <Box
-                sx={{
-                  display: 'flex',
-                  gap: 0.5,
-                  borderLeft: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                  pl: 1
-                }}
-              >
-                <IconButton
-                  onClick={() => handleChangePage(null, page - 1)}
-                  disabled={page === 0}
-                  size="small"
-                  sx={{
-                    color: theme.palette.text.primary,
-                    width: isSmallScreen ? '32px' : '40px',
-                    height: isSmallScreen ? '32px' : '40px',
-                    borderRadius: '10px',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                    background: 'transparent',
-                    boxShadow: theme.shadows[1],
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      background: 'transparent',
-                      borderColor: theme.palette.primary.main,
-                      transform: 'translateX(-2px)',
-                      boxShadow: theme.shadows[2]
-                    },
-                    '&.Mui-disabled': {
-                      color: alpha(theme.palette.text.primary, 0.3),
-                      borderColor: alpha(theme.palette.divider, 0.3),
-                      background: 'transparent',
-                      boxShadow: 'none'
-                    },
-                    '& .MuiSvgIcon-root': {
-                      fontSize: '20px'
-                    }
-                  }}
-                >
-                  <KeyboardArrowLeft />
-                </IconButton>
-                <IconButton
-                  onClick={() => handleChangePage(null, page + 1)}
-                  disabled={page >= Math.ceil(activityHistory.length / rowsPerPage) - 1}
-                  size="small"
-                  sx={{
-                    color: theme.palette.text.primary,
-                    width: isSmallScreen ? '32px' : '40px',
-                    height: isSmallScreen ? '32px' : '40px',
-                    borderRadius: '10px',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                    background: 'transparent',
-                    boxShadow: theme.shadows[1],
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      background: 'transparent',
-                      borderColor: theme.palette.primary.main,
-                      transform: 'translateX(2px)',
-                      boxShadow: theme.shadows[2]
-                    },
-                    '&.Mui-disabled': {
-                      color: alpha(theme.palette.text.primary, 0.3),
-                      borderColor: alpha(theme.palette.divider, 0.3),
-                      background: 'transparent',
-                      boxShadow: 'none'
-                    },
-                    '& .MuiSvgIcon-root': {
-                      fontSize: '20px'
-                    }
-                  }}
-                >
-                  <KeyboardArrowRight />
-                </IconButton>
-              </Box>
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                background: 'transparent',
-                backdropFilter: 'blur(8px)',
-                borderRadius: 1.5,
-                px: isSmallScreen ? 0.75 : 1.5,
-                py: isSmallScreen ? 0.25 : 0.5,
-                minHeight: isSmallScreen ? '32px' : '40px',
-                boxShadow: theme.shadows[1],
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
-              }}
-            >
+            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.3) }}>
+              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, activityHistory.length)} of {activityHistory.length}
+            </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
               <Select
                 value={rowsPerPage}
                 onChange={handleChangeRowsPerPage}
                 size="small"
                 sx={{
-                  height: isSmallScreen ? '28px' : '32px',
-                  width: isSmallScreen ? '36px' : '44px',
-                  minWidth: isSmallScreen ? '36px' : '44px',
-                  color: theme.palette.primary.main,
-                  '.MuiSelect-select': {
-                    py: 0,
-                    px: 0,
-                    fontWeight: 500,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.875rem',
-                    letterSpacing: '0.5px',
-                    marginRight: '-8px',
-                    paddingLeft: '4px'
-                  },
+                  height: '28px',
+                  fontSize: '0.75rem',
+                  color: alpha(theme.palette.text.primary, 0.6),
                   '.MuiOutlinedInput-notchedOutline': {
-                    borderColor: alpha(theme.palette.primary.main, 0.2),
-                    borderWidth: '1px',
-                    borderRadius: '6px'
+                    borderColor: 'transparent'
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: alpha(theme.palette.primary.main, 0.4)
+                    borderColor: alpha(theme.palette.text.primary, 0.1)
                   },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: alpha(theme.palette.primary.main, 0.4),
+                    borderColor: alpha(theme.palette.text.primary, 0.2),
                     borderWidth: '1px'
-                  },
-                  background: 'transparent',
-                  '&:hover': {
-                    background: 'transparent'
-                  }
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      mt: 1,
-                      borderRadius: '8px',
-                      boxShadow: theme.shadows[2],
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                      '.MuiMenuItem-root': {
-                        color: theme.palette.text.primary,
-                        justifyContent: 'center',
-                        fontSize: '0.875rem',
-                        letterSpacing: '0.5px',
-                        py: 1,
-                        '&:hover': {
-                          background: 'transparent'
-                        },
-                        '&.Mui-selected': {
-                          background: 'transparent',
-                          '&:hover': {
-                            background: 'transparent'
-                          }
-                        }
-                      }
-                    }
                   }
                 }}
               >
                 {[10, 25, 50].map((option) => (
-                  <MenuItem key={option} value={option}>
+                  <MenuItem key={option} value={option} sx={{ fontSize: '0.75rem' }}>
                     {option}
                   </MenuItem>
                 ))}
               </Select>
-              {!isSmallScreen && (
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: theme.palette.text.primary,
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    whiteSpace: 'nowrap',
-                    pr: 0.5
-                  }}
-                >
-                  items / page
-                </Typography>
-              )}
-            </Box>
+              <IconButton
+                onClick={() => handleChangePage(null, page - 1)}
+                disabled={page === 0}
+                size="small"
+                sx={{
+                  color: alpha(theme.palette.text.primary, 0.4),
+                  p: 0.5,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.text.primary, 0.05)
+                  },
+                  '&.Mui-disabled': {
+                    color: alpha(theme.palette.text.primary, 0.1)
+                  }
+                }}
+              >
+                <KeyboardArrowLeft fontSize="small" />
+              </IconButton>
+              <IconButton
+                onClick={() => handleChangePage(null, page + 1)}
+                disabled={page >= Math.ceil(activityHistory.length / rowsPerPage) - 1}
+                size="small"
+                sx={{
+                  color: alpha(theme.palette.text.primary, 0.4),
+                  p: 0.5,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.text.primary, 0.05)
+                  },
+                  '&.Mui-disabled': {
+                    color: alpha(theme.palette.text.primary, 0.1)
+                  }
+                }}
+              >
+                <KeyboardArrowRight fontSize="small" />
+              </IconButton>
+            </Stack>
           </Box>
         </>
       )}
@@ -694,7 +442,8 @@ const HistoryRow = (props) => {
     date,
     source,
     offerType,
-    LimitAmount
+    LimitAmount,
+    darkMode
   } = props;
 
   const theme = useTheme();
@@ -981,585 +730,210 @@ const HistoryRow = (props) => {
     }
   };
 
+  const getTypeColor = (type, offerType) => {
+    if (type === 'Payment') return typeof Amount === 'string' ? '#ef4444' : '#10b981';
+    if (type === 'AMMDeposit') return '#8b5cf6';
+    if (type === 'AMMWithdraw') return '#f59e0b';
+    if (type === 'TrustSet') return '#3b82f6';
+    if (type === 'OfferCreate') {
+      if (offerType === 'buy') return '#10b981';
+      if (offerType === 'sell') return '#ef4444';
+      return '#8b5cf6';
+    }
+    if (type === 'OfferCancel') return '#ef4444';
+    return '#6b7280';
+  };
+
+  const getTypeLabel = (type, offerType) => {
+    if (type === 'Payment') return typeof Amount === 'string' ? 'Sell' : 'Buy';
+    if (type === 'AMMDeposit') return 'Add';
+    if (type === 'AMMWithdraw') return 'Remove';
+    if (type === 'TrustSet') return 'Trust';
+    if (type === 'OfferCreate') {
+      if (offerType === 'buy') return 'Buy';
+      if (offerType === 'sell') return 'Sell';
+      if (offerType === 'trade') return 'Trade';
+      return 'Offer';
+    }
+    if (type === 'OfferCancel') return 'Cancel';
+    return type;
+  };
+
   return (
     <TableRow
       sx={{
-        '& .MuiTableCell-root': {
-          py: props.isSmallScreen ? 1.5 : 2,
-          px: props.isSmallScreen ? 1.5 : 2.5,
-          minHeight: props.isSmallScreen ? '48px' : '64px',
-          whiteSpace: 'nowrap',
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          verticalAlign: 'middle',
-          background: 'transparent',
-          backdropFilter: 'blur(10px)',
-          transition: 'all 0.2s ease',
-          '&:first-of-type': {
-            pl: props.isSmallScreen ? 1.5 : 2.5,
-            borderBottomLeftRadius: 0
-          },
-          '&:last-child': {
-            pr: props.isSmallScreen ? 1.5 : 2.5,
-            borderBottomRightRadius: 0
-          }
-        },
-        '&:last-child .MuiTableCell-root': {
-          borderBottom: 'none'
+        '&:hover': {
+          backgroundColor: darkMode ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)'
         }
       }}
     >
-      <TableCell sx={{ color: theme.palette.text.primary, minWidth: props.isSmallScreen ? '100px' : '160px' }}>
-        <Stack direction="row" spacing={props.isSmallScreen ? 0.5 : 1} alignItems="center" sx={{ py: 0.5 }}>
-          {TransactionType === 'Payment' &&
-            (typeof Amount !== 'string' ? (
-              <Chip
-                color="success"
-                label="Buy"
-                size="small"
-                sx={{
-                  height: props.isSmallScreen ? '22px' : '26px',
-                  backgroundColor: alpha('#00AB55', 0.15),
-                  color: '#00AB55',
-                  fontWeight: 600,
-                  borderRadius: '8px',
-                  border: `1px solid ${alpha('#00AB55', 0.2)}`,
-                  '& .MuiChip-label': {
-                    px: props.isSmallScreen ? 1 : 1.5,
-                    fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
-                    lineHeight: 1.3,
-                    letterSpacing: '0.3px'
-                  }
-                }}
-              />
-            ) : (
-              <Chip
-                color="error"
-                label="Sell"
-                size="small"
-                sx={{
-                  height: '18px',
-                  backgroundColor: alpha('#B72136', 0.1),
-                  color: '#B72136',
-                  '& .MuiChip-label': {
-                    px: 0.75,
-                    fontSize: '0.7rem',
-                    lineHeight: 1
-                  }
-                }}
-              />
-            ))}
-          {TransactionType === 'AMMDeposit' && (
-            <Chip
-              color="secondary"
-              label="Add"
-              size="small"
-              sx={{
-                height: props.isSmallScreen ? '22px' : '26px',
-                backgroundColor: alpha('#6D1FEE', 0.1),
-                color: '#6D1FEE',
-                borderRadius: '8px',
-                border: `1px solid ${alpha('#6D1FEE', 0.2)}`,
-                '& .MuiChip-label': {
-                  px: props.isSmallScreen ? 1 : 1.5,
-                  fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
-                  lineHeight: 1.3
-                }
-              }}
-            />
-          )}
-          {TransactionType === 'AMMWithdraw' && (
-            <Chip
-              color="warning"
-              label="Remove"
-              size="small"
-              sx={{
-                height: props.isSmallScreen ? '22px' : '26px',
-                backgroundColor: alpha('#FFA000', 0.1),
-                color: '#FFA000',
-                borderRadius: '8px',
-                border: `1px solid ${alpha('#FFA000', 0.2)}`,
-                '& .MuiChip-label': {
-                  px: props.isSmallScreen ? 1 : 1.5,
-                  fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
-                  lineHeight: 1.3
-                }
-              }}
-            />
-          )}
-          {TransactionType === 'TrustSet' && (
-            <Chip
-              color="info"
-              label="Trust"
-              size="small"
-              sx={{
-                height: props.isSmallScreen ? '22px' : '26px',
-                backgroundColor: alpha('#0C53B7', 0.1),
-                color: '#0C53B7',
-                borderRadius: '8px',
-                border: `1px solid ${alpha('#0C53B7', 0.2)}`,
-                '& .MuiChip-label': {
-                  px: props.isSmallScreen ? 1 : 1.5,
-                  fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
-                  lineHeight: 1.3
-                }
-              }}
-            />
-          )}
-          {TransactionType === 'OfferCreate' && (
-            <>
-              {offerType === 'buy' && (
-                <Chip
-                  color="success"
-                  label="Buy"
-                  size="small"
-                  sx={{
-                    height: props.isSmallScreen ? '22px' : '26px',
-                    backgroundColor: alpha('#00AB55', 0.1),
-                    color: '#00AB55',
-                    borderRadius: '10px',
-                    border: `1px solid ${alpha('#00AB55', 0.2)}`,
-                    '& .MuiChip-label': {
-                      px: props.isSmallScreen ? 1 : 1.5,
-                      fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
-                      lineHeight: 1.3
-                    }
-                  }}
-                />
-              )}
-              {offerType === 'sell' && (
-                <Chip
-                  color="error"
-                  label="Sell"
-                  size="small"
-                  sx={{
-                    height: props.isSmallScreen ? '22px' : '26px',
-                    backgroundColor: alpha('#B72136', 0.1),
-                    color: '#B72136',
-                    borderRadius: '10px',
-                    border: `1px solid ${alpha('#B72136', 0.2)}`,
-                    '& .MuiChip-label': {
-                      px: props.isSmallScreen ? 1 : 1.5,
-                      fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
-                      lineHeight: 1.3
-                    }
-                  }}
-                />
-              )}
-              {offerType === 'trade' && (
-                <Chip
-                  color="info"
-                  label="Trade"
-                  size="small"
-                  sx={{
-                    height: props.isSmallScreen ? '22px' : '26px',
-                    backgroundColor: alpha('#8B5CF6', 0.1),
-                    color: '#8B5CF6',
-                    borderRadius: '10px',
-                    border: `1px solid ${alpha('#8B5CF6', 0.2)}`,
-                    '& .MuiChip-label': {
-                      px: props.isSmallScreen ? 1 : 1.5,
-                      fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
-                      lineHeight: 1.3
-                    }
-                  }}
-                />
-              )}
-              {!offerType && (
-                <Chip
-                  color="info"
-                  label="Offer"
-                  size="small"
-                  sx={{
-                    height: props.isSmallScreen ? '22px' : '26px',
-                    backgroundColor: alpha('#8B5CF6', 0.1),
-                    color: '#8B5CF6',
-                    borderRadius: '10px',
-                    border: `1px solid ${alpha('#8B5CF6', 0.2)}`,
-                    '& .MuiChip-label': {
-                      px: props.isSmallScreen ? 1 : 1.5,
-                      fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
-                      lineHeight: 1.3
-                    }
-                  }}
-                />
-              )}
-            </>
-          )}
-          {TransactionType === 'OfferCancel' && (
-            <Chip
-              color="error"
-              label="Cancel"
-              size="small"
-              sx={{
-                height: props.isSmallScreen ? '22px' : '26px',
-                backgroundColor: alpha('#B72136', 0.1),
-                color: '#B72136',
-                borderRadius: '8px',
-                border: `1px solid ${alpha('#B72136', 0.2)}`,
-                '& .MuiChip-label': {
-                  px: props.isSmallScreen ? 1 : 1.5,
-                  fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem',
-                  lineHeight: 1.3
-                }
-              }}
-            />
-          )}
-        </Stack>
+      <TableCell>
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            color: getTypeColor(TransactionType, offerType),
+            fontWeight: 500,
+            textTransform: 'uppercase',
+            fontSize: '0.7rem',
+            letterSpacing: '0.5px'
+          }}
+        >
+          {getTypeLabel(TransactionType, offerType)}
+        </Typography>
       </TableCell>
-      <TableCell sx={{ color: theme.palette.text.primary, width: props.isSmallScreen ? '60px' : '80px' }}>
-        <Typography sx={{ fontSize: props.isSmallScreen ? '0.7rem' : '0.8rem', color: alpha(theme.palette.text.primary, 0.7), fontWeight: 500 }}>
+      <TableCell>
+        <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.5) }}>
           {props.isSmallScreen ? getRelativeTime(rippleEpoch).replace(' ago', '') : getRelativeTime(rippleEpoch)}
         </Typography>
       </TableCell>
-      <TableCell sx={{ color: theme.palette.text.primary, minWidth: props.isSmallScreen ? '140px' : '200px' }}>
+      <TableCell>
         {TransactionType === 'AMMDeposit' && (
-          <Stack direction="row" alignItems="center" spacing={props.isSmallScreen ? 0.5 : 1} sx={{ typography: 'body2', py: 0.5 }}>
-            <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
-              {assetValue.valueAfterDot !== '' && (
-                <Typography sx={{ fontSize: props.isSmallScreen ? '0.75rem' : '0.8rem', opacity: 0.8 }}>.{assetValue.valueAfterDot}</Typography>
-              )}
-            </Stack>
-            {tokenImageUrl && (
-              <Avatar 
-                src={tokenImageUrl} 
-                sx={{ 
-                  width: props.isSmallScreen ? 18 : 24, 
-                  height: props.isSmallScreen ? 18 : 24,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                  boxShadow: theme.shadows[1]
-                }} 
-                alt={assetName} 
-              />
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <Typography variant="caption" sx={{ fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
+            {assetValue.valueAfterDot && (
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue.valueAfterDot}</Typography>
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>
+            {tokenImageUrl && (
+              <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />
+            )}
+            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
               {assetName}
             </Typography>
-            <Typography sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '0.75rem' }}>
-              /
-            </Typography>
-            <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: '0.75rem' }}>{assetValue2.valueBeforeDot}</Typography>
-              {assetValue2.valueAfterDot !== '' && (
-                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue2.valueAfterDot}</Typography>
-              )}
-            </Stack>
-            {tokenImageUrl2 && (
-              <Avatar
-                src={tokenImageUrl2}
-                sx={{ 
-                  width: props.isSmallScreen ? 18 : 24, 
-                  height: props.isSmallScreen ? 18 : 24,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                  boxShadow: theme.shadows[1]
-                }}
-                alt={assetName2}
-              />
+            <Typography variant="caption" sx={{ opacity: 0.3 }}>/</Typography>
+            <Typography variant="caption">{assetValue2.valueBeforeDot}</Typography>
+            {assetValue2.valueAfterDot && (
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue2.valueAfterDot}</Typography>
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>
+            {tokenImageUrl2 && (
+              <Avatar src={tokenImageUrl2} sx={{ width: 16, height: 16 }} />
+            )}
+            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
               {assetName2}
             </Typography>
           </Stack>
         )}
         {TransactionType === 'AMMWithdraw' && (
-          <Stack direction="row" alignItems="center" spacing={props.isSmallScreen ? 0.125 : 0.25} sx={{ typography: 'body2' }}>
+          <Stack direction="row" alignItems="center" spacing={0.5}>
             {assetValue.valueAfterDot === '' && assetValue2.valueAfterDot === '' ? (
-              <Stack direction="row" spacing={0.25}>
-                {tokenImageUrl && (
-                  <Avatar
-                    src={tokenImageUrl}
-                    sx={{ width: 16, height: 16, mr: 0.5 }}
-                    alt={assetName}
-                  />
-                )}
-                <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>
+              <>
+                {tokenImageUrl && <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />}
+                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
                   {assetName}
                 </Typography>
-                <Typography
-                  sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '0.75rem' }}
-                >
-                  /
-                </Typography>
-                {tokenImageUrl2 && (
-                  <Avatar
-                    src={tokenImageUrl2}
-                    sx={{ width: 16, height: 16, mr: 0.5 }}
-                    alt={assetName2}
-                  />
-                )}
-                <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>
+                <Typography variant="caption" sx={{ opacity: 0.3 }}>/</Typography>
+                {tokenImageUrl2 && <Avatar src={tokenImageUrl2} sx={{ width: 16, height: 16 }} />}
+                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
                   {assetName2}
                 </Typography>
-              </Stack>
+              </>
             ) : (
-              <Stack direction="row" spacing={0.25}>
-                <Stack direction="row" alignItems="baseline">
-                  <Typography sx={{ fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
-                  {assetValue.valueAfterDot !== '' && (
-                    <Typography sx={{ fontSize: '0.75rem' }}>
-                      .{assetValue.valueAfterDot}
-                    </Typography>
-                  )}
-                </Stack>
-                {tokenImageUrl && (
-                  <Avatar
-                    src={tokenImageUrl}
-                    sx={{ width: 16, height: 16, mr: 0.5 }}
-                    alt={assetName}
-                  />
+              <>
+                <Typography variant="caption" sx={{ fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
+                {assetValue.valueAfterDot && (
+                  <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue.valueAfterDot}</Typography>
                 )}
-                <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>
+                {tokenImageUrl && <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />}
+                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
                   {assetName}
                 </Typography>
-                <Typography
-                  sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '0.75rem' }}
-                >
-                  /
-                </Typography>
-                <Stack direction="row" alignItems="baseline">
-                  <Typography sx={{ fontSize: '0.75rem' }}>{assetValue2.valueBeforeDot}</Typography>
-                  {assetValue2.valueAfterDot !== '' && (
-                    <Typography sx={{ fontSize: '0.75rem' }}>
-                      .{assetValue2.valueAfterDot}
-                    </Typography>
-                  )}
-                </Stack>
-                {tokenImageUrl2 && (
-                  <Avatar
-                    src={tokenImageUrl2}
-                    sx={{ width: 16, height: 16, mr: 0.5 }}
-                    alt={assetName2}
-                  />
+                <Typography variant="caption" sx={{ opacity: 0.3 }}>/</Typography>
+                <Typography variant="caption">{assetValue2.valueBeforeDot}</Typography>
+                {assetValue2.valueAfterDot && (
+                  <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue2.valueAfterDot}</Typography>
                 )}
-                <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>
+                {tokenImageUrl2 && <Avatar src={tokenImageUrl2} sx={{ width: 16, height: 16 }} />}
+                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
                   {assetName2}
                 </Typography>
-              </Stack>
+              </>
             )}
           </Stack>
         )}
         {TransactionType === 'Payment' && (
-          <Stack direction="row" alignItems="center" spacing={props.isSmallScreen ? 0.125 : 0.25} sx={{ typography: 'body2' }}>
-            <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
-              {assetValue.valueAfterDot && (
-                <Typography sx={{ fontSize: props.isSmallScreen ? '0.75rem' : '0.8rem', opacity: 0.8 }}>.{assetValue.valueAfterDot}</Typography>
-              )}
-            </Stack>
-            {tokenImageUrl && (
-              <Avatar 
-                src={tokenImageUrl} 
-                sx={{ 
-                  width: props.isSmallScreen ? 18 : 24, 
-                  height: props.isSmallScreen ? 18 : 24,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                  boxShadow: theme.shadows[1]
-                }} 
-                alt={assetName} 
-              />
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <Typography variant="caption" sx={{ fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
+            {assetValue.valueAfterDot && (
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue.valueAfterDot}</Typography>
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>
+            {tokenImageUrl && <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />}
+            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
               {assetName}
             </Typography>
-            <EastIcon sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '1rem' }} />
-            <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: '0.75rem' }}>{assetValue2.valueBeforeDot}</Typography>
-              {assetValue2.valueAfterDot && (
-                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue2.valueAfterDot}</Typography>
-              )}
-            </Stack>
-            {tokenImageUrl2 && (
-              <Avatar
-                src={tokenImageUrl2}
-                sx={{ 
-                  width: props.isSmallScreen ? 18 : 24, 
-                  height: props.isSmallScreen ? 18 : 24,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                  boxShadow: theme.shadows[1]
-                }}
-                alt={assetName2}
-              />
+            <Typography variant="caption" sx={{ opacity: 0.3 }}>→</Typography>
+            <Typography variant="caption">{assetValue2.valueBeforeDot}</Typography>
+            {assetValue2.valueAfterDot && (
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue2.valueAfterDot}</Typography>
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>
+            {tokenImageUrl2 && <Avatar src={tokenImageUrl2} sx={{ width: 16, height: 16 }} />}
+            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
               {assetName2}
             </Typography>
           </Stack>
         )}
         {TransactionType === 'TrustSet' && (
-          <Stack direction="row" alignItems="center" spacing={props.isSmallScreen ? 0.125 : 0.25} sx={{ typography: 'body2' }}>
-            <Typography sx={{ fontSize: '0.75rem', color: '#0C53B7' }}>Trustline for</Typography>
-            <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
-              {assetValue.valueAfterDot && (
-                <Typography sx={{ fontSize: props.isSmallScreen ? '0.75rem' : '0.8rem', opacity: 0.8 }}>.{assetValue.valueAfterDot}</Typography>
-              )}
-            </Stack>
-            {tokenImageUrl && (
-              <Avatar 
-                src={tokenImageUrl} 
-                sx={{ 
-                  width: props.isSmallScreen ? 18 : 24, 
-                  height: props.isSmallScreen ? 18 : 24,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                  boxShadow: theme.shadows[1]
-                }} 
-                alt={assetName} 
-              />
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <Typography variant="caption" sx={{ fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
+            {assetValue.valueAfterDot && (
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue.valueAfterDot}</Typography>
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>
+            {tokenImageUrl && <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />}
+            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
               {assetName}
             </Typography>
           </Stack>
         )}
         {TransactionType === 'OfferCreate' && (
-          <Stack direction="row" alignItems="center" spacing={props.isSmallScreen ? 0.125 : 0.25} sx={{ typography: 'body2' }}>
-            <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
-              {assetValue.valueAfterDot !== '' && (
-                <Typography sx={{ fontSize: props.isSmallScreen ? '0.75rem' : '0.8rem', opacity: 0.8 }}>.{assetValue.valueAfterDot}</Typography>
-              )}
-            </Stack>
-            {tokenImageUrl && (
-              <Avatar 
-                src={tokenImageUrl} 
-                sx={{ 
-                  width: props.isSmallScreen ? 18 : 24, 
-                  height: props.isSmallScreen ? 18 : 24,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                  boxShadow: theme.shadows[1]
-                }} 
-                alt={assetName} 
-              />
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <Typography variant="caption" sx={{ fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
+            {assetValue.valueAfterDot && (
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue.valueAfterDot}</Typography>
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.8rem' : '0.875rem', fontWeight: 500 }}>
+            {tokenImageUrl && <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />}
+            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
               {assetName}
             </Typography>
-            <EastIcon sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '1rem' }} />
-            <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: '0.75rem' }}>{assetValue2.valueBeforeDot}</Typography>
-              {assetValue2.valueAfterDot !== '' && (
-                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue2.valueAfterDot}</Typography>
-              )}
-            </Stack>
-            {tokenImageUrl2 && (
-              <Avatar
-                src={tokenImageUrl2}
-                sx={{ 
-                  width: props.isSmallScreen ? 18 : 24, 
-                  height: props.isSmallScreen ? 18 : 24,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                  boxShadow: theme.shadows[1]
-                }}
-                alt={assetName2}
-              />
+            <Typography variant="caption" sx={{ opacity: 0.3 }}>→</Typography>
+            <Typography variant="caption">{assetValue2.valueBeforeDot}</Typography>
+            {assetValue2.valueAfterDot && (
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue2.valueAfterDot}</Typography>
             )}
-            <Typography sx={{ color: theme.palette.primary.main, fontSize: props.isSmallScreen ? '0.7rem' : '0.75rem' }}>
+            {tokenImageUrl2 && <Avatar src={tokenImageUrl2} sx={{ width: 16, height: 16 }} />}
+            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
               {assetName2}
             </Typography>
           </Stack>
         )}
         {TransactionType === 'OfferCancel' && (
-          <Stack direction="row" alignItems="center" spacing={props.isSmallScreen ? 0.125 : 0.25} sx={{ typography: 'body2' }}>
-            <Typography sx={{ fontSize: '0.75rem', color: '#B72136' }}>Offer Cancelled</Typography>
-          </Stack>
+          <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.5) }}>
+            Offer Cancelled
+          </Typography>
         )}
       </TableCell>
-      <TableCell sx={{ color: theme.palette.text.primary }}>
-        {source && (
-          <Tooltip
-            title={props.sourceTooltip}
-            arrow
-            placement="top"
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  bgcolor: theme.palette.mode === 'dark' ? 'black' : 'white',
-                  color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                  border: `1px solid ${
-                    theme.palette.mode === 'dark'
-                      ? 'rgba(255, 255, 255, 0.2)'
-                      : 'rgba(0, 0, 0, 0.2)'
-                  }`,
-                  '& .MuiTooltip-arrow': {
-                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
-                    '&:before': {
-                      border: `1px solid ${
-                        theme.palette.mode === 'dark'
-                          ? 'rgba(255, 255, 255, 0.2)'
-                          : 'rgba(0, 0, 0, 0.2)'
-                      }`
-                    }
-                  },
-                  boxShadow: theme.shadows[1],
-                  fontSize: '0.75rem',
-                  padding: '8px 12px',
-                  maxWidth: 300
-                }
-              }
-            }}
-          >
-            <Chip
-              size="small"
-              icon={
-                SOURCE_TAGS[
-                  Object.keys(SOURCE_TAGS).find((key) => SOURCE_TAGS[key].label === source)
-                ]?.icon
-              }
-              label={source}
-              sx={{
-                height: '18px',
-                backgroundColor: alpha(
-                  SOURCE_TAGS[
-                    Object.keys(SOURCE_TAGS).find((key) => SOURCE_TAGS[key].label === source)
-                  ]?.color || theme.palette.primary.main,
-                  0.1
-                ),
-                color:
-                  SOURCE_TAGS[
-                    Object.keys(SOURCE_TAGS).find((key) => SOURCE_TAGS[key].label === source)
-                  ]?.color || theme.palette.primary.main,
-                borderRadius: '4px',
-                '& .MuiChip-label': {
-                  px: 0.75,
-                  fontSize: '0.7rem',
-                  lineHeight: 1
-                },
-                '& .MuiChip-icon': {
-                  color: 'inherit',
-                  marginLeft: '4px',
-                  marginRight: '-4px'
-                }
-              }}
-            />
-          </Tooltip>
-        )}
+      <TableCell>
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            color: alpha(theme.palette.text.primary, 0.4),
+            fontSize: '0.7rem'
+          }}
+        >
+          {source}
+        </Typography>
       </TableCell>
-      <TableCell sx={{ width: props.isSmallScreen ? '32px' : '40px', p: props.isSmallScreen ? 0.5 : 0.75 }}>
+      <TableCell sx={{ width: '40px', textAlign: 'center' }}>
         <IconButton
           size="small"
           onClick={handleViewClick}
           sx={{
-            p: props.isSmallScreen ? 0.5 : 0.75,
-            width: props.isSmallScreen ? '28px' : '32px',
-            height: props.isSmallScreen ? '28px' : '32px',
-            color: theme.palette.primary.main,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-            borderRadius: '10px',
-            background: alpha(theme.palette.background.paper, 0.8),
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.2s ease',
+            p: 0.25,
+            color: alpha(theme.palette.text.primary, 0.3),
             '&:hover': {
-              backgroundColor: 'transparent',
-              borderColor: theme.palette.primary.main,
-              transform: 'scale(1.05)',
-              boxShadow: theme.shadows[1]
-            },
-            '& .MuiSvgIcon-root': {
-              fontSize: props.isSmallScreen ? '1rem' : '1.1rem'
+              color: alpha(theme.palette.text.primary, 0.6),
+              backgroundColor: 'transparent'
             }
           }}
         >
-          <OpenInNewIcon />
+          <OpenInNewIcon sx={{ fontSize: '14px' }} />
         </IconButton>
       </TableCell>
     </TableRow>
