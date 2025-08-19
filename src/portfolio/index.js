@@ -2115,379 +2115,184 @@ export default function Portfolio({ account, limit, collection, type }) {
           <Grid item xs={12} md={9} order={{ xs: 1, md: 2 }}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <Box sx={{ mb: 2 }}>
-                  <Card
+                {/* Minimalist Time Period Statistics */}
+                <Box sx={{ mb: 1.5 }}>
+                  <Box
                     sx={{
-                      borderRadius: { xs: '12px', sm: '16px' },
+                      p: 1.5,
+                      borderRadius: '12px',
                       background: 'transparent',
-                      backdropFilter: 'none',
-                      WebkitBackdropFilter: 'none',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      boxShadow: `
-                        0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                        0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-                      overflow: 'hidden',
-                      position: 'relative',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: `linear-gradient(
-                          135deg,
-                          ${alpha(theme.palette.primary.main, 0.05)} 0%,
-                          transparent 50%,
-                          ${alpha(theme.palette.info.main, 0.05)} 100%
-                        )`,
-                        pointerEvents: 'none'
-                      },
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `
-                          0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-                          0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-                        border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
-                      }
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      transition: 'all 0.2s ease'
                     }}
                   >
-                    <CardContent sx={{ p: { xs: 0.25, sm: 1.5 } }}>
+                    {/* Header with Time Toggle */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        mb: 1.5
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontWeight: 600,
+                          fontSize: '0.7rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        Performance
+                      </Typography>
                       <Box
                         sx={{
                           display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          mb: { xs: 0.25, sm: 1.5 },
-                          flexDirection: { xs: 'column', sm: 'row' },
-                          gap: { xs: 0.25, sm: 0 }
+                          gap: 0.5,
+                          p: 0.25,
+                          borderRadius: '6px',
+                          background: alpha(theme.palette.background.paper, 0.3),
+                          border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
                         }}
                       >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
+                        {['24h', '7d', '1m', '3m'].map((period) => (
                           <Box
+                            key={period}
+                            onClick={() => setSelectedInterval(period)}
                             sx={{
-                              p: { xs: 0.4, sm: 0.8 },
-                              borderRadius: { xs: '8px', sm: '10px' },
-                              background: 'transparent',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
-                              position: 'relative',
-                              '&::after': {
-                                content: '""',
-                                position: 'absolute',
-                                inset: 0,
-                                borderRadius: '14px',
-                                background: 'transparent',
-                                pointerEvents: 'none'
-                              }
-                            }}
-                          >
-                            <TrendingUpIcon
-                              sx={{
-                                fontSize: { xs: '0.9rem', sm: '1.4rem' },
-                                color: 'white',
-                                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
-                              }}
-                            />
-                          </Box>
-                          <Box>
-                            <Typography
-                              variant="h6"
-                              sx={{
-                                fontWeight: 700,
-                                color: theme.palette.text.primary,
-                                fontSize: { xs: '0.65rem', sm: '0.95rem' },
-                                letterSpacing: '-0.01em',
-                                mb: { xs: 0.1, sm: 0.3 }
-                              }}
-                            >
-                              Time Period Statistics
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: alpha(theme.palette.text.secondary, 0.8),
-                                fontSize: { xs: '0.7rem', sm: '0.8rem' },
-                                display: { xs: 'none', sm: 'block' }
-                              }}
-                            >
-                              Performance by time period
-                            </Typography>
-                          </Box>
-                        </Box>
-                        <ToggleButtonGroup
-                          value={selectedInterval}
-                          exclusive
-                          onChange={(e, newValue) => newValue && setSelectedInterval(newValue)}
-                          size="small"
-                          sx={{
-                            bgcolor: `${alpha(theme.palette.background.paper, 0.6)}`,
-                            backdropFilter: 'none',
-                            borderRadius: { xs: '6px', sm: '12px' },
-                            padding: { xs: '0px', sm: '2px' },
-                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                            boxShadow: `inset 0 2px 4px ${alpha(theme.palette.common.black, 0.06)}`,
-                            '& .MuiToggleButton-root': {
-                              border: 'none',
-                              borderRadius: { xs: '4px !important', sm: '8px !important' },
-                              color: alpha(theme.palette.text.secondary, 0.8),
-                              fontSize: { xs: '0.55rem', sm: '0.65rem' },
+                              px: 1,
+                              py: 0.25,
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.65rem',
                               fontWeight: 600,
-                              textTransform: 'none',
-                              px: { xs: 0.3, sm: 1.2 },
-                              py: { xs: 0, sm: 0.15 },
-                              minWidth: { xs: '24px', sm: '45px' },
-                              transition: 'all 0.2s ease',
-                              '&.Mui-selected': {
-                                bgcolor: theme.palette.primary.main,
-                                color: theme.palette.primary.contrastText,
-                                fontWeight: 700,
-                                boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.3)}`,
-                                transform: 'translateY(-1px)'
-                              },
+                              color: selectedInterval === period 
+                                ? theme.palette.primary.main 
+                                : alpha(theme.palette.text.secondary, 0.6),
+                              background: selectedInterval === period
+                                ? alpha(theme.palette.primary.main, 0.1)
+                                : 'transparent',
+                              transition: 'all 0.15s ease',
                               '&:hover': {
-                                bgcolor: `${alpha(theme.palette.primary.main, 0.08)}`,
                                 color: theme.palette.primary.main
                               }
-                            }
-                          }}
-                        >
-                          <ToggleButton value="24h">24H</ToggleButton>
-                          <ToggleButton value="7d">7D</ToggleButton>
-                          <ToggleButton value="1m">1M</ToggleButton>
-                          <ToggleButton value="2m">2M</ToggleButton>
-                          <ToggleButton value="3m">3M</ToggleButton>
-                        </ToggleButtonGroup>
+                            }}
+                          >
+                            {period.toUpperCase()}
+                          </Box>
+                        ))}
                       </Box>
-                      <Grid container spacing={{ xs: 0.25, sm: 1 }}>
-                        <Grid item xs={6} sm={6} md={3}>
-                          <Box
+                    </Box>
+
+                    {/* Compact Stats Grid */}
+                    <Grid container spacing={1}>
+                      <Grid item xs={3}>
+                        <Box>
+                          <Typography
                             sx={{
-                              p: { xs: 0.5, sm: 1.2 },
-                              borderRadius: { xs: '4px', sm: '12px' },
-                              background: 'transparent',
-                              border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                transform: 'translateY(-1px)',
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.info.main, 0.15)}`
-                              }
+                              fontSize: '0.55rem',
+                              color: alpha(theme.palette.text.secondary, 0.7),
+                              mb: 0.25
                             }}
                           >
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: alpha(theme.palette.text.secondary, 0.9),
-                                fontWeight: 600,
-                                fontSize: { xs: '0.5rem', sm: '0.6rem' },
-                                textTransform: 'uppercase',
-                                letterSpacing: { xs: '0.3px', sm: '0.4px' },
-                                mb: { xs: 0.2, sm: 0.4 },
-                                display: 'block'
-                              }}
-                            >
-                              Volume
-                            </Typography>
-                            <Typography
-                              variant="h6"
-                              sx={{
-                                color: theme.palette.info.main,
-                                fontWeight: 700,
-                                fontSize: { xs: '0.7rem', sm: '0.9rem' }
-                              }}
-                            >
-                              {loading ? (
-                                <Skeleton width={100} />
-                              ) : (
-                                <>
-                                  {`${(traderStats?.[`volume${selectedInterval}`] || 0).toFixed(2)} `}
-                                  <Typography
-                                    component="span"
-                                    variant="caption"
-                                    sx={{
-                                      color: alpha(theme.palette.info.main, 0.7),
-                                      fontWeight: 500,
-                                      fontSize: { xs: '0.45rem', sm: '0.65rem' }
-                                    }}
-                                  >
-                                    XRP
-                                  </Typography>
-                                </>
-                              )}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={6} sm={6} md={3}>
-                          <Box
+                            Volume
+                          </Typography>
+                          <Typography
                             sx={{
-                              p: { xs: 0.5, sm: 1.2 },
-                              borderRadius: { xs: '4px', sm: '12px' },
-                              background: 'transparent',
-                              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                transform: 'translateY(-1px)',
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
-                              }
+                              fontSize: '0.85rem',
+                              fontWeight: 700,
+                              color: theme.palette.text.primary
                             }}
                           >
+                            {loading ? '-' : `${(traderStats?.[`volume${selectedInterval}`] || 0).toFixed(0)}`}
                             <Typography
-                              variant="caption"
+                              component="span"
                               sx={{
-                                color: alpha(theme.palette.text.secondary, 0.9),
-                                fontWeight: 600,
-                                fontSize: { xs: '0.5rem', sm: '0.6rem' },
-                                textTransform: 'uppercase',
-                                letterSpacing: { xs: '0.3px', sm: '0.4px' },
-                                mb: { xs: 0.2, sm: 0.4 },
-                                display: 'block'
+                                fontSize: '0.55rem',
+                                color: alpha(theme.palette.text.secondary, 0.6),
+                                ml: 0.25
                               }}
                             >
-                              Trades
+                              XRP
                             </Typography>
-                            <Typography
-                              variant="h6"
-                              sx={{
-                                color: theme.palette.primary.main,
-                                fontWeight: 700,
-                                fontSize: { xs: '0.7rem', sm: '0.9rem' }
-                              }}
-                            >
-                              {loading ? (
-                                <Skeleton width={60} />
-                              ) : (
-                                traderStats?.[`trades${selectedInterval}`] || 0
-                              )}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={6} sm={6} md={3}>
-                          <Box
-                            sx={{
-                              p: { xs: 0.5, sm: 1.2 },
-                              borderRadius: { xs: '4px', sm: '12px' },
-                              background: 'transparent',
-                              border: `1px solid ${alpha(
-                                (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
-                                  ? theme.palette.success.main
-                                  : theme.palette.error.main,
-                                0.1
-                              )}`,
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                transform: 'translateY(-1px)',
-                                boxShadow: `0 4px 12px ${alpha(
-                                  (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
-                                    ? theme.palette.success.main
-                                    : theme.palette.error.main,
-                                  0.15
-                                )}`
-                              }
-                            }}
-                          >
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: alpha(theme.palette.text.secondary, 0.9),
-                                fontWeight: 600,
-                                fontSize: { xs: '0.5rem', sm: '0.6rem' },
-                                textTransform: 'uppercase',
-                                letterSpacing: { xs: '0.3px', sm: '0.4px' },
-                                mb: { xs: 0.2, sm: 0.4 },
-                                display: 'block'
-                              }}
-                            >
-                              Profit/Loss
-                            </Typography>
-                            <Typography
-                              variant="h6"
-                              sx={{
-                                color:
-                                  (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
-                                    ? theme.palette.success.main
-                                    : theme.palette.error.main,
-                                fontWeight: 700,
-                                fontSize: { xs: '0.7rem', sm: '0.9rem' }
-                              }}
-                            >
-                              {loading ? (
-                                <Skeleton width={100} />
-                              ) : (
-                                <>
-                                  {`${(traderStats?.[`profit${selectedInterval}`] || 0).toFixed(2)} `}
-                                  <Typography
-                                    component="span"
-                                    variant="caption"
-                                    sx={{
-                                      color: alpha(
-                                        (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
-                                          ? theme.palette.success.main
-                                          : theme.palette.error.main,
-                                        0.7
-                                      ),
-                                      fontWeight: 500,
-                                      fontSize: { xs: '0.45rem', sm: '0.65rem' }
-                                    }}
-                                  >
-                                    XRP
-                                  </Typography>
-                                </>
-                              )}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={6} sm={6} md={3}>
-                          <Box
-                            sx={{
-                              p: { xs: 0.5, sm: 1.2 },
-                              borderRadius: { xs: '4px', sm: '12px' },
-                              background: 'transparent',
-                              border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                transform: 'translateY(-1px)',
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.warning.main, 0.15)}`
-                              }
-                            }}
-                          >
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: alpha(theme.palette.text.secondary, 0.9),
-                                fontWeight: 600,
-                                fontSize: { xs: '0.5rem', sm: '0.6rem' },
-                                textTransform: 'uppercase',
-                                letterSpacing: { xs: '0.3px', sm: '0.4px' },
-                                mb: { xs: 0.2, sm: 0.4 },
-                                display: 'block'
-                              }}
-                            >
-                              Active Tokens
-                            </Typography>
-                            <Typography
-                              variant="h6"
-                              sx={{
-                                color: theme.palette.warning.main,
-                                fontWeight: 700,
-                                fontSize: { xs: '0.7rem', sm: '0.9rem' }
-                              }}
-                            >
-                              {loading ? (
-                                <Skeleton width={60} />
-                              ) : (
-                                traderStats?.[`activeTokens${selectedInterval}`] || 0
-                              )}
-                            </Typography>
-                          </Box>
-                        </Grid>
+                          </Typography>
+                        </Box>
                       </Grid>
-                    </CardContent>
-                  </Card>
+
+                      <Grid item xs={3}>
+                        <Box>
+                          <Typography
+                            sx={{
+                              fontSize: '0.55rem',
+                              color: alpha(theme.palette.text.secondary, 0.7),
+                              mb: 0.25
+                            }}
+                          >
+                            Trades
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontSize: '0.85rem',
+                              fontWeight: 700,
+                              color: theme.palette.text.primary
+                            }}
+                          >
+                            {loading ? '-' : (traderStats?.[`trades${selectedInterval}`] || 0)}
+                          </Typography>
+                        </Box>
+                      </Grid>
+
+                      <Grid item xs={3}>
+                        <Box>
+                          <Typography
+                            sx={{
+                              fontSize: '0.55rem',
+                              color: alpha(theme.palette.text.secondary, 0.7),
+                              mb: 0.25
+                            }}
+                          >
+                            P/L
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontSize: '0.85rem',
+                              fontWeight: 700,
+                              color: (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
+                                ? theme.palette.success.main
+                                : theme.palette.error.main
+                            }}
+                          >
+                            {loading ? '-' : `${(traderStats?.[`profit${selectedInterval}`] || 0) >= 0 ? '+' : ''}${(traderStats?.[`profit${selectedInterval}`] || 0).toFixed(0)}`}
+                          </Typography>
+                        </Box>
+                      </Grid>
+
+                      <Grid item xs={3}>
+                        <Box>
+                          <Typography
+                            sx={{
+                              fontSize: '0.55rem',
+                              color: alpha(theme.palette.text.secondary, 0.7),
+                              mb: 0.25
+                            }}
+                          >
+                            Tokens
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontSize: '0.85rem',
+                              fontWeight: 700,
+                              color: theme.palette.text.primary
+                            }}
+                          >
+                            {loading ? '-' : (traderStats?.[`activeTokens${selectedInterval}`] || 0)}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </Box>
                 </Box>
               </Grid>
             </Grid>
