@@ -259,7 +259,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                   {(isXRP || token.verified) && (
                     <VerifiedIcon sx={{ fontSize: 12, color: theme.palette.success.main }} />
                   )}
-                  {token.origin && (
+                  {!isXRP && token.origin && (
                     <Chip 
                       label={token.origin} 
                       size="small" 
@@ -284,13 +284,25 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                     {token.user || `${token.issuer.slice(0, 8)}...${token.issuer.slice(-4)}`}
                   </Typography>
                 )}
+                {isXRP && (
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: { xs: '0.55rem', sm: '0.6rem' },
+                      color: theme.palette.text.secondary,
+                      visibility: 'hidden'
+                    }}
+                  >
+                    placeholder
+                  </Typography>
+                )}
               </Box>
             </Stack>
 
             {/* Right side - Stats grid */}
             <Stack 
               direction="row" 
-              spacing={{ xs: 1, sm: 1.25 }} 
+              spacing={{ xs: 3, sm: 4 }} 
               alignItems="center"
               sx={{ 
                 ml: 'auto'
@@ -341,15 +353,16 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                 </Typography>
               </Box>
 
-              {!isXRP && accountProfile?.account === account && (
+              {accountProfile?.account === account && (
                 <IconButton
                   size="small"
-                  onClick={handleRemove}
+                  onClick={!isXRP ? handleRemove : undefined}
                   sx={{
                     p: 0.5,
-                    color: theme.palette.error.main,
+                    color: !isXRP ? theme.palette.error.main : 'transparent',
+                    visibility: !isXRP ? 'visible' : 'hidden',
                     '&:hover': {
-                      backgroundColor: alpha(theme.palette.error.main, 0.1)
+                      backgroundColor: !isXRP ? alpha(theme.palette.error.main, 0.1) : 'transparent'
                     }
                   }}
                 >
@@ -869,7 +882,11 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                   <Fade in timeout={300 + index * 50} key="XRP">
                     <Box>
                       <TokenCard
-                        token={{ balance: asset.balance }}
+                        token={{ 
+                          balance: asset.balance,
+                          supply: asset.supply,
+                          value: asset.value
+                        }}
                         account={account}
                         isXRP
                         exchRate={exchRate}
