@@ -11,9 +11,8 @@ import {
     Fade
 } from '@mui/material';
 
-// Highcharts
-import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official';
+// ECharts
+import ReactECharts from 'echarts-for-react';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
@@ -73,15 +72,26 @@ const DataIndicator = styled(Typography)(({ theme, isPositive }) => ({
     gap: theme.spacing(0.5)
 }));
 
-function getChartData(offers) {
+function getChartData(offers, isBid = false) {
     let data = [];
     let hasSmallValues = false;
     
-    for (var o of offers.slice(0, 30)) {
+    // Take up to 100 data points for much smoother curves
+    const limitedOffers = offers.slice(0, 100);
+    
+    for (var o of limitedOffers) {
         data.push([o.price, o.sumAmount]);
         if (!hasSmallValues && o.price < 0.000001 ) {
             hasSmallValues = true;
         }
+    }
+    
+    // Sort data by price for proper depth chart display
+    // Bids should be descending, asks ascending
+    if (isBid) {
+        data.sort((a, b) => b[0] - a[0]);
+    } else {
+        data.sort((a, b) => a[0] - b[0]);
     }
     
     return { data, hasSmallValues };
@@ -96,8 +106,8 @@ export default function BidAskChart({asks, bids}) {
     const hasData = asks.length > 0 || bids.length > 0;
     
     // Process chart data
-    const bidData = getChartData(bids);
-    const askData = getChartData(asks);
+    const bidData = getChartData(bids, true);
+    const askData = getChartData(asks, false);
     const hasSmallValues = bidData.hasSmallValues || askData.hasSmallValues;
     
     // Calculate spread and depth
@@ -122,151 +132,138 @@ export default function BidAskChart({asks, bids}) {
         }
     }, [hasData]);
     
-    // Create enhanced Highcharts options
+    // Create enhanced ECharts options
     const chartOptions = useMemo(() => ({
-        chart: {
-            type: 'area',
-            height: isMobile ? 160 : 220,
-            backgroundColor: 'transparent',
-            style: {
-                fontFamily: theme.typography.fontFamily
-            },
-            animation: {
-                duration: 500
-            },
-            margin: isMobile ? [40, 10, 20, 10] : [50, 15, 25, 15],
-            spacing: [0, 0, 0, 0]
-        },
-        credits: {
-            enabled: false
-        },
-        title: {
-            text: null
-        },
-        legend: {
-            enabled: false // We'll create custom legend in header
+        backgroundColor: 'transparent',
+        animation: true,
+        animationDuration: 500,
+        grid: {
+            top: isMobile ? 40 : 50,
+            right: isMobile ? 10 : 15,
+            bottom: isMobile ? 20 : 25,
+            left: isMobile ? 10 : 15,
+            containLabel: true
         },
         xAxis: {
-            type: 'linear',
-            gridLineWidth: 0,
-            lineWidth: 0,
-            tickWidth: 0,
-            labels: {
-                style: {
-                    color: theme.palette.text.secondary,
-                    fontSize: '9px'
-                },
-                formatter: function() {
-                    return fNumber(this.value);
+            type: 'value',
+            axisLine: { show: false },
+            axisTick: { show: false },
+            splitLine: { show: false },
+            axisLabel: {
+                color: theme.palette.text.secondary,
+                fontSize: 9,
+                formatter: function(value) {
+                    return fNumber(value);
                 }
             }
         },
         yAxis: {
-            title: {
-                text: null
+            type: 'value',
+            axisLine: { show: false },
+            axisTick: { show: false },
+            splitLine: {
+                lineStyle: {
+                    color: alpha(theme.palette.divider, 0.1),
+                    type: 'dotted'
+                }
             },
-            gridLineColor: alpha(theme.palette.divider, 0.1),
-            gridLineDashStyle: 'Dot',
-            labels: {
-                style: {
-                    color: theme.palette.text.secondary,
-                    fontSize: '9px'
-                },
-                formatter: function() {
-                    return this.value > 1000 ? 
-                        Highcharts.numberFormat(this.value / 1000, 0) + 'k' : 
-                        fNumber(this.value);
+            axisLabel: {
+                color: theme.palette.text.secondary,
+                fontSize: 9,
+                formatter: function(value) {
+                    return value > 1000 ? 
+                        (value / 1000).toFixed(0) + 'k' : 
+                        fNumber(value);
                 }
             }
         },
         tooltip: {
-            shared: true,
+            trigger: 'axis',
             backgroundColor: theme.palette.background.paper,
             borderColor: theme.palette.divider,
-            borderRadius: 4,
             borderWidth: 1,
-            shadow: false,
+            borderRadius: 4,
             padding: 8,
-            style: {
+            textStyle: {
                 color: theme.palette.text.primary,
-                fontSize: '11px'
+                fontSize: 11
             },
-            formatter: function() {
-                const points = this.points;
-                let html = `<div><b>${fNumber(this.x)}</b></div>`;
-                points.forEach(point => {
-                    const color = point.series.name === 'BID' ? '#00D9A3' : '#FF6B6B';
-                    html += `<div style="color: ${color}">${point.series.name}: ${fNumber(point.y)}</div>`;
+            formatter: function(params) {
+                let html = `<div><b>${fNumber(params[0].axisValue)}</b></div>`;
+                params.forEach(point => {
+                    const color = point.seriesName === 'BID' ? '#00D9A3' : '#FF6B6B';
+                    html += `<div style="color: ${color}">${point.seriesName}: ${fNumber(point.value[1])}</div>`;
                 });
                 return html;
-            },
-            useHTML: true
-        },
-        plotOptions: {
-            area: {
-                lineWidth: 2,
-                states: {
-                    hover: {
-                        lineWidth: 2
-                    }
-                },
-                marker: {
-                    enabled: false,
-                    states: {
-                        hover: {
-                            enabled: true,
-                            radius: 3
-                        }
-                    }
-                },
-                fillOpacity: 0.1,
-                trackByArea: true,
-                stickyTracking: true,
-                threshold: null
-            },
-            series: {
-                animation: {
-                    duration: 500
-                },
-                states: {
-                    hover: {
-                        enabled: true
-                    },
-                    inactive: {
-                        opacity: 0.5
-                    }
-                }
             }
         },
         series: [
             {
                 name: 'BID',
+                type: 'line',
                 data: bidData.data,
-                color: '#00D9A3',
-                fillColor: alpha('#00D9A3', 0.1)
+                smooth: false, // Remove smoothing for accurate depth representation
+                symbol: 'none',
+                step: false, // Remove step for continuous depth curve
+                sampling: 'lttb', // Use downsampling for performance with many points
+                lineStyle: {
+                    width: 2,
+                    color: '#00D9A3'
+                },
+                areaStyle: {
+                    color: {
+                        type: 'linear',
+                        x: 0,
+                        y: 0,
+                        x2: 0,
+                        y2: 1,
+                        colorStops: [{
+                            offset: 0, color: alpha('#00D9A3', 0.2)
+                        }, {
+                            offset: 1, color: alpha('#00D9A3', 0.05)
+                        }]
+                    }
+                },
+                emphasis: {
+                    lineStyle: {
+                        width: 2.5
+                    }
+                }
             },
             {
                 name: 'ASK',
+                type: 'line',
                 data: askData.data,
-                color: '#FF6B6B',
-                fillColor: alpha('#FF6B6B', 0.1)
-            }
-        ],
-        responsive: {
-            rules: [
-                {
-                    condition: {
-                        maxWidth: theme.breakpoints.values.sm
-                    },
-                    chartOptions: {
-                        chart: {
-                            height: 140
-                        }
+                smooth: false, // Remove smoothing for accurate depth representation
+                symbol: 'none',
+                step: false, // Remove step for continuous depth curve
+                sampling: 'lttb', // Use downsampling for performance with many points
+                lineStyle: {
+                    width: 2,
+                    color: '#FF6B6B'
+                },
+                areaStyle: {
+                    color: {
+                        type: 'linear',
+                        x: 0,
+                        y: 0,
+                        x2: 0,
+                        y2: 1,
+                        colorStops: [{
+                            offset: 0, color: alpha('#FF6B6B', 0.2)
+                        }, {
+                            offset: 1, color: alpha('#FF6B6B', 0.05)
+                        }]
+                    }
+                },
+                emphasis: {
+                    lineStyle: {
+                        width: 2.5
                     }
                 }
-            ]
-        }
-    }), [theme, isMobile, bidData.data, askData.data, hasSmallValues]);
+            }
+        ]
+    }), [theme, isMobile, bidData.data, askData.data]);
     
     // Show loading skeleton if no data
     if (!hasData) {
@@ -305,9 +302,10 @@ export default function BidAskChart({asks, bids}) {
                         )}
                     </Stack>
                 </ChartHeader>
-                <HighchartsReact 
-                    highcharts={Highcharts}
-                    options={chartOptions}
+                <ReactECharts
+                    option={chartOptions}
+                    style={{ height: isMobile ? 160 : 220, width: '100%' }}
+                    opts={{ renderer: 'svg' }}
                 />
             </ChartContainer>
         </Fade>
