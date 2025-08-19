@@ -46,8 +46,8 @@ const Container = styled.div`
   }
   
   @media (max-width: 600px) {
-    padding: 6px;
-    gap: 6px;
+    padding: 4px;
+    gap: 4px;
   }
 `;
 
@@ -63,12 +63,14 @@ const Row = styled.div`
   width: 100%;
   
   @media (max-width: 600px) {
-    gap: 6px;
+    gap: 4px;
     overflow-x: auto;
     flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
     
     &::-webkit-scrollbar {
-      height: 4px;
+      height: 3px;
     }
     
     &::-webkit-scrollbar-track {
@@ -76,7 +78,7 @@ const Row = styled.div`
     }
     
     &::-webkit-scrollbar-thumb {
-      background: rgba(145, 158, 171, 0.2);
+      background: rgba(145, 158, 171, 0.15);
       border-radius: 2px;
     }
   }
@@ -89,7 +91,24 @@ const RowContent = styled.div`
   flex-wrap: wrap;
   
   @media (max-width: 600px) {
-    gap: 6px;
+    gap: 4px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    
+    &::-webkit-scrollbar {
+      height: 3px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(145, 158, 171, 0.15);
+      border-radius: 2px;
+    }
   }
 `;
 
@@ -214,9 +233,10 @@ const Button = styled.button`
   }
   
   @media (max-width: 600px) {
-    padding: 4px 8px;
-    font-size: 0.75rem;
-    height: 32px;
+    padding: 3px 6px;
+    font-size: 0.7rem;
+    height: 28px;
+    gap: 2px;
   }
 `;
 
@@ -330,9 +350,10 @@ const Chip = styled.button`
   }
   
   @media (max-width: 600px) {
-    padding: 2px 6px;
-    font-size: 0.7rem;
-    height: 26px;
+    padding: 2px 5px;
+    font-size: 0.65rem;
+    height: 24px;
+    gap: 2px;
     display: ${props => props.hideOnMobile ? 'none' : 'inline-flex'};
   }
 `;
@@ -373,10 +394,10 @@ const TagChip = styled.button`
   }
   
   @media (max-width: 600px) {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     height: 20px;
-    padding: 1px 6px;
-    display: none;
+    padding: 1px 5px;
+    gap: 2px;
   }
 `;
 
@@ -403,9 +424,10 @@ const AllTagsButton = styled.button`
   }
   
   @media (max-width: 600px) {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     height: 20px;
-    padding: 1px 6px;
+    padding: 1px 5px;
+    gap: 2px;
   }
 `;
 
@@ -463,7 +485,7 @@ const SearchToolbar = memo(function SearchToolbar({
       const availableWidth = containerWidth - allTagsWidth - 30; // 30px buffer for All Tags button and spacing
       
       if (availableWidth <= 100) {
-        setVisibleTagCount(isMobile ? 2 : 5);
+        setVisibleTagCount(isMobile ? 3 : 5);
         return;
       }
       
@@ -536,7 +558,7 @@ const SearchToolbar = memo(function SearchToolbar({
       }
       
       // Set the visible count - show more tags by default
-      setVisibleTagCount(Math.max(isMobile ? 3 : 8, Math.min(count, tags.length)));
+      setVisibleTagCount(Math.max(isMobile ? 4 : 8, Math.min(count, tags.length)));
       setMeasuredTags(true);
     };
     
@@ -599,7 +621,7 @@ const SearchToolbar = memo(function SearchToolbar({
 
       {/* Top Categories - first row */}
       {tags && tags.length > 0 && (
-        <Row>
+        <Row style={{ paddingBottom: '2px' }}>
           {/* Display categories dynamically based on available space */}
           {tags.slice(0, visibleTagCount).map((tag, index) => {
             const normalizedTag = tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
@@ -645,27 +667,28 @@ const SearchToolbar = memo(function SearchToolbar({
             <button
               className={currentView === 'tokens' ? 'selected' : ''}
               onClick={() => window.location.href = '/'}
-              style={{ minWidth: '70px' }}
+              style={{ minWidth: window.innerWidth <= 600 ? '55px' : '70px' }}
             >
-              <Icon icon="carbon:grid" width="14" height="14" style={{ marginRight: '4px' }} />
-              Tokens
+              <Icon icon="carbon:grid" width="14" height="14" style={{ marginRight: window.innerWidth <= 600 ? '2px' : '4px' }} />
+              <span style={{ fontSize: window.innerWidth <= 600 ? '11px' : '12px' }}>Tokens</span>
             </button>
             <button
               className={router.pathname === '/view/firstledger' ? 'selected' : ''}
               onClick={() => window.location.href = '/view/firstledger'}
-              style={{ minWidth: '90px' }}
+              style={{ minWidth: window.innerWidth <= 600 ? '70px' : '90px' }}
             >
               <span style={{ 
                 display: 'inline-flex', 
                 alignItems: 'center', 
-                gap: '4px',
-                fontSize: '12px'
+                gap: window.innerWidth <= 600 ? '2px' : '4px',
+                fontSize: window.innerWidth <= 600 ? '11px' : '12px'
               }}>
-                FirstLedger
+                <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>FirstLedger</span>
+                <span style={{ display: window.innerWidth <= 600 ? 'inline' : 'none' }}>FL</span>
                 <Icon 
                   icon="material-symbols:open-in-new" 
-                  width="12" 
-                  height="12" 
+                  width={window.innerWidth <= 600 ? '10' : '12'} 
+                  height={window.innerWidth <= 600 ? '10' : '12'} 
                   style={{ opacity: 0.7 }}
                 />
               </span>
@@ -772,10 +795,10 @@ const SearchToolbar = memo(function SearchToolbar({
             hoverBackground={currentView === 'gainers'
               ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
               : 'rgba(76, 175, 80, 0.25)'}
-            hideOnMobile
           >
             <Icon icon="ic:round-trending-up" width="16" height="16" style={{ marginRight: '4px' }} />
-            Gainers
+            <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>Gainers</span>
+            <span style={{ display: window.innerWidth <= 600 ? 'inline' : 'none' }}>📈</span>
           </Chip>
 
           <Chip
@@ -801,10 +824,10 @@ const SearchToolbar = memo(function SearchToolbar({
             hoverBackground={currentView === 'most-viewed'
               ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
               : 'rgba(156, 39, 176, 0.25)'}
-            hideOnMobile
           >
             <Icon icon="ic:round-visibility" width="16" height="16" style={{ marginRight: '4px' }} />
-            Popular
+            <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>Popular</span>
+            <span style={{ display: window.innerWidth <= 600 ? 'inline' : 'none' }}>👁️</span>
           </Chip>
         </RowContent>
 
