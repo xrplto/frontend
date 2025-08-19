@@ -173,9 +173,9 @@ export default function Portfolio({ account, limit, collection, type }) {
         // Set AMM status based on response
         setIsAmm(!!response.data?.AMM);
       } catch (error) {
-        console.error('Error fetching trader stats:', error);
-        // Set empty data on error
-        setTraderStats(null);
+        console.warn('Error fetching trader stats:', error.message || error);
+        // Set empty data on error - prevent runtime crashes
+        setTraderStats({});
         setIsAmm(false);
       } finally {
         setLoading(false);
@@ -206,7 +206,7 @@ export default function Portfolio({ account, limit, collection, type }) {
           setXrpBalance(0);
         }
       } catch (error) {
-        console.warn('Error fetching XRP balance:', error.message);
+        console.warn('Error fetching XRP balance:', error.message || error);
         setXrpBalance(0);
       } finally {
         setLoadingBalance(false);
@@ -1419,7 +1419,7 @@ export default function Portfolio({ account, limit, collection, type }) {
 
       return <HighchartsReact highcharts={Highcharts} options={highchartsOptions} />;
     } catch (error) {
-      console.error('Error rendering chart:', error);
+      console.warn('Error rendering chart:', error.message || error);
       return (
         <Box sx={{ 
           display: 'flex', 
@@ -1432,7 +1432,7 @@ export default function Portfolio({ account, limit, collection, type }) {
         }}>
           <Typography variant="body2">Error loading chart</Typography>
           <Typography variant="caption" color="text.secondary">
-            {error.message || 'Please try again later'}
+            {error?.message || 'Please try again later'}
           </Typography>
         </Box>
       );
@@ -1447,7 +1447,7 @@ export default function Portfolio({ account, limit, collection, type }) {
         // const result = await fetchChartData(); // This line caused the error
         // setChartData({ labels: [], datasets: [] }); // Ensure chartData is initialized
       } catch (error) {
-        console.error('Error fetching chart data:', error);
+        console.warn('Error fetching chart data:', error.message || error);
         // Set empty but valid chart data structure
         // setChartData({ labels: [], datasets: [] });
       } finally {
