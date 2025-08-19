@@ -1849,147 +1849,72 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </Box>
                   </Box>
 
-                <Box sx={{ mt: { xs: 0.75, sm: 1.5 } }}>
+                <Box sx={{ mt: 1 }}>
                   <Card
                     sx={{
-                      borderRadius: { xs: '12px', sm: '16px' },
+                      borderRadius: '10px',
                       background: 'transparent',
                       backdropFilter: 'none',
                       WebkitBackdropFilter: 'none',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      boxShadow: `
-                        0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                        0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
                       overflow: 'hidden',
-                      position: 'relative',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: `linear-gradient(
-                          135deg,
-                          ${alpha(theme.palette.warning.main, 0.05)} 0%,
-                          transparent 50%,
-                          ${alpha(theme.palette.success.main, 0.05)} 100%
-                        )`,
-                        pointerEvents: 'none'
-                      },
+                      transition: 'all 0.2s ease',
                       '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `
-                          0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-                          0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-                        border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
+                        transform: 'translateY(-1px)',
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
                       }
                     }}
                   >
-                    <Box sx={{ p: 2.5 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.5 }}>
-                        <Box
+                    <Box sx={{ p: 1.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography
+                          variant="caption"
                           sx={{
-                            p: { xs: 0.8, sm: 1.2 },
-                            borderRadius: '14px',
-                            background: 'transparent',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: `0 6px 20px ${alpha(theme.palette.warning.main, 0.3)}`,
-                            position: 'relative',
-                            '&::after': {
-                              content: '""',
-                              position: 'absolute',
-                              inset: 0,
-                              borderRadius: '14px',
-                              background: 'transparent',
-                              pointerEvents: 'none'
-                            }
+                            color: alpha(theme.palette.text.secondary, 0.9),
+                            fontWeight: 600,
+                            fontSize: '0.75rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.3px'
                           }}
                         >
-                          <TrendingUpIcon
-                            sx={{
-                              fontSize: '1.4rem',
-                              color: 'white',
-                              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
-                            }}
-                          />
-                        </Box>
-                        <Box>
-                          <Typography
-                            variant="h6"
-                            sx={{
-                              fontWeight: 700,
-                              color: theme.palette.text.primary,
-                              fontSize: '1.1rem',
-                              letterSpacing: '-0.01em',
-                              mb: 0.5
-                            }}
-                          >
-                            Token Performance
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: alpha(theme.palette.text.secondary, 0.8),
-                              fontSize: '0.8rem'
-                            }}
-                          >
-                            Individual token results
-                          </Typography>
-                        </Box>
+                          Token Performance
+                        </Typography>
                       </Box>
 
                       {loading ? (
                         <Skeleton
                           variant="rectangular"
-                          height={200}
-                          sx={{ borderRadius: '12px' }}
+                          height={100}
+                          sx={{ borderRadius: '6px' }}
                         />
                       ) : (
                         <Box
                           sx={{
                             background: 'transparent',
-                            borderRadius: '12px',
-                            overflow: 'auto',
-                            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                            maxWidth: '100%',
-                            maxHeight: { xs: '150px', sm: '200px' },
-                            '&::-webkit-scrollbar': {
-                              height: '6px'
-                            },
-                            '&::-webkit-scrollbar-track': {
-                              background: alpha(theme.palette.divider, 0.1)
-                            },
-                            '&::-webkit-scrollbar-thumb': {
-                              background: alpha(theme.palette.primary.main, 0.3),
-                              borderRadius: '3px'
-                            }
+                            borderRadius: '6px',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
                           }}
                         >
                           <Table
                             size="small"
                             sx={{
-                              minWidth: 'auto',
                               '& .MuiTableCell-root': {
-                                fontSize: { xs: '0.75rem', sm: '0.85rem' },
-                                padding: { xs: '8px 12px', sm: '12px 16px' },
-                                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`
+                                fontSize: '0.7rem',
+                                padding: '6px 8px',
+                                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`
                               }
                             }}
                           >
                             <TableHead>
                               <TableRow
                                 sx={{
-                                  background: 'transparent',
                                   '& .MuiTableCell-root': {
-                                    fontWeight: 700,
-                                    color: theme.palette.text.primary,
-                                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                                    fontWeight: 600,
+                                    color: theme.palette.text.secondary,
+                                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                                    fontSize: '0.65rem',
+                                    textTransform: 'uppercase'
                                   }
                                 }}
                               >
@@ -1999,32 +1924,29 @@ export default function Portfolio({ account, limit, collection, type }) {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {traderStats?.tokenPerformance?.map((token, index) => (
+                              {traderStats?.tokenPerformance?.sort((a, b) => b.profit - a.profit).map((token, index) => (
                                 <TableRow
                                   key={token.tokenId}
                                   sx={{
-                                    transition: 'all 0.2s ease',
                                     '&:hover': {
-                                      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
-                                      transform: 'translateX(2px)'
+                                      background: alpha(theme.palette.primary.main, 0.02)
                                     }
                                   }}
                                 >
                                   <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                       <Box
                                         sx={{
-                                          width: 8,
-                                          height: 8,
+                                          width: 6,
+                                          height: 6,
                                           borderRadius: '50%',
                                           bgcolor:
                                             token.roi >= 0
                                               ? theme.palette.success.main
-                                              : theme.palette.error.main,
-                                          boxShadow: `0 0 8px ${alpha(token.roi >= 0 ? theme.palette.success.main : theme.palette.error.main, 0.4)}`
+                                              : theme.palette.error.main
                                         }}
                                       />
-                                      <Typography sx={{ fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>{token.name}</Typography>
+                                      <Typography sx={{ fontWeight: 500, fontSize: '0.7rem' }}>{token.name}</Typography>
                                     </Box>
                                   </TableCell>
                                   <TableCell
@@ -2034,8 +1956,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                                         token.roi >= 0
                                           ? theme.palette.success.main
                                           : theme.palette.error.main,
-                                      fontWeight: 700,
-                                      fontSize: '0.9rem'
+                                      fontWeight: 600,
+                                      fontSize: '0.7rem'
                                     }}
                                   >
                                     {token.roi.toFixed(2)}%
@@ -2047,11 +1969,11 @@ export default function Portfolio({ account, limit, collection, type }) {
                                         token.profit >= 0
                                           ? theme.palette.success.main
                                           : theme.palette.error.main,
-                                      fontWeight: 700,
-                                      fontSize: '0.9rem'
+                                      fontWeight: 600,
+                                      fontSize: '0.7rem'
                                     }}
                                   >
-                                    {token.profit.toFixed(2)} XRP
+                                    {token.profit.toFixed(0)}
                                   </TableCell>
                                 </TableRow>
                               ))}
@@ -2065,202 +1987,128 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                 <Card
                   sx={{
-                    borderRadius: { xs: '12px', sm: '16px' },
-                    mt: { xs: 0.75, sm: 1.5 },
+                    borderRadius: '10px',
+                    mt: 1,
                     background: 'transparent',
-                    backdropFilter: 'blur(40px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    boxShadow: `
-                      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+                    backdropFilter: 'none',
+                    WebkitBackdropFilter: 'none',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                    boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
                     overflow: 'hidden',
-                    position: 'relative',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: `linear-gradient(
-                        135deg,
-                        ${alpha(theme.palette.info.main, 0.05)} 0%,
-                        transparent 50%,
-                        ${alpha(theme.palette.primary.main, 0.05)} 100%
-                      )`,
-                      pointerEvents: 'none'
-                    },
+                    transition: 'all 0.2s ease',
                     '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: `
-                        0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-                        0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-                        inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-                      border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
+                      transform: 'translateY(-1px)',
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
                     }
                   }}
                 >
-                  <Box sx={{ p: 2.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.5 }}>
+                  <Box sx={{ p: 1.5 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: alpha(theme.palette.text.secondary, 0.9),
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.3px',
+                        display: 'block',
+                        mb: 1
+                      }}
+                    >
+                      Trading Statistics
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
                       <Box
                         sx={{
-                          p: 1.2,
-                          borderRadius: '14px',
-                          background: 'transparent',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: `0 6px 20px ${alpha(theme.palette.info.main, 0.3)}`,
-                          position: 'relative',
-                          '&::after': {
-                            content: '""',
-                            position: 'absolute',
-                            inset: 0,
-                            borderRadius: '14px',
-                            background: `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.2)} 0%, transparent 100%)`,
-                            pointerEvents: 'none'
-                          }
+                          flex: 1,
+                          p: 0.75,
+                          borderRadius: '6px',
+                          background: alpha(theme.palette.primary.main, 0.05),
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
                         }}
                       >
-                        <TrendingUpIcon
-                          sx={{
-                            fontSize: '1.4rem',
-                            color: 'white',
-                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
-                          }}
-                        />
-                      </Box>
-                      <Box>
                         <Typography
-                          variant="h6"
-                          sx={{
-                            fontWeight: 700,
-                            color: theme.palette.text.primary,
-                            fontSize: '1.1rem',
-                            letterSpacing: '-0.01em',
-                            mb: 0.5
-                          }}
-                        >
-                          Trading Statistics
-                        </Typography>
-                        <Typography
-                          variant="body2"
+                          variant="caption"
                           sx={{
                             color: alpha(theme.palette.text.secondary, 0.8),
-                            fontSize: '0.8rem'
+                            fontSize: '0.65rem',
+                            display: 'block'
                           }}
                         >
-                          Performance metrics
+                          Trades
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: theme.palette.primary.main,
+                            fontWeight: 600,
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          {traderStats?.totalTrades || 0}
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          flex: 1,
+                          p: 0.75,
+                          borderRadius: '6px',
+                          background: alpha(theme.palette.success.main, 0.05),
+                          border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: alpha(theme.palette.text.secondary, 0.8),
+                            fontSize: '0.65rem',
+                            display: 'block'
+                          }}
+                        >
+                          Best
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: theme.palette.success.main,
+                            fontWeight: 600,
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          {(traderStats?.maxProfitTrade || 0).toFixed(0)}
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          flex: 1,
+                          p: 0.75,
+                          borderRadius: '6px',
+                          background: alpha(theme.palette.error.main, 0.05),
+                          border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: alpha(theme.palette.text.secondary, 0.8),
+                            fontSize: '0.65rem',
+                            display: 'block'
+                          }}
+                        >
+                          Worst
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: theme.palette.error.main,
+                            fontWeight: 600,
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          {(traderStats?.maxLossTrade || 0).toFixed(0)}
                         </Typography>
                       </Box>
                     </Box>
-                    <Stack spacing={2}>
-                      <Box
-                        sx={{
-                          p: 2,
-                          borderRadius: '12px',
-                          background: 'transparent',
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            transform: 'translateY(-1px)',
-                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
-                          }
-                        }}
-                      >
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
-                          <Typography
-                            sx={{
-                              fontWeight: 600,
-                              color: alpha(theme.palette.text.primary, 0.9),
-                              fontSize: '0.9rem'
-                            }}
-                          >
-                            Total Trades
-                          </Typography>
-                          <Typography
-                            sx={{
-                              fontWeight: 700,
-                              fontSize: '1.2rem',
-                              color: theme.palette.primary.main
-                            }}
-                          >
-                            {traderStats?.totalTrades || 0}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Box
-                        sx={{
-                          p: 2,
-                          borderRadius: '12px',
-                          background: 'transparent',
-                          border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            transform: 'translateY(-1px)',
-                            boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.15)}`
-                          }
-                        }}
-                      >
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
-                          <Typography
-                            sx={{
-                              fontWeight: 600,
-                              color: alpha(theme.palette.text.primary, 0.9),
-                              fontSize: '0.9rem'
-                            }}
-                          >
-                            Best Trade
-                          </Typography>
-                          <Typography
-                            sx={{
-                              color: theme.palette.success.main,
-                              fontWeight: 700,
-                              fontSize: '1.2rem'
-                            }}
-                          >
-                            {traderStats?.maxProfitTrade?.toFixed(2) || 0} XRP
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Box
-                        sx={{
-                          p: 2,
-                          borderRadius: '12px',
-                          background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.08)} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
-                          border: `1px solid ${alpha(theme.palette.error.main, 0.1)}`,
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            transform: 'translateY(-1px)',
-                            boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.15)}`
-                          }
-                        }}
-                      >
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
-                          <Typography
-                            sx={{
-                              fontWeight: 600,
-                              color: alpha(theme.palette.text.primary, 0.9),
-                              fontSize: '0.9rem'
-                            }}
-                          >
-                            Worst Trade
-                          </Typography>
-                          <Typography
-                            sx={{
-                              color: theme.palette.error.main,
-                              fontWeight: 700,
-                              fontSize: '1.2rem'
-                            }}
-                          >
-                            {traderStats?.maxLossTrade?.toFixed(2) || 0} XRP
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Stack>
                   </Box>
                 </Card>
               </Stack>
