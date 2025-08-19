@@ -133,9 +133,6 @@ function Overview({ data }) {
             {data && data.tags ? (
               <>
                 <TokenList tags={data.tags} tokens={tokens} tMap={tMap} setTokens={setTokens} />
-                {/* <CryptoHeatmap
-                    tokens={tokens}
-                  /> */}
               </>
             ) : (
               <></>

@@ -521,24 +521,35 @@ const SearchToolbar = memo(function SearchToolbar({
   return (
     <Container darkMode={darkMode} ref={containerRef}>
 
-      {/* View Type Toggle */}
       <ButtonGroup>
-        <IconButton
-          size="small"
-          selected={viewType === 'row'}
-          onClick={() => setViewType('row')}
-          title="List View"
+        <button
+          className={currentView === 'tokens' ? 'selected' : ''}
+          onClick={() => window.location.href = '/'}
+          style={{ minWidth: '70px' }}
         >
-          <Icon icon="material-symbols:table-rows" width="18" height="18" />
-        </IconButton>
-        <IconButton
-          size="small"
-          selected={viewType === 'heatmap'}
-          onClick={() => window.location.href = '/tokens-heatmap'}
-          title="Grid View"
+          <Icon icon="carbon:grid" width="14" height="14" style={{ marginRight: '4px' }} />
+          Tokens
+        </button>
+        <button
+          className={router.pathname === '/view/firstledger' ? 'selected' : ''}
+          onClick={() => window.location.href = '/view/firstledger'}
+          style={{ minWidth: '90px' }}
         >
-          <Icon icon="material-symbols:grid-view" width="18" height="18" />
-        </IconButton>
+          <span style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '4px',
+            fontSize: '12px'
+          }}>
+            FirstLedger
+            <Icon 
+              icon="material-symbols:open-in-new" 
+              width="12" 
+              height="12" 
+              style={{ opacity: 0.7 }}
+            />
+          </span>
+        </button>
       </ButtonGroup>
 
       <Divider />
