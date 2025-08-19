@@ -76,7 +76,7 @@ const processAssetDistribution = async (trustlines, theme) => {
   const otherAssets = sortedTrustlines.slice(10);
 
   // Ensure we have valid numeric values - use token name if available, fallback to currency
-  const labels = topAssets.map((asset) => asset.token?.name || asset.currency);
+  const labels = topAssets.map((asset) => asset.name || asset.token?.name || asset.currency);
   const data = topAssets.map((asset) => parseFloat(asset.value) || 0);
 
   // Add "Others" category if there are more than 10 assets
@@ -814,7 +814,9 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                         fontSize: '0.8rem'
                       }}
                     >
-                      {assetDistribution.series[index].toLocaleString()} XRP
+                      {parseFloat(assetDistribution.series[index]).toLocaleString('en-US', {
+                        maximumFractionDigits: 3
+                      })} XRP
                     </Typography>
                   </Box>
                 ))}
