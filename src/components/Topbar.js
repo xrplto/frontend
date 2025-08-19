@@ -475,7 +475,7 @@ const formatRelativeTime = (timestamp) => {
 
 const getTradeSizeIcon = (value) => {
   const xrpValue = parseFloat(value);
-  if (xrpValue < 500) return 'ph:fish-simple-fill';  // Small fish
+  if (xrpValue < 500) return 'game-icons:shrimp';  // Shrimp for smallest
   if (xrpValue < 1000) return 'ph:fish-fill';  // Regular fish
   if (xrpValue < 2500) return 'game-icons:dolphin';  // Dolphin
   if (xrpValue < 5000) return 'game-icons:octopus';  // Octopus
