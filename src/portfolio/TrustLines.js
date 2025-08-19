@@ -600,8 +600,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
               alignItems: 'center',
               justifyContent: 'center',
               position: 'relative',
-              minHeight: 180,
-              maxHeight: 200
+              minHeight: 220,
+              maxHeight: 240
             }}
           >
             {(() => {
@@ -642,7 +642,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                           chart: {
                             type: 'pie',
                             backgroundColor: 'transparent',
-                            height: 180,
+                            height: 220,
                             animation: { duration: 1000 }
                           },
                           title: { text: null },
