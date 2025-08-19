@@ -236,11 +236,14 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   // Sync temp columns when opening settings
   useEffect(() => {
     if (customSettingsOpen) {
-      // On mobile, ensure we start with price + one percentage column
+      // On mobile, ensure we have 2 columns selected
       if (isMobile) {
-        const percentCols = ['pro5m', 'pro1h', 'pro24h', 'pro7d', 'pro30d'];
-        const currentPercent = percentCols.find(col => customColumns.includes(col)) || 'pro24h';
-        setTempCustomColumns(['price', currentPercent]);
+        // Use existing mobile columns or defaults
+        if (customColumns && customColumns.length >= 2) {
+          setTempCustomColumns([customColumns[0], customColumns[1]]);
+        } else {
+          setTempCustomColumns(['price', 'pro24h']);
+        }
       } else {
         setTempCustomColumns(customColumns);
       }
@@ -800,65 +803,143 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
             margin: '0 0 20px 0' 
           }}>
             {isMobile 
-              ? 'Select 2 columns to display (Price is always shown)'
+              ? 'Choose any data field for each column position'
               : 'Select the columns you want to display in the token list'}
           </p>
           
-          <ColumnsGrid>
-            {AVAILABLE_COLUMNS.map(column => {
-              // For mobile, show all columns but only allow selection of price + percentage
-              const mobileAllowed = ['price', 'pro5m', 'pro1h', 'pro24h', 'pro7d', 'pro30d'];
-              if (isMobile && !mobileAllowed.includes(column.id)) {
-                return null;
-              }
+          {isMobile ? (
+            // Mobile: Two dropdowns for selecting any column
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '8px', 
+                  fontSize: '12px', 
+                  fontWeight: '600',
+                  color: darkMode ? '#999' : '#666',
+                  textTransform: 'uppercase'
+                }}>
+                  Column 2 (Middle)
+                </label>
+                <select
+                  value={tempCustomColumns[0] || 'price'}
+                  onChange={(e) => setTempCustomColumns([e.target.value, tempCustomColumns[1] || 'pro24h'])}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`,
+                    background: darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
+                    color: darkMode ? '#fff' : '#000',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <optgroup label="Data Fields">
+                    <option value="price">Price - Current token price</option>
+                    <option value="volume24h">Vol - 24 hour volume</option>
+                    <option value="volume7d">V7D - 7 day volume</option>
+                    <option value="marketCap">MCap - Market capitalization</option>
+                    <option value="tvl">TVL - Total Value Locked</option>
+                    <option value="holders">Hldr - Number of holders</option>
+                    <option value="trades">Trds - 24h trade count</option>
+                    <option value="created">Age - Token creation date</option>
+                    <option value="supply">Supp - Total supply</option>
+                    <option value="origin">Orig - Token origin</option>
+                  </optgroup>
+                  <optgroup label="Percent Changes">
+                    <option value="pro5m">5M - 5 minute change</option>
+                    <option value="pro1h">1H - 1 hour change</option>
+                    <option value="pro24h">24H - 24 hour change</option>
+                    <option value="pro7d">7D - 7 day change</option>
+                    <option value="pro30d">30D - 30 day estimate</option>
+                  </optgroup>
+                </select>
+              </div>
               
-              return (
+              <div>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '8px', 
+                  fontSize: '12px', 
+                  fontWeight: '600',
+                  color: darkMode ? '#999' : '#666',
+                  textTransform: 'uppercase'
+                }}>
+                  Column 3 (Right)
+                </label>
+                <select
+                  value={tempCustomColumns[1] || 'pro24h'}
+                  onChange={(e) => setTempCustomColumns([tempCustomColumns[0] || 'price', e.target.value])}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`,
+                    background: darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
+                    color: darkMode ? '#fff' : '#000',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <optgroup label="Percent Changes">
+                    <option value="pro5m">5M - 5 minute change</option>
+                    <option value="pro1h">1H - 1 hour change</option>
+                    <option value="pro24h">24H - 24 hour change</option>
+                    <option value="pro7d">7D - 7 day change</option>
+                    <option value="pro30d">30D - 30 day estimate</option>
+                  </optgroup>
+                  <optgroup label="Data Fields">
+                    <option value="price">Price - Current token price</option>
+                    <option value="volume24h">Vol - 24 hour volume</option>
+                    <option value="volume7d">V7D - 7 day volume</option>
+                    <option value="marketCap">MCap - Market capitalization</option>
+                    <option value="tvl">TVL - Total Value Locked</option>
+                    <option value="holders">Hldr - Number of holders</option>
+                    <option value="trades">Trds - 24h trade count</option>
+                    <option value="created">Age - Token creation date</option>
+                    <option value="supply">Supp - Total supply</option>
+                    <option value="origin">Orig - Token origin</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+          ) : (
+            // Desktop: Checkbox grid
+            <ColumnsGrid>
+              {AVAILABLE_COLUMNS.map(column => (
                 <ColumnItem key={column.id} darkMode={darkMode}>
                   <input
-                    type={isMobile && column.id !== 'price' ? "radio" : "checkbox"}
-                    name={isMobile ? "mobilePercentColumn" : undefined}
+                    type="checkbox"
                     checked={tempCustomColumns.includes(column.id)}
                     onChange={(e) => {
-                      if (isMobile) {
-                        // Mobile: price is always selected, radio buttons for percentage columns
-                        if (column.id === 'price') {
-                          // Price is always checked on mobile, can't change
-                          return;
-                        } else {
-                          // Radio button behavior for percentage columns
-                          setTempCustomColumns(['price', column.id]);
-                        }
+                      if (e.target.checked) {
+                        setTempCustomColumns([...tempCustomColumns, column.id]);
                       } else {
-                        // Desktop: normal checkbox behavior
-                        if (e.target.checked) {
-                          setTempCustomColumns([...tempCustomColumns, column.id]);
-                        } else {
-                          setTempCustomColumns(tempCustomColumns.filter(id => id !== column.id));
-                        }
+                        setTempCustomColumns(tempCustomColumns.filter(id => id !== column.id));
                       }
                     }}
-                    disabled={isMobile && column.id === 'price'}
                     style={{ width: '16px', height: '16px', cursor: 'pointer' }}
                   />
-                <div style={{ flex: 1 }}>
-                  <div style={{ 
-                    color: darkMode ? '#fff' : '#000', 
-                    fontSize: '14px', 
-                    fontWeight: '500' 
-                  }}>
-                    {column.label}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ 
+                      color: darkMode ? '#fff' : '#000', 
+                      fontSize: '14px', 
+                      fontWeight: '500' 
+                    }}>
+                      {column.label}
+                    </div>
+                    <div style={{ 
+                      color: darkMode ? '#999' : '#666', 
+                      fontSize: '12px' 
+                    }}>
+                      {column.description}
+                    </div>
                   </div>
-                  <div style={{ 
-                    color: darkMode ? '#999' : '#666', 
-                    fontSize: '12px' 
-                  }}>
-                    {column.description}
-                  </div>
-                </div>
-              </ColumnItem>
-              );
-            }).filter(Boolean)}
-          </ColumnsGrid>
+                </ColumnItem>
+              ))}
+            </ColumnsGrid>
+          )}
           
           <ButtonRow>
             <button
@@ -941,10 +1022,44 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
               align="right" 
               darkMode={darkMode}
               sortable
-              onClick={() => handleRequestSort(null, 'exch')}
+              onClick={() => {
+                const col = customColumns && customColumns[0] ? customColumns[0] : 'price';
+                const sortCol = col === 'price' ? 'exch' : 
+                               col === 'volume24h' ? 'vol24hxrp' :
+                               col === 'volume7d' ? 'vol7d' :
+                               col === 'marketCap' ? 'marketcap' :
+                               col === 'holders' ? 'holders' :
+                               col === 'trades' ? 'vol24htx' :
+                               col === 'created' ? 'dateon' :
+                               col === 'supply' ? 'supply' :
+                               col === 'origin' ? 'origin' :
+                               col === 'tvl' ? 'tvl' :
+                               col;
+                handleRequestSort(null, sortCol);
+              }}
               debugColor="yellow"
             >
-              Price
+              {(() => {
+                const col = customColumns && customColumns[0] ? customColumns[0] : 'price';
+                const labels = {
+                  'price': 'PRICE',
+                  'volume24h': 'VOL',
+                  'volume7d': 'V7D',
+                  'marketCap': 'MCAP',
+                  'tvl': 'TVL',
+                  'holders': 'HLDR',
+                  'trades': 'TRDS',
+                  'supply': 'SUPP',
+                  'created': 'AGE',
+                  'origin': 'ORIG',
+                  'pro5m': '5M%',
+                  'pro1h': '1H%',
+                  'pro24h': '24H%',
+                  'pro7d': '7D%',
+                  'pro30d': '30D%'
+                };
+                return labels[col] || 'DATA';
+              })()}
             </HeaderCell>
             <HeaderCell 
               flex={0.7} 
@@ -952,20 +1067,43 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
               darkMode={darkMode}
               sortable
               onClick={() => {
-                const percentCol = viewMode === 'custom' && customColumns.includes('pro5m') ? 'pro5m' :
-                                 viewMode === 'custom' && customColumns.includes('pro1h') ? 'pro1h' :
-                                 viewMode === 'custom' && customColumns.includes('pro7d') ? 'pro7d' :
-                                 viewMode === 'custom' && customColumns.includes('pro30d') ? 'pro30d' :
-                                 'pro24h';
-                handleRequestSort(null, percentCol);
+                const col = customColumns && customColumns[1] ? customColumns[1] : 'pro24h';
+                const sortCol = col === 'price' ? 'exch' : 
+                               col === 'volume24h' ? 'vol24hxrp' :
+                               col === 'volume7d' ? 'vol7d' :
+                               col === 'marketCap' ? 'marketcap' :
+                               col === 'holders' ? 'holders' :
+                               col === 'trades' ? 'vol24htx' :
+                               col === 'created' ? 'dateon' :
+                               col === 'supply' ? 'supply' :
+                               col === 'origin' ? 'origin' :
+                               col === 'tvl' ? 'tvl' :
+                               col;
+                handleRequestSort(null, sortCol);
               }}
               debugColor="magenta"
             >
-              {viewMode === 'custom' && customColumns.includes('pro5m') ? '5M' :
-               viewMode === 'custom' && customColumns.includes('pro1h') ? '1H' :
-               viewMode === 'custom' && customColumns.includes('pro7d') ? '7D' :
-               viewMode === 'custom' && customColumns.includes('pro30d') ? '30D' :
-               '24H'}
+              {(() => {
+                const col = customColumns && customColumns[1] ? customColumns[1] : 'pro24h';
+                const labels = {
+                  'price': 'PRICE',
+                  'volume24h': 'VOL',
+                  'volume7d': 'V7D',
+                  'marketCap': 'MCAP',
+                  'tvl': 'TVL',
+                  'holders': 'HLDR',
+                  'trades': 'TRDS',
+                  'supply': 'SUPP',
+                  'created': 'AGE',
+                  'origin': 'ORIG',
+                  'pro5m': '5M%',
+                  'pro1h': '1H%',
+                  'pro24h': '24H%',
+                  'pro7d': '7D%',
+                  'pro30d': '30D%'
+                };
+                return labels[col] || 'VALUE';
+              })()}
             </HeaderCell>
           </MobileHeader>
           {deferredTokens.map((row, idx) => (

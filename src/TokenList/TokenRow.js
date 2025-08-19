@@ -244,7 +244,10 @@ const OptimizedImage = ({ src, alt, size, onError, priority = false, md5 }) => {
 };
 
 const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleRowClick, imgError, setImgError, viewMode = 'classic', customColumns = [] }) => {
-  const { name, user, md5, slug, pro24h, pro1h, pro5m, pro7d, exch } = token;
+  const { 
+    name, user, md5, slug, pro24h, pro1h, pro5m, pro7d, pro30d, exch,
+    vol24hxrp, vol24htx, marketcap, tvl, holders, amount, dateon, date
+  } = token;
   const [priceColor, setPriceColor] = useState('');
   
   const getPercentColor = (value) => {
@@ -263,6 +266,61 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
     const cacheTime = Math.floor(Date.now() / (1000 * 60 * 60));
     return `https://s1.xrpl.to/token/${md5}?v=${cacheTime}`;
   }, [md5]);
+
+  // Get mobile column preferences - use customColumns when available
+  const mobilePriceColumn = (customColumns && customColumns[0]) ? customColumns[0] : 'price';
+  const mobilePercentColumn = (customColumns && customColumns[1]) ? customColumns[1] : 'pro24h';
+
+  // Format value based on column type - handles all field types
+  const formatMobileValue = (columnId) => {
+    // Check if it's a percentage column
+    if (['pro5m', 'pro1h', 'pro24h', 'pro7d', 'pro30d'].includes(columnId)) {
+      const val = columnId === 'pro30d' ? (pro24h * 30) : token[columnId];
+      const color = getPercentColor(val);
+      return (
+        <span style={{ color, fontWeight: '600' }}>
+          {val !== undefined && val !== null && !isNaN(val) 
+            ? `${val > 0 ? '+' : ''}${val.toFixed(1)}%` 
+            : '0.0%'}
+        </span>
+      );
+    }
+
+    // Handle other data types
+    switch(columnId) {
+      case 'price':
+        return (
+          <NumberTooltip
+            prepend={currencySymbols[activeFiatCurrency]}
+            number={fNumberWithCurreny(exch, exchRate)}
+          />
+        );
+      case 'volume24h':
+        const vol = vol24hxrp && exchRate ? Decimal.div(vol24hxrp || 0, exchRate).toNumber() : 0;
+        return `${currencySymbols[activeFiatCurrency]}${vol >= 1e6 ? `${(vol/1e6).toFixed(1)}M` : vol >= 1e3 ? `${(vol/1e3).toFixed(1)}K` : fNumber(vol)}`;
+      case 'volume7d':
+        const vol7 = vol24hxrp && exchRate ? Decimal.div((vol24hxrp || 0) * 7, exchRate).toNumber() : 0;
+        return `${currencySymbols[activeFiatCurrency]}${vol7 >= 1e6 ? `${(vol7/1e6).toFixed(1)}M` : vol7 >= 1e3 ? `${(vol7/1e3).toFixed(1)}K` : fNumber(vol7)}`;
+      case 'marketCap':
+        const mcap = marketcap && exchRate ? Decimal.div(marketcap || 0, exchRate).toNumber() : 0;
+        return `${currencySymbols[activeFiatCurrency]}${mcap >= 1e9 ? `${(mcap/1e9).toFixed(1)}B` : mcap >= 1e6 ? `${(mcap/1e6).toFixed(1)}M` : mcap >= 1e3 ? `${(mcap/1e3).toFixed(1)}K` : fNumber(mcap)}`;
+      case 'tvl':
+        const tvlVal = tvl && exchRate ? Decimal.div(tvl || 0, exchRate).toNumber() : 0;
+        return `${currencySymbols[activeFiatCurrency]}${tvlVal >= 1e6 ? `${(tvlVal/1e6).toFixed(1)}M` : tvlVal >= 1e3 ? `${(tvlVal/1e3).toFixed(1)}K` : fNumber(tvlVal)}`;
+      case 'holders':
+        return holders >= 1e3 ? `${(holders/1e3).toFixed(1)}K` : fIntNumber(holders);
+      case 'trades':
+        return vol24htx >= 1e3 ? `${(vol24htx/1e3).toFixed(1)}K` : fIntNumber(vol24htx);
+      case 'supply':
+        return amount >= 1e9 ? `${(amount/1e9).toFixed(1)}B` : amount >= 1e6 ? `${(amount/1e6).toFixed(1)}M` : amount >= 1e3 ? `${(amount/1e3).toFixed(1)}K` : fIntNumber(amount);
+      case 'created':
+        return formatTimeAgo(dateon, date);
+      case 'origin':
+        return token.origin || 'XRPL';
+      default:
+        return '-';
+    }
+  };
 
   // Using flexbox layout instead of table
   return (
@@ -285,30 +343,12 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
       </MobileTokenInfo>
       
       <MobilePriceCell darkMode={darkMode}>
-        <NumberTooltip
-          prepend={currencySymbols[activeFiatCurrency]}
-          number={fNumberWithCurreny(exch, exchRate)}
-        />
+        {formatMobileValue(mobilePriceColumn)}
       </MobilePriceCell>
       
-      <MobilePercentCell color={getPercentColor(
-        viewMode === 'custom' && customColumns.includes('pro5m') ? pro5m :
-        viewMode === 'custom' && customColumns.includes('pro1h') ? pro1h :
-        viewMode === 'custom' && customColumns.includes('pro7d') ? pro7d :
-        viewMode === 'custom' && customColumns.includes('pro30d') ? pro24h * 30 :
-        pro24h
-      )}>
-        {(() => {
-          const val = viewMode === 'custom' && customColumns.includes('pro5m') ? pro5m :
-                      viewMode === 'custom' && customColumns.includes('pro1h') ? pro1h :
-                      viewMode === 'custom' && customColumns.includes('pro7d') ? pro7d :
-                      viewMode === 'custom' && customColumns.includes('pro30d') ? pro24h * 30 :
-                      pro24h;
-          return val !== undefined && val !== null && !isNaN(val) 
-            ? `${val > 0 ? '+' : ''}${val.toFixed(1)}%` 
-            : '0.0%';
-        })()}
-      </MobilePercentCell>
+      <MobilePriceCell darkMode={darkMode}>
+        {formatMobileValue(mobilePercentColumn)}
+      </MobilePriceCell>
     </MobileTokenCard>
   );
 };

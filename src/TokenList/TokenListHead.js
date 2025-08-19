@@ -321,49 +321,65 @@ const TokenListHead = memo(function TokenListHead({
   // Get appropriate table headers based on view mode
   const getTableHeaders = () => {
     if (isMobile) {
-      console.log('[DEBUG TokenListHead] isMobile:', isMobile, 'viewMode:', viewMode, 'customColumns:', customColumns);
-      // For custom mode on mobile, show dynamic headers
-      if (viewMode === 'custom' && customColumns && customColumns.length > 0) {
-        const mobileHeaders = [
-          {
-            id: 'token',
-            label: 'TOKEN',
-            align: 'left',
-            width: '60%',
-            order: true,
-            sticky: false,
-            mobileHide: false
-          },
-          {
-            id: 'exch',
-            label: 'PRICE',
-            align: 'right',
-            width: '20%',
-            order: true,
-            sticky: false,
-            mobileHide: false
-          }
-        ];
-        
-        // Add the selected percentage column
-        if (customColumns.includes('pro5m')) {
-          mobileHeaders.push({ id: 'pro5m', label: '5M %', align: 'right', width: '20%', order: true, tooltip: '5 minute change' });
-        } else if (customColumns.includes('pro1h')) {
-          mobileHeaders.push({ id: 'pro1h', label: '1H %', align: 'right', width: '20%', order: true, tooltip: '1 hour change' });
-        } else if (customColumns.includes('pro24h')) {
-          mobileHeaders.push({ id: 'pro24h', label: '24H %', align: 'right', width: '20%', order: true, tooltip: '24 hour change' });
-        } else if (customColumns.includes('pro7d')) {
-          mobileHeaders.push({ id: 'pro7d', label: '7D %', align: 'right', width: '20%', order: true, tooltip: '7 day change' });
-        } else if (customColumns.includes('pro30d')) {
-          mobileHeaders.push({ id: 'pro30d', label: '30D %', align: 'right', width: '20%', order: true, tooltip: '30 day estimate' });
-        } else {
-          // Default to 24h if nothing selected
-          mobileHeaders.push({ id: 'pro24h', label: '24H %', align: 'right', width: '20%', order: true, tooltip: '24 hour change' });
-        }
-        
-        return mobileHeaders;
+      // Mobile column abbreviation map - matches all available options
+      const mobileLabels = {
+        'price': 'PRICE',
+        'volume24h': 'VOL',
+        'volume7d': 'V7D',
+        'marketCap': 'MCAP',
+        'tvl': 'TVL',
+        'holders': 'HLDR',
+        'trades': 'TRDS',
+        'supply': 'SUPP',
+        'created': 'AGE',
+        'origin': 'ORIG',
+        'pro5m': '5M%',
+        'pro1h': '1H%',
+        'pro24h': '24H%',
+        'pro7d': '7D%',
+        'pro30d': '30D%'
+      };
+
+      // Always use customColumns when available, regardless of viewMode
+      let mobileCol1 = 'price';
+      let mobileCol2 = 'pro24h';
+      
+      if (customColumns && customColumns.length >= 2) {
+        mobileCol1 = customColumns[0];
+        mobileCol2 = customColumns[1];
       }
-      return MOBILE_TABLE_HEAD;
+      
+      const mobileHeaders = [
+        {
+          id: 'token',
+          label: 'TOKEN',
+          align: 'left',
+          width: '60%',
+          order: true,
+          sticky: false,
+          mobileHide: false
+        },
+        {
+          id: mobileCol1,
+          label: mobileLabels[mobileCol1] || 'DATA',
+          align: 'right',
+          width: '20%',
+          order: true,
+          sticky: false,
+          mobileHide: false
+        },
+        {
+          id: mobileCol2,
+          label: mobileLabels[mobileCol2] || 'VALUE',
+          align: 'right',
+          width: '20%',
+          order: true,
+          sticky: false,
+          mobileHide: false
+        }
+      ];
+      
+      return mobileHeaders;
     }
     
     const baseHeaders = [
