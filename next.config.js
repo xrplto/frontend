@@ -46,6 +46,29 @@ module.exports = {
     ]
   },
   async headers() {
+    // Disable caching in development
+    if (process.env.NODE_ENV === 'development') {
+      return [
+        {
+          source: '/:path*',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'no-cache, no-store, must-revalidate'
+            },
+            {
+              key: 'Pragma',
+              value: 'no-cache'
+            },
+            {
+              key: 'Expires',
+              value: '0'
+            }
+          ]
+        }
+      ];
+    }
+    
     return [
       {
         source: '/:path*',

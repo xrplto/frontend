@@ -1439,24 +1439,25 @@ export default function Portfolio({ account, limit, collection, type }) {
     return <LightweightChart chartData={chartData} isMobile={isMobile} />;
   };
 
-  useEffect(() => {
-    // Fetch data
-    const fetchData = async () => {
-      try {
-        // Your data fetching logic
-        // const result = await fetchChartData(); // This line caused the error
-        // setChartData({ labels: [], datasets: [] }); // Ensure chartData is initialized
-      } catch (error) {
-        console.warn('Error fetching chart data:', error.message || error);
-        // Set empty but valid chart data structure
-        // setChartData({ labels: [], datasets: [] });
-      } finally {
-        // setIsLoading(false);
-      }
-    };
+  // Commented out empty useEffect that was causing infinite reloads
+  // useEffect(() => {
+  //   // Fetch data
+  //   const fetchData = async () => {
+  //     try {
+  //       // Your data fetching logic
+  //       // const result = await fetchChartData(); // This line caused the error
+  //       // setChartData({ labels: [], datasets: [] }); // Ensure chartData is initialized
+  //     } catch (error) {
+  //       console.warn('Error fetching chart data:', error.message || error);
+  //       // Set empty but valid chart data structure
+  //       // setChartData({ labels: [], datasets: [] });
+  //     } finally {
+  //       // setIsLoading(false);
+  //     }
+  //   };
 
-    // fetchData(); // Commenting out or removing this call
-  }, [account, collection, type]);
+  //   // fetchData(); // Commenting out or removing this call
+  // }, [account, collection, type]);
 
 
 
