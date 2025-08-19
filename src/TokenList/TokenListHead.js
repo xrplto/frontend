@@ -27,11 +27,10 @@ const StyledTableCell = styled.th`
   color: ${props => props.darkMode ? '#999' : '#666'};
   padding: ${props => props.isMobile ? '16px 8px' : '16px 12px'};  // Match mobile cell padding
   border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
-  white-space: nowrap;
+  white-space: ${props => props.isTokenColumn ? 'normal' : 'nowrap'};
   text-align: ${props => props.align || 'left'};
   width: ${props => props.width || 'auto'};
-  min-width: ${props => props.width || 'auto'};
-  max-width: ${props => props.width || 'auto'};
+  min-width: ${props => props.isTokenColumn ? '250px' : props.width || 'auto'};
   box-sizing: border-box;
   cursor: ${props => props.sortable ? 'pointer' : 'default'};
   position: ${props => props.sticky ? 'sticky' : 'relative'};
@@ -450,23 +449,23 @@ const TokenListHead = memo(function TokenListHead({
           ? customColumns 
           : ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'];
         
-        // Add headers based on selected columns
-        if (columnsToUse.includes('price')) customHeaders.push({ id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true });
-        if (columnsToUse.includes('pro5m')) customHeaders.push({ id: 'pro5m', label: '5M %', align: 'right', width: '8%', order: true, tooltip: '5 minute change' });
-        if (columnsToUse.includes('pro1h')) customHeaders.push({ id: 'pro1h', label: '1H %', align: 'right', width: '8%', order: true, tooltip: '1 hour change' });
-        if (columnsToUse.includes('pro24h')) customHeaders.push({ id: 'pro24h', label: '24H %', align: 'right', width: '8%', order: true, tooltip: '24 hour change' });
-        if (columnsToUse.includes('pro7d')) customHeaders.push({ id: 'pro7d', label: '7D %', align: 'right', width: '8%', order: true, tooltip: '7 day change' });
-        if (columnsToUse.includes('pro30d')) customHeaders.push({ id: 'pro30d', label: '30D %', align: 'right', width: '8%', order: true, tooltip: '30 day estimate' });
-        if (columnsToUse.includes('volume24h')) customHeaders.push({ id: 'vol24hxrp', label: 'VOLUME 24H', align: 'right', width: '10%', order: true, tooltip: '24h volume' });
-        if (columnsToUse.includes('volume7d')) customHeaders.push({ id: 'vol7d', label: 'VOLUME 7D', align: 'right', width: '10%', order: true, tooltip: '7d volume estimate' });
-        if (columnsToUse.includes('marketCap')) customHeaders.push({ id: 'marketcap', label: 'MARKET CAP', align: 'right', width: '12%', order: true, tooltip: 'Market capitalization' });
-        if (columnsToUse.includes('tvl')) customHeaders.push({ id: 'tvl', label: 'TVL', align: 'right', width: '10%', order: true, tooltip: 'Total Value Locked' });
-        if (columnsToUse.includes('holders')) customHeaders.push({ id: 'holders', label: 'HOLDERS', align: 'right', width: '10%', order: true, tooltip: 'Number of holders' });
-        if (columnsToUse.includes('trades')) customHeaders.push({ id: 'vol24htx', label: 'TRADES', align: 'right', width: '10%', order: true, tooltip: '24h trade count' });
-        if (columnsToUse.includes('created')) customHeaders.push({ id: 'dateon', label: 'CREATED', align: 'right', width: '10%', order: true, tooltip: 'Token creation date' });
-        if (columnsToUse.includes('supply')) customHeaders.push({ id: 'supply', label: 'SUPPLY', align: 'right', width: '10%', order: true, tooltip: 'Total supply' });
-        if (columnsToUse.includes('origin')) customHeaders.push({ id: 'origin', label: 'ORIGIN', align: 'right', width: '10%', order: true, tooltip: 'Token origin' });
-        if (columnsToUse.includes('sparkline')) customHeaders.push({ id: 'historyGraph', label: 'LAST 24H', align: 'center', width: '15%', order: false });
+        // Add headers based on selected columns with fixed pixel widths
+        if (columnsToUse.includes('price')) customHeaders.push({ id: 'exch', label: 'PRICE', align: 'right', width: '120px', order: true });
+        if (columnsToUse.includes('pro5m')) customHeaders.push({ id: 'pro5m', label: '5M %', align: 'right', width: '90px', order: true, tooltip: '5 minute change' });
+        if (columnsToUse.includes('pro1h')) customHeaders.push({ id: 'pro1h', label: '1H %', align: 'right', width: '90px', order: true, tooltip: '1 hour change' });
+        if (columnsToUse.includes('pro24h')) customHeaders.push({ id: 'pro24h', label: '24H %', align: 'right', width: '90px', order: true, tooltip: '24 hour change' });
+        if (columnsToUse.includes('pro7d')) customHeaders.push({ id: 'pro7d', label: '7D %', align: 'right', width: '90px', order: true, tooltip: '7 day change' });
+        if (columnsToUse.includes('pro30d')) customHeaders.push({ id: 'pro30d', label: '30D %', align: 'right', width: '90px', order: true, tooltip: '30 day estimate' });
+        if (columnsToUse.includes('volume24h')) customHeaders.push({ id: 'vol24hxrp', label: 'VOLUME 24H', align: 'right', width: '130px', order: true, tooltip: '24h volume' });
+        if (columnsToUse.includes('volume7d')) customHeaders.push({ id: 'vol7d', label: 'VOLUME 7D', align: 'right', width: '130px', order: true, tooltip: '7d volume estimate' });
+        if (columnsToUse.includes('marketCap')) customHeaders.push({ id: 'marketcap', label: 'MARKET CAP', align: 'right', width: '140px', order: true, tooltip: 'Market capitalization' });
+        if (columnsToUse.includes('tvl')) customHeaders.push({ id: 'tvl', label: 'TVL', align: 'right', width: '120px', order: true, tooltip: 'Total Value Locked' });
+        if (columnsToUse.includes('holders')) customHeaders.push({ id: 'holders', label: 'HOLDERS', align: 'right', width: '100px', order: true, tooltip: 'Number of holders' });
+        if (columnsToUse.includes('trades')) customHeaders.push({ id: 'vol24htx', label: 'TRADES', align: 'right', width: '100px', order: true, tooltip: '24h trade count' });
+        if (columnsToUse.includes('created')) customHeaders.push({ id: 'dateon', label: 'CREATED', align: 'right', width: '100px', order: true, tooltip: 'Token creation date' });
+        if (columnsToUse.includes('supply')) customHeaders.push({ id: 'supply', label: 'SUPPLY', align: 'right', width: '120px', order: true, tooltip: 'Total supply' });
+        if (columnsToUse.includes('origin')) customHeaders.push({ id: 'origin', label: 'ORIGIN', align: 'right', width: '90px', order: true, tooltip: 'Token origin' });
+        if (columnsToUse.includes('sparkline')) customHeaders.push({ id: 'historyGraph', label: 'LAST 24H', align: 'center', width: '280px', order: false });
         
         return customHeaders;
 
@@ -502,6 +501,7 @@ const TokenListHead = memo(function TokenListHead({
               left={isSticky ? getStickyLeft(headCell.id) : 'unset'}
               stickyThird={headCell.id === 'token'}
               scrollLeft={scrollLeft && headCell.id === 'token'}
+              isTokenColumn={headCell.id === 'token'}
               onClick={headCell.order ? createSortHandler(headCell.id, headCell.no) : undefined}
             >
               {headCell.order ? (

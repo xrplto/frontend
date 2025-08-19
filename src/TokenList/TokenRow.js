@@ -24,11 +24,13 @@ const StyledRow = styled.tr`
 
 const StyledCell = styled.td`
   padding: 12px 8px;
-  white-space: nowrap;
+  white-space: ${props => props.isTokenColumn ? 'normal' : 'nowrap'};
   text-align: ${props => props.align || 'left'};
   font-size: 13px;
   color: ${props => props.darkMode ? '#fff' : '#000'};
   vertical-align: middle;
+  width: ${props => props.width || 'auto'};
+  min-width: ${props => props.isTokenColumn ? '250px' : 'auto'};
 `;
 
 // Mobile-specific flexbox components
@@ -399,9 +401,10 @@ const DesktopTokenRow = ({
     const tokenCell = (
       <StyledCell 
         align="left" 
-        darkMode={darkMode} 
+        darkMode={darkMode}
+        isTokenColumn={true}
         style={{ 
-          width: '250px', 
+          width: '250px',
           minWidth: '250px',
           maxWidth: '250px'
         }}

@@ -53,6 +53,7 @@ const Container = styled.div`
 
 const TableContainer = styled.div`
   display: flex;
+  justify-content: flex-start;
   gap: 0;
   padding-top: 2px;
   padding-bottom: 2px;
@@ -75,12 +76,11 @@ const TableContainer = styled.div`
 `;
 
 const StyledTable = styled.table`
-  table-layout: ${props => props.isMobile ? 'fixed' : 'auto'}; /* Fixed layout on mobile for consistent columns */
+  table-layout: ${props => props.isMobile ? 'fixed' : 'fixed'}; /* Fixed layout for consistent spacing */
   width: 100%;
   border-collapse: collapse;
   transition: opacity 0.1s ease;
   contain: layout;
-  min-width: ${props => props.isMobile ? '100%' : '1200px'}; /* Mobile should be 100% width */
   margin: 0;
   padding: 0;
 `;
