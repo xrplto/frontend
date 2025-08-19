@@ -106,7 +106,7 @@ const RowsSelector = styled.select`
   height: 32px;
   min-width: 80px;
   transition: all 0.3s ease;
-  margin-left: auto;
+  margin-left: ${props => props.noMargin ? '0' : 'auto'};
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -429,7 +429,9 @@ const SearchToolbar = memo(function SearchToolbar({
   setSync,
   sync,
   currentOrderBy,
-  setOrderBy
+  setOrderBy,
+  viewMode,
+  setViewMode
 }) {
   const router = useRouter();
   const { darkMode } = useContext(AppContext);
@@ -797,18 +799,39 @@ const SearchToolbar = memo(function SearchToolbar({
           </Chip>
         </RowContent>
 
-        {/* Rows selector on the right */}
-        <RowsSelector
-          darkMode={darkMode}
-          value={rows}
-          onChange={(e) => setRows(e.target.value === 'all' ? 9999 : parseInt(e.target.value))}
-        >
-          <option value="20">20</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-          <option value="300">300</option>
-          <option value="all">All</option>
-        </RowsSelector>
+        {/* View mode and rows selectors on the right */}
+        <Stack style={{ marginLeft: 'auto', gap: '8px' }}>
+          {/* View Mode Selector */}
+          {setViewMode && (
+            <RowsSelector
+              darkMode={darkMode}
+              value={viewMode || 'classic'}
+              onChange={(e) => setViewMode(e.target.value)}
+              noMargin
+              style={{ minWidth: '110px' }}
+            >
+              <option value="classic">🏛️ Classic</option>
+              <option value="priceChange">📈 Price</option>
+              <option value="marketData">📊 Market</option>
+              <option value="topGainers">🚀 Gainers</option>
+              <option value="trader">💼 Trader</option>
+            </RowsSelector>
+          )}
+
+          {/* Rows selector */}
+          <RowsSelector
+            darkMode={darkMode}
+            value={rows}
+            onChange={(e) => setRows(e.target.value === 'all' ? 9999 : parseInt(e.target.value))}
+            noMargin
+          >
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="300">300</option>
+            <option value="all">All</option>
+          </RowsSelector>
+        </Stack>
       </Row>
 
       {/* Categories Drawer */}

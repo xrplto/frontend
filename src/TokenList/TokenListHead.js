@@ -303,7 +303,8 @@ const TokenListHead = memo(function TokenListHead({
   scrollTopLength,
   darkMode,
   isMobile,
-  isLoggedIn = false
+  isLoggedIn = false,
+  viewMode = 'classic'
 }) {
   const createSortHandler = useMemo(
     () => (id, no) => (event) => {
@@ -316,7 +317,73 @@ const TokenListHead = memo(function TokenListHead({
     return 'unset'; // No sticky columns anymore
   }, []);
 
-  const TABLE_HEAD = isMobile ? MOBILE_TABLE_HEAD : DESKTOP_TABLE_HEAD;
+  // Get appropriate table headers based on view mode
+  const getTableHeaders = () => {
+    if (isMobile) return MOBILE_TABLE_HEAD;
+    
+    const baseHeaders = [
+      { id: 'star', label: '', align: 'center', width: '40px', order: false, sticky: false, mobileHide: true },
+      { id: 'rank', label: '#', align: 'center', width: '40px', order: false, sticky: false, mobileHide: true },
+      { id: 'token', label: 'TOKEN', align: 'left', width: '250px', order: true, sticky: false, mobileHide: false }
+    ];
+
+    switch (viewMode) {
+      case 'priceChange':
+        return [
+          ...baseHeaders,
+          { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
+          { id: 'pro1h', label: '1H %', align: 'right', width: '8%', order: true, tooltip: '1 hour change' },
+          { id: 'pro24h', label: '24H %', align: 'right', width: '8%', order: true, tooltip: '24 hour change' },
+          { id: 'pro7d', label: '7D %', align: 'right', width: '8%', order: true, tooltip: '7 day change' },
+          { id: 'pro30d', label: '30D %', align: 'right', width: '8%', order: true, tooltip: '30 day estimate' },
+          { id: 'vol24hxrp', label: 'VOL 24H', align: 'right', width: '10%', order: true, tooltip: '24h volume' },
+          { id: 'vol7d', label: 'VOL 7D', align: 'right', width: '10%', order: true, tooltip: '7d volume estimate' },
+          { id: 'historyGraph', label: 'SPARKLINE', align: 'center', width: '15%', order: false }
+        ];
+
+      case 'marketData':
+        return [
+          ...baseHeaders,
+          { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
+          { id: 'marketcap', label: 'MARKET CAP', align: 'right', width: '12%', order: true, tooltip: 'Market capitalization' },
+          { id: 'vol24hxrp', label: 'VOLUME', align: 'right', width: '10%', order: true, tooltip: '24h volume' },
+          { id: 'tvl', label: 'TVL', align: 'right', width: '10%', order: true, tooltip: 'Total Value Locked' },
+          { id: 'holders', label: 'HOLDERS', align: 'right', width: '10%', order: true, tooltip: 'Number of holders' },
+          { id: 'supply', label: 'SUPPLY', align: 'right', width: '10%', order: true, tooltip: 'Total supply' },
+          { id: 'origin', label: 'ORIGIN', align: 'right', width: '10%', order: true, tooltip: 'Token origin' }
+        ];
+
+      case 'topGainers':
+        return [
+          ...baseHeaders,
+          { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
+          { id: 'pro5m', label: '5M %', align: 'right', width: '8%', order: true, tooltip: '5 minute change' },
+          { id: 'pro1h', label: '1H %', align: 'right', width: '8%', order: true, tooltip: '1 hour change' },
+          { id: 'pro24h', label: '24H %', align: 'right', width: '8%', order: true, tooltip: '24 hour change' },
+          { id: 'pro7d', label: '7D %', align: 'right', width: '8%', order: true, tooltip: '7 day change' },
+          { id: 'vol24hxrp', label: 'VOLUME', align: 'right', width: '10%', order: true, tooltip: '24h volume' },
+          { id: 'historyGraph', label: 'LAST 24H', align: 'center', width: '15%', order: false }
+        ];
+
+      case 'trader':
+        return [
+          ...baseHeaders,
+          { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
+          { id: 'vol24htx', label: 'TRADES', align: 'right', width: '10%', order: true, tooltip: '24h trade count' },
+          { id: 'vol24hxrp', label: 'VOLUME', align: 'right', width: '10%', order: true, tooltip: '24h volume' },
+          { id: 'pro24h', label: '24H %', align: 'right', width: '8%', order: true, tooltip: '24 hour change' },
+          { id: 'tvl', label: 'TVL', align: 'right', width: '10%', order: true, tooltip: 'Total Value Locked' },
+          { id: 'dateon', label: 'CREATED', align: 'right', width: '10%', order: true, tooltip: 'Token creation date' },
+          { id: 'historyGraph', label: 'LAST 24H', align: 'center', width: '15%', order: false }
+        ];
+
+      case 'classic':
+      default:
+        return DESKTOP_TABLE_HEAD;
+    }
+  };
+
+  const TABLE_HEAD = getTableHeaders();
   
   // Filter out star column if user is not logged in
   const filteredTableHead = TABLE_HEAD.filter(headCell => {

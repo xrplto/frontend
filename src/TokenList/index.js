@@ -33,6 +33,9 @@ const MemoizedTokenRow = memo(TokenRow, (prevProps, nextProps) => {
   // Check currency changes
   if (prevProps.exchRate !== nextProps.exchRate) return false;
   
+  // Check if view mode changed
+  if (prevProps.viewMode !== nextProps.viewMode) return false;
+  
   return true; // Skip re-render
 });
 const LazyEditTokenDialog = lazy(() => import('src/components/EditTokenDialog'));
@@ -159,6 +162,20 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const [showSlug, setShowSlug] = useState(false);
   const [showDate, setShowDate] = useState(false);
   const [viewType, setViewType] = useState('row');
+  const [viewMode, setViewMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('tokenListViewMode') || 'classic';
+    }
+    return 'classic';
+  });
+
+  // Save view mode to localStorage when it changes
+  const handleViewModeChange = useCallback((newMode) => {
+    setViewMode(newMode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('tokenListViewMode', newMode);
+    }
+  }, []);
 
   // Removed URL query parameter handling - now using direct state management
 
@@ -649,6 +666,8 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           sync={sync}
           currentOrderBy={orderBy}
           setOrderBy={setOrderBy}
+          viewMode={viewMode}
+          setViewMode={handleViewModeChange}
         />
         </Suspense>
       </SearchContainer>
@@ -703,6 +722,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
               darkMode={darkMode}
               isMobile={true}
               isLoggedIn={!!accountProfile?.account}
+              viewMode={viewMode}
             />
           ))}
         </MobileContainer>
@@ -723,6 +743,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
               darkMode={darkMode}
               isMobile={isMobile}
               isLoggedIn={!!accountProfile?.account}
+              viewMode={viewMode}
             />
             <StyledTableBody isMobile={isMobile}>
               {deferredTokens.map((row, idx) => (
@@ -741,6 +762,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
                   darkMode={darkMode}
                   isMobile={isMobile}
                   isLoggedIn={!!accountProfile?.account}
+                  viewMode={viewMode}
                 />
               ))}
             </StyledTableBody>
