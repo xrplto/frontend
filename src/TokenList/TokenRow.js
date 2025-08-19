@@ -315,7 +315,8 @@ const DesktopTokenRow = ({
   convertedValues,
   formatValue,
   isLoggedIn,
-  viewMode = 'classic'
+  viewMode = 'classic',
+  customColumns = []
 }) => {
   const { 
     name, user, md5, slug, pro24h, pro7d, pro1h, pro5m, exch, 
@@ -555,6 +556,155 @@ const DesktopTokenRow = ({
           </>
         );
 
+      case 'custom':
+        // If customColumns is empty or undefined, show default columns
+        if (!customColumns || customColumns.length === 0) {
+          console.log('Custom columns not set, showing default columns');
+          return (
+            <>
+              {tokenCell}
+              {priceCell}
+              <StyledCell align="right" darkMode={darkMode}>
+                <PercentText color={getPercentColor(pro24h)}>
+                  {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%` : '0.0%'}
+                </PercentText>
+              </StyledCell>
+              <StyledCell align="right" darkMode={darkMode}>
+                {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.volume)}
+              </StyledCell>
+              <StyledCell align="right" darkMode={darkMode}>
+                <span style={{ fontWeight: '600' }}>
+                  {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.marketCap)}
+                </span>
+              </StyledCell>
+              <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px' }}>
+                {sparklineUrl ? (
+                  <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
+                    <LoadChart
+                      url={sparklineUrl}
+                      style={{ width: '100%', height: '100%' }}
+                      animation={false}
+                      showGradient={false}
+                      lineWidth={1.5}
+                      opts={{ renderer: 'svg', width: 260, height: 60 }}
+                    />
+                  </div>
+                ) : (
+                  <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
+                )}
+              </StyledCell>
+            </>
+          );
+        }
+        return (
+          <>
+            {tokenCell}
+            {customColumns.includes('price') && priceCell}
+            {customColumns.includes('pro5m') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                <PercentText color={getPercentColor(pro5m)}>
+                  {pro5m !== undefined && pro5m !== null && !isNaN(pro5m) ? `${pro5m.toFixed(2)}%` : '0.00%'}
+                </PercentText>
+              </StyledCell>
+            )}
+            {customColumns.includes('pro1h') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                <PercentText color={getPercentColor(pro1h)}>
+                  {pro1h !== undefined && pro1h !== null && !isNaN(pro1h) ? `${pro1h.toFixed(2)}%` : '0.00%'}
+                </PercentText>
+              </StyledCell>
+            )}
+            {customColumns.includes('pro24h') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                <PercentText color={getPercentColor(pro24h)}>
+                  {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%` : '0.0%'}
+                </PercentText>
+              </StyledCell>
+            )}
+            {customColumns.includes('pro7d') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                <PercentText color={getPercentColor(pro7d)}>
+                  {pro7d !== undefined && pro7d !== null && !isNaN(pro7d) ? `${pro7d.toFixed(2)}%` : '0.00%'}
+                </PercentText>
+              </StyledCell>
+            )}
+            {customColumns.includes('pro30d') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                <PercentText color={getPercentColor(pro24h * 30)}>
+                  {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${(pro24h * 30).toFixed(0)}%` : '0%'}
+                </PercentText>
+              </StyledCell>
+            )}
+            {customColumns.includes('volume24h') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.volume)}
+              </StyledCell>
+            )}
+            {customColumns.includes('volume7d') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.volume * 7)}
+              </StyledCell>
+            )}
+            {customColumns.includes('marketCap') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                <span style={{ fontWeight: '600' }}>
+                  {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.marketCap)}
+                </span>
+              </StyledCell>
+            )}
+            {customColumns.includes('tvl') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.tvl)}
+              </StyledCell>
+            )}
+            {customColumns.includes('holders') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                {formatValue(holders, 'int')}
+              </StyledCell>
+            )}
+            {customColumns.includes('trades') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                {formatValue(vol24htx, 'int')}
+              </StyledCell>
+            )}
+            {customColumns.includes('created') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                <span style={{ fontSize: '11px', color: darkMode ? '#999' : '#666' }}>
+                  {formatTimeAgo(dateon, date)}
+                </span>
+              </StyledCell>
+            )}
+            {customColumns.includes('supply') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                {formatValue(amount, 'int')}
+              </StyledCell>
+            )}
+            {customColumns.includes('origin') && (
+              <StyledCell align="right" darkMode={darkMode}>
+                {origin || 'XRPL'}
+              </StyledCell>
+            )}
+            {customColumns.includes('sparkline') && (
+              <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px' }}>
+                {sparklineUrl ? (
+                  <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
+                    <LoadChart
+                      url={sparklineUrl}
+                      style={{ width: '100%', height: '100%' }}
+                      animation={false}
+                      showGradient={false}
+                      lineWidth={1.5}
+                      opts={{ renderer: 'svg', width: 260, height: 60 }}
+                    />
+                  </div>
+                ) : (
+                  <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
+                )}
+              </StyledCell>
+            )}
+          </>
+        );
+
       case 'classic':
       default:
         return (
@@ -686,7 +836,8 @@ const FTokenRow = React.memo(function FTokenRow({
   isMobile,
   activeFiatCurrency,
   isLoggedIn,
-  viewMode = 'classic'
+  viewMode = 'classic',
+  customColumns = []
 }) {
   const BASE_URL = process.env.API_URL;
   const { accountProfile } = useContext(AppContext);
@@ -763,6 +914,7 @@ const FTokenRow = React.memo(function FTokenRow({
       formatValue={formatValue}
       isLoggedIn={isLoggedIn}
       viewMode={viewMode}
+      customColumns={customColumns}
     />
   );
 }, (prevProps, nextProps) => {

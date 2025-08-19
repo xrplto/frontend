@@ -120,6 +120,47 @@ const SearchContainer = styled.div`
   margin-bottom: 0.5rem;
 `;
 
+const CustomColumnsPanel = styled.div`
+  width: 100%;
+  background: ${props => props.darkMode ? '#1a1a1a' : '#fff'};
+  border: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin: 20px 0;
+`;
+
+const ColumnsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+`;
+
+const ColumnItem = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: ${props => props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  
+  &:hover {
+    background: ${props => props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)'};
+    border-color: ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  }
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+`;
+
 export default function TokenList({ showWatchList, tag, tagName, tags, tokens, setTokens, tMap, initialOrderBy }) {
   const { accountProfile, openSnackbar, setLoading, darkMode, activeFiatCurrency } =
     useContext(AppContext);
@@ -169,11 +210,57 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     return 'classic';
   });
 
+  const [customColumns, setCustomColumns] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('customTokenColumns');
+      return saved ? JSON.parse(saved) : ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'];
+    }
+    return ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'];
+  });
+  
+  const [customSettingsOpen, setCustomSettingsOpen] = useState(false);
+  const [tempCustomColumns, setTempCustomColumns] = useState(customColumns);
+  
+  // Sync temp columns when opening settings
+  useEffect(() => {
+    if (customSettingsOpen) {
+      setTempCustomColumns(customColumns);
+    }
+  }, [customSettingsOpen, customColumns]);
+
+  // Available columns configuration
+  const AVAILABLE_COLUMNS = [
+    { id: 'price', label: 'Price', description: 'Current token price' },
+    { id: 'pro5m', label: '5M %', description: '5 minute change' },
+    { id: 'pro1h', label: '1H %', description: '1 hour change' },
+    { id: 'pro24h', label: '24H %', description: '24 hour change' },
+    { id: 'pro7d', label: '7D %', description: '7 day change' },
+    { id: 'pro30d', label: '30D %', description: '30 day estimate' },
+    { id: 'volume24h', label: 'Volume 24H', description: '24 hour volume' },
+    { id: 'volume7d', label: 'Volume 7D', description: '7 day volume' },
+    { id: 'marketCap', label: 'Market Cap', description: 'Market capitalization' },
+    { id: 'tvl', label: 'TVL', description: 'Total Value Locked' },
+    { id: 'holders', label: 'Holders', description: 'Number of holders' },
+    { id: 'trades', label: 'Trades', description: '24h trade count' },
+    { id: 'created', label: 'Created', description: 'Token creation date' },
+    { id: 'supply', label: 'Supply', description: 'Total supply' },
+    { id: 'origin', label: 'Origin', description: 'Token origin' },
+    { id: 'sparkline', label: 'Chart', description: '24h price chart' },
+  ];
+
   // Save view mode to localStorage when it changes
   const handleViewModeChange = useCallback((newMode) => {
     setViewMode(newMode);
     if (typeof window !== 'undefined') {
       localStorage.setItem('tokenListViewMode', newMode);
+    }
+  }, []);
+
+  // Save custom columns to localStorage when they change
+  const handleCustomColumnsChange = useCallback((newColumns) => {
+    setCustomColumns(newColumns);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('customTokenColumns', JSON.stringify(newColumns));
     }
   }, []);
 
@@ -668,11 +755,121 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           setOrderBy={setOrderBy}
           viewMode={viewMode}
           setViewMode={handleViewModeChange}
+          customColumns={customColumns}
+          setCustomColumns={handleCustomColumnsChange}
+          setCustomSettingsOpen={setCustomSettingsOpen}
         />
         </Suspense>
       </SearchContainer>
 
-      {isMobile ? (
+      {customSettingsOpen && viewMode === 'custom' ? (
+        <CustomColumnsPanel darkMode={darkMode}>
+          <h3 style={{ 
+            margin: '0 0 10px 0', 
+            color: darkMode ? '#fff' : '#000', 
+            fontSize: '1.1rem' 
+          }}>
+            Customize Table Columns
+          </h3>
+          <p style={{ 
+            color: darkMode ? '#999' : '#666', 
+            fontSize: '14px', 
+            margin: '0 0 20px 0' 
+          }}>
+            Select the columns you want to display in the token list
+          </p>
+          
+          <ColumnsGrid>
+            {AVAILABLE_COLUMNS.map(column => (
+              <ColumnItem key={column.id} darkMode={darkMode}>
+                <input
+                  type="checkbox"
+                  checked={tempCustomColumns.includes(column.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setTempCustomColumns([...tempCustomColumns, column.id]);
+                    } else {
+                      setTempCustomColumns(tempCustomColumns.filter(id => id !== column.id));
+                    }
+                  }}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ 
+                    color: darkMode ? '#fff' : '#000', 
+                    fontSize: '14px', 
+                    fontWeight: '500' 
+                  }}>
+                    {column.label}
+                  </div>
+                  <div style={{ 
+                    color: darkMode ? '#999' : '#666', 
+                    fontSize: '12px' 
+                  }}>
+                    {column.description}
+                  </div>
+                </div>
+              </ColumnItem>
+            ))}
+          </ColumnsGrid>
+          
+          <ButtonRow>
+            <button
+              onClick={() => {
+                setTempCustomColumns(['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline']);
+              }}
+              style={{
+                padding: '10px 20px',
+                borderRadius: '8px',
+                border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`,
+                background: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                color: darkMode ? '#fff' : '#000',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500'
+              }}
+            >
+              Reset Default
+            </button>
+            <button
+              onClick={() => {
+                handleCustomColumnsChange(tempCustomColumns);
+                setCustomSettingsOpen(false);
+              }}
+              style={{
+                padding: '10px 20px',
+                borderRadius: '8px',
+                border: 'none',
+                background: '#2196f3',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500'
+              }}
+            >
+              Apply Changes
+            </button>
+            <button
+              onClick={() => {
+                setTempCustomColumns(customColumns);
+                setCustomSettingsOpen(false);
+              }}
+              style={{
+                padding: '10px 20px',
+                borderRadius: '8px',
+                border: `1px solid ${darkMode ? 'rgba(255, 100, 100, 0.2)' : 'rgba(255, 50, 50, 0.2)'}`,
+                background: darkMode ? 'rgba(255, 100, 100, 0.1)' : 'rgba(255, 50, 50, 0.1)',
+                color: darkMode ? '#ff6666' : '#cc0000',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500'
+              }}
+            >
+              Cancel
+            </button>
+          </ButtonRow>
+        </CustomColumnsPanel>
+      ) : isMobile ? (
         <MobileContainer darkMode={darkMode}>
           <MobileHeader darkMode={darkMode}>
             <HeaderCell 
@@ -723,6 +920,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
               isMobile={true}
               isLoggedIn={!!accountProfile?.account}
               viewMode={viewMode}
+              customColumns={customColumns}
             />
           ))}
         </MobileContainer>
@@ -744,6 +942,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
               isMobile={isMobile}
               isLoggedIn={!!accountProfile?.account}
               viewMode={viewMode}
+              customColumns={customColumns}
             />
             <StyledTableBody isMobile={isMobile}>
               {deferredTokens.map((row, idx) => (
@@ -763,6 +962,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
                   isMobile={isMobile}
                   isLoggedIn={!!accountProfile?.account}
                   viewMode={viewMode}
+                  customColumns={customColumns}
                 />
               ))}
             </StyledTableBody>

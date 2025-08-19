@@ -7,6 +7,7 @@ import { AppContext } from 'src/AppContext';
 import dynamic from 'next/dynamic';
 
 const CategoriesDrawer = dynamic(() => import('src/components/CategoriesDrawer'));
+const CustomColumnsDialog = dynamic(() => import('./CustomColumnsDialog'));
 
 // Helper function
 function getTagValue(tags, tagName) {
@@ -431,7 +432,10 @@ const SearchToolbar = memo(function SearchToolbar({
   currentOrderBy,
   setOrderBy,
   viewMode,
-  setViewMode
+  setViewMode,
+  customColumns,
+  setCustomColumns,
+  setCustomSettingsOpen
 }) {
   const router = useRouter();
   const { darkMode } = useContext(AppContext);
@@ -815,7 +819,19 @@ const SearchToolbar = memo(function SearchToolbar({
               <option value="marketData">📊 Market</option>
               <option value="topGainers">🚀 Gainers</option>
               <option value="trader">💼 Trader</option>
+              <option value="custom">⚙️ Custom</option>
             </RowsSelector>
+          )}
+
+          {/* Custom columns settings button */}
+          {viewMode === 'custom' && (
+            <IconButton 
+              onClick={() => setCustomSettingsOpen(true)}
+              darkMode={darkMode}
+              title="Configure columns"
+            >
+              <Icon icon="material-symbols:settings" width="20" height="20" />
+            </IconButton>
           )}
 
           {/* Rows selector */}
