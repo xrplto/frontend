@@ -45,7 +45,7 @@ const DeFiHistory = ({ account }) => {
   const [activityHistory, setActivityHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [abortController, setAbortController] = useState(null);
 
@@ -346,7 +346,7 @@ const DeFiHistory = ({ account }) => {
                   }
                 }}
               >
-                {[10, 25, 50].map((option) => (
+                {[10, 20, 25, 50].map((option) => (
                   <MenuItem key={option} value={option} sx={{ fontSize: '0.75rem' }}>
                     {option}
                   </MenuItem>
