@@ -243,8 +243,8 @@ const OptimizedImage = ({ src, alt, size, onError, priority = false, md5 }) => {
   );
 };
 
-const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleRowClick, imgError, setImgError }) => {
-  const { name, user, md5, slug, pro24h, exch } = token;
+const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleRowClick, imgError, setImgError, viewMode = 'classic', customColumns = [] }) => {
+  const { name, user, md5, slug, pro24h, pro1h, pro5m, pro7d, exch } = token;
   const [priceColor, setPriceColor] = useState('');
   
   const getPercentColor = (value) => {
@@ -291,10 +291,23 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
         />
       </MobilePriceCell>
       
-      <MobilePercentCell color={getPercentColor(pro24h)}>
-        {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) 
-          ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%` 
-          : '0.0%'}
+      <MobilePercentCell color={getPercentColor(
+        viewMode === 'custom' && customColumns.includes('pro5m') ? pro5m :
+        viewMode === 'custom' && customColumns.includes('pro1h') ? pro1h :
+        viewMode === 'custom' && customColumns.includes('pro7d') ? pro7d :
+        viewMode === 'custom' && customColumns.includes('pro30d') ? pro24h * 30 :
+        pro24h
+      )}>
+        {(() => {
+          const val = viewMode === 'custom' && customColumns.includes('pro5m') ? pro5m :
+                      viewMode === 'custom' && customColumns.includes('pro1h') ? pro1h :
+                      viewMode === 'custom' && customColumns.includes('pro7d') ? pro7d :
+                      viewMode === 'custom' && customColumns.includes('pro30d') ? pro24h * 30 :
+                      pro24h;
+          return val !== undefined && val !== null && !isNaN(val) 
+            ? `${val > 0 ? '+' : ''}${val.toFixed(1)}%` 
+            : '0.0%';
+        })()}
       </MobilePercentCell>
     </MobileTokenCard>
   );
@@ -893,6 +906,8 @@ const FTokenRow = React.memo(function FTokenRow({
         handleRowClick={handleRowClick}
         imgError={imgError}
         setImgError={setImgError}
+        viewMode={viewMode}
+        customColumns={customColumns}
       />
     );
   }

@@ -213,7 +213,19 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const [customColumns, setCustomColumns] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('customTokenColumns');
-      return saved ? JSON.parse(saved) : ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'];
+      const mobile = window.innerWidth < 960;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // On mobile, ensure only price + one percentage column
+        if (mobile) {
+          const percentCols = ['pro5m', 'pro1h', 'pro24h', 'pro7d', 'pro30d'];
+          const selectedPercent = percentCols.find(col => parsed.includes(col)) || 'pro24h';
+          return ['price', selectedPercent];
+        }
+        return parsed;
+      }
+      // Default columns
+      return mobile ? ['price', 'pro24h'] : ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'];
     }
     return ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'];
   });
@@ -224,9 +236,16 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   // Sync temp columns when opening settings
   useEffect(() => {
     if (customSettingsOpen) {
-      setTempCustomColumns(customColumns);
+      // On mobile, ensure we start with price + one percentage column
+      if (isMobile) {
+        const percentCols = ['pro5m', 'pro1h', 'pro24h', 'pro7d', 'pro30d'];
+        const currentPercent = percentCols.find(col => customColumns.includes(col)) || 'pro24h';
+        setTempCustomColumns(['price', currentPercent]);
+      } else {
+        setTempCustomColumns(customColumns);
+      }
     }
-  }, [customSettingsOpen, customColumns]);
+  }, [customSettingsOpen, customColumns, isMobile]);
 
   // Available columns configuration
   const AVAILABLE_COLUMNS = [
@@ -262,7 +281,11 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     if (typeof window !== 'undefined') {
       localStorage.setItem('customTokenColumns', JSON.stringify(newColumns));
     }
-  }, []);
+    // Force re-render for mobile header update
+    if (isMobile) {
+      setSync(prev => prev + 1);
+    }
+  }, [isMobile]);
 
   // Removed URL query parameter handling - now using direct state management
 
@@ -776,24 +799,47 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
             fontSize: '14px', 
             margin: '0 0 20px 0' 
           }}>
-            Select the columns you want to display in the token list
+            {isMobile 
+              ? 'Select 2 columns to display (Price is always shown)'
+              : 'Select the columns you want to display in the token list'}
           </p>
           
           <ColumnsGrid>
-            {AVAILABLE_COLUMNS.map(column => (
-              <ColumnItem key={column.id} darkMode={darkMode}>
-                <input
-                  type="checkbox"
-                  checked={tempCustomColumns.includes(column.id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setTempCustomColumns([...tempCustomColumns, column.id]);
-                    } else {
-                      setTempCustomColumns(tempCustomColumns.filter(id => id !== column.id));
-                    }
-                  }}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                />
+            {AVAILABLE_COLUMNS.map(column => {
+              // For mobile, show all columns but only allow selection of price + percentage
+              const mobileAllowed = ['price', 'pro5m', 'pro1h', 'pro24h', 'pro7d', 'pro30d'];
+              if (isMobile && !mobileAllowed.includes(column.id)) {
+                return null;
+              }
+              
+              return (
+                <ColumnItem key={column.id} darkMode={darkMode}>
+                  <input
+                    type={isMobile && column.id !== 'price' ? "radio" : "checkbox"}
+                    name={isMobile ? "mobilePercentColumn" : undefined}
+                    checked={tempCustomColumns.includes(column.id)}
+                    onChange={(e) => {
+                      if (isMobile) {
+                        // Mobile: price is always selected, radio buttons for percentage columns
+                        if (column.id === 'price') {
+                          // Price is always checked on mobile, can't change
+                          return;
+                        } else {
+                          // Radio button behavior for percentage columns
+                          setTempCustomColumns(['price', column.id]);
+                        }
+                      } else {
+                        // Desktop: normal checkbox behavior
+                        if (e.target.checked) {
+                          setTempCustomColumns([...tempCustomColumns, column.id]);
+                        } else {
+                          setTempCustomColumns(tempCustomColumns.filter(id => id !== column.id));
+                        }
+                      }
+                    }}
+                    disabled={isMobile && column.id === 'price'}
+                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  />
                 <div style={{ flex: 1 }}>
                   <div style={{ 
                     color: darkMode ? '#fff' : '#000', 
@@ -810,13 +856,14 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
                   </div>
                 </div>
               </ColumnItem>
-            ))}
+              );
+            }).filter(Boolean)}
           </ColumnsGrid>
           
           <ButtonRow>
             <button
               onClick={() => {
-                setTempCustomColumns(['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline']);
+                setTempCustomColumns(isMobile ? ['price', 'pro24h'] : ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline']);
               }}
               style={{
                 padding: '10px 20px',
@@ -833,8 +880,15 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
             </button>
             <button
               onClick={() => {
-                handleCustomColumnsChange(tempCustomColumns);
+                console.log('[DEBUG] Apply clicked - tempCustomColumns:', tempCustomColumns);
+                console.log('[DEBUG] isMobile:', isMobile);
+                setCustomColumns(tempCustomColumns);
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem('customTokenColumns', JSON.stringify(tempCustomColumns));
+                }
                 setCustomSettingsOpen(false);
+                // Force component re-render
+                setSync(prev => prev + 1);
               }}
               style={{
                 padding: '10px 20px',
@@ -897,10 +951,21 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
               align="right" 
               darkMode={darkMode}
               sortable
-              onClick={() => handleRequestSort(null, 'pro24h')}
+              onClick={() => {
+                const percentCol = viewMode === 'custom' && customColumns.includes('pro5m') ? 'pro5m' :
+                                 viewMode === 'custom' && customColumns.includes('pro1h') ? 'pro1h' :
+                                 viewMode === 'custom' && customColumns.includes('pro7d') ? 'pro7d' :
+                                 viewMode === 'custom' && customColumns.includes('pro30d') ? 'pro30d' :
+                                 'pro24h';
+                handleRequestSort(null, percentCol);
+              }}
               debugColor="magenta"
             >
-              24H
+              {viewMode === 'custom' && customColumns.includes('pro5m') ? '5M' :
+               viewMode === 'custom' && customColumns.includes('pro1h') ? '1H' :
+               viewMode === 'custom' && customColumns.includes('pro7d') ? '7D' :
+               viewMode === 'custom' && customColumns.includes('pro30d') ? '30D' :
+               '24H'}
             </HeaderCell>
           </MobileHeader>
           {deferredTokens.map((row, idx) => (
