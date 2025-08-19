@@ -505,8 +505,8 @@ const SearchToolbar = memo(function SearchToolbar({
             border: 1px solid transparent;
           `;
           
-          const emojis = ['🏷️', '📍', '⭐', '💫', '🎯', '🔖', '🎨', '🌟', '🏆', '💡'];
-          tempTag.innerHTML = `<span>${emojis[i % emojis.length]}</span> <span>${tag}</span>`;
+          // Just measure text width without icons since icons have consistent width
+          tempTag.innerHTML = `<span style="width:12px;height:12px;display:inline-block"></span> <span>${tag}</span>`;
           tempContainer.appendChild(tempTag);
           
           tagWidth = tempTag.offsetWidth + (isMobile ? 6 : 10); // gap
@@ -604,11 +604,11 @@ const SearchToolbar = memo(function SearchToolbar({
           {tags.slice(0, visibleTagCount).map((tag, index) => {
             const normalizedTag = tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
             const colors = ['#e91e63', '#00bcd4', '#4caf50', '#673ab7', '#ff9800', '#795548', '#607d8b', '#3f51b5', '#009688', '#ff5722'];
-            const emojis = ['🏷️', '📍', '⭐', '💫', '🎯', '🔖', '🎨', '🌟', '🏆', '💡'];
+            const icons = ['ic:round-label', 'ic:round-place', 'ic:round-star', 'ic:round-auto-awesome', 'ic:round-flag', 'ic:round-bookmark', 'ic:round-palette', 'ic:round-grade', 'ic:round-emoji-events', 'ic:round-lightbulb'];
             const isSelected = tagName === tag;
-            // Use modulo to cycle through colors and emojis if we have more than 10 tags
+            // Use modulo to cycle through colors and icons if we have more than 10 tags
             const colorIndex = index % colors.length;
-            const emojiIndex = index % emojis.length;
+            const iconIndex = index % icons.length;
             
             return (
               <TagChip
@@ -622,7 +622,7 @@ const SearchToolbar = memo(function SearchToolbar({
                 hoverBackground={`${colors[colorIndex]}4D`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <span>{emojis[emojiIndex]}</span>
+                <Icon icon={icons[iconIndex]} width="12" height="12" />
                 <span>{tag}</span>
               </TagChip>
             );
@@ -745,7 +745,8 @@ const SearchToolbar = memo(function SearchToolbar({
               ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
               : 'rgba(255, 87, 34, 0.25)'}
           >
-            🔥 Hot
+            <Icon icon="ic:round-local-fire-department" width="16" height="16" style={{ marginRight: '4px' }} />
+            Hot
           </Chip>
 
           <Chip
@@ -758,7 +759,8 @@ const SearchToolbar = memo(function SearchToolbar({
               ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
               : 'rgba(33, 150, 243, 0.25)'}
           >
-            💎 Gems
+            <Icon icon="ic:round-diamond" width="16" height="16" style={{ marginRight: '4px' }} />
+            Gems
           </Chip>
 
           <Chip
@@ -772,7 +774,8 @@ const SearchToolbar = memo(function SearchToolbar({
               : 'rgba(76, 175, 80, 0.25)'}
             hideOnMobile
           >
-            🚀 Gainers
+            <Icon icon="ic:round-trending-up" width="16" height="16" style={{ marginRight: '4px' }} />
+            Gainers
           </Chip>
 
           <Chip
@@ -785,7 +788,8 @@ const SearchToolbar = memo(function SearchToolbar({
               ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
               : 'rgba(255, 152, 0, 0.25)'}
           >
-            ✨ New
+            <Icon icon="ic:round-new-releases" width="16" height="16" style={{ marginRight: '4px' }} />
+            New
           </Chip>
 
           <Chip
@@ -799,7 +803,8 @@ const SearchToolbar = memo(function SearchToolbar({
               : 'rgba(156, 39, 176, 0.25)'}
             hideOnMobile
           >
-            👁️ Popular
+            <Icon icon="ic:round-visibility" width="16" height="16" style={{ marginRight: '4px' }} />
+            Popular
           </Chip>
         </RowContent>
 
@@ -814,12 +819,12 @@ const SearchToolbar = memo(function SearchToolbar({
               noMargin
               style={{ minWidth: '110px' }}
             >
-              <option value="classic">🏛️ Classic</option>
-              <option value="priceChange">📈 Price</option>
-              <option value="marketData">📊 Market</option>
-              <option value="topGainers">🚀 Gainers</option>
-              <option value="trader">💼 Trader</option>
-              <option value="custom">⚙️ Custom</option>
+              <option value="classic">Classic</option>
+              <option value="priceChange">Price Change</option>
+              <option value="marketData">Market Data</option>
+              <option value="topGainers">Top Gainers</option>
+              <option value="trader">Trader View</option>
+              <option value="custom">Custom</option>
             </RowsSelector>
           )}
 
