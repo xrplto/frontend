@@ -19,18 +19,7 @@ import { fNumber } from 'src/utils/formatNumber';
 // Components
 import { currencySymbols } from 'src/utils/constants';
 import { AppContext } from 'src/AppContext';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-  Legend,
-  AreaChart,
-  Area
-} from 'recharts';
+import ReactECharts from 'echarts-for-react';
 import { format } from 'date-fns';
 
 // Styled Components
@@ -259,87 +248,92 @@ export default function Summary() {
 
   const fiatRate = metrics[activeFiatCurrency] || 1;
 
-  const CustomTooltip = memo(({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      const platforms = data.platforms || {};
-      const platformEntries = Object.entries(platforms).filter(([, value]) => value > 0);
-      const tokensInvolved = (data.tokensInvolved || [])
-        .slice()
-        .sort((a, b) => (b.marketcap || 0) - (a.marketcap || 0));
-      
-      // Debug: Check what fields are available in the first token
-      if (tokensInvolved.length > 0 && !tokensInvolved[0].currency && !tokensInvolved[0].name) {
-        console.log('Token data structure:', tokensInvolved[0]);
-      }
-
-      const renderStat = (iconName, label, value) => (
-        <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
-          <Stack direction="row" alignItems="center" spacing="2px">
-            <Icon icon={iconName} width="14" height="14" style={{ color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)' }} />
-            <span style={{ fontSize: '0.75rem', color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
-              {label}
-            </span>
-          </Stack>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'inherit' }}>{value}</span>
-        </Stack>
-      );
-
-      return (
-        <TooltipContainer darkMode={darkMode}>
-          <Stack spacing="8px">
-            <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '8px', color: 'inherit' }}>
-              {format(new Date(data.originalDate), 'MMM dd, yyyy')}
+  const getChartOption = () => ({
+    grid: {
+      left: 0,
+      right: 0,
+      top: 5,
+      bottom: 0
+    },
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params) => {
+        if (!params || !params[0]) return '';
+        const data = chartData[params[0].dataIndex];
+        const platforms = data.platforms || {};
+        const platformEntries = Object.entries(platforms).filter(([, value]) => value > 0);
+        const tokensInvolved = (data.tokensInvolved || [])
+          .slice()
+          .sort((a, b) => (b.marketcap || 0) - (a.marketcap || 0));
+        
+        let html = `
+          <div style="background: ${darkMode ? '#1c1c1c' : 'white'}; color: ${darkMode ? '#fff' : '#000'}; border: 1px solid ${darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; border-radius: 8px; padding: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 200px;">
+            <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 8px;">
+              ${format(new Date(data.originalDate), 'MMM dd, yyyy')}
             </div>
-            
-            {renderStat('mdi:fiber-new', 'New Tokens', data.Tokens || 0)}
-            {renderStat('mdi:cash-multiple', `Market Cap (${currencySymbols[activeFiatCurrency]})`, 
-              formatNumberWithDecimals(data.totalMarketcap))}
-            {renderStat('mdi:account-group', 'Avg Holders', Math.round(data.avgHolders))}
-            {renderStat('mdi:chart-line', `Volume 24h (${currencySymbols[activeFiatCurrency]})`,
-              formatNumberWithDecimals(data.totalVolume24h))}
-
-            {platformEntries.length > 0 && (
-              <>
-                <div style={{ borderTop: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)', margin: '8px -12px' }}></div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '8px', color: 'inherit' }}>
-                  Platforms
-                </div>
-                {platformEntries.map(([platform, count]) => (
-                  <Stack key={platform} direction="row" justifyContent="space-between">
-                    <span style={{ fontSize: '0.7rem', color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
-                      {platform}
-                    </span>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'inherit' }}>{count}</span>
-                  </Stack>
-                ))}
-              </>
-            )}
-
-            {tokensInvolved.length > 0 && (
-              <>
-                <div style={{ borderTop: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)', margin: '8px -12px' }}></div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '8px', color: 'inherit' }}>
-                  Top Tokens Created
-                </div>
-                {tokensInvolved.slice(0, 3).map((token, idx) => (
-                  <Stack key={idx} direction="row" justifyContent="space-between">
-                    <span style={{ fontSize: '0.7rem', color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
-                      {token.currency || token.symbol || token.ticker || token.code || token.currencyCode || token.name || `Token ${idx + 1}`}
-                    </span>
-                    <span style={{ fontSize: '0.7rem', color: 'inherit' }}>
-                      {currencySymbols[activeFiatCurrency]}
-                      {formatNumberWithDecimals(new Decimal(token.marketcap || 0).div(fiatRate).toNumber())}
-                    </span>
-                  </Stack>
-                ))}
-              </>
-            )}
-          </Stack>
-        </TooltipContainer>
-      );
-    }
-    return null;
+            <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+              <span style="font-size: 0.75rem;">New Tokens</span>
+              <span style="font-size: 0.75rem; font-weight: 600;">${data.Tokens || 0}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+              <span style="font-size: 0.75rem;">Market Cap</span>
+              <span style="font-size: 0.75rem; font-weight: 600;">${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(data.totalMarketcap)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+              <span style="font-size: 0.75rem;">Avg Holders</span>
+              <span style="font-size: 0.75rem; font-weight: 600;">${Math.round(data.avgHolders)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+              <span style="font-size: 0.75rem;">Volume 24h</span>
+              <span style="font-size: 0.75rem; font-weight: 600;">${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(data.totalVolume24h)}</span>
+            </div>
+          </div>
+        `;
+        return html;
+      },
+      backgroundColor: darkMode ? '#1c1c1c' : 'white',
+      borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+      borderWidth: 1,
+      borderRadius: 8,
+      textStyle: {
+        color: darkMode ? '#fff' : '#000'
+      }
+    },
+    xAxis: {
+      type: 'category',
+      data: chartData.map(d => d.date),
+      show: false
+    },
+    yAxis: {
+      type: 'value',
+      show: false
+    },
+    series: [{
+      data: chartData.map(d => d.Tokens),
+      type: 'line',
+      smooth: true,
+      lineStyle: {
+        color: '#8C7CF0',
+        width: 1.5
+      },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [{
+            offset: 0,
+            color: 'rgba(140, 124, 240, 0.3)'
+          }, {
+            offset: 1,
+            color: 'rgba(140, 124, 240, 0)'
+          }]
+        }
+      },
+      showSymbol: false
+    }]
   });
 
   useEffect(() => {
@@ -530,37 +524,11 @@ export default function Summary() {
                 <MetricTitle>New Tokens (30d)</MetricTitle>
                 <div style={{ width: '100%', height: '60px', marginTop: '-4px', overflow: 'visible' }}>
                   {chartData.length > 0 && (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={chartData}
-                        margin={{ top: 5, right: 0, left: 0, bottom: 0 }}
-                      >
-                        <defs>
-                          <linearGradient id="colorTokensCompact" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8C7CF0" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#8C7CF0" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <Tooltip 
-                          content={<CustomTooltip />} 
-                          wrapperStyle={{ 
-                            zIndex: 9999,
-                            pointerEvents: 'none'
-                          }}
-                          cursor={{ fill: 'transparent' }}
-                          offset={10}
-                          allowEscapeViewBox={{ x: true, y: true }}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="Tokens"
-                          stroke="#8C7CF0"
-                          strokeWidth={1.5}
-                          fill="url(#colorTokensCompact)"
-                          dot={false}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                    <ReactECharts
+                      option={getChartOption()}
+                      style={{ height: '100%', width: '100%' }}
+                      opts={{ renderer: 'svg' }}
+                    />
                   )}
                 </div>
               </MetricBox>
