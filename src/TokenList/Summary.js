@@ -257,6 +257,27 @@ export default function Summary() {
     },
     tooltip: {
       trigger: 'axis',
+      appendToBody: true,
+      z: 999999,
+      position: function (point, params, dom, rect, size) {
+        // Calculate position to ensure tooltip stays within viewport
+        var x = point[0];
+        var y = point[1];
+        
+        // Adjust if tooltip would go off top of screen
+        if (y - size.contentSize[1] - 10 < 0) {
+          y = point[1] + 20; // Show below cursor
+        } else {
+          y = point[1] - size.contentSize[1] - 10; // Show above cursor
+        }
+        
+        // Adjust if tooltip would go off right side
+        if (x + size.contentSize[0] > window.innerWidth) {
+          x = window.innerWidth - size.contentSize[0] - 10;
+        }
+        
+        return [x, y];
+      },
       formatter: (params) => {
         if (!params || !params[0]) return '';
         const data = chartData[params[0].dataIndex];
@@ -287,6 +308,26 @@ export default function Summary() {
               <span style="font-size: 0.75rem;">Volume 24h</span>
               <span style="font-size: 0.75rem; font-weight: 600;">${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(data.totalVolume24h)}</span>
             </div>
+            ${platformEntries.length > 0 ? `
+              <div style="border-top: 1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}; margin: 8px -12px;"></div>
+              <div style="font-size: 0.75rem; font-weight: 600; margin-top: 8px;">Platforms</div>
+              ${platformEntries.map(([platform, count]) => `
+                <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                  <span style="font-size: 0.7rem; color: ${darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'};">${platform}</span>
+                  <span style="font-size: 0.7rem; font-weight: 600;">${count}</span>
+                </div>
+              `).join('')}
+            ` : ''}
+            ${tokensInvolved.length > 0 ? `
+              <div style="border-top: 1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}; margin: 8px -12px;"></div>
+              <div style="font-size: 0.75rem; font-weight: 600; margin-top: 8px;">Top Tokens Created</div>
+              ${tokensInvolved.slice(0, 3).map((token) => `
+                <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                  <span style="font-size: 0.7rem; color: ${darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'};">${token.currency || token.symbol || token.ticker || token.code || token.currencyCode || token.name || 'Unknown'}</span>
+                  <span style="font-size: 0.7rem;">${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(new Decimal(token.marketcap || 0).div(fiatRate).toNumber())}</span>
+                </div>
+              `).join('')}
+            ` : ''}
           </div>
         `;
         return html;
@@ -297,7 +338,8 @@ export default function Summary() {
       borderRadius: 8,
       textStyle: {
         color: darkMode ? '#fff' : '#000'
-      }
+      },
+      extraCssText: 'z-index: 999999 !important; position: fixed !important;'
     },
     xAxis: {
       type: 'category',
