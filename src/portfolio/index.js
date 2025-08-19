@@ -2563,152 +2563,81 @@ export default function Portfolio({ account, limit, collection, type }) {
               </ModalContent>
             </StyledModal>
 
-            <Card
-              sx={{
-                flex: 1,
-                mb: 1.5,
-                color: theme.palette.text.primary,
-                borderRadius: { xs: '12px', sm: '16px' },
-                background: 'transparent',
-                backdropFilter: 'blur(40px) saturate(150%)',
-                WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                boxShadow: `
-                  0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                  0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                  inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-                position: 'relative',
-                overflow: 'hidden',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: `
-                    0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-                    0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-                    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
-                }
-              }}
-            >
-              <CardContent sx={{ p: 0, overflow: 'hidden' }}>
-                <TabContext value={activeTab}>
-                  <Box
-                    sx={{
-                      px: 3,
-                      py: 2,
-                      borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                      background: 'transparent',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                  >
+            <TabContext value={activeTab}>
+              <Box
+                sx={{
+                  px: 3,
+                  py: 2,
+                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                  background: 'transparent'
+                }}
+              >
+                <ToggleButtonGroup
+                  value={activeTab}
+                  exclusive
+                  onChange={(e, newValue) => newValue !== null && handleChange(e, newValue)}
+                  size="medium"
+                  sx={{
+                    bgcolor: 'transparent',
+                    borderRadius: '8px',
+                    padding: 0,
+                    border: 'none',
+                    '& .MuiToggleButton-root': {
+                      border: 'none',
+                      borderRadius: '6px',
+                      color: theme.palette.text.secondary,
+                      fontSize: '0.8rem',
+                      fontWeight: 500,
+                      textTransform: 'none',
+                      px: 1.5,
+                      py: 0.75,
+                      minWidth: '70px',
+                      transition: 'all 0.2s ease',
+                      '&.Mui-selected': {
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                        color: theme.palette.primary.main,
+                        fontWeight: 600
+                      },
+                      '&:hover': {
+                        bgcolor: alpha(theme.palette.primary.main, 0.05),
+                        color: theme.palette.primary.main
+                      }
+                    }
+                  }}
+                >
+                  <ToggleButton value="0">
+                    Tokens
+                  </ToggleButton>
+                  <ToggleButton value="1">
+                    NFTs
+                  </ToggleButton>
+                  <ToggleButton value="2">
+                    Ranks
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
 
-                    <ToggleButtonGroup
-                      value={activeTab}
-                      exclusive
-                      onChange={(e, newValue) => newValue !== null && handleChange(e, newValue)}
-                      size="medium"
-                      sx={{
-                        bgcolor: 'transparent',
-                        borderRadius: '8px',
-                        padding: 0,
-                        border: 'none',
-                        '& .MuiToggleButton-root': {
-                          border: 'none',
-                          borderRadius: '6px',
-                          color: theme.palette.text.secondary,
-                          fontSize: '0.8rem',
-                          fontWeight: 500,
-                          textTransform: 'none',
-                          px: 1.5,
-                          py: 0.75,
-                          minWidth: '70px',
-                          transition: 'all 0.2s ease',
-                          '&.Mui-selected': {
-                            bgcolor: alpha(theme.palette.primary.main, 0.1),
-                            color: theme.palette.primary.main,
-                            fontWeight: 600
-                          },
-                          '&:hover': {
-                            bgcolor: alpha(theme.palette.primary.main, 0.05),
-                            color: theme.palette.primary.main
-                          }
-                        }
-                      }}
-                    >
-                      <ToggleButton value="0">
-                        Tokens
-                      </ToggleButton>
-                      <ToggleButton value="1">
-                        NFTs
-                      </ToggleButton>
-                      <ToggleButton value="2">
-                        Ranks
-                      </ToggleButton>
-                    </ToggleButtonGroup>
-                  </Box>
-
-                  <TabPanel sx={{ p: 0, maxHeight: { xs: 'calc(100vh - 250px)', sm: 'auto' }, overflow: { xs: 'auto', sm: 'visible' } }} value="0">
-                        <Paper
-                          sx={{
-                            width: '100%',
-                            overflow: 'hidden',
-                            color: theme.palette.text.primary,
-                            borderRadius: '0 0 16px 0',
-                            boxShadow: 'none',
-                            background: 'transparent',
-                            border: 'none'
-                          }}
-                        >
-                          <TrustLines
-                            account={account}
-                            xrpBalance={xrpBalance}
-                            onUpdateTotalValue={(value) => setTotalValue(value)}
-                          />
-                        </Paper>
-                  </TabPanel>
-                  <TabPanel sx={{ p: 0, maxHeight: { xs: 'calc(100vh - 250px)', sm: 'auto' }, overflow: { xs: 'auto', sm: 'visible' } }} value="1">
-                    <Paper
-                      sx={{
-                        width: '100%',
-                        overflow: 'hidden',
-                        color: theme.palette.text.primary,
-                        background: 'transparent',
-                        boxShadow: 'none',
-                        borderRadius: '0 0 16px 16px'
-                      }}
-                    >
-                      <Table>
-                        <TableHead>
-                          <TableRow></TableRow>
-                        </TableHead>
-                        <TableBody>
-                          <TableRow>
-                            <TableCell sx={{ width: '100%', border: 'none', p: 0 }} colSpan={4}>
-                              <NFTPortfolio
-                                account={account}
-                                limit={limit}
-                                collection={collection}
-                                type={type}
-                              />
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </Paper>
-                  </TabPanel>
-                  <TabPanel sx={{ p: 0, maxHeight: { xs: 'calc(100vh - 250px)', sm: 'auto' }, overflow: { xs: 'auto', sm: 'visible' } }} value="2">
-                    <Box
-                      sx={{
-                        borderRadius: '0 0 16px 16px',
-                        overflow: 'hidden'
-                      }}
-                    >
-                      <Ranks profileAccount={account} />
-                    </Box>
-                  </TabPanel>
-                </TabContext>
-              </CardContent>
-            </Card>
+              <TabPanel sx={{ p: 0 }} value="0">
+                <TrustLines
+                  account={account}
+                  xrpBalance={xrpBalance}
+                  onUpdateTotalValue={(value) => setTotalValue(value)}
+                />
+              </TabPanel>
+              
+              <TabPanel sx={{ p: 0 }} value="1">
+                <NFTPortfolio
+                  account={account}
+                  limit={limit}
+                  collection={collection}
+                  type={type}
+                />
+              </TabPanel>
+              
+              <TabPanel sx={{ p: 0 }} value="2">
+                <Ranks profileAccount={account} />
+              </TabPanel>
+            </TabContext>
             <DeFiHistory account={account} />
           </Grid>
         </Grid>

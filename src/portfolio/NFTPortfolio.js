@@ -490,10 +490,7 @@ const NFTPortfolio = ({
         pt: 0,
         height: smallSize ? '320px' : '580px',
         overflow: 'auto',
-        background: `linear-gradient(135deg, 
-          ${alpha(theme.palette.background.paper, 0.05)} 0%, 
-          ${alpha(theme.palette.background.default, 0.02)} 50%,
-          ${alpha(theme.palette.primary.main, 0.01)} 100%)`,
+        background: 'transparent',
         borderRadius: smallSize ? '12px' : '20px',
         border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
         backdropFilter: 'blur(20px)'
