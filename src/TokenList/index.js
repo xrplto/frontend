@@ -145,10 +145,16 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState(initialOrderBy || 'vol24hxrp');
-  const [sync, setSync] = useState(showWatchList ? 1 : 0);
+  const [sync, setSync] = useState(1);
   const [editToken, setEditToken] = useState(null);
   const [trustToken, setTrustToken] = useState(null);
-  const [rows, setRows] = useState(100);
+  const [rows, setRows] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('tokenListRows');
+      return saved ? parseInt(saved) : 50;
+    }
+    return 50;
+  });
   const [showNew, setShowNew] = useState(false);
   const [showSlug, setShowSlug] = useState(false);
   const [showDate, setShowDate] = useState(false);
@@ -395,10 +401,11 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
       const start = page * rows;
       const ntag = tag || '';
       const watchAccount = showWatchList ? accountProfile?.account || '' : '';
+      const limit = rows === 9999 ? 10000 : rows;
 
       axios
         .get(
-          `${BASE_URL}/tokens?tag=${ntag}&watchlist=${watchAccount}&start=${start}&limit=${rows}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}&skipMetrics=true`
+          `${BASE_URL}/tokens?tag=${ntag}&watchlist=${watchAccount}&start=${start}&limit=${limit}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}&skipMetrics=true`
         )
         .then((res) => {
           if (res.status === 200 && res.data) {
@@ -528,6 +535,9 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const updateRows = (newRows) => {
     if (newRows !== rows) {
       setRows(newRows);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('tokenListRows', newRows);
+      }
       if (tokens.length < newRows) setSync(sync + 1);
     }
   };
@@ -578,7 +588,8 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   }, [rows, startTransition]);
   
   const visibleTokens = useMemo(() => {
-    return tokens.slice(0, Math.min(renderCount, rows));
+    const maxRows = rows === 9999 ? tokens.length : rows;
+    return tokens.slice(0, Math.min(renderCount, maxRows));
   }, [tokens, rows, renderCount]);
   
   // Use deferred value for smoother updates during rapid WebSocket messages
