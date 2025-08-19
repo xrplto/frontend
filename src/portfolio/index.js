@@ -2638,7 +2638,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                 <Ranks profileAccount={account} />
               </TabPanel>
             </TabContext>
-            <DeFiHistory account={account} />
+            <Box sx={{ mt: 2 }}>
+              <DeFiHistory account={account} />
+            </Box>
           </Grid>
         </Grid>
       </Container>
