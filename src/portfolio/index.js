@@ -22,7 +22,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   IconButton,
-  Modal
+  Modal,
+  TablePagination
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Verified as VerifiedIcon } from '@mui/icons-material';
@@ -172,6 +173,8 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [totalValue, setTotalValue] = useState(0);
   const [selectedInterval, setSelectedInterval] = useState('24h');
   const [pageSize, setPageSize] = useState(10);
+  const [tokenPage, setTokenPage] = useState(0);
+  const [tokenRowsPerPage, setTokenRowsPerPage] = useState(20);
 
   useEffect(() => {
     const fetchTraderStats = async () => {
@@ -1930,7 +1933,11 @@ export default function Portfolio({ account, limit, collection, type }) {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {traderStats?.tokenPerformance?.sort((a, b) => b.profit - a.profit).map((token, index) => (
+                              {traderStats?.tokenPerformance
+                                ?.sort((a, b) => b.profit - a.profit)
+                                .slice(0, 25)
+                                .slice(tokenPage * tokenRowsPerPage, tokenPage * tokenRowsPerPage + tokenRowsPerPage)
+                                .map((token, index) => (
                                 <TableRow
                                   key={token.tokenId}
                                   sx={{
@@ -1985,6 +1992,39 @@ export default function Portfolio({ account, limit, collection, type }) {
                               ))}
                             </TableBody>
                           </Table>
+                          {traderStats?.tokenPerformance?.length > 5 && (
+                            <TablePagination
+                              component="div"
+                              count={Math.min(traderStats.tokenPerformance.length, 25)}
+                              page={tokenPage}
+                              onPageChange={(event, newPage) => setTokenPage(newPage)}
+                              rowsPerPage={tokenRowsPerPage}
+                              onRowsPerPageChange={(event) => {
+                                setTokenRowsPerPage(parseInt(event.target.value, 10));
+                                setTokenPage(0);
+                              }}
+                              rowsPerPageOptions={[5, 10, 20, 25]}
+                              sx={{
+                                '.MuiTablePagination-toolbar': {
+                                  minHeight: 36,
+                                  paddingLeft: 1,
+                                  paddingRight: 1
+                                },
+                                '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+                                  fontSize: '0.65rem'
+                                },
+                                '.MuiTablePagination-select': {
+                                  fontSize: '0.65rem'
+                                },
+                                '.MuiTablePagination-actions': {
+                                  marginLeft: 0.5
+                                },
+                                '.MuiIconButton-root': {
+                                  padding: 0.5
+                                }
+                              }}
+                            />
+                          )}
                         </Box>
                       )}
                     </Box>
