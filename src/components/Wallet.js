@@ -609,9 +609,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             {truncateAccount(accountLogin, 6)}
           </span>
         )}
-        {!accountProfile && !buttonOnly && (
+        {!accountProfile && (
           <span>
-            {t('Connect Wallet')}
+            {t('Connect')}
           </span>
         )}
       </button>
