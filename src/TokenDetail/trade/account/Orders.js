@@ -56,10 +56,12 @@ const ModernTable = styled(Table)(({ theme }) => ({
   overflow: 'hidden',
   backgroundColor: theme.palette.background.paper,
   boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.08)}`,
+  tableLayout: 'fixed',
+  width: '100%',
   '& .MuiTableCell-root': {
     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    padding: theme.spacing(1.5, 2),
-    fontSize: '0.875rem'
+    padding: theme.spacing(1, 0.5),
+    fontSize: '0.75rem'
   },
   '& .MuiTableHead-root': {
     backgroundColor: alpha(theme.palette.primary.main, 0.04),
@@ -67,8 +69,8 @@ const ModernTable = styled(Table)(({ theme }) => ({
       fontWeight: 600,
       color: theme.palette.text.primary,
       textTransform: 'uppercase',
-      fontSize: '0.75rem',
-      letterSpacing: '0.5px'
+      fontSize: '0.7rem',
+      letterSpacing: '0.3px'
     }
   },
   '& .MuiTableRow-root': {
@@ -80,11 +82,11 @@ const ModernTable = styled(Table)(({ theme }) => ({
 }));
 
 const OrderTypeChip = styled(Chip)(({ theme, ordertype }) => ({
-  height: '28px',
-  fontSize: '0.75rem',
+  height: '24px',
+  fontSize: '0.7rem',
   fontWeight: 600,
-  borderRadius: '14px',
-  minWidth: '60px',
+  borderRadius: '12px',
+  minWidth: '50px',
   backgroundColor:
     ordertype === 'buy'
       ? alpha(theme.palette.success.main, 0.1)
@@ -194,12 +196,12 @@ const StickyTableCell = styled(TableCell)(({ theme, scrollleft, darkmode }) => (
 const formatNumber = (number) => {
   const num = parseFloat(number);
   if (num === 0) return '0';
-  if (num < 0.0001) return num.toExponential(4);
-  if (num < 1) return num.toFixed(6);
-  if (num < 1000) return num.toFixed(4);
+  if (num < 0.0001) return num.toExponential(2);
+  if (num < 1) return num.toFixed(4);
+  if (num < 1000) return num.toFixed(2);
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 4
+    maximumFractionDigits: 2
   }).format(num);
 };
 
@@ -445,19 +447,6 @@ export default function Orders({ pair }) {
   };
 
   const tableRef = useRef(null);
-  const [scrollLeft, setScrollLeft] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollLeft(tableRef?.current?.scrollLeft > 0);
-    };
-
-    tableRef?.current?.addEventListener('scroll', handleScroll);
-
-    return () => {
-      tableRef?.current?.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
 
   return (
     <Stack spacing={2}>
@@ -517,36 +506,21 @@ export default function Orders({ pair }) {
           <Box
             ref={tableRef}
             sx={{
-              overflow: 'auto',
-              maxHeight: '600px',
-              '&::-webkit-scrollbar': {
-                width: '8px',
-                height: '8px'
-              },
-              '&::-webkit-scrollbar-track': {
-                backgroundColor: alpha(theme.palette.divider, 0.1),
-                borderRadius: '4px'
-              },
-              '&::-webkit-scrollbar-thumb': {
-                backgroundColor: alpha(theme.palette.text.secondary, 0.3),
-                borderRadius: '4px',
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.text.secondary, 0.5)
-                }
-              }
+              overflow: 'visible',
+              width: '100%'
             }}
           >
-            <ModernTable stickyHeader size="small">
+            <ModernTable size="small">
               <TableHead>
                 <TableRow>
-                  <StickyTableCell align="left" scrollleft={scrollLeft} darkmode={darkMode}>
+                  <TableCell align="left" width="15%">
                     Type
-                  </StickyTableCell>
-                  <TableCell align="left">Price</TableCell>
-                  <TableCell align="left">Taker Gets</TableCell>
-                  <TableCell align="left">Taker Pays</TableCell>
-                  <TableCell align="left">Expires</TableCell>
-                  <TableCell align="center">Action</TableCell>
+                  </TableCell>
+                  <TableCell align="left" width="14%">Price</TableCell>
+                  <TableCell align="left" width="22%">Gets</TableCell>
+                  <TableCell align="left" width="22%">Pays</TableCell>
+                  <TableCell align="left" width="15%">Expires</TableCell>
+                  <TableCell align="center" width="12%">Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -588,7 +562,7 @@ export default function Orders({ pair }) {
 
                   return (
                     <TableRow key={_id}>
-                      <StickyTableCell align="left" scrollleft={scrollLeft} darkmode={darkMode}>
+                      <TableCell align="left">
                         <OrderTypeChip
                           ordertype={buy ? 'buy' : 'sell'}
                           label={
@@ -603,7 +577,7 @@ export default function Orders({ pair }) {
                           }
                           size="small"
                         />
-                      </StickyTableCell>
+                      </TableCell>
                       <PriceCell align="left" ordertype={buy ? 'buy' : 'sell'}>
                         {formatNumber(exch)}
                       </PriceCell>
