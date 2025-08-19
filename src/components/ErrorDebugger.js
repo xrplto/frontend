@@ -24,6 +24,7 @@ const ErrorDebugger = () => {
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState([]);
   const [showDebugInfo, setShowDebugInfo] = useState(false);
+  const [listenersAttached, setListenersAttached] = useState(false);
 
   // Load errors from localStorage
   const loadErrors = () => {
@@ -35,10 +36,91 @@ const ErrorDebugger = () => {
     }
   };
 
+  // Log error to localStorage
+  const logError = (errorData) => {
+    try {
+      const existingErrors = JSON.parse(localStorage.getItem('errorLogs') || '[]');
+      const updatedErrors = [...existingErrors, errorData].slice(-50); // Keep last 50 errors
+      localStorage.setItem('errorLogs', JSON.stringify(updatedErrors));
+      setErrors(updatedErrors);
+    } catch (err) {
+      console.error('Failed to log error:', err);
+    }
+  };
+
+  // Capture all error types
   useEffect(() => {
+    if (listenersAttached) return;
+    
     loadErrors();
     
-    // Add keyboard shortcut to open debugger (Ctrl/Cmd + Shift + D)
+    // 1. Global error handler (runtime errors)
+    const handleError = (event) => {
+      logError({
+        type: 'error',
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error?.stack || event.error?.toString(),
+        stack: event.error?.stack,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+        url: window.location.href
+      });
+    };
+    
+    // 2. Unhandled promise rejections
+    const handleUnhandledRejection = (event) => {
+      logError({
+        type: 'unhandledrejection',
+        reason: event.reason?.message || event.reason?.toString() || String(event.reason),
+        promise: event.promise?.toString(),
+        stack: event.reason?.stack,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+        url: window.location.href
+      });
+    };
+    
+    // 3. Next.js specific error boundary
+    const originalConsoleError = console.error;
+    console.error = function(...args) {
+      // Capture Next.js hydration errors and other console errors
+      const errorMessage = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      ).join(' ');
+      
+      if (errorMessage.includes('Error') || errorMessage.includes('Warning')) {
+        logError({
+          type: 'console.error',
+          message: errorMessage,
+          stack: new Error().stack,
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+          url: window.location.href
+        });
+      }
+      
+      originalConsoleError.apply(console, args);
+    };
+    
+    // 4. Resource loading errors
+    const handleResourceError = (event) => {
+      if (event.target !== window) {
+        logError({
+          type: 'resource',
+          message: `Failed to load ${event.target.tagName}: ${event.target.src || event.target.href}`,
+          target: event.target.tagName,
+          source: event.target.src || event.target.href,
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+          url: window.location.href
+        });
+      }
+    };
+    
+    // 5. Keyboard shortcut
     const handleKeyPress = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
         e.preventDefault();
@@ -47,9 +129,23 @@ const ErrorDebugger = () => {
       }
     };
     
+    // Attach all listeners
+    window.addEventListener('error', handleError, true);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', handleResourceError, true);
     document.addEventListener('keydown', handleKeyPress);
-    return () => document.removeEventListener('keydown', handleKeyPress);
-  }, []);
+    
+    setListenersAttached(true);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('error', handleError, true);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('error', handleResourceError, true);
+      document.removeEventListener('keydown', handleKeyPress);
+      console.error = originalConsoleError;
+    };
+  }, [listenersAttached]);
 
   // Show debug floating button only if there are errors
   // On mobile, auto-open dialog if there are recent errors (within last 30 seconds)
@@ -175,7 +271,11 @@ Thanks!`;
             <Chip 
               size="small" 
               label={error.type || 'Error'} 
-              color={error.type === 'unhandledrejection' ? 'warning' : 'error'}
+              color={
+                error.type === 'unhandledrejection' ? 'warning' : 
+                error.type === 'resource' ? 'info' :
+                error.type === 'console.error' ? 'secondary' : 'error'
+              }
             />
             <Typography variant="body2" sx={{ flex: 1 }}>
               {error.message || error.reason || 'Unknown Error'}

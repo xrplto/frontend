@@ -35,57 +35,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Error logging for mobile debugging
-if (typeof window !== 'undefined') {
-  // Capture and log unhandled errors
-  window.addEventListener('error', (e) => {
-    const errorInfo = {
-      message: e.message,
-      filename: e.filename,
-      lineno: e.lineno,
-      colno: e.colno,
-      error: e.error?.stack || (typeof e.error === 'object' ? JSON.stringify(e.error) : e.error),
-      userAgent: navigator.userAgent,
-      timestamp: new Date().toISOString()
-    };
-    
-    // Log to console for mobile Safari debugging
-    console.error('Global Error:', errorInfo);
-    
-    // Store error in localStorage for later retrieval
-    try {
-      const errors = JSON.parse(localStorage.getItem('errorLogs') || '[]');
-      errors.push(errorInfo);
-      // Keep only last 10 errors
-      if (errors.length > 10) errors.shift();
-      localStorage.setItem('errorLogs', JSON.stringify(errors));
-    } catch (err) {
-      console.error('Failed to log error to localStorage:', err);
-    }
-  });
-
-  // Capture unhandled promise rejections
-  window.addEventListener('unhandledrejection', (e) => {
-    const errorInfo = {
-      type: 'unhandledrejection',
-      reason: typeof e.reason === 'object' ? JSON.stringify(e.reason) : (e.reason?.toString() || e.reason),
-      stack: e.reason?.stack,
-      userAgent: navigator.userAgent,
-      timestamp: new Date().toISOString()
-    };
-    
-    console.error('Unhandled Rejection:', errorInfo);
-    
-    try {
-      const errors = JSON.parse(localStorage.getItem('errorLogs') || '[]');
-      errors.push(errorInfo);
-      if (errors.length > 10) errors.shift();
-      localStorage.setItem('errorLogs', JSON.stringify(errors));
-    } catch (err) {
-      console.error('Failed to log rejection to localStorage:', err);
-    }
-  });
-}
+// Error logging handled by ErrorDebugger component
 
 // Lazy load non-critical components
 const XSnackbar = dynamic(() => import('src/components/Snackbar'), { ssr: false });
