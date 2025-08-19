@@ -1,11 +1,20 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
+import dynamic from 'next/dynamic';
 import Decimal from 'decimal.js';
-import { ClipLoader } from 'react-spinners';
 
 // Set Decimal precision immediately after import
 Decimal.set({ precision: 50 });
-import LoadChart from 'src/components/LoadChart';
+
+// Lazy load heavy components
+const LoadChart = dynamic(() => import('src/components/LoadChart'), {
+  loading: () => <div style={{ height: 300 }}>Loading chart...</div>,
+  ssr: false
+});
+
+const ClipLoader = dynamic(() => import('react-spinners').then(mod => ({ default: mod.ClipLoader })), {
+  ssr: false
+});
 
 // Material UI components (to be gradually replaced with Tailwind)
 import {
@@ -60,22 +69,34 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber } from 'src/utils/formatNumber';
 
 // Components
-import ConnectWallet from 'src/components/ConnectWallet';
-import QRDialog from 'src/components/QRDialog';
+const ConnectWallet = dynamic(() => import('src/components/ConnectWallet'), {
+  loading: () => <Button fullWidth>Loading wallet...</Button>,
+  ssr: false
+});
+const QRDialog = dynamic(() => import('src/components/QRDialog'), {
+  loading: () => null,
+  ssr: false
+});
 import { currencySymbols, BASE_URL } from 'src/utils/constants';
 import Image from 'next/image';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
-import OrderBook from 'src/TokenDetail/trade/OrderBook';
-import Orders from 'src/TokenDetail/trade/account/Orders';
+// Lazy load heavy components
+const OrderBook = dynamic(() => import('src/TokenDetail/trade/OrderBook'), {
+  loading: () => <div>Loading orderbook...</div>,
+  ssr: false
+});
+const Orders = dynamic(() => import('src/TokenDetail/trade/account/Orders'), {
+  loading: () => <div>Loading orders...</div>,
+  ssr: false
+});
 // import Dialog from 'src/components/Dialog'; // No longer needed - using side panel instead
 
 // Router
 import { useRouter } from 'next/router';
-import { useRef } from 'react';
 
-const CurrencyContent = styled('div')(
+const CurrencyContent = memo(styled('div')(
   ({ theme }) => `
     box-sizing: border-box;
     margin: 0;
@@ -105,9 +126,9 @@ const CurrencyContent = styled('div')(
       border-radius: 8px;
     }
 `
-);
+));
 
-const InputContent = styled('div')(
+const InputContent = memo(styled('div')(
   ({ theme }) => `
     box-sizing: border-box;
     margin: 0px;
@@ -120,13 +141,13 @@ const InputContent = styled('div')(
     justify-content: flex-end;
     color: rgb(255, 255, 255);
 `
-);
+));
 
 let border; // webxtor SEO fix
 if (typeof theme !== 'undefined' && theme.currency) {
   border = theme.currency.border;
 }
-const OverviewWrapper = styled('div')(
+const OverviewWrapper = memo(styled('div')(
   ({ theme }) => `
     flex-direction: column;
     box-sizing: border-box;
@@ -147,18 +168,18 @@ const OverviewWrapper = styled('div')(
         box-shadow: 0 5px 15px ${alpha(theme.palette.common.black, 0.06)};
     }
 `
-);
+));
 
-const ConverterFrame = styled('div')(
+const ConverterFrame = memo(styled('div')(
   ({ theme }) => `
     flex-direction: column;
     overflow: hidden;
     position: relative;
     display: flex;
 `
-);
+));
 
-const ExchangeButton = styled(Button)(
+const ExchangeButton = memo(styled(Button)(
   ({ theme }) => `
     width: 100%;
     padding: 12px 16px;
@@ -212,9 +233,9 @@ const ExchangeButton = styled(Button)(
       font-size: 13px;
     }
 `
-);
+));
 
-const AllowButton = styled(Button)(
+const AllowButton = memo(styled(Button)(
   ({ theme }) => `
     padding: 4px 10px;
     border-radius: 8px;
@@ -232,9 +253,9 @@ const AllowButton = styled(Button)(
       transform: scale(1.02);
     }
 `
-);
+));
 
-const ToggleButton = styled(IconButton)(
+const ToggleButton = memo(styled(IconButton)(
   ({ theme }) => `
     background: ${theme.palette.background.paper};
     border: 1px solid ${alpha(theme.palette.divider, 0.12)};
@@ -263,21 +284,21 @@ const ToggleButton = styled(IconButton)(
       transform: translate(-50%, -50%) rotate(180deg);
     }
 `
-);
+));
 
-const getPriceImpactColor = (impact) => {
+const getPriceImpactColor = memo((impact) => {
   if (impact <= 1) return '#22C55E'; // Green for low impact
   if (impact <= 3) return '#F59E0B'; // Yellow for medium impact
   return '#EF4444'; // Red for high impact
-};
+});
 
-const getPriceImpactSeverity = (impact) => {
+const getPriceImpactSeverity = memo((impact) => {
   if (impact <= 1) return 'Low';
   if (impact <= 3) return 'Medium';
   return 'High';
-};
+});
 
-const WalletDisplay = styled('div')(
+const WalletDisplay = memo(styled('div')(
   ({ theme }) => `
     display: flex;
     align-items: center;
@@ -299,7 +320,7 @@ const WalletDisplay = styled('div')(
       margin-bottom: 6px;
     }
 `
-);
+));
 
 const WalletInfo = styled('div')(
   ({ theme }) => `
@@ -554,7 +575,7 @@ function truncate(str, n) {
   return str.length > n ? str.substr(0, n - 1) + '... ' : str;
 }
 
-export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAsks }) {
+function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAsks }) {
   const theme = useTheme();
   const QR_BLUR = '/static/blurqr.webp';
   const router = useRouter();
@@ -693,8 +714,9 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     } catch (e) {
       return 0;
     }
-  })();
-  const tokenPrice2 = (() => {
+  }, [token1, token2, amount1, tokenExch1, metrics, activeFiatCurrency]);
+  
+  const tokenPrice2 = useMemo(() => {
     try {
       const token1IsXRP = token1?.currency === 'XRP';
       const token2IsXRP = token2?.currency === 'XRP';
@@ -4328,3 +4350,5 @@ export default function Swap({ pair, setPair, revert, setRevert, bids: propsBids
     </Box>
   );
 }
+
+export default memo(Swap);
