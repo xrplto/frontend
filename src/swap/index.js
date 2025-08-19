@@ -286,17 +286,17 @@ const ToggleButton = memo(styled(IconButton)(
 `
 ));
 
-const getPriceImpactColor = memo((impact) => {
+const getPriceImpactColor = (impact) => {
   if (impact <= 1) return '#22C55E'; // Green for low impact
   if (impact <= 3) return '#F59E0B'; // Yellow for medium impact
   return '#EF4444'; // Red for high impact
-});
+};
 
-const getPriceImpactSeverity = memo((impact) => {
+const getPriceImpactSeverity = (impact) => {
   if (impact <= 1) return 'Low';
   if (impact <= 3) return 'Medium';
   return 'High';
-});
+};
 
 const WalletDisplay = memo(styled('div')(
   ({ theme }) => `
@@ -785,7 +785,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     } catch (e) {
       return 0;
     }
-  })();
+  }, [token1, token2, amount2, tokenExch2, metrics, activeFiatCurrency]);
 
   const inputPrice = revert ? tokenPrice2 : tokenPrice1;
   const outputPrice = revert ? tokenPrice1 : tokenPrice2;
@@ -1476,7 +1476,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             // For 100% sells, use more precision to ensure all tokens are sold
             value: isSelling100Percent 
               ? sendAmount  // Use exact balance string
-              : new Decimal(sendAmount).toFixed(15, Decimal.ROUND_DOWN)  // Use higher precision
+              : new Decimal(sendAmount).toFixed(6, Decimal.ROUND_DOWN)  // Use safe precision for XRPL
           };
         }
         
@@ -1487,7 +1487,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           Amount = {
             currency: receiveCurrency.currency,
             issuer: receiveCurrency.issuer,
-            value: new Decimal(receiveAmount).toFixed(15, Decimal.ROUND_DOWN)  // Use higher precision
+            value: new Decimal(receiveAmount).toFixed(6, Decimal.ROUND_DOWN)  // Use safe precision for XRPL
           };
         }
 
@@ -1501,7 +1501,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           DeliverMin = {
             currency: Amount.currency,
             issuer: Amount.issuer,
-            value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(15, Decimal.ROUND_DOWN)  // Higher precision
+            value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(6, Decimal.ROUND_DOWN)  // Safe precision for XRPL
           };
         } else {
           // For XRP amounts (strings) - Amount is already in drops
@@ -1690,8 +1690,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         return '';
       }
       
-      // Use higher precision to avoid truncation issues
-      return result.toFixed(15, Decimal.ROUND_DOWN);
+      // Use safe precision for XRPL (max 16 significant digits total)
+      return result.toFixed(6, Decimal.ROUND_DOWN);
     } catch (e) {
       return '';
     }
