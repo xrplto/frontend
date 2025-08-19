@@ -446,12 +446,12 @@ const LinkIcon = ({ style }) => (
 // Constants
 const SWITCH_INTERVAL = 3000;
 const FILTER_OPTIONS = [
-  { value: 'All', label: 'All Trades', icon: 'ic:round-water' },
-  { value: '500+', label: '500+ XRP', icon: 'ic:round-water' },
-  { value: '1000+', label: '1000+ XRP', icon: 'ic:round-waves' },
-  { value: '2500+', label: '2500+ XRP', icon: 'ic:round-pool' },
-  { value: '5000+', label: '5000+ XRP', icon: 'ic:round-tsunami' },
-  { value: '10000+', label: '10000+ XRP', icon: 'ic:round-scuba-diving' }
+  { value: 'All', label: 'All Trades', icon: 'ic:round-waves' },
+  { value: '500+', label: '500+ XRP', icon: 'ph:fish-fill' },
+  { value: '1000+', label: '1000+ XRP', icon: 'game-icons:dolphin' },
+  { value: '2500+', label: '2500+ XRP', icon: 'game-icons:octopus' },
+  { value: '5000+', label: '5000+ XRP', icon: 'game-icons:shark-fin' },
+  { value: '10000+', label: '10000+ XRP', icon: 'ic:round-pool' }
 ];
 
 // Helper functions
@@ -475,12 +475,12 @@ const formatRelativeTime = (timestamp) => {
 
 const getTradeSizeIcon = (value) => {
   const xrpValue = parseFloat(value);
-  if (xrpValue < 500) return 'ic:round-water-drop';  // Small drop
-  if (xrpValue < 1000) return 'ic:round-water';  // Small wave
-  if (xrpValue < 2500) return 'ic:round-waves';  // Medium waves
-  if (xrpValue < 5000) return 'ic:round-pool';  // Pool/larger body
-  if (xrpValue < 10000) return 'ic:round-tsunami';  // Tsunami/big wave
-  return 'ic:round-scuba-diving';  // Deep dive for largest
+  if (xrpValue < 500) return 'ph:fish-simple-fill';  // Small fish
+  if (xrpValue < 1000) return 'ph:fish-fill';  // Regular fish
+  if (xrpValue < 2500) return 'game-icons:dolphin';  // Dolphin
+  if (xrpValue < 5000) return 'game-icons:octopus';  // Octopus
+  if (xrpValue < 10000) return 'game-icons:shark-fin';  // Shark
+  return 'ic:round-pool';  // Using pool icon as fallback for whale
 };
 
 const abbreviateNumber = (num) => {
