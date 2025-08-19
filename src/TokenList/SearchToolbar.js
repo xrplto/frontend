@@ -270,18 +270,18 @@ const Chip = styled.button`
 const TagChip = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
+  gap: 3px;
+  padding: 2px 8px;
   border: 1px solid ${props => props.borderColor || 'rgba(145, 158, 171, 0.08)'};
-  border-radius: 16px;
+  border-radius: 12px;
   background: ${props => props.background || 'rgba(0, 0, 0, 0.02)'};
   color: ${props => props.color || 'inherit'};
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
-  height: 30px;
+  height: 24px;
   flex-shrink: 0;
   opacity: ${props => props.show ? 1 : 0};
   animation: ${props => props.show ? 'fadeIn 0.3s ease-out' : 'none'};
@@ -304,8 +304,8 @@ const TagChip = styled.button`
   
   @media (max-width: 600px) {
     font-size: 0.65rem;
-    height: 24px;
-    padding: 2px 6px;
+    height: 20px;
+    padding: 1px 6px;
     display: none;
   }
 `;
@@ -313,18 +313,18 @@ const TagChip = styled.button`
 const AllTagsButton = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
+  gap: 3px;
+  padding: 2px 8px;
   border: 1px solid rgba(33, 150, 243, 0.15);
-  border-radius: 16px;
+  border-radius: 12px;
   background: rgba(33, 150, 243, 0.06);
   color: inherit;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
-  height: 30px;
+  height: 24px;
   flex-shrink: 0;
   
   &:hover {
@@ -334,8 +334,8 @@ const AllTagsButton = styled.button`
   
   @media (max-width: 600px) {
     font-size: 0.65rem;
-    height: 24px;
-    padding: 2px 6px;
+    height: 20px;
+    padding: 1px 6px;
   }
 `;
 
@@ -423,8 +423,8 @@ const SearchToolbar = memo(function SearchToolbar({
           const tempTag = document.createElement('button');
           tempTag.className = 'measure-tag';
           tempTag.style.cssText = `
-            padding: ${isMobile ? '2px 6px' : '4px 10px'};
-            font-size: ${isMobile ? '0.65rem' : '0.75rem'};
+            padding: ${isMobile ? '1px 6px' : '2px 8px'};
+            font-size: ${isMobile ? '0.65rem' : '0.7rem'};
             font-weight: 500;
             white-space: nowrap;
             border: 1px solid transparent;
