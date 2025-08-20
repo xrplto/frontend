@@ -989,16 +989,32 @@ const PriceChartAdvanced = memo(({ token }) => {
               </Typography>
             </Box>
           )}
-          {isUpdating && (
-            <CircularProgress size={16} sx={{ ml: 1 }} />
-          )}
-          {!isUpdating && lastUpdate && (
-            <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-              <RefreshIcon sx={{ fontSize: 12, verticalAlign: 'middle', mr: 0.5 }} />
-              {lastUpdate.toLocaleTimeString()}
-              {isUserZoomed && ' (Auto-update paused)'}
-            </Typography>
-          )}
+          <Box sx={{ 
+            ml: 1, 
+            minWidth: isUserZoomed ? 180 : 100,
+            display: 'inline-flex',
+            alignItems: 'center',
+            height: 20
+          }}>
+            {isUpdating ? (
+              <CircularProgress size={16} />
+            ) : lastUpdate ? (
+              <Typography variant="caption" color="text.secondary" sx={{ 
+                display: 'inline-flex', 
+                alignItems: 'center',
+                whiteSpace: 'nowrap'
+              }}>
+                <RefreshIcon sx={{ fontSize: 12, mr: 0.5 }} />
+                {lastUpdate.toLocaleTimeString('en-US', { 
+                  hour: '2-digit', 
+                  minute: '2-digit', 
+                  second: '2-digit',
+                  hour12: false 
+                })}
+                {isUserZoomed && ' (paused)'}
+              </Typography>
+            ) : null}
+          </Box>
         </Box>
         
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
