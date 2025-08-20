@@ -868,20 +868,25 @@ const SearchToolbar = memo(function SearchToolbar({
         <Stack style={{ marginLeft: 'auto', gap: '8px' }}>
           {/* View Mode Selector */}
           {setViewMode && (
-            <RowsSelector
-              darkMode={darkMode}
-              value={viewMode || 'classic'}
-              onChange={(e) => setViewMode(e.target.value)}
-              noMargin
-              style={{ minWidth: '110px' }}
-            >
-              <option value="classic">Classic</option>
-              <option value="priceChange">Price Change</option>
-              <option value="marketData">Market Data</option>
-              <option value="topGainers">Top Gainers</option>
-              <option value="trader">Trader View</option>
-              <option value="custom">Custom</option>
-            </RowsSelector>
+            <>
+              <label htmlFor="view-mode-select" className="visually-hidden">View Mode</label>
+              <RowsSelector
+                id="view-mode-select"
+                darkMode={darkMode}
+                value={viewMode || 'classic'}
+                onChange={(e) => setViewMode(e.target.value)}
+                noMargin
+                style={{ minWidth: '110px' }}
+                aria-label="Select view mode"
+              >
+                <option value="classic">Classic</option>
+                <option value="priceChange">Price Change</option>
+                <option value="marketData">Market Data</option>
+                <option value="topGainers">Top Gainers</option>
+                <option value="trader">Trader View</option>
+                <option value="custom">Custom</option>
+              </RowsSelector>
+            </>
           )}
 
           {/* Custom columns settings button */}
@@ -890,24 +895,30 @@ const SearchToolbar = memo(function SearchToolbar({
               onClick={() => setCustomSettingsOpen(true)}
               darkMode={darkMode}
               title="Configure columns"
+              aria-label="Configure custom columns"
             >
               <Icon icon="material-symbols:settings" width="20" height="20" />
             </IconButton>
           )}
 
           {/* Rows selector */}
-          <RowsSelector
-            darkMode={darkMode}
-            value={rows}
-            onChange={(e) => setRows(e.target.value === 'all' ? 9999 : parseInt(e.target.value))}
-            noMargin
-          >
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="300">300</option>
-            <option value="all">All</option>
-          </RowsSelector>
+          <>
+            <label htmlFor="rows-per-page-select" className="visually-hidden">Rows per page</label>
+            <RowsSelector
+              id="rows-per-page-select"
+              darkMode={darkMode}
+              value={rows}
+              onChange={(e) => setRows(e.target.value === 'all' ? 9999 : parseInt(e.target.value))}
+              noMargin
+              aria-label="Select number of rows to display"
+            >
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="300">300</option>
+              <option value="all">All</option>
+            </RowsSelector>
+          </>
         </Stack>
       </Row>
 

@@ -848,19 +848,23 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
             // Mobile: Two dropdowns for selecting any column
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: '8px', 
-                  fontSize: '12px', 
-                  fontWeight: '600',
-                  color: darkMode ? '#999' : '#666',
-                  textTransform: 'uppercase'
-                }}>
+                <label 
+                  htmlFor="column-2-select"
+                  style={{ 
+                    display: 'block', 
+                    marginBottom: '8px', 
+                    fontSize: '12px', 
+                    fontWeight: '600',
+                    color: darkMode ? '#999' : '#666',
+                    textTransform: 'uppercase'
+                  }}>
                   Column 2 (Middle)
                 </label>
                 <select
+                  id="column-2-select"
                   value={tempCustomColumns[0] || 'price'}
                   onChange={(e) => setTempCustomColumns([e.target.value, tempCustomColumns[1] || 'pro24h'])}
+                  aria-label="Select data for column 2"
                   style={{
                     width: '100%',
                     padding: '10px',
@@ -895,19 +899,23 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
               </div>
               
               <div>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: '8px', 
-                  fontSize: '12px', 
-                  fontWeight: '600',
-                  color: darkMode ? '#999' : '#666',
-                  textTransform: 'uppercase'
-                }}>
+                <label 
+                  htmlFor="column-3-select"
+                  style={{ 
+                    display: 'block', 
+                    marginBottom: '8px', 
+                    fontSize: '12px', 
+                    fontWeight: '600',
+                    color: darkMode ? '#999' : '#666',
+                    textTransform: 'uppercase'
+                  }}>
                   Column 3 (Right)
                 </label>
                 <select
+                  id="column-3-select"
                   value={tempCustomColumns[1] || 'pro24h'}
                   onChange={(e) => setTempCustomColumns([tempCustomColumns[0] || 'price', e.target.value])}
+                  aria-label="Select data for column 3"
                   style={{
                     width: '100%',
                     padding: '10px',

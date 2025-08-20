@@ -113,7 +113,7 @@ export default function TokenMoreMenu({ token, admin, setEditToken, setTrustToke
 
   return (
     <MenuWrapper>
-      <IconButton ref={ref} onClick={() => setIsOpen(true)}>
+      <IconButton ref={ref} onClick={() => setIsOpen(true)} aria-label="More options">
         <Icon icon={moreVerticalFill} width={20} height={20} />
       </IconButton>
 

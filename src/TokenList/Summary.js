@@ -104,7 +104,9 @@ const MetricBox = styled.div`
 const MetricTitle = styled.span`
   font-size: 0.75rem;
   font-weight: 500;
-  color: rgba(145, 158, 171, 0.6);
+  color: ${props => props.theme?.palette?.mode === 'dark' 
+    ? 'rgba(255, 255, 255, 0.7)'
+    : 'rgba(33, 43, 54, 0.7)'};
   margin-bottom: 4px;
   letter-spacing: 0.02em;
   line-height: 1.2;
@@ -133,7 +135,7 @@ const MetricValue = styled.span`
 const PercentageChange = styled.span`
   font-size: 0.85rem;
   color: ${props => props.isPositive 
-    ? (props.theme?.palette?.mode === 'dark' ? '#4ade80' : '#16a34a')
+    ? (props.theme?.palette?.mode === 'dark' ? '#4ade80' : '#059669')
     : (props.theme?.palette?.mode === 'dark' ? '#f87171' : '#dc2626')};
   display: inline-flex;
   align-items: flex-start;
@@ -148,7 +150,9 @@ const PercentageChange = styled.span`
 
 const VolumePercentage = styled.span`
   font-size: 0.6rem;
-  color: rgba(145, 158, 171, 0.4);
+  color: ${props => props.theme?.palette?.mode === 'dark' 
+    ? 'rgba(255, 255, 255, 0.6)'
+    : 'rgba(33, 43, 54, 0.6)'};
   font-weight: 400;
   letter-spacing: 0.01em;
   
@@ -158,7 +162,9 @@ const VolumePercentage = styled.span`
 `;
 
 const ContentTypography = styled.span`
-  color: rgba(145, 158, 171, 0.6);
+  color: ${props => props.theme?.palette?.mode === 'dark' 
+    ? 'rgba(255, 255, 255, 0.7)'
+    : 'rgba(33, 43, 54, 0.7)'};
   font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.01em;
