@@ -112,8 +112,8 @@ const LiveIndicator = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
-  padding: theme.spacing(0.5, 1.5),
-  borderRadius: '20px',
+  padding: theme.spacing(0.25, 0.75),
+  borderRadius: '12px',
   backgroundColor: 'transparent',
   backdropFilter: 'none',
   WebkitBackdropFilter: 'none',
@@ -125,8 +125,8 @@ const LiveIndicator = styled('div')(({ theme }) => ({
 }));
 
 const LiveCircle = styled('div')(({ theme }) => ({
-  width: '10px',
-  height: '10px',
+  width: '8px',
+  height: '8px',
   borderRadius: '50%',
   backgroundColor: theme.palette.primary.main,
   animation: 'pulse 2s infinite',
@@ -153,8 +153,8 @@ const LiveCircle = styled('div')(({ theme }) => ({
 const TradeCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'isNew' && prop !== 'tradetype'
 })(({ theme, isNew, tradetype }) => ({
-  marginBottom: theme.spacing(0.3),
-  borderRadius: '8px',
+  marginBottom: theme.spacing(0.2),
+  borderRadius: '6px',
   background: tradetype === 'BUY'
     ? `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.02)} 50%, transparent 100%)`
     : `linear-gradient(90deg, ${alpha('#F44336', 0.08)} 0%, ${alpha('#F44336', 0.02)} 50%, transparent 100%)`,
@@ -180,10 +180,10 @@ const TradeCard = styled(Card, {
 }));
 
 const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
-  fontSize: '0.65rem',
-  height: '20px',
+  fontSize: '0.55rem',
+  height: '16px',
   fontWeight: 'bold',
-  borderRadius: '10px',
+  borderRadius: '6px',
   background: tradetype === 'BUY' 
     ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`
     : `linear-gradient(135deg, ${alpha('#F44336', 0.2)} 0%, ${alpha('#F44336', 0.05)} 100%)`,
@@ -215,8 +215,8 @@ const VolumeIndicator = styled('div')(({ theme, volume }) => ({
 const StyledPagination = styled(Pagination)(({ theme }) => ({
   '& .MuiPaginationItem-root': {
     color: theme.palette.text.primary,
-    borderRadius: '8px',
-    margin: '0 2px',
+    borderRadius: '6px',
+    margin: '0 1px',
     fontWeight: '500',
     '&:hover': {
       backgroundColor:
@@ -227,7 +227,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
     backgroundColor: `${theme.palette.primary.main} !important`,
     color: '#fff !important',
     fontWeight: 'bold',
-    borderRadius: '8px',
+    borderRadius: '6px',
     '&:hover': {
       backgroundColor: `${theme.palette.primary.dark} !important`
     }
@@ -792,11 +792,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
         <Box
           sx={{
             textAlign: 'center',
-            py: 6,
+            py: 3,
             backgroundColor: 'transparent',
             backdropFilter: 'none',
             WebkitBackdropFilter: 'none',
-            borderRadius: '12px',
+            borderRadius: '6px',
             border: `1px dashed ${alpha(theme.palette.divider, 0.3)}`,
             boxShadow: `
               0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
@@ -844,13 +844,13 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
             sm: '1fr 1fr',
             md: '1.2fr 1.2fr 1.8fr 1.8fr 1.2fr 0.4fr'
           },
-          gap: 1.5,
-          p: 1.5,
+          gap: 1,
+          p: 0.75,
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
           backgroundColor: 'transparent',
           backdropFilter: 'none',
           WebkitBackdropFilter: 'none',
-          borderRadius: '8px 8px 0 0',
+          borderRadius: '6px 6px 0 0',
           border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
           boxShadow: `
             0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
@@ -859,7 +859,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
           '& > *': {
             fontWeight: 'bold',
             color: theme.palette.text.secondary,
-            fontSize: '0.7rem',
+            fontSize: '0.6rem',
             textTransform: 'uppercase',
             letterSpacing: '0.5px'
           }
@@ -872,7 +872,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
             <Typography
               variant="caption"
               fontWeight="600"
-              sx={{ color: 'primary.main', fontSize: '0.6rem' }}
+              sx={{ color: 'primary.main', fontSize: '0.5rem' }}
             >
               LIVE
             </Typography>
@@ -921,7 +921,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
           return (
             <TradeCard key={trade._id} isNew={newTradeIds.has(trade._id)} tradetype={isBuy ? 'BUY' : 'SELL'}>
               <VolumeIndicator volume={volumePercentage} />
-              <CardContent sx={{ p: 1.2, '&:last-child': { pb: 1.2 } }}>
+              <CardContent sx={{ p: 0.75, '&:last-child': { pb: 0.75 } }}>
                 <Box
                   sx={{
                     display: 'grid',
@@ -940,7 +940,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                       variant="body2"
                       color="text.secondary"
                       fontWeight="500"
-                      sx={{ minWidth: 'fit-content', fontSize: '0.75rem' }}
+                      sx={{ minWidth: 'fit-content', fontSize: '0.65rem' }}
                     >
                       {formatRelativeTime(trade.time)}
                     </Typography>
@@ -956,7 +956,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                      sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
                     >
                       Price (XRP)
                     </Typography>
@@ -964,7 +964,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                       variant="body2"
                       fontWeight="600"
                       color="text.primary"
-                      sx={{ fontSize: '0.8rem' }}
+                      sx={{ fontSize: '0.7rem' }}
                     >
                       {formatPrice(price)}
                     </Typography>
@@ -975,13 +975,13 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     <img
                       src={getTokenImageUrl(amountData.issuer, amountData.currency)}
                       alt={decodeCurrency(amountData.currency)}
-                      style={{ width: 16, height: 16, borderRadius: '50%' }}
+                      style={{ width: 14, height: 14, borderRadius: '50%' }}
                     />
                     <Box>
                       <Typography
                         variant="body2"
                         color="text.secondary"
-                        sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                        sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
                       >
                         Amount
                       </Typography>
@@ -989,7 +989,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                         variant="body2"
                         fontWeight="600"
                         color="text.primary"
-                        sx={{ fontSize: '0.8rem' }}
+                        sx={{ fontSize: '0.7rem' }}
                       >
                         {formatTradeValue(amountData.value)} {decodeCurrency(amountData.currency)}
                       </Typography>
@@ -1001,13 +1001,13 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     <img
                       src={getTokenImageUrl(totalData.issuer, totalData.currency)}
                       alt={decodeCurrency(totalData.currency)}
-                      style={{ width: 16, height: 16, borderRadius: '50%' }}
+                      style={{ width: 14, height: 14, borderRadius: '50%' }}
                     />
                     <Box>
                       <Typography
                         variant="body2"
                         color="text.secondary"
-                        sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                        sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
                       >
                         Total
                       </Typography>
@@ -1015,7 +1015,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                         variant="body2"
                         fontWeight="600"
                         color="text.primary"
-                        sx={{ fontSize: '0.8rem' }}
+                        sx={{ fontSize: '0.7rem' }}
                       >
                         {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
                       </Typography>
@@ -1040,7 +1040,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                         <Typography
                           variant="body2"
                           fontWeight="500"
-                          sx={{ fontSize: '0.75rem', color: 'primary.main' }}
+                          sx={{ fontSize: '0.65rem', color: 'primary.main' }}
                         >
                           {addressToShow
                             ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}`
@@ -1057,7 +1057,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     {(makerIsWashTrader || takerIsWashTrader) && (
                       <SmartToy
                         fontSize="small"
-                        sx={{ color: theme.palette.warning.main, fontSize: '0.9rem' }}
+                        sx={{ color: theme.palette.warning.main, fontSize: '0.75rem' }}
                       />
                     )}
                   </Box>
@@ -1079,7 +1079,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                         onClick={() => handleTxClick(trade.hash)}
                         sx={{
                           color: `${theme.palette.primary.main} !important`,
-                          padding: '4px',
+                          padding: '2px',
                           '&:hover': {
                             color: `${theme.palette.primary.dark} !important`,
                             backgroundColor:
@@ -1108,7 +1108,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
       </Stack>
 
       {totalPages > 1 && (
-        <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
+        <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
           <StyledPagination
             count={totalPages}
             page={page}
@@ -1133,13 +1133,13 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
         }}
       >
         <Box sx={{ 
-          p: 2, 
+          p: 1, 
           maxWidth: 320, 
           backgroundColor: 'transparent',
           backdropFilter: 'none',
           WebkitBackdropFilter: 'none',
           border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-          borderRadius: '8px',
+          borderRadius: '6px',
           boxShadow: `
             0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
             0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
@@ -1170,7 +1170,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
             display: 'flex',
             alignItems: 'center',
             gap: 2,
-            p: 1.5, 
+            p: 0.75, 
             backgroundColor: 'transparent',
             backdropFilter: 'none',
             WebkitBackdropFilter: 'none',
