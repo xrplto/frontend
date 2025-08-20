@@ -27,8 +27,8 @@ function Logo({ style }) {
     transition: 'opacity 0.3s',
     cursor: 'pointer',
     position: 'relative',
-    width: '125px',
-    height: '46px',
+    width: '100px',
+    height: '37px',
     ...style
   };
 
@@ -41,8 +41,8 @@ function Logo({ style }) {
       {imageError ? (
         <Box
           sx={{
-            width: '125px',
-            height: '46px',
+            width: '100px',
+            height: '37px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -54,8 +54,8 @@ function Logo({ style }) {
       ) : (
         <Image
           src={img}
-          width={125}
-          height={46}
+          width={100}
+          height={37}
           alt="XRPL.to Logo"
           priority={true}
           quality={100}
