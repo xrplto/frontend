@@ -223,6 +223,15 @@ const CircularProgress = styled.div`
   }
 `;
 
+const ChartMetricBox = styled(MetricBox)`
+  grid-column: span 2;
+  overflow: visible;
+  
+  @media (max-width: 600px) {
+    grid-column: 1 / -1;
+  }
+`;
+
 function Rate(num, exch) {
   if (num === 0 || exch === 0) return 0;
   return fNumber(num / exch);
@@ -568,7 +577,7 @@ export default function Summary() {
                 </Stack>
               </MetricBox>
 
-              <MetricBox style={{ gridColumn: 'span 2', overflow: 'visible' }}>
+              <ChartMetricBox>
                 <MetricTitle>New Tokens (30d)</MetricTitle>
                 <div style={{ width: '100%', height: '60px', marginTop: '-4px', overflow: 'visible' }}>
                   {chartData.length > 0 && (
@@ -579,7 +588,7 @@ export default function Summary() {
                     />
                   )}
                 </div>
-              </MetricBox>
+              </ChartMetricBox>
             </Grid>
           </div>
         )}
