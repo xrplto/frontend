@@ -34,6 +34,49 @@ import { fNumberWithCurreny } from 'src/utils/formatNumber';
 const API_URL = process.env.API_URL || '';
 const NFT_API_URL = 'https://api.xrpnft.com/api';
 
+// Cache for preloaded data
+let cachedTrendingData = {
+  tokens: [],
+  collections: [],
+  lastFetch: 0
+};
+
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Preload trending data
+const preloadTrendingData = async () => {
+  const now = Date.now();
+  if (now - cachedTrendingData.lastFetch < CACHE_DURATION) {
+    return cachedTrendingData;
+  }
+
+  try {
+    const [tokensRes, collectionsRes] = await Promise.all([
+      axios.post(`${API_URL}/search`, { search: '' }),
+      axios.post(`${NFT_API_URL}/search`, { 
+        search: '', 
+        type: 'SEARCH_ITEM_COLLECTION_ACCOUNT' 
+      })
+    ]);
+
+    cachedTrendingData = {
+      tokens: tokensRes.data?.tokens?.slice(0, 4) || [],
+      collections: collectionsRes.data?.collections?.slice(0, 3) || [],
+      lastFetch: now
+    };
+  } catch (error) {
+    console.error('Error preloading trending data:', error);
+  }
+
+  return cachedTrendingData;
+};
+
+// Start preloading immediately
+preloadTrendingData();
+
+// Set up interval to refresh cache
+setInterval(preloadTrendingData, CACHE_DURATION);
+
 // Memoized price formatter
 const formatPrice = (price) => {
   if (price === 0) return '0.00';
@@ -83,51 +126,22 @@ function SearchModal({ open, onClose }) {
     }
   }, [open]);
 
-  // Fetch trending tokens and collections when modal opens
+  // Use preloaded trending data when modal opens
   useEffect(() => {
     if (!open) return;
     
-    let cancelled = false;
-    const controller = new AbortController();
-
-    const fetchTrending = async () => {
+    const loadTrending = async () => {
       setLoadingTrending(true);
-      try {
-        // Fetch trending tokens
-        const [tokensRes, collectionsRes] = await Promise.all([
-          axios.post(`${API_URL}/search`, { search: '' }, { signal: controller.signal }),
-          axios.post(`${NFT_API_URL}/search`, { 
-            search: '', 
-            type: 'SEARCH_ITEM_COLLECTION_ACCOUNT' 
-          }, { signal: controller.signal })
-        ]);
-
-        if (!cancelled) {
-          if (tokensRes.data?.tokens) {
-            setTrendingTokens(tokensRes.data.tokens.slice(0, 4));
-          }
-
-          if (collectionsRes.data?.collections) {
-            setTrendingCollections(collectionsRes.data.collections.slice(0, 3));
-          }
-        }
-      } catch (error) {
-        if (!axios.isCancel(error)) {
-          console.error('Error fetching trending:', error);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingTrending(false);
-        }
-      }
+      
+      // Use cached data if available
+      const cached = await preloadTrendingData();
+      
+      setTrendingTokens(cached.tokens);
+      setTrendingCollections(cached.collections);
+      setLoadingTrending(false);
     };
 
-    fetchTrending();
-    
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
+    loadTrending();
   }, [open]);
 
   // Perform search
