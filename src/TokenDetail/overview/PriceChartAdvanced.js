@@ -281,7 +281,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           // Calculate ATH from the data
           const allTimeHigh = Math.max(...processedData.map(d => d.high));
           const currentPrice = processedData[processedData.length - 1].close;
-          const percentFromATH = ((currentPrice - allTimeHigh) / allTimeHigh * 100).toFixed(2);
+          const percentFromATH = ((currentPrice - allTimeHigh) / allTimeHigh * 100).toFixed(8);
           
           
           setAthData({
@@ -967,7 +967,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h6" sx={{ fontSize: '1rem' }}>
-            {token.name} {chartType === 'holders' ? 'Holders' : `Price (${activeFiatCurrency})`}
+            {token.name} {chartType === 'holders' ? 'Holders' : `Price (${activeFiatCurrency})`} • {range === 'ALL' ? '1Y' : range}
           </Typography>
           {athData.price && chartType !== 'holders' && (
             <Box sx={{ 
@@ -985,7 +985,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 {athData.percentDown}% from ATH
               </Typography>
               <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                ({currencySymbols[activeFiatCurrency] || ''}{athData.price < 0.01 ? athData.price.toFixed(8) : athData.price.toFixed(4)})
+                ({currencySymbols[activeFiatCurrency] || ''}{athData.price < 0.000000001 ? athData.price.toFixed(16) : athData.price < 0.00000001 ? athData.price.toFixed(12) : athData.price < 0.01 ? athData.price.toFixed(8) : athData.price.toFixed(4)})
               </Typography>
             </Box>
           )}

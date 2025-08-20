@@ -96,12 +96,12 @@ const HeaderSection = styled(Box, {
 })(({ theme, darkMode }) => ({
   position: 'relative',
   background: `linear-gradient(135deg, ${alpha('#FF6B35', 0.05)}, ${alpha('#F7931E', 0.05)})`,
-  borderRadius: '10px',
-  padding: theme.spacing(1.5, 2),
-  marginBottom: theme.spacing(1.5),
+  borderRadius: '8px',
+  padding: theme.spacing(1, 1.5),
+  marginBottom: theme.spacing(1),
   border: `1px solid ${alpha('#FF6B35', 0.15)}`,
   overflow: 'hidden',
-  boxShadow: `0 2px 8px ${alpha('#FF6B35', 0.1)}`
+  boxShadow: `0 1px 4px ${alpha('#FF6B35', 0.08)}`
 }));
 
 const GlowingButton = styled(Button, {
@@ -272,32 +272,34 @@ const TrendingTokens = () => {
       }
     }}>
       <HeaderSection darkMode={darkMode}>
-        <Stack direction="row" alignItems="center" spacing={1.5}>
+        <Stack direction="row" alignItems="center" spacing={1}>
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 36,
-              height: 36,
-              borderRadius: '10px',
+              width: 28,
+              height: 28,
+              borderRadius: '8px',
               background: 'linear-gradient(135deg, #FF6B35, #F7931E)',
-              boxShadow: `0 4px 12px ${alpha('#FF6B35', 0.3)}`
+              boxShadow: `0 2px 8px ${alpha('#FF6B35', 0.25)}`
             }}
           >
-            <LocalFireDepartmentIcon sx={{ color: '#fff', fontSize: 20 }} />
+            <LocalFireDepartmentIcon sx={{ color: '#fff', fontSize: 16 }} />
           </Box>
           <Box flex={1}>
-            <Typography variant="h6" fontWeight="700" color={darkMode ? '#fff' : '#1a1a1a'} sx={{ fontSize: '1rem', lineHeight: 1.3 }}>
-              Trending XRPL Tokens
-            </Typography>
-            <Typography
-              variant="body2"
-              color={darkMode ? alpha('#fff', 0.7) : alpha('#1a1a1a', 0.6)}
-              sx={{ fontSize: '0.75rem', lineHeight: 1.3 }}
-            >
-              Top performing tokens by momentum and activity
-            </Typography>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography variant="body2" fontWeight="700" color={darkMode ? '#fff' : '#1a1a1a'} sx={{ fontSize: '0.85rem', lineHeight: 1 }}>
+                Trending Tokens
+              </Typography>
+              <Typography
+                variant="caption"
+                color={darkMode ? alpha('#fff', 0.6) : alpha('#1a1a1a', 0.5)}
+                sx={{ fontSize: '0.7rem', lineHeight: 1 }}
+              >
+                • Top performers
+              </Typography>
+            </Stack>
           </Box>
           <Chip
             label="Live"
@@ -306,8 +308,8 @@ const TrendingTokens = () => {
               background: alpha('#4caf50', 0.1),
               color: '#4caf50',
               border: `1px solid ${alpha('#4caf50', 0.3)}`,
-              fontSize: '0.65rem',
-              height: 20,
+              fontSize: '0.6rem',
+              height: 18,
               animation: 'pulse 2s infinite',
               '@keyframes pulse': {
                 '0%': { opacity: 1 },
