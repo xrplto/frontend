@@ -577,19 +577,18 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
   return (
     <Box
       sx={{
-        p: { xs: 0.75, sm: 1.5 },
-        pt: { xs: 2, sm: 1.5 },
-        borderRadius: { xs: '10px', sm: '16px' },
+        p: { xs: 0.5, sm: 0.75 },
+        pt: { xs: 0.75, sm: 0.75 },
+        borderRadius: { xs: '8px', sm: '10px' },
         background: 'transparent',
         backdropFilter: 'none',
         WebkitBackdropFilter: 'none',
         border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
         boxShadow: `
-          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-        mb: { xs: 0.75, sm: 2 },
-        mt: { xs: 1, sm: 0 },
+          0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
+          0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
+        mb: { xs: 0.5, sm: 1 },
+        mt: { xs: 0.5, sm: 0 },
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         position: 'relative',
         overflow: 'hidden',
@@ -606,9 +605,9 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
         }
       }}
     >
-      <Stack spacing={{ xs: 0.5, sm: 1.5 }}>
+      <Stack spacing={{ xs: 0.25, sm: 0.5 }}>
         {/* Header with Token Info */}
-        <Stack direction="row" spacing={{ xs: 0.75, sm: 1.5 }} alignItems="flex-start" sx={{ height: { xs: 'auto', sm: 'auto' }, position: 'relative' }}>
+        <Stack direction="row" spacing={{ xs: 0.5, sm: 0.75 }} alignItems="flex-start" sx={{ height: { xs: 'auto', sm: 'auto' }, position: 'relative' }}>
           {/* Mobile Action Buttons - Top right corner */}
           <Stack 
             direction="row" 
@@ -1098,15 +1097,15 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
               direction={{ xs: 'column', md: 'row' }} 
               alignItems={{ xs: 'flex-start', md: 'center' }} 
               justifyContent={{ xs: 'flex-start', md: 'space-between' }} 
-              sx={{ mb: { xs: 0.3, md: 1 }, gap: { xs: 0.3, md: 1 }, flex: 1 }}
+              sx={{ mb: { xs: 0.2, md: 0.5 }, gap: { xs: 0.2, md: 0.5 }, flex: 1 }}
             >
               {/* Left side: Name, user, origin */}
-              <Stack spacing={{ xs: 0.3, sm: 0.5 }} justifyContent="center" sx={{ minWidth: 0, flex: { xs: 'none', md: 1 } }}>
+              <Stack spacing={{ xs: 0.15, sm: 0.25 }} justifyContent="center" sx={{ minWidth: 0, flex: { xs: 'none', md: 1 } }}>
                 <Stack direction="row" alignItems="center" spacing={0.5} sx={{ flexWrap: 'wrap' }}>
                 <Typography
                   variant="h4"
                   sx={{
-                    fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' },
+                    fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.4rem' },
                     fontWeight: 800,
                     background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
                     backgroundClip: 'text',
@@ -1129,8 +1128,8 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        width: { xs: 24, sm: 28 },
-                        height: { xs: 24, sm: 28 },
+                        width: { xs: 18, sm: 22 },
+                        height: { xs: 18, sm: 22 },
                         borderRadius: '50%',
                         background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
                         boxShadow: `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`,
@@ -1138,7 +1137,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                         ml: 0.5
                       }}
                     >
-                      <VerifiedIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: 'white' }} />
+                      <VerifiedIcon sx={{ fontSize: { xs: 10, sm: 12 }, color: 'white' }} />
                     </Box>
                   </Tooltip>
                 )}
@@ -1149,8 +1148,8 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        minWidth: { xs: 24, sm: 28 },
-                        height: { xs: 24, sm: 28 },
+                        minWidth: { xs: 18, sm: 22 },
+                        height: { xs: 18, sm: 22 },
                         px: { xs: 0.5, sm: 0.75 },
                         borderRadius: { xs: '12px', sm: '14px' },
                         background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
@@ -1178,7 +1177,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                     readOnly
                     size="small"
                     sx={{
-                      fontSize: '0.8rem',
+                      fontSize: '0.65rem',
                       '& .MuiRating-iconFilled': {
                         color: theme.palette.warning.main
                       }
@@ -1191,7 +1190,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                     variant="h6" 
                     color="text.secondary" 
                     sx={{ 
-                      fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.4rem' },
+                      fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.85rem' },
                       opacity: 0.85,
                       fontWeight: 600,
                       letterSpacing: '-0.01em',
@@ -1209,18 +1208,18 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                       display: 'flex',
                       alignItems: 'center',
                       gap: { xs: 0.3, sm: 0.5 },
-                      px: { xs: 0.6, sm: 1.25 },
-                      py: { xs: 0.25, sm: 0.5 },
+                      px: { xs: 0.4, sm: 0.75 },
+                      py: { xs: 0.15, sm: 0.3 },
                       borderRadius: { xs: '6px', sm: '10px' },
                       background: origin ? alpha(theme.palette.background.paper, 0.9) : `linear-gradient(135deg, ${alpha('#23288E', 0.15)} 0%, ${alpha('#1976d2', 0.08)} 100%)`,
                       border: `1px solid ${origin ? alpha(theme.palette.divider, 0.2) : alpha('#1976d2', 0.3)}`,
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    <Box sx={{ transform: { xs: 'scale(1.4)', sm: 'scale(1.8)' } }}>
+                    <Box sx={{ transform: { xs: 'scale(1.2)', sm: 'scale(1.4)' } }}>
                       {getOriginIcon(origin || 'XRPL')}
                     </Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: origin ? theme.palette.text.primary : '#1976d2', fontSize: { xs: '0.5rem', sm: '0.75rem' } }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: origin ? theme.palette.text.primary : '#1976d2', fontSize: { xs: '0.45rem', sm: '0.6rem' } }}>
                       {origin || 'XRPL'}
                     </Typography>
                   </Box>
@@ -1609,7 +1608,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
               <Stack 
                 direction="row" 
                 alignItems="center" 
-                spacing={3}
+                spacing={1.5}
                 sx={{ 
                   display: { xs: 'none', md: 'flex' },
                   flex: 1,
@@ -1618,12 +1617,12 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                 }}
               >
                 {/* Center: Price with integrated 24h range */}
-                <Stack alignItems="center" spacing={0.5}>
+                <Stack alignItems="center" spacing={0.25}>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Typography
                       variant="body1"
                       sx={{
-                        fontSize: '1.5rem',
+                        fontSize: '1.1rem',
                         fontWeight: 700,
                         color: priceColor || theme.palette.text.primary,
                         lineHeight: 1,
@@ -1881,9 +1880,9 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
         {/* Percentage Changes - Full width on mobile */}
         <Box
           sx={{
-            mx: { xs: -0.75, sm: 0 },
-            mt: { xs: 0.75, sm: 0 },
-            px: { xs: 0.75, sm: 0 },
+            mx: { xs: -0.5, sm: 0 },
+            mt: { xs: 0.4, sm: 0 },
+            px: { xs: 0.5, sm: 0 },
             display: { xs: 'block', md: 'none' }
           }}
         >
@@ -1906,8 +1905,8 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                   display: 'flex',
                   alignItems: 'center',
                   gap: 0.2,
-                  px: 0.5,
-                  py: 0.2,
+                  px: 0.3,
+                  py: 0.1,
                   borderRadius: '6px',
                   background: alpha(item.color, 0.1),
                   border: `1px solid ${alpha(item.color, 0.2)}`,
@@ -1959,9 +1958,9 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
       {/* Metrics section - Full width on mobile */}
       <Box
         sx={{
-          mx: { xs: -0.75, sm: 0 }, // Negative margin to break out of parent padding on mobile
-          mt: { xs: 1, sm: 2 },
-          px: { xs: 0.75, sm: 0 }
+          mx: { xs: -0.5, sm: 0 }, // Negative margin to break out of parent padding on mobile
+          mt: { xs: 0.5, sm: 0.75 },
+          px: { xs: 0.5, sm: 0 }
         }}
       >
         <Stack direction="row" sx={{ width: '100%', overflowX: { xs: 'auto', sm: 'visible' }, '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
@@ -1972,7 +1971,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                 flex: { xs: 'none', sm: 1 },
                 width: { xs: 'auto', sm: 'auto' },
                 minWidth: { xs: '82px', sm: 'auto' },
-                p: { xs: 0.7, sm: 1 },
+                p: { xs: 0.4, sm: 0.6 },
                 borderRadius: '8px',
                 background: `linear-gradient(135deg, ${alpha(metric.color, 0.08)} 0%, ${alpha(metric.color, 0.05)} 100%)`,
                 border: `1px solid ${alpha(metric.color, 0.15)}`,
@@ -2018,9 +2017,9 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
       {isExpired && (
         <Box
           sx={{
-            mx: { xs: -0.75, sm: 0 },
-            mt: { xs: 0.5, sm: 1 },
-            px: { xs: 0.75, sm: 0 }
+            mx: { xs: -0.5, sm: 0 },
+            mt: { xs: 0.3, sm: 0.5 },
+            px: { xs: 0.5, sm: 0 }
           }}
         >
           <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
@@ -2029,8 +2028,8 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
               size="small"
               color="error"
               sx={{ 
-                fontSize: { xs: '0.55rem', sm: '0.6rem' }, 
-                height: { xs: '14px', sm: '16px' } 
+                fontSize: { xs: '0.45rem', sm: '0.5rem' }, 
+                height: { xs: '12px', sm: '14px' } 
               }}
             />
           </Stack>
