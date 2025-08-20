@@ -1,15 +1,20 @@
 import React, { useContext } from 'react';
+import { useRouter } from 'next/router';
 import { AppContext } from 'src/AppContext';
 import Wallet from 'src/components/Wallet';
 
 const PageLayout = ({ children }) => {
   const { accountProfile, open } = useContext(AppContext);
+  const router = useRouter();
+  
+  // Check if we're on the API docs page
+  const isApiDocsPage = router.pathname === '/api-docs';
 
   return (
     <div style={{ position: 'relative' }}>
       {/* Main content with padding for fixed headers */}
       <div style={{ 
-        paddingTop: '100px', // Space for fixed Topbar (36px) + Header (64px)
+        paddingTop: isApiDocsPage ? '0' : '100px', // No padding for API docs page
         marginRight: accountProfile && open ? '350px' : '0',
         transition: 'margin-right 0.3s ease'
       }}>
