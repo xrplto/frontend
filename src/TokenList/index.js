@@ -318,25 +318,48 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     []
   );
 
+  // Cache table dimensions to avoid repeated DOM queries
+  const tableDimensionsRef = useRef({ top: 0, height: 0 });
+  
+  // Update cached dimensions when table mounts or resizes
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (tableRef.current) {
+        const rect = tableRef.current.getBoundingClientRect();
+        tableDimensionsRef.current = {
+          top: rect.top + window.scrollY,
+          height: rect.height
+        };
+      }
+    };
+    
+    updateDimensions();
+    
+    // Update dimensions on resize
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    if (tableRef.current) {
+      resizeObserver.observe(tableRef.current);
+    }
+    
+    return () => resizeObserver.disconnect();
+  }, []);
+  
   const handleScrollY = useMemo(
     () => throttle(() => {
-      // Batch DOM reads in requestAnimationFrame to avoid forced reflow
-      requestAnimationFrame(() => {
-        if (tableRef.current) {
-          const rect = tableRef.current.getBoundingClientRect();
-          const scrollTop = window.scrollY;
-          const tableOffsetTop = rect.top + scrollTop;
-          const tableHeight = rect.height;
-          const anchorTop = tableOffsetTop;
-          const anchorBottom = tableOffsetTop + tableHeight;
+      // Use cached dimensions instead of querying DOM
+      const scrollTop = window.scrollY;
+      const { top: tableOffsetTop, height: tableHeight } = tableDimensionsRef.current;
+      
+      if (tableHeight > 0) {
+        const anchorTop = tableOffsetTop;
+        const anchorBottom = tableOffsetTop + tableHeight;
 
-          if (scrollTop > anchorTop && scrollTop < anchorBottom) {
-            setScrollTopLength(scrollTop - anchorTop);
-          } else {
-            setScrollTopLength(0);
-          }
+        if (scrollTop > anchorTop && scrollTop < anchorBottom) {
+          setScrollTopLength(scrollTop - anchorTop);
+        } else {
+          setScrollTopLength(0);
         }
-      });
+      }
     }, 100),
     []
   );

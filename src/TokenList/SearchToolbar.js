@@ -473,6 +473,7 @@ const SearchToolbar = memo(function SearchToolbar({
     const calculateVisibleTags = () => {
       if (!containerRef.current || !tags || tags.length === 0) return;
       
+      // Read all DOM properties at once before any DOM modifications
       const container = containerRef.current;
       const containerWidth = container.offsetWidth;
       const isMobile = window.innerWidth <= 600;
@@ -530,25 +531,57 @@ const SearchToolbar = memo(function SearchToolbar({
           // Just measure text width without icons since icons have consistent width
           tempTag.innerHTML = `<span style="width:12px;height:12px;display:inline-block"></span> <span>${tag}</span>`;
           tempContainer.appendChild(tempTag);
-          
-          tagWidth = tempTag.offsetWidth + (isMobile ? 6 : 10); // gap
-          
-          // Cache the width (limit cache size to 100 entries)
-          if (tagWidthCache.current.size > 100) {
-            const firstKey = tagWidthCache.current.keys().next().value;
-            tagWidthCache.current.delete(firstKey);
-          }
-          tagWidthCache.current.set(tagCacheKey, tagWidth);
-          
-          // Clean up temp tag
-          tempContainer.removeChild(tempTag);
         }
+      }
+      
+      // Batch all DOM reads after all modifications are done
+      if (tempContainer) {
+        const tempTags = tempContainer.querySelectorAll('.measure-tag');
+        let tempIndex = 0;
         
-        if (totalTagWidth + tagWidth <= availableWidth) {
-          totalTagWidth += tagWidth;
-          count++;
-        } else {
-          break;
+        for (let i = 0; i < tags.length; i++) {
+          const tag = tags[i];
+          const tagCacheKey = `${cacheKey}-${tag}`;
+          
+          let tagWidth;
+          
+          if (tagWidthCache.current.has(tagCacheKey)) {
+            tagWidth = tagWidthCache.current.get(tagCacheKey);
+          } else {
+            // Read the width from the temp element
+            tagWidth = tempTags[tempIndex].offsetWidth + (isMobile ? 6 : 10); // gap
+            tempIndex++;
+            
+            // Cache the width (limit cache size to 100 entries)
+            if (tagWidthCache.current.size > 100) {
+              const firstKey = tagWidthCache.current.keys().next().value;
+              tagWidthCache.current.delete(firstKey);
+            }
+            tagWidthCache.current.set(tagCacheKey, tagWidth);
+          }
+          
+          if (totalTagWidth + tagWidth <= availableWidth) {
+            totalTagWidth += tagWidth;
+            count++;
+          } else {
+            break;
+          }
+        }
+      } else {
+        // Original loop for when no measuring is needed
+        for (let i = 0; i < tags.length; i++) {
+          const tag = tags[i];
+          const tagCacheKey = `${cacheKey}-${tag}`;
+          
+          if (tagWidthCache.current.has(tagCacheKey)) {
+            const tagWidth = tagWidthCache.current.get(tagCacheKey);
+            if (totalTagWidth + tagWidth <= availableWidth) {
+              totalTagWidth += tagWidth;
+              count++;
+            } else {
+              break;
+            }
+          }
         }
       }
       
