@@ -42,6 +42,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import SmartToy from '@mui/icons-material/SmartToy';
+import { Icon } from '@iconify/react';
 import { getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 import PairsList from 'src/TokenDetail/market/PairsList';
 import TopTraders from 'src/TokenDetail/toptraders';
@@ -254,13 +255,14 @@ const formatRelativeTime = (timestamp) => {
   }
 };
 
-const getTradeSizeEmoji = (value) => {
+const getTradeSizeIcon = (value) => {
   const xrpValue = parseFloat(value);
-  if (xrpValue < 500) return '🦐';
-  if (xrpValue >= 500 && xrpValue < 5000) return '🐬';
-  if (xrpValue >= 5000 && xrpValue < 10000) return '🐋';
-  if (xrpValue >= 10000) return '🐳';
-  return '';
+  if (xrpValue < 500) return 'game-icons:shrimp';
+  if (xrpValue < 1000) return 'ph:fish-fill';
+  if (xrpValue < 2500) return 'game-icons:dolphin';
+  if (xrpValue < 5000) return 'game-icons:octopus';
+  if (xrpValue < 10000) return 'game-icons:shark-fin';
+  return 'game-icons:sperm-whale';
 };
 
 const formatTradeValue = (value) => {
@@ -341,15 +343,23 @@ const filterTrades = (trades, selectedFilter) => {
       const xrpAmount = getXRPAmount(trade);
       return xrpAmount > 0 && xrpAmount < 500;
     },
-    '🐬 500-5000 XRP': (trade) => {
+    '🐟 500-1000 XRP': (trade) => {
       const xrpAmount = getXRPAmount(trade);
-      return xrpAmount >= 500 && xrpAmount < 5000;
+      return xrpAmount >= 500 && xrpAmount < 1000;
     },
-    '🐋 5000-10000 XRP': (trade) => {
+    '🐬 1000-2500 XRP': (trade) => {
+      const xrpAmount = getXRPAmount(trade);
+      return xrpAmount >= 1000 && xrpAmount < 2500;
+    },
+    '🐙 2500-5000 XRP': (trade) => {
+      const xrpAmount = getXRPAmount(trade);
+      return xrpAmount >= 2500 && xrpAmount < 5000;
+    },
+    '🦈 5000-10000 XRP': (trade) => {
       const xrpAmount = getXRPAmount(trade);
       return xrpAmount >= 5000 && xrpAmount < 10000;
     },
-    '🐳 10000+ XRP': (trade) => {
+    '🐋 10000+ XRP': (trade) => {
       const xrpAmount = getXRPAmount(trade);
       return xrpAmount >= 10000;
     }
@@ -1038,9 +1048,12 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                         </Typography>
                       </Link>
                     </Tooltip>
-                    <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
-                      {getTradeSizeEmoji(xrpAmount)}
-                    </Typography>
+                    <Icon 
+                      icon={getTradeSizeIcon(xrpAmount)} 
+                      width="16" 
+                      height="16"
+                      style={{ color: theme.palette.text.secondary }}
+                    />
                     {(makerIsWashTrader || takerIsWashTrader) && (
                       <SmartToy
                         fontSize="small"
