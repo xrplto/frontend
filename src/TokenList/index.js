@@ -18,9 +18,13 @@ const MemoizedTokenRow = memo(TokenRow, (prevProps, nextProps) => {
   const prev = prevProps.token;
   const next = nextProps.token;
   
-  // Fast path: check only price and percentage changes for trading
+  // Fast path: check only critical fields
   if (prev.exch !== next.exch) return false;
   if (prev.pro24h !== next.pro24h) return false;
+  if (prev.pro5m !== next.pro5m) return false;
+  if (prev.pro1h !== next.pro1h) return false;
+  if (prev.pro7d !== next.pro7d) return false;
+  if (prev.vol24hxrp !== next.vol24hxrp) return false;
   if (prev.time !== next.time) return false;
   
   // Check watchlist only if changed
@@ -35,13 +39,22 @@ const MemoizedTokenRow = memo(TokenRow, (prevProps, nextProps) => {
   
   // Check if view mode changed
   if (prevProps.viewMode !== nextProps.viewMode) return false;
+  if (prevProps.customColumns !== nextProps.customColumns) return false;
   
   return true; // Skip re-render
 });
-const LazyEditTokenDialog = lazy(() => import('src/components/EditTokenDialog'));
-const LazyTrustSetDialog = lazy(() => import('src/components/TrustSetDialog'));
-const LazySearchToolbar = lazy(() => import('./SearchToolbar'));
-const LazyTokenListToolbar = lazy(() => import('./TokenListToolbar'));
+const LazyEditTokenDialog = lazy(() => 
+  import(/* webpackChunkName: "edit-token-dialog" */ 'src/components/EditTokenDialog')
+);
+const LazyTrustSetDialog = lazy(() => 
+  import(/* webpackChunkName: "trust-set-dialog" */ 'src/components/TrustSetDialog')
+);
+const LazySearchToolbar = lazy(() => 
+  import(/* webpackChunkName: "search-toolbar" */ './SearchToolbar')
+);
+const LazyTokenListToolbar = lazy(() => 
+  import(/* webpackChunkName: "token-list-toolbar" */ './TokenListToolbar')
+);
 
 const Container = styled.div`
   display: flex;
@@ -49,6 +62,7 @@ const Container = styled.div`
   width: 100%;
   padding: 0; /* Ensure no padding */
   margin: 0; /* Ensure no margin */
+  contain: layout style;
 `;
 
 const TableContainer = styled.div`
@@ -76,13 +90,14 @@ const TableContainer = styled.div`
 `;
 
 const StyledTable = styled.table`
-  table-layout: ${props => props.isMobile ? 'fixed' : 'fixed'}; /* Fixed layout for consistent spacing */
+  table-layout: fixed; /* Fixed layout for consistent spacing */
   width: 100%;
   border-collapse: collapse;
   transition: opacity 0.1s ease;
-  contain: layout;
+  contain: layout style paint;
   margin: 0;
   padding: 0;
+  will-change: auto;
 `;
 
 const StyledTableBody = styled.tbody`
@@ -91,8 +106,8 @@ const StyledTableBody = styled.tbody`
   
   tr {
     will-change: auto;
-    contain: layout style;
-    transition: background-color 0.15s ease;
+    contain: layout style paint;
+    transition: background-color 0.1s ease;
     margin: 0;
     padding: 0;
     
@@ -296,17 +311,17 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const [scrollTopLength, setScrollTopLength] = useState(0);
 
   const handleScrollX = useMemo(
-    () => debounce(() => {
+    () => throttle(() => {
       if (tableContainerRef.current) {
         const scrollLeft = tableContainerRef.current.scrollLeft;
         setScrollLeft(scrollLeft > 0);
       }
-    }, 150),
+    }, 100),
     []
   );
 
   const handleScrollY = useMemo(
-    () => debounce(() => {
+    () => throttle(() => {
       if (tableRef.current) {
         const rect = tableRef.current.getBoundingClientRect();
         const scrollTop = window.scrollY;
@@ -321,7 +336,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           setScrollTopLength(0);
         }
       }
-    }, 150),
+    }, 100),
     []
   );
 
@@ -357,7 +372,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     if (wsProcessing.current || wsMessageQueue.current.length === 0) return;
     wsProcessing.current = true;
     
-    const messages = wsMessageQueue.current.splice(0, 25); // Process max 25 at once for smoother updates
+    const messages = wsMessageQueue.current.splice(0, 10); // Process max 10 at once for smoother updates
     
     const aggregatedTokens = new Map();
     let latestMetrics = null;
@@ -424,9 +439,9 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           clearTimeout(wsProcessTimer.current);
         }
         
-        wsProcessTimer.current = requestAnimationFrame(() => {
-          processWebSocketQueue();
-        }); // Use RAF for smoother updates
+        wsProcessTimer.current = setTimeout(() => {
+          requestIdleCallback(() => processWebSocketQueue(), { timeout: 50 });
+        }, 16); // Batch messages with 16ms delay (60fps)
         
       } catch (err) {
         console.error('Error parsing WebSocket message:', err);
@@ -450,7 +465,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
       const fetchMetrics = async () => {
         try {
           const metricsResponse = await axios.get(
-            `${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`
+            `${BASE_URL}/tokens?start=0&limit=50&sortBy=vol24hxrp&sortType=desc&filter=&skipMetrics=false`
           );
           if (metricsResponse.status === 200 && metricsResponse.data) {
             dispatch(update_metrics(metricsResponse.data));
@@ -469,7 +484,8 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
       ) {
         setMetricsLoaded(true);
       } else {
-        fetchMetrics();
+        // Delay initial fetch slightly to prioritize critical rendering
+        setTimeout(fetchMetrics, 100);
       }
     }
   }, [metricsLoaded, BASE_URL, dispatch, metrics, activeFiatCurrency]);
@@ -525,7 +541,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   }, []);
 
   const debouncedLoadTokens = useMemo(
-    () => debounce(() => {
+    () => throttle(() => {
       const start = page * rows;
       const ntag = tag || '';
       const watchAccount = showWatchList ? accountProfile?.account || '' : '';
@@ -544,7 +560,7 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         })
         .catch((err) => console.log('err->>', err))
         .finally(() => setSearch(filterName));
-    }, 500),
+    }, 300),
     [
       accountProfile,
       filterName,
@@ -695,18 +711,26 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   }, []);
 
   // Performance optimization: virtualization for large lists
-  const [renderCount, setRenderCount] = useState(20);
+  const [renderCount, setRenderCount] = useState(15);
   
   useEffect(() => {
-    if (rows > 20) {
+    if (rows > 15) {
       // Immediate render of visible rows
-      setRenderCount(Math.min(50, rows));
+      setRenderCount(Math.min(30, rows));
       // Load rest progressively
-      if (rows > 50) {
+      if (rows > 30) {
         const timer = requestIdleCallback(() => {
           startTransition(() => {
-            setRenderCount(Math.min(rows, 100));
+            setRenderCount(Math.min(rows, 50));
           });
+          // Load even more if needed
+          if (rows > 50) {
+            requestIdleCallback(() => {
+              startTransition(() => {
+                setRenderCount(Math.min(rows, 100));
+              });
+            }, { timeout: 300 });
+          }
         }, { timeout: 100 });
         return () => cancelIdleCallback(timer);
       }

@@ -8,7 +8,92 @@ import { AppContext } from 'src/AppContext';
 import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
-import LoadChart from 'src/components/LoadChart';
+import dynamic from 'next/dynamic';
+
+// Lazy load chart component
+const LoadChart = dynamic(() => import('src/components/LoadChart'), {
+  ssr: false,
+  loading: () => (
+    <div style={{ 
+      width: '260px', 
+      height: '60px', 
+      background: 'rgba(128, 128, 128, 0.05)',
+      borderRadius: '4px'
+    }} />
+  )
+});
+
+// Optimized chart wrapper with intersection observer
+const OptimizedChart = memo(({ url, darkMode }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const chartRef = useRef(null);
+  const observerRef = useRef(null);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    observerRef.current = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          if (observerRef.current) {
+            observerRef.current.disconnect();
+          }
+        }
+      },
+      {
+        rootMargin: '100px',
+        threshold: 0.01
+      }
+    );
+
+    observerRef.current.observe(chartRef.current);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  // Don't render chart until visible
+  if (!isVisible) {
+    return (
+      <div 
+        ref={chartRef}
+        style={{ 
+          width: '260px', 
+          height: '60px',
+          background: darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
+          borderRadius: '4px'
+        }} 
+      />
+    );
+  }
+
+  return (
+    <div ref={chartRef} style={{ width: '260px', height: '60px', display: 'inline-block' }}>
+      <LoadChart
+        url={url}
+        style={{ width: '100%', height: '100%' }}
+        animation={false}
+        showGradient={false}
+        lineWidth={1.5}
+        opts={{ 
+          renderer: 'svg', 
+          width: 260, 
+          height: 60,
+          devicePixelRatio: 1 // Lower DPR for performance
+        }}
+      />
+    </div>
+  );
+}, (prevProps, nextProps) => {
+  // Only re-render if URL changes
+  return prevProps.url === nextProps.url && prevProps.darkMode === nextProps.darkMode;
+});
+
+OptimizedChart.displayName = 'OptimizedChart';
 
 const StyledRow = styled.tr`
   border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
@@ -16,6 +101,8 @@ const StyledRow = styled.tr`
   cursor: pointer;
   margin: 0;
   padding: 0;
+  contain: layout style;
+  will-change: auto;
   
   &:hover {
     background-color: ${props => props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
@@ -31,6 +118,7 @@ const StyledCell = styled.td`
   vertical-align: middle;
   width: ${props => props.width || 'auto'};
   min-width: ${props => props.isTokenColumn ? '250px' : 'auto'};
+  contain: layout style paint;
 `;
 
 // Mobile-specific flexbox components
@@ -187,8 +275,8 @@ const OptimizedImage = ({ src, alt, size, onError, priority = false, md5 }) => {
         }
       },
       { 
-        rootMargin: '100px',
-        threshold: 0 
+        rootMargin: '50px',
+        threshold: 0.01 
       }
     );
     
@@ -215,7 +303,8 @@ const OptimizedImage = ({ src, alt, size, onError, priority = false, md5 }) => {
           width: size,
           height: size,
           borderRadius: '50%',
-          background: 'rgba(128, 128, 128, 0.1)'
+          background: 'rgba(128, 128, 128, 0.1)',
+          willChange: 'auto'
         }} 
       />
     );
@@ -228,13 +317,12 @@ const OptimizedImage = ({ src, alt, size, onError, priority = false, md5 }) => {
         alt={alt}
         width={size}
         height={size}
-        quality={60}
+        quality={50}
         priority={priority}
         loading={priority ? 'eager' : 'lazy'}
         onError={handleError}
-        unoptimized={false}
-        placeholder="blur"
-        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxNiIgZmlsbD0iIzk5OSIgb3BhY2l0eT0iMC4xIi8+PC9zdmc+"
+        unoptimized={true}
+        placeholder="empty"
         style={{ 
           width: '100%', 
           height: '100%', 
@@ -264,8 +352,8 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
   }, [token.bearbull]);
 
   const imgUrl = useMemo(() => {
-    // Add cache parameter for 1 hour caching
-    const cacheTime = Math.floor(Date.now() / (1000 * 60 * 60));
+    // Add cache parameter for 4 hour caching to reduce requests
+    const cacheTime = Math.floor(Date.now() / (1000 * 60 * 60 * 4));
     return `https://s1.xrpl.to/token/${md5}?v=${cacheTime}`;
   }, [md5]);
 
@@ -391,8 +479,8 @@ const DesktopTokenRow = ({
   }, [token.bearbull]);
 
   const imgUrl = useMemo(() => {
-    // Add cache parameter for 1 hour caching
-    const cacheTime = Math.floor(Date.now() / (1000 * 60 * 60));
+    // Add cache parameter for 4 hour caching to reduce requests
+    const cacheTime = Math.floor(Date.now() / (1000 * 60 * 60 * 4));
     return `https://s1.xrpl.to/token/${md5}?v=${cacheTime}`;
   }, [md5]);
 
@@ -477,16 +565,7 @@ const DesktopTokenRow = ({
             </StyledCell>
             <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px' }}>
               {sparklineUrl ? (
-                <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
-                  <LoadChart
-                    url={sparklineUrl}
-                    style={{ width: '100%', height: '100%' }}
-                    animation={false}
-                    showGradient={false}
-                    lineWidth={1.5}
-                    opts={{ renderer: 'svg', width: 260, height: 60 }}
-                  />
-                </div>
+                <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
               )}
@@ -552,16 +631,7 @@ const DesktopTokenRow = ({
             </StyledCell>
             <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px' }}>
               {sparklineUrl ? (
-                <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
-                  <LoadChart
-                    url={sparklineUrl}
-                    style={{ width: '100%', height: '100%' }}
-                    animation={false}
-                    showGradient={false}
-                    lineWidth={1.5}
-                    opts={{ renderer: 'svg', width: 260, height: 60 }}
-                  />
-                </div>
+                <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
               )}
@@ -595,16 +665,7 @@ const DesktopTokenRow = ({
             </StyledCell>
             <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px' }}>
               {sparklineUrl ? (
-                <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
-                  <LoadChart
-                    url={sparklineUrl}
-                    style={{ width: '100%', height: '100%' }}
-                    animation={false}
-                    showGradient={false}
-                    lineWidth={1.5}
-                    opts={{ renderer: 'svg', width: 260, height: 60 }}
-                  />
-                </div>
+                <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
               )}
@@ -869,16 +930,7 @@ const DesktopTokenRow = ({
             </StyledCell>
             <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px', paddingLeft: '16px' }}>
               {sparklineUrl ? (
-                <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
-                  <LoadChart
-                    url={sparklineUrl}
-                    style={{ width: '100%', height: '100%' }}
-                    animation={false}
-                    showGradient={false}
-                    lineWidth={1.5}
-                    opts={{ renderer: 'svg', width: 260, height: 60 }}
-                  />
-                </div>
+                <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
               )}
