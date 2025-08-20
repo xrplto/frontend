@@ -67,24 +67,24 @@ const badge24hStyle = {
 // Enhanced styled components
 const ModernTableCell = styled(TableCell)(({ theme }) => ({
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  padding: theme.spacing(1.5),
+  padding: theme.spacing(0.75),
   '&:first-of-type': {
-    paddingLeft: theme.spacing(2),
+    paddingLeft: theme.spacing(1),
     fontWeight: 600,
     color: alpha(theme.palette.text.primary, 0.9)
   },
   '&:last-of-type': {
-    paddingRight: theme.spacing(2),
-    paddingLeft: theme.spacing(4)
+    paddingRight: theme.spacing(1),
+    paddingLeft: theme.spacing(2)
   },
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1),
+    padding: theme.spacing(0.5),
     '&:first-of-type': {
-      paddingLeft: theme.spacing(1.5)
+      paddingLeft: theme.spacing(0.75)
     },
     '&:last-of-type': {
-      paddingRight: theme.spacing(1.5),
-      paddingLeft: theme.spacing(2)
+      paddingRight: theme.spacing(0.75),
+      paddingLeft: theme.spacing(1)
     }
   }
 }));
@@ -219,18 +219,17 @@ export default function PriceStatistics({ token }) {
   return (
     <Box
       sx={{
-        borderRadius: { xs: '12px', sm: '16px' },
+        borderRadius: { xs: '8px', sm: '10px' },
         background: 'transparent',
         backdropFilter: 'none',
         WebkitBackdropFilter: 'none',
         border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
         boxShadow: `
-          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+          0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
+          0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
         position: 'relative',
         overflow: 'hidden',
-        mb: { xs: 1, sm: 2 },
+        mb: { xs: 0.5, sm: 1 },
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&::before': {
           display: 'none'
@@ -262,12 +261,12 @@ export default function PriceStatistics({ token }) {
           }
         }}
       >
-        <DialogContent sx={{ textAlign: 'center', py: 4, px: 3 }}>
+        <DialogContent sx={{ textAlign: 'center', py: 2, px: 2 }}>
           <WarningAmberIcon 
             sx={{ 
-              fontSize: '3rem',
+              fontSize: '2rem',
               color: theme.palette.error.main,
-              mb: 2
+              mb: 1
             }} 
           />
           <Typography
@@ -285,7 +284,7 @@ export default function PriceStatistics({ token }) {
             variant="body2"
             sx={{
               color: alpha(theme.palette.text.primary, 0.7),
-              mb: 3
+              mb: 2
             }}
           >
             This token has been flagged as a potential scam. Please exercise extreme caution.
@@ -296,8 +295,8 @@ export default function PriceStatistics({ token }) {
             sx={{
               backgroundColor: theme.palette.error.main,
               color: theme.palette.common.white,
-              px: 4,
-              py: 1,
+              px: 3,
+              py: 0.75,
               borderRadius: '12px',
               fontWeight: 600,
               '&:hover': {
@@ -313,7 +312,7 @@ export default function PriceStatistics({ token }) {
       {/* Enhanced Header */}
       <Box
         sx={{
-          p: { xs: 1.5, sm: 2 },
+          p: { xs: 0.75, sm: 1 },
           background: `linear-gradient(135deg, 
             ${alpha(theme.palette.primary.main, 0.1)} 0%, 
             ${alpha(theme.palette.primary.main, 0.05)} 50%,
@@ -339,7 +338,7 @@ export default function PriceStatistics({ token }) {
         <Typography
           variant="h6"
           sx={{
-            fontSize: { xs: '1rem', sm: '1.2rem' },
+            fontSize: { xs: '0.75rem', sm: '0.9rem' },
             fontWeight: 800,
             background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
             backgroundClip: 'text',
@@ -362,7 +361,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 700,
                   color: alpha(theme.palette.text.primary, 0.85),
-                  fontSize: isMobile ? '0.8rem' : '0.875rem'
+                  fontSize: isMobile ? '0.65rem' : '0.75rem'
                 }}
                 noWrap
               >
@@ -463,7 +462,7 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     fontWeight: 700,
                     color: alpha(theme.palette.text.primary, 0.85),
-                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                    fontSize: isMobile ? '0.65rem' : '0.75rem'
                   }}
                   noWrap
                 >
@@ -486,7 +485,7 @@ export default function PriceStatistics({ token }) {
                       pl: isMobile ? 0.75 : 1,
                       pr: isMobile ? 0.75 : 1,
                       borderRadius: '10px',
-                      height: isMobile ? '26px' : '32px',
+                      height: isMobile ? '20px' : '24px',
                       background: theme.palette.mode === 'dark'
                         ? `linear-gradient(145deg, ${alpha('#9C27B0', 0.15)} 0%, ${alpha('#9C27B0', 0.08)} 100%)`
                         : `linear-gradient(145deg, ${alpha('#7B1FA2', 0.12)} 0%, ${alpha('#7B1FA2', 0.06)} 100%)`,
@@ -517,9 +516,9 @@ export default function PriceStatistics({ token }) {
                       <IconButton
                         size="small"
                         sx={{
-                          p: 0.5,
-                          width: 32,
-                          height: 32,
+                          p: 0.25,
+                          width: 24,
+                          height: 24,
                           borderRadius: '8px',
                           background: alpha(theme.palette.background.paper, 0.8),
                           border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -540,8 +539,8 @@ export default function PriceStatistics({ token }) {
                       >
                         <ContentCopyIcon
                           sx={{
-                            width: isMobile ? 12 : 14,
-                            height: isMobile ? 12 : 14,
+                            width: isMobile ? 10 : 12,
+                            height: isMobile ? 10 : 12,
                             color: theme.palette.mode === 'dark' ? '#CE93D8' : '#7B1FA2'
                           }}
                         />
@@ -557,7 +556,7 @@ export default function PriceStatistics({ token }) {
                         size="small"
                         sx={{
                           borderRadius: '10px',
-                          height: isMobile ? '20px' : '26px',
+                          height: isMobile ? '16px' : '20px',
                           background: `linear-gradient(145deg, ${alpha(
                             theme.palette.info.main,
                             0.1
@@ -566,7 +565,7 @@ export default function PriceStatistics({ token }) {
                           border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
                           color: theme.palette.info.main,
                           fontWeight: 600,
-                          fontSize: isMobile ? '0.65rem' : '0.75rem',
+                          fontSize: isMobile ? '0.55rem' : '0.65rem',
                           minWidth: isMobile ? '20px' : 'unset',
                           justifyContent: isMobile ? 'center' : 'flex-start',
                           pl: isMobile ? 0.5 : 1,
@@ -593,7 +592,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 700,
                   color: alpha(theme.palette.text.primary, 0.85),
-                  fontSize: isMobile ? '0.8rem' : '0.875rem'
+                  fontSize: isMobile ? '0.65rem' : '0.75rem'
                 }}
                 noWrap
               >
@@ -609,7 +608,7 @@ export default function PriceStatistics({ token }) {
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  fontSize: isMobile ? '0.95rem' : '1.1rem'
+                  fontSize: isMobile ? '0.75rem' : '0.9rem'
                 }}
               >
                 <NumberTooltip number={fNumber(voldivmarket)} />
@@ -625,7 +624,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 700,
                   color: theme.palette.text.primary,
-                  fontSize: isMobile ? '0.8rem' : '0.875rem'
+                  fontSize: isMobile ? '0.65rem' : '0.75rem'
                 }}
                 noWrap
               >
@@ -638,7 +637,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 700,
                   color: theme.palette.mode === 'dark' ? '#66BB6A' : '#2E7D32',
-                  fontSize: isMobile ? '0.95rem' : '1.1rem',
+                  fontSize: isMobile ? '0.75rem' : '0.9rem',
                   textShadow: theme.palette.mode === 'dark' 
                     ? '0 0 12px rgba(102, 187, 106, 0.3)' 
                     : 'none'
@@ -659,7 +658,7 @@ export default function PriceStatistics({ token }) {
                 sx={{
                   fontWeight: 700,
                   color: alpha(theme.palette.text.primary, 0.85),
-                  fontSize: isMobile ? '0.8rem' : '0.875rem'
+                  fontSize: isMobile ? '0.65rem' : '0.75rem'
                 }}
                 noWrap
               >
@@ -678,7 +677,7 @@ export default function PriceStatistics({ token }) {
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  fontSize: isMobile ? '0.95rem' : '1.1rem'
+                  fontSize: isMobile ? '0.75rem' : '0.9rem'
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{' '}
@@ -696,7 +695,7 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     fontWeight: 700,
                     color: alpha(theme.palette.text.primary, 0.85),
-                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                    fontSize: isMobile ? '0.65rem' : '0.75rem'
                   }}
                   noWrap
                 >
@@ -712,7 +711,7 @@ export default function PriceStatistics({ token }) {
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    fontSize: isMobile ? '0.95rem' : '1.1rem'
+                    fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
                   <NumberTooltip number={fNumber(amount)} />
@@ -730,7 +729,7 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     fontWeight: 700,
                     color: alpha(theme.palette.text.primary, 0.85),
-                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                    fontSize: isMobile ? '0.65rem' : '0.75rem'
                   }}
                   noWrap
                 >
@@ -746,7 +745,7 @@ export default function PriceStatistics({ token }) {
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    fontSize: isMobile ? '0.95rem' : '1.1rem'
+                    fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
                   <NumberTooltip number={fNumber(holders)} />
@@ -764,7 +763,7 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     fontWeight: 700,
                     color: theme.palette.text.primary,
-                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                    fontSize: isMobile ? '0.65rem' : '0.75rem'
                   }}
                   noWrap
                 >
@@ -777,7 +776,7 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     fontWeight: 700,
                     color: theme.palette.mode === 'dark' ? '#64B5F6' : '#1976D2',
-                    fontSize: isMobile ? '0.95rem' : '1.1rem',
+                    fontSize: isMobile ? '0.75rem' : '0.9rem',
                     textShadow: theme.palette.mode === 'dark' 
                       ? '0 0 12px rgba(100, 181, 246, 0.3)' 
                       : 'none'
@@ -798,7 +797,7 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     fontWeight: 700,
                     color: alpha(theme.palette.text.primary, 0.85),
-                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                    fontSize: isMobile ? '0.65rem' : '0.75rem'
                   }}
                   noWrap
                 >
@@ -814,7 +813,7 @@ export default function PriceStatistics({ token }) {
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    fontSize: isMobile ? '0.95rem' : '1.1rem'
+                    fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
                   <NumberTooltip number={fNumber(uniqueTraders24h)} />
@@ -832,7 +831,7 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     fontWeight: 700,
                     color: theme.palette.text.primary,
-                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                    fontSize: isMobile ? '0.65rem' : '0.75rem'
                   }}
                   noWrap
                 >
@@ -845,7 +844,7 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     fontWeight: 700,
                     color: theme.palette.mode === 'dark' ? '#FFB74D' : '#F57C00',
-                    fontSize: isMobile ? '0.95rem' : '1.1rem',
+                    fontSize: isMobile ? '0.75rem' : '0.9rem',
                     textShadow: theme.palette.mode === 'dark' 
                       ? '0 0 12px rgba(255, 183, 77, 0.3)' 
                       : 'none'
@@ -866,7 +865,7 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     fontWeight: 700,
                     color: alpha(theme.palette.text.primary, 0.85),
-                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                    fontSize: isMobile ? '0.65rem' : '0.75rem'
                   }}
                   noWrap
                 >
@@ -879,7 +878,7 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     fontWeight: 600,
                     color: alpha(theme.palette.text.secondary, 0.8),
-                    fontSize: isMobile ? '0.9rem' : '1rem'
+                    fontSize: isMobile ? '0.7rem' : '0.85rem'
                   }}
                 >
                   {fDate(date || dateon)}
@@ -897,7 +896,7 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     fontWeight: 700,
                     color: alpha(theme.palette.text.primary, 0.85),
-                    fontSize: isMobile ? '0.8rem' : '0.875rem'
+                    fontSize: isMobile ? '0.65rem' : '0.75rem'
                   }}
                   noWrap
                 >
@@ -1000,8 +999,8 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
             rel="noopener noreferrer"
             size="small"
             sx={{
-              width: isMobile ? 26 : 32,
-              height: isMobile ? 26 : 32,
+              width: isMobile ? 20 : 24,
+              height: isMobile ? 20 : 24,
               p: 0.5,
               borderRadius: '8px',
               background: `linear-gradient(145deg, ${alpha(
@@ -1051,8 +1050,8 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
             onClick={() => toggleLinksDrawer(true)}
             size="small"
             sx={{
-              width: isMobile ? 26 : 32,
-              height: isMobile ? 26 : 32,
+              width: isMobile ? 20 : 24,
+              height: isMobile ? 20 : 24,
               p: 0.5,
               borderRadius: '8px',
               background: `linear-gradient(145deg, ${alpha(
@@ -1123,8 +1122,8 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
               )
             }
             sx={{
-              height: isMobile ? '22px' : '26px',
-              fontSize: isMobile ? '0.65rem' : '0.75rem',
+              height: isMobile ? '18px' : '22px',
+              fontSize: isMobile ? '0.55rem' : '0.65rem',
               borderRadius: '8px',
               px: isMobile ? 0.75 : 1,
               background: `linear-gradient(145deg, ${alpha(

@@ -38,8 +38,8 @@ const TokenImage = styled(Image)(({ theme }) => ({
   borderRadius: '4px',
   overflow: 'hidden',
   objectFit: 'cover',
-  width: '24px',
-  height: '24px',
+  width: '18px',
+  height: '18px',
   border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
 }));
 
@@ -48,9 +48,9 @@ const VerifiedBadge = styled(Badge)(({ theme }) => ({
     backgroundColor: '#1976d2',
     color: '#fff',
     borderRadius: '50%',
-    width: '10px',
-    height: '10px',
-    minWidth: '10px',
+    width: '8px',
+    height: '8px',
+    minWidth: '8px',
     fontSize: '6px',
     fontWeight: 'bold',
     border: `1px solid ${theme.palette.background.paper}`,
@@ -62,7 +62,7 @@ const TrendingCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'darkMode' && prop !== 'rank'
 })(({ theme, darkMode, rank }) => ({
   position: 'relative',
-  borderRadius: '8px',
+  borderRadius: '6px',
   background: 'transparent',
   backdropFilter: 'none',
   border:
@@ -85,8 +85,8 @@ const HeaderSection = styled(Box, {
   position: 'relative',
   background: 'transparent',
   borderRadius: '6px',
-  padding: theme.spacing(0.5, 1),
-  marginBottom: theme.spacing(0.75),
+  padding: theme.spacing(0.25, 0.5),
+  marginBottom: theme.spacing(0.4),
   border: `1px solid ${alpha('#FF6B35', 0.2)}`,
   overflow: 'hidden'
 }));
@@ -96,11 +96,11 @@ const GlowingButton = styled(Button, {
 })(({ theme, darkMode }) => ({
   background: 'transparent',
   color: `${theme.palette.primary.main} !important`,
-  borderRadius: '6px',
-  padding: theme.spacing(0.5, 2),
+  borderRadius: '4px',
+  padding: theme.spacing(0.25, 1),
   textTransform: 'none',
   fontWeight: 600,
-  fontSize: '0.75rem',
+  fontSize: '0.65rem',
   position: 'relative',
   overflow: 'hidden',
   border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
@@ -114,17 +114,17 @@ const GlowingButton = styled(Button, {
 }));
 
 const SkeletonCard = () => (
-  <Card sx={{ borderRadius: '6px', mb: 0.5, overflow: 'hidden' }}>
-    <CardContent sx={{ p: 0.75 }}>
+  <Card sx={{ borderRadius: '4px', mb: 0.3, overflow: 'hidden' }}>
+    <CardContent sx={{ p: 0.5 }}>
       <Box display="flex" alignItems="center" justifyContent="space-between">
-        <Stack direction="row" spacing={0.75} alignItems="center" flex={1}>
-          <Skeleton variant="circular" width={24} height={24} />
+        <Stack direction="row" spacing={0.5} alignItems="center" flex={1}>
+          <Skeleton variant="circular" width={18} height={18} />
           <Stack spacing={0.1} flex={1}>
-            <Skeleton variant="text" width="70%" height={16} />
-            <Skeleton variant="text" width="50%" height={12} />
+            <Skeleton variant="text" width="70%" height={12} />
+            <Skeleton variant="text" width="50%" height={10} />
           </Stack>
         </Stack>
-        <Skeleton variant="rectangular" width={20} height={18} sx={{ borderRadius: '6px' }} />
+        <Skeleton variant="rectangular" width={18} height={14} sx={{ borderRadius: '4px' }} />
       </Box>
     </CardContent>
   </Card>
@@ -165,17 +165,17 @@ const TrendingTokens = () => {
   if (loading) {
     return (
       <StackStyle sx={{ 
-        mt: 1,
+        mt: 0.5,
         background: 'transparent',
         backdropFilter: 'none',
         WebkitBackdropFilter: 'none',
         border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-        borderRadius: { xs: '8px', sm: '10px' },
+        borderRadius: { xs: '6px', sm: '8px' },
         boxShadow: `
           0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
           0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
           inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-        padding: { xs: 1.5, sm: 2 },
+        padding: { xs: 0.75, sm: 1 },
         position: 'relative',
         overflow: 'hidden',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -194,21 +194,21 @@ const TrendingTokens = () => {
         <HeaderSection darkMode={darkMode}>
           <Stack direction="row" alignItems="center" spacing={1}>
             <Box>
-              <LocalFireDepartmentIcon sx={{ color: '#FF6B35', fontSize: 16 }} />
+              <LocalFireDepartmentIcon sx={{ color: '#FF6B35', fontSize: 14 }} />
             </Box>
             <Box>
               <Typography
                 variant="body2"
                 fontWeight="700"
                 color={darkMode ? '#fff' : '#1a1a1a'}
-                sx={{ fontSize: '0.85rem' }}
+                sx={{ fontSize: '0.6rem' }}
               >
                 Trending XRPL Tokens
               </Typography>
               <Typography
                 variant="caption"
                 color={darkMode ? alpha('#fff', 0.7) : alpha('#1a1a1a', 0.7)}
-                sx={{ fontSize: '0.7rem' }}
+                sx={{ fontSize: '0.6rem' }}
               >
                 Hottest tokens gaining momentum right now
               </Typography>
@@ -224,7 +224,7 @@ const TrendingTokens = () => {
 
   return (
     <StackStyle sx={{ 
-      mt: 1,
+      mt: 0.5,
       background: 'transparent',
       backdropFilter: 'none',
       WebkitBackdropFilter: 'none',
@@ -262,7 +262,7 @@ const TrendingTokens = () => {
             <Typography
               variant="caption"
               color={darkMode ? alpha('#fff', 0.7) : alpha('#1a1a1a', 0.7)}
-              sx={{ fontSize: '0.7rem' }}
+              sx={{ fontSize: '0.6rem' }}
             >
               Hottest tokens gaining momentum right now
             </Typography>
@@ -270,7 +270,7 @@ const TrendingTokens = () => {
         </Stack>
       </HeaderSection>
 
-      <Stack spacing={0.4}>
+      <Stack spacing={0.25}>
         {trendingList.map((row, index) => {
           const { md5, id, name, user, slug, verified, isOMCF } = row;
           const imgUrl = `https://s1.xrpl.to/token/${md5}`;
@@ -279,7 +279,7 @@ const TrendingTokens = () => {
 
           return (
             <TrendingCard darkMode={darkMode} rank={rank} key={`trending-${index}-${id}-${md5}`}>
-              <CardContent sx={{ p: 0.6 }}>
+              <CardContent sx={{ p: 0.4 }}>
                 <Link
                   underline="none"
                   color="inherit"
@@ -290,7 +290,7 @@ const TrendingTokens = () => {
                   <Box display="flex" alignItems="center" justifyContent="space-between">
                     <Stack
                       direction="row"
-                      spacing={0.6}
+                      spacing={0.4}
                       alignItems="center"
                       flex={1}
                       className="token-info"
@@ -298,7 +298,7 @@ const TrendingTokens = () => {
                       <Box sx={{ position: 'relative' }}>
                         {verified ? (
                           <VerifiedBadge
-                            badgeContent={<VerifiedIcon sx={{ fontSize: 7 }} />}
+                            badgeContent={<VerifiedIcon sx={{ fontSize: 6 }} />}
                             overlap="circular"
                             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                           >
@@ -306,8 +306,8 @@ const TrendingTokens = () => {
                               className="token-image"
                               src={imgUrl}
                               alt={name}
-                              width={28}
-                              height={28}
+                              width={20}
+                              height={20}
                             />
                           </VerifiedBadge>
                         ) : (
@@ -315,21 +315,21 @@ const TrendingTokens = () => {
                             className="token-image"
                             src={imgUrl}
                             alt={name}
-                            width={24}
-                            height={24}
+                            width={18}
+                            height={18}
                           />
                         )}
                       </Box>
 
                       <Stack spacing={0} flex={1} minWidth={0}>
-                        <Box display="flex" alignItems="center" gap={0.2}>
+                        <Box display="flex" alignItems="center" gap={0.15}>
                           <Typography
                             variant="body2"
                             fontWeight="700"
                             color={theme.palette.primary.main}
                             noWrap
                             sx={{
-                              fontSize: '0.75rem',
+                              fontSize: '0.55rem',
                               lineHeight: 1.1,
                               textShadow: darkMode ? '0 1px 2px rgba(0,0,0,0.3)' : 'none'
                             }}
@@ -341,7 +341,7 @@ const TrendingTokens = () => {
                               <TrendingUpIcon
                                 sx={{
                                   color: '#FF6B35',
-                                  fontSize: 10
+                                  fontSize: 8
                                 }}
                               />
                             </Tooltip>
@@ -352,7 +352,7 @@ const TrendingTokens = () => {
                           color={darkMode ? alpha('#fff', 0.65) : alpha('#1a1a1a', 0.65)}
                           noWrap
                           sx={{
-                            fontSize: '0.65rem',
+                            fontSize: '0.55rem',
                             fontWeight: 500
                           }}
                         >
@@ -373,13 +373,13 @@ const TrendingTokens = () => {
                           ? '#C0C0C0'
                           : '#CD7F32',
                         fontWeight: 'bold',
-                        fontSize: '0.65rem',
-                        height: '18px',
-                        minWidth: '22px',
+                        fontSize: '0.55rem',
+                        height: '14px',
+                        minWidth: '18px',
                         boxShadow: 'none',
                         border: `1px solid ${rank <= 3 ? '#FFD700' : rank <= 5 ? '#C0C0C0' : '#CD7F32'}`,
                         '& .MuiChip-label': {
-                          padding: '0 3px'
+                          padding: '0 2px'
                         }
                       }}
                     />
@@ -395,7 +395,7 @@ const TrendingTokens = () => {
         sx={{
           display: 'flex',
           justifyContent: 'center',
-          mt: 0.75,
+          mt: 0.4,
           mb: 0
         }}
       >
@@ -419,8 +419,8 @@ const TrendingScore = styled(Box)(({ theme }) => ({
   background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
   color: '#fff',
   borderRadius: '4px',
-  padding: '1px 6px',
-  fontSize: '0.6rem',
+  padding: '1px 4px',
+  fontSize: '0.5rem',
   fontWeight: 700,
   boxShadow: `0 2px 6px ${alpha('#FF6B35', 0.3)}`,
   display: 'flex',

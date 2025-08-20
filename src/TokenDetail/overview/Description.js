@@ -43,15 +43,14 @@ export default function Description({
     <Card 
       elevation={0}
       sx={{
-        borderRadius: { xs: '12px', sm: '16px' },
+        borderRadius: { xs: '8px', sm: '10px' },
         background: 'transparent',
         backdropFilter: 'none',
         WebkitBackdropFilter: 'none',
         border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
         boxShadow: `
-          0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-          0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+          0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
+          0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
         position: 'relative',
         overflow: 'hidden',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -59,11 +58,10 @@ export default function Description({
           display: 'none'
         },
         '&:hover': {
-          transform: 'translateY(-2px)',
+          transform: 'translateY(-1px)',
           boxShadow: `
-            0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-            0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
+            0 6px 24px ${alpha(theme.palette.common.black, 0.1)}, 
+            0 2px 4px ${alpha(theme.palette.common.black, 0.05)}`,
           border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
         }
       }}
@@ -73,10 +71,10 @@ export default function Description({
         titleTypographyProps={{
           variant: 'h6',
           fontWeight: 600,
-          fontSize: { xs: '1rem', sm: '1.125rem' }
+          fontSize: { xs: '0.75rem', sm: '0.85rem' }
         }}
         action={
-          <Stack direction="row" spacing={1}>
+          <Stack direction="row" spacing={0.5}>
             <Tooltip title={expanded ? 'Show less' : 'Show more'}>
               <IconButton 
                 size="small" 
@@ -108,14 +106,14 @@ export default function Description({
         }
         sx={{ 
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-          px: { xs: 2, sm: 3 },
-          py: 2
+          px: { xs: 1, sm: 1.5 },
+          py: 1
         }}
       />
       
       {!showEditor && description && (
-        <Box sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
-          <Collapse in={expanded} collapsedSize={120}>
+        <Box sx={{ px: { xs: 1, sm: 1.5 }, py: 1 }}>
+          <Collapse in={expanded} collapsedSize={80}>
             <Box 
               sx={{ 
                 position: 'relative',
@@ -132,35 +130,36 @@ export default function Description({
                       paragraph
                       sx={{ 
                         color: 'text.primary',
-                        lineHeight: 1.7,
-                        mb: 1.5
+                        lineHeight: 1.5,
+                        mb: 0.75,
+                        fontSize: '0.75rem'
                       }}
                     >
                       {children}
                     </Typography>
                   ),
                   h1: ({ children }) => (
-                    <Typography variant="h5" gutterBottom sx={{ mt: 2, fontWeight: 600 }}>
+                    <Typography variant="h6" gutterBottom sx={{ mt: 1, fontWeight: 600, fontSize: '0.9rem' }}>
                       {children}
                     </Typography>
                   ),
                   h2: ({ children }) => (
-                    <Typography variant="h6" gutterBottom sx={{ mt: 2, fontWeight: 600 }}>
+                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 1, fontWeight: 600, fontSize: '0.8rem' }}>
                       {children}
                     </Typography>
                   ),
                   h3: ({ children }) => (
-                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 1.5, fontWeight: 600 }}>
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 0.75, fontWeight: 600, fontSize: '0.75rem' }}>
                       {children}
                     </Typography>
                   ),
                   ul: ({ children }) => (
-                    <Box component="ul" sx={{ pl: 2, mb: 1.5 }}>
+                    <Box component="ul" sx={{ pl: 1.5, mb: 0.75 }}>
                       {children}
                     </Box>
                   ),
                   ol: ({ children }) => (
-                    <Box component="ol" sx={{ pl: 2, mb: 1.5 }}>
+                    <Box component="ol" sx={{ pl: 1.5, mb: 0.75 }}>
                       {children}
                     </Box>
                   ),
@@ -170,8 +169,9 @@ export default function Description({
                       variant="body2"
                       sx={{ 
                         color: 'text.primary',
-                        mb: 0.5,
-                        lineHeight: 1.7
+                        mb: 0.25,
+                        lineHeight: 1.5,
+                        fontSize: '0.75rem'
                       }}
                     >
                       {children}
