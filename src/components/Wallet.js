@@ -574,6 +574,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           }
         }}
         ref={anchorRef}
+        aria-label={accountProfile ? `Wallet menu for ${truncateAccount(accountProfile.account)}` : 'Connect wallet'}
         style={{
           background: accountProfile ? theme.palette.primary.main : theme.palette.mode === 'dark' ? '#2d3436' : '#ffffff',
           border: accountProfile ? `1px solid ${theme.palette.primary.dark}` : `1px solid ${theme.palette.mode === 'dark' ? '#636e72' : '#ddd'}`,

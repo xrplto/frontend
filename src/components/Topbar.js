@@ -1117,6 +1117,9 @@ const Topbar = () => {
                 primaryColor={primaryColor}
                 paperBackground={themeColors.backgroundColor}
                 textPrimary={themeColors.textPrimary}
+                aria-label="Filter trades by size"
+                aria-expanded={filterDropdownOpen}
+                aria-haspopup="listbox"
               >
                 <Icon 
                   icon={FILTER_OPTIONS.find(opt => opt.value === tradeFilter)?.icon || 'ic:round-water'} 
@@ -1149,7 +1152,13 @@ const Topbar = () => {
                 </SelectDropdown>
               )}
             </Box>
-            <IconButton onClick={handleTradeDrawerClose} darkMode={darkMode} textSecondary={themeColors.textSecondary} textPrimary={themeColors.textPrimary}>
+            <IconButton 
+              onClick={handleTradeDrawerClose} 
+              darkMode={darkMode} 
+              textSecondary={themeColors.textSecondary} 
+              textPrimary={themeColors.textPrimary}
+              aria-label="Close trade drawer"
+            >
               <CloseIcon />
             </IconButton>
           </Box>
