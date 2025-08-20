@@ -493,9 +493,9 @@ export default function Summary() {
                 <MetricValue>
                   {xrpPriceSymbol}{xrpPrice}
                 </MetricValue>
-                <PercentageChange isPositive={(metrics.XRPchange24h || 0) >= 0}>
-                  {(metrics.XRPchange24h || 0) >= 0 ? '▲' : '▼'}
-                  {Math.abs(metrics.XRPchange24h || 0).toFixed(2)}%
+                <PercentageChange isPositive={(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0) >= 0}>
+                  {(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0) >= 0 ? '▲' : '▼'}
+                  {Math.abs(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0).toFixed(2)}%
                 </PercentageChange>
               </MetricBox>
 
