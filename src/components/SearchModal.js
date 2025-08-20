@@ -371,7 +371,7 @@ function SearchModal({ open, onClose }) {
                   <List disablePadding dense>
                     {trendingTokens.map((token, index) => (
                       <ListItem key={index} disablePadding>
-                        <ListItemButton onClick={() => { router.push(`/token/${token.slug}`); handleClose(); }} sx={{ py: 0.5, px: 2 }}>
+                        <ListItemButton onClick={() => handleResultClick(token, 'token')} sx={{ py: 0.5, px: 2 }}>
                           <ListItemAvatar sx={{ minWidth: 36 }}>
                             <Avatar
                               src={`https://s1.xrpl.to/token/${token.md5}`}
@@ -423,7 +423,7 @@ function SearchModal({ open, onClose }) {
                   <List disablePadding dense>
                     {trendingCollections.map((collection, index) => (
                       <ListItem key={index} disablePadding>
-                        <ListItemButton onClick={() => { router.push(`/collection/${collection.slug}`); handleClose(); }} sx={{ py: 0.5, px: 2 }}>
+                        <ListItemButton onClick={() => handleResultClick(collection, 'collection')} sx={{ py: 0.5, px: 2 }}>
                           <ListItemAvatar sx={{ minWidth: 36 }}>
                             <Avatar
                               src={`https://s1.xrpnft.com/collection/${collection.logoImage}`}
@@ -478,7 +478,7 @@ function SearchModal({ open, onClose }) {
               <List disablePadding dense>
                 {searchResults.tokens.map((token, index) => (
                   <ListItem key={index} disablePadding>
-                    <ListItemButton onClick={() => { router.push(`/token/${token.slug}`); handleClose(); }} sx={{ py: 0.5, px: 2 }}>
+                    <ListItemButton onClick={() => handleResultClick(token, 'token')} sx={{ py: 0.5, px: 2 }}>
                       <ListItemAvatar sx={{ minWidth: 36 }}>
                         <Avatar
                           src={`https://s1.xrpl.to/token/${token.md5}`}
