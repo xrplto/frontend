@@ -448,17 +448,14 @@ const PriceChartAdvanced = memo(({ token }) => {
           top: 0.05,
           bottom: 0.15,
         },
-        mode: 0, // Back to normal mode - logarithmic was showing percentages
+        mode: 0,
         autoScale: true,
-        borderVisible: true, // Make border visible for debugging
+        borderVisible: false,
         visible: true,
-        minimumWidth: 150, // Even wider
-        entireTextOnly: false, // Allow partial text
+        entireTextOnly: false,
         drawTicks: true,
         ticksVisible: true,
         alignLabels: true,
-        // Force more aggressive settings
-        tickMarkMaxCharacterLength: 12,
         textColor: isDark ? '#ffffff' : '#000000',
       },
       localization: {
@@ -511,8 +508,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
         timeVisible: true,
         secondsVisible: false,
-        rightOffset: 12,
-        barSpacing: 10,
+        rightOffset: 5,
+        barSpacing: 8,
         minBarSpacing: 0.5,
         fixLeftEdge: true,
         fixRightEdge: true,
