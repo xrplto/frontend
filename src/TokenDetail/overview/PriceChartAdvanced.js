@@ -990,29 +990,75 @@ const PriceChartAdvanced = memo(({ token }) => {
             </Box>
           )}
           <Box sx={{ 
-            ml: 1, 
-            minWidth: isUserZoomed ? 180 : 100,
+            ml: 2, 
+            minWidth: isUserZoomed ? 140 : 80,
             display: 'inline-flex',
             alignItems: 'center',
-            height: 20
+            height: 20,
+            position: 'relative'
           }}>
             {isUpdating ? (
-              <CircularProgress size={16} />
+              <Box sx={{ 
+                width: 6, 
+                height: 6, 
+                borderRadius: '50%',
+                bgcolor: 'success.main',
+                animation: 'pulse 1.5s ease-in-out infinite',
+                '@keyframes pulse': {
+                  '0%': { opacity: 1, transform: 'scale(1)' },
+                  '50%': { opacity: 0.6, transform: 'scale(1.2)' },
+                  '100%': { opacity: 1, transform: 'scale(1)' }
+                }
+              }} />
             ) : lastUpdate ? (
-              <Typography variant="caption" color="text.secondary" sx={{ 
+              <Box sx={{ 
                 display: 'inline-flex', 
                 alignItems: 'center',
-                whiteSpace: 'nowrap'
+                gap: 0.75,
+                opacity: isUserZoomed ? 0.5 : 0.7,
+                transition: 'opacity 0.2s ease'
               }}>
-                <RefreshIcon sx={{ fontSize: 12, mr: 0.5 }} />
-                {lastUpdate.toLocaleTimeString('en-US', { 
-                  hour: '2-digit', 
-                  minute: '2-digit', 
-                  second: '2-digit',
-                  hour12: false 
-                })}
-                {isUserZoomed && ' (paused)'}
-              </Typography>
+                <Box sx={{ 
+                  width: 4, 
+                  height: 4, 
+                  borderRadius: '50%',
+                  bgcolor: isUserZoomed ? 'warning.main' : 'success.main',
+                  opacity: isUserZoomed ? 0.6 : 1
+                }} />
+                <Typography 
+                  component="span"
+                  sx={{ 
+                    fontSize: '0.6875rem',
+                    fontWeight: 500,
+                    letterSpacing: '0.03em',
+                    fontFamily: '"SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace',
+                    color: 'text.secondary',
+                    userSelect: 'none'
+                  }}
+                >
+                  {lastUpdate.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hour12: false 
+                  })}
+                </Typography>
+                {isUserZoomed && (
+                  <Typography
+                    component="span"
+                    sx={{
+                      fontSize: '0.625rem',
+                      fontWeight: 400,
+                      letterSpacing: '0.05em',
+                      textTransform: 'uppercase',
+                      opacity: 0.6,
+                      color: 'warning.main'
+                    }}
+                  >
+                    paused
+                  </Typography>
+                )}
+              </Box>
             ) : null}
           </Box>
         </Box>
