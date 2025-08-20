@@ -332,7 +332,12 @@ const TrendingTokens = () => {
           // Format price
           const formatPrice = (price) => {
             if (!price) return '0';
-            if (price < 0.0001) return price.toExponential(2);
+            if (price < 0.0001) {
+              // Convert to string and handle very small numbers
+              const priceStr = price.toFixed(10); // Use more decimal places
+              // Remove trailing zeros but keep at least 4 significant digits after decimal
+              return priceStr.replace(/\.?0+$/, '');
+            }
             if (price < 1) return price.toFixed(6);
             if (price < 100) return price.toFixed(4);
             return price.toFixed(2);
