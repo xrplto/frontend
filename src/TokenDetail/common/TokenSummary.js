@@ -1525,12 +1525,20 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                                       // Token payment
                                       const { parseAmount } = require('src/utils/parse/amount');
                                       const { normalizeCurrencyCode } = require('src/utils/parse/utils');
+                                      const Decimal = require('decimal.js');
                                       const amount = parseAmount(amountToShow);
-                                      if (amount && typeof amount === 'object') {
+                                      if (amount && typeof amount === 'object' && amount.value) {
+                                        // Handle scientific notation
+                                        let value = amount.value;
+                                        if (typeof value === 'string' && value.includes('e')) {
+                                          value = new Decimal(value).toString();
+                                        }
                                         const currency = amount.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(amount.currency);
-                                        return `${isIncoming ? 'Received' : 'Sent'} ${fNumber(amount.value)} ${currency}`;
+                                        return `${isIncoming ? 'Received' : 'Sent'} ${fNumber(value)} ${currency}`;
                                       }
                                     }
+                                    // Fallback if parsing fails
+                                    return isIncoming ? 'Received' : 'Sent';
                                   }
                                   
                                   // Other transaction types
