@@ -93,7 +93,6 @@ const StyledTable = styled.table`
   table-layout: fixed; /* Fixed layout for consistent spacing */
   width: 100%;
   border-collapse: collapse;
-  transition: opacity 0.1s ease;
   contain: layout style paint;
   margin: 0;
   padding: 0;
@@ -107,7 +106,6 @@ const StyledTableBody = styled.tbody`
   tr {
     will-change: auto;
     contain: layout style paint;
-    transition: background-color 0.1s ease;
     margin: 0;
     padding: 0;
     
@@ -322,36 +320,41 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
 
   const handleScrollY = useMemo(
     () => throttle(() => {
-      if (tableRef.current) {
-        const rect = tableRef.current.getBoundingClientRect();
-        const scrollTop = window.scrollY;
-        const tableOffsetTop = rect.top + scrollTop;
-        const tableHeight = rect.height;
-        const anchorTop = tableOffsetTop;
-        const anchorBottom = tableOffsetTop + tableHeight;
+      // Batch DOM reads in requestAnimationFrame to avoid forced reflow
+      requestAnimationFrame(() => {
+        if (tableRef.current) {
+          const rect = tableRef.current.getBoundingClientRect();
+          const scrollTop = window.scrollY;
+          const tableOffsetTop = rect.top + scrollTop;
+          const tableHeight = rect.height;
+          const anchorTop = tableOffsetTop;
+          const anchorBottom = tableOffsetTop + tableHeight;
 
-        if (scrollTop > anchorTop && scrollTop < anchorBottom) {
-          setScrollTopLength(scrollTop - anchorTop);
-        } else {
-          setScrollTopLength(0);
+          if (scrollTop > anchorTop && scrollTop < anchorBottom) {
+            setScrollTopLength(scrollTop - anchorTop);
+          } else {
+            setScrollTopLength(0);
+          }
         }
-      }
+      });
     }, 100),
     []
   );
 
   useEffect(() => {
     const tableContainer = tableContainerRef.current;
+    const scrollOptions = { passive: true, capture: false };
+    
     if (tableContainer) {
-      tableContainer.addEventListener('scroll', handleScrollX, { passive: true });
+      tableContainer.addEventListener('scroll', handleScrollX, scrollOptions);
     }
-    window.addEventListener('scroll', handleScrollY, { passive: true });
+    window.addEventListener('scroll', handleScrollY, scrollOptions);
 
     return () => {
       if (tableContainer) {
-        tableContainer.removeEventListener('scroll', handleScrollX);
+        tableContainer.removeEventListener('scroll', handleScrollX, scrollOptions);
       }
-      window.removeEventListener('scroll', handleScrollY);
+      window.removeEventListener('scroll', handleScrollY, scrollOptions);
     };
   }, [handleScrollX, handleScrollY]);
 
@@ -710,32 +713,21 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     setSync(prev => prev + 1);
   }, []);
 
-  // Performance optimization: virtualization for large lists
-  const [renderCount, setRenderCount] = useState(15);
+  // Performance optimization: render visible rows immediately, rest progressively
+  const [renderCount, setRenderCount] = useState(50);
   
   useEffect(() => {
-    if (rows > 15) {
-      // Immediate render of visible rows
-      setRenderCount(Math.min(30, rows));
-      // Load rest progressively
-      if (rows > 30) {
-        const timer = requestIdleCallback(() => {
-          startTransition(() => {
-            setRenderCount(Math.min(rows, 50));
-          });
-          // Load even more if needed
-          if (rows > 50) {
-            requestIdleCallback(() => {
-              startTransition(() => {
-                setRenderCount(Math.min(rows, 100));
-              });
-            }, { timeout: 300 });
-          }
-        }, { timeout: 100 });
-        return () => cancelIdleCallback(timer);
-      }
-    } else {
-      setRenderCount(rows);
+    // Immediately show first batch without animation
+    setRenderCount(Math.min(rows, 50));
+    
+    // Only load more if needed
+    if (rows > 50) {
+      const timer = requestIdleCallback(() => {
+        startTransition(() => {
+          setRenderCount(rows);
+        });
+      }, { timeout: 100 });
+      return () => cancelIdleCallback(timer);
     }
   }, [rows, startTransition]);
   
@@ -1154,7 +1146,6 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           <StyledTable 
             ref={tableRef}
             isMobile={isMobile}
-            style={{ opacity: isDeferring || isPending ? 0.95 : 1 }}
           >
             <TokenListHead
               order={order}

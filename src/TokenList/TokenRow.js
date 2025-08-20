@@ -1,7 +1,6 @@
 import Decimal from 'decimal.js';
 import { useState, useEffect, useContext, memo, useMemo, useCallback, useRef } from 'react';
 import React from 'react';
-import Image from 'next/image';
 import styled from '@emotion/styled';
 
 import { AppContext } from 'src/AppContext';
@@ -65,25 +64,31 @@ const OptimizedChart = memo(({ url, darkMode }) => {
           width: '260px', 
           height: '60px',
           background: darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
-          borderRadius: '4px'
+          borderRadius: '4px',
+          contain: 'layout size style'
         }} 
       />
     );
   }
 
   return (
-    <div ref={chartRef} style={{ width: '260px', height: '60px', display: 'inline-block' }}>
+    <div ref={chartRef} style={{ 
+      width: '260px', 
+      height: '60px', 
+      display: 'inline-block',
+      contain: 'layout size style'
+    }}>
       <LoadChart
         url={url}
         style={{ width: '100%', height: '100%' }}
         animation={false}
         showGradient={false}
-        lineWidth={1.5}
+        lineWidth={1}
         opts={{ 
-          renderer: 'svg', 
+          renderer: 'canvas', // Use canvas for better performance than SVG
           width: 260, 
           height: 60,
-          devicePixelRatio: 1 // Lower DPR for performance
+          devicePixelRatio: 1
         }}
       />
     </div>
@@ -97,7 +102,6 @@ OptimizedChart.displayName = 'OptimizedChart';
 
 const StyledRow = styled.tr`
   border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
-  transition: background-color 0.15s ease;
   cursor: pointer;
   margin: 0;
   padding: 0;
@@ -128,7 +132,6 @@ const MobileTokenCard = styled.div`
   padding: 6px 4px;
   border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
   cursor: pointer;
-  transition: background-color 0.2s;
   box-sizing: border-box;
   align-items: center;
   
@@ -216,7 +219,6 @@ const PriceText = styled.span`
   font-weight: 600;
   font-size: ${props => props.isMobile ? '11px' : '14px'};
   color: ${props => props.priceColor || (props.darkMode ? '#fff' : '#000')};
-  transition: color 0.3s ease;
 `;
 
 const PercentText = styled.span`
@@ -312,21 +314,18 @@ const OptimizedImage = ({ src, alt, size, onError, priority = false, md5 }) => {
   
   return (
     <div ref={imgRef} style={{ width: size, height: size, borderRadius: '50%', overflow: 'hidden' }}>
-      <Image
+      <img
         src={imgSrc}
         alt={alt}
         width={size}
         height={size}
-        quality={50}
-        priority={priority}
         loading={priority ? 'eager' : 'lazy'}
         onError={handleError}
-        unoptimized={true}
-        placeholder="empty"
         style={{ 
           width: '100%', 
           height: '100%', 
-          objectFit: 'cover'
+          objectFit: 'cover',
+          display: 'block'
         }}
       />
     </div>
@@ -351,11 +350,7 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
     return () => clearTimeout(timer);
   }, [token.bearbull]);
 
-  const imgUrl = useMemo(() => {
-    // Add cache parameter for 4 hour caching to reduce requests
-    const cacheTime = Math.floor(Date.now() / (1000 * 60 * 60 * 4));
-    return `https://s1.xrpl.to/token/${md5}?v=${cacheTime}`;
-  }, [md5]);
+  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
   // Get mobile column preferences - use customColumns when available
   const mobilePriceColumn = (customColumns && customColumns[0]) ? customColumns[0] : 'price';
@@ -478,11 +473,7 @@ const DesktopTokenRow = ({
     return () => clearTimeout(timer);
   }, [token.bearbull]);
 
-  const imgUrl = useMemo(() => {
-    // Add cache parameter for 4 hour caching to reduce requests
-    const cacheTime = Math.floor(Date.now() / (1000 * 60 * 60 * 4));
-    return `https://s1.xrpl.to/token/${md5}?v=${cacheTime}`;
-  }, [md5]);
+  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
   // Render different columns based on view mode
   const renderColumns = () => {
