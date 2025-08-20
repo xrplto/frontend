@@ -258,7 +258,7 @@ const formatTimeAgo = (dateValue, fallbackValue) => {
 };
 
 // Optimized image component with intersection observer for lazy loading
-const OptimizedImage = ({ src, alt, size, onError, priority = false, md5 }) => {
+const OptimizedImage = memo(({ src, alt, size, onError, priority = false, md5 }) => {
   const [imgSrc, setImgSrc] = useState(src);
   const [isInView, setIsInView] = useState(priority);
   const imgRef = useRef(null);
@@ -330,7 +330,11 @@ const OptimizedImage = ({ src, alt, size, onError, priority = false, md5 }) => {
       />
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  return prevProps.src === nextProps.src && 
+         prevProps.size === nextProps.size &&
+         prevProps.md5 === nextProps.md5;
+});
 
 const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleRowClick, imgError, setImgError, viewMode = 'classic', customColumns = [] }) => {
   const { 

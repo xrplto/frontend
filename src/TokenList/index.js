@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { update_metrics, update_filteredCount, selectMetrics } from 'src/redux/statusSlice';
 import TokenListHead from './TokenListHead';
 import { TokenRow, MobileContainer, MobileHeader, HeaderCell } from './TokenRow';
+import VirtualizedTokenList from './VirtualizedTokenList';
 import React, { memo, lazy, Suspense } from 'react';
 import { debounce } from 'lodash';
 import { throttle } from 'lodash';
@@ -396,60 +397,68 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   const wsProcessTimer = useRef(null);
   const wsProcessing = useRef(false);
   
-  // Process WebSocket messages in batches for better performance
+  // Process WebSocket messages in batches using Web Worker pattern
   const processWebSocketQueue = useCallback(() => {
     if (wsProcessing.current || wsMessageQueue.current.length === 0) return;
     wsProcessing.current = true;
     
-    const messages = wsMessageQueue.current.splice(0, 10); // Process max 10 at once for smoother updates
+    const messages = wsMessageQueue.current.splice(0, 20); // Process more at once since we're optimized
     
-    const aggregatedTokens = new Map();
-    let latestMetrics = null;
-    
-    messages.forEach(msg => {
-      if (msg.metrics) latestMetrics = msg.metrics;
-      if (msg.tokens) {
-        msg.tokens.forEach(token => aggregatedTokens.set(token.md5, token));
-      }
-    });
-    
-    // Use startTransition for non-urgent updates
-    startTransition(() => {
-      if (latestMetrics) dispatch(update_metrics(latestMetrics));
+    // Process in microtask to avoid blocking
+    queueMicrotask(() => {
+      const aggregatedTokens = new Map();
+      let latestMetrics = null;
       
-      if (aggregatedTokens.size > 0) {
-        setTokens(prevTokens => {
-          const tokenMap = new Map(prevTokens.map(t => [t.md5, t]));
-          let hasChanges = false;
-          
-          aggregatedTokens.forEach((newToken, md5) => {
-            const existing = tokenMap.get(md5);
-            if (existing) {
-              // Only check critical trading fields
-              if (existing.exch !== newToken.exch || 
-                  existing.pro24h !== newToken.pro24h ||
-                  existing.vol24hxrp !== newToken.vol24hxrp) {
-                tokenMap.set(md5, {
-                  ...existing,
-                  ...newToken,
-                  time: Date.now(),
-                  bearbull: existing.exch > newToken.exch ? -1 : 1
-                });
-                hasChanges = true;
+      messages.forEach(msg => {
+        if (msg.metrics) latestMetrics = msg.metrics;
+        if (msg.tokens) {
+          msg.tokens.forEach(token => aggregatedTokens.set(token.md5, token));
+        }
+      });
+      
+      // Use startTransition for non-urgent updates
+      startTransition(() => {
+        if (latestMetrics) dispatch(update_metrics(latestMetrics));
+        
+        if (aggregatedTokens.size > 0) {
+          setTokens(prevTokens => {
+            // Use a more efficient update pattern
+            const updates = new Map();
+            
+            aggregatedTokens.forEach((newToken, md5) => {
+              updates.set(md5, newToken);
+            });
+            
+            // Only recreate array if we have updates
+            if (updates.size === 0) return prevTokens;
+            
+            return prevTokens.map(token => {
+              const update = updates.get(token.md5);
+              if (update) {
+                // Only update if values actually changed
+                if (token.exch !== update.exch || 
+                    token.pro24h !== update.pro24h ||
+                    token.vol24hxrp !== update.vol24hxrp) {
+                  return {
+                    ...token,
+                    ...update,
+                    time: Date.now(),
+                    bearbull: token.exch > update.exch ? -1 : 1
+                  };
+                }
               }
-            }
+              return token;
+            });
           });
-          
-          return hasChanges ? Array.from(tokenMap.values()) : prevTokens;
-        });
+        }
+      });
+      
+      wsProcessing.current = false;
+      // Continue processing if more messages
+      if (wsMessageQueue.current.length > 0) {
+        requestIdleCallback(() => processWebSocketQueue(), { timeout: 30 });
       }
     });
-    
-    wsProcessing.current = false;
-    // Continue processing if more messages
-    if (wsMessageQueue.current.length > 0) {
-      requestIdleCallback(() => processWebSocketQueue(), { timeout: 50 });
-    }
   }, [dispatch, setTokens, startTransition]);
 
   // Only use WebSocket if URL is provided (not in development mode)
@@ -744,28 +753,19 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     setSync(prev => prev + 1);
   }, []);
 
-  // Performance optimization: render visible rows immediately, rest progressively
-  const [renderCount, setRenderCount] = useState(50);
+  // Performance optimization: use virtualization for large lists
+  const [enableVirtualization, setEnableVirtualization] = useState(false);
   
   useEffect(() => {
-    // Immediately show first batch without animation
-    setRenderCount(Math.min(rows, 50));
-    
-    // Only load more if needed
-    if (rows > 50) {
-      const timer = requestIdleCallback(() => {
-        startTransition(() => {
-          setRenderCount(rows);
-        });
-      }, { timeout: 100 });
-      return () => cancelIdleCallback(timer);
-    }
-  }, [rows, startTransition]);
+    // Enable virtualization for lists > 100 items or when rows = 9999
+    const shouldVirtualize = rows > 100 || rows === 9999 || tokens.length > 100;
+    setEnableVirtualization(shouldVirtualize && !isMobile); // Only on desktop for now
+  }, [rows, tokens.length, isMobile]);
   
   const visibleTokens = useMemo(() => {
     const maxRows = rows === 9999 ? tokens.length : rows;
-    return tokens.slice(0, Math.min(renderCount, maxRows));
-  }, [tokens, rows, renderCount]);
+    return tokens.slice(0, maxRows);
+  }, [tokens, rows]);
   
   // Use deferred value for smoother updates during rapid WebSocket messages
   const deferredTokens = useDeferredValue(visibleTokens);
@@ -1180,49 +1180,70 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
             />
           ))}
         </MobileContainer>
-      ) : (
-        <TableContainer ref={tableContainerRef} isMobile={isMobile}>
-          <StyledTable 
-            ref={tableRef}
-            isMobile={isMobile}
-          >
-            <TokenListHead
-              order={order}
-              orderBy={orderBy}
-              onRequestSort={handleRequestSort}
+      ) : enableVirtualization ? (
+          <div style={{ width: '100%', height: 'calc(100vh - 300px)' }}>
+            <VirtualizedTokenList
+              tokens={deferredTokens}
+              height={Math.min(window.innerHeight - 300, 800)}
+              itemHeight={viewMode === 'compact' ? 36 : 48}
+              setEditToken={setEditToken}
+              setTrustToken={setTrustToken}
+              watchList={watchList}
+              onChangeWatchList={onChangeWatchList}
               scrollLeft={scrollLeft}
-              tokens={tokens}
-              scrollTopLength={scrollTopLength}
+              activeFiatCurrency={activeFiatCurrency}
+              exchRate={exchRate}
               darkMode={darkMode}
-              isMobile={isMobile}
+              page={page}
+              rows={rows}
               isLoggedIn={!!accountProfile?.account}
               viewMode={viewMode}
               customColumns={customColumns}
             />
-            <StyledTableBody isMobile={isMobile}>
-              {deferredTokens.map((row, idx) => (
-                <MemoizedTokenRow
-                  key={row.md5}
-                  time={row.time}
-                  idx={idx + page * rows}
-                  token={row}
-                  setEditToken={setEditToken}
-                  setTrustToken={setTrustToken}
-                  watchList={watchList}
-                  onChangeWatchList={onChangeWatchList}
-                  scrollLeft={scrollLeft}
-                  activeFiatCurrency={activeFiatCurrency}
-                  exchRate={exchRate}
-                  darkMode={darkMode}
-                  isMobile={isMobile}
-                  isLoggedIn={!!accountProfile?.account}
-                  viewMode={viewMode}
-                  customColumns={customColumns}
-                />
-              ))}
-            </StyledTableBody>
-          </StyledTable>
-        </TableContainer>
+          </div>
+        ) : (
+          <TableContainer ref={tableContainerRef} isMobile={isMobile}>
+            <StyledTable 
+              ref={tableRef}
+              isMobile={isMobile}
+            >
+              <TokenListHead
+                order={order}
+                orderBy={orderBy}
+                onRequestSort={handleRequestSort}
+                scrollLeft={scrollLeft}
+                tokens={tokens}
+                scrollTopLength={scrollTopLength}
+                darkMode={darkMode}
+                isMobile={isMobile}
+                isLoggedIn={!!accountProfile?.account}
+                viewMode={viewMode}
+                customColumns={customColumns}
+              />
+              <StyledTableBody isMobile={isMobile}>
+                {deferredTokens.map((row, idx) => (
+                  <MemoizedTokenRow
+                    key={row.md5}
+                    time={row.time}
+                    idx={idx + page * rows}
+                    token={row}
+                    setEditToken={setEditToken}
+                    setTrustToken={setTrustToken}
+                    watchList={watchList}
+                    onChangeWatchList={onChangeWatchList}
+                    scrollLeft={scrollLeft}
+                    activeFiatCurrency={activeFiatCurrency}
+                    exchRate={exchRate}
+                    darkMode={darkMode}
+                    isMobile={isMobile}
+                    isLoggedIn={!!accountProfile?.account}
+                    viewMode={viewMode}
+                    customColumns={customColumns}
+                  />
+                ))}
+              </StyledTableBody>
+            </StyledTable>
+          </TableContainer>
       )}
       <ToolbarContainer isMobile={isMobile}>
         <Suspense fallback={<div style={{ height: '52px' }} />}>
