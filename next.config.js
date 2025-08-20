@@ -8,13 +8,18 @@
 // module.exports = withBundleAnalyzer({ })
 
 const isProd = process.env.RUN_ENV === 'production';
+const isDev = process.env.RUN_ENV === 'development';
+
 module.exports = {
   poweredByHeader: false,
   assetPrefix: isProd ? 'https://xrpl.to' : undefined,
   env: {
     API_URL: process.env.API_URL,
-    MAINTENANCE: process.env.MAINTENANCE
+    MAINTENANCE: process.env.MAINTENANCE,
+    RUN_ENV: process.env.RUN_ENV
   },
+  // Generate source maps in development for better debugging
+  productionBrowserSourceMaps: isDev,
   compiler: {
     // Disable removeConsole as it can cause issues with module resolution
     // removeConsole: process.env.NODE_ENV === 'production',

@@ -797,6 +797,15 @@ const Topbar = () => {
 
     loadInitialData();
 
+    // Skip WebSocket connection in development to avoid errors
+    if (process.env.RUN_ENV === 'development') {
+      setIsWsLoading(false);
+      return () => {
+        throttledSetTrades.cancel();
+        throttledAddTrade.cancel();
+      };
+    }
+    
     const ws = new WebSocket('wss://api.xrpl.to/ws/sync');
 
     ws.onopen = () => {

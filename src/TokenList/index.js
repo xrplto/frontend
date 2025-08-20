@@ -194,7 +194,10 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
   }, []);
   const router = useRouter();
 
-  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
+  // Disable WebSocket in development to avoid connection errors
+  const WSS_FEED_URL = process.env.RUN_ENV === 'development' 
+    ? null 
+    : 'wss://api.xrpl.to/ws/sync';
   const BASE_URL = process.env.API_URL;
 
   const [filterName, setFilterName] = useState('');
@@ -449,8 +452,9 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     }
   }, [dispatch, setTokens, startTransition]);
 
+  // Only use WebSocket if URL is provided (not in development mode)
   const { sendJsonMessage, readyState } = useWebSocket(WSS_FEED_URL, {
-    shouldReconnect: () => true,
+    shouldReconnect: () => !!WSS_FEED_URL,
     reconnectAttempts: 10,
     reconnectInterval: 3000,
     onMessage: useCallback((event) => {
@@ -474,12 +478,16 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
       }
     }, [processWebSocketQueue]),
     onOpen: () => {
-      console.log('WebSocket connected to', WSS_FEED_URL);
+      if (WSS_FEED_URL) {
+        console.log('WebSocket connected to', WSS_FEED_URL);
+      }
     },
     onClose: () => {
-      console.log('WebSocket disconnected');
+      if (WSS_FEED_URL) {
+        console.log('WebSocket disconnected');
+      }
     }
-  });
+  }, !WSS_FEED_URL); // Skip WebSocket connection if URL is null
 
   // Add a state to track if metrics have been loaded
   const [metricsLoaded, setMetricsLoaded] = useState(false);
