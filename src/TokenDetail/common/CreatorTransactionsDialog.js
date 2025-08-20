@@ -805,9 +805,11 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
         height: '100vh',
         position: 'sticky',
         top: '64px',
-        background: theme.palette.background.paper,
-        borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        boxShadow: theme.shadows[2],
+        background: 'transparent',
+        borderRight: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+        boxShadow: `
+          0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
+          0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden'
