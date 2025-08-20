@@ -203,8 +203,8 @@ const TokenName = styled.span`
 
 const UserName = styled.span`
   font-size: ${props => props.isMobile ? '9px' : '10px'};
-  color: ${props => props.darkMode ? '#6b7280' : '#9ca3af'};
-  opacity: 0.8;
+  color: ${props => props.darkMode ? '#9E9E9E' : '#616161'};
+  opacity: 1;
   font-weight: 400;
   display: block;
   max-width: ${props => props.isMobile ? '100px' : '150px'};
@@ -340,12 +340,12 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
   const [priceColor, setPriceColor] = useState('');
   
   const getPercentColor = (value) => {
-    if (value === undefined || value === null || isNaN(value)) return darkMode ? '#66BB6A' : '#388E3C';
-    return value < 0 ? (darkMode ? '#FF5252' : '#D32F2F') : (darkMode ? '#66BB6A' : '#388E3C');
+    if (value === undefined || value === null || isNaN(value)) return darkMode ? '#4CAF50' : '#2E7D32';
+    return value < 0 ? (darkMode ? '#EF5350' : '#C62828') : (darkMode ? '#4CAF50' : '#2E7D32');
   };
 
   useEffect(() => {
-    setPriceColor(token.bearbull === -1 ? '#FF5252' : token.bearbull === 1 ? '#66BB6A' : '');
+    setPriceColor(token.bearbull === -1 ? '#EF5350' : token.bearbull === 1 ? '#4CAF50' : '');
     const timer = setTimeout(() => setPriceColor(''), 1500);
     return () => clearTimeout(timer);
   }, [token.bearbull]);
@@ -463,12 +463,12 @@ const DesktopTokenRow = ({
   const [priceColor, setPriceColor] = useState('');
   
   const getPercentColor = (value) => {
-    if (value === undefined || value === null || isNaN(value)) return darkMode ? '#66BB6A' : '#388E3C';
-    return value < 0 ? (darkMode ? '#FF5252' : '#D32F2F') : (darkMode ? '#66BB6A' : '#388E3C');
+    if (value === undefined || value === null || isNaN(value)) return darkMode ? '#4CAF50' : '#2E7D32';
+    return value < 0 ? (darkMode ? '#EF5350' : '#C62828') : (darkMode ? '#4CAF50' : '#2E7D32');
   };
 
   useEffect(() => {
-    setPriceColor(token.bearbull === -1 ? '#FF5252' : token.bearbull === 1 ? '#66BB6A' : '');
+    setPriceColor(token.bearbull === -1 ? '#EF5350' : token.bearbull === 1 ? '#4CAF50' : '');
     const timer = setTimeout(() => setPriceColor(''), 1500);
     return () => clearTimeout(timer);
   }, [token.bearbull]);
@@ -558,7 +558,7 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
+                <span style={{ color: darkMode ? '#808080' : '#9E9E9E' }}>-</span>
               )}
             </StyledCell>
           </>
@@ -624,7 +624,7 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
+                <span style={{ color: darkMode ? '#808080' : '#9E9E9E' }}>-</span>
               )}
             </StyledCell>
           </>
@@ -650,7 +650,7 @@ const DesktopTokenRow = ({
               {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.tvl)}
             </StyledCell>
             <StyledCell align="right" darkMode={darkMode}>
-              <span style={{ fontSize: '11px', color: darkMode ? '#999' : '#666' }}>
+              <span style={{ fontSize: '11px', color: darkMode ? '#B0B0B0' : '#616161' }}>
                 {formatTimeAgo(dateon, date)}
               </span>
             </StyledCell>
@@ -658,7 +658,7 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
+                <span style={{ color: darkMode ? '#808080' : '#9E9E9E' }}>-</span>
               )}
             </StyledCell>
           </>
@@ -698,7 +698,7 @@ const DesktopTokenRow = ({
                     />
                   </div>
                 ) : (
-                  <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
+                  <span style={{ color: darkMode ? '#808080' : '#9E9E9E' }}>-</span>
                 )}
               </StyledCell>
             </>
@@ -818,7 +818,7 @@ const DesktopTokenRow = ({
             case 'created':
               columnElements.push(
                 <StyledCell key="created" align="right" darkMode={darkMode} style={extraStyle}>
-                  <span style={{ fontSize: '11px', color: darkMode ? '#999' : '#666' }}>
+                  <span style={{ fontSize: '11px', color: darkMode ? '#B0B0B0' : '#616161' }}>
                     {formatTimeAgo(dateon, date)}
                   </span>
                 </StyledCell>
@@ -853,7 +853,7 @@ const DesktopTokenRow = ({
                       />
                     </div>
                   ) : (
-                    <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
+                    <span style={{ color: darkMode ? '#808080' : '#9E9E9E' }}>-</span>
                   )}
                 </StyledCell>
               );
@@ -898,7 +898,7 @@ const DesktopTokenRow = ({
               {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.volume)}
             </StyledCell>
             <StyledCell align="right" darkMode={darkMode}>
-              <span style={{ fontSize: '11px', color: darkMode ? '#999' : '#666' }}>
+              <span style={{ fontSize: '11px', color: darkMode ? '#B0B0B0' : '#616161' }}>
                 {formatTimeAgo(dateon, date)}
               </span>
             </StyledCell>
@@ -923,7 +923,7 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
+                <span style={{ color: darkMode ? '#808080' : '#9E9E9E' }}>-</span>
               )}
             </StyledCell>
           </>
@@ -948,7 +948,7 @@ const DesktopTokenRow = ({
             style={{ 
               cursor: 'pointer', 
               fontSize: '18px',
-              color: watchList.includes(md5) ? '#FFB800' : 'rgba(255, 255, 255, 0.3)',
+              color: watchList.includes(md5) ? '#FFB800' : (darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'),
               display: 'inline-block',
               width: '100%'
             }}
@@ -967,7 +967,7 @@ const DesktopTokenRow = ({
           maxWidth: '40px'
         }}
       >
-        <span style={{ fontWeight: '600', color: darkMode ? '#999' : '#666' }}>
+        <span style={{ fontWeight: '600', color: darkMode ? '#B0B0B0' : '#616161' }}>
           {idx + 1}
         </span>
       </StyledCell>
@@ -1151,7 +1151,7 @@ export const MobileHeader = styled.div`
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
-  color: ${props => props.darkMode ? '#999' : '#666'};
+  color: ${props => props.darkMode ? '#B0B0B0' : '#616161'};
   position: sticky;
   top: 0;
   z-index: 10;

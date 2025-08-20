@@ -32,9 +32,9 @@ function Footer() {
           mt: 2,
           mb: 4,
           '& .MuiLink-root': {
-            color: 'rgb(160, 160, 160) !important',
+            color: darkMode ? 'rgb(189, 189, 189) !important' : 'rgb(97, 97, 97) !important',
             '&:hover': {
-              color: darkMode ? '#007B55 !important' : '#5569ff !important'
+              color: darkMode ? '#00C853 !important' : '#3949AB !important'
             }
           }
         }}
