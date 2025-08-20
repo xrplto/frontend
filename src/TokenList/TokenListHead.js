@@ -451,23 +451,66 @@ const TokenListHead = memo(function TokenListHead({
           ? customColumns 
           : ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'];
         
+        // Track if this is the last column being added
+        let columnIndex = 0;
+        const totalColumns = columnsToUse.length;
+        
         // Add headers based on selected columns with fixed pixel widths
-        if (columnsToUse.includes('price')) customHeaders.push({ id: 'exch', label: 'PRICE', align: 'right', width: '120px', order: true });
-        if (columnsToUse.includes('pro5m')) customHeaders.push({ id: 'pro5m', label: '5M %', align: 'right', width: '90px', order: true, tooltip: '5 minute change' });
-        if (columnsToUse.includes('pro1h')) customHeaders.push({ id: 'pro1h', label: '1H %', align: 'right', width: '90px', order: true, tooltip: '1 hour change' });
-        if (columnsToUse.includes('pro24h')) customHeaders.push({ id: 'pro24h', label: '24H %', align: 'right', width: '90px', order: true, tooltip: '24 hour change' });
-        if (columnsToUse.includes('pro7d')) customHeaders.push({ id: 'pro7d', label: '7D %', align: 'right', width: '90px', order: true, tooltip: '7 day change' });
-        if (columnsToUse.includes('pro30d')) customHeaders.push({ id: 'pro30d', label: '30D %', align: 'right', width: '90px', order: true, tooltip: '30 day estimate' });
-        if (columnsToUse.includes('volume24h')) customHeaders.push({ id: 'vol24hxrp', label: 'VOLUME 24H', align: 'right', width: '130px', order: true, tooltip: '24h volume' });
-        if (columnsToUse.includes('volume7d')) customHeaders.push({ id: 'vol7d', label: 'VOLUME 7D', align: 'right', width: '130px', order: true, tooltip: '7d volume estimate' });
-        if (columnsToUse.includes('marketCap')) customHeaders.push({ id: 'marketcap', label: 'MARKET CAP', align: 'right', width: '140px', order: true, tooltip: 'Market capitalization' });
-        if (columnsToUse.includes('tvl')) customHeaders.push({ id: 'tvl', label: 'TVL', align: 'right', width: '120px', order: true, tooltip: 'Total Value Locked' });
-        if (columnsToUse.includes('holders')) customHeaders.push({ id: 'holders', label: 'HOLDERS', align: 'right', width: '100px', order: true, tooltip: 'Number of holders' });
-        if (columnsToUse.includes('trades')) customHeaders.push({ id: 'vol24htx', label: 'TRADES', align: 'right', width: '100px', order: true, tooltip: '24h trade count' });
-        if (columnsToUse.includes('created')) customHeaders.push({ id: 'dateon', label: 'CREATED', align: 'right', width: '100px', order: true, tooltip: 'Token creation date' });
-        if (columnsToUse.includes('supply')) customHeaders.push({ id: 'supply', label: 'SUPPLY', align: 'right', width: '120px', order: true, tooltip: 'Total supply' });
-        if (columnsToUse.includes('origin')) customHeaders.push({ id: 'origin', label: 'ORIGIN', align: 'right', width: '90px', order: true, tooltip: 'Token origin' });
-        if (columnsToUse.includes('sparkline')) customHeaders.push({ id: 'historyGraph', label: 'LAST 24H', align: 'center', width: '280px', order: false });
+        columnsToUse.forEach((column, idx) => {
+          const isLastColumn = idx === totalColumns - 1;
+          const extraStyle = isLastColumn && column !== 'sparkline' ? { paddingRight: '24px' } : {};
+          
+          switch(column) {
+            case 'price':
+              customHeaders.push({ id: 'exch', label: 'PRICE', align: 'right', width: '120px', order: true, style: extraStyle });
+              break;
+            case 'pro5m':
+              customHeaders.push({ id: 'pro5m', label: '5M %', align: 'right', width: '90px', order: true, tooltip: '5 minute change', style: extraStyle });
+              break;
+            case 'pro1h':
+              customHeaders.push({ id: 'pro1h', label: '1H %', align: 'right', width: '90px', order: true, tooltip: '1 hour change', style: extraStyle });
+              break;
+            case 'pro24h':
+              customHeaders.push({ id: 'pro24h', label: '24H %', align: 'right', width: '90px', order: true, tooltip: '24 hour change', style: extraStyle });
+              break;
+            case 'pro7d':
+              customHeaders.push({ id: 'pro7d', label: '7D %', align: 'right', width: '90px', order: true, tooltip: '7 day change', style: extraStyle });
+              break;
+            case 'pro30d':
+              customHeaders.push({ id: 'pro30d', label: '30D %', align: 'right', width: '90px', order: true, tooltip: '30 day estimate', style: extraStyle });
+              break;
+            case 'volume24h':
+              customHeaders.push({ id: 'vol24hxrp', label: 'VOLUME 24H', align: 'right', width: '130px', order: true, tooltip: '24h volume', style: extraStyle });
+              break;
+            case 'volume7d':
+              customHeaders.push({ id: 'vol7d', label: 'VOLUME 7D', align: 'right', width: '130px', order: true, tooltip: '7d volume estimate', style: extraStyle });
+              break;
+            case 'marketCap':
+              customHeaders.push({ id: 'marketcap', label: 'MARKET CAP', align: 'right', width: '140px', order: true, tooltip: 'Market capitalization', style: extraStyle });
+              break;
+            case 'tvl':
+              customHeaders.push({ id: 'tvl', label: 'TVL', align: 'right', width: '120px', order: true, tooltip: 'Total Value Locked', style: extraStyle });
+              break;
+            case 'holders':
+              customHeaders.push({ id: 'holders', label: 'HOLDERS', align: 'right', width: '100px', order: true, tooltip: 'Number of holders', style: extraStyle });
+              break;
+            case 'trades':
+              customHeaders.push({ id: 'vol24htx', label: 'TRADES', align: 'right', width: '100px', order: true, tooltip: '24h trade count', style: extraStyle });
+              break;
+            case 'created':
+              customHeaders.push({ id: 'dateon', label: 'CREATED', align: 'right', width: '100px', order: true, tooltip: 'Token creation date', style: extraStyle });
+              break;
+            case 'supply':
+              customHeaders.push({ id: 'supply', label: 'SUPPLY', align: 'right', width: '120px', order: true, tooltip: 'Total supply', style: extraStyle });
+              break;
+            case 'origin':
+              customHeaders.push({ id: 'origin', label: 'ORIGIN', align: 'right', width: '90px', order: true, tooltip: 'Token origin', style: extraStyle });
+              break;
+            case 'sparkline':
+              customHeaders.push({ id: 'historyGraph', label: 'LAST 24H', align: 'right', width: '15%', order: false, style: { paddingLeft: '16px' } });
+              break;
+          }
+        });
         
         return customHeaders;
 
@@ -505,6 +548,7 @@ const TokenListHead = memo(function TokenListHead({
               scrollLeft={scrollLeft && headCell.id === 'token'}
               isTokenColumn={headCell.id === 'token'}
               onClick={headCell.order ? createSortHandler(headCell.id, headCell.no) : undefined}
+              style={headCell.style || {}}
             >
               {headCell.order ? (
                 headCell.tooltip ? (

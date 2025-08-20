@@ -633,7 +633,7 @@ const DesktopTokenRow = ({
                   {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.marketCap)}
                 </span>
               </StyledCell>
-              <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px' }}>
+              <StyledCell align="right" darkMode={darkMode} style={{ minWidth: '280px', paddingLeft: '16px' }}>
                 {sparklineUrl ? (
                   <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
                     <LoadChart
@@ -652,112 +652,167 @@ const DesktopTokenRow = ({
             </>
           );
         }
+        
+        // Render custom columns with last column padding
+        const columnElements = [];
+        const lastColumnIndex = customColumns.length - 1;
+        
+        customColumns.forEach((column, index) => {
+          const isLastColumn = index === lastColumnIndex;
+          const extraStyle = isLastColumn ? { paddingRight: '24px' } : {};
+          
+          switch(column) {
+            case 'price':
+              columnElements.push(
+                <StyledCell key="price" align="right" darkMode={darkMode} style={extraStyle}>
+                  <PriceText darkMode={darkMode} priceColor={priceColor}>
+                    <NumberTooltip
+                      prepend={currencySymbols[activeFiatCurrency]}
+                      number={fNumberWithCurreny(exch, exchRate)}
+                    />
+                  </PriceText>
+                </StyledCell>
+              );
+              break;
+            case 'pro5m':
+              columnElements.push(
+                <StyledCell key="pro5m" align="right" darkMode={darkMode} style={extraStyle}>
+                  <PercentText color={getPercentColor(pro5m)}>
+                    {pro5m !== undefined && pro5m !== null && !isNaN(pro5m) ? `${pro5m.toFixed(2)}%` : '0.00%'}
+                  </PercentText>
+                </StyledCell>
+              );
+              break;
+            case 'pro1h':
+              columnElements.push(
+                <StyledCell key="pro1h" align="right" darkMode={darkMode} style={extraStyle}>
+                  <PercentText color={getPercentColor(pro1h)}>
+                    {pro1h !== undefined && pro1h !== null && !isNaN(pro1h) ? `${pro1h.toFixed(2)}%` : '0.00%'}
+                  </PercentText>
+                </StyledCell>
+              );
+              break;
+            case 'pro24h':
+              columnElements.push(
+                <StyledCell key="pro24h" align="right" darkMode={darkMode} style={extraStyle}>
+                  <PercentText color={getPercentColor(pro24h)}>
+                    {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%` : '0.0%'}
+                  </PercentText>
+                </StyledCell>
+              );
+              break;
+            case 'pro7d':
+              columnElements.push(
+                <StyledCell key="pro7d" align="right" darkMode={darkMode} style={extraStyle}>
+                  <PercentText color={getPercentColor(pro7d)}>
+                    {pro7d !== undefined && pro7d !== null && !isNaN(pro7d) ? `${pro7d.toFixed(2)}%` : '0.00%'}
+                  </PercentText>
+                </StyledCell>
+              );
+              break;
+            case 'pro30d':
+              columnElements.push(
+                <StyledCell key="pro30d" align="right" darkMode={darkMode} style={extraStyle}>
+                  <PercentText color={getPercentColor(pro24h * 30)}>
+                    {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${(pro24h * 30).toFixed(0)}%` : '0%'}
+                  </PercentText>
+                </StyledCell>
+              );
+              break;
+            case 'volume24h':
+              columnElements.push(
+                <StyledCell key="volume24h" align="right" darkMode={darkMode} style={extraStyle}>
+                  {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.volume)}
+                </StyledCell>
+              );
+              break;
+            case 'volume7d':
+              columnElements.push(
+                <StyledCell key="volume7d" align="right" darkMode={darkMode} style={extraStyle}>
+                  {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.volume * 7)}
+                </StyledCell>
+              );
+              break;
+            case 'marketCap':
+              columnElements.push(
+                <StyledCell key="marketCap" align="right" darkMode={darkMode} style={extraStyle}>
+                  <span style={{ fontWeight: '600' }}>
+                    {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.marketCap)}
+                  </span>
+                </StyledCell>
+              );
+              break;
+            case 'tvl':
+              columnElements.push(
+                <StyledCell key="tvl" align="right" darkMode={darkMode} style={extraStyle}>
+                  {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.tvl)}
+                </StyledCell>
+              );
+              break;
+            case 'holders':
+              columnElements.push(
+                <StyledCell key="holders" align="right" darkMode={darkMode} style={extraStyle}>
+                  {formatValue(holders, 'int')}
+                </StyledCell>
+              );
+              break;
+            case 'trades':
+              columnElements.push(
+                <StyledCell key="trades" align="right" darkMode={darkMode} style={extraStyle}>
+                  {formatValue(vol24htx, 'int')}
+                </StyledCell>
+              );
+              break;
+            case 'created':
+              columnElements.push(
+                <StyledCell key="created" align="right" darkMode={darkMode} style={extraStyle}>
+                  <span style={{ fontSize: '11px', color: darkMode ? '#999' : '#666' }}>
+                    {formatTimeAgo(dateon, date)}
+                  </span>
+                </StyledCell>
+              );
+              break;
+            case 'supply':
+              columnElements.push(
+                <StyledCell key="supply" align="right" darkMode={darkMode} style={extraStyle}>
+                  {formatValue(amount, 'int')}
+                </StyledCell>
+              );
+              break;
+            case 'origin':
+              columnElements.push(
+                <StyledCell key="origin" align="right" darkMode={darkMode} style={extraStyle}>
+                  {origin || 'XRPL'}
+                </StyledCell>
+              );
+              break;
+            case 'sparkline':
+              columnElements.push(
+                <StyledCell key="sparkline" align="right" darkMode={darkMode} style={{ minWidth: '280px', paddingLeft: '16px' }}>
+                  {sparklineUrl ? (
+                    <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
+                      <LoadChart
+                        url={sparklineUrl}
+                        style={{ width: '100%', height: '100%' }}
+                        animation={false}
+                        showGradient={false}
+                        lineWidth={1.5}
+                        opts={{ renderer: 'svg', width: 260, height: 60 }}
+                      />
+                    </div>
+                  ) : (
+                    <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
+                  )}
+                </StyledCell>
+              );
+              break;
+          }
+        });
+        
         return (
           <>
             {tokenCell}
-            {customColumns.includes('price') && priceCell}
-            {customColumns.includes('pro5m') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                <PercentText color={getPercentColor(pro5m)}>
-                  {pro5m !== undefined && pro5m !== null && !isNaN(pro5m) ? `${pro5m.toFixed(2)}%` : '0.00%'}
-                </PercentText>
-              </StyledCell>
-            )}
-            {customColumns.includes('pro1h') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                <PercentText color={getPercentColor(pro1h)}>
-                  {pro1h !== undefined && pro1h !== null && !isNaN(pro1h) ? `${pro1h.toFixed(2)}%` : '0.00%'}
-                </PercentText>
-              </StyledCell>
-            )}
-            {customColumns.includes('pro24h') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                <PercentText color={getPercentColor(pro24h)}>
-                  {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%` : '0.0%'}
-                </PercentText>
-              </StyledCell>
-            )}
-            {customColumns.includes('pro7d') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                <PercentText color={getPercentColor(pro7d)}>
-                  {pro7d !== undefined && pro7d !== null && !isNaN(pro7d) ? `${pro7d.toFixed(2)}%` : '0.00%'}
-                </PercentText>
-              </StyledCell>
-            )}
-            {customColumns.includes('pro30d') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                <PercentText color={getPercentColor(pro24h * 30)}>
-                  {pro24h !== undefined && pro24h !== null && !isNaN(pro24h) ? `${(pro24h * 30).toFixed(0)}%` : '0%'}
-                </PercentText>
-              </StyledCell>
-            )}
-            {customColumns.includes('volume24h') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.volume)}
-              </StyledCell>
-            )}
-            {customColumns.includes('volume7d') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.volume * 7)}
-              </StyledCell>
-            )}
-            {customColumns.includes('marketCap') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                <span style={{ fontWeight: '600' }}>
-                  {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.marketCap)}
-                </span>
-              </StyledCell>
-            )}
-            {customColumns.includes('tvl') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.tvl)}
-              </StyledCell>
-            )}
-            {customColumns.includes('holders') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                {formatValue(holders, 'int')}
-              </StyledCell>
-            )}
-            {customColumns.includes('trades') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                {formatValue(vol24htx, 'int')}
-              </StyledCell>
-            )}
-            {customColumns.includes('created') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                <span style={{ fontSize: '11px', color: darkMode ? '#999' : '#666' }}>
-                  {formatTimeAgo(dateon, date)}
-                </span>
-              </StyledCell>
-            )}
-            {customColumns.includes('supply') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                {formatValue(amount, 'int')}
-              </StyledCell>
-            )}
-            {customColumns.includes('origin') && (
-              <StyledCell align="right" darkMode={darkMode}>
-                {origin || 'XRPL'}
-              </StyledCell>
-            )}
-            {customColumns.includes('sparkline') && (
-              <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px' }}>
-                {sparklineUrl ? (
-                  <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
-                    <LoadChart
-                      url={sparklineUrl}
-                      style={{ width: '100%', height: '100%' }}
-                      animation={false}
-                      showGradient={false}
-                      lineWidth={1.5}
-                      opts={{ renderer: 'svg', width: 260, height: 60 }}
-                    />
-                  </div>
-                ) : (
-                  <span style={{ color: darkMode ? '#666' : '#ccc' }}>-</span>
-                )}
-              </StyledCell>
-            )}
+            {columnElements}
           </>
         );
 
