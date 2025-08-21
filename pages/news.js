@@ -760,7 +760,21 @@ function NewsPage() {
           />
 
           <div className={`${styles.newsGrid} ${isDark ? styles.dark : ''}`}>
-            {currentItems.map((article) => (
+            {currentItems.length === 0 ? (
+              <div 
+                style={{
+                  gridColumn: '1 / -1',
+                  textAlign: 'center',
+                  padding: '4rem 2rem',
+                  color: theme.palette.text.secondary,
+                  fontSize: '1.1rem',
+                  fontWeight: 500
+                }}
+              >
+                No news found at the moment
+              </div>
+            ) : (
+              currentItems.map((article) => (
               <div 
                 key={article._id} 
                 className={`${styles.newsCard} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
@@ -847,7 +861,7 @@ function NewsPage() {
                     </div>
                 </div>
               </div>
-            ))}
+            )))}
           </div>
 
           {totalCount > 0 && (

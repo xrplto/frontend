@@ -476,61 +476,80 @@ function SearchModal({ open, onClose }) {
                 </Typography>
               </Stack>
               <List disablePadding dense>
-                {searchResults.tokens.map((token, index) => (
-                  <ListItem key={index} disablePadding>
-                    <ListItemButton onClick={() => handleResultClick(token, 'token')} sx={{ py: 0.5, px: 2 }}>
-                      <ListItemAvatar sx={{ minWidth: 36 }}>
-                        <Avatar
-                          src={`https://s1.xrpl.to/token/${token.md5}`}
-                          sx={{ width: 28, height: 28 }}
-                          imgProps={{ loading: 'lazy' }}
+                {searchResults.tokens.map((token, index) => {
+                  // Always highlight the first token if there are multiple results
+                  // The API returns the most relevant/authentic one first
+                  const shouldHighlight = index === 0 && searchResults.tokens.length > 1;
+                  
+                  return (
+                    <ListItem key={index} disablePadding>
+                      <ListItemButton 
+                        onClick={() => handleResultClick(token, 'token')} 
+                        sx={{ 
+                          py: 0.5, 
+                          px: 2,
+                          backgroundColor: shouldHighlight ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                          '&:hover': {
+                            backgroundColor: shouldHighlight ? alpha(theme.palette.primary.main, 0.12) : alpha(theme.palette.action.hover, 0.08)
+                          }
+                        }}
+                      >
+                        <ListItemAvatar sx={{ minWidth: 36 }}>
+                          <Avatar
+                            src={`https://s1.xrpl.to/token/${token.md5}`}
+                            sx={{ width: 28, height: 28 }}
+                            imgProps={{ loading: 'lazy' }}
+                          />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={
+                            <Stack direction="row" alignItems="center" spacing={0.5}>
+                              <Typography fontSize="0.85rem" noWrap>{token.user}</Typography>
+                              {token.verified && (
+                                <Chip label="Verified" size="small" color="primary" sx={{ height: 16, fontSize: '0.6rem' }} />
+                              )}
+                              {shouldHighlight && (
+                                <Chip label="Original" size="small" color="success" sx={{ height: 16, fontSize: '0.6rem' }} />
+                              )}
+                            </Stack>
+                          }
+                          secondary={token.name}
+                          secondaryTypographyProps={{ fontSize: '0.75rem', noWrap: true }}
+                          sx={{ pr: 1 }}
                         />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={
-                          <Stack direction="row" alignItems="center" spacing={0.5}>
-                            <Typography fontSize="0.85rem" noWrap>{token.user}</Typography>
-                            {token.verified && (
-                              <Chip label="Verified" size="small" color="primary" sx={{ height: 16, fontSize: '0.6rem' }} />
-                            )}
-                          </Stack>
-                        }
-                        secondary={token.name}
-                        secondaryTypographyProps={{ fontSize: '0.75rem', noWrap: true }}
-                        sx={{ pr: 1 }}
-                      />
-                      <Stack alignItems="flex-end" spacing={0}>
-                        {token.exch !== undefined && token.exch !== null && (
-                          <Typography variant="body2" fontSize="0.8rem" fontWeight={500}>
-                            ${token.exch === 0 
-                              ? '0.00'
-                              : token.exch < 0.00000001
-                              ? parseFloat(token.exch).toFixed(12)
-                              : token.exch < 0.0000001
-                              ? parseFloat(token.exch).toFixed(10)
-                              : token.exch < 0.000001
-                              ? parseFloat(token.exch).toFixed(8)
-                              : token.exch < 0.0001
-                              ? parseFloat(token.exch).toFixed(6)
-                              : token.exch < 1
-                              ? parseFloat(token.exch).toFixed(4)
-                              : parseFloat(token.exch).toFixed(2)}
-                          </Typography>
-                        )}
-                        {token.pro24h !== undefined && token.pro24h !== null && (
-                          <Typography 
-                            variant="caption" 
-                            fontSize="0.7rem"
-                            color={parseFloat(token.pro24h) >= 0 ? 'success.main' : 'error.main'}
-                            fontWeight={600}
-                          >
-                            {parseFloat(token.pro24h) >= 0 ? '+' : ''}{parseFloat(token.pro24h).toFixed(2)}%
-                          </Typography>
-                        )}
-                      </Stack>
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+                        <Stack alignItems="flex-end" spacing={0}>
+                          {token.exch !== undefined && token.exch !== null && (
+                            <Typography variant="body2" fontSize="0.8rem" fontWeight={500}>
+                              ${token.exch === 0 
+                                ? '0.00'
+                                : token.exch < 0.00000001
+                                ? parseFloat(token.exch).toFixed(12)
+                                : token.exch < 0.0000001
+                                ? parseFloat(token.exch).toFixed(10)
+                                : token.exch < 0.000001
+                                ? parseFloat(token.exch).toFixed(8)
+                                : token.exch < 0.0001
+                                ? parseFloat(token.exch).toFixed(6)
+                                : token.exch < 1
+                                ? parseFloat(token.exch).toFixed(4)
+                                : parseFloat(token.exch).toFixed(2)}
+                            </Typography>
+                          )}
+                          {token.pro24h !== undefined && token.pro24h !== null && (
+                            <Typography 
+                              variant="caption" 
+                              fontSize="0.7rem"
+                              color={parseFloat(token.pro24h) >= 0 ? 'success.main' : 'error.main'}
+                              fontWeight={600}
+                            >
+                              {parseFloat(token.pro24h) >= 0 ? '+' : ''}{parseFloat(token.pro24h).toFixed(2)}%
+                            </Typography>
+                          )}
+                        </Stack>
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
               </List>
             </>
           )}
