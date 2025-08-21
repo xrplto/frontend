@@ -713,14 +713,14 @@ function NewsPage() {
               background: 'transparent',
               border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
               borderRadius: '8px',
-              p: 1.5,
+              p: { xs: 1, sm: 1.5 },
               mb: 2
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 1, sm: 1.5 } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ fontSize: '0.75rem', fontWeight: 600, color: theme.palette.text.secondary, textTransform: 'uppercase' }}>
-                  Market Sentiment
+                <Box sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' }, fontWeight: 600, color: theme.palette.text.secondary, textTransform: 'uppercase' }}>
+                  {isMobile ? 'Sentiment' : 'Market Sentiment'}
                 </Box>
                 {searchQuery && searchSentimentScore !== null && (
                   <Box sx={{ 
@@ -736,7 +736,7 @@ function NewsPage() {
                   </Box>
                 )}
               </Box>
-              <Box sx={{ display: 'flex', gap: 1.5, fontSize: '0.65rem', color: theme.palette.text.secondary }}>
+              <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1.5, fontSize: '0.65rem', color: theme.palette.text.secondary }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Box sx={{ width: 6, height: 6, backgroundColor: '#10B981', borderRadius: '50%' }} />
                   Bull
@@ -752,7 +752,7 @@ function NewsPage() {
               </Box>
             </Box>
             
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, gap: { xs: 0.5, sm: 1 } }}>
               {[
                 { period: '24H', stats: sentimentStats.last24h },
                 { period: '7D', stats: sentimentStats.last7d },
@@ -762,21 +762,21 @@ function NewsPage() {
                 <Box key={item.period} sx={{ 
                   backgroundColor: alpha(theme.palette.background.paper, 0.3),
                   borderRadius: '6px',
-                  p: 1,
+                  p: { xs: 0.5, sm: 1 },
                   textAlign: 'center'
                 }}>
                   <Box sx={{ 
-                    fontSize: '0.7rem', 
+                    fontSize: { xs: '0.65rem', sm: '0.7rem' }, 
                     fontWeight: 700, 
                     color: theme.palette.text.primary,
-                    mb: 0.5
+                    mb: { xs: 0.25, sm: 0.5 }
                   }}>
                     {item.period}
                   </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5, fontSize: '0.7rem', fontWeight: 600 }}>
-                    <Box sx={{ color: '#10B981' }}>{item.stats?.bullish || 0}%</Box>
-                    <Box sx={{ color: '#EF4444' }}>{item.stats?.bearish || 0}%</Box>
-                    <Box sx={{ color: '#F59E0B' }}>{item.stats?.neutral || 0}%</Box>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'center', gap: { xs: 0, sm: 0.5 }, fontSize: { xs: '0.6rem', sm: '0.7rem' }, fontWeight: 600 }}>
+                    <Box sx={{ color: '#10B981' }}>{item.stats?.bullish || 0}<span style={{ fontSize: '0.5rem' }}>%</span></Box>
+                    <Box sx={{ color: '#EF4444', display: { xs: 'none', sm: 'block' } }}>{item.stats?.bearish || 0}%</Box>
+                    <Box sx={{ color: '#F59E0B', display: { xs: 'none', sm: 'block' } }}>{item.stats?.neutral || 0}%</Box>
                   </Box>
                 </Box>
               ))}
