@@ -2198,23 +2198,27 @@ const App = ({ token }) => {
   return (
     <Stack alignItems="center" width="100%" sx={{ mb: 2 }}>
       <Button
-        variant="outlined"
+        variant="contained"
         onClick={toggleSwap}
         fullWidth
         startIcon={<Icon icon={showSwap ? hideIcon : swapIcon} />}
         sx={{
           position: 'relative',
           overflow: 'hidden',
-          borderRadius: '12px',
+          borderRadius: { xs: '16px', sm: '12px' },
           transition: 'all 0.3s ease',
-          background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.05)} 100%)`,
+          background: (theme) => showSwap 
+            ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.9)} 0%, ${alpha(theme.palette.error.dark, 0.9)} 100%)`
+            : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`,
           backdropFilter: 'blur(24px)',
           backgroundSize: '200% 200%',
           animation: { xs: 'none', sm: 'gradient 5s ease infinite' },
-          color: (theme) => (theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.main),
-          boxShadow: (theme) => `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
-          fontSize: { xs: '0.95rem', sm: '1rem' },
-          padding: { xs: '10px 24px', sm: '8px 22px' },
+          color: '#fff',
+          boxShadow: (theme) => `0 6px 20px ${alpha(showSwap ? theme.palette.error.main : theme.palette.primary.main, 0.25)}`,
+          fontSize: { xs: '1.1rem', sm: '1rem' },
+          padding: { xs: '14px 24px', sm: '10px 22px' },
+          fontWeight: { xs: 600, sm: 500 },
+          height: { xs: '52px', sm: '44px' },
           '@keyframes gradient': {
             '0%': {
               backgroundPosition: '0% 50%'
@@ -2251,24 +2255,13 @@ const App = ({ token }) => {
             }
           },
           '&:hover': {
-            transform: { xs: 'none', sm: 'translateY(-2px) scale(1.02)' },
-            background: (theme) =>
-              theme.palette.mode === 'dark'
-                ? `linear-gradient(45deg, 
-                #000000 0%, 
-                ${alpha('#000000', 0.95)} 25%,
-                ${alpha('#1a1a1a', 1)} 50%,
-                ${alpha('#000000', 0.95)} 75%,
-                #000000 100%)`
-                : `linear-gradient(45deg, 
-                #ffffff 0%, 
-                ${alpha('#ffffff', 0.95)} 25%,
-                ${alpha('#f5f5f5', 1)} 50%,
-                ${alpha('#ffffff', 0.95)} 75%,
-                #ffffff 100%)`
+            transform: { xs: 'scale(0.98)', sm: 'translateY(-2px) scale(1.02)' },
+            background: (theme) => showSwap
+              ? `linear-gradient(135deg, ${alpha(theme.palette.error.dark, 1)} 0%, ${alpha(theme.palette.error.main, 1)} 100%)`
+              : `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 1)} 0%, ${alpha(theme.palette.primary.main, 1)} 100%)`
           },
           '&:active': {
-            transform: 'translateY(0)'
+            transform: 'scale(0.95)'
           }
         }}
       >
