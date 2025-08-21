@@ -75,6 +75,12 @@ const TrendingCard = styled(Card, {
   cursor: 'pointer',
   overflow: 'hidden',
   transition: 'all 0.2s ease',
+  [theme.breakpoints.down('sm')]: {
+    borderRadius: '6px',
+    boxShadow: rank <= 3
+      ? `0 0 12px ${alpha('#FFD700', 0.12)}, 0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`
+      : `0 1px 4px ${alpha(theme.palette.common.black, 0.04)}`
+  },
   '&:hover': {
     transform: 'translateX(4px)',
     boxShadow: rank <= 3
@@ -245,17 +251,17 @@ const TrendingTokens = () => {
 
   return (
     <StackStyle sx={{ 
-      mt: 1,
+      mt: { xs: 0.5, sm: 1 },
       background: 'transparent',
       backdropFilter: 'none',
       WebkitBackdropFilter: 'none',
       border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-      borderRadius: { xs: '12px', sm: '16px' },
+      borderRadius: { xs: '8px', sm: '16px' },
       boxShadow: `
         0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
         0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
         inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-      padding: { xs: 2, sm: 2.5 },
+      padding: { xs: 1, sm: 2.5 },
       position: 'relative',
       overflow: 'hidden',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -263,7 +269,7 @@ const TrendingTokens = () => {
         display: 'none'
       },
       '&:hover': {
-        transform: 'translateY(-2px)',
+        transform: { xs: 'none', sm: 'translateY(-2px)' },
         boxShadow: `
           0 6px 24px ${alpha(theme.palette.common.black, 0.12)}, 
           0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
@@ -272,30 +278,30 @@ const TrendingTokens = () => {
       }
     }}>
       <HeaderSection darkMode={darkMode}>
-        <Stack direction="row" alignItems="center" spacing={1}>
+        <Stack direction="row" alignItems="center" spacing={{ xs: 0.75, sm: 1 }}>
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 28,
-              height: 28,
+              width: { xs: 24, sm: 28 },
+              height: { xs: 24, sm: 28 },
               borderRadius: '8px',
               background: 'linear-gradient(135deg, #FF6B35, #F7931E)',
               boxShadow: `0 2px 8px ${alpha('#FF6B35', 0.25)}`
             }}
           >
-            <LocalFireDepartmentIcon sx={{ color: '#fff', fontSize: 16 }} />
+            <LocalFireDepartmentIcon sx={{ color: '#fff', fontSize: { xs: 14, sm: 16 } }} />
           </Box>
           <Box flex={1}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="body2" fontWeight="700" color={darkMode ? '#fff' : '#1a1a1a'} sx={{ fontSize: '0.85rem', lineHeight: 1 }}>
-                Trending Tokens
+            <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1 }}>
+              <Typography variant="body2" fontWeight="700" color={darkMode ? '#fff' : '#1a1a1a'} sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem' }, lineHeight: 1 }}>
+                Trending
               </Typography>
               <Typography
                 variant="caption"
                 color={darkMode ? alpha('#fff', 0.6) : alpha('#1a1a1a', 0.5)}
-                sx={{ fontSize: '0.7rem', lineHeight: 1 }}
+                sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' }, lineHeight: 1, display: { xs: 'none', sm: 'block' } }}
               >
                 • Top performers
               </Typography>
@@ -308,8 +314,8 @@ const TrendingTokens = () => {
               background: alpha('#4caf50', 0.1),
               color: '#4caf50',
               border: `1px solid ${alpha('#4caf50', 0.3)}`,
-              fontSize: '0.6rem',
-              height: 18,
+              fontSize: { xs: '0.55rem', sm: '0.6rem' },
+              height: { xs: 16, sm: 18 },
               animation: 'pulse 2s infinite',
               '@keyframes pulse': {
                 '0%': { opacity: 1 },
@@ -364,7 +370,7 @@ const TrendingTokens = () => {
 
           return (
             <TrendingCard darkMode={darkMode} rank={rank} key={`trending-${index}-${id}-${md5}`}>
-              <CardContent sx={{ p: 1 }}>
+              <CardContent sx={{ p: { xs: 0.75, sm: 1 } }}>
                 <Link
                   underline="none"
                   color="inherit"
@@ -372,16 +378,26 @@ const TrendingTokens = () => {
                   rel="noreferrer noopener nofollow"
                   sx={{ textDecoration: 'none' }}
                 >
-                  <Box display="flex" alignItems="stretch" gap={1.5}>
-                    {/* Left Section - Rank and Token Info */}
-                    <Box display="flex" alignItems="center" gap={1} flex="0 0 auto">
+                  <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'stretch' }} gap={{ xs: 1, sm: 1.5 }} position="relative">
+                    {/* Top/Left Section - Token Info with Rank */}
+                    <Box 
+                      display="flex" 
+                      alignItems="center" 
+                      gap={{ xs: 0.75, sm: 1 }} 
+                      sx={{
+                        flex: { xs: '0 0 auto', sm: '0 0 240px' },
+                        minWidth: { xs: 'auto', sm: '240px' },
+                        maxWidth: { xs: 'none', sm: '240px' }
+                      }}
+                    >
+                      {/* Rank Badge */}
                       <Box 
                         sx={{ 
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          width: 24,
-                          height: 24,
+                          width: { xs: 20, sm: 24 },
+                          height: { xs: 20, sm: 24 },
                           borderRadius: '6px',
                           background: rank <= 3 
                             ? `linear-gradient(135deg, #FFD700, #FFA500)`
@@ -390,16 +406,17 @@ const TrendingTokens = () => {
                             : `linear-gradient(135deg, #CD7F32, #8B4513)`,
                           color: '#fff',
                           fontWeight: 'bold',
-                          fontSize: '0.65rem',
+                          fontSize: { xs: '0.6rem', sm: '0.65rem' },
                           boxShadow: rank <= 3 
                             ? `0 2px 8px ${alpha('#FFD700', 0.4)}`
-                            : 'none'
+                            : 'none',
+                          flexShrink: 0
                         }}
                       >
                         {rank}
                       </Box>
-                      
-                      <Box sx={{ position: 'relative' }}>
+
+                      <Box sx={{ position: 'relative', flexShrink: 0 }}>
                         {verified ? (
                           <VerifiedBadge
                             badgeContent={<VerifiedIcon sx={{ fontSize: 8 }} />}
@@ -425,27 +442,53 @@ const TrendingTokens = () => {
                         )}
                       </Box>
 
-                      <Stack spacing={0.25} minWidth={80} maxWidth={120}>
-                        <Typography
-                          variant="body2"
-                          fontWeight="700"
-                          color={theme.palette.primary.main}
-                          noWrap
-                          sx={{
-                            fontSize: '0.75rem',
-                            lineHeight: 1.2
-                          }}
-                        >
-                          {user}
-                        </Typography>
+                      <Stack spacing={0.25} sx={{ minWidth: 0, flex: 1 }}>
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <Typography
+                            variant="body2"
+                            fontWeight="700"
+                            color={theme.palette.primary.main}
+                            noWrap
+                            sx={{
+                              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                              lineHeight: 1.2,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
+                            }}
+                          >
+                            {user}
+                          </Typography>
+                          {/* Trending Score Badge inline */}
+                          {trendingScore && (
+                            <Box 
+                              sx={{ 
+                                background: 'linear-gradient(135deg, #FF6B35, #F7931E)',
+                                color: '#fff',
+                                borderRadius: '4px',
+                                padding: '1px 4px',
+                                fontSize: '0.45rem',
+                                fontWeight: 700,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.25,
+                                flexShrink: 0
+                              }}
+                            >
+                              <WhatshotIcon sx={{ fontSize: 7 }} />
+                              {trendingScore}
+                            </Box>
+                          )}
+                        </Box>
                         <Typography
                           variant="body2"
                           color={darkMode ? alpha('#fff', 0.7) : alpha('#000', 0.6)}
                           noWrap
                           sx={{
-                            fontSize: '0.65rem',
+                            fontSize: { xs: '0.6rem', sm: '0.65rem' },
                             fontWeight: 400,
-                            lineHeight: 1.2
+                            lineHeight: 1.2,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
                           }}
                         >
                           {name}
@@ -453,16 +496,18 @@ const TrendingTokens = () => {
                       </Stack>
                     </Box>
 
-                    {/* Right Section - Stats Grid */}
+                    {/* Bottom/Right Section - Stats Grid */}
                     <Box 
                       display="grid" 
-                      gridTemplateColumns="repeat(4, 1fr)"
-                      gap={1.5}
+                      gridTemplateColumns={{ xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }}
+                      gap={{ xs: 1, sm: 1.5 }}
                       flex={1}
                       alignItems="center"
                       sx={{
-                        borderLeft: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                        pl: 1.5
+                        borderLeft: { xs: 'none', sm: `1px solid ${alpha(theme.palette.divider, 0.1)}` },
+                        borderTop: { xs: `1px solid ${alpha(theme.palette.divider, 0.1)}`, sm: 'none' },
+                        pl: { xs: 0, sm: 1.5 },
+                        pt: { xs: 1, sm: 0 }
                       }}
                     >
                       {/* Price */}
@@ -470,20 +515,20 @@ const TrendingTokens = () => {
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: '0.55rem',
+                            fontSize: { xs: '0.5rem', sm: '0.55rem' },
                             color: darkMode ? alpha('#fff', 0.5) : alpha('#000', 0.5),
                             display: 'block',
                             lineHeight: 1.2,
                             mb: 0.25
                           }}
                         >
-                          Price (XRP)
+                          Price
                         </Typography>
                         <Typography 
                           variant="body2" 
                           fontWeight="600"
                           sx={{ 
-                            fontSize: '0.7rem',
+                            fontSize: { xs: '0.65rem', sm: '0.7rem' },
                             color: darkMode ? '#fff' : '#000',
                             lineHeight: 1.2
                           }}
@@ -497,7 +542,7 @@ const TrendingTokens = () => {
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: '0.55rem',
+                            fontSize: { xs: '0.5rem', sm: '0.55rem' },
                             color: darkMode ? alpha('#fff', 0.5) : alpha('#000', 0.5),
                             display: 'block',
                             lineHeight: 1.2,
@@ -506,45 +551,45 @@ const TrendingTokens = () => {
                         >
                           24h
                         </Typography>
-                        <Box display="flex" alignItems="center" gap={0.5}>
+                        <Box display="flex" alignItems="center" gap={0.25}>
                           <Typography 
                             variant="body2" 
                             fontWeight="600"
                             sx={{ 
-                              fontSize: '0.7rem',
+                              fontSize: { xs: '0.65rem', sm: '0.7rem' },
                               color: pro24h >= 0 ? '#4caf50' : '#f44336',
                               lineHeight: 1.2
                             }}
                           >
                             {pro24h >= 0 ? '+' : ''}{pro24h ? pro24h.toFixed(2) : '0.00'}%
                           </Typography>
-                          {pro24h >= 0 ? (
+                          {!isMobile && (pro24h >= 0 ? (
                             <TrendingUpIcon sx={{ fontSize: 10, color: '#4caf50' }} />
                           ) : (
                             <TrendingUpIcon sx={{ fontSize: 10, color: '#f44336', transform: 'rotate(180deg)' }} />
-                          )}
+                          ))}
                         </Box>
                       </Box>
                       
                       {/* Market Cap */}
-                      <Box>
+                      <Box sx={{ display: { xs: 'block', sm: 'block' } }}>
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: '0.55rem',
+                            fontSize: { xs: '0.5rem', sm: '0.55rem' },
                             color: darkMode ? alpha('#fff', 0.5) : alpha('#000', 0.5),
                             display: 'block',
                             lineHeight: 1.2,
                             mb: 0.25
                           }}
                         >
-                          Market Cap
+                          MCap
                         </Typography>
                         <Typography 
                           variant="body2" 
                           fontWeight="600"
                           sx={{ 
-                            fontSize: '0.7rem',
+                            fontSize: { xs: '0.65rem', sm: '0.7rem' },
                             color: darkMode ? '#fff' : '#000',
                             lineHeight: 1.2
                           }}
@@ -554,56 +599,33 @@ const TrendingTokens = () => {
                       </Box>
                       
                       {/* Volume */}
-                      <Box>
+                      <Box sx={{ display: { xs: 'block', sm: 'block' } }}>
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: '0.55rem',
+                            fontSize: { xs: '0.5rem', sm: '0.55rem' },
                             color: darkMode ? alpha('#fff', 0.5) : alpha('#000', 0.5),
                             display: 'block',
                             lineHeight: 1.2,
                             mb: 0.25
                           }}
                         >
-                          Volume 24h
+                          Vol 24h
                         </Typography>
                         <Typography 
                           variant="body2" 
                           fontWeight="600"
                           sx={{ 
-                            fontSize: '0.7rem',
+                            fontSize: { xs: '0.65rem', sm: '0.7rem' },
                             color: darkMode ? '#fff' : '#000',
                             lineHeight: 1.2
                           }}
                         >
-                          {formatVolume(vol24hxrp)} XRP
+                          {formatVolume(vol24hxrp)}
                         </Typography>
                       </Box>
                     </Box>
 
-                    {/* Trending Score Badge */}
-                    {trendingScore && (
-                      <Box 
-                        sx={{ 
-                          position: 'absolute',
-                          top: 8,
-                          right: 8,
-                          background: 'linear-gradient(135deg, #FF6B35, #F7931E)',
-                          color: '#fff',
-                          borderRadius: '4px',
-                          padding: '2px 6px',
-                          fontSize: '0.5rem',
-                          fontWeight: 700,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          opacity: 0.9
-                        }}
-                      >
-                        <WhatshotIcon sx={{ fontSize: 8 }} />
-                        {trendingScore}
-                      </Box>
-                    )}
                   </Box>
                 </Link>
               </CardContent>
@@ -616,18 +638,22 @@ const TrendingTokens = () => {
         sx={{
           display: 'flex',
           justifyContent: 'center',
-          mt: 2,
-          pt: 2,
+          mt: { xs: 1.5, sm: 2 },
+          pt: { xs: 1.5, sm: 2 },
           borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
         }}
       >
         <GlowingButton
           component={Link}
           href={`/trending`}
-          endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
+          endIcon={<ArrowForwardIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />}
           darkMode={darkMode}
+          sx={{ 
+            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+            padding: { xs: '6px 12px', sm: '8px 16px' }
+          }}
         >
-          Explore All Trending Tokens
+          {isMobile ? 'View All' : 'Explore All Trending Tokens'}
         </GlowingButton>
       </Box>
     </StackStyle>
