@@ -63,23 +63,15 @@ const Row = styled.div`
   width: 100%;
   
   @media (max-width: 600px) {
-    gap: 4px;
+    gap: 2px;
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     
     &::-webkit-scrollbar {
-      height: 3px;
-    }
-    
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    
-    &::-webkit-scrollbar-thumb {
-      background: rgba(145, 158, 171, 0.15);
-      border-radius: 2px;
+      display: none;
     }
   }
 `;
@@ -394,10 +386,10 @@ const TagChip = styled.button`
   }
   
   @media (max-width: 600px) {
-    font-size: 0.6rem;
-    height: 20px;
-    padding: 1px 5px;
-    gap: 2px;
+    font-size: 0.55rem;
+    height: 18px;
+    padding: 0px 4px;
+    gap: 1px;
   }
 `;
 
@@ -424,10 +416,10 @@ const AllTagsButton = styled.button`
   }
   
   @media (max-width: 600px) {
-    font-size: 0.6rem;
-    height: 20px;
-    padding: 1px 5px;
-    gap: 2px;
+    font-size: 0.55rem;
+    height: 18px;
+    padding: 0px 4px;
+    gap: 1px;
   }
 `;
 
@@ -479,11 +471,11 @@ const SearchToolbar = memo(function SearchToolbar({
       const isMobile = window.innerWidth <= 600;
       
       // Since tags are in their own row, we don't need to account for fixed elements
-      // Reserve space for "All Tags" button (approx 100px on desktop, 75px mobile)
-      const allTagsWidth = isMobile ? 75 : 100;
+      // Reserve space for "All Tags" button (approx 100px on desktop, 60px mobile)
+      const allTagsWidth = isMobile ? 60 : 100;
       
       // Available width for tags - use most of the container width for tags
-      const availableWidth = containerWidth - allTagsWidth - 30; // 30px buffer for All Tags button and spacing
+      const availableWidth = containerWidth - allTagsWidth - 20; // 20px buffer for All Tags button and spacing
       
       if (availableWidth <= 100) {
         setVisibleTagCount(isMobile ? 3 : 5);
@@ -521,8 +513,8 @@ const SearchToolbar = memo(function SearchToolbar({
           const tempTag = document.createElement('button');
           tempTag.className = 'measure-tag';
           tempTag.style.cssText = `
-            padding: ${isMobile ? '1px 6px' : '2px 8px'};
-            font-size: ${isMobile ? '0.65rem' : '0.7rem'};
+            padding: ${isMobile ? '0px 4px' : '2px 8px'};
+            font-size: ${isMobile ? '0.55rem' : '0.7rem'};
             font-weight: 500;
             white-space: nowrap;
             border: 1px solid transparent;
@@ -549,7 +541,7 @@ const SearchToolbar = memo(function SearchToolbar({
             tagWidth = tagWidthCache.current.get(tagCacheKey);
           } else {
             // Read the width from the temp element
-            tagWidth = tempTags[tempIndex].offsetWidth + (isMobile ? 6 : 10); // gap
+            tagWidth = tempTags[tempIndex].offsetWidth + (isMobile ? 3 : 10); // gap
             tempIndex++;
             
             // Cache the width (limit cache size to 100 entries)
@@ -591,7 +583,7 @@ const SearchToolbar = memo(function SearchToolbar({
       }
       
       // Set the visible count - show more tags by default
-      setVisibleTagCount(Math.max(isMobile ? 4 : 8, Math.min(count, tags.length)));
+      setVisibleTagCount(Math.max(isMobile ? 5 : 8, Math.min(count, tags.length)));
       setMeasuredTags(true);
     };
     
@@ -677,7 +669,7 @@ const SearchToolbar = memo(function SearchToolbar({
                 hoverBackground={`${colors[colorIndex]}4D`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <Icon icon={icons[iconIndex]} width="12" height="12" />
+                <Icon icon={icons[iconIndex]} width="10" height="10" />
                 <span>{tag}</span>
               </TagChip>
             );
@@ -686,8 +678,8 @@ const SearchToolbar = memo(function SearchToolbar({
           {/* All Tags Button - show only if there are more tags than visible */}
           {tags.length > visibleTagCount && (
             <AllTagsButton onClick={() => setCategoriesOpen(true)}>
-              <Icon icon="material-symbols:category" width="14" height="14" />
-              <span>All Tags ({tags.length})</span>
+              <Icon icon="material-symbols:category" width="12" height="12" />
+              <span>All ({tags.length})</span>
             </AllTagsButton>
           )}
         </Row>
