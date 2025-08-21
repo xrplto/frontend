@@ -281,7 +281,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           // Calculate ATH from the data
           const allTimeHigh = Math.max(...processedData.map(d => d.high));
           const currentPrice = processedData[processedData.length - 1].close;
-          const percentFromATH = ((currentPrice - allTimeHigh) / allTimeHigh * 100).toFixed(8);
+          const percentFromATH = ((currentPrice - allTimeHigh) / allTimeHigh * 100).toFixed(2);
           
           
           setAthData({
