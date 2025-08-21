@@ -440,13 +440,13 @@ function Header(props) {
 
   return (
     <HeaderWrapper>
-      <Container maxWidth={false} sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
+      <Container maxWidth={false} sx={{ px: { xs: 0, sm: 2, md: 3 } }}>
         <Box
           display="flex"
           alignItems="center"
           justifyContent="space-between"
           flex={2}
-          sx={{ pl: 0, pr: 0 }}
+          sx={{ pl: 0, pr: { xs: 1, sm: 0 } }}
         >
           <Box
             id="logo-container-laptop"
@@ -753,7 +753,8 @@ function Header(props) {
             <Box
               id="logo-container-mobile"
               sx={{
-                mr: 1,
+                mr: 0,
+                ml: { xs: 1, sm: 0 },
                 display: { xs: 'flex', sm: 'none' },
                 '& img': {
                   maxHeight: '32px',
