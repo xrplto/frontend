@@ -240,22 +240,28 @@
 }
 
 .sourceChip {
-  padding: 0.25rem 0.5rem;
+  padding: 0.35rem 0.5rem 0.35rem 0.5rem;
   font-size: 0.7rem;
   border-width: 1px;
   border-style: solid;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
-  height: 20px;
+  min-height: 26px;
   display: inline-flex;
   align-items: center;
+  position: relative;
   /* Border color, background, and color set inline from theme */
 }
 
 .sourceChip:hover {
-  opacity: 0.8;
-  transform: scale(1.02);
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark .sourceChip:hover {
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
 }
 
 /* SyncWave theme source chips */
@@ -286,12 +292,29 @@
 .chipContent {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .chipCount {
-  opacity: 0.7;
+  opacity: 0.6;
   font-size: 0.85em;
+}
+
+.sentimentCompact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding-left: 0.25rem;
+}
+
+.sentimentBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  display: flex;
+  opacity: 0.9;
 }
 
 .chipButton {
@@ -309,55 +332,20 @@
   transform: scale(1.05);
 }
 
-.sentimentIndicators {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-left: 0.5rem;
-}
-
-.sentimentItem {
-  display: flex;
-  align-items: center;
-}
-
-.sentimentDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin-right: 0.25rem;
-}
-
-.sentimentDot.bullish {
-  background: #10b981;
-}
-
-.sentimentDot.bearish {
-  background: #ef4444;
-}
-
-.sentimentDot.neutral {
-  background: #f59e0b;
-}
-
-/* SyncWave theme sentiment dots */
-.syncwave .sentimentDot.bullish {
+/* SyncWave theme sentiment bar colors */
+.syncwave .sentimentBar div:nth-child(1) {
   background: #00ff00;
-  box-shadow: 0 0 10px #00ff00;
+  box-shadow: 0 0 4px #00ff00;
 }
 
-.syncwave .sentimentDot.bearish {
+.syncwave .sentimentBar div:nth-child(2) {
   background: #ff0066;
-  box-shadow: 0 0 10px #ff0066;
+  box-shadow: 0 0 4px #ff0066;
 }
 
-.syncwave .sentimentDot.neutral {
+.syncwave .sentimentBar div:nth-child(3) {
   background: #ffff00;
-  box-shadow: 0 0 10px #ffff00;
-}
-
-.sentimentText {
-  font-size: 0.7rem;
+  box-shadow: 0 0 4px #ffff00;
 }
 
 /* Compact Sentiment Analysis */

@@ -201,7 +201,9 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave 
           style={{
             borderColor: theme.palette.primary.main,
             color: !selectedSource ? theme.palette.primary.contrastText : theme.palette.primary.main,
-            background: !selectedSource ? theme.palette.primary.main : 'transparent'
+            background: !selectedSource ? theme.palette.primary.main : 'transparent',
+            position: 'relative',
+            overflow: 'hidden'
           }}
         >
           All Sources
@@ -209,34 +211,62 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave 
         {displayedSources.map(([source, data]) => {
           const sentiment = data.sentiment;
           const hasSentiment = sentiment && (sentiment.Bullish || sentiment.Bearish || sentiment.Neutral);
+          const isSelected = selectedSource === source;
+          
+          // Calculate sentiment bar widths
+          const bullishWidth = sentiment?.Bullish || 0;
+          const bearishWidth = sentiment?.Bearish || 0;
+          const neutralWidth = sentiment?.Neutral || 0;
           
           return (
             <button
               key={source}
-              className={`${styles.sourceChip} ${selectedSource === source ? styles.selected : ''}`}
+              className={`${styles.sourceChip} ${isSelected ? styles.selected : ''}`}
               onClick={() => onSourceSelect(source)}
               style={{
                 borderColor: theme.palette.primary.main,
-                color: selectedSource === source ? theme.palette.primary.contrastText : theme.palette.primary.main,
-                background: selectedSource === source ? theme.palette.primary.main : 'transparent'
+                color: isSelected ? theme.palette.primary.contrastText : theme.palette.text.primary,
+                background: isSelected ? theme.palette.primary.main : 'transparent',
+                position: 'relative',
+                overflow: 'hidden',
+                paddingRight: hasSentiment ? '4px' : '0.5rem'
               }}
             >
-              <span className={styles.chipContent}>
+              {hasSentiment && !isSelected && (
+                <div
+                  className={styles.sentimentBar}
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '2px',
+                    display: 'flex',
+                    background: alpha(theme.palette.divider, 0.1)
+                  }}
+                >
+                  <div style={{ width: `${bullishWidth}%`, background: '#10B981' }} />
+                  <div style={{ width: `${bearishWidth}%`, background: '#EF4444' }} />
+                  <div style={{ width: `${neutralWidth}%`, background: '#F59E0B' }} />
+                </div>
+              )}
+              <span className={styles.chipContent} style={{ position: 'relative', zIndex: 1 }}>
                 <span>{source}</span>
-                <span className={styles.chipCount}>({data.count})</span>
+                <span className={styles.chipCount} style={{ marginRight: hasSentiment ? '0.5rem' : 0 }}>
+                  ({data.count})
+                </span>
                 {hasSentiment && (
-                  <span className={styles.sentimentIndicators}>
-                    <span className={styles.sentimentItem}>
-                      <span className={`${styles.sentimentDot} ${styles.bullish}`}></span>
-                      <span className={styles.sentimentText}>{sentiment.Bullish}%</span>
+                  <span className={styles.sentimentCompact}>
+                    <span style={{ color: '#10B981', fontSize: '0.65rem', fontWeight: 600 }}>
+                      {sentiment.Bullish}
                     </span>
-                    <span className={styles.sentimentItem}>
-                      <span className={`${styles.sentimentDot} ${styles.bearish}`}></span>
-                      <span className={styles.sentimentText}>{sentiment.Bearish}%</span>
+                    <span style={{ color: alpha(theme.palette.text.primary, 0.3), margin: '0 2px' }}>·</span>
+                    <span style={{ color: '#EF4444', fontSize: '0.65rem', fontWeight: 600 }}>
+                      {sentiment.Bearish}
                     </span>
-                    <span className={styles.sentimentItem}>
-                      <span className={`${styles.sentimentDot} ${styles.neutral}`}></span>
-                      <span className={styles.sentimentText}>{sentiment.Neutral}%</span>
+                    <span style={{ color: alpha(theme.palette.text.primary, 0.3), margin: '0 2px' }}>·</span>
+                    <span style={{ color: '#F59E0B', fontSize: '0.65rem', fontWeight: 600 }}>
+                      {sentiment.Neutral}
                     </span>
                   </span>
                 )}
