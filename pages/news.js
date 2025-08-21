@@ -146,7 +146,7 @@ const CenterBox = styled.div`
 `;
 
 
-const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave }) => {
+const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave, isMobile }) => {
   const theme = useTheme();
   const themeMode = useSelector((state) => state.status.theme);
   const isDark = themeMode === 'dark';
@@ -157,13 +157,14 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave 
     [sources]
   );
   
+  const displayLimit = isMobile ? 8 : 12;
   const displayedSources = useMemo(() => 
-    showAll ? sortedSources : sortedSources.slice(0, 12),
-    [showAll, sortedSources]
+    showAll ? sortedSources : sortedSources.slice(0, displayLimit),
+    [showAll, sortedSources, displayLimit]
   );
   
   const totalSources = sortedSources.length;
-  const hiddenCount = totalSources - 12;
+  const hiddenCount = totalSources - displayLimit;
 
   // Simple transparent background like TokenRow with theme text color
   const containerStyle = {
@@ -179,9 +180,9 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave 
     >
       <div className={styles.sourcesHeader}>
         <span className={styles.sourcesTitle}>
-          News Sources ({totalSources})
+          {isMobile ? `Sources (${totalSources})` : `News Sources (${totalSources})`}
         </span>
-        {totalSources > 12 && (
+        {totalSources > displayLimit && (
           <button
             className={styles.chipButton}
             onClick={() => setShowAll(!showAll)}
@@ -229,7 +230,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave 
                 background: isSelected ? theme.palette.primary.main : 'transparent',
                 position: 'relative',
                 overflow: 'hidden',
-                paddingRight: hasSentiment ? '4px' : '0.5rem'
+                paddingRight: hasSentiment && !isMobile ? '4px' : '0.5rem'
               }}
             >
               {hasSentiment && !isSelected && (
@@ -252,10 +253,10 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave 
               )}
               <span className={styles.chipContent} style={{ position: 'relative', zIndex: 1 }}>
                 <span>{source}</span>
-                <span className={styles.chipCount} style={{ marginRight: hasSentiment ? '0.5rem' : 0 }}>
+                <span className={styles.chipCount} style={{ marginRight: hasSentiment && !isMobile ? '0.5rem' : 0 }}>
                   ({data.count})
                 </span>
-                {hasSentiment && (
+                {hasSentiment && !isMobile && (
                   <span className={styles.sentimentCompact}>
                     <span style={{ color: '#10B981', fontSize: '0.65rem', fontWeight: 600 }}>
                       {sentiment.Bullish}
@@ -292,7 +293,7 @@ function NewsPage() {
   
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 600);
+      setIsMobile(window.innerWidth < 768);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -787,6 +788,7 @@ function NewsPage() {
             selectedSource={selectedSource}
             onSourceSelect={handleSourceSelect}
             isSyncWave={isSyncWave}
+            isMobile={isMobile}
           />
 
           <div className={`${styles.newsGrid} ${isDark ? styles.dark : ''}`}>

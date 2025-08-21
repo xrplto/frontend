@@ -973,6 +973,79 @@
 }
 
 /* Mobile Styles */
+@media (max-width: 768px) {
+  /* Sources Menu Mobile Improvements */
+  .sourcesMenuContainer {
+    padding: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .sourcesHeader {
+    margin-bottom: 0.5rem;
+  }
+  
+  .sourcesTitle {
+    font-size: 0.65rem;
+  }
+  
+  .chipButton {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+  }
+  
+  .sourcesChips {
+    gap: 0.25rem;
+    max-height: 120px;
+    overflow-y: auto;
+    padding-bottom: 0.25rem;
+  }
+  
+  .sourcesChips::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  .sourcesChips::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 2px;
+  }
+  
+  .sourcesChips::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+  }
+  
+  .dark .sourcesChips::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .dark .sourcesChips::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .sourceChip {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.4rem;
+    min-height: 22px;
+  }
+  
+  .chipContent {
+    gap: 0.15rem;
+  }
+  
+  .chipCount {
+    font-size: 0.6rem;
+  }
+  
+  .sentimentCompact {
+    display: none; /* Hide sentiment numbers on mobile for cleaner look */
+  }
+  
+  .sentimentBar {
+    height: 1px; /* Thinner bar on mobile */
+  }
+}
+
 @media (max-width: 600px) {
   .container {
     padding: 1rem;
@@ -1013,6 +1086,15 @@
 
   .sentimentGrid.mobile {
     grid-template-columns: 1fr 1fr;
+  }
+  
+  /* Additional mobile improvements for sources */
+  .sourcesMenuContainer {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
   .sentimentSummary:nth-child(2) {
