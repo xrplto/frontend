@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from '@emotion/styled';
 import {
   Box,
@@ -39,6 +39,7 @@ import {
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
+import useDebounce from 'src/hooks/useDebounce';
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -126,6 +127,8 @@ const ContactForm = styled(Box)(({ theme }) => ({
   marginTop: 48
 }));
 
+const API_URL = process.env.API_URL || 'https://api.xrpl.to/api';
+
 export default function Advertise() {
   const theme = useTheme();
   const [impressionInput, setImpressionInput] = useState('');
@@ -134,15 +137,36 @@ export default function Advertise() {
   const [tokens, setTokens] = useState([]);
   const [selectedToken, setSelectedToken] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [inputValue, setInputValue] = useState('');
+  const [xrpRate, setXrpRate] = useState(0.65); // Default fallback rate
+  
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
+  // Load top tokens initially
   useEffect(() => {
-    fetchTokens();
+    fetchTopTokens();
   }, []);
 
-  const fetchTokens = async () => {
+  // Search tokens when query changes
+  useEffect(() => {
+    if (debouncedSearchQuery) {
+      searchTokens(debouncedSearchQuery);
+    } else {
+      fetchTopTokens();
+    }
+  }, [debouncedSearchQuery]);
+
+  const fetchTopTokens = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('https://api.xrpl.to/api/tokens?limit=100&sortBy=vol24hxrp&sortType=desc');
+      const response = await axios.get(`${API_URL}/tokens?limit=100&sortBy=vol24hxrp&sortType=desc`);
+      
+      // Get XRP rate from the API response
+      if (response.data.exch && response.data.exch.USD) {
+        setXrpRate(1 / response.data.exch.USD); // Convert USD to XRP rate
+      }
+      
       const tokenList = response.data.tokens.map(token => ({
         label: `${token.name || token.currencyCode} - ${token.issuer?.substring(0, 8)}...`,
         value: token.md5,
@@ -150,7 +174,7 @@ export default function Advertise() {
         name: token.name,
         issuer: token.issuer,
         marketcap: parseFloat(token.marketcap) || 0,
-        price: parseFloat(token.price) || 0,
+        price: parseFloat(token.exch) || parseFloat(token.price) || 0,
         volume24h: parseFloat(token.vol24hxrp) || 0,
         change24h: parseFloat(token.pro24h) || 0,
         trustlines: token.trustlines || 0
@@ -158,6 +182,32 @@ export default function Advertise() {
       setTokens(tokenList);
     } catch (error) {
       console.error('Failed to fetch tokens:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchTokens = async (query) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API_URL}/search`, { search: query });
+      if (response.data?.tokens) {
+        const tokenList = response.data.tokens.map(token => ({
+          label: `${token.user || token.name} - ${token.name || ''}`,
+          value: token.md5,
+          currency: token.currency,
+          name: token.name,
+          user: token.user,
+          marketcap: parseFloat(token.marketcap) || 0,
+          price: parseFloat(token.exch) || 0,
+          volume24h: parseFloat(token.vol24hxrp) || 0,
+          change24h: parseFloat(token.pro24h) || 0,
+          verified: token.verified || false
+        }));
+        setTokens(tokenList);
+      }
+    } catch (error) {
+      console.error('Search error:', error);
     } finally {
       setLoading(false);
     }
@@ -369,9 +419,18 @@ export default function Advertise() {
                     <Autocomplete
                       value={selectedToken}
                       onChange={(event, newValue) => setSelectedToken(newValue)}
+                      inputValue={inputValue}
+                      onInputChange={(event, newInputValue, reason) => {
+                        setInputValue(newInputValue);
+                        if (reason === 'input') {
+                          setSearchQuery(newInputValue);
+                        }
+                      }}
                       options={tokens}
                       loading={loading}
+                      filterOptions={(x) => x}
                       getOptionLabel={(option) => option.label}
+                      noOptionsText={searchQuery ? "No tokens found" : "Start typing to search"}
                       renderOption={(props, option) => (
                         <Box 
                           component="li" 
@@ -415,8 +474,16 @@ export default function Advertise() {
                             <Box flex={1}>
                               <Stack direction="row" alignItems="center" spacing={1}>
                                 <Typography variant="body2" fontWeight={600}>
-                                  {option.name || option.currency}
+                                  {option.user || option.name || option.currency}
                                 </Typography>
+                                {option.verified && (
+                                  <Chip 
+                                    label="Verified" 
+                                    size="small" 
+                                    color="primary" 
+                                    sx={{ height: 18, fontSize: '0.7rem' }}
+                                  />
+                                )}
                                 {option.volume24h > 10000 && (
                                   <Chip 
                                     label="High Volume" 
@@ -435,7 +502,17 @@ export default function Advertise() {
                                     : option.volume24h.toFixed(0)} XRP
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary">
-                                  ${option.price?.toFixed(6) || '0'}
+                                  {option.price < 0.00000001 
+                                    ? option.price.toFixed(12)
+                                    : option.price < 0.0000001
+                                    ? option.price.toFixed(10)
+                                    : option.price < 0.000001
+                                    ? option.price.toFixed(8)
+                                    : option.price < 0.0001
+                                    ? option.price.toFixed(6)
+                                    : option.price < 1
+                                    ? option.price.toFixed(4)
+                                    : option.price.toFixed(2)} XRP
                                 </Typography>
                                 <Typography 
                                   variant="caption" 
@@ -455,11 +532,13 @@ export default function Advertise() {
                         <TextField
                           {...params}
                           label="Select Token to Advertise"
-                          placeholder="Search top 100 tokens by volume..."
+                          placeholder={searchQuery ? "Searching all tokens..." : "Type to search tokens or select from top 100..."}
                           helperText={
                             <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <TrendingIcon sx={{ fontSize: 14 }} />
-                              Showing top 100 most traded tokens sorted by 24h volume
+                              {searchQuery 
+                                ? `Searching for "${searchQuery}"...` 
+                                : "Showing top 100 most traded tokens - type to search all tokens"}
                             </Typography>
                           }
                           InputProps={{
@@ -576,7 +655,7 @@ export default function Advertise() {
                           </Typography>
                           <Chip
                             icon={<AutoAwesomeIcon />}
-                            label={`≈ ${(calculatePrice(parseInt(customImpressions)) / 0.65).toFixed(2)} XRP`}
+                            label={`≈ ${(calculatePrice(parseInt(customImpressions)) / xrpRate).toFixed(2)} XRP`}
                             color="primary"
                             variant="outlined"
                             sx={{ fontWeight: 600 }}
@@ -831,7 +910,7 @@ export default function Advertise() {
                           sx={{ fontWeight: 600, fontSize: '1.1rem' }}
                         />
                         <Typography variant="caption" color="text.secondary">
-                          @ $0.65/XRP
+                          @ ${xrpRate.toFixed(2)}/XRP
                         </Typography>
                       </Stack>
                       <Typography variant="body2" color="text.secondary">
