@@ -904,7 +904,7 @@ export default function Advertise() {
                       <Stack direction="row" spacing={2} alignItems="center">
                         <Chip 
                           icon={<AutoAwesomeIcon />}
-                          label={`≈ ${(calculatePrice(parseInt(customImpressions)) / 0.65).toFixed(2)} XRP`}
+                          label={`≈ ${(calculatePrice(parseInt(customImpressions)) / xrpRate).toFixed(2)} XRP`}
                           color="primary"
                           size="large"
                           sx={{ fontWeight: 600, fontSize: '1.1rem' }}
