@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import styled from '@emotion/styled';
 import {
   Box,
@@ -40,6 +40,15 @@ import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import useDebounce from 'src/hooks/useDebounce';
+import { AppContext } from 'src/AppContext';
+import ConnectWallet from 'src/components/ConnectWallet';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
+import { isInstalled, submitTransaction } from '@gemwallet/api';
+import sdk from '@crossmarkio/sdk';
+import { enqueueSnackbar } from 'notistack';
+import QRDialog from 'src/components/QRDialog';
+import Decimal from 'decimal.js';
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -131,6 +140,10 @@ const API_URL = process.env.API_URL || 'https://api.xrpl.to/api';
 
 export default function Advertise() {
   const theme = useTheme();
+  const dispatch = useDispatch();
+  const { accountProfile, openSnackbar, sync, setSync, setOpenWalletModal, session } = useContext(AppContext);
+  const process = useSelector(selectProcess);
+  
   const [impressionInput, setImpressionInput] = useState('');
   const [customImpressions, setCustomImpressions] = useState('');
   const [copied, setCopied] = useState(false);
@@ -140,6 +153,13 @@ export default function Advertise() {
   const [searchQuery, setSearchQuery] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [xrpRate, setXrpRate] = useState(0.65); // Default fallback rate
+  
+  // Payment states
+  const [openScanQR, setOpenScanQR] = useState(false);
+  const [uuid, setUuid] = useState(null);
+  const [qrUrl, setQrUrl] = useState(null);
+  const [nextUrl, setNextUrl] = useState(null);
+  const [destinationTag] = useState(Math.floor(Math.random() * 1000000) + 100000);
   
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -282,6 +302,159 @@ export default function Advertise() {
     const value = e.target.value.replace(/[^0-9]/g, '');
     setImpressionInput(value ? formatNumber(value) : '');
     setCustomImpressions(value);
+  };
+
+  // Handle wallet payment
+  const handlePayment = async () => {
+    if (!accountProfile || !accountProfile.account) {
+      setOpenWalletModal(true);
+      return;
+    }
+
+    const Account = accountProfile.account;
+    const user_token = accountProfile.user_token;
+    const wallet_type = accountProfile.wallet_type;
+    const xrpAmount = (calculatePrice(parseInt(customImpressions)) / xrpRate).toFixed(6);
+    const xrpDrops = new Decimal(xrpAmount).mul(1000000).toString();
+
+    const transactionData = {
+      TransactionType: 'Payment',
+      Account,
+      Destination: 'rN7n7otQDd6FczFgLdAtqCSVvUV6jGUMxt',
+      Amount: xrpDrops,
+      DestinationTag: destinationTag,
+      Fee: '12',
+      Memos: [
+        {
+          Memo: {
+            MemoType: Buffer.from('advertising', 'utf8').toString('hex').toUpperCase(),
+            MemoData: Buffer.from(JSON.stringify({
+              token: selectedToken?.name || selectedToken?.currency,
+              impressions: customImpressions,
+              price: calculatePrice(parseInt(customImpressions))
+            }), 'utf8').toString('hex').toUpperCase()
+          }
+        }
+      ]
+    };
+
+    try {
+      switch (wallet_type) {
+        case 'xaman':
+          setLoading(true);
+          const body = {
+            ...transactionData,
+            user_token
+          };
+
+          const res = await axios.post(`${API_URL}/offer/payment`, body);
+
+          if (res.status === 200) {
+            const uuid = res.data.data.uuid;
+            const qrlink = res.data.data.qrUrl;
+            const nextlink = res.data.data.next;
+
+            setUuid(uuid);
+            setQrUrl(qrlink);
+            setNextUrl(nextlink);
+            setOpenScanQR(true);
+          }
+          break;
+
+        case 'gem':
+          isInstalled().then(async (response) => {
+            if (response.result.isInstalled) {
+              dispatch(updateProcess(1));
+
+              await submitTransaction({
+                transaction: transactionData
+              }).then(({ type, result }) => {
+                if (type == 'response') {
+                  dispatch(updateProcess(2));
+                  dispatch(updateTxHash(result?.hash));
+                  setTimeout(() => {
+                    setSync(sync + 1);
+                    dispatch(updateProcess(0));
+                    openSnackbar('Payment successful! Your advertising campaign will start shortly.', 'success');
+                    // Reset form
+                    setCustomImpressions('');
+                    setImpressionInput('');
+                    setSelectedToken(null);
+                    setInputValue('');
+                  }, 1500);
+                } else {
+                  dispatch(updateProcess(3));
+                  openSnackbar('Payment cancelled', 'error');
+                }
+              });
+            } else {
+              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
+            }
+          });
+          break;
+
+        case 'crossmark':
+          dispatch(updateProcess(1));
+          await sdk.methods.signAndSubmitAndWait(transactionData).then(({ response }) => {
+            if (response.data.meta.isSuccess) {
+              dispatch(updateProcess(2));
+              dispatch(updateTxHash(response.data.resp.result?.hash));
+              setTimeout(() => {
+                setSync(sync + 1);
+                dispatch(updateProcess(0));
+                openSnackbar('Payment successful! Your advertising campaign will start shortly.', 'success');
+                // Reset form
+                setCustomImpressions('');
+                setImpressionInput('');
+                setSelectedToken(null);
+                setInputValue('');
+              }, 1500);
+            } else {
+              dispatch(updateProcess(3));
+              openSnackbar('Payment cancelled', 'error');
+            }
+          });
+          break;
+      }
+    } catch (err) {
+      console.log('Payment error:', err);
+      dispatch(updateProcess(0));
+      openSnackbar('Payment failed. Please try again.', 'error');
+    }
+    setLoading(false);
+  };
+
+  // Handle QR scan completion for Xaman
+  useEffect(() => {
+    if (!openScanQR || !uuid) return;
+
+    const checkPayment = setInterval(async () => {
+      try {
+        const ret = await axios.get(`${API_URL}/xumm/payload/${uuid}`);
+        const res = ret.data.data.response;
+        const resolved_at = res.resolved_at;
+        const dispatched_result = res.dispatched_result;
+
+        if (resolved_at && dispatched_result === 'tesSUCCESS') {
+          setOpenScanQR(false);
+          openSnackbar('Payment successful! Your advertising campaign will start shortly.', 'success');
+          // Reset form
+          setCustomImpressions('');
+          setImpressionInput('');
+          setSelectedToken(null);
+          setInputValue('');
+          clearInterval(checkPayment);
+        }
+      } catch (err) {
+        console.log('Error checking payment status:', err);
+      }
+    }, 2000);
+
+    return () => clearInterval(checkPayment);
+  }, [openScanQR, uuid]);
+
+  const handleScanQRClose = () => {
+    setOpenScanQR(false);
   };
 
   return (
@@ -997,7 +1170,7 @@ export default function Advertise() {
                               color: 'primary.main'
                             }}
                           >
-                            {Math.floor(Math.random() * 1000000) + 100000}
+                            {destinationTag}
                           </Typography>
                         </Paper>
                       </Stack>
@@ -1018,42 +1191,52 @@ export default function Advertise() {
                       </Typography>
                     </Alert>
 
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6}>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          size="large"
-                          fullWidth
-                          startIcon={<WalletIcon />}
-                          sx={{ 
-                            py: 1.5, 
-                            fontWeight: 600,
-                            boxShadow: 3,
-                            '&:hover': {
-                              boxShadow: 5
-                            }
-                          }}
-                          onClick={() => window.open('https://xrpl.org/xrp-wallets.html', '_blank')}
-                        >
-                          Open Wallet
-                        </Button>
+                    {session?.userInfo ? (
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            size="large"
+                            fullWidth
+                            startIcon={<WalletIcon />}
+                            sx={{ 
+                              py: 1.5, 
+                              fontWeight: 600,
+                              boxShadow: 3,
+                              '&:hover': {
+                                boxShadow: 5
+                              }
+                            }}
+                            onClick={handlePayment}
+                            disabled={process.status === 'processing'}
+                          >
+                            {process.status === 'processing' ? 'Processing...' : 'Pay with Wallet'}
+                          </Button>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Button
+                            variant="outlined"
+                            size="large"
+                            fullWidth
+                            onClick={() => {
+                              setCustomImpressions('');
+                              setImpressionInput('');
+                            }}
+                            sx={{ py: 1.5, fontWeight: 600 }}
+                          >
+                            Change Amount
+                          </Button>
+                        </Grid>
                       </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <Button
-                          variant="outlined"
-                          size="large"
-                          fullWidth
-                          onClick={() => {
-                            setCustomImpressions('');
-                            setImpressionInput('');
-                          }}
-                          sx={{ py: 1.5, fontWeight: 600 }}
-                        >
-                          Change Amount
-                        </Button>
-                      </Grid>
-                    </Grid>
+                    ) : (
+                      <Box>
+                        <ConnectWallet />
+                        <Typography variant="caption" color="text.secondary" display="block" textAlign="center" mt={1}>
+                          Connect your wallet to complete payment
+                        </Typography>
+                      </Box>
+                    )}
 
                     <Paper
                       elevation={0}
