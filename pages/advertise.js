@@ -141,7 +141,7 @@ const API_URL = process.env.API_URL || 'https://api.xrpl.to/api';
 export default function Advertise() {
   const theme = useTheme();
   const dispatch = useDispatch();
-  const { accountProfile, openSnackbar, sync, setSync, setOpenWalletModal, session } = useContext(AppContext);
+  const { accountProfile, openSnackbar, sync, setSync, setOpenWalletModal, setLoading } = useContext(AppContext);
   const process = useSelector(selectProcess);
   
   const [impressionInput, setImpressionInput] = useState('');
@@ -149,7 +149,7 @@ export default function Advertise() {
   const [copied, setCopied] = useState(false);
   const [tokens, setTokens] = useState([]);
   const [selectedToken, setSelectedToken] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoadingState] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [xrpRate, setXrpRate] = useState(0.65); // Default fallback rate
@@ -178,7 +178,7 @@ export default function Advertise() {
   }, [debouncedSearchQuery]);
 
   const fetchTopTokens = async () => {
-    setLoading(true);
+    setLoadingState(true);
     try {
       const response = await axios.get(`${API_URL}/tokens?limit=100&sortBy=vol24hxrp&sortType=desc`);
       
@@ -203,12 +203,12 @@ export default function Advertise() {
     } catch (error) {
       console.error('Failed to fetch tokens:', error);
     } finally {
-      setLoading(false);
+      setLoadingState(false);
     }
   };
 
   const searchTokens = async (query) => {
-    setLoading(true);
+    setLoadingState(true);
     try {
       const response = await axios.post(`${API_URL}/search`, { search: query });
       if (response.data?.tokens) {
@@ -229,7 +229,7 @@ export default function Advertise() {
     } catch (error) {
       console.error('Search error:', error);
     } finally {
-      setLoading(false);
+      setLoadingState(false);
     }
   };
 
@@ -347,9 +347,10 @@ export default function Advertise() {
             user_token
           };
 
+          console.log('Sending Xaman payment request:', body);
           const res = await axios.post(`${API_URL}/offer/payment`, body);
 
-          if (res.status === 200) {
+          if (res.status === 200 && res.data?.data) {
             const uuid = res.data.data.uuid;
             const qrlink = res.data.data.qrUrl;
             const nextlink = res.data.data.next;
@@ -358,6 +359,9 @@ export default function Advertise() {
             setQrUrl(qrlink);
             setNextUrl(nextlink);
             setOpenScanQR(true);
+            setLoadingState(false);
+          } else {
+            throw new Error('Invalid response from payment API');
           }
           break;
 
@@ -417,11 +421,13 @@ export default function Advertise() {
           break;
       }
     } catch (err) {
-      console.log('Payment error:', err);
+      console.error('Payment error:', err);
+      console.error('Error details:', err.response?.data || err.message);
       dispatch(updateProcess(0));
-      openSnackbar('Payment failed. Please try again.', 'error');
+      setLoadingState(false);
+      const errorMessage = err.response?.data?.message || 'Payment failed. Please try again.';
+      openSnackbar(errorMessage, 'error');
     }
-    setLoading(false);
   };
 
   // Handle QR scan completion for Xaman
@@ -1191,7 +1197,7 @@ export default function Advertise() {
                       </Typography>
                     </Alert>
 
-                    {session?.userInfo ? (
+                    {accountProfile && accountProfile.account ? (
                       <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                           <Button
