@@ -183,16 +183,6 @@ export default function Advertise() {
       <Header />
       <MainContent>
         <Container maxWidth="lg">
-          <Box textAlign="center" mb={6}>
-            <Typography 
-              variant="h3" 
-              component="h1" 
-              fontWeight="bold"
-              mb={2}
-            >
-              Token Advertising
-            </Typography>
-          </Box>
 
           <Grow in timeout={800}>
             <Paper 
@@ -227,7 +217,7 @@ export default function Advertise() {
                 <Stack direction="row" alignItems="center" justifyContent="center" spacing={1}>
                   <CalculateIcon />
                   <Typography variant="h5" fontWeight={600}>
-                    Token Advertising Calculator
+                    Advertising Calculator
                   </Typography>
                 </Stack>
               </Box>
