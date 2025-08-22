@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 import {
   Box,
@@ -18,8 +18,11 @@ import {
   IconButton,
   Tooltip,
   Fade,
-  Grow
+  Grow,
+  Autocomplete,
+  CircularProgress
 } from '@mui/material';
+import axios from 'axios';
 import {
   ContentCopy as CopyIcon,
   CheckCircle as CheckIcon,
@@ -41,27 +44,50 @@ const PageWrapper = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: ${props => props.theme.palette.mode === 'dark' 
+    ? 'linear-gradient(180deg, #000000 0%, #0a0a0a 100%)'
+    : 'linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%)'};
 `;
 
 const MainContent = styled.main`
   flex: 1;
-  padding: 40px 0;
+  padding: 60px 0;
+  @media (max-width: 768px) {
+    padding: 40px 0;
+  }
 `;
 
-const PricingCard = styled(Card)`
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s, box-shadow 0.3s;
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+const HeroSection = styled(Box)(({ theme }) => ({
+  textAlign: 'center',
+  marginBottom: 48,
+  padding: '48px 0',
+  background: theme.palette.mode === 'dark'
+    ? `linear-gradient(135deg, ${alpha('#147DFE', 0.1)} 0%, ${alpha('#147DFE', 0.05)} 100%)`
+    : `linear-gradient(135deg, ${alpha('#147DFE', 0.05)} 0%, ${alpha('#147DFE', 0.02)} 100%)`,
+  borderRadius: 16,
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(circle at top right, rgba(20, 125, 254, 0.15) 0%, transparent 50%)',
+    pointerEvents: 'none'
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(circle at bottom left, rgba(156, 39, 176, 0.1) 0%, transparent 50%)',
+    pointerEvents: 'none'
   }
-  ${props => props.featured && `
-    border: 2px solid #1976d2;
-    position: relative;
-  `}
-`;
+}));
 
 const PriceTag = styled(Typography)`
   font-size: 3rem;
@@ -105,6 +131,37 @@ export default function Advertise() {
   const [impressionInput, setImpressionInput] = useState('');
   const [customImpressions, setCustomImpressions] = useState('');
   const [copied, setCopied] = useState(false);
+  const [tokens, setTokens] = useState([]);
+  const [selectedToken, setSelectedToken] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchTokens();
+  }, []);
+
+  const fetchTokens = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('https://api.xrpl.to/api/tokens?limit=100&sortBy=vol24hxrp&sortType=desc');
+      const tokenList = response.data.tokens.map(token => ({
+        label: `${token.name || token.currencyCode} - ${token.issuer?.substring(0, 8)}...`,
+        value: token.md5,
+        currency: token.currencyCode,
+        name: token.name,
+        issuer: token.issuer,
+        marketcap: parseFloat(token.marketcap) || 0,
+        price: parseFloat(token.price) || 0,
+        volume24h: parseFloat(token.vol24hxrp) || 0,
+        change24h: parseFloat(token.pro24h) || 0,
+        trustlines: token.trustlines || 0
+      }));
+      setTokens(tokenList);
+    } catch (error) {
+      console.error('Failed to fetch tokens:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fixed pricing tiers for quick selection
   const pricingTiers = [
@@ -178,11 +235,71 @@ export default function Advertise() {
   };
 
   return (
-    <PageWrapper>
+    <PageWrapper theme={theme}>
       <Topbar />
       <Header />
       <MainContent>
         <Container maxWidth="lg">
+          <Fade in timeout={600}>
+            <HeroSection>
+              <Stack spacing={2} alignItems="center" position="relative" zIndex={1}>
+                <Chip 
+                  icon={<CampaignIcon />}
+                  label="Token Advertising Platform" 
+                  color="primary" 
+                  sx={{ 
+                    fontWeight: 600,
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.8)})`,
+                    color: 'white'
+                  }}
+                />
+                <Typography 
+                  variant="h3" 
+                  fontWeight={700}
+                  sx={{
+                    background: theme.palette.mode === 'dark'
+                      ? 'linear-gradient(135deg, #fff 0%, #b3b3b3 100%)'
+                      : 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    mb: 2
+                  }}
+                >
+                  Reach Millions on XRPL
+                </Typography>
+                <Typography 
+                  variant="h6" 
+                  color="text.secondary" 
+                  maxWidth={600}
+                  sx={{ lineHeight: 1.6 }}
+                >
+                  Promote your token to our engaged community of traders and investors.
+                  Simple pricing, instant activation, real-time analytics.
+                </Typography>
+                <Stack direction="row" spacing={2} mt={3}>
+                  <Chip 
+                    icon={<ViewIcon />}
+                    label="40K+ Monthly Users" 
+                    variant="outlined"
+                    sx={{ fontWeight: 500 }}
+                  />
+                  <Chip 
+                    icon={<TrendingIcon />}
+                    label="9,750+ Tokens" 
+                    variant="outlined"
+                    sx={{ fontWeight: 500 }}
+                  />
+                  <Chip 
+                    icon={<SpeedIcon />}
+                    label="Instant Activation" 
+                    variant="outlined"
+                    sx={{ fontWeight: 500 }}
+                  />
+                </Stack>
+              </Stack>
+            </HeroSection>
+          </Fade>
 
           <Grow in timeout={800}>
             <Paper 
@@ -207,22 +324,159 @@ export default function Advertise() {
             >
               <Box 
                 sx={{ 
-                  p: 2, 
-                  background: theme.palette.mode === 'dark'
-                    ? alpha(theme.palette.primary.main, 0.1)
-                    : alpha(theme.palette.primary.main, 0.05),
-                  borderBottom: `2px solid ${theme.palette.primary.main}`
+                  p: 3, 
+                  background: `linear-gradient(135deg, 
+                    ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.15 : 0.08)} 0%, 
+                    ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.08 : 0.03)} 100%)`,
+                  borderBottom: `3px solid ${theme.palette.primary.main}`,
+                  position: 'relative',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 1,
+                    background: `linear-gradient(90deg, transparent, ${theme.palette.primary.main}, transparent)`,
+                    animation: 'shimmer 3s infinite'
+                  }
                 }}
               >
-                <Stack direction="row" alignItems="center" justifyContent="center" spacing={1}>
-                  <CalculateIcon />
-                  <Typography variant="h5" fontWeight={600}>
+                <Stack direction="row" alignItems="center" justifyContent="center" spacing={1.5}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.7)})`,
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+                    }}
+                  >
+                    <CalculateIcon sx={{ color: 'white' }} />
+                  </Box>
+                  <Typography variant="h5" fontWeight={700}>
                     Advertising Calculator
                   </Typography>
                 </Stack>
               </Box>
               
               <Box p={4}>
+                <Grid container spacing={3} mb={3}>
+                  <Grid item xs={12}>
+                    <Autocomplete
+                      value={selectedToken}
+                      onChange={(event, newValue) => setSelectedToken(newValue)}
+                      options={tokens}
+                      loading={loading}
+                      getOptionLabel={(option) => option.label}
+                      renderOption={(props, option) => (
+                        <Box 
+                          component="li" 
+                          {...props}
+                          sx={{
+                            '&:hover': {
+                              background: alpha(theme.palette.primary.main, 0.08)
+                            }
+                          }}
+                        >
+                          <Stack direction="row" alignItems="center" spacing={2} width="100%">
+                            <Box
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: '50%',
+                                overflow: 'hidden',
+                                border: `2px solid ${option.change24h >= 0 ? alpha('#4caf50', 0.3) : alpha('#f44336', 0.3)}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                background: option.change24h >= 0 
+                                  ? `linear-gradient(135deg, ${alpha('#4caf50', 0.1)}, ${alpha('#4caf50', 0.05)})`
+                                  : `linear-gradient(135deg, ${alpha('#f44336', 0.1)}, ${alpha('#f44336', 0.05)})`
+                              }}
+                            >
+                              <img 
+                                src={`https://s1.xrpl.to/token/${option.value}`}
+                                alt={option.name || option.currency}
+                                style={{ 
+                                  width: '100%', 
+                                  height: '100%', 
+                                  objectFit: 'cover' 
+                                }}
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.parentElement.innerHTML = `<span style="font-weight: 700; font-size: 0.875rem; color: ${option.change24h >= 0 ? '#4caf50' : '#f44336'}">${(option.name || option.currency)?.charAt(0)?.toUpperCase() || '?'}</span>`;
+                                }}
+                              />
+                            </Box>
+                            <Box flex={1}>
+                              <Stack direction="row" alignItems="center" spacing={1}>
+                                <Typography variant="body2" fontWeight={600}>
+                                  {option.name || option.currency}
+                                </Typography>
+                                {option.volume24h > 10000 && (
+                                  <Chip 
+                                    label="High Volume" 
+                                    size="small" 
+                                    color="success" 
+                                    sx={{ height: 18, fontSize: '0.7rem' }}
+                                  />
+                                )}
+                              </Stack>
+                              <Stack direction="row" spacing={2}>
+                                <Typography variant="caption" color="text.secondary">
+                                  Vol: {option.volume24h > 1000000 
+                                    ? `${(option.volume24h / 1000000).toFixed(1)}M` 
+                                    : option.volume24h > 1000 
+                                    ? `${(option.volume24h / 1000).toFixed(1)}K`
+                                    : option.volume24h.toFixed(0)} XRP
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  ${option.price?.toFixed(6) || '0'}
+                                </Typography>
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    color: option.change24h >= 0 ? '#4caf50' : '#f44336',
+                                    fontWeight: 600
+                                  }}
+                                >
+                                  {option.change24h >= 0 ? '+' : ''}{option.change24h?.toFixed(2)}%
+                                </Typography>
+                              </Stack>
+                            </Box>
+                          </Stack>
+                        </Box>
+                      )}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Select Token to Advertise"
+                          placeholder="Search top 100 tokens by volume..."
+                          helperText={
+                            <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <TrendingIcon sx={{ fontSize: 14 }} />
+                              Showing top 100 most traded tokens sorted by 24h volume
+                            </Typography>
+                          }
+                          InputProps={{
+                            ...params.InputProps,
+                            endAdornment: (
+                              <>
+                                {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                                {params.InputProps.endAdornment}
+                              </>
+                            ),
+                          }}
+                        />
+                      )}
+                    />
+                  </Grid>
+                </Grid>
+                
                 <Grid container spacing={3} alignItems="center">
                   <Grid item xs={12} md={7}>
                     <TextField
@@ -235,11 +489,31 @@ export default function Advertise() {
                       sx={{ 
                         '& .MuiOutlinedInput-root': {
                           fontSize: '1.2rem',
-                          fontWeight: 500
+                          fontWeight: 500,
+                          transition: 'all 0.3s',
+                          '&:hover': {
+                            transform: 'translateY(-1px)',
+                            boxShadow: `0 4px 8px ${alpha(theme.palette.primary.main, 0.1)}`
+                          },
+                          '&.Mui-focused': {
+                            transform: 'translateY(-1px)',
+                            boxShadow: `0 6px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+                          }
                         }
                       }}
                       InputProps={{
-                        startAdornment: <AutoAwesomeIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        startAdornment: (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              mr: 1,
+                              animation: 'pulse 2s infinite'
+                            }}
+                          >
+                            <AutoAwesomeIcon sx={{ color: 'primary.main' }} />
+                          </Box>
+                        )
                       }}
                       helperText={
                         <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -254,35 +528,72 @@ export default function Advertise() {
                       <Paper
                         elevation={0}
                         sx={{
-                          p: 2,
+                          p: 2.5,
                           background: `linear-gradient(135deg, 
-                            ${alpha(theme.palette.primary.main, 0.05)} 0%, 
-                            ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                            ${alpha(theme.palette.primary.main, 0.08)} 0%, 
+                            ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
                           border: `2px solid ${theme.palette.primary.main}`,
-                          borderRadius: 2,
-                          textAlign: 'center'
+                          borderRadius: 3,
+                          textAlign: 'center',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          transition: 'all 0.3s',
+                          animation: 'slideInRight 0.5s ease-out',
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: -2,
+                            left: -2,
+                            right: -2,
+                            bottom: -2,
+                            background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.3)})`,
+                            borderRadius: 3,
+                            opacity: 0,
+                            transition: 'opacity 0.3s',
+                            zIndex: -1
+                          },
+                          '&:hover::before': {
+                            opacity: 0.1
+                          }
                         }}
                       >
-                        <Typography variant="overline" color="text.secondary">
-                          Total Cost
-                        </Typography>
-                        <Typography variant="h4" fontWeight={700} color="primary">
-                          {formatPrice(calculatePrice(parseInt(customImpressions)))}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          ≈ {(calculatePrice(parseInt(customImpressions)) / 0.65).toFixed(2)} XRP
-                        </Typography>
+                        <Stack spacing={1} alignItems="center">
+                          <Typography variant="overline" color="text.secondary" fontWeight={600}>
+                            Total Cost
+                          </Typography>
+                          <Typography 
+                            variant="h3" 
+                            fontWeight={800} 
+                            sx={{
+                              background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.7)})`,
+                              backgroundClip: 'text',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent',
+                              textShadow: `0 2px 4px ${alpha(theme.palette.primary.main, 0.1)}`
+                            }}
+                          >
+                            {formatPrice(calculatePrice(parseInt(customImpressions)))}
+                          </Typography>
+                          <Chip
+                            icon={<AutoAwesomeIcon />}
+                            label={`≈ ${(calculatePrice(parseInt(customImpressions)) / 0.65).toFixed(2)} XRP`}
+                            color="primary"
+                            variant="outlined"
+                            sx={{ fontWeight: 600 }}
+                          />
+                        </Stack>
                         <Button
                           variant="contained"
                           color="primary"
                           fullWidth
                           sx={{ mt: 2 }}
                           startIcon={<WalletIcon />}
+                          disabled={!selectedToken}
                           onClick={() => {
                             document.getElementById('payment-section')?.scrollIntoView({ behavior: 'smooth' });
                           }}
                         >
-                          Pay with XRP
+                          {selectedToken ? 'Pay with XRP' : 'Select Token First'}
                         </Button>
                       </Paper>
                     ) : (
@@ -333,19 +644,39 @@ export default function Advertise() {
                         <Paper
                           elevation={0}
                           sx={{
-                            p: 1.5,
+                            p: 2,
                             bgcolor: theme.palette.mode === 'dark' 
                               ? alpha('#1F2937', 0.1)
                               : 'grey.50',
-                            border: '1px solid',
+                            border: '2px solid',
                             borderColor: theme.palette.mode === 'dark' 
                               ? alpha('#1F2937', 0.2)
                               : 'divider',
                             cursor: 'pointer',
-                            transition: 'all 0.2s',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              left: -100,
+                              width: '100%',
+                              height: '100%',
+                              background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.1)}, transparent)`,
+                              transition: 'left 0.5s'
+                            },
                             '&:hover': {
-                              borderColor: 'primary.main',
-                              bgcolor: alpha(theme.palette.primary.main, 0.05)
+                              borderColor: theme.palette.primary.main,
+                              bgcolor: alpha(theme.palette.primary.main, 0.08),
+                              transform: 'translateY(-2px) scale(1.02)',
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`,
+                              '&::before': {
+                                left: '100%'
+                              }
+                            },
+                            '&:active': {
+                              transform: 'translateY(0) scale(1)'
                             }
                           }}
                           onClick={() => {
@@ -375,7 +706,7 @@ export default function Advertise() {
             </Paper>
           </Grow>
 
-          {customImpressions && parseInt(customImpressions) > 0 && (
+          {selectedToken && customImpressions && parseInt(customImpressions) > 0 && (
             <Fade in timeout={1000}>
               <Paper
                 id="payment-section"
@@ -440,6 +771,51 @@ export default function Advertise() {
                     }}
                   >
                     <Stack spacing={2} alignItems="center">
+                      {selectedToken && (
+                        <Box mb={2} textAlign="center">
+                          <Typography variant="overline" color="text.secondary">
+                            Advertising for
+                          </Typography>
+                          <Stack direction="row" alignItems="center" justifyContent="center" spacing={2} mt={1}>
+                            <Box
+                              sx={{
+                                width: 56,
+                                height: 56,
+                                borderRadius: '50%',
+                                overflow: 'hidden',
+                                border: `3px solid ${theme.palette.primary.main}`,
+                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+                              }}
+                            >
+                              <img 
+                                src={`https://s1.xrpl.to/token/${selectedToken.value}`}
+                                alt={selectedToken.name || selectedToken.currency}
+                                style={{ 
+                                  width: '100%', 
+                                  height: '100%', 
+                                  objectFit: 'cover' 
+                                }}
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.parentElement.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)}, ${alpha(theme.palette.primary.main, 0.1)}); font-weight: 700; font-size: 1.5rem; color: ${theme.palette.primary.main}">${(selectedToken.name || selectedToken.currency)?.charAt(0)?.toUpperCase() || '?'}</div>`;
+                                }}
+                              />
+                            </Box>
+                            <Box>
+                              <Typography variant="h6" fontWeight={700}>
+                                {selectedToken.name || selectedToken.currency}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                Vol: {selectedToken.volume24h > 1000000 
+                                  ? `${(selectedToken.volume24h / 1000000).toFixed(1)}M` 
+                                  : selectedToken.volume24h > 1000 
+                                  ? `${(selectedToken.volume24h / 1000).toFixed(1)}K`
+                                  : selectedToken.volume24h?.toFixed(0) || '0'} XRP
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
+                      )}
                       <Typography variant="overline" color="primary" fontWeight={600}>
                         Total Amount Due
                       </Typography>
@@ -652,6 +1028,20 @@ export default function Advertise() {
         </Container>
       </MainContent>
       <Footer />
+      <style jsx global>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        @keyframes slideInRight {
+          from { opacity: 0; transform: translateX(20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
     </PageWrapper>
   );
 }
