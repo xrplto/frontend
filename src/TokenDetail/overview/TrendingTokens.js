@@ -119,7 +119,7 @@ const TrendingTokens = () => {
       setLoading(true);
       try {
         const res = await axios.get(
-          `${BASE_URL}/tokens?start=0&limit=10&sortBy=trendingScore&sortType=desc&filter=&tags=&showNew=false&showSlug=false`
+          `${BASE_URL}/tokens?start=0&limit=15&sortBy=trendingScore&sortType=desc&filter=&tags=&showNew=false&showSlug=false`
         );
         if (res.status === 200 && res.data) {
           setTrendingList(res.data.tokens);
@@ -262,7 +262,7 @@ const TrendingTokens = () => {
 
       {/* Token List */}
       <Stack spacing={0.5} sx={{ px: { xs: 1, sm: 1.5 }, pb: { xs: 1, sm: 1.5 } }}>
-        {trendingList.slice(0, isMobile ? 5 : 10).map((token, index) => {
+        {trendingList.slice(0, isMobile ? 5 : 15).map((token, index) => {
           const rank = index + 1;
           const priceChange = token.pro24h || 0;
           const isPositive = priceChange >= 0;
