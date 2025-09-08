@@ -28,6 +28,7 @@ import LinkOffIcon from '@mui/icons-material/LinkOff';
 import { SvgIcon } from '@mui/material';
 import NumberTooltip from 'src/components/NumberTooltip';
 import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
+import { Box as MuiBox } from '@mui/material';
 import { currencySymbols, CURRENCY_ISSUERS } from 'src/utils/constants';
 import { checkExpiration, getHashIcon } from 'src/utils/extra';
 import Decimal from 'decimal.js';
@@ -1605,10 +1606,30 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                     whiteSpace: 'nowrap'
                   }}
                 >
-                  <NumberTooltip
-                    prepend={currencySymbols[activeFiatCurrency]}
-                    number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
-                  />
+                  {(() => {
+                    const symbol = currencySymbols[activeFiatCurrency];
+                    const rawPrice = activeFiatCurrency === 'XRP' ? exch : (exch / metrics[activeFiatCurrency]);
+                    
+                    // Check if price has many leading zeros
+                    if (rawPrice && rawPrice < 0.001) {
+                      const str = rawPrice.toFixed(15);
+                      const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+                      if (zeros >= 4) {  // Use compact notation for 4+ zeros
+                        const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+                        return (
+                          <span>
+                            {symbol}0.0<sub style={{ fontSize: '0.6em' }}>{zeros}</sub>{significant.slice(0, 4)}
+                          </span>
+                        );
+                      }
+                    }
+                    return (
+                      <NumberTooltip
+                        prepend={symbol}
+                        number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+                      />
+                    );
+                  })()}
                 </Typography>
               </Stack>
               
@@ -1640,10 +1661,30 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                         whiteSpace: 'nowrap'
                       }}
                     >
-                      <NumberTooltip
-                        prepend={currencySymbols[activeFiatCurrency]}
-                        number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
-                      />
+                      {(() => {
+                        const symbol = currencySymbols[activeFiatCurrency];
+                        const rawPrice = activeFiatCurrency === 'XRP' ? exch : (exch / metrics[activeFiatCurrency]);
+                        
+                        // Check if price has many leading zeros
+                        if (rawPrice && rawPrice < 0.001) {
+                          const str = rawPrice.toFixed(15);
+                          const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+                          if (zeros >= 4) {  // Use compact notation for 4+ zeros
+                            const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+                            return (
+                              <span>
+                                {symbol}0.0<sub style={{ fontSize: '0.6em' }}>{zeros}</sub>{significant.slice(0, 4)}
+                              </span>
+                            );
+                          }
+                        }
+                        return (
+                          <NumberTooltip
+                            prepend={symbol}
+                            number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+                          />
+                        );
+                      })()}
                     </Typography>
                     
                     {/* 24h Range - Slightly bigger */}
