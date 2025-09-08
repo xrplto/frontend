@@ -1500,11 +1500,11 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                 </Typography>
               </Stack>
               
-              {/* Desktop Price and Percentages - Moved left */}
+              {/* Desktop Price and Percentages - Unified Display */}
               <Stack 
                 direction="row" 
                 alignItems="center" 
-                spacing={1.5}
+                spacing={2}
                 sx={{ 
                   display: { xs: 'none', md: 'flex' },
                   flex: 1,
@@ -1512,132 +1512,140 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                   ml: -1
                 }}
               >
-                {/* Center: Price with integrated 24h range */}
-                <Stack alignItems="center" spacing={0.15}>
-                  <Stack direction="row" alignItems="center" spacing={1.25}>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        fontSize: '0.95rem',
-                        fontWeight: 700,
-                        color: priceColor || theme.palette.text.primary,
-                        lineHeight: 1,
-                        letterSpacing: '-0.01em',
-                        transition: 'color 0.3s ease',
-                        animation: priceColor ? 'priceFlash 0.5s ease' : 'none',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {(() => {
-                        const symbol = currencySymbols[activeFiatCurrency];
-                        const rawPrice = activeFiatCurrency === 'XRP' ? exch : (exch / metrics[activeFiatCurrency]);
-                        
-                        // Check if price has many leading zeros
-                        if (rawPrice && rawPrice < 0.001) {
-                          const str = rawPrice.toFixed(15);
-                          const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-                          if (zeros >= 4) {  // Use compact notation for 4+ zeros
-                            const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-                            return (
-                              <span>
-                                {symbol}0.0<sub style={{ fontSize: '0.6em' }}>{zeros}</sub>{significant.slice(0, 4)}
-                              </span>
-                            );
-                          }
+                {/* Unified Price Display and 24h Range */}
+                <Stack direction="row" alignItems="center" spacing={2}>
+                  {/* Price only - removed duplicate XRP exchange */}
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: '1rem',
+                      fontWeight: 700,
+                      color: priceColor || theme.palette.text.primary,
+                      lineHeight: 1,
+                      letterSpacing: '-0.01em',
+                      transition: 'color 0.3s ease',
+                      animation: priceColor ? 'priceFlash 0.5s ease' : 'none',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {(() => {
+                      const symbol = currencySymbols[activeFiatCurrency];
+                      const rawPrice = activeFiatCurrency === 'XRP' ? exch : (exch / metrics[activeFiatCurrency]);
+                      
+                      // Check if price has many leading zeros
+                      if (rawPrice && rawPrice < 0.001) {
+                        const str = rawPrice.toFixed(15);
+                        const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+                        if (zeros >= 4) {  // Use compact notation for 4+ zeros
+                          const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+                          return (
+                            <span>
+                              {symbol}0.0<sub style={{ fontSize: '0.55em', verticalAlign: 'baseline', position: 'relative', top: '0.1em' }}>{zeros}</sub>{significant.slice(0, 4)}
+                            </span>
+                          );
                         }
-                        return (
-                          <NumberTooltip
-                            prepend={symbol}
-                            number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
-                          />
-                        );
-                      })()}
-                    </Typography>
-                    
-                    {/* 24h Range - Slightly bigger */}
-                    {range24h && (
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
+                      }
+                      return (
+                        <NumberTooltip
+                          prepend={symbol}
+                          number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+                        />
+                      );
+                    })()}
+                  </Typography>
+                  
+                  {/* 24h Range Bar - Refined */}
+                  {range24h && (
+                    <Stack direction="row" alignItems="center" spacing={0.75} sx={{ ml: 0.5 }}>
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          fontSize: '0.7rem', 
+                          fontWeight: 600, 
+                          color: theme.palette.success.main,
+                          opacity: 0.85,
+                          whiteSpace: 'nowrap',
+                          minWidth: 'auto'
+                        }}
+                      >
+                        {currencySymbols[activeFiatCurrency]}{formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
+                      </Typography>
+                      
+                      <Box sx={{ position: 'relative' }}>
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: '0.7rem', 
-                            fontWeight: 500, 
-                            color: theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C',
-                            opacity: 0.9,
+                            position: 'absolute',
+                            top: -8,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            fontSize: '0.5rem', 
+                            color: theme.palette.text.secondary, 
+                            fontWeight: 500,
+                            opacity: 0.5,
+                            lineHeight: 1,
                             whiteSpace: 'nowrap'
                           }}
                         >
-                          {currencySymbols[activeFiatCurrency]}{formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
+                          24H
                         </Typography>
-                        
-                        <Stack alignItems="center" spacing={0}>
-                          <Typography 
-                            variant="caption" 
-                            sx={{ 
-                              fontSize: '0.6rem', 
-                              color: theme.palette.text.secondary, 
-                              fontWeight: 500,
-                              opacity: 0.6,
-                              lineHeight: 0.8
-                            }}
-                          >
-                            24h
-                          </Typography>
+                        <Box
+                          sx={{
+                            width: 70,
+                            height: 4,
+                            backgroundColor: alpha(theme.palette.divider, 0.1),
+                            borderRadius: '2px',
+                            position: 'relative',
+                            overflow: 'hidden'
+                          }}
+                        >
                           <Box
                             sx={{
-                              width: 50,
-                              height: 2,
-                              backgroundColor: alpha(theme.palette.divider, 0.12),
-                              borderRadius: '1px',
-                              position: 'relative',
-                              overflow: 'hidden'
+                              position: 'absolute',
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              width: `${range24h.percent}%`,
+                              background: `linear-gradient(90deg, 
+                                ${theme.palette.success.main} 0%, 
+                                ${theme.palette.warning.main} 50%, 
+                                ${theme.palette.error.main} 100%)`,
+                              borderRadius: '2px',
+                              opacity: 0.7
                             }}
-                          >
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                left: 0,
-                                top: 0,
-                                bottom: 0,
-                                width: `${range24h.percent}%`,
-                                background: theme.palette.mode === 'dark'
-                                  ? `linear-gradient(90deg, #66BB6A 0%, #FFA726 50%, #FF5252 100%)`
-                                  : `linear-gradient(90deg, #388E3C 0%, #F57C00 50%, #D32F2F 100%)`,
-                                borderRadius: '1px',
-                                opacity: 0.85
-                              }}
-                            />
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                left: `${range24h.percent}%`,
-                                top: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                width: 3,
-                                height: 3,
-                                borderRadius: '50%',
-                                backgroundColor: theme.palette.background.paper,
-                                border: `1px solid ${theme.palette.primary.main}`
-                              }}
-                            />
-                          </Box>
-                        </Stack>
-                        
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
-                            fontSize: '0.7rem', 
-                            fontWeight: 500, 
-                            color: theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F',
-                            opacity: 0.9,
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {currencySymbols[activeFiatCurrency]}{formatValue(range24h.max * (metrics.USD / metrics[activeFiatCurrency]))}
-                        </Typography>
-                      </Stack>
-                    )}
-                  </Stack>
+                          />
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              left: `${range24h.percent}%`,
+                              top: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              width: 6,
+                              height: 6,
+                              borderRadius: '50%',
+                              backgroundColor: theme.palette.background.paper,
+                              border: `1.5px solid ${theme.palette.primary.main}`,
+                              boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.2)}`
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                      
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          fontSize: '0.7rem', 
+                          fontWeight: 600, 
+                          color: theme.palette.error.main,
+                          opacity: 0.85,
+                          whiteSpace: 'nowrap',
+                          minWidth: 'auto'
+                        }}
+                      >
+                        {currencySymbols[activeFiatCurrency]}{formatValue(range24h.max * (metrics.USD / metrics[activeFiatCurrency]))}
+                      </Typography>
+                    </Stack>
+                  )}
                 </Stack>
                 
                 {/* Right: Percentage changes - Bigger */}
@@ -1697,12 +1705,12 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
           </Box>
         </Stack>
 
-        {/* 24h Range Section - Full width on mobile */}
+        {/* 24h Range Section for Mobile - Simplified */}
         {range24h && (
           <Box
             sx={{
               mx: { xs: -0.3, sm: 0 },
-              mt: { xs: 0.4, sm: 0 },
+              mt: { xs: 0.5, sm: 0 },
               px: { xs: 0.3, sm: 0 },
               display: { xs: 'block', md: 'none' }
             }}
@@ -1711,25 +1719,24 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
               <Typography 
                 variant="caption" 
                 sx={{ 
-                  fontSize: '0.7rem', 
+                  fontSize: '0.65rem', 
                   fontWeight: 600, 
                   color: theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C',
-                  opacity: 1,
-                  textShadow: theme.palette.mode === 'dark' ? '0 0 4px rgba(102, 187, 106, 0.3)' : 'none',
+                  opacity: 0.95,
                   whiteSpace: 'nowrap'
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
               </Typography>
               
-              <Stack alignItems="center" spacing={0} sx={{ flex: 1, mx: 1 }}>
+              <Stack alignItems="center" spacing={0} sx={{ flex: 1, mx: 0.5 }}>
                 <Typography 
                   variant="caption" 
                   sx={{ 
-                    fontSize: '0.55rem', 
+                    fontSize: '0.5rem', 
                     color: theme.palette.text.secondary, 
                     fontWeight: 500,
-                    opacity: 0.7,
+                    opacity: 0.6,
                     lineHeight: 1
                   }}
                 >
@@ -1739,7 +1746,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                   sx={{
                     width: '100%',
                     height: 3,
-                    backgroundColor: alpha(theme.palette.divider, 0.2),
+                    backgroundColor: alpha(theme.palette.divider, 0.15),
                     borderRadius: '1.5px',
                     position: 'relative',
                     overflow: 'hidden'
@@ -1765,12 +1772,12 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                       left: `${range24h.percent}%`,
                       top: '50%',
                       transform: 'translate(-50%, -50%)',
-                      width: 6,
-                      height: 6,
+                      width: 5,
+                      height: 5,
                       borderRadius: '50%',
                       backgroundColor: theme.palette.background.paper,
-                      border: `1.5px solid ${theme.palette.primary.main}`,
-                      boxShadow: `0 0 3px ${alpha(theme.palette.primary.main, 0.4)}`
+                      border: `1px solid ${theme.palette.primary.main}`,
+                      boxShadow: `0 0 2px ${alpha(theme.palette.primary.main, 0.3)}`
                     }}
                   />
                 </Box>
@@ -1779,11 +1786,10 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
               <Typography 
                 variant="caption" 
                 sx={{ 
-                  fontSize: '0.7rem', 
+                  fontSize: '0.65rem', 
                   fontWeight: 600, 
                   color: theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F',
-                  opacity: 1,
-                  textShadow: theme.palette.mode === 'dark' ? '0 0 4px rgba(255, 82, 82, 0.3)' : 'none',
+                  opacity: 0.95,
                   whiteSpace: 'nowrap'
                 }}
               >
