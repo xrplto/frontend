@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { memo, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useState, useEffect, useContext } from 'react';
+import 'react-markdown-editor-lite/lib/index.css';
 
 // Material
 import { Grid, Stack, useTheme, useMediaQuery, Typography, Paper, Button, Box } from '@mui/material';
@@ -172,14 +173,6 @@ const Overview = memo(({ token, onTransactionClick }) => {
               pairs={pairs} 
               onTransactionClick={onTransactionClick}
             />
-            {showEditor && (
-              <MDEditor
-                value={description}
-                renderHTML={(text) => mdParser.render(text)}
-                onChange={handleEditorChange}
-                style={{ height: '500px' }}
-              />
-            )}
             {/* <MDEditor value={description} renderHTML={text => <ReactMarkdown children={text} />} onChange={handleEditorChange} style={{ height: '500px' }} /> */}
           </>
         )}
@@ -193,15 +186,17 @@ const Overview = memo(({ token, onTransactionClick }) => {
           setShowEditor={setShowEditor}
           description={description}
           onApplyDescription={onApplyDescription}
+          mdEditor={showEditor ? (
+            <MDEditor
+              value={description}
+              renderHTML={(text) => mdParser.render(text)}
+              onChange={handleEditorChange}
+              style={{ height: '400px' }}
+              view={{ menu: true, md: true, html: true, fullScreen: false, hideMenu: false }}
+              canView={{ menu: true, md: true, html: true, fullScreen: false, hideMenu: true }}
+            />
+          ) : null}
         />
-        {showEditor && (
-          <MDEditor
-            value={description}
-            renderHTML={(text) => mdParser.render(text)}
-            onChange={handleEditorChange}
-            style={{ height: '500px' }}
-          />
-        )}
         <TrendingTokens />
       </Grid>
     </Grid>
