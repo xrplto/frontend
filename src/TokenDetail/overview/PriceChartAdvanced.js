@@ -978,32 +978,34 @@ const PriceChartAdvanced = memo(({ token }) => {
             <Box sx={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: 0.5,
+              gap: isMobile ? 0.25 : 0.5,
               bgcolor: athData.percentDown < 0 ? 'error.main' : 'success.main',
               color: 'white',
-              px: 1,
-              py: 0.25,
+              px: isMobile ? 0.5 : 1,
+              py: isMobile ? 0.125 : 0.25,
               borderRadius: 1,
-              fontSize: '0.75rem'
+              fontSize: isMobile ? '0.625rem' : '0.75rem'
             }}>
-              <Typography variant="caption" sx={{ fontWeight: 500 }}>
-                {athData.percentDown}% from ATH
+              <Typography variant="caption" sx={{ fontWeight: 500, fontSize: 'inherit' }}>
+                {athData.percentDown}% {isMobile ? 'ATH' : 'from ATH'}
               </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                ({currencySymbols[activeFiatCurrency] || ''}{
-                  (() => {
-                    if (athData.price && athData.price < 0.001) {
-                      const str = athData.price.toFixed(15);
-                      const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-                      if (zeros >= 4) {
-                        const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-                        return `0.0(${zeros})${significant.slice(0, 4)}`;
+              {!isMobile && (
+                <Typography variant="caption" sx={{ opacity: 0.9, fontSize: 'inherit' }}>
+                  ({currencySymbols[activeFiatCurrency] || ''}{
+                    (() => {
+                      if (athData.price && athData.price < 0.001) {
+                        const str = athData.price.toFixed(15);
+                        const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+                        if (zeros >= 4) {
+                          const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+                          return `0.0(${zeros})${significant.slice(0, 4)}`;
+                        }
                       }
-                    }
-                    return athData.price < 0.01 ? athData.price.toFixed(8) : athData.price.toFixed(4);
-                  })()
-                })
-              </Typography>
+                      return athData.price < 0.01 ? athData.price.toFixed(8) : athData.price.toFixed(4);
+                    })()
+                  })
+                </Typography>
+              )}
             </Box>
           )}
           <Box sx={{ 
