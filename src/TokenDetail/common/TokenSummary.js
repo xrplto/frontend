@@ -1125,7 +1125,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                         alignItems: 'center',
                         gap: { xs: 0.3, sm: 0.5 },
                         px: { xs: 0.3, sm: 0.5 },
-                        py: { xs: 0.1, sm: 0.2 },
+                        py: { xs: 0.05, sm: 0.2 },
                         borderRadius: { xs: '6px', sm: '10px' },
                         background: origin ? alpha(theme.palette.background.paper, 0.9) : `linear-gradient(135deg, ${alpha('#23288E', 0.15)} 0%, ${alpha('#1976d2', 0.08)} 100%)`,
                         border: `1px solid ${origin ? alpha(theme.palette.divider, 0.2) : alpha('#1976d2', 0.3)}`,
