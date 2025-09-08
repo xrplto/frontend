@@ -217,14 +217,14 @@ function SearchModal({ open, onClose }) {
       }, 0);
     }
     
-    // Navigate to result
+    // Navigate to result using full page reload
     if (type === 'token') {
-      router.push(`/token/${item.slug}`);
+      window.location.href = `/token/${item.slug}`;
     } else if (type === 'collection') {
-      router.push(`/collection/${item.slug}`);
+      window.location.href = `/collection/${item.slug}`;
     }
     handleClose();
-  }, [recentSearches, router, handleClose]);
+  }, [recentSearches, handleClose]);
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Escape') {
@@ -318,11 +318,11 @@ function SearchModal({ open, onClose }) {
                       <ListItem key={index} disablePadding>
                         <ListItemButton 
                           onClick={() => {
-                            // Navigate directly for recent searches since we already have the data
+                            // Navigate directly for recent searches using full page reload
                             if (item.type === 'token') {
-                              router.push(`/token/${item.slug}`);
+                              window.location.href = `/token/${item.slug}`;
                             } else if (item.type === 'collection') {
-                              router.push(`/collection/${item.slug}`);
+                              window.location.href = `/collection/${item.slug}`;
                             }
                             handleClose();
                           }} 
