@@ -3165,6 +3165,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       disableUnderline
                       value={amount1}
                       onChange={handleChangeAmount1}
+                      inputMode="decimal"
                       sx={{
                         input: {
                           textAlign: 'right',
@@ -3290,6 +3291,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       disableUnderline
                       value={amount1 === '' ? '' : amount2}
                       onChange={handleChangeAmount2}
+                      inputMode="decimal"
                       sx={{
                         input: {
                           textAlign: 'right',
