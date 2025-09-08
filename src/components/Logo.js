@@ -9,10 +9,10 @@ function Logo({ style }) {
   const theme = useTheme();
   const [imageError, setImageError] = useState(false);
 
-  // Memoize logo paths with cache buster for long-term caching
+  // Memoize logo paths - removed query string to avoid Next.js localPatterns warning
   const { img_black, img_white } = useMemo(() => ({
-    img_black: '/logo/xrpl-to-logo-black.svg?v=1',
-    img_white: '/logo/xrpl-to-logo-white.svg?v=1'
+    img_black: '/logo/xrpl-to-logo-black.svg',
+    img_white: '/logo/xrpl-to-logo-white.svg'
   }), []);
   
   // Use theme.palette.mode as primary check, fallback to darkMode
