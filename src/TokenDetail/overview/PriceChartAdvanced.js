@@ -413,7 +413,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       layout: {
         background: {
           type: 'solid',
-          color: 'transparent'
+          color: isDark ? '#0d0d0d' : '#fafafa'
         },
         textColor: theme.palette.text.primary,
         fontSize: 13,
@@ -421,11 +421,11 @@ const PriceChartAdvanced = memo(({ token }) => {
       },
       grid: {
         vertLines: {
-          color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+          color: isDark ? 'rgba(56, 56, 56, 0.4)' : 'rgba(240, 240, 240, 1)',
           style: 1,
         },
         horzLines: {
-          color: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+          color: isDark ? 'rgba(56, 56, 56, 0.4)' : 'rgba(240, 240, 240, 1)',
           style: 0,
         },
       },
@@ -546,7 +546,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     // Create tooltip
     const toolTip = document.createElement('div');
-    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 4px; font-family: inherit; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; box-shadow: 0 2px 8px ${isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`;
+    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 6px; font-family: inherit; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'linear-gradient(145deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%)' : 'linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 250, 250, 0.98) 100%)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'}; box-shadow: 0 4px 12px ${isDark ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.12)'}`;
     chartContainerRef.current.appendChild(toolTip);
 
     chart.subscribeCrosshairMove(param => {
@@ -590,7 +590,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         
         if (chartType === 'candles') {
           const change = ((candle.close - candle.open) / candle.open * 100).toFixed(2);
-          const changeColor = candle.close >= candle.open ? '#4caf50' : '#f44336';
+          const changeColor = candle.close >= candle.open ? (isDark ? '#00E676' : '#4CAF50') : (isDark ? '#FF5252' : '#F44336');
           
           ohlcData = `
             <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
@@ -640,21 +640,21 @@ const PriceChartAdvanced = memo(({ token }) => {
     
     if (chartType === 'candles') {
       const candleSeries = chart.addSeries(CandlestickSeries, {
-        upColor: '#26a69a',
-        downColor: '#ef5350',
-        borderUpColor: '#26a69a',
-        borderDownColor: '#ef5350',
-        wickUpColor: '#26a69a',
-        wickDownColor: '#ef5350',
+        upColor: isDark ? '#00E676' : '#4CAF50',
+        downColor: isDark ? '#FF5252' : '#F44336',
+        borderUpColor: isDark ? '#00E676' : '#4CAF50',
+        borderDownColor: isDark ? '#FF5252' : '#F44336',
+        wickUpColor: isDark ? 'rgba(0, 230, 118, 0.5)' : 'rgba(76, 175, 80, 0.5)',
+        wickDownColor: isDark ? 'rgba(255, 82, 82, 0.5)' : 'rgba(244, 67, 54, 0.5)',
         borderVisible: true,
         wickVisible: true,
       });
       candleSeriesRef.current = candleSeries;
     } else if (chartType === 'line') {
       const areaSeries = chart.addSeries(AreaSeries, {
-        lineColor: theme.palette.primary.main,
-        topColor: theme.palette.primary.main + '80',
-        bottomColor: theme.palette.primary.main + '08',
+        lineColor: isDark ? '#2196F3' : theme.palette.primary.main,
+        topColor: isDark ? 'rgba(33, 150, 243, 0.4)' : theme.palette.primary.main + '60',
+        bottomColor: isDark ? 'rgba(33, 150, 243, 0.05)' : theme.palette.primary.main + '08',
         lineWidth: 2,
         lineStyle: 0,
         crosshairMarkerVisible: true,
@@ -665,9 +665,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       lineSeriesRef.current = areaSeries;
     } else if (chartType === 'holders') {
       const holdersSeries = chart.addSeries(AreaSeries, {
-        lineColor: '#9c27b0',
-        topColor: 'rgba(156, 39, 176, 0.56)',
-        bottomColor: 'rgba(156, 39, 176, 0.04)',
+        lineColor: isDark ? '#E040FB' : '#9c27b0',
+        topColor: isDark ? 'rgba(224, 64, 251, 0.3)' : 'rgba(156, 39, 176, 0.4)',
+        bottomColor: isDark ? 'rgba(224, 64, 251, 0.05)' : 'rgba(156, 39, 176, 0.04)',
         lineWidth: 2,
         lineStyle: 0,
         crosshairMarkerVisible: true,
@@ -681,7 +681,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     // Add volume series for non-holder charts
     if (chartType !== 'holders') {
       const volumeSeries = chart.addSeries(HistogramSeries, {
-        color: '#26a69a',
+        color: isDark ? 'rgba(0, 230, 118, 0.3)' : 'rgba(76, 175, 80, 0.3)',
         priceFormat: {
           type: 'volume',
         },
@@ -767,12 +767,12 @@ const PriceChartAdvanced = memo(({ token }) => {
     // Create series if they don't exist yet
     if (chartType === 'candles' && !candleSeriesRef.current) {
       const candleSeries = chartRef.current.addSeries(CandlestickSeries, {
-        upColor: '#26a69a',
-        downColor: '#ef5350',
-        borderUpColor: '#26a69a',
-        borderDownColor: '#ef5350',
-        wickUpColor: '#26a69a',
-        wickDownColor: '#ef5350',
+        upColor: isDark ? '#00E676' : '#4CAF50',
+        downColor: isDark ? '#FF5252' : '#F44336',
+        borderUpColor: isDark ? '#00E676' : '#4CAF50',
+        borderDownColor: isDark ? '#FF5252' : '#F44336',
+        wickUpColor: isDark ? 'rgba(0, 230, 118, 0.5)' : 'rgba(76, 175, 80, 0.5)',
+        wickDownColor: isDark ? 'rgba(255, 82, 82, 0.5)' : 'rgba(244, 67, 54, 0.5)',
         borderVisible: true,
         wickVisible: true,
       });
@@ -887,8 +887,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         time: d.time,
         value: d.volume || 0,
         color: d.close >= d.open 
-          ? (isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.3)')
-          : (isDark ? 'rgba(244, 67, 54, 0.2)' : 'rgba(244, 67, 54, 0.3)')
+          ? (isDark ? 'rgba(0, 230, 118, 0.2)' : 'rgba(76, 175, 80, 0.3)')
+          : (isDark ? 'rgba(255, 82, 82, 0.2)' : 'rgba(244, 67, 54, 0.3)')
       }));
       if (isAutoUpdate && volumeData.length > 0) {
         const lastVolume = volumeData[volumeData.length - 1];
@@ -941,13 +941,13 @@ const PriceChartAdvanced = memo(({ token }) => {
       sx={{ 
         p: 2,
         background: isDark 
-          ? 'linear-gradient(145deg, rgba(18, 18, 18, 0.9) 0%, rgba(25, 25, 25, 0.9) 100%)' 
-          : 'linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 250, 250, 0.9) 100%)',
-        backdropFilter: 'blur(10px)',
+          ? 'linear-gradient(145deg, #0a0a0a 0%, #141414 100%)' 
+          : 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
+        backdropFilter: 'blur(20px)',
         boxShadow: isDark 
-          ? '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-          : '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-        border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`,
+          ? '0 10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.03)'
+          : '0 4px 20px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 1)',
+        border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
         borderRadius: 2,
         overflow: 'hidden',
         ...(isFullscreen && {
