@@ -413,7 +413,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       layout: {
         background: {
           type: 'solid',
-          color: isDark ? '#0d0d0d' : '#fafafa'
+          color: 'transparent'
         },
         textColor: theme.palette.text.primary,
         fontSize: 13,
@@ -948,14 +948,14 @@ const PriceChartAdvanced = memo(({ token }) => {
       sx={{ 
         p: 2,
         background: isDark 
-          ? 'linear-gradient(145deg, #0a0a0a 0%, #141414 100%)' 
-          : 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
+          ? '#0d0d0d' 
+          : '#fafafa',
         backdropFilter: 'blur(20px)',
         boxShadow: isDark 
           ? '0 10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.03)'
           : '0 4px 20px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 1)',
         border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
-        borderRadius: 2,
+        borderRadius: isMobile ? '10px' : '16px',
         overflow: 'hidden',
         ...(isFullscreen && {
           position: 'fixed',

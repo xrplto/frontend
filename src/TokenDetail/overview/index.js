@@ -197,7 +197,9 @@ const Overview = memo(({ token, onTransactionClick }) => {
             />
           ) : null}
         />
-        <TrendingTokens />
+        <Box sx={{ mt: 1.5 }}>
+          <TrendingTokens />
+        </Box>
       </Grid>
     </Grid>
   );
