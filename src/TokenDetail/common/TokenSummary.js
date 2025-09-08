@@ -1529,8 +1529,8 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                       background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
                       border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                       borderRadius: '10px',
-                      px: 1.5,
-                      py: 0.75,
+                      px: 2.5,
+                      py: 1,
                       boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
                       '&:hover': {
                         transform: 'translateY(-1px)',
@@ -1541,7 +1541,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                     <Typography
                       variant="body1"
                       sx={{
-                        fontSize: '1.1rem',
+                        fontSize: '1.3rem',
                         fontWeight: 800,
                         color: priceColor || theme.palette.primary.main,
                         lineHeight: 1,
@@ -1589,10 +1589,10 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                         background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
                         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                         borderRadius: '10px',
-                        px: 1.5,
-                        py: 0.75,
+                        px: 2,
+                        py: 1,
                         boxShadow: `0 1px 4px ${alpha(theme.palette.common.black, 0.05)}`,
-                        height: '36px'
+                        height: '40px'
                       }}
                     >
                       <Stack direction="row" alignItems="center" spacing={0.5}>
@@ -1694,8 +1694,8 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                         display: 'flex',
                         alignItems: 'center',
                         gap: 0.75,
-                        px: 0.8,
-                        py: 0.4,
+                        px: 1.2,
+                        py: 0.6,
                         borderRadius: '10px',
                         background: alpha(item.color, 0.1),
                         border: `1.5px solid ${alpha(item.color, 0.2)}`,
@@ -1720,7 +1720,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.9rem',
+                          fontSize: '1rem',
                           fontWeight: 800,
                           color: item.color,
                           display: 'flex',
