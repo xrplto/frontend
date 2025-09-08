@@ -1605,7 +1605,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                             textTransform: 'uppercase'
                           }}
                         >
-                          L
+                          Low
                         </Typography>
                         <Typography 
                           variant="caption" 
@@ -1678,7 +1678,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                             textTransform: 'uppercase'
                           }}
                         >
-                          H
+                          High
                         </Typography>
                       </Stack>
                     </Stack>
