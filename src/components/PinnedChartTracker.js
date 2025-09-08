@@ -226,6 +226,7 @@ export const usePinnedCharts = () => {
 export const PinChartButton = memo(({ token, chartType, range, indicators, activeFiatCurrency }) => {
   const theme = useTheme();
   const { pinnedCharts, pinChart, unpinChartByToken } = usePinnedCharts();
+  const isMobile = theme.breakpoints.values.sm > window.innerWidth;
   
   const isChartPinned = pinnedCharts.some(
     chart => chart.token.md5 === token.md5 && chart.chartType === chartType
@@ -260,8 +261,12 @@ export const PinChartButton = memo(({ token, chartType, range, indicators, activ
         size="small"
         onClick={handlePinChart}
         sx={{ 
-          ml: 1,
-          color: isChartPinned ? theme.palette.primary.main : 'inherit'
+          ml: isMobile ? 0.5 : 1,
+          p: isMobile ? 0.5 : 1,
+          color: isChartPinned ? theme.palette.primary.main : 'inherit',
+          '& .MuiSvgIcon-root': {
+            fontSize: isMobile ? '1rem' : '1.25rem'
+          }
         }}
       >
         {isChartPinned ? <PushPinIcon /> : <PushPinOutlinedIcon />}

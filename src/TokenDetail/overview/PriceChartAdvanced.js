@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, memo, useContext, useMemo, useCallback } from 'react';
-import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem, CircularProgress, alpha } from '@mui/material';
+import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem, CircularProgress, alpha, Divider } from '@mui/material';
 import { createChart, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries } from 'lightweight-charts';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
-import { PinChartButton } from 'src/components/PinnedChartTracker';
+import { PinChartButton, usePinnedCharts } from 'src/components/PinnedChartTracker';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
@@ -12,6 +12,8 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import GroupIcon from '@mui/icons-material/Group';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import PushPinIcon from '@mui/icons-material/PushPin';
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 
 // Performance: Throttle chart updates
 const throttle = (func, delay) => {
@@ -34,6 +36,7 @@ const throttle = (func, delay) => {
 const PriceChartAdvanced = memo(({ token }) => {
   const theme = useTheme();
   const { activeFiatCurrency, accountProfile } = useContext(AppContext);
+  const { pinnedCharts, pinChart, unpinChartByToken } = usePinnedCharts();
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
   const candleSeriesRef = useRef(null);
@@ -450,7 +453,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         autoScale: true,
         borderVisible: false,
         visible: true,
-        entireTextOnly: false,
+        entireTextOnly: isMobile ? true : false,
         drawTicks: true,
         ticksVisible: true,
         alignLabels: true,
@@ -940,7 +943,8 @@ const PriceChartAdvanced = memo(({ token }) => {
     <Paper 
       elevation={0} 
       sx={{ 
-        p: 2,
+        p: isMobile ? 1 : 2,
+        pr: isMobile ? 0.5 : 2,
         background: isDark 
           ? '#0d0d0d' 
           : '#fafafa',
@@ -1076,22 +1080,33 @@ const PriceChartAdvanced = memo(({ token }) => {
           </Box>
         </Box>
         
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: isMobile ? 0.5 : 1, flexWrap: 'wrap', alignItems: 'center', position: 'relative' }}>
           <ButtonGroup size="small">
             {Object.entries(chartTypeIcons).map(([type, icon]) => (
               <Button
                 key={type}
                 onClick={() => setChartType(type)}
                 variant={chartType === type ? 'contained' : 'outlined'}
-                sx={{ px: 1.5 }}
+                sx={{ 
+                  px: isMobile ? 0.5 : 1.5,
+                  fontSize: isMobile ? '0.6rem' : '0.875rem',
+                  minWidth: isMobile ? 'auto' : 'unset',
+                  height: isMobile ? 22 : 32,
+                  '& .MuiButton-startIcon': {
+                    marginRight: isMobile ? '2px' : '8px',
+                    '& > svg': {
+                      fontSize: isMobile ? '0.75rem' : '1.25rem'
+                    }
+                  }
+                }}
                 startIcon={icon}
               >
-                {type === 'holders' ? 'Holders' : type.charAt(0).toUpperCase() + type.slice(1)}
+                {isMobile ? (type === 'holders' ? 'Hold' : type.charAt(0).toUpperCase() + type.slice(1).substring(0, 3)) : (type === 'holders' ? 'Holders' : type.charAt(0).toUpperCase() + type.slice(1))}
               </Button>
             ))}
           </ButtonGroup>
 
-          <ButtonGroup size="small">
+          <ButtonGroup size="small" sx={{ '& .MuiButtonGroup-grouped': { minWidth: isMobile ? 20 : 'auto' } }}>
             {['1D', '7D', '1M', '3M', '1Y', 'ALL'].map(r => (
               <Button
                 key={r}
@@ -1100,43 +1115,116 @@ const PriceChartAdvanced = memo(({ token }) => {
                   setIsUserZoomed(false); // Reset zoom state on range change
                 }}
                 variant={range === r ? 'contained' : 'outlined'}
-                sx={{ px: 1, fontSize: '0.75rem', minWidth: 36 }}
+                sx={{ 
+                  px: isMobile ? 0.15 : 1, 
+                  fontSize: isMobile ? '0.55rem' : '0.75rem', 
+                  minWidth: isMobile ? 20 : 36,
+                  height: isMobile ? 20 : 32,
+                  letterSpacing: isMobile ? '-0.5px' : 'normal'
+                }}
               >
                 {r}
               </Button>
             ))}
           </ButtonGroup>
 
-          <PinChartButton
-            token={token}
-            chartType={chartType}
-            range={range}
-            indicators={indicators}
-            activeFiatCurrency={activeFiatCurrency}
-          />
-
           <IconButton
-            size="small"
-            onClick={handleFullscreen}
-            sx={{ ml: 1 }}
-            title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-          >
-            {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-          </IconButton>
-
-          <IconButton
-            size="small"
+            size={isMobile ? "small" : "small"}
             onClick={(e) => setAnchorEl(e.currentTarget)}
-            sx={{ ml: 1 }}
+            sx={{ 
+              ml: isMobile ? 0.5 : 1,
+              p: isMobile ? 0.5 : 1,
+              '& .MuiSvgIcon-root': {
+                fontSize: isMobile ? '1rem' : '1.25rem'
+              }
+            }}
           >
             <MoreVertIcon />
           </IconButton>
+
+          {!isMobile && (
+            <>
+              <PinChartButton
+                token={token}
+                chartType={chartType}
+                range={range}
+                indicators={indicators}
+                activeFiatCurrency={activeFiatCurrency}
+              />
+
+              <IconButton
+                size="small"
+                onClick={handleFullscreen}
+                sx={{ 
+                  ml: 1,
+                  p: 1,
+                  '& .MuiSvgIcon-root': {
+                    fontSize: '1.25rem'
+                  }
+                }}
+                title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+              >
+                {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+              </IconButton>
+            </>
+          )}
           
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={() => setAnchorEl(null)}
           >
+            {isMobile && (
+              <>
+                <MenuItem
+                  onClick={() => {
+                    handleFullscreen();
+                    setAnchorEl(null);
+                  }}
+                  sx={{ fontSize: '0.875rem' }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {isFullscreen ? <FullscreenExitIcon fontSize="small" /> : <FullscreenIcon fontSize="small" />}
+                    {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                  </Box>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    if (pinnedCharts.some(chart => chart.token.md5 === token.md5 && chart.chartType === chartType)) {
+                      unpinChartByToken(token.md5, chartType);
+                    } else {
+                      pinChart({
+                        token: {
+                          md5: token.md5,
+                          name: token.name,
+                          symbol: token.symbol || token.code,
+                          code: token.code,
+                          currency: token.currency,
+                          issuer: token.issuer,
+                          slug: token.slug,
+                          logo: token.logo
+                        },
+                        chartType,
+                        range,
+                        indicators,
+                        activeFiatCurrency
+                      });
+                    }
+                    setAnchorEl(null);
+                  }}
+                  sx={{ fontSize: '0.875rem' }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {pinnedCharts?.some(chart => chart.token.md5 === token.md5 && chart.chartType === chartType) ? 
+                      <PushPinIcon fontSize="small" sx={{ color: theme.palette.primary.main }} /> : 
+                      <PushPinOutlinedIcon fontSize="small" />
+                    }
+                    {pinnedCharts?.some(chart => chart.token.md5 === token.md5 && chart.chartType === chartType) ? 'Unpin Chart' : 'Pin Chart'}
+                  </Box>
+                </MenuItem>
+                <Divider />
+              </>
+            )}
             <MenuItem disabled sx={{ fontSize: '0.875rem', fontWeight: 'bold' }}>
               Indicators
             </MenuItem>
@@ -1181,7 +1269,9 @@ const PriceChartAdvanced = memo(({ token }) => {
         borderRadius: 1,
         overflow: 'hidden',
         willChange: 'height',
-        contain: 'layout style paint'
+        contain: 'layout style paint',
+        mr: isMobile ? -0.5 : 0,
+        ml: isMobile ? -0.5 : 0
       }}>
         {(() => {
           
