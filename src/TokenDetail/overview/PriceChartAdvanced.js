@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo, useContext, useMemo } from 'react';
+import { useState, useEffect, useRef, memo, useContext, useMemo, useCallback } from 'react';
 import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem, CircularProgress, alpha } from '@mui/material';
 import { createChart, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries } from 'lightweight-charts';
 import axios from 'axios';
@@ -102,31 +102,31 @@ const PriceChartAdvanced = memo(({ token }) => {
     isUserZoomedRef.current = isUserZoomed;
   }, [isUserZoomed]);
 
-  const convertScientificToRegular = (value) => {
+  const convertScientificToRegular = useCallback((value) => {
     if (typeof value === 'string') {
       value = parseFloat(value);
     }
     return Number(value);
-  };
+  }, []);
 
   // Scale factor for very small prices to help with tick generation
-  const getScaleFactor = (data) => {
+  const getScaleFactor = useCallback((data) => {
     if (!data || data.length === 0) return 1;
     const maxPrice = Math.max(...data.map(d => Math.max(d.high || d.close || d.value || d.open || 0)));
-    if (maxPrice < 0.000000001) return 1000000000000; // Scale up by 1 trillion
-    if (maxPrice < 0.00000001) return 100000000000;   // Scale up by 100 billion
-    if (maxPrice < 0.0000001) return 10000000000;     // Scale up by 10 billion
-    if (maxPrice < 0.000001) return 1000000000;       // Scale up by 1 billion
-    if (maxPrice < 0.00001) return 100000000;         // Scale up by 100 million
-    if (maxPrice < 0.0001) return 10000000;           // Scale up by 10 million
-    if (maxPrice < 0.001) return 1000000;             // Scale up by 1 million
-    if (maxPrice < 0.01) return 100000;               // Scale up by 100 thousand
-    if (maxPrice < 0.1) return 10000;                 // Scale up by 10 thousand  
-    if (maxPrice < 1) return 1000;                    // Scale up by 1 thousand
-    return 1; // No scaling needed
-  };
+    if (maxPrice < 0.000000001) return 1000000000000;
+    if (maxPrice < 0.00000001) return 100000000000;
+    if (maxPrice < 0.0000001) return 10000000000;
+    if (maxPrice < 0.000001) return 1000000000;
+    if (maxPrice < 0.00001) return 100000000;
+    if (maxPrice < 0.0001) return 10000000;
+    if (maxPrice < 0.001) return 1000000;
+    if (maxPrice < 0.01) return 100000;
+    if (maxPrice < 0.1) return 10000;
+    if (maxPrice < 1) return 1000;
+    return 1;
+  }, []);
 
-  const calculateSMA = (data, period) => {
+  const calculateSMA = useCallback((data, period) => {
     const sma = [];
     for (let i = period - 1; i < data.length; i++) {
       let sum = 0;
@@ -139,9 +139,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       });
     }
     return sma;
-  };
+  }, []);
 
-  const calculateEMA = (data, period) => {
+  const calculateEMA = useCallback((data, period) => {
     const ema = [];
     const multiplier = 2 / (period + 1);
     
@@ -164,9 +164,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       });
     }
     return ema;
-  };
+  }, []);
 
-  const calculateBollingerBands = (data, period = 20, stdDev = 2) => {
+  const calculateBollingerBands = useCallback((data, period = 20, stdDev = 2) => {
     const sma = calculateSMA(data, period);
     const bands = [];
     
@@ -191,9 +191,9 @@ const PriceChartAdvanced = memo(({ token }) => {
     }
     
     return bands;
-  };
+  }, [calculateSMA]);
 
-  const calculateRSI = (data, period = 14) => {
+  const calculateRSI = useCallback((data, period = 14) => {
     if (data.length < period + 1) return [];
     
     const rsi = [];
@@ -237,7 +237,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     }
     
     return rsi;
-  };
+  }, []);
 
   // Fetch price data
   useEffect(() => {
@@ -325,7 +325,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       controller.abort();
       clearInterval(interval);
     };
-  }, [token.md5, range, BASE_URL, activeFiatCurrency]); // Removed isUserZoomed to prevent re-creating interval
+  }, [token.md5, range, BASE_URL, activeFiatCurrency, convertScientificToRegular, calculateRSI]);
 
   // Fetch holder data
   useEffect(() => {
@@ -387,14 +387,12 @@ const PriceChartAdvanced = memo(({ token }) => {
       return;
     }
     
-    console.log('🎯 Chart creating with data points:', data.length);
-    
     // Clean up existing chart when chart type changes
     if (chartRef.current) {
       try {
         chartRef.current.remove();
       } catch (e) {
-        console.error('Error removing chart:', e);
+        // Error removing chart
       }
       chartRef.current = null;
       candleSeriesRef.current = null;
@@ -734,7 +732,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         chartRef.current = null;
       }
     };
-  }, [chartType, isDark, isMobile, data]); // Need data dependency but prevent unnecessary recreations
+  }, [chartType, isDark, isMobile, data, theme, isFullscreen, activeFiatCurrency]);
 
   // Handle fullscreen resize
   useEffect(() => {
@@ -854,9 +852,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       } else {
         candleSeriesRef.current.setData(scaledData);
         
-        if (scaleFactor > 1) {
-          console.log('🔍 [PriceScale] Applied scaling factor:', scaleFactor, 'for small prices');
-        }
+        // Applied scaling factor for small prices
       }
     } else if (chartType === 'line' && lineSeriesRef.current) {
       // Calculate scale factor for small prices
@@ -874,9 +870,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       } else {
         lineSeriesRef.current.setData(lineData);
         
-        if (scaleFactor > 1) {
-          console.log('🔍 [PriceScale] Line: Applied scaling factor:', scaleFactor, 'for small prices');
-        }
+        // Line: Applied scaling factor for small prices
       }
     } else if (chartType === 'holders' && lineSeriesRef.current) {
       const holdersLineData = chartData.map(d => ({ time: d.time, value: d.value || d.holders }));
@@ -925,9 +919,9 @@ const PriceChartAdvanced = memo(({ token }) => {
     }
     
     // The tooltip will maintain its position automatically since we're not recreating the chart
-  }, [data, holderData, chartType, isDark, range, theme, isMobile]);
+  }, [data, holderData, chartType, isDark, range, theme, isMobile, getScaleFactor]);
 
-  const handleIndicatorToggle = (indicator) => {
+  const handleIndicatorToggle = useCallback((indicator) => {
     setIndicators(prev => {
       const exists = prev.find(i => i.id === indicator.id);
       if (exists) {
@@ -936,11 +930,11 @@ const PriceChartAdvanced = memo(({ token }) => {
         return [...prev, indicator];
       }
     });
-  };
+  }, []);
 
-  const handleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
-  };
+  const handleFullscreen = useCallback(() => {
+    setIsFullscreen(prev => !prev);
+  }, []);
 
   return (
     <Paper 
@@ -1185,7 +1179,9 @@ const PriceChartAdvanced = memo(({ token }) => {
         position: 'relative', 
         height: isFullscreen ? 'calc(100vh - 120px)' : (isMobile ? 380 : 550),
         borderRadius: 1,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        willChange: 'height',
+        contain: 'layout style paint'
       }}>
         {(() => {
           
@@ -1198,7 +1194,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 alignItems: 'center', 
                 justifyContent: 'center' 
               }}>
-                <Typography color="text.secondary">Loading chart data...</Typography>
+                <CircularProgress size={24} />
               </Box>
             );
           } else if (!data || data.length === 0) {
