@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import {
-  Drawer,
   IconButton,
   Typography,
   Stack,
@@ -87,7 +86,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
     return isSentXRP && isReceivedToken;
   })();
   
-  const formatTxAmount = () => {
+  const formatTxAmount = useMemo(() => {
     try {
       // Payment transactions
       if (txType === 'Payment') {
@@ -290,9 +289,9 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
       console.error('Error formatting transaction amount:', error);
       return 'N/A';
     }
-  };
+  }, [tx, meta, theme]);
 
-  const formatTime = () => {
+  const formatTime = useMemo(() => {
     if (tx.date) {
       const date = new Date((tx.date + 946684800) * 1000);
       const now = new Date();
@@ -309,9 +308,9 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
       return `${Math.floor(diffDays / 30)}mo`;
     }
     return 'Pending';
-  };
+  }, [tx.date]);
 
-  const getTxIcon = () => {
+  const getTxIcon = useMemo(() => {
     if (isTokenToXrpConversion) {
       return 'mdi:trending-down';
     }
@@ -356,9 +355,9 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
       default:
         return 'mdi:transfer';
     }
-  };
+  }, [txType, isTokenToXrpConversion, isXrpToTokenConversion, isCurrencyConversion, isIncoming]);
 
-  const getTxColor = () => {
+  const getTxColor = useMemo(() => {
     if (!validated) return theme.palette.warning.main;
     
     // Check if transaction failed
@@ -397,7 +396,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
       default:
         return theme.palette.text.secondary;
     }
-  };
+  }, [validated, meta, isCurrencyConversion, txType, isIncoming, theme]);
 
   return (
     <Fade in timeout={300}>
@@ -428,7 +427,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
               : isXrpToTokenConversion
                 ? alpha('#4169e1', 0.08)
                 : alpha(theme.palette.background.paper, 0.8),
-            borderColor: alpha(getTxColor(), 0.2)
+            borderColor: alpha(getTxColor, 0.2)
           },
         }}
       >
@@ -445,17 +444,17 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                 ? alpha('#ff6347', 0.08)
                 : isXrpToTokenConversion
                   ? alpha('#4169e1', 0.08)
-                  : alpha(getTxColor(), 0.08),
-              border: `1px solid ${isTokenToXrpConversion ? alpha('#ff6347', 0.2) : isXrpToTokenConversion ? alpha('#4169e1', 0.2) : alpha(getTxColor(), 0.15)}`,
+                  : alpha(getTxColor, 0.08),
+              border: `1px solid ${isTokenToXrpConversion ? alpha('#ff6347', 0.2) : isXrpToTokenConversion ? alpha('#4169e1', 0.2) : alpha(getTxColor, 0.15)}`,
               position: 'relative',
               zIndex: 1
             }}
           >
             <Icon 
-              icon={getTxIcon()} 
+              icon={getTxIcon} 
               style={{ 
                 fontSize: '16px', 
-                color: isTokenToXrpConversion ? '#ff6347' : isXrpToTokenConversion ? '#4169e1' : getTxColor()
+                color: isTokenToXrpConversion ? '#ff6347' : isXrpToTokenConversion ? '#4169e1' : getTxColor
               }} 
             />
           </Box>
@@ -475,7 +474,10 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                     textOverflow: 'ellipsis'
                   }}
                 >
-                  {isTokenToXrpConversion ? 'Sell' : isXrpToTokenConversion ? 'Buy' : isCurrencyConversion ? 'Swap' : 
+                  {useMemo(() => 
+                    isTokenToXrpConversion ? 'Sell' : 
+                    isXrpToTokenConversion ? 'Buy' : 
+                    isCurrencyConversion ? 'Swap' : 
                     txType === 'Payment' ? (isIncoming ? 'Received' : 'Sent') :
                     txType === 'OfferCreate' ? 'Offer' :
                     txType === 'TrustSet' ? 'Trust' :
@@ -486,7 +488,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                     txType === 'AMMDeposit' ? 'AMM +' :
                     txType === 'AMMWithdraw' ? 'AMM -' :
                     txType
-                  }
+                  , [isTokenToXrpConversion, isXrpToTokenConversion, isCurrencyConversion, txType, isIncoming])}
                 </Typography>
               {isNew && (
                 <Chip
@@ -526,7 +528,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                   mt: 0.25
                 }}
               >
-                {formatTime()}
+                {formatTime}
               </Typography>
             </Stack>
           </Box>
@@ -536,7 +538,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
               variant="body2"
               sx={{
                 fontWeight: 600,
-                color: getTxColor(),
+                color: getTxColor,
                 fontSize: '0.75rem',
                 lineHeight: 1.2,
                 whiteSpace: 'nowrap',
@@ -545,7 +547,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
               }}
             >
               {txType === 'Payment' && !isIncoming && !isCurrencyConversion && '-'}
-              {formatTxAmount()}
+              {formatTxAmount}
             </Typography>
             {txType === 'Payment' && tx.SendMax && tx.SendMax !== tx.Amount && !isCurrencyConversion && (
               <Typography
@@ -600,7 +602,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
         account: creatorAddress,
         ledger_index_min: -1,
         ledger_index_max: -1,
-        limit: 50,
+        limit: 30,
         forward: false
       });
 
@@ -625,7 +627,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
           return true;
         });
         
-        setTransactions(filteredTransactions.slice(0, 20));
+        setTransactions(filteredTransactions.slice(0, 15));
         // Pass latest transaction to parent
         if (filteredTransactions.length > 0 && onLatestTransaction) {
           onLatestTransaction(filteredTransactions[0]);
@@ -701,7 +703,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
               setNewTxCount(prevCount => prevCount + 1);
               
               // Keep only the most recent transactions up to limit
-              const updatedTxs = [newTx, ...prev].slice(0, 20);
+              const updatedTxs = [newTx, ...prev].slice(0, 15);
               
               // Pass latest transaction to parent
               if (onLatestTransaction) {
@@ -766,10 +768,10 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
       fetchTransactionHistory();
       subscribeToTransactions();
       
-      // Auto-refresh every 5 seconds
+      // Auto-refresh every 10 seconds (reduced frequency for performance)
       const refreshInterval = setInterval(() => {
         fetchTransactionHistory();
-      }, 5000);
+      }, 10000);
       
       return () => {
         clearInterval(refreshInterval);
@@ -935,7 +937,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
           </Box>
         ) : (
           <Stack spacing={0.75}>
-            {transactions.slice(0, 20).map((tx, index) => (
+            {transactions.slice(0, 15).map((tx, index) => (
               <TransactionRow 
                 key={tx.tx?.hash || index} 
                 transaction={tx} 
