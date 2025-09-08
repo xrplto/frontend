@@ -71,17 +71,23 @@ const RankBadge = styled(Box)(({ theme, rank }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  width: 24,
-  height: 24,
+  width: 28,
+  height: 28,
   borderRadius: '6px',
   fontWeight: 700,
-  fontSize: '0.75rem',
+  fontSize: '0.8rem',
+  flexShrink: 0,
   background: rank === 1 ? 'linear-gradient(135deg, #FFD700, #FFA500)' :
               rank === 2 ? 'linear-gradient(135deg, #E5E4E2, #BCC6CC)' :
               rank === 3 ? 'linear-gradient(135deg, #CD7F32, #B87333)' :
               alpha(theme.palette.action.selected, 0.6),
   color: rank <= 3 ? '#fff' : theme.palette.text.primary,
-  boxShadow: rank <= 3 ? `0 1px 4px ${alpha('#FFD700', 0.2)}` : 'none'
+  boxShadow: rank <= 3 ? `0 1px 4px ${alpha('#FFD700', 0.2)}` : 'none',
+  [theme.breakpoints.down('sm')]: {
+    width: 24,
+    height: 24,
+    fontSize: '0.75rem'
+  }
 }));
 
 const StatsBox = styled(Box)(({ theme }) => ({
@@ -275,7 +281,7 @@ const TrendingTokens = () => {
               color="inherit"
             >
               <TokenCard>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
                   {/* Rank */}
                   <RankBadge rank={rank}>
                     {rank}

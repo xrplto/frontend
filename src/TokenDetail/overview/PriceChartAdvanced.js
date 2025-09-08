@@ -1090,10 +1090,10 @@ const PriceChartAdvanced = memo(({ token }) => {
                 onClick={() => setChartType(type)}
                 variant={chartType === type ? 'contained' : 'outlined'}
                 sx={{ 
-                  px: isMobile ? 0.5 : 1.5,
-                  fontSize: isMobile ? '0.6rem' : '0.875rem',
+                  px: isMobile ? 0.75 : 1.5,
+                  fontSize: isMobile ? '0.75rem' : '0.875rem',
                   minWidth: isMobile ? 'auto' : 'unset',
-                  height: isMobile ? 22 : 32,
+                  height: isMobile ? 28 : 32,
                   '& .MuiButton-startIcon': {
                     marginRight: isMobile ? '2px' : '8px',
                     '& > svg': {
@@ -1118,10 +1118,10 @@ const PriceChartAdvanced = memo(({ token }) => {
                 }}
                 variant={range === r ? 'contained' : 'outlined'}
                 sx={{ 
-                  px: isMobile ? 0.15 : 1, 
-                  fontSize: isMobile ? '0.55rem' : '0.75rem', 
-                  minWidth: isMobile ? 20 : 36,
-                  height: isMobile ? 20 : 32,
+                  px: isMobile ? 0.25 : 1, 
+                  fontSize: isMobile ? '0.65rem' : '0.75rem', 
+                  minWidth: isMobile ? 24 : 36,
+                  height: isMobile ? 24 : 32,
                   letterSpacing: isMobile ? '-0.5px' : 'normal'
                 }}
               >
