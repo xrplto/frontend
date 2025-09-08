@@ -586,7 +586,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
 
   // Fetch historical transactions
   const fetchTransactionHistory = useCallback(async () => {
-    if (!creatorAddress || !open) return;
+    if (!creatorAddress) return; // Removed open check
 
     setLoading(true);
     setError(null);
@@ -637,11 +637,11 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
     } finally {
       setLoading(false);
     }
-  }, [creatorAddress, open]);
+  }, [creatorAddress]); // Removed 'open' dependency
 
   // Subscribe to real-time transactions
   const subscribeToTransactions = useCallback(async () => {
-    if (!creatorAddress || !open || clientRef.current) return;
+    if (!creatorAddress || clientRef.current) return; // Removed open check
 
     try {
       const client = new Client(XRPL_WEBSOCKET_URL, {
@@ -718,7 +718,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
       setError('Failed to subscribe to real-time updates');
       handleReconnect();
     }
-  }, [creatorAddress, open]);
+  }, [creatorAddress]); // Removed 'open' dependency
 
   // Handle reconnection logic
   const handleReconnect = useCallback(() => {
@@ -760,9 +760,9 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
     }
   }, [creatorAddress]);
 
-  // Initialize when dialog opens
+  // Initialize when component mounts (not just when dialog opens)
   useEffect(() => {
-    if (open && creatorAddress) {
+    if (creatorAddress) {
       fetchTransactionHistory();
       subscribeToTransactions();
       
@@ -779,7 +779,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
         unsubscribe();
       };
     }
-  }, [creatorAddress, open]);
+  }, [creatorAddress]); // Removed 'open' dependency
 
   // Reset new transaction count after delay
   useEffect(() => {
@@ -796,21 +796,20 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
     fetchTransactionHistory();
   };
 
-  if (!open) return null;
-
+  // Always render the component but conditionally show it
   return (
     <Box
       sx={{
-        width: '280px',
+        width: open ? '280px' : 0,
         height: '100vh',
         position: 'sticky',
         top: '64px',
         background: 'transparent',
-        borderRight: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-        boxShadow: `
+        borderRight: open ? `1px solid ${alpha(theme.palette.divider, 0.2)}` : 'none',
+        boxShadow: open ? `
           0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
-          0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
-        display: 'flex',
+          0 1px 2px ${alpha(theme.palette.common.black, 0.04)}` : 'none',
+        display: open ? 'flex' : 'none',
         flexDirection: 'column',
         overflow: 'hidden'
       }}
