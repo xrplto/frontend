@@ -28,10 +28,8 @@ import { currencySymbols } from 'src/utils/constants';
 import axios from 'axios';
 
 const TokenCard = styled(Card)(({ theme }) => ({
-  background: theme.palette.mode === 'dark' 
-    ? alpha(theme.palette.background.paper, 0.6)
-    : alpha(theme.palette.background.paper, 0.9),
-  backdropFilter: 'blur(10px)',
+  background: 'transparent',
+  backdropFilter: 'none',
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   borderRadius: '8px',
   padding: '8px 12px',
@@ -40,7 +38,32 @@ const TokenCard = styled(Card)(({ theme }) => ({
   '&:hover': {
     transform: 'translateY(-1px)',
     boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
-    borderColor: alpha(theme.palette.primary.main, 0.2)
+    borderColor: alpha(theme.palette.primary.main, 0.2),
+    background: alpha(theme.palette.action.hover, 0.04)
+  }
+}));
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  borderRadius: { xs: '8px', sm: '10px' },
+  background: 'transparent',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+  boxShadow: `
+    0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
+    0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&::before': {
+    display: 'none'
+  },
+  '&:hover': {
+    transform: 'translateY(-1px)',
+    boxShadow: `
+      0 6px 24px ${alpha(theme.palette.common.black, 0.1)}, 
+      0 2px 4px ${alpha(theme.palette.common.black, 0.05)}`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
   }
 }));
 
@@ -158,25 +181,27 @@ const TrendingTokens = () => {
 
   if (loading) {
     return (
-      <StackStyle sx={{ p: 2 }}>
+      <StyledCard elevation={0} sx={{ p: 2 }}>
         <Stack spacing={1}>
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} variant="rounded" height={72} />
           ))}
         </Stack>
-      </StackStyle>
+      </StyledCard>
     );
   }
 
   return (
-    <StackStyle sx={{ 
-      p: { xs: 1, sm: 2 },
-      background: 'transparent',
-      border: 'none',
-      boxShadow: 'none'
-    }}>
+    <StyledCard elevation={0}>
       {/* Header */}
-      <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box sx={{ 
+        mb: 1.5, 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between',
+        px: { xs: 1, sm: 1.5 },
+        pt: { xs: 1, sm: 1.5 }
+      }}>
         <Stack direction="row" alignItems="center" spacing={0.75}>
           <WhatshotIcon sx={{ color: '#ff6b35', fontSize: 18 }} />
           <Typography variant="h6" fontWeight={700} fontSize="0.9rem">
@@ -216,7 +241,7 @@ const TrendingTokens = () => {
         alignItems: 'center', 
         gap: 1.5,
         mb: 0.5,
-        px: 1,
+        px: { xs: 2, sm: 2.5 },
         opacity: 0.7
       }}>
         <Box sx={{ width: 24 }} />
@@ -236,7 +261,7 @@ const TrendingTokens = () => {
       </Box>
 
       {/* Token List */}
-      <Stack spacing={0.5}>
+      <Stack spacing={0.5} sx={{ px: { xs: 1, sm: 1.5 }, pb: { xs: 1, sm: 1.5 } }}>
         {trendingList.slice(0, isMobile ? 5 : 10).map((token, index) => {
           const rank = index + 1;
           const priceChange = token.pro24h || 0;
@@ -344,7 +369,7 @@ const TrendingTokens = () => {
           );
         })}
       </Stack>
-    </StackStyle>
+    </StyledCard>
   );
 };
 
