@@ -474,33 +474,34 @@ const PriceChartAdvanced = memo(({ token }) => {
           const actualPrice = price / scaleFactorRef.current;
           const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
           
-          // Format based on the actual (unscaled) price with higher precision
-          if (actualPrice < 0.000000000001) {
-            return symbol + actualPrice.toFixed(16);
-          } else if (actualPrice < 0.00000000001) {
-            return symbol + actualPrice.toFixed(15);
-          } else if (actualPrice < 0.0000000001) {
-            return symbol + actualPrice.toFixed(14);
-          } else if (actualPrice < 0.000000001) {
-            return symbol + actualPrice.toFixed(13);
-          } else if (actualPrice < 0.00000001) {
-            return symbol + actualPrice.toFixed(12);
-          } else if (actualPrice < 0.0000001) {
-            return symbol + actualPrice.toFixed(11);
-          } else if (actualPrice < 0.000001) {
-            return symbol + actualPrice.toFixed(10);
-          } else if (actualPrice < 0.00001) {
-            return symbol + actualPrice.toFixed(8);
-          } else if (actualPrice < 0.001) {
-            return symbol + actualPrice.toFixed(8);
-          } else if (actualPrice < 0.01) {
+          // Check if price has many leading zeros and use compact notation
+          if (actualPrice && actualPrice < 0.001) {
+            const str = actualPrice.toFixed(15);
+            const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+            if (zeros >= 4) {  // Use compact notation for 4+ zeros
+              const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+              // Create HTML-like string that chart can display
+              return symbol + '0.0(' + zeros + ')' + significant.slice(0, 4);
+            } else if (actualPrice < 0.00001) {
+              return symbol + actualPrice.toFixed(8);
+            } else if (actualPrice < 0.001) {
+              return symbol + actualPrice.toFixed(6);
+            }
+          }
+          
+          // Regular formatting for normal prices
+          if (actualPrice < 0.01) {
             return symbol + actualPrice.toFixed(6);
           } else if (actualPrice < 1) {
-            return symbol + actualPrice.toFixed(6);
-          } else if (actualPrice < 100) {
             return symbol + actualPrice.toFixed(4);
-          } else {
+          } else if (actualPrice < 100) {
+            return symbol + actualPrice.toFixed(3);
+          } else if (actualPrice < 1000) {
             return symbol + actualPrice.toFixed(2);
+          } else if (actualPrice < 10000) {
+            return symbol + actualPrice.toFixed(1);
+          } else {
+            return symbol + Math.round(actualPrice).toLocaleString();
           }
         },
       },
@@ -573,19 +574,25 @@ const PriceChartAdvanced = memo(({ token }) => {
         const formatPrice = (p) => {
           // The candle data is original unscaled data, so don't scale back
           const actualPrice = p;
-          if (actualPrice < 0.000000000001) return actualPrice.toFixed(16);
-          if (actualPrice < 0.00000000001) return actualPrice.toFixed(15);
-          if (actualPrice < 0.0000000001) return actualPrice.toFixed(14);
-          if (actualPrice < 0.000000001) return actualPrice.toFixed(13);
-          if (actualPrice < 0.00000001) return actualPrice.toFixed(12);
-          if (actualPrice < 0.0000001) return actualPrice.toFixed(11);
-          if (actualPrice < 0.000001) return actualPrice.toFixed(10);
+          
+          // Check if price has many leading zeros and use compact notation
+          if (actualPrice && actualPrice < 0.001) {
+            const str = actualPrice.toFixed(15);
+            const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+            if (zeros >= 4) {  // Use compact notation for 4+ zeros
+              const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+              return '0.0(' + zeros + ')' + significant.slice(0, 4);
+            }
+          }
+          
+          // Regular formatting
           if (actualPrice < 0.00001) return actualPrice.toFixed(8);
-          if (actualPrice < 0.001) return actualPrice.toFixed(8);
+          if (actualPrice < 0.001) return actualPrice.toFixed(6);
           if (actualPrice < 0.01) return actualPrice.toFixed(6);
-          if (actualPrice < 1) return actualPrice.toFixed(6);
-          if (actualPrice < 100) return actualPrice.toFixed(4);
-          return actualPrice.toFixed(2);
+          if (actualPrice < 1) return actualPrice.toFixed(4);
+          if (actualPrice < 100) return actualPrice.toFixed(3);
+          if (actualPrice < 1000) return actualPrice.toFixed(2);
+          return actualPrice.toLocaleString();
         };
         
         if (chartType === 'candles') {
@@ -985,7 +992,19 @@ const PriceChartAdvanced = memo(({ token }) => {
                 {athData.percentDown}% from ATH
               </Typography>
               <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                ({currencySymbols[activeFiatCurrency] || ''}{athData.price < 0.000000001 ? athData.price.toFixed(16) : athData.price < 0.00000001 ? athData.price.toFixed(12) : athData.price < 0.01 ? athData.price.toFixed(8) : athData.price.toFixed(4)})
+                ({currencySymbols[activeFiatCurrency] || ''}{
+                  (() => {
+                    if (athData.price && athData.price < 0.001) {
+                      const str = athData.price.toFixed(15);
+                      const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+                      if (zeros >= 4) {
+                        const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+                        return `0.0(${zeros})${significant.slice(0, 4)}`;
+                      }
+                    }
+                    return athData.price < 0.01 ? athData.price.toFixed(8) : athData.price.toFixed(4);
+                  })()
+                })
               </Typography>
             </Box>
           )}
