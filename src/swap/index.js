@@ -1520,33 +1520,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           SourceTag: 20221212
         };
         
-        // Debug logging for market orders
-        if (wallet_type === 'crossmark') {
-          console.log('=== CROSSMARK MARKET ORDER DEBUG ===');
-          console.log('Order Type:', orderType);
-          console.log('Revert State:', revert);
-          console.log('Raw Amounts:', {
-            amount1: amount1,
-            amount2: amount2,
-            sendAmount: sendAmount,
-            receiveAmount: receiveAmount
-          });
-          console.log('Currencies:', {
-            curr1: curr1,
-            curr2: curr2,
-            sendCurrency: sendCurrency,
-            receiveCurrency: receiveCurrency
-          });
-          console.log('Transaction Fields:', {
-            SendMax: SendMax,
-            Amount: Amount,
-            DeliverMin: DeliverMin,
-            Flags: Flags,
-            slippage: slippage + '%'
-          });
-          console.log('Full Transaction Data:', JSON.stringify(transactionData, null, 2));
-          console.log('=================================');
-        }
       }
 
       let memoData = `${orderType === 'limit' ? 'Limit' : 'Swap'} via https://xrpl.to`;
