@@ -65,7 +65,7 @@ const TrendingCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'darkMode' && prop !== 'rank'
 })(({ theme, darkMode, rank }) => ({
   position: 'relative',
-  borderRadius: '8px',
+  borderRadius: '4px',
   background: 'transparent',
   backdropFilter: 'none',
   border:
@@ -342,31 +342,35 @@ const TrendingTokens = () => {
           const link = `/token/${slug}`;
           const rank = index + 1;
           
-          // Format price with currency conversion
+          // Format price with currency conversion (compact with more decimals)
           const formatPrice = (price) => {
             if (!price) return `${currencySymbols[activeFiatCurrency]}0`;
             
             // Convert from XRP to fiat if not XRP
             const convertedPrice = activeFiatCurrency === 'XRP' ? price : (price / exchRate);
+            const symbol = currencySymbols[activeFiatCurrency];
             
-            let formattedPrice;
-            if (convertedPrice < 0.0001) {
-              // Convert to string and handle very small numbers
-              const priceStr = convertedPrice.toFixed(10); // Use more decimal places
-              // Remove trailing zeros but keep at least 4 significant digits after decimal
-              formattedPrice = priceStr.replace(/\.?0+$/, '');
+            if (convertedPrice < 0.00000001) {
+              // Convert to regular decimal notation
+              const str = convertedPrice.toFixed(9);
+              return `${symbol}${str}`;
+            } else if (convertedPrice < 0.0001) {
+              return `${symbol}${convertedPrice.toFixed(8).replace(/0+$/, '').replace(/\.$/, '')}`;
+            } else if (convertedPrice < 0.01) {
+              return `${symbol}${convertedPrice.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')}`;
             } else if (convertedPrice < 1) {
-              formattedPrice = convertedPrice.toFixed(6);
+              return `${symbol}${convertedPrice.toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`;
             } else if (convertedPrice < 100) {
-              formattedPrice = convertedPrice.toFixed(4);
-            } else {
-              formattedPrice = convertedPrice.toFixed(2);
+              return `${symbol}${convertedPrice.toFixed(2)}`;
+            } else if (convertedPrice >= 1e6) {
+              return `${symbol}${(convertedPrice / 1e6).toFixed(1)}M`;
+            } else if (convertedPrice >= 1e3) {
+              return `${symbol}${(convertedPrice / 1e3).toFixed(1)}K`;
             }
-            
-            return `${currencySymbols[activeFiatCurrency]}${formattedPrice}`;
+            return `${symbol}${convertedPrice.toFixed(0)}`;
           };
           
-          // Format market cap with currency conversion
+          // Format market cap with currency conversion (compact)
           const formatMarketCap = (mc) => {
             if (!mc) return `${currencySymbols[activeFiatCurrency]}0`;
             
@@ -374,13 +378,13 @@ const TrendingTokens = () => {
             const convertedMc = activeFiatCurrency === 'XRP' ? mc : (mc / exchRate);
             
             const symbol = currencySymbols[activeFiatCurrency];
-            if (convertedMc >= 1e9) return `${symbol}${(convertedMc / 1e9).toFixed(2)}B`;
-            if (convertedMc >= 1e6) return `${symbol}${(convertedMc / 1e6).toFixed(2)}M`;
-            if (convertedMc >= 1e3) return `${symbol}${(convertedMc / 1e3).toFixed(2)}K`;
+            if (convertedMc >= 1e9) return `${symbol}${(convertedMc / 1e9).toFixed(1)}B`;
+            if (convertedMc >= 1e6) return `${symbol}${(convertedMc / 1e6).toFixed(1)}M`;
+            if (convertedMc >= 1e3) return `${symbol}${(convertedMc / 1e3).toFixed(0)}K`;
             return `${symbol}${convertedMc.toFixed(0)}`;
           };
           
-          // Format volume with currency conversion
+          // Format volume with currency conversion (compact)
           const formatVolume = (vol) => {
             if (!vol) return `${currencySymbols[activeFiatCurrency]}0`;
             
@@ -388,14 +392,14 @@ const TrendingTokens = () => {
             const convertedVol = activeFiatCurrency === 'XRP' ? vol : (vol / exchRate);
             
             const symbol = currencySymbols[activeFiatCurrency];
-            if (convertedVol >= 1e6) return `${symbol}${(convertedVol / 1e6).toFixed(2)}M`;
-            if (convertedVol >= 1e3) return `${symbol}${(convertedVol / 1e3).toFixed(2)}K`;
-            return `${symbol}${convertedVol.toFixed(0)}`;
+            if (convertedVol >= 1e6) return `${symbol}${(convertedVol / 1e6).toFixed(1)}M`;
+            if (convertedVol >= 1e3) return `${symbol}${(convertedVol / 1e3).toFixed(0)}K`;
+            return `${symbol}${Math.round(convertedVol)}`;
           };
 
           return (
             <TrendingCard darkMode={darkMode} rank={rank} key={`trending-${index}-${id}-${md5}`}>
-              <CardContent sx={{ p: { xs: 0.75, sm: 1 } }}>
+              <CardContent sx={{ p: { xs: 0.5, sm: 0.75 } }}>
                 <Link
                   underline="none"
                   color="inherit"
@@ -410,9 +414,9 @@ const TrendingTokens = () => {
                       alignItems="center" 
                       gap={{ xs: 0.75, sm: 1 }} 
                       sx={{
-                        flex: { xs: '0 0 auto', sm: '0 0 240px' },
-                        minWidth: { xs: 'auto', sm: '240px' },
-                        maxWidth: { xs: 'none', sm: '240px' }
+                        flex: { xs: '0 0 auto', sm: '0 0 280px' },
+                        minWidth: { xs: 'auto', sm: '280px' },
+                        maxWidth: { xs: 'none', sm: '280px' }
                       }}
                     >
                       {/* Rank Badge */}
@@ -421,8 +425,8 @@ const TrendingTokens = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          width: { xs: 20, sm: 24 },
-                          height: { xs: 20, sm: 24 },
+                          width: { xs: 22, sm: 26 },
+                          height: { xs: 22, sm: 26 },
                           borderRadius: '6px',
                           background: rank <= 3 
                             ? `linear-gradient(135deg, #FFD700, #FFA500)`
@@ -468,14 +472,14 @@ const TrendingTokens = () => {
                       </Box>
 
                       <Stack spacing={0.25} sx={{ minWidth: 0, flex: 1 }}>
-                        <Box display="flex" alignItems="center" gap={0.5}>
+                        <Box display="flex" alignItems="center" gap={0.75}>
                           <Typography
                             variant="body2"
                             fontWeight="700"
                             color={theme.palette.primary.main}
                             noWrap
                             sx={{
-                              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                              fontSize: { xs: '0.72rem', sm: '0.78rem' },
                               lineHeight: 1.2,
                               overflow: 'hidden',
                               textOverflow: 'ellipsis'
@@ -500,7 +504,7 @@ const TrendingTokens = () => {
                               }}
                             >
                               <WhatshotIcon sx={{ fontSize: 7 }} />
-                              {trendingScore}
+                              {trendingScore > 999 ? `${(trendingScore/1000).toFixed(0)}k` : trendingScore}
                             </Box>
                           )}
                         </Box>
@@ -525,13 +529,13 @@ const TrendingTokens = () => {
                     <Box 
                       display="grid" 
                       gridTemplateColumns={{ xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }}
-                      gap={{ xs: 1, sm: 1.5 }}
+                      gap={{ xs: 1, sm: 1.2 }}
                       flex={1}
                       alignItems="center"
                       sx={{
                         borderLeft: { xs: 'none', sm: `1px solid ${alpha(theme.palette.divider, 0.1)}` },
                         borderTop: { xs: `1px solid ${alpha(theme.palette.divider, 0.1)}`, sm: 'none' },
-                        pl: { xs: 0, sm: 1.5 },
+                        pl: { xs: 0, sm: 1.2 },
                         pt: { xs: 1, sm: 0 }
                       }}
                     >
@@ -540,11 +544,11 @@ const TrendingTokens = () => {
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: { xs: '0.5rem', sm: '0.55rem' },
+                            fontSize: { xs: '0.45rem', sm: '0.5rem' },
                             color: darkMode ? alpha('#fff', 0.5) : alpha('#000', 0.5),
                             display: 'block',
-                            lineHeight: 1.2,
-                            mb: 0.25
+                            lineHeight: 1,
+                            mb: 0.15
                           }}
                         >
                           Price
@@ -553,7 +557,7 @@ const TrendingTokens = () => {
                           variant="body2" 
                           fontWeight="600"
                           sx={{ 
-                            fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
                             color: darkMode ? '#fff' : '#000',
                             lineHeight: 1.2
                           }}
@@ -567,33 +571,26 @@ const TrendingTokens = () => {
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: { xs: '0.5rem', sm: '0.55rem' },
+                            fontSize: { xs: '0.45rem', sm: '0.5rem' },
                             color: darkMode ? alpha('#fff', 0.5) : alpha('#000', 0.5),
                             display: 'block',
-                            lineHeight: 1.2,
-                            mb: 0.25
+                            lineHeight: 1,
+                            mb: 0.15
                           }}
                         >
                           24h
                         </Typography>
-                        <Box display="flex" alignItems="center" gap={0.25}>
-                          <Typography 
-                            variant="body2" 
-                            fontWeight="600"
-                            sx={{ 
-                              fontSize: { xs: '0.65rem', sm: '0.7rem' },
-                              color: pro24h >= 0 ? '#4caf50' : '#f44336',
-                              lineHeight: 1.2
-                            }}
-                          >
-                            {pro24h >= 0 ? '+' : ''}{pro24h ? pro24h.toFixed(2) : '0.00'}%
-                          </Typography>
-                          {!isMobile && (pro24h >= 0 ? (
-                            <TrendingUpIcon sx={{ fontSize: 10, color: '#4caf50' }} />
-                          ) : (
-                            <TrendingUpIcon sx={{ fontSize: 10, color: '#f44336', transform: 'rotate(180deg)' }} />
-                          ))}
-                        </Box>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight="600"
+                          sx={{ 
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                            color: pro24h >= 0 ? '#4caf50' : '#f44336',
+                            lineHeight: 1.2
+                          }}
+                        >
+                          {pro24h >= 0 ? '+' : ''}{pro24h ? Math.round(pro24h) : '0'}%
+                        </Typography>
                       </Box>
                       
                       {/* Market Cap */}
@@ -601,11 +598,11 @@ const TrendingTokens = () => {
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: { xs: '0.5rem', sm: '0.55rem' },
+                            fontSize: { xs: '0.45rem', sm: '0.5rem' },
                             color: darkMode ? alpha('#fff', 0.5) : alpha('#000', 0.5),
                             display: 'block',
-                            lineHeight: 1.2,
-                            mb: 0.25
+                            lineHeight: 1,
+                            mb: 0.15
                           }}
                         >
                           MCap
@@ -614,7 +611,7 @@ const TrendingTokens = () => {
                           variant="body2" 
                           fontWeight="600"
                           sx={{ 
-                            fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
                             color: darkMode ? '#fff' : '#000',
                             lineHeight: 1.2
                           }}
@@ -628,20 +625,20 @@ const TrendingTokens = () => {
                         <Typography 
                           variant="caption" 
                           sx={{ 
-                            fontSize: { xs: '0.5rem', sm: '0.55rem' },
+                            fontSize: { xs: '0.45rem', sm: '0.5rem' },
                             color: darkMode ? alpha('#fff', 0.5) : alpha('#000', 0.5),
                             display: 'block',
-                            lineHeight: 1.2,
-                            mb: 0.25
+                            lineHeight: 1,
+                            mb: 0.15
                           }}
                         >
-                          Vol 24h
+                          Vol
                         </Typography>
                         <Typography 
                           variant="body2" 
                           fontWeight="600"
                           sx={{ 
-                            fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
                             color: darkMode ? '#fff' : '#000',
                             lineHeight: 1.2
                           }}
