@@ -969,7 +969,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
               justifyContent={{ xs: 'flex-start', md: 'space-between' }} 
               sx={{ mb: { xs: 0.1, md: 0.25 }, gap: { xs: 0.1, md: 0.25 }, flex: 1 }}
             >
-              {/* Left side: Name, user, origin */}
+              {/* Left side: Name, price (mobile), user, origin */}
               <Stack spacing={{ xs: 0.1, sm: 0.15 }} justifyContent="center" sx={{ minWidth: 0, flex: { xs: 'none', md: 1 } }}>
                 <Stack direction="row" alignItems="center" spacing={0.3} sx={{ flexWrap: 'wrap' }}>
                 <Typography
@@ -1054,6 +1054,50 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                     }}
                   />
                 )}
+                {/* Mobile Price - Inline with name */}
+                <Typography
+                  variant="body1"
+                  sx={{
+                    display: { xs: 'inline', md: 'none' },
+                    fontSize: '0.9rem',
+                    fontWeight: 700,
+                    color: priceColor || theme.palette.text.primary,
+                    lineHeight: 1,
+                    letterSpacing: '-0.01em',
+                    transition: 'color 0.3s ease',
+                    animation: priceColor ? 'priceFlash 0.5s ease' : 'none',
+                    ml: 1,
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                    px: 0.75,
+                    py: 0.25,
+                    borderRadius: '8px',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+                  }}
+                >
+                  {(() => {
+                    const symbol = currencySymbols[activeFiatCurrency];
+                    const rawPrice = activeFiatCurrency === 'XRP' ? exch : (exch / metrics[activeFiatCurrency]);
+                    
+                    if (rawPrice && rawPrice < 0.001) {
+                      const str = rawPrice.toFixed(15);
+                      const zeros = str.match(/0\\.0*/)?.[0]?.length - 2 || 0;
+                      if (zeros >= 4) {
+                        const significant = str.replace(/^0\\.0+/, '').replace(/0+$/, '');
+                        return (
+                          <span>
+                            {symbol}0.0<sub style={{ fontSize: '0.6em' }}>{zeros}</sub>{significant.slice(0, 4)}
+                          </span>
+                        );
+                      }
+                    }
+                    return (
+                      <NumberTooltip
+                        prepend={symbol}
+                        number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+                      />
+                    );
+                  })()}
+                </Typography>
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={0.3}>
                   <Typography 
@@ -1463,46 +1507,6 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                     )}
                   </Stack>
                 </Stack>
-                {/* Mobile Price - Below name and origin */}
-                <Typography
-                  variant="body1"
-                  sx={{
-                    display: { xs: 'block', md: 'none' },
-                    fontSize: '1.1rem',
-                    fontWeight: 700,
-                    color: priceColor || theme.palette.text.primary,
-                    lineHeight: 1,
-                    letterSpacing: '-0.01em',
-                    transition: 'color 0.3s ease',
-                    animation: priceColor ? 'priceFlash 0.5s ease' : 'none',
-                    mt: 0.5,
-                    mb: 0.75
-                  }}
-                >
-                  {(() => {
-                    const symbol = currencySymbols[activeFiatCurrency];
-                    const rawPrice = activeFiatCurrency === 'XRP' ? exch : (exch / metrics[activeFiatCurrency]);
-                    
-                    if (rawPrice && rawPrice < 0.001) {
-                      const str = rawPrice.toFixed(15);
-                      const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-                      if (zeros >= 4) {
-                        const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-                        return (
-                          <span>
-                            {symbol}0.0<sub style={{ fontSize: '0.6em' }}>{zeros}</sub>{significant.slice(0, 4)}
-                          </span>
-                        );
-                      }
-                    }
-                    return (
-                      <NumberTooltip
-                        prepend={symbol}
-                        number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
-                      />
-                    );
-                  })()}
-                </Typography>
               </Stack>
               
               {/* Desktop Price and Percentages - Unified Display */}
