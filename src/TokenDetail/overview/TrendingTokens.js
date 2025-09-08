@@ -28,6 +28,9 @@ import StackStyle from 'src/components/StackStyle';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
+import { useSelector } from 'react-redux';
+import { selectMetrics } from 'src/redux/statusSlice';
+import { currencySymbols } from 'src/utils/constants';
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -160,7 +163,9 @@ const SkeletonCard = () => (
 const TrendingTokens = () => {
   const BASE_URL = 'https://api.xrpl.to/api';
   const theme = useTheme();
-  const { darkMode } = useContext(AppContext);
+  const { darkMode, activeFiatCurrency } = useContext(AppContext);
+  const metrics = useSelector(selectMetrics);
+  const exchRate = metrics[activeFiatCurrency];
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [trendingList, setTrendingList] = useState([]);
@@ -337,35 +342,55 @@ const TrendingTokens = () => {
           const link = `/token/${slug}`;
           const rank = index + 1;
           
-          // Format price
+          // Format price with currency conversion
           const formatPrice = (price) => {
-            if (!price) return '0';
-            if (price < 0.0001) {
+            if (!price) return `${currencySymbols[activeFiatCurrency]}0`;
+            
+            // Convert from XRP to fiat if not XRP
+            const convertedPrice = activeFiatCurrency === 'XRP' ? price : (price / exchRate);
+            
+            let formattedPrice;
+            if (convertedPrice < 0.0001) {
               // Convert to string and handle very small numbers
-              const priceStr = price.toFixed(10); // Use more decimal places
+              const priceStr = convertedPrice.toFixed(10); // Use more decimal places
               // Remove trailing zeros but keep at least 4 significant digits after decimal
-              return priceStr.replace(/\.?0+$/, '');
+              formattedPrice = priceStr.replace(/\.?0+$/, '');
+            } else if (convertedPrice < 1) {
+              formattedPrice = convertedPrice.toFixed(6);
+            } else if (convertedPrice < 100) {
+              formattedPrice = convertedPrice.toFixed(4);
+            } else {
+              formattedPrice = convertedPrice.toFixed(2);
             }
-            if (price < 1) return price.toFixed(6);
-            if (price < 100) return price.toFixed(4);
-            return price.toFixed(2);
+            
+            return `${currencySymbols[activeFiatCurrency]}${formattedPrice}`;
           };
           
-          // Format market cap
+          // Format market cap with currency conversion
           const formatMarketCap = (mc) => {
-            if (!mc) return '0';
-            if (mc >= 1e9) return `$${(mc / 1e9).toFixed(2)}B`;
-            if (mc >= 1e6) return `$${(mc / 1e6).toFixed(2)}M`;
-            if (mc >= 1e3) return `$${(mc / 1e3).toFixed(2)}K`;
-            return `$${mc.toFixed(0)}`;
+            if (!mc) return `${currencySymbols[activeFiatCurrency]}0`;
+            
+            // Convert from XRP to fiat if not XRP
+            const convertedMc = activeFiatCurrency === 'XRP' ? mc : (mc / exchRate);
+            
+            const symbol = currencySymbols[activeFiatCurrency];
+            if (convertedMc >= 1e9) return `${symbol}${(convertedMc / 1e9).toFixed(2)}B`;
+            if (convertedMc >= 1e6) return `${symbol}${(convertedMc / 1e6).toFixed(2)}M`;
+            if (convertedMc >= 1e3) return `${symbol}${(convertedMc / 1e3).toFixed(2)}K`;
+            return `${symbol}${convertedMc.toFixed(0)}`;
           };
           
-          // Format volume
+          // Format volume with currency conversion
           const formatVolume = (vol) => {
-            if (!vol) return '0';
-            if (vol >= 1e6) return `${(vol / 1e6).toFixed(2)}M`;
-            if (vol >= 1e3) return `${(vol / 1e3).toFixed(2)}K`;
-            return vol.toFixed(0);
+            if (!vol) return `${currencySymbols[activeFiatCurrency]}0`;
+            
+            // Convert from XRP to fiat if not XRP
+            const convertedVol = activeFiatCurrency === 'XRP' ? vol : (vol / exchRate);
+            
+            const symbol = currencySymbols[activeFiatCurrency];
+            if (convertedVol >= 1e6) return `${symbol}${(convertedVol / 1e6).toFixed(2)}M`;
+            if (convertedVol >= 1e3) return `${symbol}${(convertedVol / 1e3).toFixed(2)}K`;
+            return `${symbol}${convertedVol.toFixed(0)}`;
           };
 
           return (
