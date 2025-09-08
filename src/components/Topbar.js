@@ -54,7 +54,7 @@ const TopWrapper = styled.header`
   width: 100%;
   display: flex;
   align-items: center;
-  height: 36px;
+  height: 28px;
   background: ${props => props.backgroundColor};
   border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
   position: fixed;
@@ -63,20 +63,19 @@ const TopWrapper = styled.header`
   right: 0;
   z-index: 1099;
   box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-  contain: layout style;
 `;
 
 const Container = styled.div`
   width: 100%;
   max-width: 100%;
-  padding: 0 16px;
+  padding: 0 8px;
   margin: 0 auto;
   height: 100%;
   display: flex;
   align-items: center;
   
   ${media.down('md')} {
-    padding: 0;
+    padding: 0 2px;
   }
 `;
 
@@ -94,7 +93,6 @@ const ContentWrapper = styled.nav`
     display: none;
   }
   scrollbar-width: none;
-  contain: layout style;
 `;
 
 const APILabel = styled.button`
@@ -104,38 +102,93 @@ const APILabel = styled.button`
   text-decoration: none;
   margin-left: 4px;
   background: ${props => props.primaryColor ? `${props.primaryColor}14` : 'rgba(0,128,255,0.08)'};
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   gap: 4px;
-  min-height: 26px;
+  min-height: 32px;
   border: 1px solid ${props => props.primaryColor ? `${props.primaryColor}26` : 'rgba(0,128,255,0.15)'};
   cursor: pointer;
   transition: all 0.2s;
   
   &:hover {
     background: ${props => props.primaryColor ? `${props.primaryColor}1f` : 'rgba(0,128,255,0.12)'};
-    transform: translateY(-1px);
   }
   
   &:focus {
     outline: 2px solid ${props => props.primaryColor || '#0080ff'};
     outline-offset: 2px;
   }
+  
+  ${media.down('md')} {
+    min-height: 44px;
+    padding: 8px 12px;
+    margin-left: 0;
+  }
 `;
 
-const MobileMetric = styled.div`
+const MobileContainer = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 4px;
   width: 100%;
-  padding: 4px 6px;
-  border-radius: 0;
+  height: 100%;
+  gap: 0;
   background: transparent;
+`;
+
+const MobileMetricCard = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 2px;
+  background: ${props => `${props.color}08`};
+  border-left: ${props => props.isFirst ? 'none' : `1px solid ${props.borderColor}`};
+`;
+
+const MetricContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+`;
+
+const MetricBadge = styled.span`
+  font-size: 0.45rem;
+  font-weight: 600;
+  color: ${props => props.textColor};
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.1px;
+`;
+
+const MetricNumber = styled.span`
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: ${props => props.color};
+  font-family: 'Inter', sans-serif;
+  line-height: 0.8;
+`;
+
+const LiveButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 2px 5px;
+  background: ${props => props.primaryColor}20;
   border: none;
-  min-height: 28px;
+  border-radius: 10px;
+  color: ${props => props.primaryColor};
+  font-size: 0.5rem;
+  font-weight: 800;
+  cursor: pointer;
+  margin-left: 2px;
+  box-shadow: inset 0 1px 0 ${props => props.primaryColor}30;
+  min-width: 36px;
+  height: 18px;
+  justify-content: center;
 `;
 
 const H24Style = styled.div`
@@ -215,7 +268,7 @@ const Drawer = styled.div`
   position: fixed;
   top: 0;
   right: ${props => props.open ? '0' : '-100%'};
-  width: ${props => props.isMobile ? '100%' : '400px'};
+  width: ${props => props.isMobile ? (props.isSmallMobile ? '100%' : '90%') : '400px'};
   height: 100vh;
   background: ${props => props.backgroundColor};
   box-shadow: -4px 0 16px rgba(0,0,0,0.25);
@@ -223,6 +276,12 @@ const Drawer = styled.div`
   z-index: 1200;
   display: flex;
   flex-direction: column;
+  max-width: ${props => props.isMobile ? '420px' : '400px'};
+  
+  ${media.down('sm')} {
+    width: 100%;
+    max-width: 100%;
+  }
 `;
 
 const DrawerHeader = styled.div`
@@ -235,6 +294,12 @@ const DrawerHeader = styled.div`
   position: sticky;
   top: 0;
   z-index: 1;
+  min-height: 64px;
+  
+  ${media.down('md')} {
+    padding: 12px 16px;
+    min-height: 60px;
+  }
 `;
 
 const DrawerOverlay = styled.div`
@@ -251,13 +316,13 @@ const DrawerOverlay = styled.div`
 const IconButton = styled.button`
   background: transparent;
   border: none;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
   color: ${props => props.textSecondary};
   transition: all 0.2s;
   
@@ -265,13 +330,23 @@ const IconButton = styled.button`
     background: ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
     color: ${props => props.textPrimary};
   }
+  
+  &:focus {
+    outline: 2px solid ${props => props.primaryColor || '#0080ff'};
+    outline-offset: 2px;
+  }
+  
+  ${media.down('md')} {
+    width: 44px;
+    height: 44px;
+  }
 `;
 
 const SelectButton = styled.button`
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 8px;
+  padding: 6px 10px;
   font-size: 0.75rem;
   border: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)'};
   border-radius: 6px;
@@ -279,7 +354,7 @@ const SelectButton = styled.button`
   color: ${props => props.textPrimary};
   cursor: pointer;
   min-width: 120px;
-  height: 28px;
+  height: 32px;
   transition: all 0.2s;
   position: relative;
   
@@ -288,8 +363,16 @@ const SelectButton = styled.button`
   }
   
   &:focus {
-    outline: none;
+    outline: 2px solid ${props => props.primaryColor || '#0080ff'};
+    outline-offset: 2px;
     border-color: ${props => props.primaryColor || '#0080ff'};
+  }
+  
+  ${media.down('md')} {
+    min-height: 44px;
+    height: 44px;
+    padding: 8px 12px;
+    min-width: 140px;
   }
 `;
 
@@ -358,7 +441,7 @@ const TradeList = styled.div`
 const TradeItem = styled.a`
   display: flex;
   align-items: center;
-  padding: 8px 12px;
+  padding: 12px;
   border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
   text-decoration: none;
   color: inherit;
@@ -366,11 +449,23 @@ const TradeItem = styled.a`
     ? `rgba(16, 185, 129, ${props.opacity})` 
     : `rgba(239, 68, 68, ${props.opacity})`};
   transition: background 0.2s;
+  min-height: 64px;
   
   &:hover {
     background: ${props => props.isBuy 
       ? `rgba(16, 185, 129, ${props.opacity * 1.5})` 
       : `rgba(239, 68, 68, ${props.opacity * 1.5})`};
+  }
+  
+  &:active {
+    background: ${props => props.isBuy 
+      ? `rgba(16, 185, 129, ${props.opacity * 2})` 
+      : `rgba(239, 68, 68, ${props.opacity * 2})`};
+  }
+  
+  ${media.down('md')} {
+    padding: 14px 16px;
+    min-height: 72px;
   }
 `;
 
@@ -380,6 +475,12 @@ const TokenImage = styled.img`
   border-radius: 50%;
   background: ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'};
   object-fit: cover;
+  flex-shrink: 0;
+  
+  ${media.down('md')} {
+    width: 24px;
+    height: 24px;
+  }
 `;
 
 const Typography = styled.span`
@@ -444,7 +545,7 @@ const LinkIcon = ({ style }) => (
 );
 
 // Constants
-const SWITCH_INTERVAL = 3000;
+const SWITCH_INTERVAL = 5000;
 const FILTER_OPTIONS = [
   { value: 'All', label: 'All Trades', icon: 'ic:round-waves' },
   { value: '500+', label: '500+ XRP', icon: 'ph:fish-fill' },
@@ -567,10 +668,10 @@ const Topbar = () => {
   const metrics = useSelector(selectMetrics);
   const { darkMode, activeFiatCurrency, themeName } = useContext(AppContext);
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const isSmallMobile = useMediaQuery('(max-width: 480px)');
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const iconColor = darkMode ? '#FFFFFF' : '#000000';
   const [fullSearch, setFullSearch] = useState(false);
-  const [currentMetricIndex, setCurrentMetricIndex] = useState(0);
   const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
   const router = useRouter();
 
@@ -644,100 +745,7 @@ const Topbar = () => {
     }
   }, [metricsLoaded, dispatch]);
 
-  // Memoize the mobile metrics
-  const mobileMetrics = useMemo(
-    () => {
-      if (!metricsLoaded) {
-        return [
-          { label: 'Addresses', value: '...', color: '#54D62C', loading: true },
-          { label: 'Tokens', value: '...', color: '#FF6B6B', loading: true },
-          { label: 'Offers', value: '...', color: '#FFC107', loading: true },
-          { label: 'Trustlines', value: '...', color: '#FFA48D', loading: true },
-          { label: 'Trades', value: '...', color: '#74CAFF', loading: true },
-          { label: 'Vol', value: '...', color: '#ef4444', loading: true },
-          { label: 'Tokens Traded', value: '...', color: '#3366FF', loading: true },
-          { label: 'Active Addresses', value: '...', color: '#54D62C', loading: true },
-          { label: 'Unique Traders', value: '...', color: '#2196F3', loading: true },
-          { label: 'Total TVL', value: '...', color: '#8E44AD', loading: true }
-        ];
-      }
 
-      return [
-        {
-          label: 'Addresses',
-          value: abbreviateNumber(metrics.global?.totalAddresses || 0),
-          color: '#54D62C'
-        },
-        {
-          label: 'Tokens',
-          value: abbreviateNumber(metrics.global?.total || 0),
-          color: '#FF6B6B'
-        },
-        {
-          label: 'Offers',
-          value: abbreviateNumber(metrics.global?.totalOffers || 0),
-          color: '#FFC107'
-        },
-        {
-          label: 'Trustlines',
-          value: abbreviateNumber(metrics.global?.totalTrustLines || 0),
-          color: '#FFA48D'
-        },
-        {
-          label: 'Trades',
-          value: abbreviateNumber(metrics.H24?.transactions24H || 0),
-          color: '#74CAFF'
-        },
-        {
-          label: 'Vol',
-          value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
-            metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
-              ? new Decimal(metrics.H24.tradedXRP24H || 0)
-                  .div(new Decimal(metrics[activeFiatCurrency] || 1))
-                  .toNumber()
-              : 0
-          )}`,
-          color: '#ef4444'
-        },
-        {
-          label: 'Tokens Traded',
-          value: abbreviateNumber(metrics.H24?.tradedTokens24H || 0),
-          color: '#3366FF'
-        },
-        {
-          label: 'Active Addresses',
-          value: abbreviateNumber(metrics.H24?.activeAddresses24H || 0),
-          color: '#54D62C'
-        },
-        {
-          label: 'Unique Traders',
-          value: abbreviateNumber(metrics?.H24?.uniqueTraders24H || 0),
-          color: '#2196F3'
-        },
-        {
-          label: 'Total TVL',
-          value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
-            metrics?.H24?.totalTVL && metrics[activeFiatCurrency]
-              ? new Decimal(metrics.H24.totalTVL || 0)
-                  .div(new Decimal(metrics[activeFiatCurrency] || 1))
-                  .toNumber()
-              : 0
-          )}`,
-          color: '#8E44AD'
-        }
-      ];
-    },
-    [metrics, activeFiatCurrency, metricsLoaded]
-  );
-
-  // Auto-switch metrics on mobile
-  useEffect(() => {
-    if (!isMobile) return;
-    const interval = setInterval(() => {
-      setCurrentMetricIndex((prev) => (prev + 1) % mobileMetrics.length);
-    }, SWITCH_INTERVAL);
-    return () => clearInterval(interval);
-  }, [isMobile, mobileMetrics.length]);
 
   const handleTradeDrawerOpen = () => {
     if (!tradeDrawerOpen) {
@@ -857,80 +865,52 @@ const Topbar = () => {
         <Container>
           <ContentWrapper>
             {isMobile ? (
-              <MobileMetric>
-                <Stack direction="row" spacing={0.5} alignItems="center" width="100%">
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    gap={0.75}
-                    style={{
-                      padding: '6px',
-                      borderRadius: '4px',
-                      background: `linear-gradient(135deg, ${mobileMetrics[currentMetricIndex].color}1f 0%, ${mobileMetrics[currentMetricIndex].color}0f 100%)`,
-                      border: `1px solid ${mobileMetrics[currentMetricIndex].color}26`,
-                      flex: 1,
-                      boxShadow: `inset 0 1px 2px ${mobileMetrics[currentMetricIndex].color}14`,
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}
+              <MobileContainer>
+                {/* Show 3 key metrics simultaneously */}
+                {[
+                  { label: 'Tokens', value: metricsLoaded ? abbreviateNumber(metrics.global?.total || 0) : '...', color: '#FF6B6B' },
+                  { label: 'Trades', value: metricsLoaded ? abbreviateNumber(metrics.H24?.transactions24H || 0) : '...', color: '#74CAFF' },
+                  { label: 'Vol', value: metricsLoaded ? `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
+                    metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
+                      ? new Decimal(metrics.H24.tradedXRP24H || 0)
+                          .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                          .toNumber()
+                      : 0
+                  )}` : '...', color: '#10b981' }
+                ].map((metric, index) => (
+                  <MobileMetricCard
+                    key={metric.label}
+                    color={metric.color}
+                    isFirst={index === 0}
+                    borderColor={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}
                   >
-                    <Typography
-                      variant="caption"
-                      color={themeColors.textSecondary}
-                      style={{
-                        fontWeight: 500,
-                        fontSize: '0.7rem',
-                        textTransform: 'uppercase'
-                      }}
-                    >
-                      {t(mobileMetrics[currentMetricIndex].label)}
-                    </Typography>
-                    {mobileMetrics[currentMetricIndex].loading ? (
-                      <SkeletonLoader style={{ width: '50px', height: '16px' }} />
-                    ) : (
-                      <Typography
-                        variant="caption"
-                        color={mobileMetrics[currentMetricIndex].color}
-                        style={{
-                          fontWeight: 700,
-                          fontSize: '0.8rem'
-                        }}
-                      >
-                        {mobileMetrics[currentMetricIndex].value}
-                      </Typography>
-                    )}
-                  </Box>
-                  {currentMetricIndex >= 3 && (
-                    <H24Style primaryColor={primaryColor}>
-                      <Typography
-                        variant="caption"
-                        color="#ffffff"
-                        style={{
-                          fontWeight: 600,
-                          fontSize: '0.6rem',
-                          lineHeight: 1
-                        }}
-                      >
-                        24h
-                      </Typography>
-                    </H24Style>
-                  )}
-                  <APILabel
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleTradeDrawerOpen();
-                    }}
-                    aria-label="Open live trades"
-                    type="button"
-                    textColor={themeColors.textPrimary}
-                    primaryColor={primaryColor}
-                  >
-                    <PulsatingCircle primaryColor={primaryColor} />
-                    <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
-                      Live
-                    </Typography>
-                  </APILabel>
-                </Stack>
-              </MobileMetric>
+                    <MetricContent>
+                      <MetricBadge textColor={themeColors.textSecondary}>
+                        {t(metric.label)}
+                      </MetricBadge>
+                      {metricsLoaded ? (
+                        <MetricNumber color={metric.color} title={metric.value}>
+                          {metric.value}
+                        </MetricNumber>
+                      ) : (
+                        <SkeletonLoader style={{ width: '32px', height: '10px', borderRadius: '2px' }} />
+                      )}
+                    </MetricContent>
+                  </MobileMetricCard>
+                ))}
+                
+                <LiveButton
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleTradeDrawerOpen();
+                  }}
+                  primaryColor={primaryColor}
+                  aria-label="Open live trades"
+                >
+                  <PulsatingCircle primaryColor={primaryColor} />
+                  LIVE
+                </LiveButton>
+              </MobileContainer>
             ) : (
               <Stack direction="row" spacing={1} alignItems="center" flex={1}>
                 <MetricContainer>
@@ -1110,7 +1090,12 @@ const Topbar = () => {
       </TopWrapper>
 
       <DrawerOverlay open={tradeDrawerOpen} onClick={handleTradeDrawerClose} />
-      <Drawer open={tradeDrawerOpen} backgroundColor={themeColors.backgroundColor} isMobile={isMobile}>
+      <Drawer 
+        open={tradeDrawerOpen} 
+        backgroundColor={themeColors.backgroundColor} 
+        isMobile={isMobile}
+        isSmallMobile={isSmallMobile}
+      >
         <DrawerHeader darkMode={darkMode} paperBackground={themeColors.backgroundColor}>
           <Box display="flex" alignItems="center" gap={0.5}>
             <Typography variant="h6" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
