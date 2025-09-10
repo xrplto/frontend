@@ -831,19 +831,6 @@ function NewsPage() {
                     </div>
                   </div>
                   <div className={styles.articleContent}>
-                    <div className={styles.articleImage}>
-                      <img
-                        src={article.articleImage || '/static/default-news.svg'}
-                        alt={extractTitle(article.title)}
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          if (e.target.src !== '/static/default-news.svg') {
-                            e.target.src = '/static/default-news.svg';
-                          }
-                        }}
-                      />
-                    </div>
                     <p className={styles.articleSummary} style={{ color: theme.palette.text.secondary }}>
                       {article.summary}
                     </p>
