@@ -149,7 +149,7 @@ const HeaderWrapper = styled(Box)(
     width: 100%;
     display: flex;
     align-items: center;
-    height: ${theme.spacing(7)};
+    height: ${theme.spacing(6)};
     margin-bottom: ${theme.spacing(0)};
     border-radius: 0px;
     position: fixed;
@@ -167,7 +167,7 @@ const HeaderWrapper = styled(Box)(
     overflow: hidden;
     
     ${theme.breakpoints.down('sm')} {
-      height: ${theme.spacing(6)};
+      height: ${theme.spacing(5)};
       background: ${theme.palette.mode === 'dark'
         ? '#000000'
         : '#ffffff'};
@@ -197,54 +197,20 @@ const StyledLink = styled(Link, {
   shouldForwardProp: (prop) => prop !== 'darkMode'
 })(
   ({ darkMode, theme }) => `
-    color: ${theme.palette.primary.main} !important;
-    font-weight: 600;
+    color: ${theme.palette.text.primary} !important;
+    font-weight: 500;
     margin-right: 20px;
     padding: 8px 16px;
     border-radius: 12px;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
-    background: 'transparent';
-    border: 1px solid ${alpha(theme.palette.divider, 0.15)};
-    box-shadow: 
-      0 2px 8px ${alpha(theme.palette.common.black, 0.08)}, 
-      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.08)};
-    position: relative;
-    overflow: hidden;
-    
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, ${alpha(
-        theme.palette.primary.main,
-        0.1
-      )}, transparent);
-      transition: left 0.5s ease;
-    }
+    background: transparent;
+    border: none;
     
     &:hover {
-      color: ${theme.palette.primary.main};
-      background: 'transparent';
-      border: 1px solid ${alpha(
-        theme.palette.primary.main,
-        0.25
-      )};
-      box-shadow: 
-        0 8px 24px ${alpha(
-          theme.palette.primary.main,
-          0.15
-        )},
-        inset 0 1px 2px ${alpha(theme.palette.common.white, 0.15)};
+      color: ${theme.palette.primary.main} !important;
       cursor: pointer;
-      
-      &::before {
-        left: 100%;
-      }
     }
 `
 );
@@ -444,7 +410,7 @@ function Header(props) {
               alignItems: 'center'
             }}
           >
-            <Logo alt="xrpl.to Logo" style={{ marginRight: '24px', width: 'auto', height: '40px' }} />
+            <Logo alt="xrpl.to Logo" style={{ marginRight: '16px', width: 'auto', height: '32px' }} />
           </Box>
 
           {isDesktop && (
@@ -454,246 +420,536 @@ function Header(props) {
                 alignItems: 'center'
               }}
             >
-              <Box
-                onClick={handleTokensClick}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  px: 2,
-                  py: 1,
-                  borderRadius: 1,
-                  cursor: 'pointer',
-                  color: theme.palette.text.primary,
-                  transition: 'all 0.2s',
-                  '&:hover': {
-                    bgcolor: alpha(theme.palette.primary.main, 0.08),
-                    color: theme.palette.primary.main
-                  }
-                }}
+              <StyledLink
+                underline="none"
+                darkMode={darkMode}
+                theme={theme}
+                href="/"
+                onMouseEnter={handleTokensClick}
+                onMouseLeave={() => setTimeout(() => setTokensAnchorEl(null), 300)}
               >
-                <Typography variant="body2" fontWeight={500}>
-                  {t('Tokens')}
-                </Typography>
-                <KeyboardArrowDownIcon
-                  sx={{
-                    fontSize: 20,
-                    transition: 'transform 0.2s',
-                    transform: openTokensMenu ? 'rotate(180deg)' : 'rotate(0deg)'
-                  }}
-                />
-              </Box>
+                {t('Tokens')}
+              </StyledLink>
 
               <Menu
                 anchorEl={tokensAnchorEl}
                 open={openTokensMenu}
                 onClose={handleTokensClose}
+                onMouseEnter={() => setTokensAnchorEl(tokensAnchorEl)}
+                onMouseLeave={handleTokensClose}
                 PaperProps={{
                   sx: {
                     mt: 1,
-                    minWidth: 200,
-                    maxWidth: 280,
-                    borderRadius: 2,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow: theme.shadows[3],
-                    bgcolor: theme.palette.background.paper,
+                    minWidth: { xs: 300, sm: 500, md: 720 },
+                    maxWidth: { xs: 350, sm: 550, md: 800 },
+                    borderRadius: 3,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? `0 8px 32px ${alpha('#000000', 0.4)}, 0 2px 8px ${alpha('#000000', 0.3)}`
+                      : `0 8px 32px ${alpha('#000000', 0.12)}, 0 2px 8px ${alpha('#000000', 0.08)}`,
+                    bgcolor: theme.palette.mode === 'dark'
+                      ? alpha('#000000', 0.85)
+                      : alpha('#ffffff', 0.95),
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: theme.palette.mode === 'dark'
+                        ? `linear-gradient(135deg, ${alpha('#ffffff', 0.05)} 0%, ${alpha('#ffffff', 0.01)} 100%)`
+                        : `linear-gradient(135deg, ${alpha('#ffffff', 0.8)} 0%, ${alpha('#ffffff', 0.4)} 100%)`,
+                      pointerEvents: 'none',
+                      zIndex: -1
+                    },
                     '& .MuiList-root': {
-                      py: 1
+                      py: 2,
+                      background: 'transparent',
+                      display: 'flex',
+                      flexDirection: { xs: 'column', md: 'row' },
+                      alignItems: 'flex-start',
+                      gap: { xs: 1, md: 2 }
                     }
                   }
                 }}
                 transformOrigin={{ horizontal: 'left', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
               >
-                <MenuItem
-                  onClick={() => handleTokenOptionSelect('/')}
-                  sx={{
-                    py: 1,
-                    px: 2,
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.08)
-                    }
-                  }}
-                >
-                  <Typography variant="body2">{t('All Tokens')}</Typography>
-                </MenuItem>
-
-                <Divider sx={{ my: 0.5 }} />
-
-                <Box sx={{ px: 2, py: 0.5 }}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                    {t('LAUNCHPADS')}
-                  </Typography>
-                </Box>
-
-                <MenuItem
-                  onClick={() => handleTokenOptionSelect('/view/firstledger')}
-                  sx={{
-                    py: 0.75,
-                    px: 2,
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.08)
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <OpenInNewIcon sx={{ fontSize: 16, color: '#013CFE' }} />
-                    <Typography variant="body2" fontSize={14}>FirstLedger</Typography>
+                {/* Column 1: All Tokens + Launchpads */}
+                <Box sx={{ 
+                  flex: 1, 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  minWidth: { xs: '100%', md: 220 },
+                  width: { xs: '100%', md: 'auto' }
+                }}>
+                  <Box sx={{ px: 2, py: 1, mb: 0.5 }}>
+                    <Typography 
+                      variant="caption" 
+                      sx={{
+                        color: theme.palette.mode === 'dark' 
+                          ? alpha(theme.palette.text.secondary, 0.7)
+                          : alpha(theme.palette.text.secondary, 0.8),
+                        fontWeight: 700,
+                        fontSize: '0.68rem',
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase'
+                      }}
+                    >
+                      {t('LAUNCHPADS')}
+                    </Typography>
                   </Box>
-                </MenuItem>
-                <MenuItem
-                  onClick={() => handleTokenOptionSelect('/view/magnetic-x')}
-                  sx={{
-                    py: 0.75,
-                    px: 2,
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.08)
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Image
-                      src="/magneticx-logo.webp?v=1"
-                      alt="Magnetic X"
-                      width={16}
-                      height={16}
-                      quality={85}
-                      loading="lazy"
-                      style={{ width: 16, height: 16, objectFit: 'contain' }}
-                    />
-                    <Typography variant="body2" fontSize={14}>Magnetic X</Typography>
-                  </Box>
-                </MenuItem>
-                <MenuItem
-                  onClick={() => handleTokenOptionSelect('/view/xpmarket')}
-                  sx={{
-                    py: 0.75,
-                    px: 2,
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.08)
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <XPMarketIcon sx={{ fontSize: 16, color: '#6D1FEE' }} />
-                    <Typography variant="body2" fontSize={14}>XPmarket</Typography>
-                  </Box>
-                </MenuItem>
-                <MenuItem
-                  onClick={() => handleTokenOptionSelect('/view/aigentrun')}
-                  sx={{
-                    py: 0.75,
-                    px: 2,
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.08)
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Image
-                      src="/static/aigentrun.gif?v=1"
-                      alt="Aigent.Run"
-                      width={16}
-                      height={16}
-                      sizes="16px"
-                      quality={85}
-                      loading="lazy"
-                      unoptimized={true}
-                      style={{ objectFit: 'contain' }}
-                    />
-                    <Typography variant="body2" fontSize={14}>aigent.run</Typography>
-                  </Box>
-                </MenuItem>
-                <MenuItem
-                  onClick={() => handleTokenOptionSelect('/view/ledgermeme')}
-                  sx={{
-                    py: 0.75,
-                    px: 2,
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.08)
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <LedgerMemeIcon sx={{ fontSize: 16 }} />
-                    <Typography variant="body2" fontSize={14}>LedgerMeme</Typography>
-                  </Box>
-                </MenuItem>
-                <MenuItem
-                  onClick={() => handleTokenOptionSelect('/view/horizon')}
-                  sx={{
-                    py: 0.75,
-                    px: 2,
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.08)
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <HorizonIcon sx={{ fontSize: 16 }} />
-                    <Typography variant="body2" fontSize={14}>Horizon</Typography>
-                  </Box>
-                </MenuItem>
 
-                <Divider sx={{ my: 0.5 }} />
-
-                <Box sx={{ px: 2, py: 0.5 }}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                    {t('DISCOVER')}
-                  </Typography>
-                </Box>
-
-                {discoverMenuItems.map((item) => (
-                  <MenuItem
-                    key={item.path}
-                    onClick={() => handleTokenOptionSelect(item.path)}
-                    sx={{
-                      py: 0.75,
-                      px: 2,
-                      '&:hover': {
-                        bgcolor: alpha(theme.palette.primary.main, 0.08)
-                      }
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body2" fontSize={14}>
+                  {[
+                    { path: '/view/firstledger', name: 'FirstLedger', icon: <OpenInNewIcon sx={{ fontSize: 16, color: '#013CFE' }} /> },
+                    { path: '/view/magnetic-x', name: 'Magnetic X', icon: <Image src="/magneticx-logo.webp?v=1" alt="Magnetic X" width={16} height={16} quality={90} loading="lazy" style={{ width: 16, height: 16, objectFit: 'contain' }} /> },
+                    { path: '/view/xpmarket', name: 'XPmarket', icon: <XPMarketIcon sx={{ fontSize: 16, color: '#6D1FEE' }} /> },
+                    // Mobile-only items (hidden on desktop as they appear in other columns)
+                    ...(isTabletOrMobile ? [
+                      { path: '/view/aigentrun', name: 'aigent.run', icon: <Image src="/static/aigentrun.gif?v=1" alt="Aigent.Run" width={16} height={16} sizes="16px" quality={90} loading="lazy" unoptimized={true} style={{ objectFit: 'contain' }} /> },
+                      { path: '/view/ledgermeme', name: 'LedgerMeme', icon: <LedgerMemeIcon sx={{ fontSize: 16 }} /> },
+                      { path: '/view/horizon', name: 'Horizon', icon: <HorizonIcon sx={{ fontSize: 16 }} /> }
+                    ] : [])
+                  ].map((item) => (
+                    <Box
+                      key={item.path}
+                      onClick={() => handleTokenOptionSelect(item.path)}
+                      sx={{
+                        py: 1,
+                        px: 2,
+                        mx: 1,
+                        borderRadius: 2,
+                        background: 'transparent',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: '-100%',
+                          width: '100%',
+                          height: '100%',
+                          background: `linear-gradient(90deg, transparent, ${alpha(
+                            theme.palette.primary.main,
+                            0.08
+                          )}, transparent)`,
+                          transition: 'left 0.4s ease'
+                        },
+                        '&:hover': {
+                          bgcolor: theme.palette.mode === 'dark'
+                            ? alpha(theme.palette.primary.main, 0.06)
+                            : alpha(theme.palette.primary.main, 0.03),
+                          color: theme.palette.primary.main,
+                          transform: 'translateY(-1px)',
+                          boxShadow: theme.palette.mode === 'dark'
+                            ? `0 3px 12px ${alpha(theme.palette.primary.main, 0.12)}`
+                            : `0 2px 6px ${alpha(theme.palette.primary.main, 0.06)}`,
+                          '&::before': {
+                            left: '100%'
+                          }
+                        }
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {item.icon}
-                      </Typography>
+                        <Typography variant="body2" fontSize={14}>{item.name}</Typography>
+                      </Box>
+                    </Box>
+                  ))}
+
+                  {/* Mobile-only sections */}
+                  {isTabletOrMobile && (
+                    <>
+                      <Divider 
+                        sx={{ 
+                          my: 1.5, 
+                          mx: 1,
+                          borderColor: alpha(theme.palette.divider, 0.08)
+                        }} 
+                      />
+
+                      <Box sx={{ px: 2, py: 1, mb: 0.5 }}>
+                        <Typography 
+                          variant="caption" 
+                          sx={{
+                            color: theme.palette.mode === 'dark' 
+                              ? alpha(theme.palette.text.secondary, 0.7)
+                              : alpha(theme.palette.text.secondary, 0.8),
+                            fontWeight: 700,
+                            fontSize: '0.68rem',
+                            letterSpacing: '0.08em',
+                            textTransform: 'uppercase'
+                          }}
+                        >
+                          {t('DISCOVER')}
+                        </Typography>
+                      </Box>
+
+                      {discoverMenuItems.map((item) => (
+                        <Box
+                          key={item.path}
+                          onClick={() => handleTokenOptionSelect(item.path)}
+                          sx={{
+                            py: 1,
+                            px: 2,
+                            mx: 1,
+                            borderRadius: 2,
+                            background: 'transparent',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            cursor: 'pointer',
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              left: '-100%',
+                              width: '100%',
+                              height: '100%',
+                              background: `linear-gradient(90deg, transparent, ${alpha(
+                                theme.palette.primary.main,
+                                0.08
+                              )}, transparent)`,
+                              transition: 'left 0.4s ease'
+                            },
+                            '&:hover': {
+                              bgcolor: theme.palette.mode === 'dark'
+                                ? alpha(theme.palette.primary.main, 0.06)
+                                : alpha(theme.palette.primary.main, 0.03),
+                              color: theme.palette.primary.main,
+                              transform: 'translateY(-1px)',
+                              boxShadow: theme.palette.mode === 'dark'
+                                ? `0 3px 12px ${alpha(theme.palette.primary.main, 0.12)}`
+                                : `0 2px 6px ${alpha(theme.palette.primary.main, 0.06)}`,
+                              '&::before': {
+                                left: '100%'
+                              }
+                            }
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body2" fontSize={14}>
+                              {item.icon}
+                            </Typography>
+                            <Typography variant="body2" fontSize={14}>
+                              {item.name}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      ))}
+
+                      <Divider 
+                        sx={{ 
+                          my: 1.5, 
+                          mx: 1,
+                          borderColor: alpha(theme.palette.divider, 0.08)
+                        }} 
+                      />
+
+                      <Box sx={{ px: 2, py: 1, mb: 0.5 }}>
+                        <Typography 
+                          variant="caption" 
+                          sx={{
+                            color: theme.palette.mode === 'dark' 
+                              ? alpha(theme.palette.text.secondary, 0.7)
+                              : alpha(theme.palette.text.secondary, 0.8),
+                            fontWeight: 700,
+                            fontSize: '0.68rem',
+                            letterSpacing: '0.08em',
+                            textTransform: 'uppercase'
+                          }}
+                        >
+                          {t('ANALYTICS')}
+                        </Typography>
+                      </Box>
+
+                      {[
+                        { path: '/market-metrics', name: t('Market Metrics') },
+                        { path: '/top-traders', name: t('Top Traders') }
+                      ].map((item) => (
+                        <Box
+                          key={item.path}
+                          onClick={() => handleTokenOptionSelect(item.path)}
+                          sx={{
+                            py: 1,
+                            px: 2,
+                            mx: 1,
+                            borderRadius: 2,
+                            background: 'transparent',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            cursor: 'pointer',
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              left: '-100%',
+                              width: '100%',
+                              height: '100%',
+                              background: `linear-gradient(90deg, transparent, ${alpha(
+                                theme.palette.primary.main,
+                                0.08
+                              )}, transparent)`,
+                              transition: 'left 0.4s ease'
+                            },
+                            '&:hover': {
+                              bgcolor: theme.palette.mode === 'dark'
+                                ? alpha(theme.palette.primary.main, 0.06)
+                                : alpha(theme.palette.primary.main, 0.03),
+                              color: theme.palette.primary.main,
+                              transform: 'translateY(-1px)',
+                              boxShadow: theme.palette.mode === 'dark'
+                                ? `0 3px 12px ${alpha(theme.palette.primary.main, 0.12)}`
+                                : `0 2px 6px ${alpha(theme.palette.primary.main, 0.06)}`,
+                              '&::before': {
+                                left: '100%'
+                              }
+                            }
+                          }}
+                        >
+                          <Typography variant="body2" fontSize={14}>
+                            {item.name}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </>
+                  )}
+                </Box>
+
+                {/* Column 2: More Launchpads */}
+                <Box sx={{ 
+                  flex: 1, 
+                  display: { xs: 'none', md: 'flex' }, 
+                  flexDirection: 'column',
+                  minWidth: { xs: '100%', md: 220 },
+                  width: { xs: '100%', md: 'auto' }
+                }}>
+                  <Box sx={{ px: 2, py: 1, mb: 0.5, mt: 1.5 }}>
+                    <Typography 
+                      variant="caption" 
+                      sx={{
+                        color: 'transparent'
+                      }}
+                    >
+                      SPACER
+                    </Typography>
+                  </Box>
+
+                  {[
+                    { path: '/view/aigentrun', name: 'aigent.run', icon: <Image src="/static/aigentrun.gif?v=1" alt="Aigent.Run" width={16} height={16} sizes="16px" quality={90} loading="lazy" unoptimized={true} style={{ objectFit: 'contain' }} /> },
+                    { path: '/view/ledgermeme', name: 'LedgerMeme', icon: <LedgerMemeIcon sx={{ fontSize: 16 }} /> },
+                    { path: '/view/horizon', name: 'Horizon', icon: <HorizonIcon sx={{ fontSize: 16 }} /> }
+                  ].map((item) => (
+                    <Box
+                      key={item.path}
+                      onClick={() => handleTokenOptionSelect(item.path)}
+                      sx={{
+                        py: 1,
+                        px: 2,
+                        mx: 1,
+                        borderRadius: 2,
+                        background: 'transparent',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: '-100%',
+                          width: '100%',
+                          height: '100%',
+                          background: `linear-gradient(90deg, transparent, ${alpha(
+                            theme.palette.primary.main,
+                            0.08
+                          )}, transparent)`,
+                          transition: 'left 0.4s ease'
+                        },
+                        '&:hover': {
+                          bgcolor: theme.palette.mode === 'dark'
+                            ? alpha(theme.palette.primary.main, 0.06)
+                            : alpha(theme.palette.primary.main, 0.03),
+                          color: theme.palette.primary.main,
+                          transform: 'translateY(-1px)',
+                          boxShadow: theme.palette.mode === 'dark'
+                            ? `0 3px 12px ${alpha(theme.palette.primary.main, 0.12)}`
+                            : `0 2px 6px ${alpha(theme.palette.primary.main, 0.06)}`,
+                          '&::before': {
+                            left: '100%'
+                          }
+                        }
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {item.icon}
+                        <Typography variant="body2" fontSize={14}>{item.name}</Typography>
+                      </Box>
+                    </Box>
+                  ))}
+
+                  <Divider 
+                    sx={{ 
+                      my: 1.5, 
+                      mx: 1,
+                      borderColor: alpha(theme.palette.divider, 0.08)
+                    }} 
+                  />
+
+                  <Box sx={{ px: 2, py: 1, mb: 0.5 }}>
+                    <Typography 
+                      variant="caption" 
+                      sx={{
+                        color: theme.palette.mode === 'dark' 
+                          ? alpha(theme.palette.text.secondary, 0.7)
+                          : alpha(theme.palette.text.secondary, 0.8),
+                        fontWeight: 700,
+                        fontSize: '0.68rem',
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase'
+                      }}
+                    >
+                      {t('ANALYTICS')}
+                    </Typography>
+                  </Box>
+
+                  {[
+                    { path: '/market-metrics', name: t('Market Metrics') },
+                    { path: '/top-traders', name: t('Top Traders') }
+                  ].map((item) => (
+                    <Box
+                      key={item.path}
+                      onClick={() => handleTokenOptionSelect(item.path)}
+                      sx={{
+                        py: 1,
+                        px: 2,
+                        mx: 1,
+                        borderRadius: 2,
+                        background: 'transparent',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: '-100%',
+                          width: '100%',
+                          height: '100%',
+                          background: `linear-gradient(90deg, transparent, ${alpha(
+                            theme.palette.primary.main,
+                            0.08
+                          )}, transparent)`,
+                          transition: 'left 0.4s ease'
+                        },
+                        '&:hover': {
+                          bgcolor: theme.palette.mode === 'dark'
+                            ? alpha(theme.palette.primary.main, 0.06)
+                            : alpha(theme.palette.primary.main, 0.03),
+                          color: theme.palette.primary.main,
+                          transform: 'translateY(-1px)',
+                          boxShadow: theme.palette.mode === 'dark'
+                            ? `0 3px 12px ${alpha(theme.palette.primary.main, 0.12)}`
+                            : `0 2px 6px ${alpha(theme.palette.primary.main, 0.06)}`,
+                          '&::before': {
+                            left: '100%'
+                          }
+                        }
+                      }}
+                    >
                       <Typography variant="body2" fontSize={14}>
                         {item.name}
                       </Typography>
                     </Box>
-                  </MenuItem>
-                ))}
-
-                <Divider sx={{ my: 0.5 }} />
-
-                <Box sx={{ px: 2, py: 0.5 }}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                    {t('ANALYTICS')}
-                  </Typography>
+                  ))}
                 </Box>
 
-                {[
-                  { path: '/market-metrics', name: t('Market Metrics') },
-                  { path: '/top-traders', name: t('Top Traders') }
-                ].map((item) => (
-                  <MenuItem
-                    key={item.path}
-                    onClick={() => handleTokenOptionSelect(item.path)}
-                    sx={{
-                      py: 0.75,
-                      px: 2,
-                      '&:hover': {
-                        bgcolor: alpha(theme.palette.primary.main, 0.08)
-                      }
-                    }}
-                  >
-                    <Typography variant="body2" fontSize={14}>
-                      {item.name}
+                {/* Column 3: Discover */}
+                <Box sx={{ 
+                  flex: 1, 
+                  display: { xs: 'none', md: 'flex' }, 
+                  flexDirection: 'column',
+                  minWidth: { xs: '100%', md: 220 },
+                  width: { xs: '100%', md: 'auto' }
+                }}>
+                  <Box sx={{ px: 2, py: 1, mb: 0.5, mt: 1.5 }}>
+                    <Typography 
+                      variant="caption" 
+                      sx={{
+                        color: theme.palette.mode === 'dark' 
+                          ? alpha(theme.palette.text.secondary, 0.7)
+                          : alpha(theme.palette.text.secondary, 0.8),
+                        fontWeight: 700,
+                        fontSize: '0.68rem',
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase'
+                      }}
+                    >
+                      {t('DISCOVER')}
                     </Typography>
-                  </MenuItem>
-                ))}
+                  </Box>
+
+                  {discoverMenuItems.map((item) => (
+                    <Box
+                      key={item.path}
+                      onClick={() => handleTokenOptionSelect(item.path)}
+                      sx={{
+                        py: 1,
+                        px: 2,
+                        mx: 1,
+                        borderRadius: 2,
+                        background: 'transparent',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: '-100%',
+                          width: '100%',
+                          height: '100%',
+                          background: `linear-gradient(90deg, transparent, ${alpha(
+                            theme.palette.primary.main,
+                            0.08
+                          )}, transparent)`,
+                          transition: 'left 0.4s ease'
+                        },
+                        '&:hover': {
+                          bgcolor: theme.palette.mode === 'dark'
+                            ? alpha(theme.palette.primary.main, 0.06)
+                            : alpha(theme.palette.primary.main, 0.03),
+                          color: theme.palette.primary.main,
+                          transform: 'translateY(-1px)',
+                          boxShadow: theme.palette.mode === 'dark'
+                            ? `0 3px 12px ${alpha(theme.palette.primary.main, 0.12)}`
+                            : `0 2px 6px ${alpha(theme.palette.primary.main, 0.06)}`,
+                          '&::before': {
+                            left: '100%'
+                          }
+                        }
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2" fontSize={14}>
+                          {item.icon}
+                        </Typography>
+                        <Typography variant="body2" fontSize={14}>
+                          {item.name}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
               </Menu>
 
               <StyledLink
@@ -745,12 +1001,12 @@ function Header(props) {
                 ml: { xs: 1, sm: 0 },
                 display: { xs: 'flex', sm: 'none' },
                 '& img': {
-                  maxHeight: '32px',
+                  maxHeight: '28px',
                   width: 'auto'
                 }
               }}
             >
-              <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '32px' }} />
+              <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '28px' }} />
             </Box>
           )}
 

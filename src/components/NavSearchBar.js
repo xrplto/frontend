@@ -38,10 +38,10 @@ const NavSearchBar = ({
         sx={{
           borderRadius: '14px',
           cursor: 'pointer',
-          px: 2.5,
-          py: 1.5,
-          height: '46px',
-          width: '270px',
+          px: 2,
+          py: 1,
+          height: '34px',
+          width: '280px',
           backgroundColor: 'transparent',
           backdropFilter: 'blur(10px) saturate(150%)',
           WebkitBackdropFilter: 'blur(10px) saturate(150%)',
@@ -65,8 +65,8 @@ const NavSearchBar = ({
       >
         <SearchIcon
           sx={{
-            fontSize: '1.3rem',
-            mr: 2,
+            fontSize: '1.2rem',
+            mr: 1.5,
             color: isHovered
               ? alpha(theme.palette.primary.main, 0.8)
               : alpha(theme.palette.primary.main, 0.6),
@@ -76,7 +76,7 @@ const NavSearchBar = ({
         />
         <Typography
           sx={{
-            fontSize: '0.96rem',
+            fontSize: '0.9rem',
             flex: 1,
             color: darkMode
               ? alpha(theme.palette.text.primary, 0.85)
@@ -94,8 +94,8 @@ const NavSearchBar = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '26px',
-            height: '26px',
+            width: '22px',
+            height: '22px',
             borderRadius: '7px',
             backgroundColor: alpha(theme.palette.primary.main, darkMode ? 0.08 : 0.12),
             border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.15 : 0.2)}`,
