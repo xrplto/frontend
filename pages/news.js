@@ -18,25 +18,32 @@ const Topbar = dynamic(() => import('../src/components/Topbar'), { ssr: true });
 const PaginationContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 16px;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
   background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
-  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
-  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
-  backdrop-filter: blur(10px);
+  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.08)};
+  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 4px 12px rgba(0, 0, 0, 0.06)'};
+  backdrop-filter: blur(20px);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 6px 16px rgba(0, 0, 0, 0.08)'};
+  }
   
   @media (max-width: 900px) {
     width: 100%;
     justify-content: center;
-    padding: 2px 4px;
+    padding: 4px 8px;
+    gap: 4px;
   }
 `;
 
 const NavButton = styled.button`
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -45,21 +52,27 @@ const NavButton = styled.button`
   justify-content: center;
   color: ${({ theme }) => theme.palette.text.primary || 'inherit'};
   padding: 0;
+  transition: all 0.15s ease;
   
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.pagination?.backgroundHover || alpha(theme.palette.primary.main, 0.08)};
+    background: ${({ theme }) => theme.pagination?.backgroundHover || alpha(theme.palette.primary.main, 0.1)};
+    transform: scale(1.05);
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.95);
   }
   
   &:disabled {
-    color: ${({ theme }) => alpha(theme.pagination?.textColor || theme.palette.text.primary, 0.48)};
+    color: ${({ theme }) => alpha(theme.pagination?.textColor || theme.palette.text.primary, 0.3)};
     cursor: not-allowed;
   }
 `;
 
 const PageButton = styled.button`
-  min-width: 20px;
-  height: 20px;
-  border-radius: 6px;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 8px;
   border: none;
   background: ${props => props.selected ? props.theme.pagination?.selectedBackground || props.theme.palette.primary.main : 'transparent'};
   color: ${props => props.selected ? (props.theme.pagination?.selectedTextColor || 'white') : (props.theme.palette.text.primary || 'inherit')};
@@ -67,18 +80,24 @@ const PageButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
+  padding: 0 6px;
   margin: 0;
-  font-size: 12px;
-  font-weight: ${props => props.selected ? 600 : 500};
+  font-size: 13px;
+  font-weight: ${props => props.selected ? 700 : 500};
+  transition: all 0.15s ease;
   
   &:hover:not(:disabled) {
-    background: ${props => props.selected ? (props.theme.palette.primary.dark || '#1976D2') : (props.theme.pagination?.backgroundHover || alpha(props.theme.palette.primary.main, 0.08))};
+    background: ${props => props.selected ? (props.theme.palette.primary.dark || '#1976D2') : (props.theme.pagination?.backgroundHover || alpha(props.theme.palette.primary.main, 0.1))};
+    transform: ${props => props.selected ? 'none' : 'translateY(-1px)'};
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.95);
   }
   
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: 0.3;
   }
 `;
 
@@ -91,21 +110,27 @@ const PageEllipsis = styled.span`
 const InfoBox = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
-  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
-  border-radius: 16px;
+  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.08)};
+  border-radius: 20px;
   background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
-  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
-  padding: 4px 8px;
-  backdrop-filter: blur(10px);
+  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 4px 12px rgba(0, 0, 0, 0.06)'};
+  padding: 8px 14px;
+  backdrop-filter: blur(20px);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 6px 16px rgba(0, 0, 0, 0.08)'};
+  }
   
   @media (max-width: 900px) {
     flex: 1;
     min-width: calc(50% - 8px);
     justify-content: flex-start;
     gap: 4px;
-    padding: 4px 8px;
+    padding: 6px 10px;
   }
 `;
 
@@ -711,13 +736,20 @@ function NewsPage() {
           <Box
             sx={{
               background: 'transparent',
-              border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
-              borderRadius: '8px',
-              p: { xs: 1, sm: 1.5 },
-              mb: 2
+              border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,
+              borderRadius: '12px',
+              p: { xs: 1.5, sm: 2 },
+              mb: 2.5,
+              backdropFilter: 'blur(10px)',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+              }
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 1, sm: 1.5 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 1.5, sm: 2 } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Box sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' }, fontWeight: 600, color: theme.palette.text.secondary, textTransform: 'uppercase' }}>
                   {isMobile ? 'Sentiment' : 'Market Sentiment'}
@@ -736,7 +768,7 @@ function NewsPage() {
                   </Box>
                 )}
               </Box>
-              <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1.5, fontSize: '0.65rem', color: theme.palette.text.secondary }}>
+              <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1.5, fontSize: '0.65rem', color: theme.palette.text.secondary, opacity: 0.8 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Box sx={{ width: 6, height: 6, backgroundColor: '#10B981', borderRadius: '50%' }} />
                   Bull
@@ -752,7 +784,7 @@ function NewsPage() {
               </Box>
             </Box>
             
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, gap: { xs: 0.5, sm: 1 } }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, gap: { xs: 0.75, sm: 1.25 } }}>
               {[
                 { period: '24H', stats: sentimentStats.last24h },
                 { period: '7D', stats: sentimentStats.last7d },
@@ -760,16 +792,22 @@ function NewsPage() {
                 { period: 'ALL', stats: sentimentStats.all }
               ].map((item) => (
                 <Box key={item.period} sx={{ 
-                  backgroundColor: alpha(theme.palette.background.paper, 0.3),
-                  borderRadius: '6px',
-                  p: { xs: 0.5, sm: 1 },
-                  textAlign: 'center'
+                  backgroundColor: alpha(theme.palette.background.paper, 0.4),
+                  borderRadius: '10px',
+                  p: { xs: 0.75, sm: 1.25 },
+                  textAlign: 'center',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                    transform: 'translateY(-1px)'
+                  }
                 }}>
                   <Box sx={{ 
                     fontSize: { xs: '0.65rem', sm: '0.7rem' }, 
                     fontWeight: 700, 
                     color: theme.palette.text.primary,
-                    mb: { xs: 0.25, sm: 0.5 }
+                    mb: { xs: 0.25, sm: 0.5 },
+                    letterSpacing: '0.5px'
                   }}>
                     {item.period}
                   </Box>
@@ -812,8 +850,21 @@ function NewsPage() {
                 className={`${styles.newsCard} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
                 style={{
                   background: 'transparent',
-                  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
-                  color: theme.palette.text.primary
+                  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,
+                  color: theme.palette.text.primary,
+                  transition: 'all 0.3s ease',
+                  transform: 'translateY(0)',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.12)';
+                  e.currentTarget.style.borderColor = theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
+                  e.currentTarget.style.borderColor = theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
                 }}
               >
                 <div className={`${styles.cardContent} ${isDark ? styles.dark : ''}`}>
@@ -824,7 +875,13 @@ function NewsPage() {
                     <div className={styles.sentimentBadge}>
                       <span 
                         className={styles.sentimentLabel}
-                        style={{ backgroundColor: getSentimentColor(article.sentiment) }}
+                        style={{ 
+                          backgroundColor: getSentimentColor(article.sentiment),
+                          transition: 'all 0.2s ease',
+                          transform: 'scale(1)'
+                        }}
+                        onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                        onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                       >
                         {article.sentiment || 'Unknown'}
                       </span>
@@ -863,6 +920,12 @@ function NewsPage() {
                           <button
                             className={styles.expandButton}
                             onClick={() => toggleArticleExpansion(article._id)}
+                            style={{
+                              transition: 'all 0.2s ease',
+                              transform: 'scale(1)'
+                            }}
+                            onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                           >
                             {expandedArticles[article._id] ? 'Show Less' : 'Show More'}
                           </button>
