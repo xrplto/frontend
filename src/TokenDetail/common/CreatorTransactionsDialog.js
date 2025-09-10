@@ -899,7 +899,7 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
             textOverflow: 'ellipsis'
           }}
         >
-          {creatorAddress.slice(0, 8)}...{creatorAddress.slice(-4)}
+          {creatorAddress && creatorAddress.length >= 8 ? `${creatorAddress.slice(0, 8)}...${creatorAddress.slice(-4)}` : 'Loading...'}
         </Typography>
       </Box>
       

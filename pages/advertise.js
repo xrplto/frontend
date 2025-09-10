@@ -153,6 +153,7 @@ export default function Advertise() {
   const [searchQuery, setSearchQuery] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [xrpRate, setXrpRate] = useState(0.65); // Default fallback rate
+  const [totalTokens, setTotalTokens] = useState(0);
   
   // Payment states
   const [openScanQR, setOpenScanQR] = useState(false);
@@ -181,6 +182,11 @@ export default function Advertise() {
     setLoadingState(true);
     try {
       const response = await axios.get(`${API_URL}/tokens?limit=100&sortBy=vol24hxrp&sortType=desc`);
+      
+      // Get total tokens count
+      if (response.data.total) {
+        setTotalTokens(response.data.total);
+      }
       
       // Get XRP rate from the API response
       if (response.data.exch && response.data.exch.USD) {
@@ -515,7 +521,7 @@ export default function Advertise() {
                   />
                   <Chip 
                     icon={<TrendingIcon />}
-                    label="9,750+ Tokens" 
+                    label={totalTokens > 0 ? `${totalTokens.toLocaleString()} Tokens` : "Loading..."} 
                     variant="outlined"
                     sx={{ fontWeight: 500 }}
                   />
@@ -717,7 +723,9 @@ export default function Advertise() {
                               <TrendingIcon sx={{ fontSize: 14 }} />
                               {searchQuery 
                                 ? `Searching for "${searchQuery}"...` 
-                                : "Showing top 100 most traded tokens - type to search all tokens"}
+                                : totalTokens > 0 
+                                  ? `Showing top ${tokens.length} of ${totalTokens.toLocaleString()} total tokens by 24h volume`
+                                  : "Showing top 100 most traded tokens - type to search all tokens"}
                             </Typography>
                           }
                           InputProps={{
