@@ -522,8 +522,10 @@ export default function Summary() {
                   </MetricValue>
                   <div style={{ 
                     background: `conic-gradient(${
-                      metrics.global?.sentimentScore >= 70 ? '#4ade80' : 
-                      metrics.global?.sentimentScore >= 50 ? '#fbbf24' : '#ef4444'
+                      metrics.global?.sentimentScore >= 80 ? '#16a34a' : 
+                      metrics.global?.sentimentScore >= 60 ? '#4ade80' :
+                      metrics.global?.sentimentScore >= 40 ? '#fbbf24' :
+                      metrics.global?.sentimentScore >= 20 ? '#f97316' : '#ef4444'
                     } ${(metrics.global?.sentimentScore || 0) * 3.6}deg, rgba(255,255,255,0.1) 0deg)`,
                     borderRadius: '50%',
                     width: '24px',
@@ -544,25 +546,33 @@ export default function Summary() {
                 <Stack direction="row" alignItems="center" spacing="6px">
                   <Icon 
                     icon={
-                      metrics.global?.sentimentScore >= 70 ? "mdi:trending-up" :
-                      metrics.global?.sentimentScore >= 50 ? "mdi:trending-neutral" : "mdi:trending-down"
+                      metrics.global?.sentimentScore >= 80 ? "mdi:trending-up" :
+                      metrics.global?.sentimentScore >= 60 ? "mdi:thumb-up" :
+                      metrics.global?.sentimentScore >= 40 ? "mdi:minus" :
+                      metrics.global?.sentimentScore >= 20 ? "mdi:thumb-down" : "mdi:trending-down"
                     } 
                     width="16" 
                     height="16" 
                     style={{ color: 
-                      metrics.global?.sentimentScore >= 70 ? '#4ade80' :
-                      metrics.global?.sentimentScore >= 50 ? '#fbbf24' : '#ef4444'
+                      metrics.global?.sentimentScore >= 80 ? '#16a34a' :
+                      metrics.global?.sentimentScore >= 60 ? '#4ade80' :
+                      metrics.global?.sentimentScore >= 40 ? '#fbbf24' :
+                      metrics.global?.sentimentScore >= 20 ? '#f97316' : '#ef4444'
                     }} 
                   />
                   <ContentTypography style={{ 
                     color: 
-                      metrics.global?.sentimentScore >= 70 ? '#4ade80' :
-                      metrics.global?.sentimentScore >= 50 ? '#fbbf24' : '#ef4444',
+                      metrics.global?.sentimentScore >= 80 ? '#16a34a' :
+                      metrics.global?.sentimentScore >= 60 ? '#4ade80' :
+                      metrics.global?.sentimentScore >= 40 ? '#fbbf24' :
+                      metrics.global?.sentimentScore >= 20 ? '#f97316' : '#ef4444',
                     fontWeight: 600
                   }}>
                     {
-                      metrics.global?.sentimentScore >= 70 ? 'Very Bullish' :
-                      metrics.global?.sentimentScore >= 50 ? 'Bullish' : 'Bearish'
+                      metrics.global?.sentimentScore >= 80 ? 'Very Bullish' :
+                      metrics.global?.sentimentScore >= 60 ? 'Bullish' :
+                      metrics.global?.sentimentScore >= 40 ? 'Neutral' :
+                      metrics.global?.sentimentScore >= 20 ? 'Bearish' : 'Very Bearish'
                     }
                   </ContentTypography>
                 </Stack>
