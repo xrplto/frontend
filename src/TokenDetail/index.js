@@ -76,8 +76,8 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
 
   return (
     <Box sx={{ position: 'relative', display: 'flex' }}>
-      {/* Creator Transactions Panel - Left Sidebar */}
-      {!isMobile && creatorTxOpen && (
+      {/* Creator Transactions Panel - Always render but conditionally show */}
+      {!isMobile && (
         <CreatorTransactionsDialog
           open={creatorTxOpen}
           onClose={handleCreatorTxToggle}

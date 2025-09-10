@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, memo, useContext, useMemo } from 'react';
-import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem, CircularProgress, alpha } from '@mui/material';
+import { useState, useEffect, useRef, memo, useContext, useMemo, useCallback } from 'react';
+import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem, CircularProgress, alpha, Divider } from '@mui/material';
 import { createChart, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries } from 'lightweight-charts';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
-import { PinChartButton } from 'src/components/PinnedChartTracker';
+import { PinChartButton, usePinnedCharts } from 'src/components/PinnedChartTracker';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
@@ -12,6 +12,8 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import GroupIcon from '@mui/icons-material/Group';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import PushPinIcon from '@mui/icons-material/PushPin';
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 
 // Performance: Throttle chart updates
 const throttle = (func, delay) => {
@@ -34,6 +36,7 @@ const throttle = (func, delay) => {
 const PriceChartAdvanced = memo(({ token }) => {
   const theme = useTheme();
   const { activeFiatCurrency, accountProfile } = useContext(AppContext);
+  const { pinnedCharts, pinChart, unpinChartByToken } = usePinnedCharts();
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
   const candleSeriesRef = useRef(null);
@@ -102,31 +105,31 @@ const PriceChartAdvanced = memo(({ token }) => {
     isUserZoomedRef.current = isUserZoomed;
   }, [isUserZoomed]);
 
-  const convertScientificToRegular = (value) => {
+  const convertScientificToRegular = useCallback((value) => {
     if (typeof value === 'string') {
       value = parseFloat(value);
     }
     return Number(value);
-  };
+  }, []);
 
   // Scale factor for very small prices to help with tick generation
-  const getScaleFactor = (data) => {
+  const getScaleFactor = useCallback((data) => {
     if (!data || data.length === 0) return 1;
     const maxPrice = Math.max(...data.map(d => Math.max(d.high || d.close || d.value || d.open || 0)));
-    if (maxPrice < 0.000000001) return 1000000000000; // Scale up by 1 trillion
-    if (maxPrice < 0.00000001) return 100000000000;   // Scale up by 100 billion
-    if (maxPrice < 0.0000001) return 10000000000;     // Scale up by 10 billion
-    if (maxPrice < 0.000001) return 1000000000;       // Scale up by 1 billion
-    if (maxPrice < 0.00001) return 100000000;         // Scale up by 100 million
-    if (maxPrice < 0.0001) return 10000000;           // Scale up by 10 million
-    if (maxPrice < 0.001) return 1000000;             // Scale up by 1 million
-    if (maxPrice < 0.01) return 100000;               // Scale up by 100 thousand
-    if (maxPrice < 0.1) return 10000;                 // Scale up by 10 thousand  
-    if (maxPrice < 1) return 1000;                    // Scale up by 1 thousand
-    return 1; // No scaling needed
-  };
+    if (maxPrice < 0.000000001) return 1000000000000;
+    if (maxPrice < 0.00000001) return 100000000000;
+    if (maxPrice < 0.0000001) return 10000000000;
+    if (maxPrice < 0.000001) return 1000000000;
+    if (maxPrice < 0.00001) return 100000000;
+    if (maxPrice < 0.0001) return 10000000;
+    if (maxPrice < 0.001) return 1000000;
+    if (maxPrice < 0.01) return 100000;
+    if (maxPrice < 0.1) return 10000;
+    if (maxPrice < 1) return 1000;
+    return 1;
+  }, []);
 
-  const calculateSMA = (data, period) => {
+  const calculateSMA = useCallback((data, period) => {
     const sma = [];
     for (let i = period - 1; i < data.length; i++) {
       let sum = 0;
@@ -139,9 +142,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       });
     }
     return sma;
-  };
+  }, []);
 
-  const calculateEMA = (data, period) => {
+  const calculateEMA = useCallback((data, period) => {
     const ema = [];
     const multiplier = 2 / (period + 1);
     
@@ -164,9 +167,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       });
     }
     return ema;
-  };
+  }, []);
 
-  const calculateBollingerBands = (data, period = 20, stdDev = 2) => {
+  const calculateBollingerBands = useCallback((data, period = 20, stdDev = 2) => {
     const sma = calculateSMA(data, period);
     const bands = [];
     
@@ -191,9 +194,9 @@ const PriceChartAdvanced = memo(({ token }) => {
     }
     
     return bands;
-  };
+  }, [calculateSMA]);
 
-  const calculateRSI = (data, period = 14) => {
+  const calculateRSI = useCallback((data, period = 14) => {
     if (data.length < period + 1) return [];
     
     const rsi = [];
@@ -237,7 +240,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     }
     
     return rsi;
-  };
+  }, []);
 
   // Fetch price data
   useEffect(() => {
@@ -325,7 +328,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       controller.abort();
       clearInterval(interval);
     };
-  }, [token.md5, range, BASE_URL, activeFiatCurrency]); // Removed isUserZoomed to prevent re-creating interval
+  }, [token.md5, range, BASE_URL, activeFiatCurrency, convertScientificToRegular, calculateRSI]);
 
   // Fetch holder data
   useEffect(() => {
@@ -387,14 +390,12 @@ const PriceChartAdvanced = memo(({ token }) => {
       return;
     }
     
-    console.log('🎯 Chart creating with data points:', data.length);
-    
     // Clean up existing chart when chart type changes
     if (chartRef.current) {
       try {
         chartRef.current.remove();
       } catch (e) {
-        console.error('Error removing chart:', e);
+        // Error removing chart
       }
       chartRef.current = null;
       candleSeriesRef.current = null;
@@ -421,11 +422,11 @@ const PriceChartAdvanced = memo(({ token }) => {
       },
       grid: {
         vertLines: {
-          color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+          color: isDark ? 'rgba(56, 56, 56, 0.4)' : 'rgba(240, 240, 240, 1)',
           style: 1,
         },
         horzLines: {
-          color: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+          color: isDark ? 'rgba(56, 56, 56, 0.4)' : 'rgba(240, 240, 240, 1)',
           style: 0,
         },
       },
@@ -452,7 +453,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         autoScale: true,
         borderVisible: false,
         visible: true,
-        entireTextOnly: false,
+        entireTextOnly: isMobile ? true : false,
         drawTicks: true,
         ticksVisible: true,
         alignLabels: true,
@@ -474,33 +475,34 @@ const PriceChartAdvanced = memo(({ token }) => {
           const actualPrice = price / scaleFactorRef.current;
           const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
           
-          // Format based on the actual (unscaled) price with higher precision
-          if (actualPrice < 0.000000000001) {
-            return symbol + actualPrice.toFixed(16);
-          } else if (actualPrice < 0.00000000001) {
-            return symbol + actualPrice.toFixed(15);
-          } else if (actualPrice < 0.0000000001) {
-            return symbol + actualPrice.toFixed(14);
-          } else if (actualPrice < 0.000000001) {
-            return symbol + actualPrice.toFixed(13);
-          } else if (actualPrice < 0.00000001) {
-            return symbol + actualPrice.toFixed(12);
-          } else if (actualPrice < 0.0000001) {
-            return symbol + actualPrice.toFixed(11);
-          } else if (actualPrice < 0.000001) {
-            return symbol + actualPrice.toFixed(10);
-          } else if (actualPrice < 0.00001) {
-            return symbol + actualPrice.toFixed(8);
-          } else if (actualPrice < 0.001) {
-            return symbol + actualPrice.toFixed(8);
-          } else if (actualPrice < 0.01) {
+          // Check if price has many leading zeros and use compact notation
+          if (actualPrice && actualPrice < 0.001) {
+            const str = actualPrice.toFixed(15);
+            const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+            if (zeros >= 4) {  // Use compact notation for 4+ zeros
+              const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+              // Create HTML-like string that chart can display
+              return symbol + '0.0(' + zeros + ')' + significant.slice(0, 4);
+            } else if (actualPrice < 0.00001) {
+              return symbol + actualPrice.toFixed(8);
+            } else if (actualPrice < 0.001) {
+              return symbol + actualPrice.toFixed(6);
+            }
+          }
+          
+          // Regular formatting for normal prices
+          if (actualPrice < 0.01) {
             return symbol + actualPrice.toFixed(6);
           } else if (actualPrice < 1) {
-            return symbol + actualPrice.toFixed(6);
-          } else if (actualPrice < 100) {
             return symbol + actualPrice.toFixed(4);
-          } else {
+          } else if (actualPrice < 100) {
+            return symbol + actualPrice.toFixed(3);
+          } else if (actualPrice < 1000) {
             return symbol + actualPrice.toFixed(2);
+          } else if (actualPrice < 10000) {
+            return symbol + actualPrice.toFixed(1);
+          } else {
+            return symbol + Math.round(actualPrice).toLocaleString();
           }
         },
       },
@@ -546,7 +548,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     // Create tooltip
     const toolTip = document.createElement('div');
-    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 4px; font-family: inherit; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; box-shadow: 0 2px 8px ${isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`;
+    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 6px; font-family: inherit; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'linear-gradient(145deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%)' : 'linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 250, 250, 0.98) 100%)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'}; box-shadow: 0 4px 12px ${isDark ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.12)'}`;
     chartContainerRef.current.appendChild(toolTip);
 
     chart.subscribeCrosshairMove(param => {
@@ -573,24 +575,30 @@ const PriceChartAdvanced = memo(({ token }) => {
         const formatPrice = (p) => {
           // The candle data is original unscaled data, so don't scale back
           const actualPrice = p;
-          if (actualPrice < 0.000000000001) return actualPrice.toFixed(16);
-          if (actualPrice < 0.00000000001) return actualPrice.toFixed(15);
-          if (actualPrice < 0.0000000001) return actualPrice.toFixed(14);
-          if (actualPrice < 0.000000001) return actualPrice.toFixed(13);
-          if (actualPrice < 0.00000001) return actualPrice.toFixed(12);
-          if (actualPrice < 0.0000001) return actualPrice.toFixed(11);
-          if (actualPrice < 0.000001) return actualPrice.toFixed(10);
+          
+          // Check if price has many leading zeros and use compact notation
+          if (actualPrice && actualPrice < 0.001) {
+            const str = actualPrice.toFixed(15);
+            const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+            if (zeros >= 4) {  // Use compact notation for 4+ zeros
+              const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+              return '0.0(' + zeros + ')' + significant.slice(0, 4);
+            }
+          }
+          
+          // Regular formatting
           if (actualPrice < 0.00001) return actualPrice.toFixed(8);
-          if (actualPrice < 0.001) return actualPrice.toFixed(8);
+          if (actualPrice < 0.001) return actualPrice.toFixed(6);
           if (actualPrice < 0.01) return actualPrice.toFixed(6);
-          if (actualPrice < 1) return actualPrice.toFixed(6);
-          if (actualPrice < 100) return actualPrice.toFixed(4);
-          return actualPrice.toFixed(2);
+          if (actualPrice < 1) return actualPrice.toFixed(4);
+          if (actualPrice < 100) return actualPrice.toFixed(3);
+          if (actualPrice < 1000) return actualPrice.toFixed(2);
+          return actualPrice.toLocaleString();
         };
         
         if (chartType === 'candles') {
           const change = ((candle.close - candle.open) / candle.open * 100).toFixed(2);
-          const changeColor = candle.close >= candle.open ? '#4caf50' : '#f44336';
+          const changeColor = candle.close >= candle.open ? (isDark ? '#00E676' : '#4CAF50') : (isDark ? '#FF5252' : '#F44336');
           
           ohlcData = `
             <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
@@ -640,21 +648,21 @@ const PriceChartAdvanced = memo(({ token }) => {
     
     if (chartType === 'candles') {
       const candleSeries = chart.addSeries(CandlestickSeries, {
-        upColor: '#26a69a',
-        downColor: '#ef5350',
-        borderUpColor: '#26a69a',
-        borderDownColor: '#ef5350',
-        wickUpColor: '#26a69a',
-        wickDownColor: '#ef5350',
+        upColor: isDark ? '#00E676' : '#4CAF50',
+        downColor: isDark ? '#FF5252' : '#F44336',
+        borderUpColor: isDark ? '#00E676' : '#4CAF50',
+        borderDownColor: isDark ? '#FF5252' : '#F44336',
+        wickUpColor: isDark ? 'rgba(0, 230, 118, 0.5)' : 'rgba(76, 175, 80, 0.5)',
+        wickDownColor: isDark ? 'rgba(255, 82, 82, 0.5)' : 'rgba(244, 67, 54, 0.5)',
         borderVisible: true,
         wickVisible: true,
       });
       candleSeriesRef.current = candleSeries;
     } else if (chartType === 'line') {
       const areaSeries = chart.addSeries(AreaSeries, {
-        lineColor: theme.palette.primary.main,
-        topColor: theme.palette.primary.main + '80',
-        bottomColor: theme.palette.primary.main + '08',
+        lineColor: isDark ? '#2196F3' : theme.palette.primary.main,
+        topColor: isDark ? 'rgba(33, 150, 243, 0.4)' : theme.palette.primary.main + '60',
+        bottomColor: isDark ? 'rgba(33, 150, 243, 0.05)' : theme.palette.primary.main + '08',
         lineWidth: 2,
         lineStyle: 0,
         crosshairMarkerVisible: true,
@@ -665,9 +673,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       lineSeriesRef.current = areaSeries;
     } else if (chartType === 'holders') {
       const holdersSeries = chart.addSeries(AreaSeries, {
-        lineColor: '#9c27b0',
-        topColor: 'rgba(156, 39, 176, 0.56)',
-        bottomColor: 'rgba(156, 39, 176, 0.04)',
+        lineColor: isDark ? '#E040FB' : '#9c27b0',
+        topColor: isDark ? 'rgba(224, 64, 251, 0.3)' : 'rgba(156, 39, 176, 0.4)',
+        bottomColor: isDark ? 'rgba(224, 64, 251, 0.05)' : 'rgba(156, 39, 176, 0.04)',
         lineWidth: 2,
         lineStyle: 0,
         crosshairMarkerVisible: true,
@@ -681,7 +689,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     // Add volume series for non-holder charts
     if (chartType !== 'holders') {
       const volumeSeries = chart.addSeries(HistogramSeries, {
-        color: '#26a69a',
+        color: isDark ? 'rgba(0, 230, 118, 0.3)' : 'rgba(76, 175, 80, 0.3)',
         priceFormat: {
           type: 'volume',
         },
@@ -727,7 +735,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         chartRef.current = null;
       }
     };
-  }, [chartType, isDark, isMobile, data]); // Need data dependency but prevent unnecessary recreations
+  }, [chartType, isDark, isMobile, data, theme, isFullscreen, activeFiatCurrency]);
 
   // Handle fullscreen resize
   useEffect(() => {
@@ -767,12 +775,12 @@ const PriceChartAdvanced = memo(({ token }) => {
     // Create series if they don't exist yet
     if (chartType === 'candles' && !candleSeriesRef.current) {
       const candleSeries = chartRef.current.addSeries(CandlestickSeries, {
-        upColor: '#26a69a',
-        downColor: '#ef5350',
-        borderUpColor: '#26a69a',
-        borderDownColor: '#ef5350',
-        wickUpColor: '#26a69a',
-        wickDownColor: '#ef5350',
+        upColor: isDark ? '#00E676' : '#4CAF50',
+        downColor: isDark ? '#FF5252' : '#F44336',
+        borderUpColor: isDark ? '#00E676' : '#4CAF50',
+        borderDownColor: isDark ? '#FF5252' : '#F44336',
+        wickUpColor: isDark ? 'rgba(0, 230, 118, 0.5)' : 'rgba(76, 175, 80, 0.5)',
+        wickDownColor: isDark ? 'rgba(255, 82, 82, 0.5)' : 'rgba(244, 67, 54, 0.5)',
         borderVisible: true,
         wickVisible: true,
       });
@@ -847,9 +855,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       } else {
         candleSeriesRef.current.setData(scaledData);
         
-        if (scaleFactor > 1) {
-          console.log('🔍 [PriceScale] Applied scaling factor:', scaleFactor, 'for small prices');
-        }
+        // Applied scaling factor for small prices
       }
     } else if (chartType === 'line' && lineSeriesRef.current) {
       // Calculate scale factor for small prices
@@ -867,9 +873,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       } else {
         lineSeriesRef.current.setData(lineData);
         
-        if (scaleFactor > 1) {
-          console.log('🔍 [PriceScale] Line: Applied scaling factor:', scaleFactor, 'for small prices');
-        }
+        // Line: Applied scaling factor for small prices
       }
     } else if (chartType === 'holders' && lineSeriesRef.current) {
       const holdersLineData = chartData.map(d => ({ time: d.time, value: d.value || d.holders }));
@@ -887,8 +891,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         time: d.time,
         value: d.volume || 0,
         color: d.close >= d.open 
-          ? (isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.3)')
-          : (isDark ? 'rgba(244, 67, 54, 0.2)' : 'rgba(244, 67, 54, 0.3)')
+          ? (isDark ? 'rgba(0, 230, 118, 0.2)' : 'rgba(76, 175, 80, 0.3)')
+          : (isDark ? 'rgba(255, 82, 82, 0.2)' : 'rgba(244, 67, 54, 0.3)')
       }));
       if (isAutoUpdate && volumeData.length > 0) {
         const lastVolume = volumeData[volumeData.length - 1];
@@ -918,9 +922,9 @@ const PriceChartAdvanced = memo(({ token }) => {
     }
     
     // The tooltip will maintain its position automatically since we're not recreating the chart
-  }, [data, holderData, chartType, isDark, range, theme, isMobile]);
+  }, [data, holderData, chartType, isDark, range, theme, isMobile, getScaleFactor]);
 
-  const handleIndicatorToggle = (indicator) => {
+  const handleIndicatorToggle = useCallback((indicator) => {
     setIndicators(prev => {
       const exists = prev.find(i => i.id === indicator.id);
       if (exists) {
@@ -929,26 +933,27 @@ const PriceChartAdvanced = memo(({ token }) => {
         return [...prev, indicator];
       }
     });
-  };
+  }, []);
 
-  const handleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
-  };
+  const handleFullscreen = useCallback(() => {
+    setIsFullscreen(prev => !prev);
+  }, []);
 
   return (
     <Paper 
       elevation={0} 
       sx={{ 
-        p: 2,
+        p: isMobile ? 1 : 2,
+        pr: isMobile ? 0.5 : 2,
         background: isDark 
-          ? 'linear-gradient(145deg, rgba(18, 18, 18, 0.9) 0%, rgba(25, 25, 25, 0.9) 100%)' 
-          : 'linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 250, 250, 0.9) 100%)',
-        backdropFilter: 'blur(10px)',
+          ? '#0d0d0d' 
+          : '#fafafa',
+        backdropFilter: 'blur(20px)',
         boxShadow: isDark 
-          ? '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-          : '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-        border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`,
-        borderRadius: 2,
+          ? '0 10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.03)'
+          : '0 4px 20px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 1)',
+        border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
+        borderRadius: isMobile ? '10px' : '16px',
         overflow: 'hidden',
         ...(isFullscreen && {
           position: 'fixed',
@@ -973,20 +978,34 @@ const PriceChartAdvanced = memo(({ token }) => {
             <Box sx={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: 0.5,
+              gap: isMobile ? 0.25 : 0.5,
               bgcolor: athData.percentDown < 0 ? 'error.main' : 'success.main',
               color: 'white',
-              px: 1,
-              py: 0.25,
+              px: isMobile ? 0.5 : 1,
+              py: isMobile ? 0.125 : 0.25,
               borderRadius: 1,
-              fontSize: '0.75rem'
+              fontSize: isMobile ? '0.625rem' : '0.75rem'
             }}>
-              <Typography variant="caption" sx={{ fontWeight: 500 }}>
-                {athData.percentDown}% from ATH
+              <Typography variant="caption" sx={{ fontWeight: 500, fontSize: 'inherit' }}>
+                {athData.percentDown}% {isMobile ? 'ATH' : 'from ATH'}
               </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                ({currencySymbols[activeFiatCurrency] || ''}{athData.price < 0.000000001 ? athData.price.toFixed(16) : athData.price < 0.00000001 ? athData.price.toFixed(12) : athData.price < 0.01 ? athData.price.toFixed(8) : athData.price.toFixed(4)})
-              </Typography>
+              {!isMobile && (
+                <Typography variant="caption" sx={{ opacity: 0.9, fontSize: 'inherit' }}>
+                  ({currencySymbols[activeFiatCurrency] || ''}{
+                    (() => {
+                      if (athData.price && athData.price < 0.001) {
+                        const str = athData.price.toFixed(15);
+                        const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+                        if (zeros >= 4) {
+                          const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+                          return `0.0(${zeros})${significant.slice(0, 4)}`;
+                        }
+                      }
+                      return athData.price < 0.01 ? athData.price.toFixed(8) : athData.price.toFixed(4);
+                    })()
+                  })
+                </Typography>
+              )}
             </Box>
           )}
           <Box sx={{ 
@@ -1063,22 +1082,33 @@ const PriceChartAdvanced = memo(({ token }) => {
           </Box>
         </Box>
         
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: isMobile ? 0.5 : 1, flexWrap: 'wrap', alignItems: 'center', position: 'relative' }}>
           <ButtonGroup size="small">
             {Object.entries(chartTypeIcons).map(([type, icon]) => (
               <Button
                 key={type}
                 onClick={() => setChartType(type)}
                 variant={chartType === type ? 'contained' : 'outlined'}
-                sx={{ px: 1.5 }}
+                sx={{ 
+                  px: isMobile ? 0.75 : 1.5,
+                  fontSize: isMobile ? '0.75rem' : '0.875rem',
+                  minWidth: isMobile ? 'auto' : 'unset',
+                  height: isMobile ? 28 : 32,
+                  '& .MuiButton-startIcon': {
+                    marginRight: isMobile ? '2px' : '8px',
+                    '& > svg': {
+                      fontSize: isMobile ? '0.75rem' : '1.25rem'
+                    }
+                  }
+                }}
                 startIcon={icon}
               >
-                {type === 'holders' ? 'Holders' : type.charAt(0).toUpperCase() + type.slice(1)}
+                {isMobile ? (type === 'holders' ? 'Hold' : type.charAt(0).toUpperCase() + type.slice(1).substring(0, 3)) : (type === 'holders' ? 'Holders' : type.charAt(0).toUpperCase() + type.slice(1))}
               </Button>
             ))}
           </ButtonGroup>
 
-          <ButtonGroup size="small">
+          <ButtonGroup size="small" sx={{ '& .MuiButtonGroup-grouped': { minWidth: isMobile ? 20 : 'auto' } }}>
             {['1D', '7D', '1M', '3M', '1Y', 'ALL'].map(r => (
               <Button
                 key={r}
@@ -1087,43 +1117,116 @@ const PriceChartAdvanced = memo(({ token }) => {
                   setIsUserZoomed(false); // Reset zoom state on range change
                 }}
                 variant={range === r ? 'contained' : 'outlined'}
-                sx={{ px: 1, fontSize: '0.75rem', minWidth: 36 }}
+                sx={{ 
+                  px: isMobile ? 0.25 : 1, 
+                  fontSize: isMobile ? '0.65rem' : '0.75rem', 
+                  minWidth: isMobile ? 24 : 36,
+                  height: isMobile ? 24 : 32,
+                  letterSpacing: isMobile ? '-0.5px' : 'normal'
+                }}
               >
                 {r}
               </Button>
             ))}
           </ButtonGroup>
 
-          <PinChartButton
-            token={token}
-            chartType={chartType}
-            range={range}
-            indicators={indicators}
-            activeFiatCurrency={activeFiatCurrency}
-          />
-
           <IconButton
-            size="small"
-            onClick={handleFullscreen}
-            sx={{ ml: 1 }}
-            title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-          >
-            {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-          </IconButton>
-
-          <IconButton
-            size="small"
+            size={isMobile ? "small" : "small"}
             onClick={(e) => setAnchorEl(e.currentTarget)}
-            sx={{ ml: 1 }}
+            sx={{ 
+              ml: isMobile ? 0.5 : 1,
+              p: isMobile ? 0.5 : 1,
+              '& .MuiSvgIcon-root': {
+                fontSize: isMobile ? '1rem' : '1.25rem'
+              }
+            }}
           >
             <MoreVertIcon />
           </IconButton>
+
+          {!isMobile && (
+            <>
+              <PinChartButton
+                token={token}
+                chartType={chartType}
+                range={range}
+                indicators={indicators}
+                activeFiatCurrency={activeFiatCurrency}
+              />
+
+              <IconButton
+                size="small"
+                onClick={handleFullscreen}
+                sx={{ 
+                  ml: 1,
+                  p: 1,
+                  '& .MuiSvgIcon-root': {
+                    fontSize: '1.25rem'
+                  }
+                }}
+                title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+              >
+                {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+              </IconButton>
+            </>
+          )}
           
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={() => setAnchorEl(null)}
           >
+            {isMobile && (
+              <>
+                <MenuItem
+                  onClick={() => {
+                    handleFullscreen();
+                    setAnchorEl(null);
+                  }}
+                  sx={{ fontSize: '0.875rem' }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {isFullscreen ? <FullscreenExitIcon fontSize="small" /> : <FullscreenIcon fontSize="small" />}
+                    {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                  </Box>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    if (pinnedCharts.some(chart => chart.token.md5 === token.md5 && chart.chartType === chartType)) {
+                      unpinChartByToken(token.md5, chartType);
+                    } else {
+                      pinChart({
+                        token: {
+                          md5: token.md5,
+                          name: token.name,
+                          symbol: token.symbol || token.code,
+                          code: token.code,
+                          currency: token.currency,
+                          issuer: token.issuer,
+                          slug: token.slug,
+                          logo: token.logo
+                        },
+                        chartType,
+                        range,
+                        indicators,
+                        activeFiatCurrency
+                      });
+                    }
+                    setAnchorEl(null);
+                  }}
+                  sx={{ fontSize: '0.875rem' }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {pinnedCharts?.some(chart => chart.token.md5 === token.md5 && chart.chartType === chartType) ? 
+                      <PushPinIcon fontSize="small" sx={{ color: theme.palette.primary.main }} /> : 
+                      <PushPinOutlinedIcon fontSize="small" />
+                    }
+                    {pinnedCharts?.some(chart => chart.token.md5 === token.md5 && chart.chartType === chartType) ? 'Unpin Chart' : 'Pin Chart'}
+                  </Box>
+                </MenuItem>
+                <Divider />
+              </>
+            )}
             <MenuItem disabled sx={{ fontSize: '0.875rem', fontWeight: 'bold' }}>
               Indicators
             </MenuItem>
@@ -1166,7 +1269,11 @@ const PriceChartAdvanced = memo(({ token }) => {
         position: 'relative', 
         height: isFullscreen ? 'calc(100vh - 120px)' : (isMobile ? 380 : 550),
         borderRadius: 1,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        willChange: 'height',
+        contain: 'layout style paint',
+        mr: isMobile ? -0.5 : 0,
+        ml: isMobile ? -0.5 : 0
       }}>
         {(() => {
           
@@ -1179,7 +1286,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 alignItems: 'center', 
                 justifyContent: 'center' 
               }}>
-                <Typography color="text.secondary">Loading chart data...</Typography>
+                <CircularProgress size={24} />
               </Box>
             );
           } else if (!data || data.length === 0) {

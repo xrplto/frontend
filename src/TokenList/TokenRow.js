@@ -515,16 +515,35 @@ const DesktopTokenRow = ({
       </StyledCell>
     );
 
-    const priceCell = (
-      <StyledCell align="right" darkMode={darkMode}>
-        <PriceText darkMode={darkMode} priceColor={priceColor}>
-          <NumberTooltip
-            prepend={currencySymbols[activeFiatCurrency]}
-            number={fNumberWithCurreny(exch, exchRate)}
-          />
-        </PriceText>
-      </StyledCell>
-    );
+    const priceCell = (() => {
+      const rawPrice = activeFiatCurrency === 'XRP' ? exch : (exch / exchRate);
+      if (rawPrice && rawPrice < 0.01) {
+        const str = rawPrice.toFixed(15);
+        const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+        if (zeros >= 4) {
+          const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+          return (
+            <StyledCell align="right" darkMode={darkMode}>
+              <PriceText darkMode={darkMode} priceColor={priceColor}>
+                <span>
+                  {currencySymbols[activeFiatCurrency]}0.0<sub style={{ fontSize: '0.6em' }}>{zeros}</sub>{significant.slice(0, 4)}
+                </span>
+              </PriceText>
+            </StyledCell>
+          );
+        }
+      }
+      return (
+        <StyledCell align="right" darkMode={darkMode}>
+          <PriceText darkMode={darkMode} priceColor={priceColor}>
+            <NumberTooltip
+              prepend={currencySymbols[activeFiatCurrency]}
+              number={fNumberWithCurreny(exch, exchRate)}
+            />
+          </PriceText>
+        </StyledCell>
+      );
+    })();
 
     switch (viewMode) {
       case 'priceChange':

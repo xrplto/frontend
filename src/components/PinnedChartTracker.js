@@ -226,6 +226,7 @@ export const usePinnedCharts = () => {
 export const PinChartButton = memo(({ token, chartType, range, indicators, activeFiatCurrency }) => {
   const theme = useTheme();
   const { pinnedCharts, pinChart, unpinChartByToken } = usePinnedCharts();
+  const isMobile = theme.breakpoints.values.sm > window.innerWidth;
   
   const isChartPinned = pinnedCharts.some(
     chart => chart.token.md5 === token.md5 && chart.chartType === chartType
@@ -260,8 +261,12 @@ export const PinChartButton = memo(({ token, chartType, range, indicators, activ
         size="small"
         onClick={handlePinChart}
         sx={{ 
-          ml: 1,
-          color: isChartPinned ? theme.palette.primary.main : 'inherit'
+          ml: isMobile ? 0.5 : 1,
+          p: isMobile ? 0.5 : 1,
+          color: isChartPinned ? theme.palette.primary.main : 'inherit',
+          '& .MuiSvgIcon-root': {
+            fontSize: isMobile ? '1rem' : '1.25rem'
+          }
         }}
       >
         {isChartPinned ? <PushPinIcon /> : <PushPinOutlinedIcon />}
@@ -576,13 +581,6 @@ export const FloatingPinnedChart = memo(() => {
       let memoData = 'Quick Swap via https://xrpl.to';
       transactionData.Memos = configureMemos('', '', memoData);
 
-      console.log('[PinnedChartTracker] Executing swap:', {
-        wallet_type,
-        swapFromXRP,
-        sendAmount,
-        receiveAmount,
-        transactionData
-      });
 
       switch (wallet_type) {
         case 'xaman':
@@ -658,7 +656,6 @@ export const FloatingPinnedChart = memo(() => {
           break;
       }
     } catch (err) {
-      console.error('[PinnedChartTracker] Swap error:', err);
       dispatch(updateProcess(0));
       enqueueSnackbar('Error executing swap', { variant: 'error' });
     }
@@ -691,7 +688,6 @@ export const FloatingPinnedChart = memo(() => {
       }
       
       if (!issuer || !currency) {
-        console.error('[PinnedChartTracker] Missing issuer or currency:', { token, issuer, currency });
         openSnackbar('Unable to create trustline: missing token information', 'error');
         return;
       }
@@ -702,7 +698,6 @@ export const FloatingPinnedChart = memo(() => {
       LimitAmount.currency = currency;
       LimitAmount.value = '1000000000'; // Set a high trust limit
 
-      console.log('[PinnedChartTracker] Creating trustline:', { wallet_type, token, Account, LimitAmount });
 
       switch (wallet_type) {
         case 'xaman':
@@ -804,18 +799,12 @@ export const FloatingPinnedChart = memo(() => {
         const xrpMd5 = 'f8cd8e5bc5aeb1e8e5e89e83f8ee2d06';
         const tokenMd5 = activePinnedChart.token.md5;
         
-        console.log('[PinnedChartTracker] Fetching rates for:', {
-          tokenMd5,
-          xrpMd5,
-          tokenName: activePinnedChart.token.name
-        });
         
         // Fetch rates with XRP as token1 and our token as token2
         const res = await axios.get(
           `${BASE_URL}/pair_rates?md51=${xrpMd5}&md52=${tokenMd5}`
         );
         
-        console.log('[PinnedChartTracker] Rates response:', res.data);
         
         if (res.data) {
           // When XRP is token1 and our token is token2:
@@ -826,7 +815,6 @@ export const FloatingPinnedChart = memo(() => {
             rate2: Number(res.data.rate2) || 0  // XRP per token
           };
           setTokenExchangeRate(rates);
-          console.log('[PinnedChartTracker] Set exchange rates:', rates);
         }
       } catch (err) {
         console.error('Error fetching exchange rates:', err);
@@ -890,23 +878,14 @@ export const FloatingPinnedChart = memo(() => {
 
   // Check trustline when account or token changes
   useEffect(() => {
-    console.log('[PinnedChartTracker] Checking trustline...', {
-      hasAccount: !!accountProfile?.account,
-      account: accountProfile?.account,
-      walletType: accountProfile?.wallet_type,
-      token: activePinnedChart?.token,
-      showSwap
-    });
 
     if (!accountProfile?.account || !activePinnedChart?.token) {
-      console.log('[PinnedChartTracker] Missing account or token, setting trustline to null');
       setHasTrustline(null);
       return;
     }
 
     // XRP doesn't need trustline
     if (activePinnedChart.token.currency === 'XRP' || activePinnedChart.token.code === 'XRP') {
-      console.log('[PinnedChartTracker] Token is XRP, no trustline needed');
       setHasTrustline(true);
       return;
     }
@@ -1004,12 +983,6 @@ export const FloatingPinnedChart = memo(() => {
           }
         }
         
-        console.log('[PinnedChartTracker] Checking trustline for token:', {
-          currency: tokenCurrency,
-          issuer: tokenIssuer,
-          name: activePinnedChart.token.name,
-          totalTrustlines: allTrustlines.length
-        });
         
         if (allTrustlines.length > 0) {
           
@@ -1051,13 +1024,6 @@ export const FloatingPinnedChart = memo(() => {
                              currenciesMatch(curr, activePinnedChart.token.symbol);
               
               if (matches) {
-                console.log('[PinnedChartTracker] Found matching trustline:', {
-                  lineCurrency: curr,
-                  lineIssuers: lineIssuers,
-                  tokenCurrency: tokenCurrency,
-                  tokenSymbol: activePinnedChart.token.symbol,
-                  tokenIssuer: tokenIssuer
-                });
               }
               
               return matches;
@@ -1066,14 +1032,11 @@ export const FloatingPinnedChart = memo(() => {
             return currencyMatches;
           });
           
-          console.log('[PinnedChartTracker] Has trustline:', hasTrust);
           setHasTrustline(hasTrust);
         } else {
-          console.log('[PinnedChartTracker] No trustlines found');
           setHasTrustline(false);
         }
       } catch (err) {
-        console.error('[PinnedChartTracker] Error checking trustline:', err);
         setHasTrustline(false);
       }
     };
@@ -1634,12 +1597,6 @@ export const FloatingPinnedChart = memo(() => {
                         if (!swapAmount || swapAmount === '0') return '0.00';
                         const amount = new Decimal(swapAmount);
                         
-                        console.log('[PinnedChartTracker] Calculating output:', {
-                          swapAmount,
-                          swapFromXRP,
-                          rate1: tokenExchangeRate.rate1,
-                          rate2: tokenExchangeRate.rate2
-                        });
                         
                         // Use exchange rates for calculation
                         if (tokenExchangeRate.rate1 > 0 || tokenExchangeRate.rate2 > 0) {
@@ -1648,7 +1605,6 @@ export const FloatingPinnedChart = memo(() => {
                             // If rate2 is 0.35 (0.35 XRP per RLUSD), then 1 XRP / 0.35 = 2.85 RLUSD
                             if (tokenExchangeRate.rate2 > 0) {
                               const result = amount.div(tokenExchangeRate.rate2).toFixed(6);
-                              console.log('[PinnedChartTracker] XRP->Token calc:', `${swapAmount} / ${tokenExchangeRate.rate2} = ${result}`);
                               return result;
                             }
                           } else {
@@ -1657,12 +1613,10 @@ export const FloatingPinnedChart = memo(() => {
                             // If rate2 is 0.35 (0.35 XRP per RLUSD), then 2 RLUSD * 0.35 = 0.7 XRP
                             if (tokenExchangeRate.rate2 > 0) {
                               const result = amount.mul(tokenExchangeRate.rate2).toFixed(6);
-                              console.log('[PinnedChartTracker] Token->XRP calc:', `${swapAmount} * ${tokenExchangeRate.rate2} = ${result}`);
                               return result;
                             }
                           }
                         }
-                        console.log('[PinnedChartTracker] No valid rates, returning 0.00');
                         return '0.00';
                       })()}
                       </Typography>
@@ -1691,14 +1645,6 @@ export const FloatingPinnedChart = memo(() => {
                   variant="contained"
                   size="small"
                   onClick={async () => {
-                    console.log('[PinnedChartTracker] Swap button clicked:', {
-                      swapFromXRP,
-                      hasTrustline,
-                      token: activePinnedChart.token,
-                      account: accountProfile?.account,
-                      walletType: accountProfile?.wallet_type,
-                      swapAmount
-                    });
                     
                     // Check if we need to set trustline first
                     // swapFromXRP = true means we're buying the token (XRP -> Token)

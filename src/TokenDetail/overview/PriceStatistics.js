@@ -67,24 +67,26 @@ const badge24hStyle = {
 // Enhanced styled components
 const ModernTableCell = styled(TableCell)(({ theme }) => ({
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  padding: theme.spacing(0.75),
+  padding: theme.spacing(1.25, 1.5),
   '&:first-of-type': {
-    paddingLeft: theme.spacing(1),
+    paddingLeft: theme.spacing(1.5),
     fontWeight: 600,
-    color: alpha(theme.palette.text.primary, 0.9)
+    color: alpha(theme.palette.text.primary, 0.9),
+    width: '40%'
   },
   '&:last-of-type': {
-    paddingRight: theme.spacing(1),
+    paddingRight: theme.spacing(1.5),
     paddingLeft: theme.spacing(2)
   },
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.5),
+    padding: theme.spacing(1, 1.25),
     '&:first-of-type': {
-      paddingLeft: theme.spacing(0.75)
+      paddingLeft: theme.spacing(1.25),
+      width: '45%'
     },
     '&:last-of-type': {
-      paddingRight: theme.spacing(0.75),
-      paddingLeft: theme.spacing(1)
+      paddingRight: theme.spacing(1.25),
+      paddingLeft: theme.spacing(1.5)
     }
   }
 }));
@@ -229,7 +231,7 @@ export default function PriceStatistics({ token }) {
           0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
         position: 'relative',
         overflow: 'hidden',
-        mb: { xs: 0.5, sm: 1 },
+        mb: { xs: 1, sm: 1.5 },
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&::before': {
           display: 'none'
@@ -312,7 +314,7 @@ export default function PriceStatistics({ token }) {
       {/* Enhanced Header */}
       <Box
         sx={{
-          p: { xs: 0.75, sm: 1 },
+          p: { xs: 1.25, sm: 1.5 },
           background: `linear-gradient(135deg, 
             ${alpha(theme.palette.primary.main, 0.1)} 0%, 
             ${alpha(theme.palette.primary.main, 0.05)} 50%,
@@ -351,7 +353,7 @@ export default function PriceStatistics({ token }) {
         </Typography>
       </Box>
 
-      <StyledTable size="small">
+      <StyledTable size="small" sx={{ mt: 0.5 }}>
         <TableBody>
           {/* Issuer Row */}
           <TableRow>
@@ -369,7 +371,7 @@ export default function PriceStatistics({ token }) {
               </Typography>
             </ModernTableCell>
             <ModernTableCell align="left">
-              <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
+              <Stack direction="row" alignItems="center" spacing={isMobile ? 0.75 : 1.25}>
                 <Chip
                   label={
                     <Stack direction="row" alignItems="center" spacing={isMobile ? 0.25 : 0.5}>
@@ -470,7 +472,7 @@ export default function PriceStatistics({ token }) {
                 </Typography>
               </ModernTableCell>
               <ModernTableCell align="left">
-                <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
+                <Stack direction="row" alignItems="center" spacing={isMobile ? 0.75 : 1.25}>
                   <Chip
                     label={
                       <Typography
@@ -904,7 +906,12 @@ export default function PriceStatistics({ token }) {
                 </Typography>
               </ModernTableCell>
               <ModernTableCell align="left">
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                <Stack 
+                  direction="row" 
+                  alignItems="center" 
+                  spacing={isMobile ? 0.5 : 1.25} 
+                  sx={{ flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.75 }}
+                >
                   <CompactTags 
                     enhancedTags={enhancedTags}
                     maxTags={isMobile ? 2 : 3}
@@ -989,8 +996,8 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
   const iconSize = size === 'small' ? 14 : 16;
 
   return (
-    <Stack direction="row" spacing={0.5} alignItems="center">
-      {socialEntries.slice(0, isMobile ? 3 : 4).map(([platform, url]) => (
+    <Stack direction="row" spacing={isMobile ? 0.25 : 0.75} alignItems="center">
+      {socialEntries.slice(0, isMobile ? 2 : 4).map(([platform, url]) => (
         <Tooltip key={platform} title={`${platform}: ${url}`} arrow>
           <IconButton
             component="a"
@@ -999,9 +1006,9 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
             rel="noopener noreferrer"
             size="small"
             sx={{
-              width: isMobile ? 20 : 24,
-              height: isMobile ? 20 : 24,
-              p: 0.5,
+              width: isMobile ? 18 : 24,
+              height: isMobile ? 18 : 24,
+              p: isMobile ? 0.25 : 0.5,
               borderRadius: '8px',
               background: `linear-gradient(145deg, ${alpha(
                 theme.palette.primary.main,
@@ -1044,15 +1051,15 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
           </IconButton>
         </Tooltip>
       ))}
-      {socialEntries.length > (isMobile ? 3 : 4) && toggleLinksDrawer && (
+      {socialEntries.length > (isMobile ? 2 : 4) && toggleLinksDrawer && (
         <Tooltip title="View all links" arrow>
           <IconButton
             onClick={() => toggleLinksDrawer(true)}
             size="small"
             sx={{
-              width: isMobile ? 20 : 24,
-              height: isMobile ? 20 : 24,
-              p: 0.5,
+              width: isMobile ? 18 : 24,
+              height: isMobile ? 18 : 24,
+              p: isMobile ? 0.25 : 0.5,
               borderRadius: '8px',
               background: `linear-gradient(145deg, ${alpha(
                 theme.palette.secondary.main,
@@ -1073,8 +1080,8 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
               }
             }}
           >
-            <Typography sx={{ fontSize: '0.65rem', fontWeight: 600 }}>
-              +{socialEntries.length - (isMobile ? 3 : 4)}
+            <Typography sx={{ fontSize: isMobile ? '0.55rem' : '0.65rem', fontWeight: 600 }}>
+              +{socialEntries.length - (isMobile ? 2 : 4)}
             </Typography>
           </IconButton>
         </Tooltip>
@@ -1089,9 +1096,9 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   if (!enhancedTags || enhancedTags.length === 0) return null;
-
+  
   return (
-    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+    <Stack direction="row" spacing={isMobile ? 0.4 : 0.75} alignItems="center" sx={{ flexWrap: 'wrap', gap: isMobile ? 0.4 : 0.75 }}>
       {enhancedTags.slice(0, maxTags).map((tag) => (
         <Link
           key={tag}
@@ -1125,7 +1132,7 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
               height: isMobile ? '18px' : '22px',
               fontSize: isMobile ? '0.55rem' : '0.65rem',
               borderRadius: '8px',
-              px: isMobile ? 0.75 : 1,
+              px: isMobile ? 0.6 : 1,
               background: `linear-gradient(145deg, ${alpha(
                 theme.palette.background.paper,
                 0.95
@@ -1157,10 +1164,10 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
           size="small"
           onClick={() => toggleTagsDrawer(true)}
           sx={{
-            height: isMobile ? '22px' : '26px',
-            fontSize: isMobile ? '0.65rem' : '0.75rem',
+            height: isMobile ? '18px' : '26px',
+            fontSize: isMobile ? '0.55rem' : '0.75rem',
             borderRadius: '8px',
-            px: isMobile ? 0.75 : 1,
+            px: isMobile ? 0.5 : 1,
             background: `linear-gradient(145deg, ${alpha(
               theme.palette.primary.main,
               0.1
@@ -1198,9 +1205,10 @@ export const CompactSocialAndTags = ({
   socialSize = 'small' 
 }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   return (
-    <Stack direction="row" alignItems="center" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+    <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1.25} sx={{ flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.75 }}>
       <CompactTags 
         enhancedTags={enhancedTags}
         toggleTagsDrawer={toggleTagsDrawer}

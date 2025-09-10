@@ -22,7 +22,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CollectionsIcon from '@mui/icons-material/Collections';
-import { useState, useEffect, useRef, useCallback, useContext, useMemo, memo } from 'react';
+import { useState, useEffect, useRef, useCallback, useContext, useMemo, memo, lazy, Suspense } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import useDebounce from 'src/hooks/useDebounce';
@@ -74,8 +74,10 @@ const preloadTrendingData = async () => {
 // Start preloading immediately
 preloadTrendingData();
 
-// Set up interval to refresh cache
-setInterval(preloadTrendingData, CACHE_DURATION);
+// Set up interval to refresh cache (only in browser)
+if (typeof window !== 'undefined') {
+  setInterval(preloadTrendingData, CACHE_DURATION);
+}
 
 // Memoized price formatter
 const formatPrice = (price) => {
@@ -122,7 +124,10 @@ function SearchModal({ open, onClose }) {
   // Focus input when modal opens
   useEffect(() => {
     if (open && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 100);
+      // Use requestAnimationFrame for smoother focus
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
     }
   }, [open]);
 
@@ -217,14 +222,18 @@ function SearchModal({ open, onClose }) {
       }, 0);
     }
     
-    // Navigate to result
-    if (type === 'token') {
-      router.push(`/token/${item.slug}`);
-    } else if (type === 'collection') {
-      router.push(`/collection/${item.slug}`);
-    }
+    // Close modal first for better perceived performance
     handleClose();
-  }, [recentSearches, router, handleClose]);
+    
+    // Navigate to result using full page reload
+    requestAnimationFrame(() => {
+      if (type === 'token') {
+        window.location.href = `/token/${item.slug}`;
+      } else if (type === 'collection') {
+        window.location.href = `/collection/${item.slug}`;
+      }
+    });
+  }, [recentSearches, handleClose]);
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Escape') {
@@ -261,6 +270,8 @@ function SearchModal({ open, onClose }) {
       open={open}
       onClose={handleClose}
       sx={modalStyles}
+      keepMounted={false}
+      disablePortal={false}
     >
       <Paper
         sx={paperStyles}
@@ -318,13 +329,17 @@ function SearchModal({ open, onClose }) {
                       <ListItem key={index} disablePadding>
                         <ListItemButton 
                           onClick={() => {
-                            // Navigate directly for recent searches since we already have the data
-                            if (item.type === 'token') {
-                              router.push(`/token/${item.slug}`);
-                            } else if (item.type === 'collection') {
-                              router.push(`/collection/${item.slug}`);
-                            }
+                            // Close modal first for better perceived performance
                             handleClose();
+                            
+                            // Navigate directly for recent searches using full page reload
+                            requestAnimationFrame(() => {
+                              if (item.type === 'token') {
+                                window.location.href = `/token/${item.slug}`;
+                              } else if (item.type === 'collection') {
+                                window.location.href = `/collection/${item.slug}`;
+                              }
+                            });
                           }} 
                           sx={{ py: 0.5 }}
                         >
@@ -334,7 +349,7 @@ function SearchModal({ open, onClose }) {
                                 ? `https://s1.xrpnft.com/collection/${item.logoImage}` 
                                 : `https://s1.xrpl.to/token/${item.md5}`}
                               sx={{ width: 28, height: 28 }}
-                              imgProps={{ loading: 'lazy' }}
+                              imgProps={{ loading: 'lazy', decoding: 'async' }}
                             >
                               {item.user?.[0] || item.name?.[0]}
                             </Avatar>
@@ -376,7 +391,7 @@ function SearchModal({ open, onClose }) {
                             <Avatar
                               src={`https://s1.xrpl.to/token/${token.md5}`}
                               sx={{ width: 28, height: 28 }}
-                              imgProps={{ loading: 'lazy' }}
+                              imgProps={{ loading: 'lazy', decoding: 'async' }}
                             />
                           </ListItemAvatar>
                           <ListItemText
@@ -428,7 +443,7 @@ function SearchModal({ open, onClose }) {
                             <Avatar
                               src={`https://s1.xrpnft.com/collection/${collection.logoImage}`}
                               sx={{ width: 28, height: 28 }}
-                              imgProps={{ loading: 'lazy' }}
+                              imgProps={{ loading: 'lazy', decoding: 'async' }}
                             />
                           </ListItemAvatar>
                           <ListItemText
@@ -498,7 +513,7 @@ function SearchModal({ open, onClose }) {
                           <Avatar
                             src={`https://s1.xrpl.to/token/${token.md5}`}
                             sx={{ width: 28, height: 28 }}
-                            imgProps={{ loading: 'lazy' }}
+                            imgProps={{ loading: 'lazy', decoding: 'async' }}
                           />
                         </ListItemAvatar>
                         <ListItemText

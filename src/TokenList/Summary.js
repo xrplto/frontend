@@ -251,15 +251,6 @@ export default function Summary() {
   const { activeFiatCurrency, darkMode } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Debug logging to see what metrics we're receiving
-  useEffect(() => {
-    console.log('DEBUG - Metrics received:', metrics);
-    console.log('DEBUG - Metrics.global:', metrics.global);
-    console.log('DEBUG - Total tokens:', metrics.total_tokens);
-    console.log('DEBUG - Global.total:', metrics.global?.total);
-    console.log('DEBUG - Active holders:', metrics.active_holders);
-    console.log('DEBUG - New tokens 24h:', metrics.new_tokens_24h);
-  }, [metrics]);
 
   const fiatRate = metrics[activeFiatCurrency] || 1;
 

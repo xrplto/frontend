@@ -11,7 +11,7 @@ const PageLayout = ({ children }) => {
   const isApiDocsPage = router.pathname === '/api-docs';
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div>
       {/* Main content with padding for fixed headers */}
       <div style={{ 
         paddingTop: isApiDocsPage ? '0' : '100px', // No padding for API docs page

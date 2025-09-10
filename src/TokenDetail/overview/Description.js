@@ -23,7 +23,8 @@ export default function Description({
   showEditor, 
   setShowEditor, 
   description, 
-  onApplyDescription 
+  onApplyDescription,
+  mdEditor 
 }) {
   const theme = useTheme();
   const { accountProfile } = useContext(AppContext);
@@ -37,7 +38,7 @@ export default function Description({
     setShowEditor(!showEditor);
   };
 
-  if (!description && !showEditor) return null;
+  if (!description && !showEditor && !isAdmin) return null;
 
   return (
     <Card 
@@ -111,7 +112,56 @@ export default function Description({
         }}
       />
       
-      {!showEditor && description && (
+      {showEditor && mdEditor ? (
+        <Box 
+          sx={{ 
+            px: { xs: 1, sm: 1.5 }, 
+            py: 1,
+            '& .rc-md-editor': {
+              border: 'none !important',
+              borderRadius: '0 !important',
+              boxShadow: 'none !important',
+              '& .rc-md-navigation': {
+                backgroundColor: theme.palette.background.paper,
+                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                padding: '8px',
+                '& .button-wrap': {
+                  '& .button': {
+                    color: theme.palette.text.primary,
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    transition: 'background-color 0.2s',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                    }
+                  }
+                }
+              },
+              '& .editor-container': {
+                backgroundColor: theme.palette.background.paper,
+                '& .sec-md-editor-input': {
+                  backgroundColor: theme.palette.background.paper,
+                  color: theme.palette.text.primary,
+                  borderRight: `1px solid ${alpha(theme.palette.divider, 0.15)}`
+                },
+                '& .sec-html-preview': {
+                  backgroundColor: theme.palette.background.paper,
+                  color: theme.palette.text.primary,
+                  padding: '16px'
+                },
+                '& .input': {
+                  backgroundColor: theme.palette.background.paper,
+                  color: theme.palette.text.primary,
+                  fontSize: '14px',
+                  lineHeight: '1.6'
+                }
+              }
+            }
+          }}
+        >
+          {mdEditor}
+        </Box>
+      ) : !showEditor && description ? (
         <Box sx={{ px: { xs: 1, sm: 1.5 }, py: 1 }}>
           <Collapse in={expanded} collapsedSize={80}>
             <Box 
@@ -184,6 +234,21 @@ export default function Description({
             </Box>
           </Collapse>
         </Box>
+      ) : (
+        !showEditor && (
+          <Box sx={{ px: { xs: 1, sm: 1.5 }, py: 1, minHeight: 60 }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'text.secondary',
+                fontStyle: 'italic',
+                fontSize: '0.75rem'
+              }}
+            >
+              No description available.
+            </Typography>
+          </Box>
+        )
       )}
     </Card>
   );

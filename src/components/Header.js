@@ -153,30 +153,24 @@ const HeaderWrapper = styled(Box)(
     margin-bottom: ${theme.spacing(0)};
     border-radius: 0px;
     position: fixed;
-    top: 36px;
+    top: 28px;
     left: 0;
     right: 0;
     z-index: 1100;
     background: ${theme.palette.mode === 'dark' 
       ? '#000000'
       : '#ffffff'};
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid ${theme.palette.mode === 'dark'
       ? 'rgba(255,255,255,0.08)'
       : 'rgba(0,0,0,0.1)'};
     box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
-    will-change: transform;
     
     ${theme.breakpoints.down('sm')} {
       height: ${theme.spacing(6)};
       background: ${theme.palette.mode === 'dark'
         ? '#000000'
         : '#ffffff'};
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
     }
     
     &::before {
@@ -212,8 +206,6 @@ const StyledLink = styled(Link, {
     display: inline-flex;
     align-items: center;
     background: 'transparent';
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
     border: 1px solid ${alpha(theme.palette.divider, 0.15)};
     box-shadow: 
       0 2px 8px ${alpha(theme.palette.common.black, 0.08)}, 
@@ -242,7 +234,6 @@ const StyledLink = styled(Link, {
         theme.palette.primary.main,
         0.25
       )};
-      transform: translateY(-2px);
       box-shadow: 
         0 8px 24px ${alpha(
           theme.palette.primary.main,
@@ -267,8 +258,6 @@ const StyledMenuItem = styled(MenuItem, {
     border-radius: 10px;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: 'transparent';
-    backdrop-filter: blur(15px) saturate(120%);
-    -webkit-backdrop-filter: blur(15px) saturate(120%);
     border: 1px solid ${alpha(theme.palette.divider, 0.1)};
     box-shadow: 
       0 1px 4px ${alpha(theme.palette.common.black, 0.05)}, 
@@ -297,7 +286,6 @@ const StyledMenuItem = styled(MenuItem, {
         theme.palette.primary.main,
         0.2
       )};
-      transform: translateX(4px);
       box-shadow: 
         0 4px 16px ${alpha(
           theme.palette.primary.main,
@@ -824,9 +812,6 @@ function Header(props) {
                         borderRadius: '12px',
                         height: '32px',
                         background: 'transparent',
-                        backdropFilter: 'blur(20px) saturate(150%)',
-                        WebkitBackdropFilter: 'blur(20px) saturate(150%)',
-                        contain: 'layout style paint',
                         border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
                         boxShadow: `
                           0 2px 8px ${alpha(theme.palette.common.black, 0.08)}, 
@@ -849,8 +834,7 @@ function Header(props) {
                           transition: 'left 0.5s ease'
                         },
                         '&:hover': {
-                          transform: 'translateY(-2px)',
-                          background: 'transparent',
+                                          background: 'transparent',
                           border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
                           boxShadow: `
                             0 8px 24px ${alpha(theme.palette.primary.main, 0.15)},

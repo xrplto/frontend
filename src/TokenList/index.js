@@ -187,7 +187,6 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     const checkMobile = () => {
       const mobile = window.innerWidth < 960;
       setIsMobile(mobile);
-      console.log('[DEBUG] Mobile mode:', mobile, 'Width:', window.innerWidth); // DEBUG
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -1014,8 +1013,6 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
             </button>
             <button
               onClick={() => {
-                console.log('[DEBUG] Apply clicked - tempCustomColumns:', tempCustomColumns);
-                console.log('[DEBUG] isMobile:', isMobile);
                 setCustomColumns(tempCustomColumns);
                 if (typeof window !== 'undefined') {
                   localStorage.setItem('customTokenColumns', JSON.stringify(tempCustomColumns));

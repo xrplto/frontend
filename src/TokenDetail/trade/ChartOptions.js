@@ -51,10 +51,10 @@ export default function ChartOptions(series, theme, isMobile) {
             strokeDashArray: 2,
             borderColor: theme.palette.divider,
             padding: {
-                top: isMobile ? 5 : 10,
-                right: isMobile ? 10 : 20,
-                bottom: isMobile ? 5 : 10,
-                left: isMobile ? 10 : 20
+                top: isMobile ? 2 : 10,
+                right: isMobile ? 5 : 20,
+                bottom: isMobile ? 2 : 10,
+                left: isMobile ? 5 : 20
             }
         },
 
@@ -83,12 +83,15 @@ export default function ChartOptions(series, theme, isMobile) {
             axisTicks: { show: false },
 			labels: { // webxtor adding formatting for the labels
 				formatter: memoizedFNumber,
+				style: {
+					fontSize: isMobile ? '10px' : '12px'
+				}
 			}
         },
         // Y Axis
         yaxis: {
             show: true,
-            tickAmount: 3,
+            tickAmount: isMobile ? 2 : 3,
             labels: {
                 /**
                 * Allows users to apply a custom formatter function to yaxis labels.
@@ -98,6 +101,9 @@ export default function ChartOptions(series, theme, isMobile) {
                 */
                 formatter: function(val) {
                     return val > 1000 ? memoizedFNumberWithSuffix(val) : memoizedFNumber(val);
+                },
+                style: {
+                    fontSize: isMobile ? '10px' : '12px'
                 }
             }
         },
@@ -159,14 +165,14 @@ export default function ChartOptions(series, theme, isMobile) {
         // Legend
         legend: {
             show: !isMobile,
-            fontSize: isMobile ? 11 : 13,
+            fontSize: isMobile ? 10 : 13,
             position: 'top',
             horizontalAlign: 'right',
             markers: {
-                radius: isMobile ? 8 : 12
+                radius: isMobile ? 6 : 12
             },
             fontWeight: 500,
-            itemMargin: { horizontal: isMobile ? 8 : 12 },
+            itemMargin: { horizontal: isMobile ? 4 : 12 },
             labels: {
                 colors: theme.palette.text.primary
             }

@@ -10,3 +10,10 @@
   white-space: nowrap !important;
   border: 0 !important;
 }
+
+/* Hide fullscreen button in markdown editor */
+.rc-md-editor .button[title="full screen"],
+.rc-md-editor .button[title="exit full screen"],
+.rc-md-editor .rc-md-navigation .button-wrap .button[data-name="fullscreen"] {
+  display: none !important;
+}
