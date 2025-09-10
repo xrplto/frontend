@@ -441,7 +441,6 @@ function Header(props) {
                   darkMode={darkMode}
                   theme={theme}
                   href="/"
-                  onClick={(e) => e.preventDefault()}
                 >
                   {t('Tokens')}
                 </StyledLink>
