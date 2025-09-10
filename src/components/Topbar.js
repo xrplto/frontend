@@ -96,18 +96,18 @@ const ContentWrapper = styled.nav`
 `;
 
 const APILabel = styled.button`
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: ${props => props.textColor};
   text-decoration: none;
-  margin-left: 4px;
+  margin-left: 3px;
   background: ${props => props.primaryColor ? `${props.primaryColor}14` : 'rgba(0,128,255,0.08)'};
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
-  gap: 4px;
-  min-height: 32px;
+  gap: 3px;
+  min-height: 26px;
   border: 1px solid ${props => props.primaryColor ? `${props.primaryColor}26` : 'rgba(0,128,255,0.15)'};
   cursor: pointer;
   transition: all 0.2s;
@@ -209,8 +209,8 @@ const H24Style = styled.div`
 `;
 
 const PulsatingCircle = styled.div`
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: ${props => props.primaryColor || '#10b981'};
   position: relative;
@@ -221,7 +221,7 @@ const PulsatingCircle = styled.div`
       box-shadow: 0 0 0 0 ${props => props.primaryColor ? `${props.primaryColor}b3` : 'rgba(16, 185, 129, 0.7)'};
     }
     70% {
-      box-shadow: 0 0 0 10px ${props => props.primaryColor ? `${props.primaryColor}00` : 'rgba(16, 185, 129, 0)'};
+      box-shadow: 0 0 0 8px ${props => props.primaryColor ? `${props.primaryColor}00` : 'rgba(16, 185, 129, 0)'};
     }
     100% {
       box-shadow: 0 0 0 0 ${props => props.primaryColor ? `${props.primaryColor}00` : 'rgba(16, 185, 129, 0)'};
@@ -232,9 +232,9 @@ const PulsatingCircle = styled.div`
 const MetricContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 6px;
-  border-radius: 6px;
+  gap: 3px;
+  padding: 2px 4px;
+  border-radius: 4px;
   background: transparent;
   min-width: auto;
   position: relative;
@@ -248,16 +248,16 @@ const MetricContainer = styled.div`
 const MetricLabel = styled.span`
   color: ${props => props.textSecondary};
   font-weight: 600;
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   line-height: 1;
   font-family: inherit;
 `;
 
 const MetricValue = styled.span`
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   line-height: 1;
   font-family: inherit;
   letter-spacing: -0.01em;
@@ -912,7 +912,7 @@ const Topbar = () => {
                 </LiveButton>
               </MobileContainer>
             ) : (
-              <Stack direction="row" spacing={1} alignItems="center" flex={1}>
+              <Stack direction="row" spacing={0.5} alignItems="center" flex={1}>
                 <MetricContainer>
                   <MetricLabel textSecondary={themeColors.textSecondary}>{t('Addresses')}</MetricLabel>
                   {metricsLoaded ? (
@@ -1053,7 +1053,7 @@ const Topbar = () => {
               </Stack>
             )}
             {!isMobile && (
-              <Box display="flex" alignItems="center" gap={0.5} style={{ paddingLeft: '8px' }}>
+              <Box display="flex" alignItems="center" gap={0.25} style={{ paddingLeft: '6px' }}>
                 <CurrencySwitcher />
                 <ThemeSwitcher />
                 <APILabel
@@ -1067,19 +1067,19 @@ const Topbar = () => {
                   primaryColor={primaryColor}
                 >
                   <PulsatingCircle primaryColor={primaryColor} />
-                  <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
+                  <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.65rem', fontFamily: 'Inter, sans-serif' }}>
                     Live Trades
                   </Typography>
                 </APILabel>
                 <APILabel
                   as="a"
                   href="/api-docs"
-                  style={{ marginLeft: '4px' }}
+                  style={{ marginLeft: '2px' }}
                   aria-label="API documentation"
                   textColor={themeColors.textPrimary}
                   primaryColor={primaryColor}
                 >
-                  <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.75rem', fontFamily: 'Inter, sans-serif' }}>
+                  <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.65rem', fontFamily: 'Inter, sans-serif' }}>
                     API
                   </Typography>
                 </APILabel>

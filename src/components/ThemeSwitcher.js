@@ -96,14 +96,17 @@ export default function ThemeSwitcher() {
         size="small"
         sx={{
           backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
-          borderRadius: '8px',
-          padding: '6px',
+          borderRadius: '6px',
+          padding: '4px',
+          minWidth: '26px',
+          width: '26px',
+          height: '26px',
           '&:hover': {
             backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.2)
           }
         }}
       >
-        <Icon icon={currentTheme.icon} fontSize={20} />
+        <Icon icon={currentTheme.icon} fontSize={16} />
       </IconButton>
       
       <Menu

@@ -9,11 +9,11 @@ const StyledButton = styled(IconButton)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
     ? alpha('#030310', 0.7)
     : alpha(theme.palette.primary.main, 0.08),
-  borderRadius: theme.spacing(1.5),
-  padding: '6px 10px',
+  borderRadius: theme.spacing(1),
+  padding: '4px 6px',
   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  minWidth: 72,
+  minWidth: 58,
   '&:hover': {
     backgroundColor: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
       ? alpha(theme.palette.primary.main, 0.04)
@@ -128,7 +128,7 @@ export default function CurrencySwithcer() {
             <Typography
               variant="body2"
               sx={{
-                fontSize: '0.8rem',
+                fontSize: '0.7rem',
                 fontWeight: 600,
                 color: (theme) => theme.palette.text.primary,
                 fontFamily: 'Inter, sans-serif',
