@@ -17,7 +17,6 @@ import { AppContext } from 'src/AppContext';
 import dynamic from 'next/dynamic';
 
 const CategoriesDrawer = dynamic(() => import('src/components/CategoriesDrawer'));
-const CustomColumnsDialog = dynamic(() => import('./CustomColumnsDialog'));
 
 // Helper function
 function getTagValue(tags, tagName) {
