@@ -810,18 +810,39 @@ const MarketMetricsContent = () => {
 
       // Filter data based on selected time range
       if (range !== 'all') {
-        const rangeMap = {
-          '5y': 5,
-          '1y': 1,
-          '6m': 0.5,
-          '1m': 1 / 12
-        };
-
-        const cutoffDate = parse(now, 'yyyy-MM-dd', new Date());
-        cutoffDate.setDate(cutoffDate.getDate() - rangeMap[range]);
-        filteredData = filteredData.filter((item) =>
-          isAfter(parse(item.date, 'MMM dd yyyy', new Date()), cutoffDate)
-        );
+        let cutoffDate = new Date();
+        
+        switch (range) {
+          case '5y':
+            cutoffDate = subYears(new Date(), 5);
+            break;
+          case '1y':
+            cutoffDate = subYears(new Date(), 1);
+            break;
+          case '6m':
+            cutoffDate = new Date();
+            cutoffDate.setMonth(cutoffDate.getMonth() - 6);
+            break;
+          case '1m':
+            cutoffDate = new Date();
+            cutoffDate.setMonth(cutoffDate.getMonth() - 1);
+            break;
+        }
+        
+        filteredData = filteredData.filter((item) => {
+          try {
+            const itemDate = parse(item.date, 'MMM dd yyyy', new Date());
+            return isAfter(itemDate, cutoffDate);
+          } catch (e) {
+            // If date parsing fails, try other formats or skip
+            try {
+              const itemDate = new Date(item.date);
+              return isAfter(itemDate, cutoffDate);
+            } catch (e2) {
+              return true; // Include item if date can't be parsed
+            }
+          }
+        });
       }
 
       // Further filter by token names if any are selected
