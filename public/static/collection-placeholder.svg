@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="#f0f0f0"/>
-  <rect x="50" y="50" width="200" height="200" fill="#e0e0e0" stroke="#ccc" stroke-width="2" rx="10"/>
-  <circle cx="100" cy="100" r="15" fill="#999"/>
-  <path d="M70 180 L120 130 L170 160 L230 120 L230 230 L70 230 Z" fill="#d0d0d0"/>
-  <text x="150" y="270" text-anchor="middle" fill="#999" font-family="Arial, sans-serif" font-size="12">Collection</text>
-</svg>
