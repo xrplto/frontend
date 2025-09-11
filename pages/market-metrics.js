@@ -546,6 +546,15 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
 
 const tokenColorMap = {};
 
+// Wrapper components to avoid nested component definitions
+const LegendWrapper = ({ payload, visibleLines, handleLegendClick }) => (
+  <CustomLegend
+    payload={payload}
+    visibleLines={visibleLines}
+    handleLegendClick={handleLegendClick}
+  />
+);
+
 const MarketMetricsContent = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1421,13 +1430,7 @@ const MarketMetricsContent = () => {
                     cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
                   <div
-                    content={({ payload }) => (
-                      <CustomLegend
-                        payload={payload}
-                        visibleLines={visibleLines}
-                        handleLegendClick={handleLegendClick}
-                      />
-                    )}
+                    content={null}
                   />
                   <div
                     type="monotone"
@@ -1921,13 +1924,7 @@ const MarketMetricsContent = () => {
                     cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
                   <div
-                    content={({ payload }) => (
-                      <CustomLegend
-                        payload={payload}
-                        visibleLines={visibleLines}
-                        handleLegendClick={handleLegendClick}
-                      />
-                    )}
+                    content={null}
                   />
 
                   {/* Dynamically render lines for selected tokens */}
@@ -2295,13 +2292,7 @@ const MarketMetricsContent = () => {
                     cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
                   <div
-                    content={({ payload }) => (
-                      <CustomLegend
-                        payload={payload}
-                        visibleLines={visibleLines}
-                        handleLegendClick={handleLegendClick}
-                      />
-                    )}
+                    content={null}
                   />
                   <div
                     type="monotone"
@@ -2845,13 +2836,7 @@ const MarketMetricsContent = () => {
                     cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
                   <div
-                    content={({ payload }) => (
-                      <CustomLegend
-                        payload={payload}
-                        visibleLines={visibleLines}
-                        handleLegendClick={handleLegendClick}
-                      />
-                    )}
+                    content={null}
                   />
                   <div
                     yAxisId="volume"
@@ -3343,13 +3328,7 @@ const MarketMetricsContent = () => {
                     cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
                   <div
-                    content={({ payload }) => (
-                      <CustomLegend
-                        payload={payload}
-                        visibleLines={visibleLines}
-                        handleLegendClick={handleLegendClick}
-                      />
-                    )}
+                    content={null}
                   />
                   <div
                     type="monotone"

@@ -274,7 +274,7 @@ function Header(props) {
   
   const [fullSearch, setFullSearch] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [isClosed, setClosed] = useState(false);
+  const [isClosed, setIsClosed] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
@@ -340,7 +340,7 @@ function Header(props) {
     }
 
     if (isClosed) {
-      setClosed(false);
+      setIsClosed(false);
     }
   }, [isProcessing, isClosed]);
 
@@ -372,7 +372,7 @@ function Header(props) {
           if (isMounted && CrossmarkSDK && typeof CrossmarkSDK.on === 'function') {
             const handleClose = () => {
               if (isMounted) {
-                setClosed(true);
+                setIsClosed(true);
               }
             };
 

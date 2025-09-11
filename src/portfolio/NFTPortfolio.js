@@ -239,6 +239,18 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
   );
 }
 
+// Skeleton component for loading state
+const CollectionSkeleton = ({ smallSize }) => (
+  <Skeleton
+    variant="rectangular"
+    sx={{ width: '100%', height: smallSize ? '70px' : '90px' }}
+  />
+);
+
+const createSkeletonComponent = (smallSize) => (props) => (
+  <CollectionSkeleton smallSize={smallSize} />
+);
+
 // Collection Card Component
 function CollectionCard({ collectionData, type, account, handleRemove, smallSize = false }) {
   const theme = useTheme();
@@ -302,16 +314,7 @@ function CollectionCard({ collectionData, type, account, handleRemove, smallSize
           }}
         >
           <CardMedia
-            component={
-              loadingImg
-                ? () => (
-                    <Skeleton
-                      variant="rectangular"
-                      sx={{ width: '100%', height: smallSize ? '70px' : '90px' }}
-                    />
-                  )
-                : 'img'
-            }
+            component={loadingImg ? createSkeletonComponent(smallSize) : 'img'}
             image={imgUrl}
             alt={'Collection' + uuid}
             className="card-media"
@@ -445,7 +448,7 @@ const NFTPortfolio = ({
   const theme = useTheme();
   const { darkMode } = useContext(AppContext);
 
-  const [nfts, setNFTs] = useState([]);
+  const [nfts, setNfts] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -471,7 +474,7 @@ const NFTPortfolio = ({
     setLoading(true);
     try {
       const res = await axios.post(`${BASE_URL}/account/collectedCreated`, body);
-      setNFTs(res.data.nfts);
+      setNfts(res.data.nfts);
     } catch (err) {
       console.error(err);
     } finally {

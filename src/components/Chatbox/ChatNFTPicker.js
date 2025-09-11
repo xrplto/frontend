@@ -14,7 +14,7 @@ const NFTs = ({ account, collection, type = 'collected', limit, onSelect, smallS
   const scrollRef = useRef(null);
   const { darkMode } = useContext(AppContext);
 
-  const [nfts, setNFTs] = useState([]);
+  const [nfts, setNfts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState(null);
 
@@ -43,7 +43,7 @@ const NFTs = ({ account, collection, type = 'collected', limit, onSelect, smallS
     try {
       const res = await axios.post(`${BASE_URL}/account/collectedCreated`, body);
       console.log('Received NFTs:', res.data.nfts); // Log the received NFT data
-      setNFTs(res.data.nfts);
+      setNfts(res.data.nfts);
     } catch (err) {
       console.error('Error fetching NFTs:', err);
     } finally {

@@ -307,6 +307,33 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave,
 
 SourcesMenu.displayName = 'SourcesMenu';
 
+const SentimentSummary = memo(({ period, stats, isDark }) => {
+  if (!stats) return null;
+  
+  return (
+    <div className={`${styles.sentimentSummary} ${isDark ? styles.dark : ''}`}>
+      <span className={styles.sentimentPeriod}>
+        {period}
+      </span>
+      <div className={styles.sentimentValues}>
+        <span className={`${styles.sentimentValue} ${styles.bullish}`}>
+          {stats.bullish || 0}%
+        </span>
+        <span className={styles.sentimentDivider}>·</span>
+        <span className={`${styles.sentimentValue} ${styles.bearish}`}>
+          {stats.bearish || 0}%
+        </span>
+        <span className={styles.sentimentDivider}>·</span>
+        <span className={`${styles.sentimentValue} ${styles.neutral}`}>
+          {stats.neutral || 0}%
+        </span>
+      </div>
+    </div>
+  );
+});
+
+SentimentSummary.displayName = 'SentimentSummary';
+
 function NewsPage() {
   const router = useRouter();
   const theme = useTheme();
@@ -555,32 +582,6 @@ function NewsPage() {
     return titleMatch ? titleMatch[1] : htmlContent;
   }, []);
 
-  const SentimentSummary = memo(({ period, stats }) => {
-    if (!stats) return null;
-    
-    return (
-      <div className={`${styles.sentimentSummary} ${isDark ? styles.dark : ''}`}>
-        <span className={styles.sentimentPeriod}>
-          {period}
-        </span>
-        <div className={styles.sentimentValues}>
-          <span className={`${styles.sentimentValue} ${styles.bullish}`}>
-            {stats.bullish || 0}%
-          </span>
-          <span className={styles.sentimentDivider}>·</span>
-          <span className={`${styles.sentimentValue} ${styles.bearish}`}>
-            {stats.bearish || 0}%
-          </span>
-          <span className={styles.sentimentDivider}>·</span>
-          <span className={`${styles.sentimentValue} ${styles.neutral}`}>
-            {stats.neutral || 0}%
-          </span>
-        </div>
-      </div>
-    );
-  });
-  
-  SentimentSummary.displayName = 'SentimentSummary';
 
   // Get background and text styles from theme
   const backgroundStyle = {

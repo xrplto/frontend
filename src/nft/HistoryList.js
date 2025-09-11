@@ -152,6 +152,24 @@ function formatDate(dateString) {
   }
 }
 
+// Components extracted to avoid nested component definitions
+const LoadingSkeleton = () => (
+  <Stack spacing={2} sx={{ p: 2 }}>
+    {[1, 2, 3].map((item) => (
+      <Skeleton key={item} variant="rectangular" height={60} sx={{ borderRadius: 1 }} />
+    ))}
+  </Stack>
+);
+
+const EmptyState = () => (
+  <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
+    <SwapHorizIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2, opacity: 0.5 }} />
+    <Typography variant="body2" color="text.secondary">
+      No transaction history yet
+    </Typography>
+  </Stack>
+);
+
 export default function HistoryList({ nft }) {
   const theme = useTheme();
   const BASE_URL = 'https://api.xrpnft.com/api';
@@ -180,22 +198,6 @@ export default function HistoryList({ nft }) {
     getHistories();
   }, [sync, nft.NFTokenID]);
 
-  const LoadingSkeleton = () => (
-    <Stack spacing={2} sx={{ p: 2 }}>
-      {[1, 2, 3].map((item) => (
-        <Skeleton key={item} variant="rectangular" height={60} sx={{ borderRadius: 1 }} />
-      ))}
-    </Stack>
-  );
-
-  const EmptyState = () => (
-    <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
-      <SwapHorizIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2, opacity: 0.5 }} />
-      <Typography variant="body2" color="text.secondary">
-        No transaction history yet
-      </Typography>
-    </Stack>
-  );
 
   if (loading) {
     return (

@@ -151,6 +151,202 @@ const OuterBorderContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
+// Component extracted to avoid nested component definition
+const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) => {
+  const chartContainerRef = useRef(null);
+  const chartRef = useRef(null);
+  const isDark = theme.palette.mode === 'dark';
+
+  useEffect(() => {
+    if (!chartContainerRef.current || !chartData || !chartData.series) return;
+
+    const initChart = async () => {
+      // Load chart libraries first
+      await loadChartLibraries();
+      
+      if (!createChart) {
+        console.error('Chart library failed to load');
+        return;
+      }
+
+      // Check if container still exists after async operation
+      if (!chartContainerRef.current) {
+        return;
+      }
+
+      // Clean up existing chart
+      if (chartRef.current) {
+        try {
+          chartRef.current.remove();
+        } catch (e) {
+          console.error('Error removing chart:', e);
+        }
+        chartRef.current = null;
+      }
+
+      // Create new chart
+      const chart = createChart(chartContainerRef.current, {
+      width: chartContainerRef.current.clientWidth,
+      height: isMobile ? 180 : 200,
+      layout: {
+        background: { type: 'solid', color: 'transparent' },
+        textColor: theme.palette.text.primary,
+        fontSize: 11,
+      },
+      grid: {
+        vertLines: {
+          color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+        },
+        horzLines: {
+          color: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+        },
+      },
+      crosshair: {
+        mode: 0,
+        vertLine: {
+          color: theme.palette.primary.main,
+          width: 1,
+          labelBackgroundColor: theme.palette.primary.main,
+        },
+        horzLine: {
+          color: theme.palette.primary.main,
+          width: 1,
+          labelBackgroundColor: theme.palette.primary.main,
+        },
+      },
+      rightPriceScale: {
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+        scaleMargins: { top: 0.1, bottom: 0.2 },
+      },
+      timeScale: {
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+        timeVisible: true,
+        secondsVisible: false,
+      },
+    });
+
+    chartRef.current = chart;
+
+    // Add series
+    const seriesRefs = [];
+    chartData.series.forEach((serie, index) => {
+      let series;
+      if (serie.type === 'column') {
+        series = chart.addSeries(HistogramSeries, {
+          color: index === 0 ? theme.palette.primary.main : theme.palette.info.main,
+          priceFormat: { type: 'volume' },
+        });
+      } else {
+        series = chart.addSeries(LineSeries, {
+          color: index === 0 ? theme.palette.primary.main : theme.palette.success.main,
+          lineWidth: 2,
+        });
+      }
+
+      // Convert data to lightweight-charts format and sort by time
+      const data = serie.data
+        .map((value, idx) => {
+          const timestamp = new Date(chartData.xaxis.categories[idx]).getTime() / 1000;
+          // Validate timestamp
+          if (isNaN(timestamp) || !isFinite(timestamp)) {
+            return null;
+          }
+          return {
+            time: Math.floor(timestamp),
+            value: value || 0
+          };
+        })
+        .filter(item => item !== null) // Remove invalid entries
+        .sort((a, b) => a.time - b.time) // Sort in ascending order by time
+        .filter((item, index, array) => {
+          // Remove duplicates - keep only the first occurrence of each timestamp
+          return index === 0 || item.time !== array[index - 1].time;
+        });
+      
+      if (data.length > 0) {
+        series.setData(data);
+      }
+      seriesRefs.push(series);
+    });
+
+    // Add tooltip
+    const toolTip = document.createElement('div');
+    toolTip.style = `position: absolute; display: none; padding: 8px; font-size: 12px; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 4px; background: ${isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`;
+    chartContainerRef.current.appendChild(toolTip);
+
+    chart.subscribeCrosshairMove(param => {
+      if (!param.time || param.point.x < 0 || param.point.y < 0) {
+        toolTip.style.display = 'none';
+        return;
+      }
+
+      const dateStr = new Date(param.time * 1000).toLocaleDateString();
+      let html = `<div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>`;
+      
+      seriesRefs.forEach((series, idx) => {
+        const data = param.seriesData.get(series);
+        if (data) {
+          const seriesName = chartData.series[idx].name;
+          const value = data.value;
+          let formattedValue = value.toFixed(2);
+          if (seriesName.includes('ROI')) formattedValue += '%';
+          else if (seriesName.includes('Volume')) formattedValue = value.toLocaleString() + ' XRP';
+          else if (seriesName.includes('Trades')) formattedValue = value.toLocaleString();
+          
+          html += `<div>${seriesName}: ${formattedValue}</div>`;
+        }
+      });
+
+      toolTip.innerHTML = html;
+      toolTip.style.display = 'block';
+      toolTip.style.left = Math.min(param.point.x + 10, chartContainerRef.current.clientWidth - 150) + 'px';
+      toolTip.style.top = '12px';
+    });
+
+    chart.timeScale().fitContent();
+
+    const handleResize = () => {
+      if (chartContainerRef.current && chart) {
+        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (chartContainerRef.current) {
+        const tooltips = chartContainerRef.current.querySelectorAll('div[style*="position: absolute"]');
+        tooltips.forEach(tooltip => tooltip.remove());
+      }
+      if (chartRef.current) {
+        try {
+          chartRef.current.remove();
+        } catch (e) {}
+        chartRef.current = null;
+      }
+    };
+    };
+    
+    initChart();
+  }, [chartData, isDark, theme]);
+
+  if (!chartData || !chartData.series) {
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        height: isMobile ? 180 : 200,
+        color: theme.palette.text.secondary
+      }}>
+        <Typography variant="body2">Loading chart data...</Typography>
+      </Box>
+    );
+  }
+
+  return <div ref={chartContainerRef} style={{ width: '100%', height: isMobile ? 180 : 200 }} />;
+});
+
 export default function Portfolio({ account, limit, collection, type }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -1269,204 +1465,9 @@ export default function Portfolio({ account, limit, collection, type }) {
     }
   };
 
-  // Create a separate component for the chart
-  const LightweightChart = React.memo(({ chartData, isMobile }) => {
-    const chartContainerRef = useRef(null);
-    const chartRef = useRef(null);
-    const isDark = theme.palette.mode === 'dark';
-
-    useEffect(() => {
-      if (!chartContainerRef.current || !chartData || !chartData.series) return;
-
-      const initChart = async () => {
-        // Load chart libraries first
-        await loadChartLibraries();
-        
-        if (!createChart) {
-          console.error('Chart library failed to load');
-          return;
-        }
-
-        // Check if container still exists after async operation
-        if (!chartContainerRef.current) {
-          return;
-        }
-
-        // Clean up existing chart
-        if (chartRef.current) {
-          try {
-            chartRef.current.remove();
-          } catch (e) {
-            console.error('Error removing chart:', e);
-          }
-          chartRef.current = null;
-        }
-
-        // Create new chart
-        const chart = createChart(chartContainerRef.current, {
-        width: chartContainerRef.current.clientWidth,
-        height: isMobile ? 180 : 200,
-        layout: {
-          background: { type: 'solid', color: 'transparent' },
-          textColor: theme.palette.text.primary,
-          fontSize: 11,
-        },
-        grid: {
-          vertLines: {
-            color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
-          },
-          horzLines: {
-            color: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
-          },
-        },
-        crosshair: {
-          mode: 0,
-          vertLine: {
-            color: theme.palette.primary.main,
-            width: 1,
-            labelBackgroundColor: theme.palette.primary.main,
-          },
-          horzLine: {
-            color: theme.palette.primary.main,
-            width: 1,
-            labelBackgroundColor: theme.palette.primary.main,
-          },
-        },
-        rightPriceScale: {
-          borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-          scaleMargins: { top: 0.1, bottom: 0.2 },
-        },
-        timeScale: {
-          borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-          timeVisible: true,
-          secondsVisible: false,
-        },
-      });
-
-      chartRef.current = chart;
-
-      // Add series
-      const seriesRefs = [];
-      chartData.series.forEach((serie, index) => {
-        let series;
-        if (serie.type === 'column') {
-          series = chart.addSeries(HistogramSeries, {
-            color: index === 0 ? theme.palette.primary.main : theme.palette.info.main,
-            priceFormat: { type: 'volume' },
-          });
-        } else {
-          series = chart.addSeries(LineSeries, {
-            color: index === 0 ? theme.palette.primary.main : theme.palette.success.main,
-            lineWidth: 2,
-          });
-        }
-
-        // Convert data to lightweight-charts format and sort by time
-        const data = serie.data
-          .map((value, idx) => {
-            const timestamp = new Date(chartData.xaxis.categories[idx]).getTime() / 1000;
-            // Validate timestamp
-            if (isNaN(timestamp) || !isFinite(timestamp)) {
-              return null;
-            }
-            return {
-              time: Math.floor(timestamp),
-              value: value || 0
-            };
-          })
-          .filter(item => item !== null) // Remove invalid entries
-          .sort((a, b) => a.time - b.time) // Sort in ascending order by time
-          .filter((item, index, array) => {
-            // Remove duplicates - keep only the first occurrence of each timestamp
-            return index === 0 || item.time !== array[index - 1].time;
-          });
-        
-        if (data.length > 0) {
-          series.setData(data);
-        }
-        seriesRefs.push(series);
-      });
-
-      // Add tooltip
-      const toolTip = document.createElement('div');
-      toolTip.style = `position: absolute; display: none; padding: 8px; font-size: 12px; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 4px; background: ${isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`;
-      chartContainerRef.current.appendChild(toolTip);
-
-      chart.subscribeCrosshairMove(param => {
-        if (!param.time || param.point.x < 0 || param.point.y < 0) {
-          toolTip.style.display = 'none';
-          return;
-        }
-
-        const dateStr = new Date(param.time * 1000).toLocaleDateString();
-        let html = `<div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>`;
-        
-        seriesRefs.forEach((series, idx) => {
-          const data = param.seriesData.get(series);
-          if (data) {
-            const seriesName = chartData.series[idx].name;
-            const value = data.value;
-            let formattedValue = value.toFixed(2);
-            if (seriesName.includes('ROI')) formattedValue += '%';
-            else if (seriesName.includes('Volume')) formattedValue = value.toLocaleString() + ' XRP';
-            else if (seriesName.includes('Trades')) formattedValue = value.toLocaleString();
-            
-            html += `<div>${seriesName}: ${formattedValue}</div>`;
-          }
-        });
-
-        toolTip.innerHTML = html;
-        toolTip.style.display = 'block';
-        toolTip.style.left = Math.min(param.point.x + 10, chartContainerRef.current.clientWidth - 150) + 'px';
-        toolTip.style.top = '12px';
-      });
-
-      chart.timeScale().fitContent();
-
-      const handleResize = () => {
-        if (chartContainerRef.current && chart) {
-          chart.applyOptions({ width: chartContainerRef.current.clientWidth });
-        }
-      };
-      window.addEventListener('resize', handleResize);
-
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        if (chartContainerRef.current) {
-          const tooltips = chartContainerRef.current.querySelectorAll('div[style*="position: absolute"]');
-          tooltips.forEach(tooltip => tooltip.remove());
-        }
-        if (chartRef.current) {
-          try {
-            chartRef.current.remove();
-          } catch (e) {}
-          chartRef.current = null;
-        }
-      };
-      };
-      
-      initChart();
-    }, [chartData, isDark, theme]);
-
-    if (!chartData || !chartData.series) {
-      return (
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          height: isMobile ? 180 : 200,
-          color: theme.palette.text.secondary
-        }}>
-          <Typography variant="body2">Loading chart data...</Typography>
-        </Box>
-      );
-    }
-
-    return <div ref={chartContainerRef} style={{ width: '100%', height: isMobile ? 180 : 200 }} />;
-  });
 
   const renderChart = (chartData, options, type = 'line') => {
-    return <LightweightChart chartData={chartData} isMobile={isMobile} />;
+    return <LightweightChartComponent chartData={chartData} isMobile={isMobile} theme={theme} />;
   };
 
   // Commented out empty useEffect that was causing infinite reloads

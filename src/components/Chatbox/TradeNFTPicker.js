@@ -269,7 +269,7 @@ const ProfileNFTs = ({
   const scrollRef = React.useRef(null);
   const { darkMode } = useContext(AppContext);
 
-  const [nfts, setNFTs] = React.useState([]);
+  const [nfts, setNfts] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [selectedCollection, setSelectedCollection] = React.useState(null);
   const [selectedNFT, setSelectedNFT] = React.useState(null);
@@ -300,7 +300,7 @@ const ProfileNFTs = ({
     try {
       const res = await axios.post(`${BASE_URL}/account/collectedCreated`, body);
       console.log('XRPNFT API Response:', res.data); // Log the entire response
-      setNFTs(res.data.nfts);
+      setNfts(res.data.nfts);
     } catch (err) {
       console.error('Error fetching NFTs:', err);
     } finally {

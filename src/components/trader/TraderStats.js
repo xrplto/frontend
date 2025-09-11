@@ -227,6 +227,106 @@ export const DailyVolumeChart = ({ data }) => {
   );
 };
 
+// Component extracted to avoid nested component definition
+const StatCard = ({ title, icon, children, gradient = false, theme }) => (
+  <Paper
+    elevation={2}
+    sx={{
+      p: 1.5,
+      borderRadius: 2,
+      background: gradient
+        ? `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(
+            theme.palette.success.main,
+            0.03
+          )} 100%)`
+        : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+            theme.palette.background.paper,
+            0.7
+          )} 100%)`,
+      backdropFilter: 'blur(20px)',
+      border: '1px solid',
+      borderColor: alpha(theme.palette.divider, 0.1),
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      '&:hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+      }
+    }}
+  >
+    <Stack direction="row" alignItems="center" spacing={0.75} mb={1.5}>
+      {icon}
+      <Typography
+        variant="subtitle2"
+        sx={{
+          fontWeight: 600,
+          color: theme.palette.text.primary,
+          textTransform: 'uppercase',
+          letterSpacing: '0.3px',
+          fontSize: '0.75rem'
+        }}
+      >
+        {title}
+      </Typography>
+    </Stack>
+    <Stack spacing={1}>{children}</Stack>
+  </Paper>
+);
+
+const StatRow = ({ label, value, color, isPercentage = false, isCurrency = true, theme }) => (
+  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+      {label}
+    </Typography>
+    <Typography
+      variant="body2"
+      sx={{
+        fontWeight: 600,
+        fontSize: '0.8rem',
+        color: color || theme.palette.text.primary
+      }}
+    >
+      {isCurrency ? fNumber(value) : isPercentage ? fPercent(value) : value}
+    </Typography>
+  </Box>
+);
+
+const ProfitChip = ({ value, label, theme }) => (
+  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+      {label}
+    </Typography>
+    <Chip
+      label={fNumber(value)}
+      size="small"
+      icon={
+        value >= 0 ? (
+          <TrendingUpIcon sx={{ fontSize: 14 }} />
+        ) : (
+          <TrendingDownIcon sx={{ fontSize: 14 }} />
+        )
+      }
+      sx={{
+        bgcolor:
+          value >= 0
+            ? alpha(theme.palette.success.main, 0.1)
+            : alpha(theme.palette.error.main, 0.1),
+        color: value >= 0 ? theme.palette.success.main : theme.palette.error.main,
+        fontWeight: 600,
+        height: 22,
+        fontSize: '0.7rem',
+        border: `1px solid ${alpha(
+          value >= 0 ? theme.palette.success.main : theme.palette.error.main,
+          0.2
+        )}`,
+        '& .MuiChip-icon': {
+          color: value >= 0 ? theme.palette.success.main : theme.palette.error.main
+        }
+      }}
+    />
+  </Box>
+);
+
 export const StatsModal = ({ open, onClose, account, traderStats }) => {
   const theme = useTheme();
 
@@ -264,104 +364,6 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
     }
   };
 
-  const StatCard = ({ title, icon, children, gradient = false }) => (
-    <Paper
-      elevation={2}
-      sx={{
-        p: 1.5,
-        borderRadius: 2,
-        background: gradient
-          ? `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(
-              theme.palette.success.main,
-              0.03
-            )} 100%)`
-          : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
-              theme.palette.background.paper,
-              0.7
-            )} 100%)`,
-        backdropFilter: 'blur(20px)',
-        border: '1px solid',
-        borderColor: alpha(theme.palette.divider, 0.1),
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
-          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-        }
-      }}
-    >
-      <Stack direction="row" alignItems="center" spacing={0.75} mb={1.5}>
-        {icon}
-        <Typography
-          variant="subtitle2"
-          sx={{
-            fontWeight: 600,
-            color: theme.palette.text.primary,
-            textTransform: 'uppercase',
-            letterSpacing: '0.3px',
-            fontSize: '0.75rem'
-          }}
-        >
-          {title}
-        </Typography>
-      </Stack>
-      <Stack spacing={1}>{children}</Stack>
-    </Paper>
-  );
-
-  const StatRow = ({ label, value, color, isPercentage = false, isCurrency = true }) => (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-        {label}
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{
-          fontWeight: 600,
-          fontSize: '0.8rem',
-          color: color || theme.palette.text.primary
-        }}
-      >
-        {isCurrency ? fNumber(value) : isPercentage ? fPercent(value) : value}
-      </Typography>
-    </Box>
-  );
-
-  const ProfitChip = ({ value, label }) => (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-        {label}
-      </Typography>
-      <Chip
-        label={fNumber(value)}
-        size="small"
-        icon={
-          value >= 0 ? (
-            <TrendingUpIcon sx={{ fontSize: 14 }} />
-          ) : (
-            <TrendingDownIcon sx={{ fontSize: 14 }} />
-          )
-        }
-        sx={{
-          bgcolor:
-            value >= 0
-              ? alpha(theme.palette.success.main, 0.1)
-              : alpha(theme.palette.error.main, 0.1),
-          color: value >= 0 ? theme.palette.success.main : theme.palette.error.main,
-          fontWeight: 600,
-          height: 22,
-          fontSize: '0.7rem',
-          border: `1px solid ${alpha(
-            value >= 0 ? theme.palette.success.main : theme.palette.error.main,
-            0.2
-          )}`,
-          '& .MuiChip-icon': {
-            color: value >= 0 ? theme.palette.success.main : theme.palette.error.main
-          }
-        }}
-      />
-    </Box>
-  );
 
   const winRate =
     stats.profitableTrades + stats.losingTrades > 0
@@ -667,104 +669,104 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
               mb: 2
             }}
           >
-            <StatCard
+            <StatCard theme={theme}
               title="Trade Summary"
               icon={<AssessmentIcon sx={{ color: theme.palette.primary.main, fontSize: 16 }} />}
             >
-              <StatRow label="Total Trades" value={stats.totalTrades} isCurrency={false} />
-              <StatRow
+              <StatRow theme={theme} label="Total Trades" value={stats.totalTrades} isCurrency={false} />
+              <StatRow theme={theme}
                 label="Profitable"
                 value={stats.profitableTrades}
                 color={theme.palette.success.main}
                 isCurrency={false}
               />
-              <StatRow
+              <StatRow theme={theme}
                 label="Losing"
                 value={stats.losingTrades}
                 color={theme.palette.error.main}
                 isCurrency={false}
               />
-              <StatRow
+              <StatRow theme={theme}
                 label="Avg Hold"
                 value={formatDuration(stats.avgHoldingTime)}
                 isCurrency={false}
               />
             </StatCard>
 
-            <StatCard
+            <StatCard theme={theme}
               title="P&L Analysis"
               icon={<TrendingUpIcon sx={{ color: theme.palette.success.main, fontSize: 16 }} />}
             >
-              <ProfitChip value={stats.profit24h} label="24h" />
-              <ProfitChip value={stats.profit7d} label="7d" />
-              <ProfitChip value={stats.profit1m || 0} label="1m" />
-              <ProfitChip value={stats.profit2m || 0} label="2m" />
-              <ProfitChip value={stats.profit3m || 0} label="3m" />
+              <ProfitChip theme={theme} value={stats.profit24h} label="24h" />
+              <ProfitChip theme={theme} value={stats.profit7d} label="7d" />
+              <ProfitChip theme={theme} value={stats.profit1m || 0} label="1m" />
+              <ProfitChip theme={theme} value={stats.profit2m || 0} label="2m" />
+              <ProfitChip theme={theme} value={stats.profit3m || 0} label="3m" />
             </StatCard>
 
-            <StatCard
+            <StatCard theme={theme}
               title="Volume"
               icon={<ShowChartIcon sx={{ color: theme.palette.info.main, fontSize: 16 }} />}
             >
-              <StatRow label="24h" value={stats.volume24h} />
-              <StatRow label="7d" value={stats.volume7d} />
-              <StatRow label="1m" value={stats.volume1m || 0} />
-              <StatRow label="2m" value={stats.volume2m || 0} />
-              <StatRow label="Total" value={stats.totalVolume} />
+              <StatRow theme={theme} label="24h" value={stats.volume24h} />
+              <StatRow theme={theme} label="7d" value={stats.volume7d} />
+              <StatRow theme={theme} label="1m" value={stats.volume1m || 0} />
+              <StatRow theme={theme} label="2m" value={stats.volume2m || 0} />
+              <StatRow theme={theme} label="Total" value={stats.totalVolume} />
             </StatCard>
 
-            <StatCard
+            <StatCard theme={theme}
               title="Activity"
               icon={<TimelineIcon sx={{ color: theme.palette.warning.main, fontSize: 16 }} />}
             >
-              <StatRow label="24h Trades" value={stats.trades24h} isCurrency={false} />
-              <StatRow label="7d Trades" value={stats.trades7d} isCurrency={false} />
-              <StatRow label="1m Trades" value={stats.trades1m || 0} isCurrency={false} />
-              <StatRow label="2m Trades" value={stats.trades2m || 0} isCurrency={false} />
-              <StatRow label="Total" value={stats.totalTrades} isCurrency={false} />
+              <StatRow theme={theme} label="24h Trades" value={stats.trades24h} isCurrency={false} />
+              <StatRow theme={theme} label="7d Trades" value={stats.trades7d} isCurrency={false} />
+              <StatRow theme={theme} label="1m Trades" value={stats.trades1m || 0} isCurrency={false} />
+              <StatRow theme={theme} label="2m Trades" value={stats.trades2m || 0} isCurrency={false} />
+              <StatRow theme={theme} label="Total" value={stats.totalTrades} isCurrency={false} />
             </StatCard>
 
-            <StatCard
+            <StatCard theme={theme}
               title="Extremes"
               icon={<StarIcon sx={{ color: theme.palette.warning.main, fontSize: 16 }} />}
             >
-              <StatRow
+              <StatRow theme={theme}
                 label="Best Trade"
                 value={stats.maxProfitTrade}
                 color={theme.palette.success.main}
               />
-              <StatRow
+              <StatRow theme={theme}
                 label="Worst Trade"
                 value={Math.abs(stats.maxLossTrade)}
                 color={theme.palette.error.main}
               />
-              <StatRow
+              <StatRow theme={theme}
                 label="Buy Volume"
                 value={stats.buyVolume}
                 color={theme.palette.success.main}
               />
-              <StatRow
+              <StatRow theme={theme}
                 label="Sell Volume"
                 value={stats.sellVolume}
                 color={theme.palette.error.main}
               />
             </StatCard>
 
-            <StatCard
+            <StatCard theme={theme}
               title="Timeline"
               icon={<HistoryIcon sx={{ color: theme.palette.text.secondary, fontSize: 16 }} />}
             >
-              <StatRow
+              <StatRow theme={theme}
                 label="First Trade"
                 value={formatDate(stats.firstTradeDate)}
                 isCurrency={false}
               />
-              <StatRow
+              <StatRow theme={theme}
                 label="Last Trade"
                 value={formatDate(stats.lastTradeDate)}
                 isCurrency={false}
               />
-              <StatRow label="Updated" value={formatDate(stats.updatedAt)} isCurrency={false} />
+              <StatRow theme={theme} label="Updated" value={formatDate(stats.updatedAt)} isCurrency={false} />
             </StatCard>
           </Box>
 

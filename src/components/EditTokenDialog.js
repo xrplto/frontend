@@ -103,11 +103,11 @@ export default function EditTokenDialog({ token, setToken }) {
 
   const [slug, setSlug] = useState(token.slug);
 
-  const [whitepaper, setWhitePaper] = useState(token.whitepaper);
+  const [whitepaper, setWhitepaper] = useState(token.whitepaper);
 
   const [twitter, setTwitter] = useState(token.social?.twitter);
   const [facebook, setFacebook] = useState(token.social?.facebook);
-  const [linkedin, setLinkedIn] = useState(token.social?.linkedin);
+  const [linkedin, setLinkedin] = useState(token.social?.linkedin);
   const [instagram, setInstagram] = useState(token.social?.instagram);
   const [telegram, setTelegram] = useState(token.social?.telegram);
   const [discord, setDiscord] = useState(token.social?.discord);
@@ -622,7 +622,7 @@ export default function EditTokenDialog({ token, setToken }) {
                       {whitepaper}
                     </Typography>
                   </Link>
-                  <EditDialog label="Whitepaper URL" value={whitepaper} setValue={setWhitePaper} />
+                  <EditDialog label="Whitepaper URL" value={whitepaper} setValue={setWhitepaper} />
                 </Stack>
               </TableCell>
             </TableRow>
@@ -780,7 +780,7 @@ export default function EditTokenDialog({ token, setToken }) {
                       {linkedin}
                     </Typography>
                   </Link>
-                  <EditDialog label="LinkedIn" value={linkedin} setValue={setLinkedIn} />
+                  <EditDialog label="LinkedIn" value={linkedin} setValue={setLinkedin} />
                 </Stack>
               </TableCell>
               <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>

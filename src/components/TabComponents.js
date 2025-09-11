@@ -31,4 +31,5 @@ export const TabPanel = ({ value, children, sx = {}, ...props }) => {
   );
 };
 
-export default { TabContext, TabList, TabPanel };
+const TabComponents = { TabContext, TabList, TabPanel };
+export default TabComponents;

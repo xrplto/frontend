@@ -2171,6 +2171,11 @@ const CardWrapper = styled(Card)(({ theme }) => ({
   }
 }));
 
+// Skeleton component for loading state
+const LoadingSkeleton = () => (
+  <Skeleton variant="rectangular" sx={{ width: '100%', height: '75%' }} />
+);
+
 function CollectionCard({ collectionData, type, account, handleRemove }) {
   const collection = collectionData.collection;
   const theme = useTheme();
@@ -2199,7 +2204,7 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
           <CloseIcon sx={{ position: 'absolute', top: 0, right: 0, zIndex: 1500 }} onClick={handleRemoveNft} />
         )}
         <CardMedia
-          component={loadingImg ? () => <Skeleton variant="rectangular" sx={{ width: '100%', height: '75%' }} /> : 'img'}
+          component={loadingImg ? LoadingSkeleton : 'img'}
           image={imgUrl}
           loading={loadingImg.toString()}
           alt={'NFT' + collection.uuid}

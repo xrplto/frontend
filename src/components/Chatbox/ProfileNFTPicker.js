@@ -209,7 +209,7 @@ const ProfileNFTs = ({
   const scrollRef = useRef(null);
   const { darkMode } = useContext(AppContext);
 
-  const [nfts, setNFTs] = useState([]);
+  const [nfts, setNfts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [selectedNFT, setSelectedNFT] = useState(null);
@@ -238,7 +238,7 @@ const ProfileNFTs = ({
     setLoading(true);
     try {
       const res = await axios.post(`${BASE_URL}/account/collectedCreated`, body);
-      setNFTs(res.data.nfts);
+      setNfts(res.data.nfts);
     } catch (err) {
       console.error('Error fetching NFTs:', err);
     } finally {

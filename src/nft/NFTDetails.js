@@ -69,6 +69,27 @@ function t(key) {
   return translations[key] || '';
 }
 
+// Arrow component for carousel navigation
+function Arrow(props) {
+  return (
+    <IconButton
+      onClick={props.onClick}
+      disabled={props.disabled}
+      sx={{
+        position: 'absolute',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        [props.left ? 'left' : 'right']: 8,
+        color: 'white',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.7)' }
+      }}
+    >
+      {props.left ? <ArrowBackIosNewIcon /> : <ArrowForwardIosIcon />}
+    </IconButton>
+  );
+}
+
 function getProperties(meta) {
   const properties = [];
   if (!meta) return [];
@@ -302,25 +323,6 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
     </Link>
   );
 
-  function Arrow(props) {
-    return (
-      <IconButton
-        onClick={props.onClick}
-        disabled={props.disabled}
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          [props.left ? 'left' : 'right']: 8,
-          color: 'white',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.7)' }
-        }}
-      >
-        {props.left ? <ArrowBackIosNewIcon /> : <ArrowForwardIosIcon />}
-      </IconButton>
-    );
-  }
 
   return (
     <StyledCard>
