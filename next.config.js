@@ -11,6 +11,7 @@ const isDev = process.env.RUN_ENV === 'development';
 const config = {
   poweredByHeader: false,
   assetPrefix: isProd ? 'https://xrpl.to' : undefined,
+  outputFileTracingRoot: __dirname,
   env: {
     API_URL: process.env.API_URL,
     MAINTENANCE: process.env.MAINTENANCE,
