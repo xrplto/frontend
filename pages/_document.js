@@ -14,10 +14,10 @@ export default function Document() {
         <link rel="dns-prefetch" href="https://api.xrpl.to" />
         
         
-        {/* Resource hints for faster loading */}
+        {/* Critical resource preloading */}
+        <link rel="preload" href="/_next/static/css" as="style" />
+        <link rel="preload" href="/logo/xrpl-to-logo-white.svg" as="image" type="image/svg+xml" />
         <link rel="prefetch" href="/static/empty-folder.png" as="image" />
-        <link rel="preload" href="/logo/xrpl-to-logo-black.svg" as="image" />
-        <link rel="preload" href="/logo/xrpl-to-logo-white.svg" as="image" />
         
         {/* PWA and mobile optimization */}
         <meta name="theme-color" content="#000000" />

@@ -1,9 +1,8 @@
-/* Page Layout */
+/* Critical CSS - Above the fold */
 .pageWrapper {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  /* Background will be set inline from theme */
 }
 
 .mainContent {
@@ -17,8 +16,10 @@
   color: #000;
 }
 
-.dark .container {
-  color: #fff;
+@media (prefers-color-scheme: dark) {
+  .container {
+    color: #fff;
+  }
 }
 
 .loadingContainer {
