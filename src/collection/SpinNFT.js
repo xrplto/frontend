@@ -4,6 +4,7 @@ import Decimal from 'decimal.js';
 import PropTypes from 'prop-types';
 // import { ColorExtractor } from 'react-color-extractor';
 import useWindowSize from 'react-use/lib/useWindowSize';
+import Confetti from 'react-confetti';
 
 // Material
 import { useTheme } from '@mui/material/styles';

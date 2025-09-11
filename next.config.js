@@ -1,16 +1,14 @@
 // const withImages = require('next-images')
 // module.exports = withImages()
 
-// const withBundleAnalyzer = require('@next/bundle-analyzer')({
-//     enabled: process.env.ANALYZE === 'true',
-// })
-
-// module.exports = withBundleAnalyzer({ })
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+    enabled: process.env.ANALYZE === 'true',
+})
 
 const isProd = process.env.RUN_ENV === 'production';
 const isDev = process.env.RUN_ENV === 'development';
 
-module.exports = {
+const config = {
   poweredByHeader: false,
   assetPrefix: isProd ? 'https://xrpl.to' : undefined,
   env: {
@@ -217,16 +215,60 @@ module.exports = {
   },
   reactStrictMode: true,
   compress: true,
-  // Webpack config - keep it simple to avoid conflicts
-  webpack: (config, { isServer }) => {
+  experimental: {
+    esmExternals: true,
+    webpackMemoryOptimizations: true
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production'
+  },
+  // Webpack config - optimized for performance  
+  webpack: (config, { isServer, dev }) => {
     // Ensure proper handling of dynamic imports
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
       };
+
+      // Production optimizations only
+      if (!dev) {
+        config.optimization = {
+          ...config.optimization,
+          moduleIds: 'deterministic',
+          splitChunks: {
+            chunks: 'all',
+            maxSize: 244000, // 244KB chunks for optimal loading
+            cacheGroups: {
+              // Heavy chart libraries separate chunk
+              charts: {
+                test: /[\\/]node_modules[\\/](lightweight-charts|highcharts|recharts|echarts|apexcharts)[\\/]/,
+                name: 'charts',
+                priority: 30,
+                chunks: 'all',
+              },
+              // Material-UI separate chunk
+              mui: {
+                test: /[\\/]node_modules[\\/]@mui[\\/]/,
+                name: 'mui', 
+                priority: 20,
+                chunks: 'all',
+              },
+              // Large vendor libraries
+              vendor: {
+                test: /[\\/]node_modules[\\/](react|react-dom|axios|lodash)[\\/]/,
+                name: 'vendor',
+                priority: 10,
+                chunks: 'all',
+              }
+            }
+          }
+        };
+      }
     }
     
     return config;
   }
 };
+
+module.exports = withBundleAnalyzer(config);

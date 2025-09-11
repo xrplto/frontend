@@ -3,9 +3,10 @@ import { performance } from 'perf_hooks';
 import { useState, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { useRouter } from 'next/router';
+import dynamic from 'next/dynamic';
 
 // Material UI imports
-import { styled, Container, Box, Typography, Toolbar, alpha } from '@mui/material';
+import { styled, Container, Box, Typography, Toolbar, alpha, CircularProgress } from '@mui/material';
 
 // Context
 import { useContext } from 'react';
@@ -17,7 +18,15 @@ import { processOrderbookOffers } from 'src/utils/orderbookService';
 
 // Components
 import Logo from 'src/components/Logo';
-import Swap from 'src/swap';
+
+// Lazy load the heavy swap component (165KB)
+const Swap = dynamic(() => import('src/swap'), {
+  loading: () => (
+    <Box display="flex" justifyContent="center" p={4}>
+      <CircularProgress />
+    </Box>
+  )
+});
 
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
