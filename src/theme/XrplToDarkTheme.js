@@ -176,16 +176,22 @@ export const XrplToDarkTheme = createTheme({
       styleOverrides: {
         body: {
           background: '#000000',
-          scrollbarColor: `${alpha('#147DFE', 0.5)} ${alpha('#000000', 0.3)}`,
+          contain: 'layout style',
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#475569 #1E293B',
           '&::-webkit-scrollbar': {
-            backgroundColor: alpha('#000000', 0.3),
-            width: '8px',
-            height: '8px'
+            width: '6px',
+            height: '6px'
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: '#1E293B'
           },
           '&::-webkit-scrollbar-thumb': {
-            borderRadius: 8,
-            backgroundColor: alpha('#147DFE', 0.5),
-            border: `1px solid ${alpha('#147DFE', 0.3)}`
+            borderRadius: 6,
+            backgroundColor: '#475569'
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: '#64748B'
           }
         },
         ':root': {
@@ -202,7 +208,8 @@ export const XrplToDarkTheme = createTheme({
           textTransform: 'none',
           paddingLeft: 16,
           paddingRight: 16,
-          transition: 'all 0.2s'
+          transition: 'background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease',
+          willChange: 'transform'
         },
         contained: {
           backgroundColor: themeColors.primary,
@@ -234,7 +241,8 @@ export const XrplToDarkTheme = createTheme({
           border: `1px solid ${alpha('#ffffff', 0.08)}`,
           backdropFilter: 'blur(40px) saturate(200%)',
           boxShadow: `0 8px 32px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}`,
-          transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+          willChange: 'transform',
           '&:hover': {
             transform: 'translateY(-4px)',
             boxShadow: `0 20px 60px ${alpha('#000000', 0.3)}, inset 0 1px 0 ${alpha('#ffffff', 0.15)}`,
@@ -254,7 +262,8 @@ export const XrplToDarkTheme = createTheme({
             ${alpha('#000000', 0.95)} 100%)`,
           backdropFilter: 'blur(40px) saturate(200%)',
           boxShadow: `0 8px 32px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}`,
-          transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+          willChange: 'transform',
           '&:hover': {
             transform: 'translateY(-4px)',
             boxShadow: `0 20px 60px ${alpha('#000000', 0.3)}, inset 0 1px 0 ${alpha('#ffffff', 0.15)}`,

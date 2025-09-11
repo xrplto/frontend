@@ -435,23 +435,22 @@ export const XrplToLightTheme = createTheme({
           width: '100%',
           flex: 1,
           background: '#FFFFFF',
-          scrollbarColor: `${alpha('#147DFE', 0.4)} ${alpha('#147DFE', 0.1)}`,
-          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            backgroundColor: themeColors.neutral[100],
+          contain: 'layout style',
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#CBD5E1 #F1F5F9',
+          '&::-webkit-scrollbar': {
             width: '6px',
             height: '6px'
           },
-          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: '#F1F5F9'
+          },
+          '&::-webkit-scrollbar-thumb': {
             borderRadius: 6,
-            backgroundColor: themeColors.neutral[300],
-            border: `1px solid transparent`,
-            backgroundClip: 'content-box',
+            backgroundColor: '#CBD5E1'
           },
-          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
-            backgroundColor: themeColors.neutral[400]
-          },
-          '&::-webkit-scrollbar-corner': {
-            backgroundColor: 'transparent'
+          '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: '#94A3B8'
           }
         },
         '#__next': {
@@ -730,10 +729,8 @@ export const XrplToLightTheme = createTheme({
           fontWeight: 600,
           textTransform: 'none',
           borderRadius: 8,
-          transition: 'all 0.2s ease-in-out',
-          '.MuiSvgIcon-root': {
-            transition: 'all 0.2s ease-in-out'
-          },
+          transition: 'background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease',
+          willChange: 'transform',
           '&:active': {
             transform: 'scale(0.98)'
           }
@@ -869,7 +866,8 @@ export const XrplToLightTheme = createTheme({
           padding: 0,
           border: '1px solid #E2E8F0',
           borderRadius: 12,
-          transition: 'all 0.2s ease-in-out',
+          transition: 'border-color 0.15s ease, transform 0.15s ease',
+          willChange: 'transform',
           '&:hover': {
             borderColor: alpha('#147DFE', 0.3),
             transform: 'translateY(-1px)'
