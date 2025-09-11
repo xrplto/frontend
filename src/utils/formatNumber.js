@@ -1,5 +1,10 @@
-import BigNumber from 'bignumber.js'; // maybe change to smaller big.js+toFormat from the same family
 import Decimal from 'decimal.js';
+
+// Helper function to format decimal with thousand separators
+function formatDecimal(decimal, decimalPlaces = null) {
+  let str = decimalPlaces !== null ? decimal.toFixed(decimalPlaces) : decimal.toString();
+  return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
 
 export function fNumber(num, flag = false) {
   //console.log('fNumber... ', num);
@@ -13,7 +18,7 @@ export function fNumber(num, flag = false) {
       return trimDecimal(num); //webxtor: no more exponential
     }
 
-    if (flag) return trimDecimal(BigNumber(strNum).toFixed());
+    if (flag) return trimDecimal(new Decimal(strNum).toFixed());
     else {
       const splitNum = strNum.split('e');
       const result = (
@@ -42,7 +47,7 @@ const trimDecimal = (num, threshold = 4) => {
   //console.log('trimDecimal-ninit', num, typeof num, isNaN(num));
   num = typeof num == 'string' ? num : num.toString();
   //console.log('trimDecimal-string', num, typeof num);
-  num = num.includes('e') ? BigNumber(num).toFixed() : num;
+  num = num.includes('e') ? new Decimal(num).toFixed() : num;
   //console.log('trimDecimal', num, typeof num);
   let match = num.match(new RegExp(`^[^.]+\.[0]*[1-9][0-9]{${threshold - 1}}`)); // TODO: Make round, not trim
   //console.log('match', match);
@@ -52,23 +57,23 @@ const trimDecimal = (num, threshold = 4) => {
 };
 
 export function fIntNumber(number) {
-  return BigNumber(number).toFormat(0); //former numeral()
+  return formatDecimal(new Decimal(number), 0); //former numeral()
 }
 
 export function fCurrency(number) {
-  return BigNumber(number).toFormat(Number.isInteger(number) ? 0 : 2); //former numeral()
+  return formatDecimal(new Decimal(number), Number.isInteger(number) ? 0 : 2); //former numeral()
 }
 
 export function fCurrency3(number) {
   // option: Intl.NumberFormat but up to 20 minimumFractionDigits
-  return BigNumber(number).toFormat(Number.isInteger(number) ? 0 : 3); //former numeral()
+  return formatDecimal(new Decimal(number), Number.isInteger(number) ? 0 : 3); //former numeral()
 }
 
 export function fCurrency5(number) {
   if (number < 1)
     return trimDecimal(number); //f(number);
   else {
-    const res = BigNumber(number).toFormat(Number.isInteger(number) ? 0 : 2); //former numeral()
+    const res = formatDecimal(new Decimal(number), Number.isInteger(number) ? 0 : 2); //former numeral()
     if (res === 'NaN') return 0; // not sure about BigNumber's NaN
     return res;
   }
@@ -78,7 +83,7 @@ export function fPercent(number) {
   if (number < 1) return trimDecimal(number, 2);
   //number.toFixed(2); //webxtor: as in other places//fp(number);
   else {
-    const res = BigNumber(number).toFormat(Number.isInteger(number) ? 0 : 1); //former numeral() // Maybe change to 2 for percents?
+    const res = formatDecimal(new Decimal(number), Number.isInteger(number) ? 0 : 1); //former numeral() // Maybe change to 2 for percents?
     if (res === 'NaN') return 0; // not sure about BigNumber's NaN
     return res;
   }

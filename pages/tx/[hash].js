@@ -40,7 +40,13 @@ import Topbar from 'src/components/Topbar';
 import Link from 'next/link';
 import { rippleTimeToISO8601, dropsToXrp, normalizeCurrencyCode } from 'src/utils/parse/utils';
 import { formatDistanceToNow } from 'date-fns';
-import BigNumber from 'bignumber.js';
+import Decimal from 'decimal.js';
+
+// Helper function to format decimal with thousand separators (like BigNumber.toFormat)
+function formatDecimal(decimal, decimalPlaces = null) {
+  let str = decimalPlaces !== null ? decimal.toFixed(decimalPlaces) : decimal.toString();
+  return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
 import CryptoJS from 'crypto-js';
 import { getHashIcon } from 'src/utils/extra';
 
@@ -173,17 +179,17 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
             {exch && (
               <>
                 <Chip
-                  label={`$${new BigNumber(exch.USD).toFixed(4)}`}
+                  label={`$${new Decimal(exch.USD).toFixed(4)}`}
                   size="small"
                   sx={{ fontSize: '0.75rem' }}
                 />
                 <Chip
-                  label={`€${new BigNumber(exch.EUR).toFixed(4)}`}
+                  label={`€${new Decimal(exch.EUR).toFixed(4)}`}
                   size="small"
                   sx={{ fontSize: '0.75rem' }}
                 />
                 <Chip
-                  label={`¥${new BigNumber(exch.JPY).toFixed(4)}`}
+                  label={`¥${new Decimal(exch.JPY).toFixed(4)}`}
                   size="small"
                   sx={{ fontSize: '0.75rem' }}
                 />
@@ -242,7 +248,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 24h Volume
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {new BigNumber(token.vol24h || 0).toFormat(0)} XRP
+                {formatDecimal(new Decimal(token.vol24h || 0), 0)} XRP
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -250,7 +256,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 Supply
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {new BigNumber(token.supply || 0).toFormat(0)} XRP
+                {formatDecimal(new Decimal(token.supply || 0), 0)} XRP
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -258,7 +264,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 Holders
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {new BigNumber(token.holders || 0).toFormat(0)}
+                {formatDecimal(new Decimal(token.holders || 0), 0)}
               </Typography>
             </Box>
           </Stack>
@@ -343,14 +349,14 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {token.usd && (
               <Chip
-                label={`$${new BigNumber(token.usd).toFixed(6)}`}
+                label={`$${new Decimal(token.usd).toFixed(6)}`}
                 size="small"
                 sx={{ fontSize: '0.75rem' }}
               />
             )}
             {token.exch && (
               <Chip
-                label={`${new BigNumber(token.exch).toFixed(6)} XRP`}
+                label={`${new Decimal(token.exch).toFixed(6)} XRP`}
                 size="small"
                 sx={{ fontSize: '0.75rem' }}
               />
@@ -416,7 +422,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 Market Cap
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {new BigNumber(token.marketcap).toFormat(0)} XRP
+                {formatDecimal(new Decimal(token.marketcap), 0)} XRP
               </Typography>
             </Box>
           )}
@@ -426,7 +432,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 24h Volume
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {new BigNumber(token.vol24h).toFormat(0)} XRP
+                {formatDecimal(new Decimal(token.vol24h), 0)} XRP
               </Typography>
             </Box>
           )}
@@ -436,7 +442,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 Supply
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {new BigNumber(token.supply).toFormat(0)}
+                {formatDecimal(new Decimal(token.supply), 0)}
               </Typography>
             </Box>
           )}
@@ -446,7 +452,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 Holders
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {new BigNumber(token.holders).toFormat(0)}
+                {formatDecimal(new Decimal(token.holders), 0)}
               </Typography>
             </Box>
           )}
@@ -456,7 +462,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 Trust Lines
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {new BigNumber(token.trustlines).toFormat(0)}
+                {formatDecimal(new Decimal(token.trustlines), 0)}
               </Typography>
             </Box>
           )}
@@ -828,7 +834,7 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Typography variant={variant} component="span">
-          {new BigNumber(amount.value).toFormat()}{' '}
+          {formatDecimal(new Decimal(amount.value))}{' '}
         </Typography>
         {slug ? (
           <TokenDisplay
@@ -931,7 +937,7 @@ const getTransactionDescription = (txData) => {
     }
     if (typeof amount === 'object' && amount) {
       const currency = normalizeCurrencyCode(amount.currency);
-      return `${new BigNumber(amount.value).toFormat()} ${currency}`;
+      return `${formatDecimal(new Decimal(amount.value))} ${currency}`;
     }
     return 'Unknown amount';
   };
@@ -989,7 +995,7 @@ const getTransactionDescription = (txData) => {
           `Offering: ${takerGets}`,
           `Requesting: ${takerPays}`,
           `Exchange rate: 1 ${getCurrency(TakerPays)} = ${(() => {
-            const rate = new BigNumber(TakerGets.value || dropsToXrp(TakerGets)).div(TakerPays.value || dropsToXrp(TakerPays));
+            const rate = new Decimal(TakerGets.value || dropsToXrp(TakerGets)).div(TakerPays.value || dropsToXrp(TakerPays));
             return rate.toFormat(rate.lt(0.000001) ? 15 : 8);
           })()} ${getCurrency(TakerGets)}`,
           OfferSequence > 0 ? `Replaces order #${OfferSequence}` : 'New order',
@@ -1015,12 +1021,12 @@ const getTransactionDescription = (txData) => {
       const trustIssuer = LimitAmount ? formatAccount(LimitAmount.issuer) : 'Unknown';
       return {
         title: 'Trust Line Configuration',
-        description: `${formatAccount(Account)} ${LimitAmount && new BigNumber(LimitAmount.value).isZero() ? 'removed' : 'established or modified'} a trust line with ${trustIssuer}. Trust lines allow accounts to hold and transact with tokens issued by other accounts. ${LimitAmount && !new BigNumber(LimitAmount.value).isZero() ? `The trust limit is set to ${trustAmount}.` : 'The trust line has been removed.'}`,
+        description: `${formatAccount(Account)} ${LimitAmount && new Decimal(LimitAmount.value).isZero() ? 'removed' : 'established or modified'} a trust line with ${trustIssuer}. Trust lines allow accounts to hold and transact with tokens issued by other accounts. ${LimitAmount && !new Decimal(LimitAmount.value).isZero() ? `The trust limit is set to ${trustAmount}.` : 'The trust line has been removed.'}`,
         details: [
           `Account: ${formatAccount(Account)}`,
           `Token issuer: ${trustIssuer}`,
           `Trust limit: ${trustAmount}`,
-          LimitAmount && new BigNumber(LimitAmount.value).isZero()
+          LimitAmount && new Decimal(LimitAmount.value).isZero()
             ? 'Action: Trust line removed'
             : 'Action: Trust line created/modified',
           `Network fee: ${dropsToXrp(Fee)} XRP`,
@@ -1370,15 +1376,15 @@ const TransactionDetails = ({ txData, theme }) => {
 
       if (node.LedgerEntryType === 'AccountRoot' && previousFields.Balance) {
         const account = finalFields.Account;
-        const change = new BigNumber(finalFields.Balance).minus(previousFields.Balance);
+        const change = new Decimal(finalFields.Balance).minus(previousFields.Balance);
         if (!balanceChanges[account]) balanceChanges[account] = [];
         balanceChanges[account].push({ currency: 'XRP', value: dropsToXrp(change.toString()) });
       } else if (node.LedgerEntryType === 'RippleState' && previousFields.Balance) {
         const lowAccount = finalFields.LowLimit.issuer;
         const highAccount = finalFields.HighLimit.issuer;
         const currency = finalFields.Balance.currency;
-        const finalBalance = new BigNumber(finalFields.Balance.value);
-        const prevBalance = new BigNumber(previousFields.Balance?.value || 0);
+        const finalBalance = new Decimal(finalFields.Balance.value);
+        const prevBalance = new Decimal(previousFields.Balance?.value || 0);
         const change = finalBalance.minus(prevBalance);
 
         if (!change.isZero()) {
@@ -1386,12 +1392,12 @@ const TransactionDetails = ({ txData, theme }) => {
 
           let issuer = highAccount;
           // If balance is negative, the low account is the issuer.
-          if (new BigNumber(finalFields.Balance.value).isNegative()) {
+          if (new Decimal(finalFields.Balance.value).isNegative()) {
             issuer = lowAccount;
           } else if (
             finalBalance.isZero() &&
             previousFields.Balance &&
-            new BigNumber(previousFields.Balance.value).isNegative()
+            new Decimal(previousFields.Balance.value).isNegative()
           ) {
             // If final balance is 0 and previous was negative, low account was issuer.
             issuer = lowAccount;
@@ -1427,13 +1433,13 @@ const TransactionDetails = ({ txData, theme }) => {
 
         const paid =
           typeof prevPays === 'object'
-            ? new BigNumber(prevPays.value || 0).minus(finalPays.value || 0)
-            : new BigNumber(prevPays || 0).minus(finalPays || 0);
+            ? new Decimal(prevPays.value || 0).minus(finalPays.value || 0)
+            : new Decimal(prevPays || 0).minus(finalPays || 0);
 
         const got =
           typeof prevGets === 'object'
-            ? new BigNumber(prevGets.value || 0).minus(finalGets.value || 0)
-            : new BigNumber(prevGets || 0).minus(finalGets || 0);
+            ? new Decimal(prevGets.value || 0).minus(finalGets.value || 0)
+            : new Decimal(prevGets || 0).minus(finalGets || 0);
 
         if (!paid.isZero() && !got.isZero()) {
           const paidAmount = {};
@@ -1765,12 +1771,12 @@ const TransactionDetails = ({ txData, theme }) => {
     initiatorChanges?.changes.length >= 2
   ) {
     const changes = initiatorChanges.changes;
-    const paidChange = changes.find((c) => new BigNumber(c.value).isNegative());
-    const gotChange = changes.find((c) => new BigNumber(c.value).isPositive());
+    const paidChange = changes.find((c) => new Decimal(c.value).isNegative());
+    const gotChange = changes.find((c) => new Decimal(c.value).isPositive());
 
     if (paidChange && gotChange) {
-      const paidValue = new BigNumber(paidChange.value).abs();
-      const gotValue = new BigNumber(gotChange.value);
+      const paidValue = new Decimal(paidChange.value).abs();
+      const gotValue = new Decimal(gotChange.value);
 
       let gotAmountFromChanges;
       if (gotChange.currency === 'XRP') {
@@ -2872,8 +2878,8 @@ const TransactionDetails = ({ txData, theme }) => {
                           {PriceDataSeries.map((series) => {
                             const { AssetPrice, BaseAsset, QuoteAsset, Scale } = series.PriceData;
                             if (!AssetPrice) return null;
-                            const price = new BigNumber(parseInt(AssetPrice, 16)).dividedBy(
-                              new BigNumber(10).pow(Scale)
+                            const price = new Decimal(parseInt(AssetPrice, 16)).div(
+                              new Decimal(10).pow(Scale)
                             );
                             const base =
                               BaseAsset === 'XRP' ? 'XRP' : normalizeCurrencyCode(BaseAsset);
@@ -2882,7 +2888,7 @@ const TransactionDetails = ({ txData, theme }) => {
                             const keyStr = `${BaseAsset}-${QuoteAsset}-${AssetPrice}`;
                             return (
                               <Typography key={keyStr} variant="body2">
-                                1 {base} = {price.toFormat()} {quote}
+                                1 {base} = {price.toString()} {quote}
                               </Typography>
                             );
                           })}
@@ -2914,7 +2920,7 @@ const TransactionDetails = ({ txData, theme }) => {
                     <DetailRow label="Exchanged">
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Typography variant="body1" color="error.main">
-                          -{new BigNumber(displayExchange.paid.value).toFormat()}
+                          -{formatDecimal(new Decimal(displayExchange.paid.value))}
                         </Typography>
                         {displayExchange.paid.rawCurrency ? (
                           <TokenDisplay
@@ -2928,7 +2934,7 @@ const TransactionDetails = ({ txData, theme }) => {
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Typography variant="body1" color="success.main">
-                          +{new BigNumber(displayExchange.got.value).toFormat()}
+                          +{formatDecimal(new Decimal(displayExchange.got.value))}
                         </Typography>
                         {displayExchange.got.rawCurrency ? (
                           <TokenDisplay
@@ -2952,8 +2958,8 @@ const TransactionDetails = ({ txData, theme }) => {
                     <DetailRow label="Rate">
                       <Stack spacing={0.5}>
                         {(() => {
-                          const paidValue = new BigNumber(displayExchange.paid.value);
-                          const gotValue = new BigNumber(displayExchange.got.value);
+                          const paidValue = new Decimal(displayExchange.paid.value);
+                          const gotValue = new Decimal(displayExchange.got.value);
 
                           if (
                             paidValue.isZero() ||
@@ -3082,7 +3088,7 @@ const TransactionDetails = ({ txData, theme }) => {
                         <Box flex={1}>
                           <Stack spacing={1}>
                             {changes.map((change) => {
-                              const isPositive = new BigNumber(change.value).isPositive();
+                              const isPositive = new Decimal(change.value).isPositive();
                               const sign = isPositive ? '+' : '';
                               const color = isPositive ? 'success.main' : 'error.main';
                               const changeKey = `${change.currency}-${change.issuer || 'XRP'}-${change.value}`;
@@ -3091,7 +3097,7 @@ const TransactionDetails = ({ txData, theme }) => {
                                 <Box key={changeKey} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                   <Typography variant="body2" color={color} fontWeight="medium">
                                     {sign}
-                                    {new BigNumber(change.value).toFormat()}
+                                    {formatDecimal(new Decimal(change.value))}
                                   </Typography>
                                   {change.currency === 'XRP' ? (
                                     <XrpDisplay variant="body2" />
@@ -3140,7 +3146,7 @@ const TransactionDetails = ({ txData, theme }) => {
                     <Stack direction="row" spacing={2} alignItems="center">
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography variant="body1" color="error.main" fontWeight="medium">
-                          -{new BigNumber(displayExchange.paid.value).toFormat()}
+                          -{formatDecimal(new Decimal(displayExchange.paid.value))}
                         </Typography>
                         {displayExchange.paid.rawCurrency ? (
                           <TokenDisplay
@@ -3155,7 +3161,7 @@ const TransactionDetails = ({ txData, theme }) => {
                       <SwapHorizIcon color="action" />
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography variant="body1" color="success.main" fontWeight="medium">
-                          +{new BigNumber(displayExchange.got.value).toFormat()}
+                          +{formatDecimal(new Decimal(displayExchange.got.value))}
                         </Typography>
                         {displayExchange.got.rawCurrency ? (
                           <TokenDisplay
@@ -3175,8 +3181,8 @@ const TransactionDetails = ({ txData, theme }) => {
                     </Typography>
                     <Stack spacing={0.5}>
                       {(() => {
-                        const paidValue = new BigNumber(displayExchange.paid.value);
-                        const gotValue = new BigNumber(displayExchange.got.value);
+                        const paidValue = new Decimal(displayExchange.paid.value);
+                        const gotValue = new Decimal(displayExchange.got.value);
 
                         if (
                           paidValue.isZero() ||
@@ -3470,7 +3476,7 @@ export async function getServerSideProps(context) {
     // if (meta) {
     //   const deliveredAmount = meta.delivered_amount;
     //   if (typeof deliveredAmount === 'object' && deliveredAmount.value) {
-    //     meta.delivered_amount.value = new BigNumber(deliveredAmount.value).toFormat();
+    //     meta.delivered_amount.value = new Decimal(deliveredAmount.value).toString();
     //   }
     // }
 

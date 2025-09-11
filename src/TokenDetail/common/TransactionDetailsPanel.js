@@ -28,7 +28,6 @@ import { formatDistanceToNow } from 'date-fns';
 import { parseAmount } from 'src/utils/parse/amount';
 import Decimal from 'decimal.js';
 import { normalizeCurrencyCode, rippleTimeToISO8601, dropsToXrp } from 'src/utils/parse/utils';
-import BigNumber from 'bignumber.js';
 import { Client } from 'xrpl';
 
 const TransactionDetailsPanel = memo(({ open, onClose, transactionHash, onSelectTransaction }) => {
@@ -93,7 +92,7 @@ const TransactionDetailsPanel = memo(({ open, onClose, transactionHash, onSelect
     }
     
     if (typeof amount === 'object' && amount.value) {
-      const value = new BigNumber(amount.value).toFormat();
+      const value = new Decimal(amount.value).toString();
       const currency = normalizeCurrencyCode(amount.currency);
       return `${value} ${currency}`;
     }
@@ -533,7 +532,7 @@ const TransactionDetailsPanel = memo(({ open, onClose, transactionHash, onSelect
                     {formatAmount(transaction.LimitAmount)}
                   </Typography>
                   <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7) }}>
-                    {new BigNumber(transaction.LimitAmount.value).isZero() ? 'Removed' : 'Active'}
+                    {new Decimal(transaction.LimitAmount.value).eq(0) ? 'Removed' : 'Active'}
                   </Typography>
                 </Box>
               </>

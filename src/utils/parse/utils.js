@@ -2,7 +2,6 @@ import Decimal from 'decimal.js';
 import { encodeAccountID } from 'ripple-address-codec';
 
 const { omitBy } = require('lodash');
-const BigNumber = require('bignumber.js');
 const { deriveKeypair } = require('ripple-keypairs');
 const { xAddressToClassicAddress } = require('ripple-address-codec');
 
@@ -24,7 +23,7 @@ function adjustQualityForXRP(quality, takerGetsCurrency, takerPaysCurrency) {
   const numeratorShift = takerPaysCurrency === 'XRP' ? -6 : 0;
   const denominatorShift = takerGetsCurrency === 'XRP' ? -6 : 0;
   const shift = numeratorShift - denominatorShift;
-  return shift === 0 ? quality : new BigNumber(quality).shiftedBy(shift).toString();
+  return shift === 0 ? quality : new Decimal(quality).mul(Decimal.pow(10, shift)).toString();
 }
 
 function parseQuality(quality) {
@@ -32,7 +31,7 @@ function parseQuality(quality) {
     return undefined;
   }
   try {
-    return new BigNumber(quality).shiftedBy(-9).toNumber();
+    return new Decimal(quality).div(Decimal.pow(10, 9)).toNumber();
   } catch (error) {
     console.error('Error in parseQuality:', error);
     return undefined;
@@ -81,7 +80,7 @@ function dropsToXrp(drops) {
   // Converting to BigNumber and then back to string should remove any
   // decimal point followed by zeros, e.g. '1.00'.
   // Important: specify base 10 to avoid exponential notation, e.g. '1e-7'.
-  drops = new BigNumber(drops).toString(10);
+  drops = new Decimal(drops).toString();
 
   // drops are only whole units
   if (drops.includes('.')) {
@@ -97,7 +96,7 @@ function dropsToXrp(drops) {
     );
   }
 
-  return new BigNumber(drops).dividedBy(1000000.0).toString(10);
+  return new Decimal(drops).div(1000000.0).toString();
 }
 
 function xrpToDrops(xrp) {
@@ -115,7 +114,7 @@ function xrpToDrops(xrp) {
   }
 
   // Important: specify base 10 to avoid exponential notation, e.g. '1e-7'.
-  xrp = new BigNumber(xrp).toString(10);
+  xrp = new Decimal(xrp).toString();
 
   // This should never happen; the value has already been
   // validated above. This just ensures BigNumber did not do
@@ -138,7 +137,7 @@ function xrpToDrops(xrp) {
     console.error(`xrpToDrops: value '${xrp}' has` + ` too many decimal places.`);
   }
 
-  return new BigNumber(xrp).times(1000000.0).integerValue(BigNumber.ROUND_FLOOR).toString(10);
+  return new Decimal(xrp).mul(1000000.0).floor().toString();
 }
 
 function toRippledAmount(amount) {

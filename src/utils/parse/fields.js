@@ -1,4 +1,4 @@
-const BigNumber = require('bignumber.js');
+const Decimal = require('decimal.js');
 const { AccountFields } = require('./constants');
 
 function parseField(info, value) {
@@ -7,7 +7,7 @@ function parseField(info, value) {
     return Buffer.from(value, 'hex').toString('ascii')
   }
   if (info.shift) {
-    return new BigNumber(value).shiftedBy(-info.shift).toNumber()
+    return new Decimal(value).div(Decimal.pow(10, info.shift)).toNumber()
   }
   return value
 }
