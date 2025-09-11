@@ -5,7 +5,12 @@ const { omitBy } = require('lodash');
 // Removed ripple-keypairs for security (compromised in 2025)
 const { xAddressToClassicAddress } = require('ripple-address-codec');
 
-const txFlags = require('./txflags');
+// Inline from txflags.js - only need Payment flags
+const txFlags = {
+  Payment: {
+    PartialPayment: 0x00020000
+  }
+};
 
 const dropsInXRP = 1000000;
 

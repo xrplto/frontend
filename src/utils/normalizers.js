@@ -1,5 +1,55 @@
 import Decimal from 'decimal.js';
-const ieee754Float = require('./IEEE754Float');
+
+// IEEE 754 floating-point implementation
+function fromBytesIEEE754(bytes) {
+  // Render in binary.  Hackish.
+  var b = "";
+  for (var i = 0, n = bytes.length; i < n; i++) {
+    var bits = (bytes[i] & 0xff).toString(2);
+    while (bits.length < 8) bits = "0" + bits;
+    b += bits;
+  }
+
+  // Determine configuration.  This could have all been precomputed but it is fast enough.
+  var exponentBits = bytes.length === 4 ? 4 : 11;
+  var mantissaBits = (bytes.length * 8) - exponentBits - 1;
+  var bias = Math.pow(2, exponentBits - 1) - 1;
+  var minExponent = 1 - bias - mantissaBits;
+
+  // Break up the binary representation into its pieces for easier processing.
+  var s = b[0];
+  var e = b.substring(1, exponentBits + 1);
+  var m = b.substring(exponentBits + 1);
+
+  var allZeros = /^0+$/;
+  var allOnes = /^1+$/;
+
+  var value = 0;
+  var multiplier = (s === "0" ? 1 : -1);
+
+  if (allZeros.test(e)) {
+    // Zero or denormalized
+    if (allZeros.test(m)) {
+      // Value is zero
+    } else {
+      value = parseInt(m, 2) * Math.pow(2, minExponent);
+    }
+  } else if (allOnes.test(e)) {
+    // Infinity or NaN
+    if (allZeros.test(m)) {
+      value = Infinity;
+    } else {
+      value = NaN;
+    }
+  } else {
+    // Normalized
+    var exponent = parseInt(e, 2) - bias;
+    var mantissa = parseInt(m, 2);
+    value = (1 + (mantissa * Math.pow(2, -mantissaBits))) * Math.pow(2, exponent);
+  }
+
+  return value * multiplier;
+}
 
 /*module.exports.isHex = string => {
     return /^[0-9A-Fa-f]*$/.test(string);
@@ -44,7 +94,7 @@ function convertDemurrageToUTF8(demurrageCode) {
   let code =
     String.fromCharCode(bytes[1]) + String.fromCharCode(bytes[2]) + String.fromCharCode(bytes[3]);
   let interest_start = (bytes[4] << 24) + (bytes[5] << 16) + (bytes[6] << 8) + bytes[7];
-  let interest_period = ieee754Float.fromBytes(bytes.slice(8, 16));
+  let interest_period = fromBytesIEEE754(bytes.slice(8, 16));
   const year_seconds = 31536000; // By convention, the XRP Ledger's interest/demurrage rules use a fixed number of seconds per year (31536000), which is not adjusted for leap days or leap seconds
   let interest_after_year = precision(
     Math.pow(Math.E, (interest_start + year_seconds - interest_start) / interest_period),

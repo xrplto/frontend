@@ -1,5 +1,8 @@
 const CryptoJS = require('crypto-js');
-const { removeUndefined } = require("./common");
+// Inline from common.js
+function removeUndefined(obj) {
+    return require("lodash").omitBy(obj, value => value == null);
+}
 const { rippleToUnixTimestamp } = require("./utils");
 const { parseAmount } = require('./amount');
 

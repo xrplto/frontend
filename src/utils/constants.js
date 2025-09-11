@@ -1,5 +1,4 @@
 import ClassIcon from '@mui/icons-material/Class';
-import ArtTrackIcon from '@mui/icons-material/ArtTrack';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import DnsIcon from '@mui/icons-material/Dns';
 import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
@@ -24,42 +23,7 @@ const CryptoJS = require('crypto-js');
 
 export const BASE_URL = 'https://api.xrpl.to/api';
 
-export const SUPPORTED_FILE_TYPES = [
-  'JPG',
-  'PNG'
-  // 'GIF',
-  // 'SVG',
-  // 'MP4',
-  // 'WEBM',
-  // 'WAV',
-  // 'OGG',
-  // 'GLB',
-  // 'GLTF'
-];
 
-export const ACCOUNTS = [
-  {
-    id: 1,
-    account: 'rKVd5WtB8ugrxaTDTbJv6pVH7WunmyryLq'
-  },
-  {
-    id: 2,
-    account: 'rEBKhngY8izMvRrgGg3Yh5zdiQgHH9cExg'
-  },
-  {
-    id: 3,
-    account: 'rwj4mN7o5niF2zqoUajKGH5rXJwdWyLWF9'
-  },
-  {
-    id: 4,
-    account: 'rQ3zXHDBM7mbZyNrUP1fGjhEfHT38dkx1v'
-  },
-  {
-    id: 5,
-    account: 'rpcmZhxthTeWoLMpro5dfRAsAmwZCrsxGK'
-  }
-];
-export const TOP_BAR_HEIGHT_DESKTOP = 33;
 export const BASIC_COLOR = '#00AB55';
 export const tfTransferable = 0x00000008;
 export const tfTrustLine = 0x00000004;
@@ -87,7 +51,6 @@ export const TOKEN_FLAGS = [
     desc: '	If set, indicates that this NFT can be transferred. This flag has no effect if the token is being transferred from the issuer or to the issuer.'
   }
 ];
-export const NON_FLAGS = [6, 7, 14, 15];
 
 export const CATEGORIES = [
   {
@@ -353,36 +316,6 @@ export const CollectionListType = {
   LANDING: 4
 };
 
-const BG_FILES = [
-  'bay1.png',
-  'Fractal_1.png',
-  'bay2.jpg',
-  'Fractal_2.png',
-  'bay3.png',
-  'Fractal_3.png',
-  'bay4.jpg',
-  'Fractal_4.png',
-  'mmc1.png',
-  'Fractal_5.png',
-  'mmc2.png',
-  'Fractal_6.png',
-  'mmc3.png',
-  'Fractal_7.png',
-  'mmc4.jpg',
-  'Fractal_8.png',
-  'mmc5.png',
-  'Fractal_9.png',
-  'Fractal_10.png',
-  'Fractal_11.png'
-];
-
-export function getRandomBG() {
-  let rand = Math.random() * BG_FILES.length;
-
-  rand = Math.floor(rand);
-
-  return BG_FILES[rand];
-}
 
 export function getMinterName(minter) {
   switch (minter) {
@@ -407,12 +340,6 @@ export function getMinterName(minter) {
   }
 }
 
-export function statusToString(status) {
-  for (const [key, value] of Object.entries(NFToken)) {
-    if (value === status) return key;
-  }
-  return 'NONE';
-}
 
 export const defaultCurrencyIconProps = {
   sx: {
