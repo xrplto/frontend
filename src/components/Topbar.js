@@ -58,15 +58,17 @@ const TopWrapper = styled.header`
   width: 100%;
   display: flex;
   align-items: center;
-  height: 28px;
+  height: 36px;
   background: ${props => props.backgroundColor};
-  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
+  border-top: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
   position: fixed;
-  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   z-index: 1099;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
+  backdrop-filter: blur(10px);
+  font-family: 'JetBrains Mono', monospace;
 `;
 
 const Container = styled.div`
@@ -160,19 +162,20 @@ const MetricContent = styled.div`
 `;
 
 const MetricBadge = styled.span`
-  font-size: 0.45rem;
+  font-size: 0.4rem;
   font-weight: 600;
   color: ${props => props.textColor};
   opacity: 0.8;
   text-transform: uppercase;
   letter-spacing: 0.1px;
+  font-family: 'JetBrains Mono', monospace;
 `;
 
 const MetricNumber = styled.span`
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 700;
   color: ${props => props.color};
-  font-family: 'Inter', sans-serif;
+  font-family: 'JetBrains Mono', monospace;
   line-height: 0.8;
 `;
 
@@ -270,17 +273,18 @@ const MetricValue = styled.span`
 
 const Drawer = styled.div`
   position: fixed;
-  top: 0;
+  bottom: 36px;
   right: ${props => props.open ? '0' : '-100%'};
   width: ${props => props.isMobile ? (props.isSmallMobile ? '100%' : '90%') : '400px'};
-  height: 100vh;
+  height: calc(100vh - 36px);
   background: ${props => props.backgroundColor};
-  box-shadow: -4px 0 16px rgba(0,0,0,0.25);
+  box-shadow: -4px -4px 16px rgba(0,0,0,0.25);
   transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1200;
   display: flex;
   flex-direction: column;
   max-width: ${props => props.isMobile ? '420px' : '400px'};
+  border-top-left-radius: 12px;
   
   ${media.down('sm')} {
     width: 100%;
@@ -687,32 +691,17 @@ const Topbar = () => {
 
   // Get theme-specific colors
   const getThemeColors = () => {
-    switch(themeName) {
-      case 'SyncWaveTheme':
-        return {
-          primaryColor: '#00ffff',
-          backgroundColor: '#030310',
-          paperBackground: 'rgba(26, 0, 51, 0.8)',
-          textPrimary: '#00ffff',
-          textSecondary: 'rgba(0, 255, 255, 0.7)'
-        };
-      case 'XrplToDarkTheme':
-        return {
-          primaryColor: '#147DFE',
-          backgroundColor: '#000000',
-          paperBackground: '#111827',
-          textPrimary: '#ffffff',
-          textSecondary: 'rgba(255, 255, 255, 0.7)'
-        };
-      default:
-        return {
-          primaryColor: '#0080ff',
-          backgroundColor: darkMode ? '#000000' : '#ffffff',
-          paperBackground: darkMode ? '#0a0a0a' : '#f5f5f5',
-          textPrimary: darkMode ? '#ffffff' : '#000000',
-          textSecondary: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'
-        };
-    }
+    // Import theme context if available
+    const themeContext = useContext(AppContext);
+    const currentTheme = themeContext?.theme;
+    
+    return {
+      primaryColor: currentTheme?.palette?.primary?.main || (darkMode ? '#147DFE' : '#0080ff'),
+      backgroundColor: currentTheme?.header?.background || (darkMode ? '#000000' : '#ffffff'),
+      paperBackground: currentTheme?.palette?.background?.paper || (darkMode ? '#0a0a0a' : '#f5f5f5'),
+      textPrimary: currentTheme?.palette?.text?.primary || (darkMode ? '#ffffff' : '#000000'),
+      textSecondary: currentTheme?.palette?.text?.secondary || (darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)')
+    };
   };
 
   const themeColors = getThemeColors();
