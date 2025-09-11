@@ -1,63 +1,63 @@
 import { alpha, createTheme, darken, lighten } from '@mui/material';
 
-// Cyberpunk-inspired color palette
+// Florida Synthwave color palette
 const themeColors = {
-  primary: '#00ffff',      // Cyan
-  secondary: '#ff00ff',    // Magenta
-  success: '#00ff00',      // Neon Green
-  warning: '#ffff00',      // Neon Yellow
-  error: '#ff0066',        // Hot Pink
-  info: '#00ccff',         // Electric Blue
-  black: '#0a0a0a',        // Deep Black
-  white: '#f0f0f0',        // Off White
-  primaryAlt: '#1a0033',   // Deep Purple
+  primary: '#ff1493',      // Hot Pink
+  secondary: '#ff6b35',    // Vibrant Orange
+  success: '#7fffd4',      // Aquamarine
+  warning: '#ffd700',      // Gold
+  error: '#ff1744',        // Neon Red
+  info: '#00bfff',         // Deep Sky Blue
+  black: '#0d0818',        // Dark Purple Black
+  white: '#fff5ee',        // Seashell
+  primaryAlt: '#2d1b69',   // Deep Purple
   trueWhite: '#ffffff'
 };
 
 const colors = {
   gradients: {
-    blue1: 'linear-gradient(135deg, #00ffff 0%, #0080ff 100%)',
-    blue2: 'linear-gradient(135deg, #00ccff 0%, #0066ff 100%)',
-    blue3: 'linear-gradient(127.55deg, #1a0033 3.73%, #330066 92.26%)',
-    blue4: 'linear-gradient(-20deg, #00ffff 0%, #ff00ff 100%)',
-    blue5: 'linear-gradient(135deg, #0099ff 10%, #003366 100%)',
-    orange1: 'linear-gradient(135deg, #ff00ff 0%, #ff0066 100%)',
-    orange2: 'linear-gradient(135deg, #ff66cc 0%, #ff0099 100%)',
-    orange3: 'linear-gradient(120deg, #ffff00 0%, #ff00ff 100%)',
-    purple1: 'linear-gradient(135deg, #00ffff 0%, #9900ff 100%)',
-    purple3: 'linear-gradient(135deg, #cc00ff 0%, #6600cc 100%)',
-    pink1: 'linear-gradient(135deg, #ff99ff 0%, #ff00ff 100%)',
-    pink2: 'linear-gradient(135deg, #ff0099 0%, #cc0066 100%)',
-    green1: 'linear-gradient(135deg, #00ff00 0%, #00ffff 100%)',
-    green2: 'linear-gradient(to bottom, #00ff99 0%, #00ffff 100%)',
-    black1: 'linear-gradient(100.66deg, #1a1a1a 6.56%, #000000 93.57%)',
-    black2: 'linear-gradient(60deg, #0a0a0a 0%, #1a0033 100%)'
+    blue1: 'linear-gradient(135deg, #00bfff 0%, #ff1493 100%)',
+    blue2: 'linear-gradient(135deg, #7fffd4 0%, #ff6b35 100%)',
+    blue3: 'linear-gradient(127.55deg, #2d1b69 3.73%, #ff1493 92.26%)',
+    blue4: 'linear-gradient(-20deg, #ff6b35 0%, #ff1493 100%)',
+    blue5: 'linear-gradient(135deg, #00bfff 10%, #2d1b69 100%)',
+    orange1: 'linear-gradient(135deg, #ff6b35 0%, #ffd700 100%)',
+    orange2: 'linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%)',
+    orange3: 'linear-gradient(120deg, #ffd700 0%, #ff6b35 100%)',
+    purple1: 'linear-gradient(135deg, #ff1493 0%, #2d1b69 100%)',
+    purple3: 'linear-gradient(135deg, #9370db 0%, #2d1b69 100%)',
+    pink1: 'linear-gradient(135deg, #ff69b4 0%, #ff1493 100%)',
+    pink2: 'linear-gradient(135deg, #ff1493 0%, #c71585 100%)',
+    green1: 'linear-gradient(135deg, #7fffd4 0%, #00bfff 100%)',
+    green2: 'linear-gradient(to bottom, #40e0d0 0%, #7fffd4 100%)',
+    black1: 'linear-gradient(100.66deg, #2d1b69 6.56%, #0d0818 93.57%)',
+    black2: 'linear-gradient(60deg, #0d0818 0%, #2d1b69 100%)'
   },
   shadows: {
-    success: '0px 0px 20px rgba(0, 255, 0, 0.5), 0px 0px 40px rgba(0, 255, 0, 0.3)',
-    error: '0px 0px 20px rgba(255, 0, 102, 0.5), 0px 0px 40px rgba(255, 0, 102, 0.3)',
-    info: '0px 0px 20px rgba(0, 255, 255, 0.5), 0px 0px 40px rgba(0, 255, 255, 0.3)',
-    primary: '0px 0px 20px rgba(0, 255, 255, 0.5), 0px 0px 40px rgba(0, 255, 255, 0.3)',
-    warning: '0px 0px 20px rgba(255, 255, 0, 0.5), 0px 0px 40px rgba(255, 255, 0, 0.3)',
-    card: '0px 0px 30px rgba(0, 255, 255, 0.2), inset 0px 0px 2px rgba(0, 255, 255, 0.5)',
-    cardSm: '0px 0px 15px rgba(0, 255, 255, 0.2), inset 0px 0px 1px rgba(0, 255, 255, 0.5)',
-    cardLg: '0px 0px 60px rgba(255, 0, 255, 0.3), 0px 0px 120px rgba(0, 255, 255, 0.2)'
+    success: '0px 0px 20px rgba(127, 255, 212, 0.5), 0px 0px 40px rgba(127, 255, 212, 0.3)',
+    error: '0px 0px 20px rgba(255, 23, 68, 0.5), 0px 0px 40px rgba(255, 23, 68, 0.3)',
+    info: '0px 0px 20px rgba(0, 191, 255, 0.5), 0px 0px 40px rgba(0, 191, 255, 0.3)',
+    primary: '0px 0px 20px rgba(255, 20, 147, 0.5), 0px 0px 40px rgba(255, 20, 147, 0.3)',
+    warning: '0px 0px 20px rgba(255, 215, 0, 0.5), 0px 0px 40px rgba(255, 215, 0, 0.3)',
+    card: '0px 0px 30px rgba(255, 20, 147, 0.2), inset 0px 0px 2px rgba(255, 107, 53, 0.5)',
+    cardSm: '0px 0px 15px rgba(255, 20, 147, 0.2), inset 0px 0px 1px rgba(255, 107, 53, 0.5)',
+    cardLg: '0px 0px 60px rgba(255, 107, 53, 0.3), 0px 0px 120px rgba(255, 20, 147, 0.2)'
   },
   layout: {
     general: {
-      bodyBg: '#030310'
+      bodyBg: '#0d0818'
     },
     sidebar: {
-      background: alpha('#1a0033', 0.8),
-      textColor: '#00ffff',
-      dividerBg: alpha('#00ffff', 0.1),
-      menuItemColor: '#00ccff',
-      menuItemColorActive: '#00ffff',
+      background: alpha('#2d1b69', 0.8),
+      textColor: '#ff1493',
+      dividerBg: alpha('#ff1493', 0.1),
+      menuItemColor: '#ff6b35',
+      menuItemColorActive: '#ff1493',
       menuItemBg: 'transparent',
-      menuItemBgActive: alpha('#00ffff', 0.1),
-      menuItemIconColor: '#ff00ff',
-      menuItemIconColorActive: '#00ffff',
-      menuItemHeadingColor: '#ff00ff'
+      menuItemBgActive: alpha('#ff1493', 0.1),
+      menuItemIconColor: '#7fffd4',
+      menuItemIconColorActive: '#ff1493',
+      menuItemHeadingColor: '#ffd700'
     }
   },
   alpha: {
@@ -149,24 +149,24 @@ export const SyncWaveTheme = createTheme({
     info: colors.info
   },
   pagination: {
-    background: alpha('#1a0033', 0.6),
-    backgroundHover: alpha('#00ffff', 0.15),
-    border: alpha('#00ffff', 0.2),
-    textColor: '#00ffff',
-    selectedBackground: 'linear-gradient(135deg, #00ffff 0%, #0080ff 100%)',
+    background: alpha('#2d1b69', 0.6),
+    backgroundHover: alpha('#ff1493', 0.15),
+    border: alpha('#ff1493', 0.2),
+    textColor: '#ff1493',
+    selectedBackground: 'linear-gradient(135deg, #ff1493 0%, #ff6b35 100%)',
     selectedTextColor: themeColors.black,
-    boxShadow: '0px 0px 15px rgba(0, 255, 255, 0.2)'
+    boxShadow: '0px 0px 15px rgba(255, 20, 147, 0.2)'
   },
   general: {
-    reactFrameworkColor: '#00ffff80',
+    reactFrameworkColor: '#ff149380',
     borderRadiusSm: '4px',
     borderRadius: '8px',
     borderRadiusLg: '12px',
     borderRadiusXl: '16px',
-    backgroundAlt: alpha('#1a0033', 0.5),
-    backgroundAsset: alpha('#00ffff', 0.05),
-    backgroundTrait: alpha('#ff00ff', 0.1),
-    borderTrait: '#ff00ff'
+    backgroundAlt: alpha('#2d1b69', 0.5),
+    backgroundAsset: alpha('#ff1493', 0.05),
+    backgroundTrait: alpha('#ff6b35', 0.1),
+    borderTrait: '#ff6b35'
   },
   sidebar: {
     background: colors.layout.sidebar.background,
@@ -179,26 +179,26 @@ export const SyncWaveTheme = createTheme({
     menuItemIconColor: colors.layout.sidebar.menuItemIconColor,
     menuItemIconColorActive: colors.layout.sidebar.menuItemIconColorActive,
     menuItemHeadingColor: colors.layout.sidebar.menuItemHeadingColor,
-    boxShadow: '0px 0px 30px rgba(0, 255, 255, 0.3)',
+    boxShadow: '0px 0px 30px rgba(255, 20, 147, 0.3)',
     width: '290px'
   },
   header: {
     height: '80px',
-    background: alpha('#0a0a0a', 0.8),
-    boxShadow: '0px 0px 20px rgba(0, 255, 255, 0.3)',
+    background: alpha('#0d0818', 0.8),
+    boxShadow: '0px 0px 20px rgba(255, 107, 53, 0.3)',
     textColor: colors.secondary.main
   },
   spacing: 9,
   currency: {
-    background1: alpha('#00ffff', 0.1),
-    background2: alpha('#ff00ff', 0.1), 
-    border: `1px solid ${alpha('#00ffff', 0.3)}`
+    background1: alpha('#ff1493', 0.1),
+    background2: alpha('#ff6b35', 0.1), 
+    border: `1px solid ${alpha('#ff1493', 0.3)}`
   },
   
   walletDialog: {
-    background: alpha('#1a0033', 0.95),
-    backgroundSecondary: alpha('#1a0033', 0.6),
-    border: alpha('#00ffff', 0.2)
+    background: alpha('#2d1b69', 0.95),
+    backgroundSecondary: alpha('#2d1b69', 0.6),
+    border: alpha('#ff1493', 0.2)
   },
   palette: {
     common: {
@@ -243,13 +243,13 @@ export const SyncWaveTheme = createTheme({
       contrastText: themeColors.black
     },
     text: {
-      primary: '#00ffff',
-      secondary: alpha('#00ffff', 0.7),
-      disabled: alpha('#00ffff', 0.5)
+      primary: '#ff1493',
+      secondary: alpha('#ff6b35', 0.8),
+      disabled: alpha('#ff1493', 0.5)
     },
     background: {
-      paper: alpha('#1a0033', 0.8),
-      default: '#030310'
+      paper: alpha('#2d1b69', 0.8),
+      default: '#0d0818'
     },
     action: {
       active: colors.alpha.white[100],
@@ -264,7 +264,7 @@ export const SyncWaveTheme = createTheme({
       focusOpacity: 0.2,
       activatedOpacity: 0.24
     },
-    divider: alpha('#00ffff', 0.2),
+    divider: alpha('#ff1493', 0.2),
     tonalOffset: 0.5
   },
   breakpoints: {
@@ -303,13 +303,13 @@ export const SyncWaveTheme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          backgroundColor: alpha('#1a0033', 0.8),
+          backgroundColor: alpha('#2d1b69', 0.8),
           backdropFilter: 'blur(10px)',
-          border: `1px solid ${alpha('#00ffff', 0.2)}`,
-          boxShadow: '0px 0px 20px rgba(0, 255, 255, 0.1)',
+          border: `1px solid ${alpha('#ff1493', 0.2)}`,
+          boxShadow: '0px 0px 20px rgba(255, 20, 147, 0.1)',
           '&:hover': {
-            boxShadow: '0px 0px 30px rgba(0, 255, 255, 0.2)',
-            borderColor: alpha('#00ffff', 0.4)
+            boxShadow: '0px 0px 30px rgba(255, 20, 147, 0.2)',
+            borderColor: alpha('#ff1493', 0.4)
           }
         }
       }
@@ -330,7 +330,7 @@ export const SyncWaveTheme = createTheme({
             left: '-100%',
             width: '100%',
             height: '100%',
-            background: 'linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.4), transparent)',
+            background: 'linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.4), transparent)',
             transition: 'left 0.5s',
           },
           '&:hover::before': {
@@ -338,11 +338,11 @@ export const SyncWaveTheme = createTheme({
           }
         },
         contained: {
-          background: 'linear-gradient(135deg, #00ffff 0%, #0080ff 100%)',
-          boxShadow: '0px 0px 15px rgba(0, 255, 255, 0.5)',
+          background: 'linear-gradient(135deg, #ff1493 0%, #ff6b35 100%)',
+          boxShadow: '0px 0px 15px rgba(255, 20, 147, 0.5)',
           '&:hover': {
-            background: 'linear-gradient(135deg, #00ffff 0%, #00ccff 100%)',
-            boxShadow: '0px 0px 25px rgba(0, 255, 255, 0.7)'
+            background: 'linear-gradient(135deg, #ff1493 0%, #ffd700 100%)',
+            boxShadow: '0px 0px 25px rgba(255, 107, 53, 0.7)'
           }
         },
         outlined: {
@@ -351,7 +351,7 @@ export const SyncWaveTheme = createTheme({
           '&:hover': {
             borderColor: themeColors.primary,
             backgroundColor: alpha(themeColors.primary, 0.1),
-            boxShadow: '0px 0px 15px rgba(0, 255, 255, 0.3)'
+            boxShadow: '0px 0px 15px rgba(255, 20, 147, 0.3)'
           }
         },
         sizeSmall: {
@@ -387,11 +387,11 @@ export const SyncWaveTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: '4px',
-          border: `1px solid ${alpha('#00ffff', 0.3)}`,
-          backgroundColor: alpha('#00ffff', 0.1),
+          border: `1px solid ${alpha('#ff1493', 0.3)}`,
+          backgroundColor: alpha('#ff1493', 0.1),
           '&:hover': {
-            backgroundColor: alpha('#00ffff', 0.2),
-            boxShadow: '0px 0px 10px rgba(0, 255, 255, 0.5)'
+            backgroundColor: alpha('#ff1493', 0.2),
+            boxShadow: '0px 0px 10px rgba(255, 20, 147, 0.5)'
           }
         }
       }
@@ -399,9 +399,9 @@ export const SyncWaveTheme = createTheme({
     MuiDivider: {
       styleOverrides: {
         root: {
-          borderColor: alpha('#00ffff', 0.2),
+          borderColor: alpha('#ff1493', 0.2),
           '&::before, &::after': {
-            borderColor: alpha('#00ffff', 0.2),
+            borderColor: alpha('#ff1493', 0.2),
           }
         }
       }
@@ -410,15 +410,15 @@ export const SyncWaveTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: '8px',
-          border: `1px solid ${alpha('#00ffff', 0.2)}`,
-          background: alpha('#1a0033', 0.6),
+          border: `1px solid ${alpha('#ff1493', 0.2)}`,
+          background: alpha('#2d1b69', 0.6),
           backdropFilter: 'blur(10px)',
-          boxShadow: '0px 0px 20px rgba(0, 255, 255, 0.1)',
+          boxShadow: '0px 0px 20px rgba(255, 20, 147, 0.1)',
           transition: 'all 0.3s ease',
           '&:hover': {
             transform: 'translateY(-2px)',
-            boxShadow: '0px 0px 40px rgba(0, 255, 255, 0.3)',
-            borderColor: alpha('#00ffff', 0.5)
+            boxShadow: '0px 0px 40px rgba(255, 107, 53, 0.3)',
+            borderColor: alpha('#ff6b35', 0.5)
           }
         }
       }
@@ -426,15 +426,15 @@ export const SyncWaveTheme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         root: {
-          borderBottomColor: alpha('#00ffff', 0.1),
-          color: alpha('#00ffff', 0.9)
+          borderBottomColor: alpha('#ff1493', 0.1),
+          color: alpha('#ff1493', 0.9)
         },
         head: {
           fontWeight: 'bold',
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
           color: themeColors.primary,
-          borderBottomColor: alpha('#00ffff', 0.3)
+          borderBottomColor: alpha('#ff1493', 0.3)
         }
       }
     },
@@ -443,14 +443,14 @@ export const SyncWaveTheme = createTheme({
         root: {
           '& .MuiOutlinedInput-root': {
             '& fieldset': {
-              borderColor: alpha('#00ffff', 0.3),
+              borderColor: alpha('#ff1493', 0.3),
             },
             '&:hover fieldset': {
-              borderColor: alpha('#00ffff', 0.5),
+              borderColor: alpha('#ff1493', 0.5),
             },
             '&.Mui-focused fieldset': {
               borderColor: themeColors.primary,
-              boxShadow: '0px 0px 10px rgba(0, 255, 255, 0.3)'
+              boxShadow: '0px 0px 10px rgba(255, 20, 147, 0.3)'
             }
           }
         }
@@ -459,16 +459,16 @@ export const SyncWaveTheme = createTheme({
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
-          backgroundColor: alpha('#1a0033', 0.95),
-          border: `1px solid ${alpha('#00ffff', 0.3)}`,
+          backgroundColor: alpha('#2d1b69', 0.95),
+          border: `1px solid ${alpha('#ff1493', 0.3)}`,
           color: themeColors.primary,
-          boxShadow: '0px 0px 20px rgba(0, 255, 255, 0.3)',
+          boxShadow: '0px 0px 20px rgba(255, 20, 147, 0.3)',
           backdropFilter: 'blur(10px)'
         },
         arrow: {
-          color: alpha('#1a0033', 0.95),
+          color: alpha('#2d1b69', 0.95),
           '&::before': {
-            border: `1px solid ${alpha('#00ffff', 0.3)}`
+            border: `1px solid ${alpha('#ff1493', 0.3)}`
           }
         }
       }
@@ -490,27 +490,27 @@ export const SyncWaveTheme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiPaginationItem-root': {
-            backgroundColor: alpha('#1a0033', 0.6),
-            color: '#00ffff',
-            border: `1px solid ${alpha('#00ffff', 0.2)}`,
+            backgroundColor: alpha('#2d1b69', 0.6),
+            color: '#ff1493',
+            border: `1px solid ${alpha('#ff1493', 0.2)}`,
             backdropFilter: 'blur(10px)',
             textShadow: '0 0 5px currentColor',
             transition: 'all 0.3s ease',
             '&:hover': {
-              backgroundColor: alpha('#00ffff', 0.15),
-              borderColor: alpha('#00ffff', 0.5),
-              boxShadow: '0px 0px 15px rgba(0, 255, 255, 0.3)',
+              backgroundColor: alpha('#ff1493', 0.15),
+              borderColor: alpha('#ff1493', 0.5),
+              boxShadow: '0px 0px 15px rgba(255, 20, 147, 0.3)',
               transform: 'scale(1.05)'
             },
             '&.Mui-selected': {
-              background: 'linear-gradient(135deg, #00ffff 0%, #0080ff 100%)',
+              background: 'linear-gradient(135deg, #ff1493 0%, #ff6b35 100%)',
               color: themeColors.black,
-              borderColor: '#00ffff',
-              boxShadow: '0px 0px 20px rgba(0, 255, 255, 0.5)',
+              borderColor: '#ff1493',
+              boxShadow: '0px 0px 20px rgba(255, 20, 147, 0.5)',
               textShadow: 'none',
               '&:hover': {
-                background: 'linear-gradient(135deg, #00ffff 0%, #00ccff 100%)',
-                boxShadow: '0px 0px 25px rgba(0, 255, 255, 0.7)'
+                background: 'linear-gradient(135deg, #ff1493 0%, #ffd700 100%)',
+                boxShadow: '0px 0px 25px rgba(255, 107, 53, 0.7)'
               }
             }
           }
@@ -520,25 +520,25 @@ export const SyncWaveTheme = createTheme({
     MuiTablePagination: {
       styleOverrides: {
         root: {
-          backgroundColor: alpha('#1a0033', 0.6),
+          backgroundColor: alpha('#2d1b69', 0.6),
           backdropFilter: 'blur(10px)',
-          borderTop: `1px solid ${alpha('#00ffff', 0.2)}`,
-          color: '#00ffff',
-          boxShadow: '0px 0px 10px rgba(0, 255, 255, 0.1)'
+          borderTop: `1px solid ${alpha('#ff1493', 0.2)}`,
+          color: '#ff1493',
+          boxShadow: '0px 0px 10px rgba(255, 20, 147, 0.1)'
         },
         selectIcon: {
-          color: alpha('#00ffff', 0.7)
+          color: alpha('#ff1493', 0.7)
         },
         select: {
-          color: '#00ffff',
+          color: '#ff1493',
           textShadow: '0 0 5px currentColor'
         },
         menuItem: {
-          backgroundColor: alpha('#1a0033', 0.95),
-          color: '#00ffff',
+          backgroundColor: alpha('#2d1b69', 0.95),
+          color: '#ff1493',
           '&:hover': {
-            backgroundColor: alpha('#00ffff', 0.15),
-            boxShadow: '0px 0px 10px rgba(0, 255, 255, 0.3)'
+            backgroundColor: alpha('#ff1493', 0.15),
+            boxShadow: '0px 0px 10px rgba(255, 20, 147, 0.3)'
           }
         }
       }
@@ -555,7 +555,7 @@ export const SyncWaveTheme = createTheme({
           minHeight: '100%',
           width: '100%',
           flex: 1,
-          background: '#030310',
+          background: '#0d0818',
           position: 'relative',
           '&::before': {
             content: '""',
@@ -565,10 +565,10 @@ export const SyncWaveTheme = createTheme({
             right: 0,
             bottom: 0,
             backgroundImage: `
-              linear-gradient(rgba(0, 255, 255, 0.08) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 255, 255, 0.08) 1px, transparent 1px),
-              linear-gradient(rgba(255, 0, 255, 0.04) 2px, transparent 2px),
-              linear-gradient(90deg, rgba(255, 0, 255, 0.04) 2px, transparent 2px)
+              linear-gradient(rgba(255, 20, 147, 0.08) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255, 20, 147, 0.08) 1px, transparent 1px),
+              linear-gradient(rgba(255, 107, 53, 0.04) 2px, transparent 2px),
+              linear-gradient(90deg, rgba(255, 107, 53, 0.04) 2px, transparent 2px)
             `,
             backgroundSize: '50px 50px, 50px 50px, 100px 100px, 100px 100px',
             backgroundPosition: '0 0, 0 0, 0 0, 0 0',
@@ -583,24 +583,24 @@ export const SyncWaveTheme = createTheme({
             left: 0,
             right: 0,
             bottom: 0,
-            background: `radial-gradient(ellipse at center, transparent 0%, rgba(3, 3, 16, 0.4) 50%, rgba(3, 3, 16, 0.8) 100%)`,
+            background: `radial-gradient(ellipse at center, transparent 0%, rgba(13, 8, 24, 0.4) 50%, rgba(13, 8, 24, 0.8) 100%)`,
             pointerEvents: 'none',
             zIndex: -1
           },
-          scrollbarColor: `${alpha('#00ffff', 0.5)} ${alpha('#1a0033', 0.3)}`,
+          scrollbarColor: `${alpha('#ff1493', 0.5)} ${alpha('#2d1b69', 0.3)}`,
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            backgroundColor: alpha('#1a0033', 0.3),
+            backgroundColor: alpha('#2d1b69', 0.3),
             width: '8px',
             height: '8px'
           },
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: 8,
-            backgroundColor: alpha('#00ffff', 0.5),
-            border: `1px solid ${alpha('#00ffff', 0.3)}`,
+            backgroundColor: alpha('#ff1493', 0.5),
+            border: `1px solid ${alpha('#ff1493', 0.3)}`,
           },
           '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
-            backgroundColor: alpha('#00ffff', 0.7),
-            boxShadow: '0 0 10px rgba(0, 255, 255, 0.5)'
+            backgroundColor: alpha('#ff1493', 0.7),
+            boxShadow: '0 0 10px rgba(255, 20, 147, 0.5)'
           }
         },
         '#__next': {
@@ -690,29 +690,29 @@ export const SyncWaveTheme = createTheme({
   },
   shadows: [
     'none',
-    '0px 0px 10px rgba(0, 255, 255, 0.1)',
-    '0px 0px 15px rgba(0, 255, 255, 0.15)',
-    '0px 0px 20px rgba(0, 255, 255, 0.2)',
-    '0px 0px 25px rgba(0, 255, 255, 0.25)',
-    '0px 0px 30px rgba(0, 255, 255, 0.3)',
-    '0px 0px 35px rgba(0, 255, 255, 0.35)',
-    '0px 0px 40px rgba(0, 255, 255, 0.4)',
-    '0px 0px 45px rgba(0, 255, 255, 0.45)',
-    '0px 0px 50px rgba(0, 255, 255, 0.5)',
-    '0px 0px 55px rgba(255, 0, 255, 0.3)',
-    '0px 0px 60px rgba(255, 0, 255, 0.35)',
-    '0px 0px 65px rgba(255, 0, 255, 0.4)',
-    '0px 0px 70px rgba(255, 0, 255, 0.45)',
-    '0px 0px 75px rgba(255, 0, 255, 0.5)',
-    '0px 0px 80px rgba(255, 0, 255, 0.55)',
-    '0px 0px 85px rgba(255, 0, 255, 0.6)',
-    '0px 0px 90px rgba(255, 0, 255, 0.65)',
-    '0px 0px 95px rgba(255, 0, 255, 0.7)',
-    '0px 0px 100px rgba(255, 0, 255, 0.75)',
-    '0px 0px 105px rgba(255, 0, 255, 0.8)',
-    '0px 0px 110px rgba(255, 0, 255, 0.85)',
-    '0px 0px 115px rgba(255, 0, 255, 0.9)',
-    '0px 0px 120px rgba(255, 0, 255, 0.95)',
-    '0px 0px 125px rgba(255, 0, 255, 1)'
+    '0px 0px 10px rgba(255, 20, 147, 0.1)',
+    '0px 0px 15px rgba(255, 20, 147, 0.15)',
+    '0px 0px 20px rgba(255, 20, 147, 0.2)',
+    '0px 0px 25px rgba(255, 20, 147, 0.25)',
+    '0px 0px 30px rgba(255, 20, 147, 0.3)',
+    '0px 0px 35px rgba(255, 20, 147, 0.35)',
+    '0px 0px 40px rgba(255, 20, 147, 0.4)',
+    '0px 0px 45px rgba(255, 20, 147, 0.45)',
+    '0px 0px 50px rgba(255, 20, 147, 0.5)',
+    '0px 0px 55px rgba(255, 107, 53, 0.3)',
+    '0px 0px 60px rgba(255, 107, 53, 0.35)',
+    '0px 0px 65px rgba(255, 107, 53, 0.4)',
+    '0px 0px 70px rgba(255, 107, 53, 0.45)',
+    '0px 0px 75px rgba(255, 107, 53, 0.5)',
+    '0px 0px 80px rgba(255, 107, 53, 0.55)',
+    '0px 0px 85px rgba(255, 107, 53, 0.6)',
+    '0px 0px 90px rgba(255, 107, 53, 0.65)',
+    '0px 0px 95px rgba(255, 107, 53, 0.7)',
+    '0px 0px 100px rgba(255, 215, 0, 0.5)',
+    '0px 0px 105px rgba(255, 215, 0, 0.6)',
+    '0px 0px 110px rgba(255, 215, 0, 0.7)',
+    '0px 0px 115px rgba(255, 215, 0, 0.8)',
+    '0px 0px 120px rgba(255, 215, 0, 0.9)',
+    '0px 0px 125px rgba(255, 215, 0, 1)'
   ]
 });

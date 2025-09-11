@@ -13,8 +13,6 @@ import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import PaletteIcon from '@mui/icons-material/Palette';
 import WavesIcon from '@mui/icons-material/Waves';
-import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
-import PetsIcon from '@mui/icons-material/Pets';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import { AppContext } from 'src/AppContext';
 
@@ -48,18 +46,6 @@ const themes = [
     name: 'Liquid Ledger',
     icon: WaterDropIcon,
     color: '#00D4E6'
-  },
-  {
-    id: 'XShroomTheme',
-    name: 'XShroom',
-    icon: LocalFloristIcon,
-    color: '#FFB84D'
-  },
-  {
-    id: 'BoredApeTheme',
-    name: 'Bored Ape',
-    icon: PetsIcon,
-    color: '#40E0D0'
   },
   {
     id: 'BirdTheme',
@@ -149,7 +135,7 @@ export default function ThemeSwitcher() {
                   borderRadius: '6px',
                   backgroundColor: theme.color,
                   border: theme.id === 'XrplToLightTheme' ? '1px solid #e0e0e0' : theme.id === 'BirdTheme' ? '1px solid #1A1A1A' : 'none',
-                  boxShadow: theme.id === 'SyncWaveTheme' || theme.id === 'RippleBlueTheme' || theme.id === 'LiquidLedgerTheme' || theme.id === 'XShroomTheme' || theme.id === 'BoredApeTheme'
+                  boxShadow: theme.id === 'SyncWaveTheme' || theme.id === 'RippleBlueTheme' || theme.id === 'LiquidLedgerTheme'
                     ? `0 0 10px ${theme.color}` 
                     : 'none'
                 }}
