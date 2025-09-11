@@ -71,6 +71,11 @@ export const getServerSideProps = async ({ res }) => {
   const startTime = performance.now();
   
   try {
+    // Debug logging
+    console.log('Sitemap generation started');
+    console.log('API_URL:', BASE_URL);
+    console.log('Environment:', process.env.NODE_ENV);
+    
     // Set response headers early
     res.setHeader('Content-Type', 'text/xml');
     res.setHeader('Cache-Control', 'public, max-age=900'); // Cache for 15 minutes
@@ -101,32 +106,65 @@ export const getServerSideProps = async ({ res }) => {
     
     sitemapCache.isGenerating = true;
     
-    // Fetch data with timeout - using /tokens endpoint since /slugs may not exist
-    const response = await axios.get(`${BASE_URL}/tokens`, {
-      params: {
-        start: 0,
-        limit: 10000, // Get a large number of tokens
-        sortBy: 'vol24hxrp',
-        sortType: 'desc',
-        showSlug: 'true' // Request slug data if supported
-      },
-      timeout: 15000, // 15 second timeout for large dataset
-      headers: {
-        'User-Agent': 'XRPL.to-Sitemap-Generator'
+    // Try /slugs endpoint first, fallback to /tokens if it doesn't exist
+    let response;
+    let slugs = [];
+    let count = 0;
+    
+    try {
+      console.log(`Attempting to fetch from: ${BASE_URL}/slugs`);
+      response = await axios.get(`${BASE_URL}/slugs`, {
+        timeout: 10000,
+        headers: {
+          'User-Agent': 'XRPL.to-Sitemap-Generator'
+        }
+      });
+      
+      count = response.data?.count || 0;
+      slugs = response.data?.slugs || [];
+      console.log(`Successfully fetched ${count} slugs from /slugs endpoint`);
+      
+    } catch (slugsError) {
+      console.log(`/slugs endpoint failed: ${slugsError.message}`);
+      console.log(`Falling back to /tokens endpoint...`);
+      
+      try {
+        response = await axios.get(`${BASE_URL}/tokens`, {
+          params: {
+            start: 0,
+            limit: 5000,
+            sortBy: 'vol24hxrp',
+            sortType: 'desc'
+          },
+          timeout: 15000,
+          headers: {
+            'User-Agent': 'XRPL.to-Sitemap-Generator'
+          }
+        });
+        
+        const tokens = response.data?.tokens || response.data || [];
+        console.log(`Fetched ${tokens.length} tokens from /tokens endpoint`);
+        
+        // Extract slugs from token data
+        slugs = tokens
+          .map(token => {
+            if (token.slug) return token.slug;
+            if (token.md5) return token.md5;
+            if (token.issuer && token.currency) {
+              return `${token.issuer}_${token.currency}`;
+            }
+            return null;
+          })
+          .filter(slug => slug && slug.length > 0);
+        
+        count = slugs.length;
+        console.log(`Extracted ${count} valid slugs from tokens`);
+        
+      } catch (tokensError) {
+        console.error(`Both endpoints failed. /slugs: ${slugsError.message}, /tokens: ${tokensError.message}`);
+        throw new Error(`API endpoints unavailable: ${tokensError.message}`);
       }
-    });
-    
-    const tokens = response.data?.tokens || response.data || [];
-    
-    // Extract slugs from token data
-    const slugs = tokens
-      .map(token => {
-        // Try different slug properties that might exist
-        return token.slug || token.md5 || `${token.issuer}_${token.currency}`;
-      })
-      .filter(slug => slug && slug.length > 0);
-    
-    const count = slugs.length;
+    }
     
     if (!Array.isArray(slugs) || slugs.length === 0) {
       throw new Error('Invalid or empty slugs data received from API');
@@ -162,16 +200,30 @@ export const getServerSideProps = async ({ res }) => {
       return { props: {} };
     }
     
-    // Generate minimal fallback sitemap
+    // Generate minimal fallback sitemap with some common token pages
     const fallbackSitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https://xrpl.to/trending</loc>
+        <loc>https://xrpl.to/token/xrp</loc>
+        <lastmod>${new Date().toISOString()}</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+    <url>
+        <loc>https://xrpl.to/token/bitstamp-usd</loc>
         <lastmod>${new Date().toISOString()}</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
+    <url>
+        <loc>https://xrpl.to/trustset/bitstamp-usd</loc>
+        <lastmod>${new Date().toISOString()}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
 </urlset>`;
+    
+    console.log('Serving fallback sitemap due to API failure');
     
     res.statusCode = 200; // Don't return 500 for SEO reasons
     res.write(fallbackSitemap);

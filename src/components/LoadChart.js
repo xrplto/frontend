@@ -69,10 +69,13 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
     const maxPrice = Math.max(...prices);
     const range = maxPrice - minPrice;
     
-    // Scale points to canvas
+    // Scale points to canvas with padding
+    const padding = height * 0.1; // 10% padding top and bottom
+    const chartHeight = height - (padding * 2);
+    
     const points = prices.map((price, index) => {
       const x = (index / (prices.length - 1)) * width;
-      const y = range === 0 ? height / 2 : height - ((price - minPrice) / range) * height;
+      const y = range === 0 ? height / 2 : padding + chartHeight - ((price - minPrice) / range) * chartHeight;
       return { x, y };
     });
 
@@ -83,9 +86,9 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
       gradient.addColorStop(1, color + '00');
       
       ctx.beginPath();
-      ctx.moveTo(points[0].x, height);
+      ctx.moveTo(points[0].x, height - padding);
       points.forEach(point => ctx.lineTo(point.x, point.y));
-      ctx.lineTo(points[points.length - 1].x, height);
+      ctx.lineTo(points[points.length - 1].x, height - padding);
       ctx.closePath();
       ctx.fillStyle = gradient;
       ctx.fill();
