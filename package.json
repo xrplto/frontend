@@ -14,7 +14,6 @@
     "@gemwallet/api": "^3.7.0",
     "@heroicons/react": "^2.1.5",
     "@mui/icons-material": "^5.11.11",
-    "@mui/lab": "^5.0.0-alpha.177",
     "@mui/material": "^5.16.7",
     "@reduxjs/toolkit": "^1.8.2",
     "axios": "^1.10.0",

@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 
 // Material
 import {
@@ -155,7 +155,7 @@ const CompactTooltip = styled(Tooltip)(({ theme }) => ({
 const ORDER_TYPE_BIDS = 1;
 const ORDER_TYPE_ASKS = 2;
 
-export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick, limitPrice, isBuyOrder }) {
+const OrderBook = memo(function OrderBook({ pair, asks, bids, onAskClick, onBidClick, limitPrice, isBuyOrder }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isPageVisible, setIsPageVisible] = useState(true);
@@ -485,4 +485,6 @@ export default function OrderBook({ pair, asks, bids, onAskClick, onBidClick, li
       )}
     </OrderBookContainer>
   );
-}
+});
+
+export default OrderBook;

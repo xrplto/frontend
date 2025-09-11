@@ -98,10 +98,10 @@ export default function PlaceOrder({
   const canPlaceOrder = isLoggedIn && isSufficientBalance;
 
   useEffect(() => {
-    var timer = null;
-    var isRunning = false;
-    var counter = 150;
-    var dispatchTimer = null;
+    let timer = null;
+    let dispatchTimer = null;
+    let isRunning = false;
+    let counter = 150;
 
     async function getDispatchResult() {
       try {
@@ -139,7 +139,10 @@ export default function PlaceOrder({
 
     // Stop the interval
     const stopInterval = () => {
-      clearInterval(dispatchTimer);
+      if (dispatchTimer) {
+        clearInterval(dispatchTimer);
+        dispatchTimer = null;
+      }
       setOpenScanQR(false);
     };
 
@@ -153,6 +156,7 @@ export default function PlaceOrder({
         // const account = res.account;
         const resolved_at = res.resolved_at;
         if (resolved_at) {
+          stopInterval();  // Clear any existing dispatch timer first
           startInterval();
           return;
         }
@@ -169,6 +173,11 @@ export default function PlaceOrder({
     return () => {
       if (timer) {
         clearInterval(timer);
+        timer = null;
+      }
+      if (dispatchTimer) {
+        clearInterval(dispatchTimer);
+        dispatchTimer = null;
       }
     };
   }, [dispatch, openScanQR, uuid]);

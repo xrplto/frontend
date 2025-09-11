@@ -31,7 +31,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import styled from '@emotion/styled';
 import { getHashIcon } from 'src/utils/extra';
 import TrustLines from './TrustLines';
-import { TabContext, TabPanel } from '@mui/lab';
+import { TabContext, TabPanel } from '../components/TabComponents';
 import NFTPortfolio from './NFTPortfolio';
 import DeFiHistory from './DeFi';
 import { alpha } from '@mui/material/styles';

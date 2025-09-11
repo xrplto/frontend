@@ -1,5 +1,4 @@
 import { alpha, createTheme, darken, lighten } from '@mui/material';
-import '@mui/lab/themeAugmentation';
 
 // XRP Ledger inspired color palette - liquidity, speed, trust
 const themeColors = {

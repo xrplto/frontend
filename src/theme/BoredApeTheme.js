@@ -1,5 +1,4 @@
 import { alpha, createTheme, darken, lighten } from '@mui/material';
-import '@mui/lab/themeAugmentation';
 
 // Bored Ape color palette - Enhanced with high shine
 const themeColors = {

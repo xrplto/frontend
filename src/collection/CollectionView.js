@@ -35,7 +35,7 @@ import {
   Button
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { TabContext, TabPanel } from '@mui/lab';
+import { TabContext, TabPanel } from '../components/TabComponents';
 import {
   Accordion,
   AccordionSummary,

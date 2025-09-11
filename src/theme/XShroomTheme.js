@@ -1,5 +1,4 @@
 import { alpha, createTheme, darken, lighten } from '@mui/material';
-import '@mui/lab/themeAugmentation';
 
 // XShroom color palette extracted from the mushroom character image
 const themeColors = {

@@ -27,7 +27,7 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
+import LoadingButton from '../components/LoadingButton';
 import ImageIcon from '@mui/icons-material/Image';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';

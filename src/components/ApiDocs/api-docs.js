@@ -37,9 +37,7 @@ import {
 import Logo from 'src/components/Logo';
 import axios from 'axios';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import TabContext from '@mui/lab/TabContext';
-import TabList from '@mui/lab/TabList';
-import TabPanel from '@mui/lab/TabPanel';
+import { TabContext, TabList, TabPanel } from '../TabComponents';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';

@@ -1,5 +1,4 @@
 import { alpha, createTheme, darken, lighten } from '@mui/material';
-import '@mui/lab/themeAugmentation';
 
 // Cyberpunk-inspired color palette
 const themeColors = {

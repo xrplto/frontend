@@ -1,5 +1,4 @@
 import { alpha, createTheme, darken, lighten, responsiveFontSizes } from '@mui/material';
-import '@mui/lab/themeAugmentation';
 
 // Ripple Blue color palette
 const themeColors = {

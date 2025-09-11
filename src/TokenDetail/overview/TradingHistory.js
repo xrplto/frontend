@@ -1271,4 +1271,4 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
   );
 };
 
-export default TradingHistory;
+export default memo(TradingHistory);
