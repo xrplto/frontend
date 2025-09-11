@@ -2,7 +2,6 @@ import axios from 'axios';
 import React, { memo, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useState, useEffect, useContext } from 'react';
-import 'react-markdown-editor-lite/lib/index.css';
 
 // Material
 import { Grid, Stack, useTheme, useMediaQuery, Typography, Paper, Button, Box } from '@mui/material';

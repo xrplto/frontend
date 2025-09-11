@@ -2,8 +2,11 @@ import React, { memo, useMemo, useState, useContext, lazy, Suspense } from 'reac
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 const Lightbox = lazy(() => import('react-modal-image').then(module => ({ default: module.Lightbox })));
 import Head from 'next/head';
-import { useKeenSlider } from 'keen-slider/react';
-import 'keen-slider/keen-slider.min.css';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 // Material
 import {
