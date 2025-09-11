@@ -2,7 +2,7 @@ import Decimal from 'decimal.js';
 import { encodeAccountID } from 'ripple-address-codec';
 
 const { omitBy } = require('lodash');
-const { deriveKeypair } = require('ripple-keypairs');
+// Removed ripple-keypairs for security (compromised in 2025)
 const { xAddressToClassicAddress } = require('ripple-address-codec');
 
 const txFlags = require('./txflags');
@@ -55,12 +55,10 @@ function hexToString(hex) {
 }
 
 function isValidSecret(secret) {
-  try {
-    deriveKeypair(secret);
-    return true;
-  } catch (err) {
-    return false;
-  }
+  // Basic validation - removed ripple-keypairs for security
+  // XRP secrets are typically 29 chars starting with 's'
+  return secret && typeof secret === 'string' && 
+         secret.length === 29 && secret.startsWith('s');
 }
 
 function dropsToXrp(drops) {
