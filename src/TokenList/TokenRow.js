@@ -974,7 +974,7 @@ const DesktopTokenRow = ({
             style={{ 
               cursor: 'pointer', 
               fontSize: '18px',
-              color: watchList.includes(md5) ? '#FFB800' : (darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'),
+              color: watchList.includes(md5) ? '#FFB800' : theme.palette.action.disabled,
               display: 'inline-block',
               width: '100%'
             }}
@@ -993,7 +993,7 @@ const DesktopTokenRow = ({
           maxWidth: '40px'
         }}
       >
-        <span style={{ fontWeight: '600', color: darkMode ? '#B0B0B0' : '#616161' }}>
+        <span style={{ fontWeight: '600', color: theme.palette.text.secondary }}>
           {idx + 1}
         </span>
       </StyledCell>
