@@ -275,7 +275,7 @@ const Drawer = styled.div`
   position: fixed;
   bottom: 36px;
   right: ${props => props.open ? '0' : '-100%'};
-  width: ${props => props.isMobile ? (props.isSmallMobile ? '100%' : '90%') : '400px'};
+  width: ${props => props.isMobile ? (props.isSmallMobile ? '100vw' : '90vw') : '400px'};
   height: calc(100vh - 36px);
   background: ${props => props.backgroundColor};
   box-shadow: -4px -4px 16px rgba(0,0,0,0.25);
@@ -283,12 +283,13 @@ const Drawer = styled.div`
   z-index: 1200;
   display: flex;
   flex-direction: column;
-  max-width: ${props => props.isMobile ? '420px' : '400px'};
+  max-width: ${props => props.isMobile ? '100vw' : '400px'};
   border-top-left-radius: 12px;
   
   ${media.down('sm')} {
-    width: 100%;
-    max-width: 100%;
+    width: 100vw;
+    max-width: 100vw;
+    right: ${props => props.open ? '0' : '-100vw'};
   }
 `;
 
