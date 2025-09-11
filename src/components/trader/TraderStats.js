@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Box,
   Typography,
@@ -29,7 +30,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import { fNumber, fPercent } from 'src/utils/formatNumber';
 import { format } from 'date-fns';
 
-// Recharts
+// Import lightweight chart component
+const LightweightChart = dynamic(
+  () => import('src/components/LightweightChart'),
+  { ssr: false }
+);
+
+// Removed recharts - will use lightweight-charts instead
+/*
 import {
   BarChart,
   Bar,
@@ -42,6 +50,7 @@ import {
   Line,
   ComposedChart
 } from 'recharts';
+*/
 
 export const DailyVolumeChart = ({ data }) => {
   const theme = useTheme();
@@ -213,6 +222,8 @@ export const DailyVolumeChart = ({ data }) => {
           boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`
         }}
       >
+        {/* Recharts chart removed - TODO: Replace with lightweight-charts */}
+        {false && (
         <ResponsiveContainer>
           <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
             {/* Enhanced Grid */}
@@ -510,6 +521,21 @@ export const DailyVolumeChart = ({ data }) => {
             />
           </ComposedChart>
         </ResponsiveContainer>
+        )}
+        <LightweightChart
+          data={chartData}
+          height={400}
+          series={[
+            {
+              dataKey: "cumulativeProfit",
+              name: "Cumulative Profit",
+              color: theme.palette.success.main,
+              lineWidth: 3,
+              visible: true
+            }
+          ]}
+          showLegend={true}
+        />
       </Box>
     </Box>
   );

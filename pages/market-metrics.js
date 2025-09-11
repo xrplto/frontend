@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+// Removed recharts - will use lightweight-charts instead
+/*
 import {
   LineChart,
   Line,
@@ -10,6 +12,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
+*/
 import axios from 'axios';
 import { format, subYears, isAfter, parse } from 'date-fns';
 import Box from '@mui/material/Box';
@@ -33,6 +36,12 @@ import Link from 'next/link'; // Import Link
 import useWebSocket from 'react-use-websocket'; // Add WebSocket import
 import { useDispatch } from 'react-redux'; // Add Redux dispatch import
 import { update_metrics } from 'src/redux/statusSlice'; // Add Redux action import
+
+// Import lightweight chart component
+const LightweightChart = dynamic(
+  () => import('src/components/LightweightChart'),
+  { ssr: false }
+);
 
 // Updated theme-aware colors with portfolio styling
 const getThemeColors = (theme) => {
@@ -618,6 +627,104 @@ const MarketMetricsContent = () => {
     return color;
   };
 
+  // Helper function to generate series for different chart types
+  const getChartSeries = (type) => {
+    switch (type) {
+      case 'marketcap':
+        return [
+          {
+            dataKey: "totalMarketcap",
+            name: "Total",
+            color: chartColors.totalLine,
+            lineWidth: 3,
+            visible: visibleLines.totalMarketcap
+          },
+          {
+            dataKey: "firstLedgerMarketcap", 
+            name: "FirstLedger",
+            color: chartColors.primary.main,
+            lineWidth: 2,
+            visible: visibleLines.firstLedgerMarketcap
+          },
+          {
+            dataKey: "magneticXMarketcap",
+            name: "Magnetic X", 
+            color: chartColors.secondary.main,
+            lineWidth: 2,
+            visible: visibleLines.magneticXMarketcap
+          },
+          {
+            dataKey: "xpMarketMarketcap",
+            name: "XPMarket",
+            color: chartColors.tertiary.main,
+            lineWidth: 2,
+            visible: visibleLines.xpMarketMarketcap
+          },
+          {
+            dataKey: "ledgerMemeMarketcap",
+            name: "LedgerMeme",
+            color: chartColors.quaternary.main,
+            lineWidth: 2,
+            visible: visibleLines.ledgerMemeMarketcap
+          }
+        ];
+      case 'tokens':
+        return selectedTokens.map(token => ({
+          dataKey: `${token}_marketcap`,
+          name: token,
+          color: getTokenColor(token),
+          lineWidth: 2,
+          visible: visibleLines[`${token}_marketcap`]
+        }));
+      case 'activity':
+        return [
+          {
+            dataKey: "tokenCount",
+            name: "Active Tokens",
+            color: chartColors.primary.main,
+            lineWidth: 2,
+            visible: visibleLines.tokenCount
+          }
+        ];
+      case 'trading':
+        return [
+          {
+            dataKey: "volumeAMM",
+            name: "AMM Volume",
+            color: chartColors.primary.main,
+            lineWidth: 2,
+            visible: visibleLines.volumeAMM
+          },
+          {
+            dataKey: "volumeNonAMM",
+            name: "Non-AMM Volume",
+            color: chartColors.secondary.main,
+            lineWidth: 2,
+            visible: visibleLines.volumeNonAMM
+          }
+        ];
+      case 'addresses':
+        return [
+          {
+            dataKey: "uniqueActiveAddressesAMM",
+            name: "AMM Addresses",
+            color: chartColors.primary.main,
+            lineWidth: 2,
+            visible: visibleLines.uniqueActiveAddressesAMM
+          },
+          {
+            dataKey: "uniqueActiveAddressesNonAMM",
+            name: "Non-AMM Addresses",
+            color: chartColors.secondary.main,
+            lineWidth: 2,
+            visible: visibleLines.uniqueActiveAddressesNonAMM
+          }
+        ];
+      default:
+        return [];
+    }
+  };
+
   const handleLegendClick = (entry) => {
     setVisibleLines((prev) => ({
       ...prev,
@@ -710,7 +817,7 @@ const MarketMetricsContent = () => {
           '1m': 1 / 12
         };
 
-        const cutoffDate = parse(now, 'yyyy-MM-dd');
+        const cutoffDate = parse(now, 'yyyy-MM-dd', new Date());
         cutoffDate.setDate(cutoffDate.getDate() - rangeMap[range]);
         filteredData = filteredData.filter((item) =>
           isAfter(parse(item.date, 'MMM dd yyyy', new Date()), cutoffDate)
@@ -1248,6 +1355,8 @@ const MarketMetricsContent = () => {
             </Box>
 
             <Box sx={{ height: { xs: 300, sm: 350, md: 400 } }}>
+              {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
+              {false && (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   ref={chartRef}
@@ -1401,6 +1510,14 @@ const MarketMetricsContent = () => {
                   />
                 </LineChart>
               </ResponsiveContainer>
+              )}
+              <LightweightChart
+                data={progressiveData}
+                height={isMobile ? 300 : 400}
+                series={getChartSeries('marketcap')}
+                onClick={(data) => handleDataPointClick(data)}
+                showLegend={true}
+              />
             </Box>
 
             {/* Token breakdown section - appears when a data point is clicked */}
@@ -1740,6 +1857,8 @@ const MarketMetricsContent = () => {
 
             {/* Add the missing chart content */}
             <Box sx={{ height: { xs: 300, sm: 350, md: 400 } }}>
+              {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
+              {false && (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={progressiveData}
@@ -1831,6 +1950,14 @@ const MarketMetricsContent = () => {
                   })}
                 </LineChart>
               </ResponsiveContainer>
+              )}
+              <LightweightChart
+                data={progressiveData}
+                height={isMobile ? 300 : 400}
+                series={getChartSeries('tokens')}
+                onClick={(data) => handleDataPointClick(data)}
+                showLegend={true}
+              />
             </Box>
 
             {/* Token breakdown section - appears when a data point is clicked */}
@@ -2122,6 +2249,8 @@ const MarketMetricsContent = () => {
               </Tabs>
             </Box>
             <Box sx={{ height: 400 }}>
+              {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
+              {false && (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={progressiveData}
@@ -2238,6 +2367,14 @@ const MarketMetricsContent = () => {
                   />
                 </LineChart>
               </ResponsiveContainer>
+              )}
+              <LightweightChart
+                data={progressiveData}
+                height={isMobile ? 300 : 400}
+                series={getChartSeries('activity')}
+                onClick={(data) => handleDataPointClick(data)}
+                showLegend={true}
+              />
             </Box>
 
             {/* Token count breakdown section - appears when a data point is clicked */}
@@ -2650,6 +2787,8 @@ const MarketMetricsContent = () => {
               </Tabs>
             </Box>
             <Box sx={{ height: 400, backgroundColor: 'transparent' }}>
+              {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
+              {false && (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={progressiveData}
@@ -2784,6 +2923,14 @@ const MarketMetricsContent = () => {
                   />
                 </LineChart>
               </ResponsiveContainer>
+              )}
+              <LightweightChart
+                data={progressiveData}
+                height={isMobile ? 300 : 400}
+                series={getChartSeries('trading')}
+                onClick={(data) => handleDataPointClick(data)}
+                showLegend={true}
+              />
             </Box>
 
             {/* Trading activity breakdown section - appears when a data point is clicked */}
@@ -3150,6 +3297,8 @@ const MarketMetricsContent = () => {
               </Tabs>
             </Box>
             <Box sx={{ height: 400 }}>
+              {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
+              {false && (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={progressiveData}
@@ -3232,6 +3381,14 @@ const MarketMetricsContent = () => {
                   />
                 </LineChart>
               </ResponsiveContainer>
+              )}
+              <LightweightChart
+                data={progressiveData}
+                height={isMobile ? 300 : 400}
+                series={getChartSeries('addresses')}
+                onClick={(data) => handleDataPointClick(data)}
+                showLegend={true}
+              />
             </Box>
 
             {/* Active addresses breakdown section - appears when a data point is clicked */}

@@ -39,7 +39,8 @@ import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+// Removed recharts - will use alternative visualization
+// import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
@@ -615,6 +616,7 @@ function ValidatorsPage({ initialValidators = [], initialNodes = [], initialServ
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                           Validator Version Distribution
                         </Typography>
+                        {/* Recharts PieChart removed - TODO: Replace with alternative visualization
                         <ResponsiveContainer width="100%" height={350}>
                           <PieChart>
                             <Pie
@@ -641,6 +643,55 @@ function ValidatorsPage({ initialValidators = [], initialNodes = [], initialServ
                             />
                           </PieChart>
                         </ResponsiveContainer>
+                        */}
+                        <Box sx={{ p: 2 }}>
+                          {versionData.map((item, index) => {
+                            const total = versionData.reduce((sum, v) => sum + v.value, 0);
+                            const percentage = total > 0 ? (item.value / total) * 100 : 0;
+                            const color = COLORS[index % COLORS.length];
+                            
+                            return (
+                              <Box key={item.name || index} sx={{ mb: 2 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Box
+                                      sx={{
+                                        width: 12,
+                                        height: 12,
+                                        backgroundColor: color,
+                                        borderRadius: '50%',
+                                      }}
+                                    />
+                                    <Typography variant="body2" color="text.secondary">
+                                      {item.name.length > 20 ? `${item.name.substring(0, 20)}...` : item.name}
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ display: 'flex', gap: 2 }}>
+                                    <Typography variant="body2" fontWeight="medium">
+                                      {item.value} nodes
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                      {percentage.toFixed(1)}%
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                                <LinearProgress
+                                  variant="determinate"
+                                  value={percentage}
+                                  sx={{
+                                    height: 8,
+                                    borderRadius: 1,
+                                    backgroundColor: `${color}20`,
+                                    '& .MuiLinearProgress-bar': {
+                                      backgroundColor: color,
+                                      borderRadius: 1,
+                                    },
+                                  }}
+                                />
+                              </Box>
+                            );
+                          })}
+                        </Box>
                         <Box sx={{ mt: 2, textAlign: 'center' }}>
                           <Typography variant="body2" color="text.secondary">
                             Total Validators

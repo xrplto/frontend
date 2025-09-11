@@ -4,6 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## CRITICAL INSTRUCTIONS - MUST FOLLOW
 
+### DO NOT RUN THESE COMMANDS
+1. **DO NOT START `npm run dev`** - Development server should not be started
+2. **DO NOT RUN `npm run build`** - Build process should not be initiated  
+3. **DO NOT RUN `npm install`** - Package installation should not be executed
+
 ### Understanding User Requirements
 1. **Read the ENTIRE request carefully**
    - Pay attention to specific words like "directly", "only", "do not hardcode"
