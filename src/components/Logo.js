@@ -1,6 +1,5 @@
 import { useContext, useState, useMemo } from 'react';
 import { Box, useTheme } from '@mui/material';
-import Image from 'next/image';
 
 import { AppContext } from 'src/AppContext';
 
@@ -52,14 +51,11 @@ function Logo({ style }) {
           XRPL.to
         </Box>
       ) : (
-        <Image
+        <img
           src={img}
           width={100}
           height={37}
           alt="XRPL.to Logo"
-          priority={true}
-          quality={100}
-          unoptimized={false}
           onError={handleImageError}
           style={{
             objectFit: 'contain',

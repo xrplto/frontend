@@ -13,16 +13,11 @@ export default function Document() {
         <link rel="dns-prefetch" href="https://s1.xrpl.to" />
         <link rel="dns-prefetch" href="https://api.xrpl.to" />
         
-        {/* Optimize font loading - JetBrains Mono from Google Fonts */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link 
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" 
-          rel="stylesheet"
-        />
         
         {/* Resource hints for faster loading */}
         <link rel="prefetch" href="/static/empty-folder.png" as="image" />
+        <link rel="preload" href="/logo/xrpl-to-logo-black.svg" as="image" />
+        <link rel="preload" href="/logo/xrpl-to-logo-white.svg" as="image" />
         
         {/* PWA and mobile optimization */}
         <meta name="theme-color" content="#000000" />
