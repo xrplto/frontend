@@ -32,7 +32,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import numeral from 'numeral';
+import { fIntNumber } from 'src/utils/formatNumber';
 import { getTokenImageUrl } from 'src/utils/constants';
 
 const rippleServerUrl = process.env.NEXT_PUBLIC_RIPPLED_LIVE_DATA_ONLY_URL;
@@ -563,7 +563,7 @@ const HistoryRow = React.memo((props) => {
   const getFormat = (value) => {
     const valueString = value.toString();
     const valueParts = valueString.split('.');
-    const valueBeforeDot = numeral(valueParts[0]).format('0,0');
+    const valueBeforeDot = fIntNumber(valueParts[0]);
     const valueAfterDot = valueParts[1]?.substring(0, 6) || '';
     return {
       valueBeforeDot,
