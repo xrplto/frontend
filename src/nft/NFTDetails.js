@@ -1,6 +1,6 @@
 import React, { memo, useMemo, useState, useContext, lazy, Suspense } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-const Lightbox = lazy(() => import('react-modal-image').then(module => ({ default: module.Lightbox })));
+const Lightbox = lazy(() => import('react-awesome-lightbox'));
 import Head from 'next/head';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';

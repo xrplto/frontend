@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useContext } from 'react';
 import { Stack, Typography, alpha, useTheme } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import useKeypress from 'react-use-keypress';
+// Replaced react-use-keypress with native React event handling
 
 import { Box } from '@mui/material';
 import { AppContext } from 'src/AppContext';
