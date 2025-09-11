@@ -1,5 +1,6 @@
 import Decimal from 'decimal.js';
 import { useContext, useState, useEffect, useRef, useMemo, memo } from 'react';
+import { createPortal } from 'react-dom';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import { Icon } from '@iconify/react';
@@ -245,9 +246,41 @@ const formatNumberWithDecimals = (num) => {
   return Math.round(num).toLocaleString();
 };
 
-// Canvas-based Token Chart Component
-const TokenChart = ({ data, theme }) => {
+// Canvas-based Token Chart Component with Tooltips
+const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
   const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, data: null });
+
+  const handleMouseMove = (event) => {
+    if (!data || data.length === 0 || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+
+    const chartData = data.slice(-30);
+    if (chartData.length === 0) return;
+    
+    const width = rect.width;
+    const pointWidth = width / Math.max(chartData.length - 1, 1);
+    
+    // Find closest data point
+    const closestIndex = Math.max(0, Math.min(Math.round(mouseX / pointWidth), chartData.length - 1));
+    const dataPoint = chartData[closestIndex];
+    
+    // Show tooltip for the closest data point
+    setTooltip({
+      show: true,
+      x: event.clientX,
+      y: event.clientY,
+      data: dataPoint
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip({ show: false, x: 0, y: 0, data: null });
+  };
 
   useEffect(() => {
     if (!data || data.length === 0 || !canvasRef.current) return;
@@ -325,18 +358,112 @@ const TokenChart = ({ data, theme }) => {
 
   }, [data, theme]);
 
+  // Tooltip Portal Component
+  const TooltipPortal = ({ tooltip, darkMode, activeFiatCurrency }) => {
+    if (!tooltip.show || !tooltip.data) return null;
+
+    return createPortal(
+      <div
+        style={{
+          position: 'fixed',
+          left: Math.max(10, Math.min(tooltip.x - 100, window.innerWidth - 210)),
+          top: Math.max(10, tooltip.y - 120),
+          background: darkMode ? '#1c1c1c' : 'white',
+          color: darkMode ? '#fff' : '#000',
+          border: `1px solid ${theme.palette.primary.main}`,
+          borderRadius: '8px',
+          padding: '12px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          minWidth: '200px',
+          zIndex: 999999,
+          pointerEvents: 'none',
+          fontSize: '0.75rem'
+        }}
+      >
+        <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '8px', color: theme.palette.primary.main }}>
+          {format(new Date(tooltip.data.originalDate), 'MMM dd, yyyy')}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+          <span>New Tokens</span>
+          <strong>{tooltip.data.Tokens || 0}</strong>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+          <span>Market Cap</span>
+          <strong>{currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(tooltip.data.totalMarketcap || 0)}</strong>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+          <span>Avg Holders</span>
+          <strong>{Math.round(tooltip.data.avgHolders || 0)}</strong>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+          <span>Volume 24h</span>
+          <strong>{currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(tooltip.data.totalVolume24h || 0)}</strong>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+          <span>Avg Market Cap</span>
+          <strong>{currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(tooltip.data.avgMarketcap || 0)}</strong>
+        </div>
+        {tooltip.data.platforms && Object.entries(tooltip.data.platforms).filter(([,v]) => v > 0).length > 0 && (
+          <>
+            <div style={{ borderTop: `1px solid ${theme.palette.primary.main}40`, margin: '8px 0 4px', paddingTop: '4px' }}>
+              <strong>Platforms:</strong>
+            </div>
+            {Object.entries(tooltip.data.platforms).filter(([,v]) => v > 0).map(([platform, count]) => (
+              <div key={platform} style={{ display: 'flex', justifyContent: 'space-between', margin: '2px 0', fontSize: '0.7rem', opacity: 0.8 }}>
+                <span>{platform}</span>
+                <span>{count}</span>
+              </div>
+            ))}
+          </>
+        )}
+        {tooltip.data.tokensInvolved?.length > 0 && (
+          <>
+            <div style={{ borderTop: `1px solid ${theme.palette.primary.main}40`, margin: '8px 0 4px', paddingTop: '4px' }}>
+              <strong>Top Tokens:</strong>
+            </div>
+            {tooltip.data.tokensInvolved.slice(0, 3).map((token, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', margin: '2px 0', fontSize: '0.7rem', opacity: 0.8 }}>
+                <span>{token.name}</span>
+                <span>{currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(token.marketcap || 0)}</span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>,
+      document.body
+    );
+  };
+
   return (
-    <div style={{ width: '100%', height: '60px', marginTop: '-4px' }}>
-      <canvas 
-        ref={canvasRef} 
+    <>
+      <div 
+        ref={containerRef}
         style={{ 
           width: '100%', 
-          height: '100%',
-          display: 'block',
-          cursor: 'pointer'
-        }} 
+          height: '60px', 
+          marginTop: '-4px', 
+          position: 'relative'
+        }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        <canvas 
+          ref={canvasRef} 
+          style={{ 
+            width: '100%', 
+            height: '100%',
+            display: 'block',
+            cursor: 'pointer'
+          }} 
+        />
+      </div>
+      
+      <TooltipPortal 
+        tooltip={tooltip} 
+        darkMode={darkMode} 
+        activeFiatCurrency={activeFiatCurrency} 
       />
-    </div>
+    </>
   );
 };
 
@@ -677,7 +804,12 @@ export default function Summary() {
 
               <ChartMetricBox>
                 <MetricTitle>New Tokens (30d)</MetricTitle>
-                <TokenChart data={chartData} theme={theme} />
+                <TokenChart 
+                  data={chartData} 
+                  theme={theme} 
+                  activeFiatCurrency={activeFiatCurrency}
+                  darkMode={darkMode}
+                />
               </ChartMetricBox>
             </Grid>
           </div>
