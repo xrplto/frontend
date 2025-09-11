@@ -3,6 +3,7 @@ import { useContext, useState, useEffect, useRef, useMemo, memo } from 'react';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import { Icon } from '@iconify/react';
+import { useTheme } from '@mui/material/styles';
 
 // import i18n (needs to be bundled ;))
 import 'src/utils/i18n';
@@ -19,7 +20,7 @@ import { fNumber } from 'src/utils/formatNumber';
 // Components
 import { currencySymbols } from 'src/utils/constants';
 import { AppContext } from 'src/AppContext';
-import ReactECharts from 'echarts-for-react';
+// Removed ECharts dependency
 import { format } from 'date-fns';
 
 // Styled Components
@@ -250,6 +251,7 @@ export default function Summary() {
   const tokenCreation = useSelector(selectTokenCreation);
   const { activeFiatCurrency, darkMode } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true);
+  const theme = useTheme();
 
 
   const fiatRate = metrics[activeFiatCurrency] || 1;
@@ -580,14 +582,23 @@ export default function Summary() {
 
               <ChartMetricBox>
                 <MetricTitle>New Tokens (30d)</MetricTitle>
-                <div style={{ width: '100%', height: '60px', marginTop: '-4px', overflow: 'visible' }}>
-                  {chartData.length > 0 && (
-                    <ReactECharts
-                      option={getChartOption()}
-                      style={{ height: '100%', width: '100%' }}
-                      opts={{ renderer: 'svg' }}
-                    />
-                  )}
+                <div style={{ width: '100%', height: '60px', marginTop: '-4px', display: 'flex', alignItems: 'end', gap: '2px' }}>
+                  {chartData.slice(-30).map((value, index) => {
+                    const height = Math.max(10, (value / Math.max(...chartData.slice(-30))) * 50);
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          width: '3px',
+                          height: `${height}px`,
+                          background: `linear-gradient(to top, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
+                          borderRadius: '1px',
+                          opacity: 0.8
+                        }}
+                        title={`${value} tokens`}
+                      />
+                    );
+                  })}
                 </div>
               </ChartMetricBox>
             </Grid>

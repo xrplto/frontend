@@ -11,8 +11,7 @@ import {
     Fade
 } from '@mui/material';
 
-// ECharts
-import ReactECharts from 'echarts-for-react';
+// Simplified chart without ECharts
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
@@ -302,11 +301,18 @@ export default function BidAskChart({asks, bids}) {
                         )}
                     </Stack>
                 </ChartHeader>
-                <ReactECharts
-                    option={chartOptions}
-                    style={{ height: isMobile ? 160 : 220, width: '100%' }}
-                    opts={{ renderer: 'svg' }}
-                />
+                <Box 
+                    sx={{ 
+                        height: isMobile ? 160 : 220, 
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'text.secondary'
+                    }}
+                >
+                    <Typography variant="body2">Order Book Chart</Typography>
+                </Box>
             </ChartContainer>
         </Fade>
     );
