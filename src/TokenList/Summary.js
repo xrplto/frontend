@@ -245,6 +245,101 @@ const formatNumberWithDecimals = (num) => {
   return Math.round(num).toLocaleString();
 };
 
+// Canvas-based Token Chart Component
+const TokenChart = ({ data, theme }) => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!data || data.length === 0 || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    // Get last 30 days of data
+    const chartValues = data.slice(-30).map(d => d.Tokens || 0);
+    if (chartValues.length === 0) return;
+
+    // Set canvas size
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    const width = rect.width;
+    const height = rect.height;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+
+    if (chartValues.length < 2) return;
+
+    // Calculate min/max for scaling
+    const minValue = Math.min(...chartValues);
+    const maxValue = Math.max(...chartValues);
+    const range = maxValue - minValue;
+    
+    // Scale points to canvas
+    const points = chartValues.map((value, index) => {
+      const x = (index / (chartValues.length - 1)) * width;
+      const y = range === 0 ? height / 2 : height - ((value - minValue) / range) * height;
+      return { x, y };
+    });
+
+    // Colors based on theme
+    const color = theme.palette.primary.main;
+    const lightColor = theme.palette.primary.light;
+
+    // Draw gradient fill
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, color + '66');
+    gradient.addColorStop(1, color + '00');
+    
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, height);
+    points.forEach(point => ctx.lineTo(point.x, point.y));
+    ctx.lineTo(points[points.length - 1].x, height);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    // Draw line
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    points.forEach(point => ctx.lineTo(point.x, point.y));
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // Draw dots at data points
+    points.forEach((point, index) => {
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
+      ctx.fillStyle = lightColor;
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+
+  }, [data, theme]);
+
+  return (
+    <div style={{ width: '100%', height: '60px', marginTop: '-4px' }}>
+      <canvas 
+        ref={canvasRef} 
+        style={{ 
+          width: '100%', 
+          height: '100%',
+          display: 'block',
+          cursor: 'pointer'
+        }} 
+      />
+    </div>
+  );
+};
+
 export default function Summary() {
   const { t } = useTranslation();
   const metrics = useSelector(selectMetrics);
@@ -582,24 +677,7 @@ export default function Summary() {
 
               <ChartMetricBox>
                 <MetricTitle>New Tokens (30d)</MetricTitle>
-                <div style={{ width: '100%', height: '60px', marginTop: '-4px', display: 'flex', alignItems: 'end', gap: '2px' }}>
-                  {chartData.slice(-30).map((value, index) => {
-                    const height = Math.max(10, (value / Math.max(...chartData.slice(-30))) * 50);
-                    return (
-                      <div
-                        key={index}
-                        style={{
-                          width: '3px',
-                          height: `${height}px`,
-                          background: `linear-gradient(to top, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
-                          borderRadius: '1px',
-                          opacity: 0.8
-                        }}
-                        title={`${value} tokens`}
-                      />
-                    );
-                  })}
-                </div>
+                <TokenChart data={chartData} theme={theme} />
               </ChartMetricBox>
             </Grid>
           </div>

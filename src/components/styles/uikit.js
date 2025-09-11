@@ -1,4 +1,4 @@
-import { m as motion } from "framer-motion";
+// Removed framer-motion dependency
 import { Box, Button, TextField } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import React from 'react';

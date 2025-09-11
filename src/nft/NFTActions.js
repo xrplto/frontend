@@ -50,7 +50,7 @@ import alertTriangleFill from '@iconify/icons-eva/alert-triangle-fill';
 
 // Loader
 import { PuffLoader, PulseLoader } from 'react-spinners';
-import { ProgressBar, Discuss } from 'react-loader-spinner';
+// Removed unused react-loader-spinner import
 
 // Context
 import { useContext } from 'react';

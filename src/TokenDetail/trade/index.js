@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
-import { MD5 } from 'crypto-js';
+import { md5Sync as MD5 } from 'src/utils/md5';
 
 // Material
 import { styled, Grid, Stack, Box, Card, CardContent, Typography, Container, useMediaQuery } from '@mui/material';

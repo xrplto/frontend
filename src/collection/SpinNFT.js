@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import useSound from 'use-sound';
 import Decimal from 'decimal.js';
 import PropTypes from 'prop-types';
-import Confetti from 'react-confetti';
 // import { ColorExtractor } from 'react-color-extractor';
 import useWindowSize from 'react-use/lib/useWindowSize';
 
