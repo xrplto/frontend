@@ -1,7 +1,5 @@
 import { alpha, createTheme, lighten, darken } from '@mui/material';
 
-// import i18n from 'src/i18n/i18n';
-
 const themeColors = {
   primary: '#147DFE',
   secondary: '#64748B',
@@ -11,7 +9,19 @@ const themeColors = {
   info: '#3B82F6',
   black: '#000000',
   white: '#ffffff',
-  primaryAlt: '#E5F3FF'
+  primaryAlt: '#E5F3FF',
+  neutral: {
+    50: '#F8FAFC',
+    100: '#F1F5F9',
+    200: '#E2E8F0',
+    300: '#CBD5E1',
+    400: '#94A3B8',
+    500: '#64748B',
+    600: '#475569',
+    700: '#334155',
+    800: '#1E293B',
+    900: '#0F172A'
+  }
 };
 
 const colors = {
@@ -40,14 +50,14 @@ const colors = {
       '0px 1px 4px rgba(255, 25, 67, 0.25), 0px 3px 12px 2px rgba(255, 25, 67, 0.35)',
     info: '0px 1px 4px rgba(51, 194, 255, 0.25), 0px 3px 12px 2px rgba(51, 194, 255, 0.35)',
     primary:
-      '0px 1px 4px rgba(85, 105, 255, 0.25), 0px 3px 12px 2px rgba(85, 105, 255, 0.35)',
+      '0px 1px 4px rgba(20, 125, 254, 0.25), 0px 3px 12px 2px rgba(20, 125, 254, 0.35)',
     warning:
       '0px 1px 4px rgba(255, 163, 25, 0.25), 0px 3px 12px 2px rgba(255, 163, 25, 0.35)',
-    card: '0px 9px 16px rgba(159, 162, 191, .18), 0px 2px 2px rgba(159, 162, 191, 0.32)',
-    cardSm:
-      '0px 2px 3px rgba(159, 162, 191, .18), 0px 1px 1px rgba(159, 162, 191, 0.32)',
-    cardLg:
-      '0 5rem 14rem 0 rgb(255 255 255 / 30%), 0 0.8rem 2.3rem rgb(0 0 0 / 60%), 0 0.2rem 0.3rem rgb(0 0 0 / 45%)'
+    card: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06)',
+    cardSm: '0px 1px 2px rgba(0, 0, 0, 0.05)',
+    cardMd: '0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    cardLg: '0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px -5px rgba(0, 0, 0, 0.04)',
+    cardXl: '0px 25px 50px -12px rgba(0, 0, 0, 0.25)'
   },
   layout: {
     general: {
@@ -147,7 +157,6 @@ const colors = {
 };
 
 export const XrplToLightTheme = createTheme({
-  // direction: i18n.dir(),
   typography: {
     fontFamily: "'JetBrains Mono', 'Courier New', monospace",
     fontSize: 14,
@@ -251,14 +260,17 @@ export const XrplToLightTheme = createTheme({
   },
   general: {
     reactFrameworkColor: '#5569ff80',
-    borderRadiusSm: '6px',
-    borderRadius: '10px',
-    borderRadiusLg: '12px',
-    borderRadiusXl: '16px',
-    backgroundAlt: "#FAF9FA",
-    backgroundAsset: "#f1f5f9",
-    backgroundTrait: "#00bbff10",
-    borderTrait: "#00f3ff"
+    borderRadiusSm: '8px',
+    borderRadius: '12px',
+    borderRadiusLg: '16px',
+    borderRadiusXl: '20px',
+    backgroundAlt: "#F8FAFC",
+    backgroundAsset: "#F1F5F9",
+    backgroundTrait: "#E0F2FE",
+    borderTrait: "#0EA5E9",
+    surfaceElevated: "#FFFFFF",
+    surfaceHover: "#F8FAFC",
+    surfacePressed: "#F1F5F9"
   },
   sidebar: {
     background: colors.layout.sidebar.background,
@@ -272,20 +284,21 @@ export const XrplToLightTheme = createTheme({
     menuItemIconColorActive: colors.layout.sidebar.menuItemIconColorActive,
     menuItemHeadingColor: colors.layout.sidebar.menuItemHeadingColor,
     boxShadow:
-      '2px 0 3px rgba(159, 162, 191, .18), 1px 0 1px rgba(159, 162, 191, 0.32)',
+      '2px 0 8px rgba(0, 0, 0, 0.1)',
     width: '290px'
   },
   header: {
     height: '80px',
-    background: '#F8F9FA',
-    boxShadow: colors.shadows.cardSm,
-    textColor: colors.alpha.black[100]
+    background: '#FFFFFF',
+    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06)',
+    textColor: colors.alpha.black[100],
+    borderBottom: '1px solid #E2E8F0'
   },
   spacing: 9,
 
   currency: {
     background1: '#E9ECEF',
-    background2: '#F8F9FA', 
+    background2: '#F8F9FA',
     border: '1px solid #E0E7EC'
   },
   
@@ -385,19 +398,6 @@ export const XrplToLightTheme = createTheme({
     }
   },
   components: {
-    // MuiBackdrop: {
-    //   styleOverrides: {
-    //     root: {
-    //       backgroundColor: alpha(darken(themeColors.primaryAlt, 0.4), 0.2),
-    //       backdropFilter: 'blur(2px)',
-
-    //       '&.MuiBackdrop-invisible': {
-    //         backgroundColor: 'transparent',
-    //         backdropFilter: 'blur(2px)'
-    //       }
-    //     }
-    //   }
-    // },
     MuiContainer: {
       styleOverrides: {
         root: {
@@ -434,21 +434,24 @@ export const XrplToLightTheme = createTheme({
           minHeight: '100%',
           width: '100%',
           flex: 1,
-          background: '#F9FAFB',
+          background: '#FFFFFF',
           scrollbarColor: `${alpha('#147DFE', 0.4)} ${alpha('#147DFE', 0.1)}`,
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            backgroundColor: alpha('#147DFE', 0.05),
-            width: '8px',
-            height: '8px'
+            backgroundColor: themeColors.neutral[100],
+            width: '6px',
+            height: '6px'
           },
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
-            borderRadius: 8,
-            backgroundColor: alpha('#147DFE', 0.3),
-            border: `2px solid transparent`,
+            borderRadius: 6,
+            backgroundColor: themeColors.neutral[300],
+            border: `1px solid transparent`,
             backgroundClip: 'content-box',
           },
           '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
-            backgroundColor: alpha('#147DFE', 0.5)
+            backgroundColor: themeColors.neutral[400]
+          },
+          '&::-webkit-scrollbar-corner': {
+            backgroundColor: 'transparent'
           }
         },
         '#__next': {
@@ -547,15 +550,29 @@ export const XrplToLightTheme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
+          borderRadius: 8,
+          transition: 'all 0.2s ease-in-out',
           '& .MuiInputAdornment-positionEnd.MuiInputAdornment-outlined': {
             paddingRight: 6
           },
-          '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: colors.alpha.black[50]
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: themeColors.neutral[200],
+            borderWidth: '1.5px'
           },
-          '&.Mui-focused:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: colors.primary.main
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: themeColors.neutral[300]
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: colors.primary.main,
+            borderWidth: '2px'
+          },
+          '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+            borderColor: colors.error.main
           }
+        },
+        input: {
+          padding: '12px 14px',
+          fontSize: '0.875rem'
         }
       }
     },
@@ -591,19 +608,42 @@ export const XrplToLightTheme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          
+          borderRadius: 16,
+          fontWeight: 500,
+          fontSize: '0.75rem',
+          height: 28
+        },
+        filled: {
+          backgroundColor: themeColors.neutral[100],
+          color: themeColors.neutral[700],
+          '&:hover': {
+            backgroundColor: themeColors.neutral[200]
+          }
+        },
+        outlined: {
+          borderColor: themeColors.neutral[200],
+          color: themeColors.neutral[700],
+          '&:hover': {
+            backgroundColor: themeColors.neutral[50]
+          }
+        },
+        colorPrimary: {
+          backgroundColor: alpha(colors.primary.main, 0.1),
+          color: colors.primary.dark,
+          '&:hover': {
+            backgroundColor: alpha(colors.primary.main, 0.2)
+          }
         },
         colorSecondary: {
-          background: colors.alpha.black[5],
-          color: colors.alpha.black[100],
-
+          backgroundColor: themeColors.neutral[100],
+          color: themeColors.neutral[700],
           '&:hover': {
-            background: colors.alpha.black[10]
+            backgroundColor: themeColors.neutral[200]
           }
         },
         deleteIcon: {
           color: colors.error.light,
-
+          fontSize: '1rem',
           '&:hover': {
             color: colors.error.main
           }
@@ -683,68 +723,82 @@ export const XrplToLightTheme = createTheme({
     },
     MuiButton: {
       defaultProps: {
-        disableRipple: true
+        disableRipple: false
       },
       styleOverrides: {
         root: {
-          fontWeight: 'bold',
+          fontWeight: 600,
           textTransform: 'none',
-          paddingLeft: 16,
-          paddingRight: 16,
-          transition: 'all 0.2s',
+          borderRadius: 8,
+          transition: 'all 0.2s ease-in-out',
           '.MuiSvgIcon-root': {
-            transition: 'all .2s'
+            transition: 'all 0.2s ease-in-out'
+          },
+          '&:active': {
+            transform: 'scale(0.98)'
           }
         },
         contained: {
           backgroundColor: colors.primary.main,
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+          boxShadow: colors.shadows.cardSm,
           '&:hover': {
             backgroundColor: colors.primary.dark,
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)'
+            boxShadow: colors.shadows.card,
+            transform: 'translateY(-1px)'
+          },
+          '&:focus': {
+            boxShadow: `0 0 0 3px ${alpha(colors.primary.main, 0.3)}`
           }
         },
         outlined: {
           borderColor: colors.primary.main,
+          borderWidth: '1.5px',
           '&:hover': {
-            backgroundColor: alpha(colors.primary.main, 0.04),
-            borderColor: colors.primary.dark
+            backgroundColor: alpha(colors.primary.main, 0.08),
+            borderColor: colors.primary.dark,
+            borderWidth: '1.5px'
+          }
+        },
+        text: {
+          '&:hover': {
+            backgroundColor: alpha(colors.primary.main, 0.08)
           }
         },
         endIcon: {
-          marginRight: -8
+          marginRight: -4
+        },
+        startIcon: {
+          marginLeft: -4
         },
         containedSecondary: {
-          backgroundColor: colors.secondary.main,
-          color: colors.alpha.white[100],
-          border: '1px solid ' + colors.alpha.black[30]
+          backgroundColor: themeColors.neutral[100],
+          color: themeColors.neutral[700],
+          border: `1px solid ${themeColors.neutral[200]}`,
+          '&:hover': {
+            backgroundColor: themeColors.neutral[50],
+            borderColor: themeColors.neutral[300]
+          }
         },
         outlinedSecondary: {
-          backgroundColor: colors.alpha.white[100],
-
-          '&:hover, &.MuiSelected': {
-            backgroundColor: colors.alpha.black[5],
-            color: colors.alpha.black[100]
+          borderColor: themeColors.neutral[200],
+          color: themeColors.neutral[700],
+          '&:hover': {
+            backgroundColor: themeColors.neutral[50],
+            borderColor: themeColors.neutral[300]
           }
         },
         sizeSmall: {
-          padding: '8px 16px',
+          padding: '6px 12px',
+          fontSize: '0.75rem',
           lineHeight: 1.5
         },
         sizeMedium: {
-          padding: '10px 20px'
+          padding: '8px 16px',
+          fontSize: '0.875rem'
         },
         sizeLarge: {
-          padding: '12px 24px'
-        },
-        textSizeSmall: {
-          padding: '7px 12px'
-        },
-        textSizeMedium: {
-          padding: '9px 16px'
-        },
-        textSizeLarge: {
-          padding: '12px 16px'
+          padding: '12px 24px',
+          fontSize: '0.875rem'
         }
       }
     },
@@ -758,38 +812,6 @@ export const XrplToLightTheme = createTheme({
         }
       }
     },
-    // MuiToggleButton: {
-    //   defaultProps: {
-    //     disableRipple: true
-    //   },
-    //   styleOverrides: {
-    //     root: {
-    //       color: colors.primary.main,
-    //       background: colors.alpha.white[100],
-    //       transition: 'all .2s',
-
-    //       '&:hover, &.Mui-selected, &.Mui-selected:hover': {
-    //         color: colors.alpha.white[100],
-    //         background: colors.primary.main
-    //       }
-    //     }
-    //   }
-    // },
-    // MuiIconButton: {
-    //   styleOverrides: {
-    //     root: {
-    //       borderRadius: 8,
-    //       padding: 8,
-
-    //       '& .MuiTouchRipple-root': {
-    //         borderRadius: 8
-    //       }
-    //     },
-    //     sizeSmall: {
-    //       padding: 4
-    //     }
-    //   }
-    // },
     MuiListItemText: {
       styleOverrides: {
         root: {
@@ -845,29 +867,37 @@ export const XrplToLightTheme = createTheme({
         root: {
           background: colors.alpha.white[100],
           padding: 0,
-          border: '1px solid #E5E7EB',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-          transition: 'all 0.2s',
+          border: '1px solid #E2E8F0',
+          borderRadius: 12,
+          transition: 'all 0.2s ease-in-out',
           '&:hover': {
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
-            borderColor: alpha('#147DFE', 0.2)
+            borderColor: alpha('#147DFE', 0.3),
+            transform: 'translateY(-1px)'
           }
         },
-        // elevation0: {
-        //   boxShadow: 'none'
-        // },
-        // elevation: {
-        //   boxShadow: colors.shadows.card
-        // },
-        // elevation2: {
-        //   boxShadow: colors.shadows.cardSm
-        // },
-        // elevation24: {
-        //   boxShadow: colors.shadows.cardLg
-        // },
-        // outlined: {
-        //   boxShadow: colors.shadows.card
-        // }
+        elevation0: {
+          boxShadow: 'none',
+          border: '1px solid #F1F5F9'
+        },
+        elevation1: {
+          boxShadow: colors.shadows.cardSm
+        },
+        elevation2: {
+          boxShadow: colors.shadows.card
+        },
+        elevation4: {
+          boxShadow: colors.shadows.cardMd
+        },
+        elevation8: {
+          boxShadow: colors.shadows.cardLg
+        },
+        elevation24: {
+          boxShadow: colors.shadows.cardXl
+        },
+        outlined: {
+          border: '1px solid #E2E8F0',
+          boxShadow: 'none'
+        }
       }
     },
     MuiLink: {
@@ -937,18 +967,18 @@ export const XrplToLightTheme = createTheme({
     MuiTabs: {
       styleOverrides: {
         root: {
-          height: 38,
-          minHeight: 38,
+          minHeight: 42,
           overflow: 'hidden',
-          maxWidth: { xs: 320, sm: 480 }
+          backgroundColor: themeColors.neutral[50],
+          borderRadius: 8,
+          padding: '4px',
+          '& .MuiTabs-scroller': {
+            overflow: 'auto !important'
+          }
         },
-        // indicator: {
-        //   height: 38,
-        //   minHeight: 38,
-        //   borderRadius: 6,
-        //   border: '1px solid ' + colors.primary.dark,
-        //   boxShadow: '0px 2px 10px ' + colors.primary.light
-        // },
+        indicator: {
+          display: 'none'
+        },
         scrollableX: {
           overflow: 'auto !important'
         }
@@ -957,26 +987,26 @@ export const XrplToLightTheme = createTheme({
     MuiTab: {
       styleOverrides: {
         root: {
-          padding: 0,
-          height: 38,
-          minHeight: 38,
+          padding: '8px 16px',
+          minHeight: 34,
           borderRadius: 6,
-          transition: 'color .2s',
-          textTransform: 'capitalize',
-
-          '&.MuiButtonBase-root': {
-            minWidth: 'auto',
-            paddingLeft: 20,
-            paddingRight: 20,
-            marginRight: 4
+          textTransform: 'none',
+          fontWeight: 500,
+          fontSize: '0.875rem',
+          color: themeColors.neutral[600],
+          transition: 'all 0.2s ease-in-out',
+          marginRight: 2,
+          minWidth: 'auto',
+          '&.Mui-selected': {
+            backgroundColor: '#FFFFFF',
+            color: colors.primary.main,
+            boxShadow: colors.shadows.cardSm,
+            zIndex: 1
           },
-          // '&.Mui-selected, &.Mui-selected:hover': {
-          //   color: colors.alpha.black[100],
-          //   zIndex: 5
-          // },
-          // '&:hover': {
-          //   color: colors.alpha.black[100]
-          // }
+          '&:hover': {
+            color: colors.primary.main,
+            backgroundColor: alpha('#FFFFFF', 0.8)
+          }
         }
       }
     },
@@ -1084,9 +1114,7 @@ export const XrplToLightTheme = createTheme({
     },
     MuiTableRow: {
       styleOverrides: {
-        head: {
-          // background: colors.alpha.black[5]
-        },
+        head: {},
         root: {
           transition: 'background-color .2s',
 
@@ -1103,13 +1131,8 @@ export const XrplToLightTheme = createTheme({
           fontSize: 14
         },
         head: {
-          // textTransform: 'uppercase',
           fontSize: 13,
-          whiteSpace: 'nowrap',
-          // fontWeight: 'bold',
-          // color: colors.alpha.black[70],
-          // background: 'inherit'
-          // background: colors.alpha.white[100]
+          whiteSpace: 'nowrap'
         }
       }
     },
@@ -1383,7 +1406,7 @@ export const XrplToLightTheme = createTheme({
     }
   },
   shape: {
-    borderRadius: 10
+    borderRadius: 12
   },
   typography: {
     fontFamily:
@@ -1504,9 +1527,7 @@ export const XrplToLightTheme = createTheme({
       fontWeight: 600
     },
     caption: {
-      fontSize: 13,
-      // textTransform: 'uppercase',
-      // color: colors.alpha.black[50]
+      fontSize: 13
     },
     // link: {
     //   fontSize: 14,
@@ -1560,13 +1581,11 @@ export const XrplToLightTheme = createTheme({
     },
     subtitle2: {
       fontWeight: 400,
-      fontSize: 15,
-      // color: colors.alpha.black[50]
+      fontSize: 15
     },
     overline: {
       fontSize: 13,
-      fontWeight: 700,
-      // textTransform: 'uppercase'
+      fontWeight: 700
     },
     s2: {
       fontWeight: 500,
@@ -1590,8 +1609,7 @@ export const XrplToLightTheme = createTheme({
     },
     s6: {
       fontWeight: 500,
-      fontSize: 14,
-      // color: colors.alpha.black[100]
+      fontSize: 14
     },
     s7: {
       fontWeight: 400,
@@ -1651,29 +1669,29 @@ export const XrplToLightTheme = createTheme({
   },
   shadows: [
     'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none',
-    'none'
+    '0px 1px 2px rgba(0, 0, 0, 0.05)',
+    '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06)',
+    '0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    '0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05)',
+    '0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px -5px rgba(0, 0, 0, 0.04)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    '0px 25px 50px -12px rgba(0, 0, 0, 0.25)'
   ]
 });

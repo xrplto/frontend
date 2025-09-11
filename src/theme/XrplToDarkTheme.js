@@ -23,29 +23,9 @@ const createAlphaColors = (color) => ({
 });
 
 export const XrplToDarkTheme = createTheme({
-  typography: {
-    fontFamily: "'JetBrains Mono', 'Courier New', monospace",
-    fontSize: 14,
-    h1: { fontFamily: "'JetBrains Mono', monospace" },
-    h2: { fontFamily: "'JetBrains Mono', monospace" },
-    h3: { fontFamily: "'JetBrains Mono', monospace" },
-    h4: { fontFamily: "'JetBrains Mono', monospace" },
-    h5: { fontFamily: "'JetBrains Mono', monospace" },
-    h6: { fontFamily: "'JetBrains Mono', monospace" },
-    body1: { fontVariantNumeric: "tabular-nums" },
-    body2: { fontVariantNumeric: "tabular-nums" }
-  },
   spacing: 9,
   shape: { borderRadius: 10 },
   
-  pagination: {
-    background: alpha('#111827', 0.5),
-    backgroundHover: alpha('#147DFE', 0.15),
-    border: alpha('#1F2937', 0.3),
-    textColor: themeColors.white,
-    selectedBackground: themeColors.primary,
-    selectedTextColor: themeColors.white
-  },
   
   palette: {
     mode: 'dark',
@@ -100,7 +80,7 @@ export const XrplToDarkTheme = createTheme({
       disabled: alpha(themeColors.white, 0.5)
     },
     background: {
-      paper: '#111827',
+      paper: '#000000',
       default: '#000000'
     },
     action: {
@@ -134,20 +114,25 @@ export const XrplToDarkTheme = createTheme({
 
   general: {
     reactFrameworkColor: '#007b5580',
-    borderRadiusSm: '6px',
-    borderRadius: '10px',
-    borderRadiusLg: '12px',
-    borderRadiusXl: '16px',
-    backgroundAlt: '#08060b70',
+    borderRadiusSm: '8px',
+    borderRadius: '12px',
+    borderRadiusLg: '16px',
+    borderRadiusXl: '20px',
+    backgroundAlt: '#000000',
     backgroundAsset: '#000000',
-    backgroundTrait: '#00ff7f10',
-    borderTrait: '#00ff7f'
+    backgroundTrait: '#ffffff10',
+    borderTrait: '#ffffff',
+    glassMorphism: 'rgba(255, 255, 255, 0.05)',
+    cardBackground: '#000000',
+    surfaceElevated: '#111111'
   },
 
   header: {
     height: '80px',
-    background: '#111827',
-    boxShadow: '0px 1px 0px #1F2937'
+    background: '#000000',
+    boxShadow: '0px 1px 0px rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
   },
 
   sidebar: {
@@ -176,7 +161,15 @@ export const XrplToDarkTheme = createTheme({
     caption: { fontSize: 13 }
   },
 
-  shadows: Array(25).fill('none'),
+  shadows: [
+    'none',
+    '0 1px 3px rgba(0, 0, 0, 0.3)',
+    '0 4px 6px rgba(0, 0, 0, 0.3)',
+    '0 10px 15px rgba(0, 0, 0, 0.3)',
+    '0 20px 25px rgba(0, 0, 0, 0.3)',
+    '0 25px 50px rgba(0, 0, 0, 0.5)',
+    ...Array(19).fill('0 25px 50px rgba(0, 0, 0, 0.5)')
+  ],
 
   components: {
     MuiCssBaseline: {
@@ -234,17 +227,18 @@ export const XrplToDarkTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          background: `linear-gradient(135deg, 
-            ${alpha('#111827', 0.5)} 0%, 
-            ${alpha('#111827', 0.3)} 50%,
-            ${alpha('#111827', 0.4)} 100%)`,
-          border: `1px solid ${alpha('#1F2937', 0.15)}`,
-          backdropFilter: 'blur(60px) saturate(180%)',
-          boxShadow: `0 10px 40px ${alpha('#000000', 0.18)}`,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          background: `linear-gradient(145deg, 
+            ${alpha('#000000', 0.9)} 0%, 
+            ${alpha('#111111', 0.6)} 50%,
+            ${alpha('#000000', 0.95)} 100%)`,
+          border: `1px solid ${alpha('#ffffff', 0.08)}`,
+          backdropFilter: 'blur(40px) saturate(200%)',
+          boxShadow: `0 8px 32px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}`,
+          transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: `0 15px 50px ${alpha('#000000', 0.22)}`
+            transform: 'translateY(-4px)',
+            boxShadow: `0 20px 60px ${alpha('#000000', 0.3)}, inset 0 1px 0 ${alpha('#ffffff', 0.15)}`,
+            borderColor: alpha('#ffffff', 0.12)
           }
         }
       }
@@ -252,19 +246,19 @@ export const XrplToDarkTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: '8px',
-          border: `1px solid ${alpha('#1F2937', 0.15)}`,
-          background: `linear-gradient(135deg, 
-            ${alpha('#111827', 0.5)} 0%, 
-            ${alpha('#111827', 0.3)} 50%,
-            ${alpha('#111827', 0.4)} 100%)`,
-          backdropFilter: 'blur(60px) saturate(180%)',
-          boxShadow: `0 10px 40px ${alpha('#000000', 0.18)}`,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          borderRadius: '12px',
+          border: `1px solid ${alpha('#ffffff', 0.08)}`,
+          background: `linear-gradient(145deg, 
+            ${alpha('#000000', 0.9)} 0%, 
+            ${alpha('#111111', 0.6)} 50%,
+            ${alpha('#000000', 0.95)} 100%)`,
+          backdropFilter: 'blur(40px) saturate(200%)',
+          boxShadow: `0 8px 32px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}`,
+          transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: `0 15px 50px ${alpha('#000000', 0.22)}`,
-            borderColor: alpha('#147DFE', 0.4)
+            transform: 'translateY(-4px)',
+            boxShadow: `0 20px 60px ${alpha('#000000', 0.3)}, inset 0 1px 0 ${alpha('#ffffff', 0.15)}`,
+            borderColor: alpha(themeColors.primary, 0.5)
           }
         }
       }
@@ -278,11 +272,14 @@ export const XrplToDarkTheme = createTheme({
       styleOverrides: {
         tooltip: {
           color: themeColors.white,
-          background: alpha('#222531', 1),
-          padding: '8px 16px',
-          fontSize: 13
+          background: alpha('#000000', 0.95),
+          border: `1px solid ${alpha('#ffffff', 0.1)}`,
+          backdropFilter: 'blur(20px) saturate(180%)',
+          padding: '12px 16px',
+          fontSize: 13,
+          borderRadius: '8px'
         },
-        arrow: { color: alpha('#222531', 1) }
+        arrow: { color: alpha('#000000', 0.95) }
       }
     },
     MuiDivider: {
@@ -338,18 +335,21 @@ export const XrplToDarkTheme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiPaginationItem-root': {
-            backgroundColor: alpha('#111827', 0.6),
+            backgroundColor: alpha('#000000', 0.8),
             color: themeColors.white,
-            border: `1px solid ${alpha('#1F2937', 0.3)}`,
-            backdropFilter: 'blur(10px)',
+            border: `1px solid ${alpha('#ffffff', 0.1)}`,
+            backdropFilter: 'blur(20px) saturate(180%)',
+            borderRadius: '8px',
             '&:hover': {
-              backgroundColor: alpha('#147DFE', 0.15),
-              borderColor: alpha('#147DFE', 0.5)
+              backgroundColor: alpha(themeColors.primary, 0.2),
+              borderColor: alpha(themeColors.primary, 0.6),
+              transform: 'scale(1.05)'
             },
             '&.Mui-selected': {
               backgroundColor: themeColors.primary,
               color: themeColors.white,
               borderColor: themeColors.primary,
+              boxShadow: `0 4px 16px ${alpha(themeColors.primary, 0.3)}`,
               '&:hover': {
                 backgroundColor: alpha(themeColors.primary, 0.8)
               }
@@ -361,9 +361,9 @@ export const XrplToDarkTheme = createTheme({
     MuiTablePagination: {
       styleOverrides: {
         root: {
-          backgroundColor: alpha('#111827', 0.5),
-          backdropFilter: 'blur(10px)',
-          borderTop: `1px solid ${alpha('#1F2937', 0.15)}`,
+          backgroundColor: alpha('#000000', 0.9),
+          backdropFilter: 'blur(20px) saturate(180%)',
+          borderTop: `1px solid ${alpha('#ffffff', 0.08)}`,
           color: themeColors.white
         },
         selectIcon: {
@@ -372,13 +372,6 @@ export const XrplToDarkTheme = createTheme({
         select: {
           color: themeColors.white
         },
-        menuItem: {
-          backgroundColor: '#111827',
-          color: themeColors.white,
-          '&:hover': {
-            backgroundColor: alpha('#147DFE', 0.15)
-          }
-        }
       }
     }
   }
