@@ -76,8 +76,8 @@ import FactCheckIcon from '@mui/icons-material/FactCheck';
 import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
 import TuneIcon from '@mui/icons-material/Tune';
 import SportsScoreIcon from '@mui/icons-material/SportsScore';
-import { Icon } from '@iconify/react';
-import infoFilled from '@iconify/icons-ep/info-filled';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import InfoIcon from '@mui/icons-material/Info';
 
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -1840,7 +1840,7 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                               } 
                             }}
                           >
-                            <Icon icon={infoFilled} style={{ fontSize: '10px' }} />
+                            <MoreVertIcon sx={{ fontSize: '10px' }} />
                           </Box>
                         </Tooltip>
                       </Stack>
@@ -1870,7 +1870,7 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                         </Typography>
                         <Tooltip title="Display recently Minted NFTs and being transferred to users. Or NFTs that pending to be accepted by users." placement="top" arrow>
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: '50%', background: (theme) => alpha(theme.palette.info.main, 0.1), color: 'info.main', cursor: 'help', transition: 'all 0.2s ease', '&:hover': { background: (theme) => alpha(theme.palette.info.main, 0.2), transform: 'scale(1.1)' } }}>
-                            <Icon icon={infoFilled} style={{ fontSize: '12px' }} />
+                            <MoreVertIcon sx={{ fontSize: '12px' }} />
                           </Box>
                         </Tooltip>
                       </Stack>
@@ -2057,7 +2057,7 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                       </Typography>
                       <Tooltip title="Sort NFTs with rarity" placement="top" arrow>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: '50%', background: (theme) => alpha(theme.palette.info.main, 0.1), color: 'info.main', cursor: 'help', transition: 'all 0.2s ease', '&:hover': { background: (theme) => alpha(theme.palette.info.main, 0.2), transform: 'scale(1.1)' } }}>
-                          <Icon icon={infoFilled} style={{ fontSize: '12px' }} />
+                          <MoreVertIcon sx={{ fontSize: '12px' }} />
                         </Box>
                       </Tooltip>
                     </Stack>
@@ -2390,7 +2390,7 @@ export default function CollectionView({ collection }) {
                 color: theme.palette.info.main
               }}
             >
-              <Icon icon="material-symbols:content-copy" />
+              <MoreVertIcon />
             </IconButton>
           </Stack>
         </Box>
@@ -2662,8 +2662,8 @@ export default function CollectionView({ collection }) {
                     {item.label}
                     {item.tooltip && (
                       <Tooltip title={`Volume on XRPNFT: ${volume1}`}>
-                        <Icon
-                          icon={infoFilled}
+                        <MoreVertIcon
+                          icon={<InfoIcon />}
                           style={{
                             fontSize: '10px',
                             color: theme.palette.text.secondary,

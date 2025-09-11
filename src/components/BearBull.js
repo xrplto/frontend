@@ -11,10 +11,9 @@ import {
 // Utils
 import { fPercent } from 'src/utils/formatNumber';
 
-// Iconify
-import { Icon } from '@iconify/react';
-import caretDown from '@iconify/icons-bx/caret-down';
-import caretUp from '@iconify/icons-bx/caret-up';
+// Material UI Icons
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 // ----------------------------------------------------------------------
 
@@ -51,12 +50,12 @@ export default function BearBull({value}) {
         <>
             {pro < 0 ? (
                 <span>
-                    <Icon icon={caretDown} color={theme.palette.error.main}/>
+                    <KeyboardArrowDownIcon sx={{ color: theme.palette.error.main }} />
                     <Bearish>{strPro}</Bearish>
                 </span>
             ) : (
                 <span>
-                    <Icon icon={caretUp} color={theme.palette.primary.light}/>
+                    <KeyboardArrowUpIcon sx={{ color: theme.palette.primary.light }} />
                     <Bullish>{strPro}</Bullish>
                 </span>
             )}

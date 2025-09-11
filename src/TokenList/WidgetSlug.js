@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Icon } from '@iconify/react';
+import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
 // ----------------------------------------------------------------------
 
 const RootStyle = styled.div`
@@ -62,7 +62,7 @@ export default function WidgetSlug({showSlug, setShowSlug}) {
         >
             <RootStyle>
                 <Container>
-                    <Icon icon="mdi:do-not-disturb" width={24} height={24} />
+                    <DoNotDisturbIcon sx={{ width: 24, height: 24 }} />
                     <StyledText>
                         URL Slug
                     </StyledText>

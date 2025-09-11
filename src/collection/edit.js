@@ -38,7 +38,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Iconify
-import { Icon } from '@iconify/react';
+import EditIcon from '@mui/icons-material/Edit';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';

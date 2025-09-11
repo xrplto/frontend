@@ -1,5 +1,17 @@
 import { useState, useEffect, useRef, memo, useContext, useMemo, useCallback } from 'react';
-import { Box, ButtonGroup, Button, Typography, useTheme, Paper, IconButton, Menu, MenuItem, CircularProgress, alpha, Divider } from '@mui/material';
+import dynamic from 'next/dynamic';
+import Box from '@mui/material/Box';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
+import Paper from '@mui/material/Paper';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import CircularProgress from '@mui/material/CircularProgress';
+import { alpha } from '@mui/material/styles';
+import Divider from '@mui/material/Divider';
 import { createChart, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries } from 'lightweight-charts';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';

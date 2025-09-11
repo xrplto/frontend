@@ -34,7 +34,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 
 // Iconify
-import { Icon } from '@iconify/react';
+import AddIcon from '@mui/icons-material/Add';
 
 // Context
 import { useContext } from 'react';

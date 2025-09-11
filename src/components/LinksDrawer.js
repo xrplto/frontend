@@ -4,14 +4,13 @@ import { useMediaQuery } from '@mui/material';
 // Material
 import { Box, Chip, Link, Typography, MenuItem, Divider, Avatar } from '@mui/material';
 
-// Iconify
-import { Icon } from '@iconify/react';
-import link45deg from '@iconify/icons-bi/link-45deg';
-import linkExternal from '@iconify/icons-charm/link-external';
-import paperIcon from '@iconify/icons-charm/link-external';
-import chatIcon from '@iconify/icons-bi/chat';
-import zoomIcon from '@iconify/icons-cil/zoom';
-import personFill from '@iconify/icons-bi/person-fill';
+// Material UI Icons
+import LinkIcon from '@mui/icons-material/Link';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import DocumentIcon from '@mui/icons-material/Description';
+import ChatIcon from '@mui/icons-material/Chat';
+import SearchIcon from '@mui/icons-material/Search';
+import PersonIcon from '@mui/icons-material/Person';
 
 import Drawer from './Drawer';
 import { AppContext } from 'src/AppContext';
@@ -50,19 +49,23 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token, getFullUrl })
       key={index}
     >
       <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
-        <Avatar
-          alt={icon.alt}
-          src={icon.src}
-          sx={{ mr: iconSpacing, width: iconSize, height: iconSize }}
-        />
+        {icon.src ? (
+          <Avatar
+            alt={icon.alt}
+            src={icon.src}
+            sx={{ mr: iconSpacing, width: iconSize, height: iconSize }}
+          />
+        ) : (
+          <icon.icon sx={{ mr: iconSpacing, width: iconSize, height: iconSize }} />
+        )}
         <Typography variant="caption">{title}</Typography>
       </MenuItem>
     </Link>
   );
 
-  const renderIconItem = (title, icon) => (
+  const renderIconItem = (title, IconComponent) => (
     <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
-      <Icon icon={icon} width={iconSize} height={iconSize} style={{ marginRight: iconSpacing }} />
+      <IconComponent sx={{ mr: iconSpacing, width: iconSize, height: iconSize }} />
       <Typography variant="caption">{title}</Typography>
     </MenuItem>
   );
@@ -88,8 +91,8 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token, getFullUrl })
             <Typography variant="h6" color="textPrimary" sx={{ mt: 2, ml: 2, mb: 1 }}>
               Links
             </Typography>
-            {domain && renderLinkItem('Website', link45deg, `https://${domain}`)}
-            {whitepaper && renderLinkItem('Whitepaper', paperIcon, whitepaper)}
+            {domain && renderLinkItem('Website', { alt: 'link', src: null, icon: LinkIcon }, `https://${domain}`)}
+            {whitepaper && renderLinkItem('Whitepaper', { alt: 'document', src: null, icon: DocumentIcon }, whitepaper)}
             <Divider sx={{ my: 2 }} />
           </>
         )}
@@ -140,7 +143,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token, getFullUrl })
             <Typography variant="h6" color="textPrimary" sx={{ mt: 2, ml: 2, mb: 1 }}>
               Issuer
             </Typography>
-            {renderLinkItem('Website', linkExternal, issuer)}
+            {renderLinkItem('Website', { alt: 'external', src: null, icon: OpenInNewIcon }, issuer)}
             <Divider sx={{ my: 2 }} />
           </>
         )}
@@ -148,7 +151,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token, getFullUrl })
         <Typography variant="h6" color="textPrimary" sx={{ mt: 2, ml: 2, mb: 1 }}>
           Additional Resources
         </Typography>
-        {renderIconItem('Explorer', zoomIcon)}
+        {renderIconItem('Explorer', SearchIcon)}
         <Divider sx={{ my: 2 }} />
       </Box>
     </Drawer>

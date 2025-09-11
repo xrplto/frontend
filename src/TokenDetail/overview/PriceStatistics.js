@@ -29,8 +29,13 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import LockIcon from '@mui/icons-material/Lock';
 
 // Iconify
-import { Icon } from '@iconify/react';
-import blackholeIcon from '@iconify/icons-arcticons/blackhole';
+import CircleIcon from '@mui/icons-material/Circle';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import TelegramIcon from '@mui/icons-material/Telegram';
+import GitHub from '@mui/icons-material/GitHub';
+import Reddit from '@mui/icons-material/Reddit';
+import Language from '@mui/icons-material/Language';
+import LinkIcon from '@mui/icons-material/Link';
 
 // Components
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -1030,24 +1035,24 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
             }}
           >
             {(platform === 'twitter' || platform === 'x') && (
-              <Icon icon="mdi:twitter" width={iconSize} height={iconSize} />
+              <TwitterIcon sx={{ width: iconSize, height: iconSize }} />
             )}
             {platform === 'telegram' && (
-              <Icon icon="mdi:telegram" width={iconSize} height={iconSize} />
+              <TelegramIcon sx={{ width: iconSize, height: iconSize }} />
             )}
             {platform === 'discord' && (
-              <Icon icon="mdi:discord" width={iconSize} height={iconSize} />
+              <CircleIcon sx={{ width: iconSize, height: iconSize }} />
             )}
-            {platform === 'website' && <Icon icon="mdi:web" width={iconSize} height={iconSize} />}
+            {platform === 'website' && <Language sx={{ width: iconSize, height: iconSize }} />}
             {platform === 'github' && (
-              <Icon icon="mdi:github" width={iconSize} height={iconSize} />
+              <GitHub sx={{ width: iconSize, height: iconSize }} />
             )}
             {platform === 'reddit' && (
-              <Icon icon="mdi:reddit" width={iconSize} height={iconSize} />
+              <Reddit sx={{ width: iconSize, height: iconSize }} />
             )}
             {!['twitter', 'x', 'telegram', 'discord', 'website', 'github', 'reddit'].includes(
               platform
-            ) && <Icon icon="mdi:link" width={iconSize} height={iconSize} />}
+            ) && <LinkIcon sx={{ width: iconSize, height: iconSize }} />}
           </IconButton>
         </Tooltip>
       ))}

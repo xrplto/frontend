@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 
 // Iconify
-import { Icon } from '@iconify/react';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 // Context
 import { useContext } from 'react';
@@ -214,7 +214,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
                 fullWidth
                 // sx={{ minWidth: 150 }}
                 color='warning'
-                startIcon={<Icon icon='ps:feedburner' />}
+                startIcon={<DeleteIcon />}
                 onClick={() => handleBurnNFT()}
                 disabled={!accountLogin || !isBurnable || !nft} // Added !nft check
             >

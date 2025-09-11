@@ -1,7 +1,17 @@
 import React, { useState, useCallback, useMemo, memo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
-import { Icon } from '@iconify/react';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import CategoryIcon from '@mui/icons-material/Category';
+import GridOnIcon from '@mui/icons-material/GridOn';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import DiamondIcon from '@mui/icons-material/Diamond';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import NewReleasesIcon from '@mui/icons-material/NewReleases';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import SettingsIcon from '@mui/icons-material/Settings';
+import StarIcon from '@mui/icons-material/Star';
+import FiberNewIcon from '@mui/icons-material/FiberNew';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import dynamic from 'next/dynamic';
@@ -669,7 +679,7 @@ const SearchToolbar = memo(function SearchToolbar({
                 hoverBackground={`${colors[colorIndex]}4D`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <Icon icon={icons[iconIndex]} width="10" height="10" />
+                <FilterListIcon sx={{ width: 10, height: 10 }} />
                 <span>{tag}</span>
               </TagChip>
             );
@@ -678,7 +688,7 @@ const SearchToolbar = memo(function SearchToolbar({
           {/* All Tags Button - show only if there are more tags than visible */}
           {tags.length > visibleTagCount && (
             <AllTagsButton onClick={() => setCategoriesOpen(true)}>
-              <Icon icon="material-symbols:category" width="12" height="12" />
+              <CategoryIcon sx={{ width: 12, height: 12 }} />
               <span>All ({tags.length})</span>
             </AllTagsButton>
           )}
@@ -694,7 +704,7 @@ const SearchToolbar = memo(function SearchToolbar({
               onClick={() => window.location.href = '/'}
               style={{ minWidth: window.innerWidth <= 600 ? '55px' : '70px' }}
             >
-              <Icon icon="carbon:grid" width="14" height="14" style={{ marginRight: window.innerWidth <= 600 ? '2px' : '4px' }} />
+              <GridOnIcon sx={{ width: 14, height: 14, marginRight: window.innerWidth <= 600 ? '2px' : '4px' }} />
               <span style={{ fontSize: window.innerWidth <= 600 ? '11px' : '12px' }}>Tokens</span>
             </button>
             <button
@@ -710,7 +720,7 @@ const SearchToolbar = memo(function SearchToolbar({
               }}>
                 <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>FirstLedger</span>
                 <span style={{ display: window.innerWidth <= 600 ? 'inline' : 'none' }}>FL</span>
-                <Icon 
+                <FilterListIcon 
                   icon="material-symbols:open-in-new" 
                   width={window.innerWidth <= 600 ? '10' : '12'} 
                   height={window.innerWidth <= 600 ? '10' : '12'} 
@@ -793,7 +803,7 @@ const SearchToolbar = memo(function SearchToolbar({
               ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
               : 'rgba(255, 87, 34, 0.25)'}
           >
-            <Icon icon="ic:round-local-fire-department" width="16" height="16" style={{ marginRight: '4px' }} />
+            <LocalFireDepartmentIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
             Hot
           </Chip>
 
@@ -807,7 +817,7 @@ const SearchToolbar = memo(function SearchToolbar({
               ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
               : 'rgba(33, 150, 243, 0.25)'}
           >
-            <Icon icon="ic:round-diamond" width="16" height="16" style={{ marginRight: '4px' }} />
+            <DiamondIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
             Gems
           </Chip>
 
@@ -821,7 +831,7 @@ const SearchToolbar = memo(function SearchToolbar({
               ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
               : 'rgba(76, 175, 80, 0.25)'}
           >
-            <Icon icon="ic:round-trending-up" width="16" height="16" style={{ marginRight: '4px' }} />
+            <TrendingUpIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
             <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>Gainers</span>
             <span style={{ display: window.innerWidth <= 600 ? 'inline' : 'none' }}>📈</span>
           </Chip>
@@ -836,7 +846,7 @@ const SearchToolbar = memo(function SearchToolbar({
               ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
               : 'rgba(255, 152, 0, 0.25)'}
           >
-            <Icon icon="ic:round-new-releases" width="16" height="16" style={{ marginRight: '4px' }} />
+            <NewReleasesIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
             New
           </Chip>
 
@@ -850,7 +860,7 @@ const SearchToolbar = memo(function SearchToolbar({
               ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
               : 'rgba(156, 39, 176, 0.25)'}
           >
-            <Icon icon="ic:round-visibility" width="16" height="16" style={{ marginRight: '4px' }} />
+            <VisibilityIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
             <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>Popular</span>
             <span style={{ display: window.innerWidth <= 600 ? 'inline' : 'none' }}>👁️</span>
           </Chip>
@@ -889,7 +899,7 @@ const SearchToolbar = memo(function SearchToolbar({
               title="Configure columns"
               aria-label="Configure custom columns"
             >
-              <Icon icon="material-symbols:settings" width="20" height="20" />
+              <SettingsIcon sx={{ width: 20, height: 20 }} />
             </IconButton>
           )}
 

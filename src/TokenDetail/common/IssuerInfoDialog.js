@@ -31,9 +31,6 @@ import { tableCellClasses } from '@mui/material/TableCell';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
-// Iconify
-import { Icon } from '@iconify/react';
-import copyIcon from '@iconify/icons-fad/copy';
 
 // Context
 import { useContext } from 'react';

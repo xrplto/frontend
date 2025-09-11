@@ -2,8 +2,7 @@ import axios from 'axios';
 import { useState, useEffect, useMemo, useCallback, memo, useRef, useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import { FormControl, InputLabel, MenuItem, Select, Stack, Typography, useTheme, useMediaQuery } from '@mui/material';
-import { Icon } from '@iconify/react';
-import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { fNumber } from 'src/utils/formatNumber';
 
 
@@ -52,7 +51,7 @@ const PairsSelect = memo(({ token, pair, setPair }) => {
       <MenuItem key={id} value={pair} sx={{ py: 0.5 }}>
         <Stack direction="row" alignItems="center" spacing={0.5}>
           <Typography variant="caption" sx={{ color: '#B72136', fontWeight: 600 }}>{curr1.name}</Typography>
-          <Icon icon={arrowsExchange} width="14" height="14" />
+          <SwapHorizIcon sx={{ width: '14px', height: '14px' }} />
           <Typography variant="caption" sx={{ color: darkMode ? '#007B55' : '#5569ff', fontWeight: 600 }}>{curr2.name}</Typography>
           {!isMobile && <Typography variant="caption" sx={{ color: '#B72136', ml: 1 }}>{fNumber(curr1.value)}</Typography>}
         </Stack>

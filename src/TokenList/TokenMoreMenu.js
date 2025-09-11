@@ -1,8 +1,10 @@
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { Icon } from '@iconify/react';
 import { useRef, useState, useEffect } from 'react';
-import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import EditIcon from '@mui/icons-material/Edit';
+import LinkIcon from '@mui/icons-material/Link';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import styled from '@emotion/styled';
 
 // ----------------------------------------------------------------------
@@ -114,7 +116,7 @@ export default function TokenMoreMenu({ token, admin, setEditToken, setTrustToke
   return (
     <MenuWrapper>
       <IconButton ref={ref} onClick={() => setIsOpen(true)} aria-label="More options">
-        <Icon icon={moreVerticalFill} width={20} height={20} />
+        <MoreVertIcon sx={{ width: 20, height: 20 }} />
       </IconButton>
 
       {isOpen && (
@@ -128,7 +130,7 @@ export default function TokenMoreMenu({ token, admin, setEditToken, setTrustToke
               }}
             >
               <IconWrapper>
-                <Icon icon="material-symbols:edit" width={24} height={24} />
+                <EditIcon sx={{ width: 24, height: 24 }} />
               </IconWrapper>
               Edit Token
             </MenuButton>
@@ -141,7 +143,7 @@ export default function TokenMoreMenu({ token, admin, setEditToken, setTrustToke
             }}
           >
             <IconWrapper>
-              <Icon icon="material-symbols:link" width={24} height={24} />
+              <LinkIcon sx={{ width: 24, height: 24 }} />
             </IconWrapper>
             Trust Set
           </MenuButton>
@@ -153,7 +155,7 @@ export default function TokenMoreMenu({ token, admin, setEditToken, setTrustToke
             onClick={() => setIsOpen(false)}
           >
             <IconWrapper>
-              <Icon icon="material-symbols:swap-horiz" width={24} height={24} />
+              <SwapHorizIcon sx={{ width: 24, height: 24 }} />
             </IconWrapper>
             DEX Trade
           </MenuItem>

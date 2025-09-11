@@ -2,8 +2,7 @@
 import { Link, Stack, Typography } from '@mui/material';
 
 // Iconify icons
-import { Icon } from '@iconify/react';
-import twotoneGreaterThan from '@iconify/icons-ic/twotone-greater-than';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 export default function CollectionBreadcrumb({ collection, nftName, nftId }) {
   return (
@@ -19,7 +18,7 @@ export default function CollectionBreadcrumb({ collection, nftName, nftId }) {
           NFTs
         </Typography>
       </Link>
-      <Icon icon={twotoneGreaterThan} width="12" height="12" style={{ marginTop: '3' }} />
+      <ChevronRightIcon sx={{ width: '12px', height: '12px', mt: 0.4 }} />
       <Link
         underline="none"
         color="inherit"
@@ -32,7 +31,7 @@ export default function CollectionBreadcrumb({ collection, nftName, nftId }) {
       </Link>
       {nftName && (
         <>
-          <Icon icon={twotoneGreaterThan} width="12" height="12" style={{ marginTop: '3' }} />
+          <ChevronRightIcon sx={{ width: '12px', height: '12px', mt: 0.4 }} />
           <Typography variant="link_cascade">{nftName}</Typography>
         </>
       )}

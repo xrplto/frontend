@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Icon } from '@iconify/react';
+import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
 
 // ----------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ export default function WidgetDate({showDate, setShowDate}) {
             }}
         >
             <Stack>
-                <Icon icon="material-symbols:update-disabled" width="20" height="20" />
+                <UpdateDisabledIcon sx={{ width: 20, height: 20 }} />
                 <Caption>
                     Date
                 </Caption>

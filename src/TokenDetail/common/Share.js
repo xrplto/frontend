@@ -58,8 +58,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
-import { Icon } from '@iconify/react';
-import copyIcon from '@iconify/icons-fad/copy';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { fNumber } from 'src/utils/formatNumber';
 import { currencySymbols } from 'src/utils/constants';
 
@@ -539,7 +538,7 @@ export default function Share({ token }) {
                   <CopyToClipboard text={url} onCopy={handleCopy}>
                     <Tooltip title={copied ? 'Copied!' : 'Copy link'}>
                       <CopyButton>
-                        <Icon icon={copyIcon} />
+                        <ContentCopyIcon />
                       </CopyButton>
                     </Tooltip>
                   </CopyToClipboard>

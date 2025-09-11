@@ -16,10 +16,10 @@ import {
   Paper
 } from '@mui/material';
 import { styled, useTheme, keyframes, alpha, css } from '@mui/material/styles';
-import { Icon } from '@iconify/react';
-import exchangeIcon from '@iconify/icons-uil/exchange';
-import swapIcon from '@iconify/icons-uil/sync'; // Import an icon for swap
-import hideIcon from '@iconify/icons-uil/eye-slash'; // Import an icon for hide
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import SyncIcon from '@mui/icons-material/Sync';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import CloseIcon from '@mui/icons-material/Close';
 import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
@@ -1637,11 +1637,10 @@ const Swap = ({ token }) => {
                 }
               }}
             >
-              <Icon
-                icon={exchangeIcon}
-                width="18"
-                height="18"
-                style={{
+              <SwapHorizIcon 
+                sx={{
+                  width: '18px',
+                  height: '18px',
                   color: theme.palette.text.primary,
                   transform: 'rotate(90deg)',
                   transition: 'all 0.2s ease-in-out'
@@ -2097,7 +2096,7 @@ const Swap = ({ token }) => {
                   }
                 }}
               >
-                <Icon icon="mdi:close" width={16} height={16} />
+                <CloseIcon sx={{ width: 16, height: 16 }} />
               </IconButton>
             </Stack>
           </Box>
@@ -2171,7 +2170,7 @@ const Swap = ({ token }) => {
                 }
               }}
             >
-              <Icon icon="mdi:close" width={16} height={16} />
+              <CloseIcon sx={{ width: 16, height: 16 }} />
             </IconButton>
           </Box>
           
@@ -2201,7 +2200,7 @@ const App = ({ token }) => {
         variant="contained"
         onClick={toggleSwap}
         fullWidth
-        startIcon={<Icon icon={showSwap ? hideIcon : swapIcon} />}
+        startIcon={showSwap ? <VisibilityOffIcon /> : <SyncIcon />}
         sx={{
           position: 'relative',
           overflow: 'hidden',

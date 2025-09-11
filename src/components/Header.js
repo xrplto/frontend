@@ -1,20 +1,18 @@
-import {
-  alpha,
-  Box,
-  Chip,
-  Container,
-  IconButton,
-  Link,
-  Snackbar,
-  Stack,
-  useMediaQuery,
-  useTheme,
-  Menu,
-  MenuItem,
-  Divider,
-  SvgIcon,
-  Typography
-} from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
+import Snackbar from '@mui/material/Snackbar';
+import Stack from '@mui/material/Stack';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Divider from '@mui/material/Divider';
+import SvgIcon from '@mui/material/SvgIcon';
+import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import Image from 'next/image';
 import SearchIcon from '@mui/icons-material/Search';

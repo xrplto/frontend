@@ -41,9 +41,6 @@ import { PulseLoader } from 'react-spinners';
 import { fNumber } from 'src/utils/formatNumber';
 import Decimal from 'decimal.js';
 
-// Iconify
-import { Icon } from '@iconify/react';
-import copyIcon from '@iconify/icons-fad/copy';
 import ConnectWallet from './ConnectWallet';
 import { isInstalled, setTrustline, submitTransaction } from '@gemwallet/api';
 import { enqueueSnackbar } from 'notistack';

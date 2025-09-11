@@ -41,12 +41,12 @@ import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
-// Iconify
-import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
-import infoFilled from '@iconify/icons-ep/info-filled';
-import xIcon from '@iconify/icons-bi/x';
-import alertTriangleFill from '@iconify/icons-eva/alert-triangle-fill';
+// Icons
+import InfoIcon from '@mui/icons-material/Info';
+import CloseIcon from '@mui/icons-material/Close';
+import WarningIcon from '@mui/icons-material/Warning';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+import LaunchIcon from '@mui/icons-material/Launch';
 
 // Loader
 import { PuffLoader, PulseLoader } from 'react-spinners';
@@ -244,7 +244,7 @@ function PriceWarningIcon({ discrepancy, floorPrice }) {
         discrepancy * 100
       )}% below the floor price of ${fNumber(floorPrice)} XRP.`}
     >
-      <Icon icon={alertTriangleFill} style={{ color: 'orange' }} width={24} height={24} />
+      <WarningIcon sx={{ color: 'orange', width: 24, height: 24 }} />
     </Tooltip>
   );
 }
@@ -960,11 +960,10 @@ export default function NFTActions({ nft }) {
                         Global Floor
                       </Typography>
                       <Tooltip title="Collection-wide floor price">
-                        <Icon
-                          icon="material-symbols:info-outline"
-                          width={16}
-                          height={16}
-                          style={{
+                        <InfoIcon
+                          sx={{
+                            width: 16,
+                            height: 16,
                             color: theme.palette.primary.main,
                             opacity: 0.7,
                             cursor: 'help'
@@ -973,7 +972,7 @@ export default function NFTActions({ nft }) {
                       </Tooltip>
                     </Stack>
                     <FloorPriceValue>
-                      <Icon icon={rippleSolid} className="icon" />
+                      <InfoIcon className="icon" />
                       <Typography className="amount">
                         {floorPrice > 0 ? fNumber(floorPrice) : '- - -'}
                       </Typography>
@@ -1025,11 +1024,12 @@ export default function NFTActions({ nft }) {
 
             {MasterSequence && (
               <MasterSequenceBadge elevation={0}>
-                <Icon
-                  icon={rippleSolid}
-                  width={18}
-                  height={18}
-                  style={{ color: theme.palette.secondary.main }}
+                <InfoIcon
+                  sx={{
+                    width: 18,
+                    height: 18,
+                    color: theme.palette.secondary.main
+                  }}
                 />
                 <Stack>
                   <Typography variant="caption" color="secondary.main" fontWeight="medium">
@@ -1064,11 +1064,12 @@ export default function NFTActions({ nft }) {
                 <Typography variant="subtitle1" fontWeight="medium">
                   {truncate(account, 16)}
                 </Typography>
-                <Icon
-                  icon="material-symbols:arrow-outward"
-                  width={16}
-                  height={16}
-                  style={{ opacity: 0.7 }}
+                <LaunchIcon
+                  sx={{
+                    width: 16,
+                    height: 16,
+                    opacity: 0.7
+                  }}
                 />
               </OwnerAddress>
               {minter && minter === account && (
@@ -1133,7 +1134,7 @@ export default function NFTActions({ nft }) {
                     <PulseLoader color={theme.palette.primary.main} size={10} />
                   ) : lowestSellOffer ? (
                     <Stack direction="row" spacing={1} alignItems="center">
-                      <Icon icon={rippleSolid} width="24" height="24" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
+                      <InfoIcon sx={{ width: 24, height: 24, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
                       <Typography 
                         variant="h5" 
                         fontWeight="bold"
@@ -1188,7 +1189,7 @@ export default function NFTActions({ nft }) {
                   Lowest Sell Offer
                 </Typography>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Icon icon={rippleSolid} width="24" height="24" />
+                  <InfoIcon sx={{ width: 24, height: 24 }} />
                   <Typography variant="h5" fontWeight="bold">
                     {formatXRPAmount(
                       lowestSellOffer.totalAmount,
@@ -1284,7 +1285,7 @@ export default function NFTActions({ nft }) {
                                 alignItems="center"
                               >
                                 <Stack direction="row" spacing={1} alignItems="center">
-                                  <Icon icon={rippleSolid} width="20" height="20" />
+                                  <InfoIcon sx={{ width: 20, height: 20 }} />
                                   <Typography variant="h6" fontWeight="bold">
                                     {formatXRPAmount(amount.amount, true, 'sell_offer')}
                                   </Typography>
@@ -1294,7 +1295,7 @@ export default function NFTActions({ nft }) {
                                   size="small"
                                   color="error"
                                   onClick={() => handleCancelOffer(offer)}
-                                  startIcon={<Icon icon={infoFilled} />}
+                                  startIcon={<InfoIcon />}
                                 >
                                   Cancel
                                 </Button>
@@ -1393,7 +1394,7 @@ export default function NFTActions({ nft }) {
                               alignItems="center"
                             >
                               <Stack direction="row" spacing={1} alignItems="center">
-                                <Icon icon={rippleSolid} width="20" height="20" />
+                                <InfoIcon sx={{ width: 20, height: 20 }} />
                                 <Typography variant="h6" fontWeight="bold">
                                   {formatXRPAmount(amount.amount, true, offer.destination)}
                                 </Typography>
@@ -1420,7 +1421,7 @@ export default function NFTActions({ nft }) {
                                       size="small"
                                       color="error"
                                       onClick={() => handleCancelOffer(offer)}
-                                      startIcon={<Icon icon={infoFilled} />}
+                                      startIcon={<InfoIcon />}
                                     >
                                       Cancel
                                     </Button>
@@ -1580,13 +1581,12 @@ export default function NFTActions({ nft }) {
               fullWidth
               variant="outlined"
               startIcon={
-                <Icon
-                  icon={xIcon}
-                  width={24}
-                  height={24}
-                  style={{
+                <CloseIcon
+                  sx={{
+                    width: 24,
+                    height: 24,
                     borderRadius: '50%',
-                    padding: 4,
+                    padding: 0.5,
                     backgroundColor: 'black',
                     color: 'white'
                   }}

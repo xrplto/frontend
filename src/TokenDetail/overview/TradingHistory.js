@@ -42,7 +42,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import SmartToy from '@mui/icons-material/SmartToy';
-import { Icon } from '@iconify/react';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 import PairsList from 'src/TokenDetail/market/PairsList';
 import TopTraders from 'src/TokenDetail/toptraders';
@@ -1048,7 +1048,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                         </Typography>
                       </Link>
                     </Tooltip>
-                    <Icon 
+                    <SwapHorizIcon 
                       icon={getTradeSizeIcon(xrpAmount)} 
                       width="16" 
                       height="16"

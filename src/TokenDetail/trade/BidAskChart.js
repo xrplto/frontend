@@ -1,15 +1,13 @@
 // Material
-import {
-    Stack,
-    Box,
-    useTheme,
-    useMediaQuery,
-    styled,
-    alpha,
-    Skeleton,
-    Typography,
-    Fade
-} from '@mui/material';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { styled } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
+import Skeleton from '@mui/material/Skeleton';
+import Typography from '@mui/material/Typography';
+import Fade from '@mui/material/Fade';
 
 // Simplified chart without ECharts
 

@@ -3,11 +3,10 @@ import { Fragment } from 'react';
 // Material
 import { styled, Chip, Link, useTheme, alpha, Box, Tooltip } from '@mui/material';
 
-// Iconify
-import { Icon } from '@iconify/react';
-import chatIcon from '@iconify/icons-bi/chat';
-import personFill from '@iconify/icons-bi/person-fill';
-import zoomIcon from '@iconify/icons-cil/zoom';
+// Material UI Icons
+import ChatIcon from '@mui/icons-material/Chat';
+import PersonIcon from '@mui/icons-material/Person';
+import SearchIcon from '@mui/icons-material/Search';
 
 // ----------------------------------------------------------------------
 const LinkChip = styled(Chip)(({ theme }) => ({
@@ -182,13 +181,13 @@ export default function SocialLinksMenu({ token, issuer }) {
   const getIconForType = (type) => {
     switch (type) {
       case 'explorer':
-        return <Icon icon={zoomIcon} width="12" height="12" />;
+        return <SearchIcon sx={{ width: 12, height: 12 }} />;
       case 'chat':
-        return <Icon icon={chatIcon} width="12" height="12" />;
+        return <ChatIcon sx={{ width: 12, height: 12 }} />;
       case 'social':
       case 'content':
       default:
-        return <Icon icon={personFill} width="12" height="12" />;
+        return <PersonIcon sx={{ width: 12, height: 12 }} />;
     }
   };
 

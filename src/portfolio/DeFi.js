@@ -31,8 +31,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import CloseIcon from '@mui/icons-material/Close';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import { Icon } from '@iconify/react';
-import chartLineUp from '@iconify/icons-ph/chart-line-up';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import numeral from 'numeral';
 import { getTokenImageUrl } from 'src/utils/constants';
 
@@ -451,8 +450,8 @@ const SOURCE_TAGS = {
     label: 'Sologenic',
     color: '#B72136', // Red
     icon: (
-      <Icon
-        icon={chartLineUp}
+      <TrendingUpIcon
+        icon={TrendingUpIcon}
         style={{
           fontSize: '16px',
           background: 'transparent'

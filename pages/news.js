@@ -7,7 +7,7 @@ import { useTheme } from '@mui/material/styles';
 import styled from '@emotion/styled';
 import { alpha, Container, Box, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { Icon } from '@iconify/react';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import styles from './news.module.css';
 
 const Header = dynamic(() => import('../src/components/Header'), { ssr: true });
@@ -696,7 +696,7 @@ function NewsPage() {
                           }
                         }}
                       >
-                        <Icon icon="material-symbols:close" width="18" height="18" />
+                        <ArrowForwardIcon sx={{ fontSize: 18 }} />
                       </IconButton>
                       <Box
                         component="button"
@@ -973,7 +973,7 @@ function NewsPage() {
                       disabled={currentPage === 1}
                       title="First page"
                     >
-                      <Icon icon="material-symbols:first-page" width="14" height="14" />
+                      <ArrowForwardIcon sx={{ fontSize: 14, transform: 'rotate(180deg)' }} />
                     </NavButton>
 
                     {(() => {
@@ -1020,7 +1020,7 @@ function NewsPage() {
                       disabled={currentPage === totalPages}
                       title="Last page"
                     >
-                      <Icon icon="material-symbols:last-page" width="14" height="14" />
+                      <ArrowForwardIcon sx={{ fontSize: 14 }} />
                     </NavButton>
                   </PaginationContainer>
                 </CenterBox>

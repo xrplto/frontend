@@ -1,5 +1,9 @@
 import styled from '@emotion/styled';
-import { Icon } from '@iconify/react';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import ShareIcon from '@mui/icons-material/Share';
+import EmailIcon from '@mui/icons-material/Email';
 
 // Context
 import { useContext } from 'react';
@@ -222,7 +226,7 @@ export default function SummaryPortfolio({}) {
                     Discover and Track XRP Ledger Tokens
                   </CTATitle>
                   <CTAButton>
-                    <Icon icon="mdi:wallet" width={20} height={20} />
+                    <AccountBalanceWalletIcon sx={{ width: 20, height: 20 }} />
                     Connect Wallet & Track Tokens
                   </CTAButton>
                 </CTAContainer>
@@ -257,7 +261,7 @@ export default function SummaryPortfolio({}) {
           <FeaturesGrid>
             <FeatureCard>
               <FeatureIcon>
-                <Icon icon="mdi:monetization-on" width={60} height={60} />
+                <MonetizationOnIcon sx={{ width: 60, height: 60 }} />
               </FeatureIcon>
               <FeatureTitle>
                 Real-time Prices
@@ -270,7 +274,7 @@ export default function SummaryPortfolio({}) {
             </FeatureCard>
             <FeatureCard>
               <FeatureIcon>
-                <Icon icon="mdi:bell-ring" width={60} height={60} />
+                <NotificationsIcon sx={{ width: 60, height: 60 }} />
               </FeatureIcon>
               <FeatureTitle>
                 Price Alerts
@@ -283,7 +287,7 @@ export default function SummaryPortfolio({}) {
             </FeatureCard>
             <FeatureCard>
               <FeatureIcon>
-                <Icon icon="mdi:share" width={60} height={60} />
+                <ShareIcon sx={{ width: 60, height: 60 }} />
               </FeatureIcon>
               <FeatureTitle>
                 Share Portfolio
@@ -296,7 +300,7 @@ export default function SummaryPortfolio({}) {
             </FeatureCard>
             <FeatureCard>
               <FeatureIcon>
-                <Icon icon="mdi:email" width={60} height={60} />
+                <EmailIcon sx={{ width: 60, height: 60 }} />
               </FeatureIcon>
               <FeatureTitle>
                 News Alerts

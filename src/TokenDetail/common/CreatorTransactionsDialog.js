@@ -17,7 +17,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { Icon } from '@iconify/react';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import { Client } from 'xrpl';
 import { fNumber } from 'src/utils/formatNumber';
 import { formatDistanceToNow } from 'date-fns';
@@ -450,9 +450,8 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
               zIndex: 1
             }}
           >
-            <Icon 
-              icon={getTxIcon} 
-              style={{ 
+            <AccountBalanceWalletIcon 
+              sx={{ 
                 fontSize: '16px', 
                 color: isTokenToXrpConversion ? '#ff6347' : isXrpToTokenConversion ? '#4169e1' : getTxColor
               }} 

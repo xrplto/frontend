@@ -1,5 +1,9 @@
 import styled from '@emotion/styled';
-import { Icon } from '@iconify/react';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import FirstPageIcon from '@mui/icons-material/FirstPage';
+import LastPageIcon from '@mui/icons-material/LastPage';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectFilteredCount } from 'src/redux/statusSlice';
 import { useCallback, memo, useState, useRef, useEffect } from 'react';
@@ -307,7 +311,7 @@ const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, s
             disabled={page === 0}
             title="First page"
           >
-            <Icon icon="material-symbols:first-page" width="14" height="14" />
+            <FirstPageIcon sx={{ width: 14, height: 14 }} />
           </NavButton>
 
           {getPageNumbers().map((pageNum, idx) => {
@@ -330,18 +334,18 @@ const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, s
             disabled={page === page_count - 1}
             title="Last page"
           >
-            <Icon icon="material-symbols:last-page" width="14" height="14" />
+            <LastPageIcon sx={{ width: 14, height: 14 }} />
           </NavButton>
         </PaginationContainer>
       </CenterBox>
 
       <RowsSelector>
-        <Icon icon="material-symbols:view-list" width="14" height="14" />
+        <ViewListIcon sx={{ width: 14, height: 14 }} />
         <Text>Rows</Text>
         <Select ref={selectRef}>
           <SelectButton onClick={() => setSelectOpen(!selectOpen)}>
             {rows}
-            <Icon icon="material-symbols:arrow-drop-down" width="16" height="16" />
+            <ArrowDropDownIcon sx={{ width: 16, height: 16 }} />
           </SelectButton>
           {selectOpen && (
             <SelectMenu>

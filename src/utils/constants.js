@@ -18,8 +18,7 @@ import AttachMoneyRoundedIcon from '@mui/icons-material/AttachMoneyRounded';
 import EuroRoundedIcon from '@mui/icons-material/EuroRounded';
 import CurrencyYenRoundedIcon from '@mui/icons-material/CurrencyYenRounded';
 import CurrencyYuanRoundedIcon from '@mui/icons-material/CurrencyYuanRounded';
-import { Icon } from '@iconify/react';
-// import CurrencyXRPIcon from "@iconify/icons-tabler/currency-xrp";
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 
 const CryptoJS = require('crypto-js');
 
@@ -426,7 +425,7 @@ export const currencyIcons = {
   EUR: <EuroRoundedIcon {...defaultCurrencyIconProps} />,
   JPY: <CurrencyYenRoundedIcon {...defaultCurrencyIconProps} />,
   CNY: <CurrencyYuanRoundedIcon {...defaultCurrencyIconProps} />,
-  XRP: <Icon icon="tabler:currency-xrp" width={18} height={18} />
+  XRP: <CurrencyExchangeIcon sx={{ fontSize: 18 }} />
 };
 
 export const currencySymbols = {

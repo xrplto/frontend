@@ -24,8 +24,7 @@ import {
 } from '@mui/material';
 
 // Iconify
-import { Icon } from '@iconify/react';
-import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import InfoIcon from '@mui/icons-material/Info';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -539,11 +538,12 @@ export default function PairsList({ token, pairs }) {
                     >
                       {name1}
                     </Typography>
-                    <Icon
-                      icon={arrowsExchange}
-                      width="16"
-                      height="16"
-                      style={{ color: theme.palette.text.secondary }}
+                    <SwapHorizIcon 
+                      sx={{ 
+                        width: '16px', 
+                        height: '16px', 
+                        color: theme.palette.text.secondary 
+                      }} 
                     />
                     <Avatar
                       src={curr2.md5 ? `https://s1.xrpl.to/token/${curr2.md5}` : curr2.currency === 'XRP' ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8` : undefined}

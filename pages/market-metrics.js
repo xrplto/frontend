@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import {
   LineChart,
   Line,
@@ -11,19 +12,17 @@ import {
 } from 'recharts';
 import axios from 'axios';
 import { format, subYears, isAfter, parse } from 'date-fns';
-import {
-  Box,
-  Typography,
-  Container,
-  Paper,
-  Tabs,
-  Tab,
-  Portal,
-  TextField,
-  Autocomplete,
-  Chip,
-  Button // Import Button
-} from '@mui/material';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import Paper from '@mui/material/Paper';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Portal from '@mui/material/Portal';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
+import Chip from '@mui/material/Chip';
+import Button from '@mui/material/Button';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';

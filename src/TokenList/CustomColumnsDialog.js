@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
-import { Icon } from '@iconify/react';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 
 const Panel = styled.div`
   width: 100%;

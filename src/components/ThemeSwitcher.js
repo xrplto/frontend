@@ -9,63 +9,62 @@ import {
   Typography,
   Box
 } from '@mui/material';
-import { Icon } from '@iconify/react';
-import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
-import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
-import baselinePalette from '@iconify/icons-ic/baseline-palette';
-import baselineWaves from '@iconify/icons-ic/baseline-waves';
-import baselineLocalFlorist from '@iconify/icons-ic/baseline-local-florist';
-import baselinePets from '@iconify/icons-ic/baseline-pets';
-import baselineWaterDrop from '@iconify/icons-ic/baseline-water-drop';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import PaletteIcon from '@mui/icons-material/Palette';
+import WavesIcon from '@mui/icons-material/Waves';
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
+import PetsIcon from '@mui/icons-material/Pets';
+import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import { AppContext } from 'src/AppContext';
 
 const themes = [
   {
     id: 'XrplToLightTheme',
     name: 'Light',
-    icon: baselineBrightnessHigh,
+    icon: <Brightness7Icon />,
     color: '#ffffff'
   },
   {
     id: 'XrplToDarkTheme',
     name: 'Dark',
-    icon: baselineBrightness4,
+    icon: <Brightness4Icon />,
     color: '#000000'
   },
   {
     id: 'SyncWaveTheme',
     name: 'Sync Wave',
-    icon: baselinePalette,
+    icon: <PaletteIcon />,
     color: '#00ffff'
   },
   {
     id: 'RippleBlueTheme',
     name: 'Ripple Blue',
-    icon: baselineWaves,
+    icon: WavesIcon,
     color: '#0080ff'
   },
   {
     id: 'LiquidLedgerTheme',
     name: 'Liquid Ledger',
-    icon: baselineWaterDrop,
+    icon: WaterDropIcon,
     color: '#00D4E6'
   },
   {
     id: 'XShroomTheme',
     name: 'XShroom',
-    icon: baselineLocalFlorist,
+    icon: LocalFloristIcon,
     color: '#FFB84D'
   },
   {
     id: 'BoredApeTheme',
     name: 'Bored Ape',
-    icon: baselinePets,
+    icon: PetsIcon,
     color: '#40E0D0'
   },
   {
     id: 'BirdTheme',
     name: 'birdjpg',
-    icon: baselinePalette,
+    icon: <PaletteIcon />,
     color: '#1A1A1A'
   }
 ];
@@ -106,7 +105,7 @@ export default function ThemeSwitcher() {
           }
         }}
       >
-        <Icon icon={currentTheme.icon} fontSize={16} />
+        <PaletteIcon sx={{ fontSize: 16 }} />
       </IconButton>
       
       <Menu
@@ -155,10 +154,11 @@ export default function ThemeSwitcher() {
                     : 'none'
                 }}
               >
-                <Icon 
-                  icon={theme.icon} 
-                  fontSize={16} 
-                  color={theme.id === 'XrplToLightTheme' || theme.id === 'BirdTheme' ? '#fff' : theme.id === 'XrplToDarkTheme' ? '#fff' : '#fff'}
+                <PaletteIcon 
+                  sx={{ 
+                    fontSize: 16, 
+                    color: theme.id === 'XrplToLightTheme' || theme.id === 'BirdTheme' ? '#fff' : theme.id === 'XrplToDarkTheme' ? '#fff' : '#fff'
+                  }}
                 />
               </Box>
             </ListItemIcon>

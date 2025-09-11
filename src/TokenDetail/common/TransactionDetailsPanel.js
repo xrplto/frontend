@@ -21,7 +21,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
-import { Icon } from '@iconify/react';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import axios from 'axios';
 import { fNumber } from 'src/utils/formatNumber';
 import { formatDistanceToNow } from 'date-fns';
@@ -355,9 +355,8 @@ const TransactionDetailsPanel = memo(({ open, onClose, transactionHash, onSelect
                     border: `1px solid ${alpha(getTransactionColor(transaction.meta?.TransactionResult), 0.2)}`
                   }}
                 >
-                  <Icon 
-                    icon={getTransactionIcon(transaction.TransactionType)} 
-                    style={{ 
+                  <SwapHorizIcon 
+                    sx={{ 
                       fontSize: '16px', 
                       color: getTransactionColor(transaction.meta?.TransactionResult)
                     }} 

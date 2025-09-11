@@ -1,9 +1,8 @@
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { Chip, Tooltip, Typography, Stack } from '@mui/material';
-import { Icon } from '@iconify/react';
-import caretDown from '@iconify/icons-bx/caret-down';
-import caretUp from '@iconify/icons-bx/caret-up';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { fPercent } from 'src/utils/formatNumber';
 
 export default function BearBullChip({ value, tooltip, label, componentsProps }) {
@@ -22,7 +21,7 @@ export default function BearBullChip({ value, tooltip, label, componentsProps })
           </Typography>
         )}
         <ChipComponent
-          icon={<Icon icon={isBearish ? caretDown : caretUp} width="16" height="16" color="#fff" />}
+          icon={isBearish ? <KeyboardArrowDownIcon sx={{ width: 16, height: 16, color: '#fff' }} /> : <KeyboardArrowUpIcon sx={{ width: 16, height: 16, color: '#fff' }} />}
           size="small"
           label={
             <WhiteTextTypography variant="caption" style={{ color: '#FFFFFF !important' }}>

@@ -3,7 +3,7 @@ import { useContext, useState, useEffect, useRef, useMemo, memo } from 'react';
 import { createPortal } from 'react-dom';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
-import { Icon } from '@iconify/react';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useTheme } from '@mui/material/styles';
 
 // import i18n (needs to be bundled ;))
@@ -786,7 +786,7 @@ export default function Summary() {
                   </div>
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing="6px">
-                  <Icon 
+                  <TrendingUpIcon 
                     icon={
                       metrics.global?.sentimentScore >= 80 ? "mdi:trending-up" :
                       metrics.global?.sentimentScore >= 60 ? "mdi:thumb-up" :

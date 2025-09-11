@@ -2,7 +2,7 @@ import Head from 'next/head';
 import React, { memo, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import ThemeProvider from 'src/theme/ThemeProvider';
-import CssBaseline from '@mui/material/CssBaseline';
+import { CssBaseline } from '@mui/material';
 import { ContextProvider } from 'src/AppContext';
 import { useSnackbar } from 'src/components/useSnackbar';
 import './zMain.css';
@@ -38,12 +38,12 @@ if (typeof window !== 'undefined') {
 // Error logging handled by ErrorDebugger component
 
 // Lazy load non-critical components
-const XSnackbar = dynamic(() => import('src/components/Snackbar'), { ssr: false });
-const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), { ssr: false });
-const NextNProgress = dynamic(() => import('nextjs-progressbar'), { ssr: false });
-const PinnedChartTracker = dynamic(() => import('src/components/PinnedChartTracker'), { ssr: false });
-const Wallet = dynamic(() => import('src/components/Wallet'), { ssr: false });
-const ErrorDebugger = dynamic(() => import('src/components/ErrorDebugger').catch(() => null), { 
+const XSnackbar = dynamic(() => import('src/components/Snackbar'), { ssr: false, loading: () => null });
+const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), { ssr: false, loading: () => null });
+const NextNProgress = dynamic(() => import('nextjs-progressbar'), { ssr: false, loading: () => null });
+const PinnedChartTracker = dynamic(() => import('src/components/PinnedChartTracker'), { ssr: false, loading: () => null });
+const Wallet = dynamic(() => import('src/components/Wallet'), { ssr: false, loading: () => null });
+const ErrorDebugger = dynamic(() => import('src/components/ErrorDebugger').catch(() => ({ default: () => null })), { 
   ssr: false,
   loading: () => null 
 });

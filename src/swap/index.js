@@ -45,15 +45,17 @@ import CloseIcon from '@mui/icons-material/Close';
 
 // Additional icons for future replacement (lucide-react not installed)
 
-// Iconify
-import { Icon } from '@iconify/react';
-import exchangeIcon from '@iconify/icons-uil/exchange';
-import infoFill from '@iconify/icons-eva/info-fill';
-import shareIcon from '@iconify/icons-uil/share-alt';
-import searchFill from '@iconify/icons-eva/search-fill';
-import arrowBack from '@iconify/icons-eva/arrow-back-fill';
-import trendingUp from '@iconify/icons-eva/trending-up-fill';
-import clockFill from '@iconify/icons-eva/clock-fill';
+// Material UI Icons
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import InfoIcon from '@mui/icons-material/Info';
+import ShareIcon from '@mui/icons-material/Share';
+import SearchIcon from '@mui/icons-material/Search';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ToggleOnIcon from '@mui/icons-material/ToggleOn';
+import ToggleOffIcon from '@mui/icons-material/ToggleOff';
+import ListIcon from '@mui/icons-material/List';
 
 // Context
 import { useContext } from 'react';
@@ -2724,7 +2726,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   }
                 }}
               >
-                <Icon icon={arrowBack} width={24} />
+                <ArrowBackIcon sx={{ width: 24, height: 24 }} />
               </IconButton>
               <Typography variant="h6" fontWeight={700}>
                 {title}
@@ -2780,7 +2782,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <Icon icon={searchFill} width={20} color={theme.palette.text.secondary} />
+                  <SearchIcon sx={{ width: 20, height: 20, color: theme.palette.text.secondary }} />
                 </InputAdornment>
               ),
               endAdornment: searchQuery && (
@@ -2824,7 +2826,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               <Box mb={2}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
                   <SectionTitle>
-                    <Icon icon={clockFill} width={14} />
+                    <AccessTimeIcon sx={{ width: 14, height: 14 }} />
                     Recent Selections
                   </SectionTitle>
                   <Typography
@@ -3080,7 +3082,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 </Button>
               </Stack>
               <IconButton size="small" onClick={handleShareUrl}>
-                <Icon icon={shareIcon} width={16} height={16} />
+                <ShareIcon sx={{ width: 16, height: 16 }} />
               </IconButton>
             </Stack>
           </Box>
@@ -3208,7 +3210,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 className={isSwitching ? 'switching' : ''}
                 title="Switch currencies (Alt + S)"
               >
-                <Icon icon={exchangeIcon} width={20} height={20} />
+                <SwapHorizIcon sx={{ width: 20, height: 20 }} />
               </ToggleButton>
             </Box>
 
@@ -3304,7 +3306,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     size="small"
                     variant="outlined"
                     onClick={() => setShowOrderbook(!showOrderbook)}
-                    startIcon={<Icon icon={showOrderbook ? "mdi:chart-box-outline" : "mdi:chart-box"} width={14} height={14} />}
+                    startIcon={showOrderbook ? <ToggleOnIcon sx={{ width: 14, height: 14 }} /> : <ToggleOffIcon sx={{ width: 14, height: 14 }} />}
                     sx={{
                       py: 0.6,
                       fontSize: '0.7rem',
@@ -3326,7 +3328,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       size="small"
                       variant="outlined"
                       onClick={() => setShowOrders(!showOrders)}
-                      startIcon={<Icon icon="mdi:format-list-bulleted" width={14} height={14} />}
+                      startIcon={<ListIcon sx={{ width: 14, height: 14 }} />}
                       sx={{
                         py: 0.6,
                         fontSize: '0.7rem',
@@ -3364,7 +3366,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           Slippage Tolerance
                         </Typography>
                         <Tooltip title="Maximum price change you accept" arrow>
-                          <Icon icon={infoFill} width={12} height={12} style={{ opacity: 0.5 }} />
+                          <InfoIcon sx={{ width: 12, height: 12, opacity: 0.5 }} />
                         </Tooltip>
                       </Stack>
                       <Stack direction="row" spacing={0.5}>
@@ -3654,8 +3656,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     Slippage
                   </Typography>
                   <Tooltip title="Maximum price movement you're willing to accept" arrow>
-                    <Icon
-                      icon={infoFill}
+                    <InfoIcon
+                      icon={InfoIcon}
                       width={16}
                       height={16}
                       style={{
@@ -3821,7 +3823,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     <Typography variant="caption" sx={{ fontSize: '0.65rem', color: theme.palette.text.secondary }}>
                       ORDER SUMMARY
                     </Typography>
-                    <Icon 
+                    <InfoIcon 
                       icon={showOrderSummary ? "mdi:chevron-up" : "mdi:chevron-down"} 
                       width={16} 
                       height={16}
@@ -3986,7 +3988,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       <Tooltip title={Math.abs(priceImpact) > 10 
                         ? "Very high impact! Consider reducing size" 
                         : "High impact detected"} arrow>
-                        <Icon 
+                        <InfoIcon 
                           icon="mdi:alert-circle" 
                           width={14} 
                           height={14} 
@@ -4111,7 +4113,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   }
                 }}
               >
-                <Icon icon="mdi:close" width={18} height={18} />
+                <CloseIcon sx={{ width: 18, height: 18 }} />
               </IconButton>
             </Stack>
           </Box>

@@ -1,6 +1,5 @@
 import styled from '@emotion/styled';
-import { Icon } from '@iconify/react';
-// import DoNotTouchIcon from '@mui/icons-material/DoNotTouch';
+import FiberNewIcon from '@mui/icons-material/FiberNew';
 // ----------------------------------------------------------------------
 
 const RootStyle = styled.div`
@@ -64,7 +63,7 @@ export default function WidgetNew({showNew, setShowNew}) {
         >
             <RootStyle>
                 <Container>
-                    <Icon icon="mdi:fiber-new" width={24} height={24} />
+                    <FiberNewIcon sx={{ width: 24, height: 24 }} />
                     <StyledText>
                         Recent
                     </StyledText>

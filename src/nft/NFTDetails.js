@@ -35,8 +35,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import { styled, alpha } from '@mui/material/styles';
 
 // Iconify
-import { Icon } from '@iconify/react';
-import infoFilled from '@iconify/icons-ep/info-filled';
+import InfoIcon from '@mui/icons-material/Info';
 
 // Context
 import { AppContext } from 'src/AppContext';

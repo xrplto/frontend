@@ -5,9 +5,8 @@ import {
     Typography
 } from '@mui/material';
 
-// Iconify icons
-import { Icon } from '@iconify/react';
-import twotoneGreaterThan from '@iconify/icons-ic/twotone-greater-than';
+// Material UI icons
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 // ---------------------------------------------------
 
 export default function LinkCascade({token, tabID, tabLabels}) {
@@ -21,7 +20,7 @@ export default function LinkCascade({token, tabID, tabLabels}) {
             >
                 <Typography variant='link_cascade' color='primary'>Tokens</Typography>
             </Link>
-            <Icon icon={twotoneGreaterThan} width='12' height='12' style={{marginTop:'3'}}/>
+            <ChevronRightIcon sx={{ fontSize: 12, mt: 0.4 }} />
             
             {tabID > 0 ? (
                 <>
@@ -33,7 +32,7 @@ export default function LinkCascade({token, tabID, tabLabels}) {
                     >
                         <Typography variant='link_cascade' color={'primary'}>{token.name}</Typography>
                     </Link>
-                    <Icon icon={twotoneGreaterThan} width='12' height='12' style={{marginTop:'3'}}/>
+                    <ChevronRightIcon sx={{ fontSize: 12, mt: 0.4 }} />
                     <Typography variant='link_cascade'>{tabLabels[tabID]}</Typography>
                 </>
             ):(

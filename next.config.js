@@ -26,11 +26,13 @@ const config = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
-    qualities: [75, 90, 100], // Add quality 100 to resolve warning
-    minimumCacheTTL: 3600, // 1 hour cache for images
+    qualities: [75, 90, 100],
+    minimumCacheTTL: 3600,
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    loader: 'default',
+    unoptimized: false,
     remotePatterns: [
       {
         protocol: 'https',
@@ -217,7 +219,8 @@ const config = {
   compress: true,
   experimental: {
     esmExternals: true,
-    webpackMemoryOptimizations: true
+    webpackMemoryOptimizations: true,
+    optimizePackageImports: ['@mui/material', '@mui/icons-material', '@mui/lab'],
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production'
@@ -236,16 +239,18 @@ const config = {
         config.optimization = {
           ...config.optimization,
           moduleIds: 'deterministic',
+          usedExports: true,
+          sideEffects: false,
           splitChunks: {
             chunks: 'all',
-            maxSize: 244000, // 244KB chunks for optimal loading
+            maxSize: 200000, // 200KB chunks for better loading
             cacheGroups: {
               // Heavy chart libraries separate chunk
               charts: {
-                test: /[\\/]node_modules[\\/](lightweight-charts|highcharts|recharts|echarts|apexcharts)[\\/]/,
+                test: /[\\/]node_modules[\\/](lightweight-charts|recharts|echarts)[\\/]/,
                 name: 'charts',
                 priority: 30,
-                chunks: 'all',
+                chunks: 'async',
               },
               // Material-UI separate chunk
               mui: {
@@ -253,6 +258,7 @@ const config = {
                 name: 'mui', 
                 priority: 20,
                 chunks: 'all',
+                minSize: 20000,
               },
               // Large vendor libraries
               vendor: {
@@ -260,6 +266,13 @@ const config = {
                 name: 'vendor',
                 priority: 10,
                 chunks: 'all',
+              },
+              // Iconify icons
+              iconify: {
+                test: /[\\/]node_modules[\\/]@iconify[\\/]/,
+                name: 'iconify',
+                priority: 15,
+                chunks: 'async',
               }
             }
           }

@@ -16,8 +16,9 @@ import {
   Rating,
   IconButton
 } from '@mui/material';
-import { Icon } from '@iconify/react';
-import chartLineUp from '@iconify/icons-ph/chart-line-up';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import SearchIcon from '@mui/icons-material/Search';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -431,9 +432,8 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
         );
       case 'xrp.fun':
         return (
-          <Icon
-            icon={chartLineUp}
-            style={{ fontSize: '10px', color: '#B72136' }}
+          <TrendingUpIcon 
+            sx={{ fontSize: '10px', color: '#B72136' }}
           />
         );
       case 'XRPL':
@@ -1729,10 +1729,10 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                         }}
                       >
                         {formatPercentage(item.value)}
-                        <Icon 
-                          icon={item.value >= 0 ? 'mdi:arrow-up' : 'mdi:arrow-down'} 
-                          style={{ fontSize: '1rem' }}
-                        />
+                        {item.value >= 0 ? 
+                          <ArrowUpwardIcon sx={{ fontSize: '1rem' }} /> : 
+                          <ArrowDownwardIcon sx={{ fontSize: '1rem' }} />
+                        }
                       </Typography>
                     </Box>
                   ))}
@@ -1861,10 +1861,10 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                   }}
                 >
                   {formatPercentage(item.value)}
-                  <Icon 
-                    icon={item.value >= 0 ? 'mdi:arrow-up' : 'mdi:arrow-down'} 
-                    style={{ fontSize: '0.9rem' }}
-                  />
+                  {item.value >= 0 ? 
+                    <ArrowUpwardIcon sx={{ fontSize: '0.9rem' }} /> : 
+                    <ArrowDownwardIcon sx={{ fontSize: '0.9rem' }} />
+                  }
                 </Typography>
               </Box>
             ))}

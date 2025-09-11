@@ -28,9 +28,8 @@ import { tableCellClasses } from '@mui/material/TableCell';
 import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
 
 // Iconify
-import { Icon } from '@iconify/react';
-import infoFilled from '@iconify/icons-ep/info-filled';
-import baselineGetApp from '@iconify/icons-ic/baseline-get-app';
+import InfoIcon from '@mui/icons-material/Info';
+import GetAppIcon from '@mui/icons-material/GetApp';
 
 // Loader
 import { PulseLoader } from 'react-spinners';
@@ -562,7 +561,7 @@ export default function EditTokenDialog({ token, setToken }) {
                       edge="end"
                       aria-label="getdate"
                     >
-                      <Icon icon={baselineGetApp} />
+                      <GetAppIcon />
                     </IconButton>
                   </Tooltip>
 
@@ -572,7 +571,7 @@ export default function EditTokenDialog({ token, setToken }) {
                     {new Date(dateon).toISOString().split('.')[0].replace('T', ' ')}
                   </Label>
                   <Tooltip title={'Token discovered date by the Ledger Scanner.'}>
-                    <Icon icon={infoFilled} />
+                    <InfoIcon />
                   </Tooltip>
                 </Stack>
               </TableCell>

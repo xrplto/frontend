@@ -37,7 +37,7 @@ import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 import PermIdentityIcon from '@mui/icons-material/PermIdentity';
 
 // Iconify
-import { Icon } from '@iconify/react';
+import ImportExportIcon from '@mui/icons-material/ImportExport';
 
 // Loader
 import { ClipLoader } from 'react-spinners';

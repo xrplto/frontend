@@ -11,7 +11,11 @@ import { currencySymbols, getTokenImageUrl, decodeCurrency } from 'src/utils/con
 import axios from 'axios';
 import { throttle } from 'lodash';
 import styled from '@emotion/styled';
-import { Icon } from '@iconify/react';
+import InfoIcon from '@mui/icons-material/Info';
+import WavesIcon from '@mui/icons-material/Waves';
+import SetMealIcon from '@mui/icons-material/SetMeal';
+import PetsIcon from '@mui/icons-material/Pets';
+import WaterIcon from '@mui/icons-material/Water';
 
 // Lazy load switchers
 const CurrencySwitcher = dynamic(() => import('./CurrencySwitcher'), { 
@@ -547,12 +551,12 @@ const LinkIcon = ({ style }) => (
 // Constants
 const SWITCH_INTERVAL = 5000;
 const FILTER_OPTIONS = [
-  { value: 'All', label: 'All Trades', icon: 'ic:round-waves' },
-  { value: '500+', label: '500+ XRP', icon: 'ph:fish-fill' },
-  { value: '1000+', label: '1000+ XRP', icon: 'game-icons:dolphin' },
-  { value: '2500+', label: '2500+ XRP', icon: 'game-icons:octopus' },
-  { value: '5000+', label: '5000+ XRP', icon: 'game-icons:shark-fin' },
-  { value: '10000+', label: '10000+ XRP', icon: 'game-icons:sperm-whale' }
+  { value: 'All', label: 'All Trades', IconComponent: WavesIcon },
+  { value: '500+', label: '500+ XRP', IconComponent: SetMealIcon },
+  { value: '1000+', label: '1000+ XRP', IconComponent: PetsIcon },
+  { value: '2500+', label: '2500+ XRP', IconComponent: WaterIcon },
+  { value: '5000+', label: '5000+ XRP', IconComponent: InfoIcon },
+  { value: '10000+', label: '10000+ XRP', IconComponent: InfoIcon }
 ];
 
 // Helper functions
@@ -574,14 +578,14 @@ const formatRelativeTime = (timestamp) => {
   }
 };
 
-const getTradeSizeIcon = (value) => {
+const getTradeSizeIconComponent = (value) => {
   const xrpValue = parseFloat(value);
-  if (xrpValue < 500) return 'game-icons:shrimp';  // Shrimp for smallest
-  if (xrpValue < 1000) return 'ph:fish-fill';  // Regular fish
-  if (xrpValue < 2500) return 'game-icons:dolphin';  // Dolphin
-  if (xrpValue < 5000) return 'game-icons:octopus';  // Octopus
-  if (xrpValue < 10000) return 'game-icons:shark-fin';  // Shark
-  return 'game-icons:sperm-whale';  // Whale for largest
+  if (xrpValue < 500) return SetMealIcon;  // Small for smallest
+  if (xrpValue < 1000) return PetsIcon;  // Regular
+  if (xrpValue < 2500) return WaterIcon;  // Medium
+  if (xrpValue < 5000) return InfoIcon;  // Large
+  if (xrpValue < 10000) return WavesIcon;  // Larger
+  return InfoIcon;  // Largest
 };
 
 const abbreviateNumber = (num) => {
@@ -1115,11 +1119,10 @@ const Topbar = () => {
                 aria-expanded={filterDropdownOpen}
                 aria-haspopup="listbox"
               >
-                <Icon 
-                  icon={FILTER_OPTIONS.find(opt => opt.value === tradeFilter)?.icon || 'ic:round-water'} 
-                  width="16" 
-                  height="16" 
-                />
+                {(() => {
+                  const FilterIconComponent = FILTER_OPTIONS.find(opt => opt.value === tradeFilter)?.IconComponent || WaterIcon;
+                  return <FilterIconComponent sx={{ width: 16, height: 16 }} />;
+                })()}
                 <span>{FILTER_OPTIONS.find(opt => opt.value === tradeFilter)?.label || 'All Trades'}</span>
               </SelectButton>
               {filterDropdownOpen && (
@@ -1139,7 +1142,7 @@ const Topbar = () => {
                       primaryColor={primaryColor}
                       textPrimary={themeColors.textPrimary}
                     >
-                      <Icon icon={option.icon} width="16" height="16" />
+                      <option.IconComponent sx={{ width: 16, height: 16 }} />
                       <span>{option.label}</span>
                     </SelectOption>
                   ))}
@@ -1267,12 +1270,10 @@ const Topbar = () => {
                     </Box>
 
                     <Box display="flex" alignItems="center" gap={0.25} minWidth={35}>
-                      <Icon 
-                        icon={getTradeSizeIcon(getXRPAmount(trade))} 
-                        width="16" 
-                        height="16"
-                        style={{ color: themeColors.textSecondary }}
-                      />
+                      {(() => {
+                        const TradeIconComponent = getTradeSizeIconComponent(getXRPAmount(trade));
+                        return <TradeIconComponent sx={{ width: 16, height: 16, color: themeColors.textSecondary }} />;
+                      })()}
                       {trade.hash && (
                         <a
                           href={txPath}

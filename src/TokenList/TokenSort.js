@@ -1,7 +1,6 @@
-import { Icon } from '@iconify/react';
 import { useState, useRef, useEffect } from 'react';
-import chevronUpFill from '@iconify/icons-eva/chevron-up-fill';
-import chevronDownFill from '@iconify/icons-eva/chevron-down-fill';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import styled from '@emotion/styled';
 
 // ----------------------------------------------------------------------
@@ -100,7 +99,7 @@ export default function MarketTokenSort() {
                 <SortLabel>
                     {SORT_BY_OPTIONS.find(opt => opt.value === selected)?.label}
                 </SortLabel>
-                <Icon icon={open ? chevronUpFill : chevronDownFill} />
+                {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </SortButton>
             {open && (
                 <DropdownMenu>
