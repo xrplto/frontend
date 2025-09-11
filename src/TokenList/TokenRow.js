@@ -2,6 +2,7 @@ import Decimal from 'decimal.js';
 import { useState, useEffect, useContext, memo, useMemo, useCallback, useRef } from 'react';
 import React from 'react';
 import styled from '@emotion/styled';
+import { useTheme } from '@mui/material/styles';
 
 import { AppContext } from 'src/AppContext';
 import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
@@ -63,7 +64,7 @@ const OptimizedChart = memo(({ url, darkMode }) => {
         style={{ 
           width: '260px', 
           height: '60px',
-          background: darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
+          background: 'rgba(128, 128, 128, 0.05)',
           borderRadius: '4px',
           contain: 'layout size style'
         }} 
@@ -101,7 +102,7 @@ const OptimizedChart = memo(({ url, darkMode }) => {
 OptimizedChart.displayName = 'OptimizedChart';
 
 const StyledRow = styled.tr`
-  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border-bottom: 1px solid ${props => props.theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   cursor: pointer;
   margin: 0;
   padding: 0;
@@ -109,7 +110,7 @@ const StyledRow = styled.tr`
   will-change: auto;
   
   &:hover {
-    background-color: ${props => props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
+    background-color: ${props => props.theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
   }
 `;
 
@@ -118,7 +119,7 @@ const StyledCell = styled.td`
   white-space: ${props => props.isTokenColumn ? 'normal' : 'nowrap'};
   text-align: ${props => props.align || 'left'};
   font-size: 13px;
-  color: ${props => props.darkMode ? '#fff' : '#000'};
+  color: ${props => props.theme.palette.text.primary};
   vertical-align: middle;
   width: ${props => props.width || 'auto'};
   min-width: ${props => props.isTokenColumn ? '250px' : 'auto'};
@@ -130,13 +131,13 @@ const MobileTokenCard = styled.div`
   display: flex;
   width: 100%;
   padding: 6px 4px;
-  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
+  border-bottom: 1px solid ${props => props.theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
   cursor: pointer;
   box-sizing: border-box;
   align-items: center;
   
   &:hover {
-    background-color: ${props => props.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+    background-color: ${props => props.theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
   }
 `;
 
@@ -155,7 +156,7 @@ const MobilePriceCell = styled.div`
   padding: 0 2px;
   font-weight: 600;
   font-size: 11px;
-  color: ${props => props.darkMode ? '#fff' : '#000'};
+  color: ${props => props.theme.palette.text.primary};
   min-width: 65px;
   word-break: break-all;
   line-height: 1.3;
@@ -178,7 +179,7 @@ const TokenImage = styled.div`
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  background: ${props => props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
+  background: ${props => props.theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
 `;
 
 const TokenDetails = styled.div`
@@ -192,7 +193,7 @@ const TokenDetails = styled.div`
 const TokenName = styled.span`
   font-weight: 600;
   font-size: ${props => props.isMobile ? '12px' : '14px'};
-  color: ${props => props.darkMode ? '#fff' : '#000'};
+  color: ${props => props.theme.palette.text.primary};
   max-width: ${props => props.isMobile ? '100px' : '150px'};
   overflow: hidden;
   text-overflow: ellipsis;
@@ -203,7 +204,7 @@ const TokenName = styled.span`
 
 const UserName = styled.span`
   font-size: ${props => props.isMobile ? '9px' : '10px'};
-  color: ${props => props.darkMode ? '#9E9E9E' : '#616161'};
+  color: ${props => props.theme.palette.text.secondary};
   opacity: 1;
   font-weight: 400;
   display: block;
@@ -218,7 +219,7 @@ const UserName = styled.span`
 const PriceText = styled.span`
   font-weight: 600;
   font-size: ${props => props.isMobile ? '11px' : '14px'};
-  color: ${props => props.priceColor || (props.darkMode ? '#fff' : '#000')};
+  color: ${props => props.priceColor || props.theme.palette.text.primary};
 `;
 
 const PercentText = styled.span`
@@ -337,6 +338,7 @@ const OptimizedImage = memo(({ src, alt, size, onError, priority = false, md5 })
 });
 
 const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleRowClick, imgError, setImgError, viewMode = 'classic', customColumns = [] }) => {
+  const theme = useTheme();
   const { 
     name, user, md5, slug, pro24h, pro1h, pro5m, pro7d, pro30d, exch,
     vol24hxrp, vol24htx, marketcap, tvl, holders, amount, dateon, date
@@ -344,8 +346,8 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
   const [priceColor, setPriceColor] = useState('');
   
   const getPercentColor = (value) => {
-    if (value === undefined || value === null || isNaN(value)) return darkMode ? '#4CAF50' : '#2E7D32';
-    return value < 0 ? (darkMode ? '#EF5350' : '#C62828') : (darkMode ? '#4CAF50' : '#2E7D32');
+    if (value === undefined || value === null || isNaN(value)) return theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32';
+    return value < 0 ? (theme.palette.mode === 'dark' ? '#EF5350' : '#C62828') : (theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32');
   };
 
   useEffect(() => {
@@ -413,9 +415,9 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
 
   // Using flexbox layout instead of table
   return (
-    <MobileTokenCard darkMode={darkMode} onClick={handleRowClick}>
-      <MobileTokenInfo darkMode={darkMode}>
-        <TokenImage darkMode={darkMode} isMobile={true}>
+    <MobileTokenCard theme={theme} onClick={handleRowClick}>
+      <MobileTokenInfo>
+        <TokenImage theme={theme} isMobile={true}>
           <OptimizedImage
             src={imgError ? '/static/alt.webp' : imgUrl}
             alt={name || 'Token'}
@@ -426,16 +428,16 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
           />
         </TokenImage>
         <TokenDetails>
-          <TokenName darkMode={darkMode} isMobile={true}>{name}</TokenName>
-          <UserName darkMode={darkMode} isMobile={true}>{user}</UserName>
+          <TokenName theme={theme} isMobile={true}>{name}</TokenName>
+          <UserName theme={theme} isMobile={true}>{user}</UserName>
         </TokenDetails>
       </MobileTokenInfo>
       
-      <MobilePriceCell darkMode={darkMode}>
+      <MobilePriceCell theme={theme}>
         {formatMobileValue(mobilePriceColumn)}
       </MobilePriceCell>
       
-      <MobilePriceCell darkMode={darkMode}>
+      <MobilePriceCell theme={theme}>
         {formatMobileValue(mobilePercentColumn)}
       </MobilePriceCell>
     </MobileTokenCard>
@@ -460,6 +462,7 @@ const DesktopTokenRow = ({
   viewMode = 'classic',
   customColumns = []
 }) => {
+  const theme = useTheme();
   const { 
     name, user, md5, slug, pro24h, pro7d, pro1h, pro5m, exch, 
     vol24htx, tvl, holders, amount, dateon, date, origin 
@@ -467,8 +470,8 @@ const DesktopTokenRow = ({
   const [priceColor, setPriceColor] = useState('');
   
   const getPercentColor = (value) => {
-    if (value === undefined || value === null || isNaN(value)) return darkMode ? '#4CAF50' : '#2E7D32';
-    return value < 0 ? (darkMode ? '#EF5350' : '#C62828') : (darkMode ? '#4CAF50' : '#2E7D32');
+    if (value === undefined || value === null || isNaN(value)) return theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32';
+    return value < 0 ? (theme.palette.mode === 'dark' ? '#EF5350' : '#C62828') : (theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32');
   };
 
   useEffect(() => {
@@ -493,7 +496,7 @@ const DesktopTokenRow = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <TokenImage darkMode={darkMode}>
+          <TokenImage theme={theme}>
             <OptimizedImage
               src={imgError ? '/static/alt.webp' : imgUrl}
               alt={name || 'Token'}
@@ -504,10 +507,10 @@ const DesktopTokenRow = ({
             />
           </TokenImage>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <TokenName darkMode={darkMode} title={name}>
+            <TokenName theme={theme} title={name}>
               {truncate(name, 20)}
             </TokenName>
-            <UserName darkMode={darkMode} title={user}>
+            <UserName theme={theme} title={user}>
               {truncate(user, 12)}
             </UserName>
           </div>
@@ -524,7 +527,7 @@ const DesktopTokenRow = ({
           const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
           return (
             <StyledCell align="right" darkMode={darkMode}>
-              <PriceText darkMode={darkMode} priceColor={priceColor}>
+              <PriceText theme={theme} priceColor={priceColor}>
                 <span>
                   {currencySymbols[activeFiatCurrency]}0.0<sub style={{ fontSize: '0.6em' }}>{zeros}</sub>{significant.slice(0, 4)}
                 </span>
@@ -535,7 +538,7 @@ const DesktopTokenRow = ({
       }
       return (
         <StyledCell align="right" darkMode={darkMode}>
-          <PriceText darkMode={darkMode} priceColor={priceColor}>
+          <PriceText theme={theme} priceColor={priceColor}>
             <NumberTooltip
               prepend={currencySymbols[activeFiatCurrency]}
               number={fNumberWithCurreny(exch, exchRate)}
@@ -581,7 +584,7 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? '#808080' : '#9E9E9E' }}>-</span>
+                <span style={{ color: theme.palette.text.disabled }}>-</span>
               )}
             </StyledCell>
           </>
@@ -647,7 +650,7 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? '#808080' : '#9E9E9E' }}>-</span>
+                <span style={{ color: theme.palette.text.disabled }}>-</span>
               )}
             </StyledCell>
           </>
@@ -673,7 +676,7 @@ const DesktopTokenRow = ({
               {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.tvl)}
             </StyledCell>
             <StyledCell align="right" darkMode={darkMode}>
-              <span style={{ fontSize: '11px', color: darkMode ? '#B0B0B0' : '#616161' }}>
+              <span style={{ fontSize: '11px', color: theme.palette.text.secondary }}>
                 {formatTimeAgo(dateon, date)}
               </span>
             </StyledCell>
@@ -681,7 +684,7 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? '#808080' : '#9E9E9E' }}>-</span>
+                <span style={{ color: theme.palette.text.disabled }}>-</span>
               )}
             </StyledCell>
           </>
@@ -721,7 +724,7 @@ const DesktopTokenRow = ({
                     />
                   </div>
                 ) : (
-                  <span style={{ color: darkMode ? '#808080' : '#9E9E9E' }}>-</span>
+                  <span style={{ color: theme.palette.text.disabled }}>-</span>
                 )}
               </StyledCell>
             </>
@@ -740,7 +743,7 @@ const DesktopTokenRow = ({
             case 'price':
               columnElements.push(
                 <StyledCell key="price" align="right" darkMode={darkMode} style={extraStyle}>
-                  <PriceText darkMode={darkMode} priceColor={priceColor}>
+                  <PriceText theme={theme} priceColor={priceColor}>
                     <NumberTooltip
                       prepend={currencySymbols[activeFiatCurrency]}
                       number={fNumberWithCurreny(exch, exchRate)}
@@ -841,7 +844,7 @@ const DesktopTokenRow = ({
             case 'created':
               columnElements.push(
                 <StyledCell key="created" align="right" darkMode={darkMode} style={extraStyle}>
-                  <span style={{ fontSize: '11px', color: darkMode ? '#B0B0B0' : '#616161' }}>
+                  <span style={{ fontSize: '11px', color: theme.palette.text.secondary }}>
                     {formatTimeAgo(dateon, date)}
                   </span>
                 </StyledCell>
@@ -876,7 +879,7 @@ const DesktopTokenRow = ({
                       />
                     </div>
                   ) : (
-                    <span style={{ color: darkMode ? '#808080' : '#9E9E9E' }}>-</span>
+                    <span style={{ color: theme.palette.text.disabled }}>-</span>
                   )}
                 </StyledCell>
               );
@@ -921,7 +924,7 @@ const DesktopTokenRow = ({
               {currencySymbols[activeFiatCurrency]}{formatValue(convertedValues.volume)}
             </StyledCell>
             <StyledCell align="right" darkMode={darkMode}>
-              <span style={{ fontSize: '11px', color: darkMode ? '#B0B0B0' : '#616161' }}>
+              <span style={{ fontSize: '11px', color: theme.palette.text.secondary }}>
                 {formatTimeAgo(dateon, date)}
               </span>
             </StyledCell>
@@ -946,7 +949,7 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? '#808080' : '#9E9E9E' }}>-</span>
+                <span style={{ color: theme.palette.text.disabled }}>-</span>
               )}
             </StyledCell>
           </>
@@ -955,11 +958,11 @@ const DesktopTokenRow = ({
   };
 
   return (
-    <StyledRow darkMode={darkMode} onClick={handleRowClick}>
+    <StyledRow theme={theme} onClick={handleRowClick}>
       {isLoggedIn && (
         <StyledCell 
           align="center" 
-          darkMode={darkMode} 
+          theme={theme} 
           style={{ 
             width: '40px', 
             minWidth: '40px',
@@ -1145,7 +1148,7 @@ export const MobileTokenList = ({ tokens, darkMode, exchRate, activeFiatCurrency
           onChangeWatchList={() => {}}
           scrollLeft={false}
           exchRate={exchRate}
-          darkMode={darkMode}
+          theme={theme}
           isMobile={true}
           activeFiatCurrency={activeFiatCurrency}
           isLoggedIn={false}
@@ -1162,19 +1165,19 @@ export const MobileContainer = styled.div`
   gap: 0;
   padding: 0;
   margin: 0;
-  background: ${props => props.darkMode ? '#121212' : '#fff'};
+  background: ${props => props.theme.palette.background.default};
 `;
 
 export const MobileHeader = styled.div`
   display: flex;
   width: 100%;
   padding: 6px 4px;
-  background: ${props => props.darkMode ? '#1a1a1a' : '#f5f5f5'};
-  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  background: ${props => props.theme.palette.background.paper};
+  border-bottom: 1px solid ${props => props.theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
-  color: ${props => props.darkMode ? '#B0B0B0' : '#616161'};
+  color: ${props => props.theme.palette.text.secondary};
   position: sticky;
   top: 0;
   z-index: 10;
@@ -1188,7 +1191,7 @@ export const HeaderCell = styled.div`
   cursor: ${props => props.sortable ? 'pointer' : 'default'};
   
   &:hover {
-    color: ${props => props.sortable && (props.darkMode ? '#fff' : '#000')};
+    color: ${props => props.sortable && props.theme.palette.text.primary};
   }
 `;
 
