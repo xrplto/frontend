@@ -155,9 +155,7 @@ const HeaderWrapper = styled(Box)(
     left: 0;
     right: 0;
     z-index: 1100;
-    background: ${theme.palette.mode === 'dark' 
-      ? '#000000'
-      : '#ffffff'};
+    background: ${theme.header?.background || (theme.palette.mode === 'dark' ? '#000000' : '#ffffff')};
     border-bottom: 1px solid ${theme.palette.mode === 'dark'
       ? 'rgba(255,255,255,0.08)'
       : 'rgba(0,0,0,0.1)'};
@@ -166,9 +164,7 @@ const HeaderWrapper = styled(Box)(
     
     ${theme.breakpoints.down('sm')} {
       height: ${theme.spacing(5)};
-      background: ${theme.palette.mode === 'dark'
-        ? '#000000'
-        : '#ffffff'};
+      background: ${theme.header?.background || (theme.palette.mode === 'dark' ? '#000000' : '#ffffff')};
     }
     
     &::before {
@@ -463,9 +459,7 @@ function Header(props) {
                       boxShadow: theme.palette.mode === 'dark'
                         ? `0 8px 32px ${alpha('#000000', 0.4)}, 0 2px 8px ${alpha('#000000', 0.3)}`
                         : `0 8px 32px ${alpha('#000000', 0.12)}, 0 2px 8px ${alpha('#000000', 0.08)}`,
-                      bgcolor: theme.palette.mode === 'dark'
-                        ? alpha('#000000', 0.95)
-                        : alpha('#ffffff', 0.98),
+                      bgcolor: theme.header?.background || (theme.palette.mode === 'dark' ? alpha('#000000', 0.95) : alpha('#ffffff', 0.98)),
                       backdropFilter: 'blur(20px)',
                       WebkitBackdropFilter: 'blur(20px)',
                       overflow: 'hidden',
