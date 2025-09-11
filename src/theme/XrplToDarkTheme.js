@@ -147,6 +147,12 @@ export const XrplToDarkTheme = createTheme({
     border: alpha('#ffffff', 0.1)
   },
 
+  chart: {
+    background: '#000000',
+    gridColor: alpha('#ffffff', 0.1),
+    borderColor: alpha('#ffffff', 0.2)
+  },
+
   typography: {
     fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
     h1: { fontWeight: 700, fontSize: '1.2rem' },

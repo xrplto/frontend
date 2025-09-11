@@ -35,18 +35,18 @@ const LightweightChart = ({
       width: chartContainerRef.current.clientWidth,
       height: height,
       layout: {
-        background: { type: 'solid', color: 'transparent' },
+        background: { type: 'solid', color: theme.chart?.background || 'transparent' },
         textColor: theme.palette.text.secondary,
         fontSize: 12,
       },
       grid: {
         vertLines: {
-          color: alpha(theme.palette.divider, 0.1),
+          color: theme.chart?.gridColor || alpha(theme.palette.divider, 0.1),
           style: 1,
           visible: true,
         },
         horzLines: {
-          color: alpha(theme.palette.divider, 0.1),
+          color: theme.chart?.gridColor || alpha(theme.palette.divider, 0.1),
           style: 1,
           visible: true,
         },
@@ -67,7 +67,7 @@ const LightweightChart = ({
         },
       },
       rightPriceScale: {
-        borderColor: alpha(theme.palette.divider, 0.1),
+        borderColor: theme.chart?.borderColor || alpha(theme.palette.divider, 0.1),
         visible: true,
         scaleMargins: {
           top: 0.1,
@@ -75,7 +75,7 @@ const LightweightChart = ({
         },
       },
       timeScale: {
-        borderColor: alpha(theme.palette.divider, 0.1),
+        borderColor: theme.chart?.borderColor || alpha(theme.palette.divider, 0.1),
         timeVisible: true,
         secondsVisible: false,
         rightOffset: 12,

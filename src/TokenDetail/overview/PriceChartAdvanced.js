@@ -426,7 +426,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       layout: {
         background: {
           type: 'solid',
-          color: 'transparent'
+          color: theme.chart?.background || 'transparent'
         },
         textColor: theme.palette.text.primary,
         fontSize: 13,
@@ -434,11 +434,11 @@ const PriceChartAdvanced = memo(({ token }) => {
       },
       grid: {
         vertLines: {
-          color: isDark ? 'rgba(56, 56, 56, 0.4)' : 'rgba(240, 240, 240, 1)',
+          color: theme.chart?.gridColor || (isDark ? 'rgba(56, 56, 56, 0.4)' : 'rgba(240, 240, 240, 1)'),
           style: 1,
         },
         horzLines: {
-          color: isDark ? 'rgba(56, 56, 56, 0.4)' : 'rgba(240, 240, 240, 1)',
+          color: theme.chart?.gridColor || (isDark ? 'rgba(56, 56, 56, 0.4)' : 'rgba(240, 240, 240, 1)'),
           style: 0,
         },
       },
@@ -456,7 +456,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         },
       },
       rightPriceScale: {
-        borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+        borderColor: theme.chart?.borderColor || (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'),
         scaleMargins: {
           top: 0.05,
           bottom: 0.15,
@@ -519,7 +519,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         },
       },
       timeScale: {
-        borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+        borderColor: theme.chart?.borderColor || (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'),
         timeVisible: true,
         secondsVisible: false,
         rightOffset: 5,
@@ -957,9 +957,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       sx={{ 
         p: isMobile ? 1 : 2,
         pr: isMobile ? 0.5 : 2,
-        background: isDark 
-          ? '#0d0d0d' 
-          : '#fafafa',
+        background: theme.chart?.background || (isDark ? '#0d0d0d' : '#fafafa'),
         backdropFilter: 'blur(20px)',
         boxShadow: isDark 
           ? '0 10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.03)'

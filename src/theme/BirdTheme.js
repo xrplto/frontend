@@ -185,6 +185,12 @@ export const BirdTheme = createTheme({
     background2: alpha('#333333', 0.06), 
     border: `1px solid ${alpha('#1A1A1A', 0.2)}`
   },
+
+  chart: {
+    background: '#FFFFFF',
+    gridColor: alpha('#1A1A1A', 0.06),
+    borderColor: alpha('#1A1A1A', 0.15)
+  },
   palette: {
     common: {
       black: themeColors.black,

@@ -193,6 +193,12 @@ export const LiquidLedgerTheme = createTheme({
     background2: alpha('#536DFE', 0.08), 
     border: `1px solid ${alpha('#00D4E6', 0.2)}`
   },
+
+  chart: {
+    background: alpha('#FFFFFF', 0.9),
+    gridColor: alpha('#00D4E6', 0.08),
+    borderColor: alpha('#536DFE', 0.12)
+  },
   palette: {
     common: {
       black: themeColors.black,
@@ -739,6 +745,11 @@ export const createLiquidLedgerTheme = ({ dark = false } = {}) => {
   
   return createTheme({
     ...LiquidLedgerTheme,
+    chart: {
+      background: alpha('#0A0E12', 0.9),
+      gridColor: alpha('#00E5F7', 0.1),
+      borderColor: alpha('#7B61FF', 0.2)
+    },
     palette: {
       ...LiquidLedgerTheme.palette,
       mode: 'dark',

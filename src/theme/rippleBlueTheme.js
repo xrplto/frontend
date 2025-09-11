@@ -185,6 +185,12 @@ export const rippleBlueTheme = createTheme({
     background2: alpha('#00c5d7', 0.1), 
     border: `1px solid ${alpha('#0080ff', 0.3)}`
   },
+
+  chart: {
+    background: alpha('#ffffff', 0.9),
+    gridColor: alpha('#0080ff', 0.08),
+    borderColor: alpha('#0080ff', 0.15)
+  },
   palette: {
     common: {
       black: themeColors.black,
@@ -549,6 +555,11 @@ export const createRippleBlueTheme = ({ dark = false } = {}) => {
   
   return createTheme({
     ...rippleBlueTheme,
+    chart: {
+      background: alpha('#001429', 0.9),
+      gridColor: alpha('#1a8fff', 0.1),
+      borderColor: alpha('#1a8fff', 0.2)
+    },
     palette: {
       ...rippleBlueTheme.palette,
       mode: 'dark',

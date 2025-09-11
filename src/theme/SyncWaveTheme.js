@@ -200,6 +200,12 @@ export const SyncWaveTheme = createTheme({
     backgroundSecondary: alpha('#2d1b69', 0.6),
     border: alpha('#ff1493', 0.2)
   },
+
+  chart: {
+    background: alpha('#0d0818', 0.8),
+    gridColor: alpha('#ff1493', 0.1),
+    borderColor: alpha('#ff6b35', 0.3)
+  },
   palette: {
     common: {
       black: themeColors.white,

@@ -302,6 +302,12 @@ export const XrplToLightTheme = createTheme({
     border: '1px solid #E0E7EC'
   },
   
+  chart: {
+    background: '#FFFFFF',
+    gridColor: '#F1F5F9',
+    borderColor: '#E2E8F0'
+  },
+  
   walletDialog: {
     background: '#FFFFFF',
     backgroundSecondary: alpha('#F8F9FA', 0.95),
