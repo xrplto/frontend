@@ -422,8 +422,26 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
               <strong>Top Tokens:</strong>
             </div>
             {tooltip.data.tokensInvolved.slice(0, 3).map((token, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', margin: '2px 0', fontSize: '0.7rem', opacity: 0.8 }}>
-                <span>{token.name}</span>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '2px 0', fontSize: '0.7rem', opacity: 0.8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <img 
+                    src={`https://s1.xrpl.to/token/${token.md5}`}
+                    alt={token.name}
+                    style={{ 
+                      width: '16px', 
+                      height: '16px', 
+                      borderRadius: '50%', 
+                      background: theme.palette.primary.main + '20',
+                      objectFit: 'cover',
+                      border: `1px solid ${theme.palette.primary.main}40`
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.marginLeft = '0';
+                    }}
+                  />
+                  <span>{token.name}</span>
+                </div>
                 <span>{currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(token.marketcap || 0)}</span>
               </div>
             ))}
