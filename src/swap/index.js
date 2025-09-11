@@ -605,7 +605,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   const [tokenExch1, setTokenExch1] = useState(0);
   const [tokenExch2, setTokenExch2] = useState(0);
-  const [isSwapped, setSwapped] = useState(false);
+  const [isSwapped, setIsSwapped] = useState(false);
 
   const [active, setActive] = useState('AMOUNT');
 
@@ -1566,7 +1566,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     setSync(sync + 1);
                     dispatch(updateProcess(0));
                   }, 1500);
-                  setSwapped(!isSwapped);
+                  setIsSwapped(!isSwapped);
                   // Clear amounts after successful swap
                   setAmount1('');
                   setAmount2('');
@@ -1591,7 +1591,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 setSync(sync + 1);
                 dispatch(updateProcess(0));
               }, 1500);
-              setSwapped(!isSwapped);
+              setIsSwapped(!isSwapped);
               // Clear amounts after successful swap
               setAmount1('');
               setAmount2('');

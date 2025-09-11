@@ -16,7 +16,8 @@
     }],
     "react/jsx-no-constructed-context-values": "error",
     "react/no-array-index-key": "off",
-    "react/hook-use-state": "error",
-    "react/no-unstable-nested-components": "warn"
+    "react/hook-use-state": "warn",
+    "react/no-unstable-nested-components": "warn",
+    "import/no-anonymous-default-export": "warn"
   }
 }

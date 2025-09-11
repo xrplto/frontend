@@ -1,18 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-// Removed recharts - will use lightweight-charts instead
-/*
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer
-} from 'recharts';
-*/
+
+const LightweightChart = dynamic(() => import('src/components/LightweightChart'), { ssr: false });
 import axios from 'axios';
 import { format, subYears, isAfter, parse } from 'date-fns';
 import Box from '@mui/material/Box';
@@ -37,11 +26,7 @@ import useWebSocket from 'react-use-websocket'; // Add WebSocket import
 import { useDispatch } from 'react-redux'; // Add Redux dispatch import
 import { update_metrics } from 'src/redux/statusSlice'; // Add Redux action import
 
-// Import lightweight chart component
-const LightweightChart = dynamic(
-  () => import('src/components/LightweightChart'),
-  { ssr: false }
-);
+// LightweightChart already imported above
 
 // Updated theme-aware colors with portfolio styling
 const getThemeColors = (theme) => {
@@ -1377,9 +1362,9 @@ const MarketMetricsContent = () => {
 
             <Box sx={{ height: { xs: 300, sm: 350, md: 400 } }}>
               {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
-              {false && (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+              {/* Recharts removed - using LightweightChart */}
+              {false && <div width="100%" height="100%">
+                <div
                   ref={chartRef}
                   data={progressiveData}
                   margin={isMobile ? chartConfig.mobileMargin : chartConfig.margin}
@@ -1390,8 +1375,8 @@ const MarketMetricsContent = () => {
                     }
                   }}
                 >
-                  <CartesianGrid {...chartConfig.gridStyle} />
-                  <XAxis
+                  <div {...chartConfig.gridStyle} />
+                  <div
                     dataKey="date"
                     angle={-45}
                     textAnchor="end"
@@ -1417,7 +1402,7 @@ const MarketMetricsContent = () => {
                       isMobile ? { ...chartConfig.mobileAxisStyle } : { ...chartConfig.axisStyle }
                     }
                   />
-                  <YAxis
+                  <div
                     domain={['auto', 'auto']}
                     tickFormatter={
                       (value) =>
@@ -1431,11 +1416,11 @@ const MarketMetricsContent = () => {
                     }
                     width={isMobile ? 60 : 80} // Smaller width on mobile
                   />
-                  <Tooltip
+                  <div
                     content={<CustomTooltip />}
                     cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
-                  <Legend
+                  <div
                     content={({ payload }) => (
                       <CustomLegend
                         payload={payload}
@@ -1444,7 +1429,7 @@ const MarketMetricsContent = () => {
                       />
                     )}
                   />
-                  <Line
+                  <div
                     type="monotone"
                     dataKey="totalMarketcap"
                     stroke={chartColors.totalLine}
@@ -1461,7 +1446,7 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                  <Line
+                  <div
                     type="monotone"
                     dataKey="firstLedgerMarketcap"
                     stroke={chartColors.primary.main}
@@ -1478,7 +1463,7 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                  <Line
+                  <div
                     type="monotone"
                     dataKey="magneticXMarketcap"
                     stroke={chartColors.secondary.main}
@@ -1495,7 +1480,7 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                  <Line
+                  <div
                     type="monotone"
                     dataKey="xpMarketMarketcap"
                     stroke={chartColors.tertiary.main}
@@ -1512,7 +1497,7 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                  <Line
+                  <div
                     type="monotone"
                     dataKey="ledgerMemeMarketcap"
                     stroke={chartColors.quaternary.main}
@@ -1529,9 +1514,9 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                </LineChart>
-              </ResponsiveContainer>
-              )}
+                </div>
+              </div>
+              }
               <LightweightChart
                 data={progressiveData}
                 height={isMobile ? 300 : 400}
@@ -1879,9 +1864,9 @@ const MarketMetricsContent = () => {
             {/* Add the missing chart content */}
             <Box sx={{ height: { xs: 300, sm: 350, md: 400 } }}>
               {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
-              {false && (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+              {/* Recharts removed - using LightweightChart */}
+              {false && <div width="100%" height="100%">
+                <div
                   data={progressiveData}
                   margin={isMobile ? chartConfig.mobileMargin : chartConfig.margin}
                   isAnimationActive={false}
@@ -1891,8 +1876,8 @@ const MarketMetricsContent = () => {
                     }
                   }}
                 >
-                  <CartesianGrid {...chartConfig.gridStyle} />
-                  <XAxis
+                  <div {...chartConfig.gridStyle} />
+                  <div
                     dataKey="date"
                     angle={-45}
                     textAnchor="end"
@@ -1918,7 +1903,7 @@ const MarketMetricsContent = () => {
                       isMobile ? { ...chartConfig.mobileAxisStyle } : { ...chartConfig.axisStyle }
                     }
                   />
-                  <YAxis
+                  <div
                     domain={['auto', 'auto']}
                     tickFormatter={(value) =>
                       value.toLocaleString(undefined, {
@@ -1931,11 +1916,11 @@ const MarketMetricsContent = () => {
                     }
                     width={isMobile ? 60 : 80}
                   />
-                  <Tooltip
+                  <div
                     content={<CustomTooltip />}
                     cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
-                  <Legend
+                  <div
                     content={({ payload }) => (
                       <CustomLegend
                         payload={payload}
@@ -1949,7 +1934,7 @@ const MarketMetricsContent = () => {
                   {selectedTokens.map((token, index) => {
                     const tokenKey = `${token}_marketcap`;
                     return (
-                      <Line
+                      <div
                         key={tokenKey}
                         type="monotone"
                         dataKey={tokenKey}
@@ -1969,9 +1954,9 @@ const MarketMetricsContent = () => {
                       />
                     );
                   })}
-                </LineChart>
-              </ResponsiveContainer>
-              )}
+                </div>
+              </div>
+              }
               <LightweightChart
                 data={progressiveData}
                 height={isMobile ? 300 : 400}
@@ -2271,9 +2256,9 @@ const MarketMetricsContent = () => {
             </Box>
             <Box sx={{ height: 400 }}>
               {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
-              {false && (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+              {/* Recharts removed - using LightweightChart */}
+              {false && <div width="100%" height="100%">
+                <div
                   data={progressiveData}
                   margin={chartConfig.margin}
                   isAnimationActive={false}
@@ -2283,8 +2268,8 @@ const MarketMetricsContent = () => {
                     }
                   }}
                 >
-                  <CartesianGrid {...chartConfig.gridStyle} />
-                  <XAxis
+                  <div {...chartConfig.gridStyle} />
+                  <div
                     dataKey="date"
                     angle={-45}
                     textAnchor="end"
@@ -2300,16 +2285,16 @@ const MarketMetricsContent = () => {
                     }
                     tick={{ ...chartConfig.axisStyle }}
                   />
-                  <YAxis
+                  <div
                     domain={['auto', 'auto']}
                     tickFormatter={(value) => value.toLocaleString()}
                     tick={{ ...chartConfig.axisStyle }}
                   />
-                  <Tooltip
+                  <div
                     content={<CustomTooltip />}
                     cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
-                  <Legend
+                  <div
                     content={({ payload }) => (
                       <CustomLegend
                         payload={payload}
@@ -2318,7 +2303,7 @@ const MarketMetricsContent = () => {
                       />
                     )}
                   />
-                  <Line
+                  <div
                     type="monotone"
                     dataKey="tokenCount"
                     stroke={chartColors.totalLine}
@@ -2335,7 +2320,7 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                  <Line
+                  <div
                     type="monotone"
                     dataKey="firstLedgerTokens"
                     stroke={chartColors.primary.main}
@@ -2352,7 +2337,7 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                  <Line
+                  <div
                     type="monotone"
                     dataKey="magneticXTokens"
                     stroke={chartColors.secondary.main}
@@ -2369,7 +2354,7 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                  <Line
+                  <div
                     type="monotone"
                     dataKey="xpMarketTokens"
                     stroke={chartColors.tertiary.main}
@@ -2386,9 +2371,9 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                </LineChart>
-              </ResponsiveContainer>
-              )}
+                </div>
+              </div>
+              }
               <LightweightChart
                 data={progressiveData}
                 height={isMobile ? 300 : 400}
@@ -2809,9 +2794,9 @@ const MarketMetricsContent = () => {
             </Box>
             <Box sx={{ height: 400, backgroundColor: 'transparent' }}>
               {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
-              {false && (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+              {/* Recharts removed - using LightweightChart */}
+              {false && <div width="100%" height="100%">
+                <div
                   data={progressiveData}
                   margin={chartConfig.margin}
                   style={{
@@ -2824,8 +2809,8 @@ const MarketMetricsContent = () => {
                     }
                   }}
                 >
-                  <CartesianGrid {...chartConfig.gridStyle} opacity={0.1} />
-                  <XAxis
+                  <div {...chartConfig.gridStyle} opacity={0.1} />
+                  <div
                     dataKey="date"
                     angle={-45}
                     textAnchor="end"
@@ -2841,25 +2826,25 @@ const MarketMetricsContent = () => {
                     }
                     tick={{ ...chartConfig.axisStyle }}
                   />
-                  <YAxis
+                  <div
                     yAxisId="volume"
                     orientation="left"
                     domain={['dataMin - 1000', 'dataMax + 1000']}
                     tickFormatter={(value) => value.toLocaleString() + ' XRP'}
                     tick={{ ...chartConfig.axisStyle }}
                   />
-                  <YAxis
+                  <div
                     yAxisId="trades"
                     orientation="right"
                     domain={['dataMin - 100', 'dataMax + 100']}
                     tickFormatter={(value) => value.toLocaleString()}
                     tick={{ ...chartConfig.axisStyle }}
                   />
-                  <Tooltip
+                  <div
                     content={<CustomTooltip />}
                     cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
-                  <Legend
+                  <div
                     content={({ payload }) => (
                       <CustomLegend
                         payload={payload}
@@ -2868,7 +2853,7 @@ const MarketMetricsContent = () => {
                       />
                     )}
                   />
-                  <Line
+                  <div
                     yAxisId="volume"
                     type="monotone"
                     dataKey="volumeAMM"
@@ -2886,7 +2871,7 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                  <Line
+                  <div
                     yAxisId="volume"
                     type="monotone"
                     dataKey="volumeNonAMM"
@@ -2904,7 +2889,7 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                  <Line
+                  <div
                     yAxisId="trades"
                     type="monotone"
                     dataKey="tradesAMM"
@@ -2923,7 +2908,7 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                  <Line
+                  <div
                     yAxisId="trades"
                     type="monotone"
                     dataKey="tradesNonAMM"
@@ -2942,9 +2927,9 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                </LineChart>
-              </ResponsiveContainer>
-              )}
+                </div>
+              </div>
+              }
               <LightweightChart
                 data={progressiveData}
                 height={isMobile ? 300 : 400}
@@ -3319,9 +3304,9 @@ const MarketMetricsContent = () => {
             </Box>
             <Box sx={{ height: 400 }}>
               {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
-              {false && (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+              {/* Recharts removed - using LightweightChart */}
+              {false && <div width="100%" height="100%">
+                <div
                   data={progressiveData}
                   margin={chartConfig.margin}
                   isAnimationActive={false}
@@ -3331,8 +3316,8 @@ const MarketMetricsContent = () => {
                     }
                   }}
                 >
-                  <CartesianGrid {...chartConfig.gridStyle} />
-                  <XAxis
+                  <div {...chartConfig.gridStyle} />
+                  <div
                     dataKey="date"
                     angle={-45}
                     textAnchor="end"
@@ -3348,16 +3333,16 @@ const MarketMetricsContent = () => {
                     }
                     tick={{ ...chartConfig.axisStyle }}
                   />
-                  <YAxis
+                  <div
                     domain={['auto', 'auto']}
                     tickFormatter={(value) => value.toLocaleString()}
                     tick={{ ...chartConfig.axisStyle }}
                   />
-                  <Tooltip
+                  <div
                     content={<CustomTooltip />}
                     cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
-                  <Legend
+                  <div
                     content={({ payload }) => (
                       <CustomLegend
                         payload={payload}
@@ -3366,7 +3351,7 @@ const MarketMetricsContent = () => {
                       />
                     )}
                   />
-                  <Line
+                  <div
                     type="monotone"
                     dataKey="uniqueActiveAddressesAMM"
                     stroke={chartColors.primary.main}
@@ -3383,7 +3368,7 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                  <Line
+                  <div
                     type="monotone"
                     dataKey="uniqueActiveAddressesNonAMM"
                     stroke={chartColors.secondary.main}
@@ -3400,9 +3385,9 @@ const MarketMetricsContent = () => {
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
-                </LineChart>
-              </ResponsiveContainer>
-              )}
+                </div>
+              </div>
+              }
               <LightweightChart
                 data={progressiveData}
                 height={isMobile ? 300 : 400}

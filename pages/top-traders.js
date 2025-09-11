@@ -426,7 +426,7 @@ export default function Analytics({ initialData, initialError }) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialData?.pagination?.totalPages || 0);
   const [totalItems, setTotalItems] = useState(initialData?.pagination?.total || 0);
-  const [itemsPerPage] = useState(25);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   const [searchAddress, setSearchAddress] = useState('');
   const [debouncedSearchAddress, setDebouncedSearchAddress] = useState('');
   const [activeTab, setActiveTab] = useState(0);

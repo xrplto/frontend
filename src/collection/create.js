@@ -179,7 +179,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
 
   const [valid1, setValid1] = useState(false); // Name validation check
   const [valid2, setValid2] = useState(false); // Slug validation check
-  const [passphrase, setPassPhrase] = useState('');
+  const [passphrase, setPassphrase] = useState('');
   const [validPassword, setValidPassword] = useState(false);
 
   let canCreate = file1 && name && slug && valid1 && valid2 && validPassword;
@@ -1067,7 +1067,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           value={passphrase}
           setValid={setValidPassword}
           onChange={(e) => {
-            setPassPhrase(e.target.value);
+            setPassphrase(e.target.value);
           }}
         />
       </Stack>

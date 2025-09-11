@@ -1,9 +1,7 @@
 import * as React from 'react';
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Stack, Typography, alpha, useTheme } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-// Replaced react-use-keypress with native React event handling
-
 import { Box } from '@mui/material';
 import { AppContext } from 'src/AppContext';
 
@@ -19,9 +17,17 @@ const NavSearchBar = ({
   const theme = useTheme();
   const [isHovered, setIsHovered] = useState(false);
 
-  useKeypress('/', () => {
-    onOpenSearchModal();
-  });
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.key === '/' && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault();
+        onOpenSearchModal();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [onOpenSearchModal]);
 
   const openModal = (event) => {
     event.stopPropagation();

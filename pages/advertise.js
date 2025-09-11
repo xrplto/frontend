@@ -149,7 +149,7 @@ export default function Advertise() {
   const [copied, setCopied] = useState(false);
   const [tokens, setTokens] = useState([]);
   const [selectedToken, setSelectedToken] = useState(null);
-  const [loading, setLoadingState] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [xrpRate, setXrpRate] = useState(0.65); // Default fallback rate
@@ -160,7 +160,7 @@ export default function Advertise() {
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
-  const [destinationTag] = useState(Math.floor(Math.random() * 1000000) + 100000);
+  const [destinationTag, setDestinationTag] = useState(Math.floor(Math.random() * 1000000) + 100000);
   
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -179,7 +179,7 @@ export default function Advertise() {
   }, [debouncedSearchQuery]);
 
   const fetchTopTokens = async () => {
-    setLoadingState(true);
+    setLocalLoading(true);
     try {
       const response = await axios.get(`${API_URL}/tokens?limit=100&sortBy=vol24hxrp&sortType=desc`);
       
@@ -209,12 +209,12 @@ export default function Advertise() {
     } catch (error) {
       console.error('Failed to fetch tokens:', error);
     } finally {
-      setLoadingState(false);
+      setLocalLoading(false);
     }
   };
 
   const searchTokens = async (query) => {
-    setLoadingState(true);
+    setLocalLoading(true);
     try {
       const response = await axios.post(`${API_URL}/search`, { search: query });
       if (response.data?.tokens) {
@@ -235,7 +235,7 @@ export default function Advertise() {
     } catch (error) {
       console.error('Search error:', error);
     } finally {
-      setLoadingState(false);
+      setLocalLoading(false);
     }
   };
 
@@ -347,7 +347,7 @@ export default function Advertise() {
     try {
       switch (wallet_type) {
         case 'xaman':
-          setLoading(true);
+          setLocalLoading(true);
           const body = {
             ...transactionData,
             user_token
@@ -365,7 +365,7 @@ export default function Advertise() {
             setQrUrl(qrlink);
             setNextUrl(nextlink);
             setOpenScanQR(true);
-            setLoadingState(false);
+            setLocalLoading(false);
           } else {
             throw new Error('Invalid response from payment API');
           }
@@ -430,7 +430,7 @@ export default function Advertise() {
       console.error('Payment error:', err);
       console.error('Error details:', err.response?.data || err.message);
       dispatch(updateProcess(0));
-      setLoadingState(false);
+      setLocalLoading(false);
       const errorMessage = err.response?.data?.message || 'Payment failed. Please try again.';
       openSnackbar(errorMessage, 'error');
     }
@@ -612,7 +612,7 @@ export default function Advertise() {
                         }
                       }}
                       options={tokens}
-                      loading={loading}
+                      localLoading={localLoading}
                       filterOptions={(x) => x}
                       getOptionLabel={(option) => option.label}
                       noOptionsText={searchQuery ? "No tokens found" : "Start typing to search"}
@@ -732,7 +732,7 @@ export default function Advertise() {
                             ...params.InputProps,
                             endAdornment: (
                               <>
-                                {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                                {localLoading ? <CircularProgress color="inherit" size={20} /> : null}
                                 {params.InputProps.endAdornment}
                               </>
                             ),

@@ -175,7 +175,7 @@ export default function ImportCollection() {
 
   const [valid1, setValid1] = useState(false); // Name validation check
   const [valid2, setValid2] = useState(false); // Slug validation check
-  const [passphrase, setPassPhrase] = useState('');
+  const [passphrase, setPassphrase] = useState('');
   const [validPassword, setValidPassword] = useState(true);
 
   let canImport =
@@ -929,7 +929,7 @@ export default function ImportCollection() {
                     value={passphrase}
                     setValid={setValidPassword}
                     onChange={(e) => {
-                        setPassPhrase(e.target.value)
+                        setPassphrase(e.target.value)
                     }}
                 />
             </Stack> */}

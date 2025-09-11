@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectProcess, selectTxHash, updateProcess } from 'src/redux/transactionSlice';
-import { styled, keyframes, css } from '@emotion/react';
+import { styled, keyframes } from '@mui/material/styles';
 
 const slideIn = keyframes`
   from {

@@ -18,6 +18,76 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { AppContext } from 'src/AppContext';
 
+const MarkdownParagraph = ({ children }) => (
+  <Typography 
+    variant="body2" 
+    paragraph
+    sx={{ 
+      color: 'text.primary',
+      lineHeight: 1.5,
+      mb: 0.75,
+      fontSize: '0.75rem'
+    }}
+  >
+    {children}
+  </Typography>
+);
+
+const MarkdownH1 = ({ children }) => (
+  <Typography variant="h6" gutterBottom sx={{ mt: 1, fontWeight: 600, fontSize: '0.9rem' }}>
+    {children}
+  </Typography>
+);
+
+const MarkdownH2 = ({ children }) => (
+  <Typography variant="subtitle1" gutterBottom sx={{ mt: 1, fontWeight: 600, fontSize: '0.8rem' }}>
+    {children}
+  </Typography>
+);
+
+const MarkdownH3 = ({ children }) => (
+  <Typography variant="subtitle2" gutterBottom sx={{ mt: 0.75, fontWeight: 600, fontSize: '0.75rem' }}>
+    {children}
+  </Typography>
+);
+
+const MarkdownUL = ({ children }) => (
+  <Box component="ul" sx={{ pl: 1.5, mb: 0.75 }}>
+    {children}
+  </Box>
+);
+
+const MarkdownOL = ({ children }) => (
+  <Box component="ol" sx={{ pl: 1.5, mb: 0.75 }}>
+    {children}
+  </Box>
+);
+
+const MarkdownLI = ({ children }) => (
+  <Typography 
+    component="li" 
+    variant="body2"
+    sx={{ 
+      color: 'text.primary',
+      mb: 0.25,
+      lineHeight: 1.5,
+      fontSize: '0.75rem'
+    }}
+  >
+    {children}
+  </Typography>
+);
+
+const markdownComponents = {
+  p: MarkdownParagraph,
+  h1: MarkdownH1,
+  h2: MarkdownH2,
+  h3: MarkdownH3,
+  ul: MarkdownUL,
+  ol: MarkdownOL,
+  li: MarkdownLI
+};
+
 export default function Description({ 
   token, 
   showEditor, 
@@ -173,61 +243,7 @@ export default function Description({
               }}
             >
               <ReactMarkdown
-                components={{
-                  p: ({ children }) => (
-                    <Typography 
-                      variant="body2" 
-                      paragraph
-                      sx={{ 
-                        color: 'text.primary',
-                        lineHeight: 1.5,
-                        mb: 0.75,
-                        fontSize: '0.75rem'
-                      }}
-                    >
-                      {children}
-                    </Typography>
-                  ),
-                  h1: ({ children }) => (
-                    <Typography variant="h6" gutterBottom sx={{ mt: 1, fontWeight: 600, fontSize: '0.9rem' }}>
-                      {children}
-                    </Typography>
-                  ),
-                  h2: ({ children }) => (
-                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 1, fontWeight: 600, fontSize: '0.8rem' }}>
-                      {children}
-                    </Typography>
-                  ),
-                  h3: ({ children }) => (
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 0.75, fontWeight: 600, fontSize: '0.75rem' }}>
-                      {children}
-                    </Typography>
-                  ),
-                  ul: ({ children }) => (
-                    <Box component="ul" sx={{ pl: 1.5, mb: 0.75 }}>
-                      {children}
-                    </Box>
-                  ),
-                  ol: ({ children }) => (
-                    <Box component="ol" sx={{ pl: 1.5, mb: 0.75 }}>
-                      {children}
-                    </Box>
-                  ),
-                  li: ({ children }) => (
-                    <Typography 
-                      component="li" 
-                      variant="body2"
-                      sx={{ 
-                        color: 'text.primary',
-                        mb: 0.25,
-                        lineHeight: 1.5,
-                        fontSize: '0.75rem'
-                      }}
-                    >
-                      {children}
-                    </Typography>
-                  )
-                }}
+                components={markdownComponents}
               >
                 {description}
               </ReactMarkdown>
