@@ -1,21 +1,16 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { ThemeProvider, createTheme, alpha } from '@mui/material/styles';
+import { useTheme, alpha } from '@mui/material/styles';
 import {
-  AppBar,
-  Toolbar,
   Typography,
   Container,
-  Grid,
   Paper,
   List,
   ListItem,
   ListItemText,
   TextField,
   Box,
-  Divider,
-  CssBaseline,
   Table,
   TableBody,
   TableCell,
@@ -23,27 +18,23 @@ import {
   TableHead,
   TableRow,
   Chip,
-  Tabs,
-  Tab,
   Button,
   Modal,
   CircularProgress,
   IconButton,
-  Tooltip,
   Card,
-  CardContent,
-  Alert
+  CardContent
 } from '@mui/material';
-import Logo from 'src/components/Logo';
 import axios from 'axios';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { TabContext, TabList, TabPanel } from '../TabComponents';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CodeIcon from '@mui/icons-material/Code';
 import SearchIcon from '@mui/icons-material/Search';
 import { AppContext } from 'src/AppContext';
+import ApiDocsHeader from 'src/components/ApiDocsHeader';
+import ApiDocsFooter from 'src/components/ApiDocsFooter';
 
 const sections = [
   { id: 'tokens', title: 'Tokens' },
@@ -55,120 +46,179 @@ const sections = [
   { id: 'errors', title: 'Errors' }
 ];
 
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: { main: '#25A768' },
-    secondary: { main: '#3E4348' },
-    background: {
-      default: '#0F1113',
-      paper: '#1A1E23'
-    }
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif'
-  },
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          margin: 0,
-          padding: 0
-        }
-      }
-    }
-  }
-});
-
-const CodeBlock = ({ children, language = 'bash' }) => (
-  <Paper sx={{ background: '#1A1E23', borderRadius: '8px', overflow: 'hidden', position: 'relative' }}>
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: alpha('#25A768', 0.1), p: 1 }}>
-      <Chip label={language} size="small" sx={{ background: alpha('#25A768', 0.2) }} />
-      <IconButton size="small" onClick={() => navigator.clipboard.writeText(children)}>
-        <ContentCopyIcon fontSize="small" />
-      </IconButton>
-    </Box>
-    <Box component="pre" sx={{ fontFamily: '"Roboto Mono", monospace', fontSize: '0.9rem', m: 0, p: 2, overflowX: 'auto' }}>
-      {children}
-    </Box>
-  </Paper>
-);
-
-const ApiEndpoint = ({ method, endpoint, description, params = [], response, example, apiPath, onTryIt }) => (
-  <Card sx={{ mb: 3, background: alpha('#25A768', 0.02), border: `1px solid ${alpha('#25A768', 0.1)}` }}>
-    <CardContent>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-        <Chip label={method} color="primary" size="small" sx={{ fontWeight: 600 }} />
-        <Typography variant="h6" sx={{ fontFamily: '"Roboto Mono", monospace' }}>{endpoint}</Typography>
+const CodeBlock = ({ children, language = 'bash' }) => {
+  const theme = useTheme();
+  
+  return (
+    <Paper sx={{ 
+      background: theme.palette.background.paper, 
+      borderRadius: '8px', 
+      overflow: 'hidden', 
+      position: 'relative',
+      border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`
+    }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        background: alpha(theme.palette.primary.main, 0.1), 
+        p: 1 
+      }}>
+        <Chip 
+          label={language} 
+          size="small" 
+          sx={{ background: alpha(theme.palette.primary.main, 0.2) }} 
+        />
+        <IconButton size="small" onClick={() => navigator.clipboard.writeText(children)}>
+          <ContentCopyIcon fontSize="small" />
+        </IconButton>
       </Box>
-      {description && <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>{description}</Typography>}
-      
-      {params.length > 0 && (
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Parameters</Typography>
-          <TableContainer component={Paper} sx={{ background: '#1A1E23' }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Default</TableCell>
-                  <TableCell>Description</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {params.map(param => (
-                  <TableRow key={param.name}>
-                    <TableCell><code>{param.name}</code></TableCell>
-                    <TableCell>{param.type}</TableCell>
-                    <TableCell>{param.default || '-'}</TableCell>
-                    <TableCell>{param.description}</TableCell>
+      <Box 
+        component="pre" 
+        sx={{ 
+          fontFamily: '"Roboto Mono", monospace', 
+          fontSize: '0.9rem', 
+          m: 0, 
+          p: 2, 
+          overflowX: 'auto',
+          color: theme.palette.text.primary,
+          background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'
+        }}
+      >
+        {children}
+      </Box>
+    </Paper>
+  );
+};
+
+const ApiEndpoint = ({ method, endpoint, description, params = [], response, example, apiPath, onTryIt }) => {
+  const theme = useTheme();
+  
+  return (
+    <Card sx={{ 
+      mb: 3, 
+      background: alpha(theme.palette.primary.main, 0.02), 
+      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+      borderRadius: '8px'
+    }}>
+      <CardContent>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+          <Chip label={method} color="primary" size="small" sx={{ fontWeight: 600 }} />
+          <Typography variant="h6" sx={{ 
+            fontFamily: '"Roboto Mono", monospace',
+            color: theme.palette.text.primary
+          }}>
+            {endpoint}
+          </Typography>
+        </Box>
+        {description && (
+          <Typography variant="body2" sx={{ 
+            mb: 2, 
+            color: theme.palette.text.secondary 
+          }}>
+            {description}
+          </Typography>
+        )}
+        
+        {params.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ 
+              mb: 1, 
+              fontWeight: 600,
+              color: theme.palette.text.primary 
+            }}>
+              Parameters
+            </Typography>
+            <TableContainer component={Paper} sx={{ 
+              background: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`
+            }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>Name</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>Type</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>Default</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>Description</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      )}
-      
-      {example && (
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Example</Typography>
-          <CodeBlock>{example}</CodeBlock>
-        </Box>
-      )}
-      
-      {response && (
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Response</Typography>
-          <CodeBlock language="json">{response}</CodeBlock>
-        </Box>
-      )}
-      
-      {apiPath && (
-        <Box>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            size="small" 
-            onClick={() => onTryIt(apiPath)}
-            startIcon={<CodeIcon />}
-          >
-            Try It Now
-          </Button>
-        </Box>
-      )}
-    </CardContent>
-  </Card>
-);
+                </TableHead>
+                <TableBody>
+                  {params.map(param => (
+                    <TableRow key={param.name}>
+                      <TableCell>
+                        <code style={{ 
+                          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                          padding: '2px 4px',
+                          borderRadius: '4px',
+                          color: theme.palette.text.primary
+                        }}>
+                          {param.name}
+                        </code>
+                      </TableCell>
+                      <TableCell sx={{ color: theme.palette.text.primary }}>{param.type}</TableCell>
+                      <TableCell sx={{ color: theme.palette.text.primary }}>{param.default || '-'}</TableCell>
+                      <TableCell sx={{ color: theme.palette.text.secondary }}>{param.description}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        )}
+        
+        {example && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ 
+              mb: 1, 
+              fontWeight: 600,
+              color: theme.palette.text.primary 
+            }}>
+              Example
+            </Typography>
+            <CodeBlock>{example}</CodeBlock>
+          </Box>
+        )}
+        
+        {response && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ 
+              mb: 1, 
+              fontWeight: 600,
+              color: theme.palette.text.primary 
+            }}>
+              Response
+            </Typography>
+            <CodeBlock language="json">{response}</CodeBlock>
+          </Box>
+        )}
+        
+        {apiPath && (
+          <Box>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              size="small" 
+              onClick={() => onTryIt(apiPath)}
+              startIcon={<CodeIcon />}
+            >
+              Try It Now
+            </Button>
+          </Box>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 const DocumentationContent = ({ activeSection, onTryApi }) => {
+  const theme = useTheme();
+  
   const renderSection = (id) => {
     switch (id) {
       case 'tokens':
         return (
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: 'primary.main' }}>Tokens</Typography>
+            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>Tokens</Typography>
             
             <ApiEndpoint
               method="GET"
@@ -244,7 +294,7 @@ const DocumentationContent = ({ activeSection, onTryApi }) => {
       case 'token-details':
         return (
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: 'primary.main' }}>Token Details</Typography>
+            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>Token Details</Typography>
             
             <ApiEndpoint
               method="GET"
@@ -304,7 +354,7 @@ const DocumentationContent = ({ activeSection, onTryApi }) => {
       case 'market-data':
         return (
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: 'primary.main' }}>Market Data</Typography>
+            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>Market Data</Typography>
             
             <ApiEndpoint
               method="GET"
@@ -371,7 +421,7 @@ const DocumentationContent = ({ activeSection, onTryApi }) => {
       case 'account':
         return (
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: 'primary.main' }}>Account</Typography>
+            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>Account</Typography>
             
             <ApiEndpoint
               method="GET"
@@ -414,7 +464,7 @@ const DocumentationContent = ({ activeSection, onTryApi }) => {
       case 'trading':
         return (
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: 'primary.main' }}>Trading</Typography>
+            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>Trading</Typography>
             
             <ApiEndpoint
               method="GET"
@@ -446,7 +496,7 @@ const DocumentationContent = ({ activeSection, onTryApi }) => {
       case 'analytics':
         return (
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: 'primary.main' }}>Analytics</Typography>
+            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>Analytics</Typography>
             
             <ApiEndpoint
               method="GET"
@@ -492,36 +542,39 @@ const DocumentationContent = ({ activeSection, onTryApi }) => {
       case 'errors':
         return (
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: 'primary.main' }}>Error Codes</Typography>
+            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>Error Codes</Typography>
             
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} sx={{ 
+              background: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`
+            }}>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Code</TableCell>
-                    <TableCell>Description</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>Code</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>Description</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   <TableRow>
-                    <TableCell>200</TableCell>
-                    <TableCell>Success</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>200</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.secondary }}>Success</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>400</TableCell>
-                    <TableCell>Bad Request - Invalid parameters</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>400</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.secondary }}>Bad Request - Invalid parameters</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>404</TableCell>
-                    <TableCell>Not Found - Resource doesn't exist</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>404</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.secondary }}>Not Found - Resource doesn't exist</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>429</TableCell>
-                    <TableCell>Too Many Requests - Rate limit exceeded</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>429</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.secondary }}>Too Many Requests - Rate limit exceeded</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>500</TableCell>
-                    <TableCell>Internal Server Error</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>500</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.secondary }}>Internal Server Error</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
@@ -538,6 +591,8 @@ const DocumentationContent = ({ activeSection, onTryApi }) => {
 };
 
 const ApiDocs = () => {
+  const theme = useTheme();
+  const { darkMode } = useContext(AppContext);
   const [currentSection, setCurrentSection] = useState('tokens');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -600,36 +655,49 @@ const ApiDocs = () => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <Box sx={{ margin: 0, padding: 0 }}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Head>
-          <title>XRPL.to API Documentation</title>
-          <meta name="description" content="Complete API documentation for XRPL.to - XRP Ledger token data and analytics" />
-        </Head>
+    <Box sx={{ 
+      margin: 0, 
+      padding: 0, 
+      background: theme.palette.background.default, 
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <Head>
+        <title>XRPL.to API Documentation</title>
+        <meta name="description" content="Complete API documentation for XRPL.to - XRP Ledger token data and analytics" />
+      </Head>
 
-        <AppBar position="sticky" sx={{ background: '#1A1E23', borderBottom: '1px solid #2A2E33', top: 0 }}>
-          <Toolbar>
-            <IconButton edge="start" onClick={toggleSidebar} sx={{ mr: 2, display: { md: 'none' } }}>
-              <MenuIcon />
-            </IconButton>
-            <Logo width={32} height={32} />
-            <Typography variant="h6" sx={{ ml: 2, flexGrow: 1 }}>API Documentation</Typography>
-            <Typography variant="body2" color="text.secondary">v1.0.0</Typography>
-          </Toolbar>
-        </AppBar>
+      <ApiDocsHeader />
 
-        <Box sx={{ display: 'flex', minHeight: 'calc(100vh - 64px)' }}>
+      <Box sx={{ display: 'flex', flex: 1 }}>
+        {/* Mobile menu button */}
+        <IconButton 
+          onClick={toggleSidebar}
+          sx={{ 
+            display: { md: 'none' },
+            position: 'fixed',
+            top: 8,
+            right: 8,
+            zIndex: 1300,
+            background: theme.palette.background.paper,
+            boxShadow: 2
+          }}
+        >
+          <MenuIcon />
+        </IconButton>
+
         {/* Sidebar */}
         <Box
           sx={{
             width: { xs: isSidebarOpen ? '250px' : '0', md: '250px' },
             transition: 'width 0.3s',
-            borderRight: '1px solid #2A2E33',
-            background: '#1A1E23',
+            borderRight: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
+            background: theme.palette.background.paper,
             overflowY: 'auto',
             position: { xs: 'fixed', md: 'relative' },
-            height: { xs: '100%', md: 'auto' },
+            height: { xs: '100vh', md: 'auto' },
+            top: { xs: 0, md: 'auto' },
             zIndex: { xs: 1200, md: 'auto' },
             display: { xs: isSidebarOpen ? 'block' : 'none', md: 'block' }
           }}
@@ -641,8 +709,21 @@ const ApiDocs = () => {
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} /> }}
-              sx={{ mb: 2 }}
+              InputProps={{ 
+                startAdornment: <SearchIcon sx={{ mr: 1, color: theme.palette.text.secondary }} />
+              }}
+              sx={{ 
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  color: theme.palette.text.primary,
+                  '& fieldset': {
+                    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
+                  }
+                }
+              }}
             />
             <List>
               {sections.map(section => (
@@ -654,10 +735,26 @@ const ApiDocs = () => {
                   sx={{
                     borderRadius: '8px',
                     mb: 0.5,
-                    '&.Mui-selected': { background: alpha('#25A768', 0.1) }
+                    color: theme.palette.text.primary,
+                    '&.Mui-selected': { 
+                      background: alpha(theme.palette.primary.main, 0.1),
+                      '& .MuiListItemText-primary': {
+                        color: theme.palette.primary.main
+                      }
+                    },
+                    '&:hover': {
+                      background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'
+                    }
                   }}
                 >
-                  <ListItemText primary={section.title} />
+                  <ListItemText 
+                    primary={section.title}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: theme.palette.text.primary
+                      }
+                    }}
+                  />
                 </ListItem>
               ))}
             </List>
@@ -665,15 +762,31 @@ const ApiDocs = () => {
         </Box>
 
         {/* Main Content */}
-        <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
+        <Box sx={{ 
+          flexGrow: 1, 
+          overflowY: 'auto',
+          background: theme.palette.background.default
+        }}>
           <Container maxWidth="lg" sx={{ py: 4 }}>
             <Box sx={{ mb: 4, textAlign: 'center' }}>
-              <Typography variant="h3" sx={{ mb: 2, fontWeight: 700 }}>XRPL.to API</Typography>
-              <Typography variant="body1" color="text.secondary">
+              <Typography variant="h3" sx={{ 
+                mb: 2, 
+                fontWeight: 700,
+                color: theme.palette.text.primary
+              }}>
+                XRPL.to API
+              </Typography>
+              <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
                 RESTful API for XRP Ledger token data, market analytics, and trading information
               </Typography>
               <Box sx={{ mt: 2 }}>
-                <Chip label="Base URL: https://api.xrpl.to" sx={{ background: alpha('#25A768', 0.1) }} />
+                <Chip 
+                  label="Base URL: https://api.xrpl.to" 
+                  sx={{ 
+                    background: alpha(theme.palette.primary.main, 0.1),
+                    color: theme.palette.text.primary
+                  }} 
+                />
               </Box>
             </Box>
             
@@ -694,11 +807,11 @@ const ApiDocs = () => {
           maxHeight: '80vh', 
           overflow: 'auto', 
           p: 3,
-          background: '#1A1E23',
-          border: `1px solid ${alpha('#25A768', 0.3)}`
+          background: theme.palette.background.paper,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
         }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" color="primary">API Response</Typography>
+            <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>API Response</Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               {copySuccess && (
                 <Chip 
@@ -727,12 +840,12 @@ const ApiDocs = () => {
               sx={{
                 fontFamily: '"Roboto Mono", monospace',
                 fontSize: '0.9rem',
-                color: '#e6e6e6',
-                background: '#0F1113',
+                color: theme.palette.text.primary,
+                background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
                 p: 2,
                 borderRadius: '8px',
                 overflowX: 'auto',
-                border: `1px solid ${alpha('#25A768', 0.1)}`
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
               }}
             >
               {JSON.stringify(apiResponse, null, 2)}
@@ -740,7 +853,8 @@ const ApiDocs = () => {
           ) : null}
         </Paper>
       </Modal>
-      </ThemeProvider>
+      
+      <ApiDocsFooter />
     </Box>
   );
 };
