@@ -81,6 +81,7 @@
     "eslint-plugin-prettier": "^5.5.1",
     "prettier": "^3.6.1",
     "sass": "^1.60.0",
-    "typescript": "5.4.5"
+    "scientific-to-decimal": "^1.1.1",
+    "typescript": "5.7.2"
   }
 }
