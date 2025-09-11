@@ -151,7 +151,7 @@ const HeaderWrapper = styled(Box)(
     margin-bottom: ${theme.spacing(0)};
     border-radius: 0px;
     position: fixed;
-    top: 28px;
+    top: 0;
     left: 0;
     right: 0;
     z-index: 1100;
@@ -450,7 +450,7 @@ function Header(props) {
                     onMouseLeave={handleTokensClose}
                     sx={{
                       position: 'fixed',
-                      top: '76px',
+                      top: '48px',
                       left: tokensAnchorEl ? tokensAnchorEl.offsetLeft : 0,
                       mt: 0,
                       minWidth: 720,

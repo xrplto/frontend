@@ -60,14 +60,14 @@ const TopWrapper = styled.header`
   align-items: center;
   height: 36px;
   background: ${props => props.backgroundColor};
-  border-top: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
+  border-top: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'};
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 1099;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 -1px 8px ${props => props.darkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.08)'};
+  backdrop-filter: blur(20px) saturate(120%);
   font-family: 'JetBrains Mono', monospace;
 `;
 
@@ -695,9 +695,20 @@ const Topbar = () => {
     const themeContext = useContext(AppContext);
     const currentTheme = themeContext?.theme;
     
+    // Check if we're using SyncWaveTheme or other dark themes
+    const isSyncWave = currentTheme?.header?.background === 'rgba(13, 8, 24, 0.8)';
+    const isCustomTheme = currentTheme?.header?.background && currentTheme.header.background !== '#000000' && currentTheme.header.background !== '#ffffff';
+    
+    let backgroundColor;
+    if (isCustomTheme) {
+      backgroundColor = currentTheme.header.background;
+    } else {
+      backgroundColor = currentTheme?.palette?.background?.default || (darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)');
+    }
+    
     return {
       primaryColor: currentTheme?.palette?.primary?.main || (darkMode ? '#147DFE' : '#0080ff'),
-      backgroundColor: currentTheme?.header?.background || (darkMode ? '#000000' : '#ffffff'),
+      backgroundColor,
       paperBackground: currentTheme?.palette?.background?.paper || (darkMode ? '#0a0a0a' : '#f5f5f5'),
       textPrimary: currentTheme?.palette?.text?.primary || (darkMode ? '#ffffff' : '#000000'),
       textSecondary: currentTheme?.palette?.text?.secondary || (darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)')
