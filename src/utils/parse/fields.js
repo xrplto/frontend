@@ -1,4 +1,3 @@
-const lodash = require('lodash');
 const BigNumber = require('bignumber.js');
 const { AccountFields } = require('./constants');
 

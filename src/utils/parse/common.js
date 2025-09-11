@@ -1,7 +1,7 @@
-const lodash = require("lodash");
+const { omitBy } = require("lodash");
 
 function removeUndefined(obj) {
-    return lodash.omitBy(obj, value => value == null)
+    return omitBy(obj, value => value == null)
 }
 
 function hexToString(hex) {

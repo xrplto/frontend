@@ -1,7 +1,7 @@
 import Decimal from 'decimal.js';
 import { encodeAccountID } from 'ripple-address-codec';
 
-const lodash = require('lodash');
+const { omitBy } = require('lodash');
 const BigNumber = require('bignumber.js');
 const { deriveKeypair } = require('ripple-keypairs');
 const { xAddressToClassicAddress } = require('ripple-address-codec');
@@ -172,7 +172,7 @@ function toRippledAmount(amount) {
 }
 
 function removeUndefined(obj) {
-  return lodash.omitBy(obj, (value) => value == null);
+  return omitBy(obj, (value) => value == null);
 }
 
 /**
