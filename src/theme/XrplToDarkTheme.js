@@ -182,7 +182,6 @@ export const XrplToDarkTheme = createTheme({
       styleOverrides: {
         body: {
           background: '#000000',
-          contain: 'layout style',
           scrollbarWidth: 'thin',
           scrollbarColor: '#475569 #1E293B',
           '&::-webkit-scrollbar': {

@@ -441,7 +441,6 @@ export const XrplToLightTheme = createTheme({
           width: '100%',
           flex: 1,
           background: '#FFFFFF',
-          contain: 'layout style',
           scrollbarWidth: 'thin',
           scrollbarColor: '#CBD5E1 #F1F5F9',
           '&::-webkit-scrollbar': {
