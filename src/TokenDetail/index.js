@@ -92,7 +92,17 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
       <Box 
         sx={{ 
           flex: 1,
-          minWidth: 0 // Prevent content overflow
+          minWidth: 0, // Prevent content overflow
+          pr: {
+            md: txDetailsOpen ? '240px' : 0,
+            lg: txDetailsOpen ? '256px' : 0,
+            xl: txDetailsOpen ? '272px' : 0
+          },
+          pl: {
+            md: creatorTxOpen ? '240px' : 0,
+            lg: creatorTxOpen ? '256px' : 0,
+            xl: creatorTxOpen ? '272px' : 0
+          }
         }}
       >
         {!isMobile && <LinkCascade token={token} />}
@@ -115,7 +125,7 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
       </Box>
       
       {/* Transaction Details Panel - Right Sidebar */}
-      {!isMobile && txDetailsOpen && (
+      {!isMobile && (
         <TransactionDetailsPanel
           open={txDetailsOpen}
           onClose={handleTxDetailsClose}

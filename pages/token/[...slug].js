@@ -82,29 +82,19 @@ function Detail({ data }) {
       <Topbar />
       <Header />
 
-      {creatorPanelOpen || transactionPanelOpen ? (
-        <Box sx={{ width: '100%', px: 2 }}>
-          <TokenDetail 
-            token={token} 
-            tab={data.tab} 
-            onCreatorPanelToggle={(open) => setCreatorPanelOpen(open)}
-            creatorPanelOpen={creatorPanelOpen}
-            onTransactionPanelToggle={(open) => setTransactionPanelOpen(open)}
-            transactionPanelOpen={transactionPanelOpen}
-          />
-        </Box>
-      ) : (
-        <Container maxWidth="xl">
-          <TokenDetail 
-            token={token} 
-            tab={data.tab} 
-            onCreatorPanelToggle={(open) => setCreatorPanelOpen(open)}
-            creatorPanelOpen={creatorPanelOpen}
-            onTransactionPanelToggle={(open) => setTransactionPanelOpen(open)}
-            transactionPanelOpen={transactionPanelOpen}
-          />
-        </Container>
-      )}
+      <Container
+        maxWidth={creatorPanelOpen || transactionPanelOpen ? false : 'xl'}
+        sx={creatorPanelOpen || transactionPanelOpen ? { width: '100%', px: 2 } : undefined}
+      >
+        <TokenDetail 
+          token={token} 
+          tab={data.tab} 
+          onCreatorPanelToggle={(open) => setCreatorPanelOpen(open)}
+          creatorPanelOpen={creatorPanelOpen}
+          onTransactionPanelToggle={(open) => setTransactionPanelOpen(open)}
+          transactionPanelOpen={transactionPanelOpen}
+        />
+      </Container>
 
       <ScrollToTop />
 

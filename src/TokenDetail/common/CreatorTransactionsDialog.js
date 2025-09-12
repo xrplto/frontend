@@ -8,11 +8,12 @@ import {
   CircularProgress,
   Alert,
   useTheme,
-  alpha,
   Fade,
   Tooltip,
-  Badge
+  Badge,
+  Drawer
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
@@ -797,24 +798,31 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
     fetchTransactionHistory();
   };
 
-  // Always render the component but conditionally show it
+  // Always render; Drawer visibility controlled by `open`
   return (
-    <Box
-      sx={{
-        width: open ? '280px' : 0,
-        height: '100vh',
-        position: 'sticky',
-        top: '64px',
-        background: 'transparent',
-        borderRight: open ? `1px solid ${alpha(theme.palette.divider, 0.2)}` : 'none',
-        boxShadow: open ? `
-          0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
-          0 1px 2px ${alpha(theme.palette.common.black, 0.04)}` : 'none',
-        display: open ? 'flex' : 'none',
-        flexDirection: 'column',
-        overflow: 'hidden'
+    <Drawer
+      anchor="left"
+      variant="persistent"
+      open={open}
+      hideBackdrop
+      PaperProps={{
+        sx: {
+          width: { md: 240, lg: 256, xl: 272 },
+          minWidth: { md: 236 },
+          top: { xs: 56, sm: 56, md: 56 },
+          height: { xs: 'calc(100vh - 56px)', sm: 'calc(100vh - 56px)', md: 'calc(100vh - 56px)' },
+          borderRight: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          backgroundColor: theme.palette.background.paper,
+          boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(
+            theme.palette.common.black,
+            0.04
+          )}`,
+          overflow: 'hidden'
+        }
       }}
+      ModalProps={{ keepMounted: true }}
     >
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Box
         sx={{
           p: 1.5,
@@ -948,7 +956,8 @@ const CreatorTransactionsDialog = memo(({ open, onClose, creatorAddress, tokenNa
           </Stack>
         )}
       </Box>
-    </Box>
+      </Box>
+    </Drawer>
   );
 });
 

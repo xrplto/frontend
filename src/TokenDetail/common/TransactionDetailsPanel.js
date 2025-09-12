@@ -8,13 +8,14 @@ import {
   CircularProgress,
   Alert,
   useTheme,
-  alpha,
   Fade,
   Tooltip,
   Badge,
   Divider,
-  Avatar
+  Avatar,
+  Drawer
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -171,22 +172,29 @@ const TransactionDetailsPanel = memo(({ open, onClose, transactionHash, onSelect
   if (!open) return null;
 
   return (
-    <Box
-      sx={{
-        width: '350px',
-        height: '100vh',
-        position: 'sticky',
-        top: '64px',
-        background: 'transparent',
-        borderLeft: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-        boxShadow: `
-          0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
-          0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden'
+    <Drawer
+      anchor="right"
+      variant="persistent"
+      open={open}
+      hideBackdrop
+      PaperProps={{
+        sx: {
+          width: { md: 240, lg: 256, xl: 272 },
+          minWidth: { md: 236 },
+          top: { xs: 56, sm: 56, md: 56 },
+          height: { xs: 'calc(100vh - 56px)', sm: 'calc(100vh - 56px)', md: 'calc(100vh - 56px)' },
+          borderLeft: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          backgroundColor: theme.palette.background.paper,
+          boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(
+            theme.palette.common.black,
+            0.04
+          )}`,
+          overflow: 'hidden'
+        }
       }}
+      ModalProps={{ keepMounted: true }}
     >
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Box
         sx={{
           p: 1.5,
@@ -608,7 +616,8 @@ const TransactionDetailsPanel = memo(({ open, onClose, transactionHash, onSelect
           </Box>
         )}
       </Box>
-    </Box>
+      </Box>
+    </Drawer>
   );
 });
 

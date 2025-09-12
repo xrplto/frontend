@@ -464,7 +464,8 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
         border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
         boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.06)}`,
         mb: { xs: 0.25, sm: 0.5 },
-        mt: 0,
+        // Reduce space above on desktop while keeping mobile unchanged
+        mt: { xs: 0, md: -1 },
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         position: 'relative',
         overflow: 'hidden',
