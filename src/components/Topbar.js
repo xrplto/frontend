@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import dynamic from 'next/dynamic';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 import 'src/utils/i18n';
 import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';

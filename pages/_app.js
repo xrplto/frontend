@@ -2,6 +2,8 @@ import Head from 'next/head';
 import React, { memo, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import ThemeProvider from 'src/theme/ThemeProvider';
+import { CacheProvider } from '@emotion/react';
+import createEmotionCache from 'src/theme/createEmotionCache';
 import { CssBaseline } from '@mui/material';
 import { ContextProvider } from 'src/AppContext';
 import { useSnackbar } from 'src/components/useSnackbar';
@@ -73,7 +75,9 @@ const jsonLdSchema = {
   }
 };
 
-function XRPLToApp({ Component, pageProps, router }) {
+const clientSideEmotionCache = createEmotionCache();
+
+function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmotionCache }) {
   // Treat MAINTENANCE env as boolean string ("true"/"false")
   const isUnderMaintenance = process.env.MAINTENANCE === 'true';
   const { isOpen, msg, variant, openSnackbar, closeSnackbar } = useSnackbar();
@@ -94,6 +98,7 @@ function XRPLToApp({ Component, pageProps, router }) {
   }
 
   return (
+    <CacheProvider value={emotionCache}>
     <>
       <Head>
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
@@ -185,6 +190,7 @@ function XRPLToApp({ Component, pageProps, router }) {
         </ThemeProvider>
       </ContextProvider>
     </>
+    </CacheProvider>
   );
 }
 

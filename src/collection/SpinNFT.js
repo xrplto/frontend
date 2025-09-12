@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
 import dynamic from 'next/dynamic';
 // import { ColorExtractor } from 'react-color-extractor';

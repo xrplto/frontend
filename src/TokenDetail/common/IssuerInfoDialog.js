@@ -1,4 +1,4 @@
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 // Material

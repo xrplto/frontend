@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 
 // Material
 import {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { MD5 } from 'crypto-js';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 import { alpha } from '@mui/material/styles';
 import {
   Table,

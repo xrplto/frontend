@@ -1,7 +1,7 @@
 import axios from 'axios';
 import PropTypes from 'prop-types';
 import { useState, useEffect, useMemo } from 'react';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 // Material
 import { styled, alpha, useTheme } from '@mui/material';
 

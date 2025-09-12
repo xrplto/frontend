@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import Image from 'next/image';
+import NextLink from 'next/link';
 import { Box, Container, Link, Typography } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
@@ -15,6 +16,7 @@ const FooterLink = ({ href, children }) => {
   const external = /^https?:\/\//.test(href || '');
   return (
     <Link
+      component={external ? 'a' : NextLink}
       href={href}
       underline="none"
       target={external ? '_blank' : undefined}
@@ -36,8 +38,32 @@ const FooterLink = ({ href, children }) => {
   );
 };
 
-// Extract nested component to top level to satisfy react/no-unstable-nested-components
-const Group = ({ label, items }) => (
+// Predefine immutable link groups to avoid re-creation on each render
+const PRODUCTS = [
+  { href: '/swap', label: 'Token Swap' },
+  { href: '/market-metrics', label: 'Market Metrics' },
+  { href: '/top-traders', label: 'Top Traders' },
+  { href: '/api-docs', label: 'Token API' }
+];
+const COMPANY = [
+  { href: '/about', label: 'About' },
+  { href: '/terms', label: 'Terms' },
+  { href: '/privacy', label: 'Privacy' },
+  { href: '/disclaimer', label: 'Disclaimer' }
+];
+const SUPPORT = [
+  { href: 'https://hmc0r1fnxt5.typeform.com/to/jd3HUclQ', label: 'Request' },
+  { href: '/faq', label: 'FAQ' }
+];
+const SOCIALS = [
+  { href: 'https://twitter.com/xrplto', label: 'Twitter' },
+  { href: 'https://t.me/xrplto/', label: 'Telegram' },
+  { href: 'https://www.reddit.com/r/xrplto/', label: 'Reddit' },
+  { href: 'https://xrpl.to/discord/', label: 'Discord' }
+];
+
+// Extract nested component to top level and memoize
+const Group = React.memo(({ label, items }) => (
   <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.25 }}>
     <Typography
       variant="caption"
@@ -60,35 +86,14 @@ const Group = ({ label, items }) => (
       </Box>
     ))}
   </Box>
-);
+));
 
 function Footer() {
   const { darkMode } = useContext(AppContext);
   const year = new Date().getFullYear();
   const logo = darkMode ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
 
-  const products = [
-    { href: '/swap', label: 'Token Swap' },
-    { href: '/market-metrics', label: 'Market Metrics' },
-    { href: '/top-traders', label: 'Top Traders' },
-    { href: '/api-docs', label: 'Token API' }
-  ];
-  const company = [
-    { href: '/about', label: 'About' },
-    { href: '/terms', label: 'Terms' },
-    { href: '/privacy', label: 'Privacy' },
-    { href: '/disclaimer', label: 'Disclaimer' }
-  ];
-  const support = [
-    { href: 'https://hmc0r1fnxt5.typeform.com/to/jd3HUclQ', label: 'Request' },
-    { href: '/faq', label: 'FAQ' }
-  ];
-  const socials = [
-    { href: 'https://twitter.com/xrplto', label: 'Twitter' },
-    { href: 'https://t.me/xrplto/', label: 'Telegram' },
-    { href: 'https://www.reddit.com/r/xrplto/', label: 'Reddit' },
-    { href: 'https://xrpl.to/discord/', label: 'Discord' }
-  ];
+  // Link groups are hoisted as constants above to keep references stable
 
   return (
     <Root>
@@ -112,10 +117,10 @@ function Footer() {
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flex: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-            <Group label="Products" items={products} />
-            <Group label="Company" items={company} />
-            <Group label="Support" items={support} />
-            <Group label="Socials" items={socials} />
+            <Group label="Products" items={PRODUCTS} />
+            <Group label="Company" items={COMPANY} />
+            <Group label="Support" items={SUPPORT} />
+            <Group label="Socials" items={SOCIALS} />
           </Box>
         </Box>
       </Container>

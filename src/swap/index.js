@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
 import dynamic from 'next/dynamic';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 
 // Set Decimal precision immediately after import
 Decimal.set({ precision: 50 });

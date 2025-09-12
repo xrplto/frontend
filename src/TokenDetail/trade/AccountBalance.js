@@ -1,5 +1,5 @@
 import axios from 'axios';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
 // Material

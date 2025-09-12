@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 
 // Material
 import { Button, Stack, Typography, styled, useTheme, useMediaQuery, Box } from '@mui/material';

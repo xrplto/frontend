@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { MD5 } from 'crypto-js';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 import { useState, useEffect } from 'react';
 
 // Material

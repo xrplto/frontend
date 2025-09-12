@@ -40,7 +40,7 @@ import Topbar from 'src/components/Topbar';
 import Link from 'next/link';
 import { rippleTimeToISO8601, dropsToXrp, normalizeCurrencyCode } from 'src/utils/parse/utils';
 import { formatDistanceToNow } from 'date-fns';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 
 // Helper function to format decimal with thousand separators (like BigNumber.toFormat)
 function formatDecimal(decimal, decimalPlaces = null) {

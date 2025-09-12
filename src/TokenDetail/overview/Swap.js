@@ -28,7 +28,7 @@ import QRDialog from 'src/components/QRDialog';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { currencySymbols, XRP_TOKEN } from 'src/utils/constants';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 import { fNumber } from 'src/utils/formatNumber';
 import useWebSocket from 'react-use-websocket';
 import { isInstalled, submitTransaction, setTrustline } from '@gemwallet/api';

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { FadeLoader } from 'react-spinners';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 
 // Material
 import {

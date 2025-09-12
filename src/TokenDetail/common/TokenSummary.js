@@ -32,7 +32,7 @@ import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 import { Box as MuiBox } from '@mui/material';
 import { currencySymbols, CURRENCY_ISSUERS } from 'src/utils/constants';
 import { checkExpiration, getHashIcon } from 'src/utils/extra';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
@@ -1447,7 +1447,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                                       // Token payment
                                       const { parseAmount } = require('src/utils/parse/amount');
                                       const { normalizeCurrencyCode } = require('src/utils/parse/utils');
-                                      const Decimal = require('decimal.js');
+                                      const Decimal = require('decimal.js-light');
                                       const amount = parseAmount(amountToShow);
                                       if (amount && typeof amount === 'object' && amount.value) {
                                         // Handle scientific notation

@@ -1,4 +1,4 @@
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 
 // IEEE 754 floating-point implementation
 function fromBytesIEEE754(bytes) {

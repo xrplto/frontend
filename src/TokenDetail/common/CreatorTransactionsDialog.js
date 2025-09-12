@@ -23,7 +23,7 @@ import { Client } from 'xrpl';
 import { fNumber } from 'src/utils/formatNumber';
 import { formatDistanceToNow } from 'date-fns';
 import { parseAmount } from 'src/utils/parse/amount';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 import { normalizeCurrencyCode } from 'src/utils/parse/utils';
 
 const XRPL_WEBSOCKET_URL = 'wss://s1.ripple.com';

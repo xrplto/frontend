@@ -1,4 +1,4 @@
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 import { encodeAccountID } from 'ripple-address-codec';
 
 const { omitBy } = require('lodash');

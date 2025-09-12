@@ -39,7 +39,7 @@ import { PulseLoader } from 'react-spinners';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 
 import ConnectWallet from './ConnectWallet';
 import { isInstalled, setTrustline, submitTransaction } from '@gemwallet/api';

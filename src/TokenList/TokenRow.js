@@ -1,4 +1,4 @@
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 import { useState, useEffect, useContext, memo, useMemo, useCallback, useRef } from 'react';
 import React from 'react';
 import styled from '@emotion/styled';

@@ -27,7 +27,7 @@ import axios from 'axios';
 import { fNumber } from 'src/utils/formatNumber';
 import { formatDistanceToNow } from 'date-fns';
 import { parseAmount } from 'src/utils/parse/amount';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 import { normalizeCurrencyCode, rippleTimeToISO8601, dropsToXrp } from 'src/utils/parse/utils';
 import { Client } from 'xrpl';
 

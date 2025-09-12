@@ -1,4 +1,4 @@
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 
 // Helper function to format decimal with thousand separators
 function formatDecimal(decimal, decimalPlaces = null) {

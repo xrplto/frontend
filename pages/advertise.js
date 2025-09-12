@@ -48,7 +48,7 @@ import { isInstalled, submitTransaction } from '@gemwallet/api';
 import sdk from '@crossmarkio/sdk';
 import { enqueueSnackbar } from 'notistack';
 import QRDialog from 'src/components/QRDialog';
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js-light';
 
 const PageWrapper = styled.div`
   min-height: 100vh;
