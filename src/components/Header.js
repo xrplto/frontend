@@ -192,18 +192,20 @@ const StyledLink = styled(Link, {
 })(
   ({ darkMode, theme }) => `
     color: ${theme.palette.text.primary} !important;
-    font-weight: 500;
-    margin-right: 20px;
-    padding: 8px 16px;
-    border-radius: 12px;
-    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 400;
+    margin-right: 16px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     background: transparent;
     border: none;
+    font-size: 0.9rem;
     
     &:hover {
       color: ${theme.palette.primary.main} !important;
+      background: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'};
       cursor: pointer;
     }
 `
@@ -452,12 +454,12 @@ function Header(props) {
                       top: '48px',
                       left: tokensAnchorEl ? tokensAnchorEl.offsetLeft : 0,
                       mt: 0,
-                      minWidth: 720,
-                      borderRadius: 3,
-                      border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                      minWidth: 600,
+                      borderRadius: 8,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                       boxShadow: theme.palette.mode === 'dark'
-                        ? `0 8px 32px ${alpha('#000000', 0.4)}, 0 2px 8px ${alpha('#000000', 0.3)}`
-                        : `0 8px 32px ${alpha('#000000', 0.12)}, 0 2px 8px ${alpha('#000000', 0.08)}`,
+                        ? `0 4px 20px ${alpha('#000000', 0.3)}`
+                        : `0 4px 20px ${alpha('#000000', 0.08)}`,
                       bgcolor: theme.header?.background || (theme.palette.mode === 'dark' ? alpha('#000000', 0.95) : alpha('#ffffff', 0.98)),
                       backdropFilter: 'blur(20px)',
                       WebkitBackdropFilter: 'blur(20px)',
@@ -480,8 +482,8 @@ function Header(props) {
                   >
                     <Box sx={{ 
                       display: 'flex', 
-                      p: 2.5, 
-                      gap: 2.5,
+                      p: 2, 
+                      gap: 2,
                       alignItems: 'flex-start'
                     }}>
                       {/* Column 1: All Launchpads */}
