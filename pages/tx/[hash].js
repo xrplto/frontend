@@ -1159,7 +1159,9 @@ const getTransactionDescription = (txData) => {
   }
 };
 
-const TransactionSummaryCard = ({ txData, theme }) => {
+import { useTheme } from '@mui/material/styles';
+const TransactionSummaryCard = ({ txData }) => {
+  const theme = useTheme();
   const { hash, TransactionType, Account, Destination, Amount, meta, date, ledger_index, Fee } =
     txData;
 
@@ -1272,7 +1274,8 @@ const TransactionSummaryCard = ({ txData, theme }) => {
   );
 };
 
-const TransactionDetails = ({ txData, theme }) => {
+const TransactionDetails = ({ txData }) => {
+  const theme = useTheme();
   const [moreVisible, setMoreVisible] = useState(false);
   const [selectedTab, setSelectedTab] = useState(0);
   const [rawVisible, setRawVisible] = useState(false);
@@ -1839,7 +1842,7 @@ const TransactionDetails = ({ txData, theme }) => {
 
   return (
     <Box>
-      <TransactionSummaryCard txData={txData} theme={theme} />
+      <TransactionSummaryCard txData={txData} />
 
       <Box
         sx={{
@@ -3384,7 +3387,7 @@ const TxPage = ({ txData, error }) => {
         {error ? (
           <Typography color="error">{error}</Typography>
         ) : (
-          <TransactionDetails txData={txData} theme={theme} />
+          <TransactionDetails txData={txData} />
         )}
       </Container>
       <Footer />

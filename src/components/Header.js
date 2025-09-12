@@ -433,7 +433,6 @@ function Header(props) {
                 <StyledLink
                   underline="none"
                   darkMode={darkMode}
-                  theme={theme}
                   href="/"
                 >
                   {t('Tokens')}
@@ -616,18 +615,16 @@ function Header(props) {
                 )}
               </Box>
 
-              <StyledLink
-                underline="none"
-                darkMode={darkMode}
-                theme={theme}
-                href="/collections"
+                <StyledLink
+                  underline="none"
+                  darkMode={darkMode}
+                  href="/collections"
               >
                 {t('NFTs')}
               </StyledLink>
               <StyledLink
                 underline="none"
                 darkMode={darkMode}
-                theme={theme}
                 href="/swap"
               >
                 {t('Swap')}
@@ -635,7 +632,6 @@ function Header(props) {
               <StyledLink
                 underline="none"
                 darkMode={darkMode}
-                theme={theme}
                 href="/news"
               >
                 {t('News')}

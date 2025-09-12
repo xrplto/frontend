@@ -1,4 +1,4 @@
-import { alpha, createTheme, darken, lighten } from '@mui/material';
+import { alpha, createTheme, darken, lighten } from '@mui/material/styles';
 
 // birdjpg theme - monochrome pixel art inspired
 const themeColors = {

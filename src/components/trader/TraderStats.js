@@ -669,104 +669,89 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
               mb: 2
             }}
           >
-            <StatCard theme={theme}
-              title="Trade Summary"
+            <StatCard title="Trade Summary"
               icon={<AssessmentIcon sx={{ color: theme.palette.primary.main, fontSize: 16 }} />}
             >
-              <StatRow theme={theme} label="Total Trades" value={stats.totalTrades} isCurrency={false} />
-              <StatRow theme={theme}
-                label="Profitable"
+              <StatRow label="Total Trades" value={stats.totalTrades} isCurrency={false} />
+              <StatRow label="Profitable"
                 value={stats.profitableTrades}
                 color={theme.palette.success.main}
                 isCurrency={false}
               />
-              <StatRow theme={theme}
-                label="Losing"
+              <StatRow label="Losing"
                 value={stats.losingTrades}
                 color={theme.palette.error.main}
                 isCurrency={false}
               />
-              <StatRow theme={theme}
-                label="Avg Hold"
+              <StatRow label="Avg Hold"
                 value={formatDuration(stats.avgHoldingTime)}
                 isCurrency={false}
               />
             </StatCard>
 
-            <StatCard theme={theme}
-              title="P&L Analysis"
+            <StatCard title="P&L Analysis"
               icon={<TrendingUpIcon sx={{ color: theme.palette.success.main, fontSize: 16 }} />}
             >
-              <ProfitChip theme={theme} value={stats.profit24h} label="24h" />
-              <ProfitChip theme={theme} value={stats.profit7d} label="7d" />
-              <ProfitChip theme={theme} value={stats.profit1m || 0} label="1m" />
-              <ProfitChip theme={theme} value={stats.profit2m || 0} label="2m" />
-              <ProfitChip theme={theme} value={stats.profit3m || 0} label="3m" />
+              <ProfitChip value={stats.profit24h} label="24h" />
+              <ProfitChip value={stats.profit7d} label="7d" />
+              <ProfitChip value={stats.profit1m || 0} label="1m" />
+              <ProfitChip value={stats.profit2m || 0} label="2m" />
+              <ProfitChip value={stats.profit3m || 0} label="3m" />
             </StatCard>
 
-            <StatCard theme={theme}
-              title="Volume"
+            <StatCard title="Volume"
               icon={<ShowChartIcon sx={{ color: theme.palette.info.main, fontSize: 16 }} />}
             >
-              <StatRow theme={theme} label="24h" value={stats.volume24h} />
-              <StatRow theme={theme} label="7d" value={stats.volume7d} />
-              <StatRow theme={theme} label="1m" value={stats.volume1m || 0} />
-              <StatRow theme={theme} label="2m" value={stats.volume2m || 0} />
-              <StatRow theme={theme} label="Total" value={stats.totalVolume} />
+              <StatRow label="24h" value={stats.volume24h} />
+              <StatRow label="7d" value={stats.volume7d} />
+              <StatRow label="1m" value={stats.volume1m || 0} />
+              <StatRow label="2m" value={stats.volume2m || 0} />
+              <StatRow label="Total" value={stats.totalVolume} />
             </StatCard>
 
-            <StatCard theme={theme}
-              title="Activity"
+            <StatCard title="Activity"
               icon={<TimelineIcon sx={{ color: theme.palette.warning.main, fontSize: 16 }} />}
             >
-              <StatRow theme={theme} label="24h Trades" value={stats.trades24h} isCurrency={false} />
-              <StatRow theme={theme} label="7d Trades" value={stats.trades7d} isCurrency={false} />
-              <StatRow theme={theme} label="1m Trades" value={stats.trades1m || 0} isCurrency={false} />
-              <StatRow theme={theme} label="2m Trades" value={stats.trades2m || 0} isCurrency={false} />
-              <StatRow theme={theme} label="Total" value={stats.totalTrades} isCurrency={false} />
+              <StatRow label="24h Trades" value={stats.trades24h} isCurrency={false} />
+              <StatRow label="7d Trades" value={stats.trades7d} isCurrency={false} />
+              <StatRow label="1m Trades" value={stats.trades1m || 0} isCurrency={false} />
+              <StatRow label="2m Trades" value={stats.trades2m || 0} isCurrency={false} />
+              <StatRow label="Total" value={stats.totalTrades} isCurrency={false} />
             </StatCard>
 
-            <StatCard theme={theme}
-              title="Extremes"
+            <StatCard title="Extremes"
               icon={<StarIcon sx={{ color: theme.palette.warning.main, fontSize: 16 }} />}
             >
-              <StatRow theme={theme}
-                label="Best Trade"
+              <StatRow label="Best Trade"
                 value={stats.maxProfitTrade}
                 color={theme.palette.success.main}
               />
-              <StatRow theme={theme}
-                label="Worst Trade"
+              <StatRow label="Worst Trade"
                 value={Math.abs(stats.maxLossTrade)}
                 color={theme.palette.error.main}
               />
-              <StatRow theme={theme}
-                label="Buy Volume"
+              <StatRow label="Buy Volume"
                 value={stats.buyVolume}
                 color={theme.palette.success.main}
               />
-              <StatRow theme={theme}
-                label="Sell Volume"
+              <StatRow label="Sell Volume"
                 value={stats.sellVolume}
                 color={theme.palette.error.main}
               />
             </StatCard>
 
-            <StatCard theme={theme}
-              title="Timeline"
+            <StatCard title="Timeline"
               icon={<HistoryIcon sx={{ color: theme.palette.text.secondary, fontSize: 16 }} />}
             >
-              <StatRow theme={theme}
-                label="First Trade"
+              <StatRow label="First Trade"
                 value={formatDate(stats.firstTradeDate)}
                 isCurrency={false}
               />
-              <StatRow theme={theme}
-                label="Last Trade"
+              <StatRow label="Last Trade"
                 value={formatDate(stats.lastTradeDate)}
                 isCurrency={false}
               />
-              <StatRow theme={theme} label="Updated" value={formatDate(stats.updatedAt)} isCurrency={false} />
+              <StatRow label="Updated" value={formatDate(stats.updatedAt)} isCurrency={false} />
             </StatCard>
           </Box>
 

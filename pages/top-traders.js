@@ -227,7 +227,8 @@ function TabPanel({ children, value, index }) {
 }
 
 // Memoized TraderRow component to prevent unnecessary re-renders
-const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, theme, isMobile, index, scrollLeft }) => {
+const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, isMobile, index, scrollLeft }) => {
+  const theme = useTheme();
   const stickyCellStyles = useMemo(
     () => ({
       first: {
@@ -1522,7 +1523,6 @@ export default function Analytics({ initialData, initialError }) {
                               onRoiClick={handleRoiClick}
                               formatCurrency={formatCurrency}
                               formatPercentage={formatPercentage}
-                              theme={theme}
                               isMobile={isMobile}
                               scrollLeft={scrollLeft}
                             />

@@ -1,4 +1,4 @@
-import { alpha, createTheme, lighten, darken } from '@mui/material';
+import { alpha, createTheme, lighten, darken } from '@mui/material/styles';
 
 const themeColors = {
   primary: '#147DFE',

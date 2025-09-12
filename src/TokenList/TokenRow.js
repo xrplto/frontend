@@ -415,9 +415,9 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
 
   // Using flexbox layout instead of table
   return (
-    <MobileTokenCard theme={theme} onClick={handleRowClick}>
+    <MobileTokenCard onClick={handleRowClick}>
       <MobileTokenInfo>
-        <TokenImage theme={theme} isMobile={true}>
+        <TokenImage isMobile={true}>
           <OptimizedImage
             src={imgError ? '/static/alt.webp' : imgUrl}
             alt={name || 'Token'}
@@ -428,16 +428,16 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
           />
         </TokenImage>
         <TokenDetails>
-          <TokenName theme={theme} isMobile={true}>{name}</TokenName>
-          <UserName theme={theme} isMobile={true}>{user}</UserName>
+          <TokenName isMobile={true}>{name}</TokenName>
+          <UserName isMobile={true}>{user}</UserName>
         </TokenDetails>
       </MobileTokenInfo>
       
-      <MobilePriceCell theme={theme}>
+      <MobilePriceCell>
         {formatMobileValue(mobilePriceColumn)}
       </MobilePriceCell>
       
-      <MobilePriceCell theme={theme}>
+      <MobilePriceCell>
         {formatMobileValue(mobilePercentColumn)}
       </MobilePriceCell>
     </MobileTokenCard>
@@ -496,7 +496,7 @@ const DesktopTokenRow = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <TokenImage theme={theme}>
+          <TokenImage>
             <OptimizedImage
               src={imgError ? '/static/alt.webp' : imgUrl}
               alt={name || 'Token'}
@@ -507,10 +507,10 @@ const DesktopTokenRow = ({
             />
           </TokenImage>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <TokenName theme={theme} title={name}>
+            <TokenName title={name}>
               {truncate(name, 20)}
             </TokenName>
-            <UserName theme={theme} title={user}>
+            <UserName title={user}>
               {truncate(user, 12)}
             </UserName>
           </div>
@@ -527,7 +527,7 @@ const DesktopTokenRow = ({
           const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
           return (
             <StyledCell align="right" darkMode={darkMode}>
-              <PriceText theme={theme} priceColor={priceColor}>
+              <PriceText priceColor={priceColor}>
                 <span>
                   {currencySymbols[activeFiatCurrency]}0.0<sub style={{ fontSize: '0.6em' }}>{zeros}</sub>{significant.slice(0, 4)}
                 </span>
@@ -538,7 +538,7 @@ const DesktopTokenRow = ({
       }
       return (
         <StyledCell align="right" darkMode={darkMode}>
-          <PriceText theme={theme} priceColor={priceColor}>
+          <PriceText priceColor={priceColor}>
             <NumberTooltip
               prepend={currencySymbols[activeFiatCurrency]}
               number={fNumberWithCurreny(exch, exchRate)}
@@ -743,7 +743,7 @@ const DesktopTokenRow = ({
             case 'price':
               columnElements.push(
                 <StyledCell key="price" align="right" darkMode={darkMode} style={extraStyle}>
-                  <PriceText theme={theme} priceColor={priceColor}>
+                  <PriceText priceColor={priceColor}>
                     <NumberTooltip
                       prepend={currencySymbols[activeFiatCurrency]}
                       number={fNumberWithCurreny(exch, exchRate)}
@@ -958,11 +958,10 @@ const DesktopTokenRow = ({
   };
 
   return (
-    <StyledRow theme={theme} onClick={handleRowClick}>
+    <StyledRow onClick={handleRowClick}>
       {isLoggedIn && (
         <StyledCell 
           align="center" 
-          theme={theme} 
           style={{ 
             width: '40px', 
             minWidth: '40px',
@@ -1148,7 +1147,7 @@ export const MobileTokenList = ({ tokens, darkMode, exchRate, activeFiatCurrency
           onChangeWatchList={() => {}}
           scrollLeft={false}
           exchRate={exchRate}
-          theme={theme}
+          
           isMobile={true}
           activeFiatCurrency={activeFiatCurrency}
           isLoggedIn={false}

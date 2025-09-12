@@ -470,7 +470,7 @@ export default function Advertise() {
   };
 
   return (
-    <PageWrapper theme={theme}>
+    <PageWrapper>
       <Topbar />
       <Header />
       <MainContent>

@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import { useState, useEffect } from 'react';
-import { ThemeProvider } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
 import { themeCreator } from './base';
 import { StyledEngineProvider } from '@mui/material/styles';
 

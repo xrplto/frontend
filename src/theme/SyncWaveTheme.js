@@ -1,4 +1,4 @@
-import { alpha, createTheme, darken, lighten } from '@mui/material';
+import { alpha, createTheme, darken, lighten } from '@mui/material/styles';
 
 // Florida Synthwave color palette
 const themeColors = {
