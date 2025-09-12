@@ -69,6 +69,7 @@ const TopWrapper = styled.header`
   box-shadow: 0 -1px 8px ${props => props.darkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.08)'};
   backdrop-filter: blur(20px) saturate(120%);
   font-family: 'JetBrains Mono', monospace;
+  overflow-x: hidden;
 `;
 
 const Container = styled.div`
@@ -275,7 +276,7 @@ const Drawer = styled.div`
   position: fixed;
   bottom: 36px;
   right: ${props => props.open ? '0' : '-100%'};
-  width: ${props => props.isMobile ? (props.isSmallMobile ? '100vw' : '90vw') : '400px'};
+  width: ${props => props.isMobile ? '100vw' : '400px'};
   height: calc(100vh - 36px);
   background: ${props => props.backgroundColor};
   box-shadow: -4px -4px 16px rgba(0,0,0,0.25);
@@ -286,7 +287,7 @@ const Drawer = styled.div`
   max-width: ${props => props.isMobile ? '100vw' : '400px'};
   border-top-left-radius: 12px;
   
-  ${media.down('sm')} {
+  ${media.down('md')} {
     width: 100vw;
     max-width: 100vw;
     right: ${props => props.open ? '0' : '-100vw'};
@@ -1094,13 +1095,15 @@ const Topbar = () => {
         </Container>
       </TopWrapper>
 
-      <DrawerOverlay open={tradeDrawerOpen} onClick={handleTradeDrawerClose} />
-      <Drawer 
-        open={tradeDrawerOpen} 
-        backgroundColor={themeColors.backgroundColor} 
-        isMobile={isMobile}
-        isSmallMobile={isSmallMobile}
-      >
+      {tradeDrawerOpen && (
+        <>
+          <DrawerOverlay open={tradeDrawerOpen} onClick={handleTradeDrawerClose} />
+          <Drawer 
+            open={tradeDrawerOpen} 
+            backgroundColor={themeColors.backgroundColor} 
+            isMobile={isMobile}
+            isSmallMobile={isSmallMobile}
+          >
         <DrawerHeader darkMode={darkMode} paperBackground={themeColors.backgroundColor}>
           <Box display="flex" alignItems="center" gap={0.5}>
             <Typography variant="h6" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
@@ -1298,7 +1301,9 @@ const Topbar = () => {
             })}
           </TradeList>
         )}
-      </Drawer>
+          </Drawer>
+        </>
+      )}
     </>
   );
 };
