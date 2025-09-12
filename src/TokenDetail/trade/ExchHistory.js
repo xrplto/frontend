@@ -183,19 +183,19 @@ function convertTrade(md5, trades) {
 
     if (ledger !== prevLedger) {
       if (ledger > 0) {
-        prevExch = Decimal.div(d1, d2).toNumber();
+        prevExch = new Decimal(d1).div(d2).toNumber();
       }
       d1 = 0;
       d2 = 0;
     }
 
     if (md5 === md51) {
-      exch = Decimal.div(got.value, paid.value).toNumber();
+      exch = new Decimal(got.value).div(paid.value).toNumber();
       amount = fNumber(paid.value);
       d1 = Decimal.add(got.value, d1).toString();
       d2 = Decimal.add(paid.value, d2).toString();
     } else {
-      exch = Decimal.div(paid.value, got.value).toNumber();
+      exch = new Decimal(paid.value).div(got.value).toNumber();
       amount = fNumber(got.value);
       d1 = Decimal.add(paid.value, d1).toString();
       d2 = Decimal.add(got.value, d2).toString();

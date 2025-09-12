@@ -322,10 +322,10 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
 
   // Metrics data
   const convertedMarketCap = marketcap && metrics[activeFiatCurrency]
-    ? Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber()
+    ? new Decimal(marketcap).div(metrics[activeFiatCurrency]).toNumber()
     : 0;
   const convertedVolume = vol24hxrp && metrics[activeFiatCurrency]
-    ? Decimal.div(vol24hxrp, metrics[activeFiatCurrency]).toNumber()
+    ? new Decimal(vol24hxrp).div(metrics[activeFiatCurrency]).toNumber()
     : 0;
 
   const metricsData = [

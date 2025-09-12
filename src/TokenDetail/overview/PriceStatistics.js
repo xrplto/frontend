@@ -176,7 +176,7 @@ export default function PriceStatistics({ token }) {
   if (!user) user = name;
 
   const voldivmarket =
-    marketcap > 0 && vol24hxrp != null ? Decimal.div(vol24hxrp || 0, marketcap || 1).toNumber() : 0;
+    marketcap > 0 && vol24hxrp != null ? new Decimal(vol24hxrp || 0).div(marketcap || 1).toNumber() : 0;
 
   const handleOpenIssuerInfo = () => {
     setOpenIssuerInfo(true);

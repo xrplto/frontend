@@ -387,16 +387,16 @@ const MobileTokenRow = ({ token, darkMode, exchRate, activeFiatCurrency, handleR
           />
         );
       case 'volume24h':
-        const vol = vol24hxrp && exchRate ? Decimal.div(vol24hxrp || 0, exchRate).toNumber() : 0;
+        const vol = vol24hxrp && exchRate ? new Decimal(vol24hxrp || 0).div(exchRate).toNumber() : 0;
         return `${currencySymbols[activeFiatCurrency]}${vol >= 1e6 ? `${(vol/1e6).toFixed(1)}M` : vol >= 1e3 ? `${(vol/1e3).toFixed(1)}K` : fNumber(vol)}`;
       case 'volume7d':
-        const vol7 = vol24hxrp && exchRate ? Decimal.div((vol24hxrp || 0) * 7, exchRate).toNumber() : 0;
+        const vol7 = vol24hxrp && exchRate ? new Decimal((vol24hxrp || 0) * 7).div(exchRate).toNumber() : 0;
         return `${currencySymbols[activeFiatCurrency]}${vol7 >= 1e6 ? `${(vol7/1e6).toFixed(1)}M` : vol7 >= 1e3 ? `${(vol7/1e3).toFixed(1)}K` : fNumber(vol7)}`;
       case 'marketCap':
-        const mcap = marketcap && exchRate ? Decimal.div(marketcap || 0, exchRate).toNumber() : 0;
+        const mcap = marketcap && exchRate ? new Decimal(marketcap || 0).div(exchRate).toNumber() : 0;
         return `${currencySymbols[activeFiatCurrency]}${mcap >= 1e9 ? `${(mcap/1e9).toFixed(1)}B` : mcap >= 1e6 ? `${(mcap/1e6).toFixed(1)}M` : mcap >= 1e3 ? `${(mcap/1e3).toFixed(1)}K` : fNumber(mcap)}`;
       case 'tvl':
-        const tvlVal = tvl && exchRate ? Decimal.div(tvl || 0, exchRate).toNumber() : 0;
+        const tvlVal = tvl && exchRate ? new Decimal(tvl || 0).div(exchRate).toNumber() : 0;
         return `${currencySymbols[activeFiatCurrency]}${tvlVal >= 1e6 ? `${(tvlVal/1e6).toFixed(1)}M` : tvlVal >= 1e3 ? `${(tvlVal/1e3).toFixed(1)}K` : fNumber(tvlVal)}`;
       case 'holders':
         return holders >= 1e3 ? `${(holders/1e3).toFixed(1)}K` : fIntNumber(holders);
@@ -1040,9 +1040,9 @@ const FTokenRow = React.memo(function FTokenRow({
   }, [slug]);
   
   const convertedValues = useMemo(() => ({
-    marketCap: marketcap && exchRate ? Decimal.div(marketcap || 0, exchRate).toNumber() : 0,
-    volume: vol24hxrp && exchRate ? Decimal.div(vol24hxrp || 0, exchRate).toNumber() : 0,
-    tvl: tvl && exchRate ? Decimal.div(tvl || 0, exchRate).toNumber() : 0
+    marketCap: marketcap && exchRate ? new Decimal(marketcap || 0).div(exchRate).toNumber() : 0,
+    volume: vol24hxrp && exchRate ? new Decimal(vol24hxrp || 0).div(exchRate).toNumber() : 0,
+    tvl: tvl && exchRate ? new Decimal(tvl || 0).div(exchRate).toNumber() : 0
   }), [marketcap, vol24hxrp, tvl, exchRate]);
   
   const formatValue = (val, type = 'number') => {

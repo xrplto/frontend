@@ -420,10 +420,10 @@ export default function History({ token }) {
                     let name;
 
                     if (md51 === token.md5) {
-                      exch = Decimal.div(got.value, paid.value).toNumber();
+                      exch = new Decimal(got.value).div(paid.value).toNumber();
                       name = gotName;
                     } else {
-                      exch = Decimal.div(paid.value, got.value).toNumber();
+                      exch = new Decimal(paid.value).div(got.value).toNumber();
                       name = paidName;
                     }
 

@@ -36,8 +36,7 @@ export function fNumber(num, flag = false) {
 
 export function fNumberWithCurreny(num, exchRate) {
   if (!num || !exchRate) return 0;
-
-  return fCurrency5(Decimal.div(num, exchRate).toNumber());
+  return fCurrency5(new Decimal(num).div(exchRate).toNumber());
 }
 
 // Trims x numbers after zeroes, ie from 456.000000000027213246546 to 456.00000000002721 when the threshold is 4

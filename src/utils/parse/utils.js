@@ -493,7 +493,7 @@ export function parseNFTokenID(NFTokenID) {
 
   let transferFee = 0;
   try {
-    if (royalty) transferFee = Decimal.div(royalty, '1000').toDP(3, Decimal.ROUND_DOWN).toNumber();
+    if (royalty) transferFee = new Decimal(royalty).div('1000').toDP(3, Decimal.ROUND_DOWN).toNumber();
   } catch (e) {}
 
   return { flag, royalty, issuer, taxon, transferFee };
