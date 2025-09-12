@@ -14,7 +14,7 @@ const PageLayout = ({ children }) => {
     <div>
       {/* Main content with padding for fixed headers */}
       <div style={{ 
-        paddingTop: isApiDocsPage ? '0' : '100px', // No padding for API docs page
+        paddingTop: isApiDocsPage ? '0' : '56px', // Slightly more padding to move content down
         marginRight: accountProfile && open ? '350px' : '0',
         transition: 'margin-right 0.3s ease'
       }}>
@@ -25,10 +25,10 @@ const PageLayout = ({ children }) => {
       {accountProfile && open && (
         <div style={{
           position: 'fixed',
-          top: '100px', // Below Topbar (36px) + Header (64px)
+          top: '56px', // Below Header with spacing
           right: '0',
           width: '350px',
-          height: 'calc(100vh - 100px)',
+          height: 'calc(100vh - 48px)',
           zIndex: 1000
         }}>
           <Wallet embedded={true} />
