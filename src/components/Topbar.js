@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols, getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 import axios from 'axios';
-import { throttle } from 'lodash';
+import { throttle } from 'src/utils/lodashLite';
 import styled from '@emotion/styled';
 import InfoIcon from '@mui/icons-material/Info';
 import WavesIcon from '@mui/icons-material/Waves';

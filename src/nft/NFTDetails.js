@@ -2,11 +2,10 @@ import React, { memo, useMemo, useState, useContext, lazy, Suspense } from 'reac
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 const Lightbox = lazy(() => import('react-awesome-lightbox'));
 import Head from 'next/head';
-import { Swiper, SwiperSlide } from 'swiper/react';
+import dynamic from 'next/dynamic';
+const Swiper = dynamic(() => import('swiper/react').then((mod) => mod.Swiper), { ssr: false });
+const SwiperSlide = dynamic(() => import('swiper/react').then((mod) => mod.SwiperSlide), { ssr: false });
 import { Navigation, Pagination } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
 
 // Material
 import {
@@ -211,6 +210,15 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
   const { darkMode } = useContext(AppContext);
   const noImg = '/static/nft_no_image.webp';
   
+  // Load Swiper styles on client only
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('swiper/css');
+      import('swiper/css/navigation');
+      import('swiper/css/pagination');
+    }
+  }, []);
+
   // Slider state
   const [loadedSlider, setLoadedSlider] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);

@@ -270,7 +270,7 @@ const config = {
               },
               // Large vendor libraries
               vendor: {
-                test: /[\\/]node_modules[\\/](react|react-dom|axios|lodash|@reduxjs)[\\/]/,
+                test: /[\\/]node_modules[\\/](react|react-dom|axios|@reduxjs)[\\/]/,
                 name: 'vendor',
                 priority: 10,
                 chunks: 'all',

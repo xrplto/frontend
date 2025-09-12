@@ -25,7 +25,6 @@
     "hashicon": "^0.3.0",
     "i18next": "^23.5.1",
     "i18next-browser-languagedetector": "^7.1.0",
-    "lodash": "^4.17.21",
     "lightweight-charts": "^5.0.8",
     "lru-cache": "^11.2.1",
     "markdown-it": "^13.0.1",

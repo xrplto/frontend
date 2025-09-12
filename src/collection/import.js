@@ -53,7 +53,6 @@ import { CATEGORIES } from 'src/utils/constants';
 // Components
 import LoadingTextField from 'src/components/LoadingTextField';
 import AddCostDialog from './AddCostDialog';
-import _ from 'lodash';
 
 const CardWrapper = styled('div')(
   ({ theme }) => `
@@ -414,7 +413,7 @@ export default function ImportCollection() {
   };
 
   const handleClickSelectAllTaxons = (isSelectAll = true) => {
-    setSelectedTaxons(isSelectAll ? _.map(taxons, 'taxon') : []);
+    setSelectedTaxons(isSelectAll ? taxons.map((t) => t.taxon) : []);
   };
 
   return (

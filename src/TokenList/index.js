@@ -10,8 +10,7 @@ import TokenListHead from './TokenListHead';
 import { TokenRow, MobileContainer, MobileHeader, HeaderCell } from './TokenRow';
 import VirtualizedTokenList from './VirtualizedTokenList';
 import React, { memo, lazy, Suspense } from 'react';
-import { debounce } from 'lodash';
-import { throttle } from 'lodash';
+import { debounce, throttle } from 'src/utils/lodashLite';
 import { useRouter } from 'next/router';
 
 // Optimized memoization for high-frequency updates
