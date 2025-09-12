@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useMemo, useRef } from 'react';
 import axios from 'axios';
-import ReactECharts from 'echarts-for-react';
+import dynamic from 'next/dynamic';
+const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false });
 import {
   Modal,
   Box,

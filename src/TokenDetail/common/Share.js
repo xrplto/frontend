@@ -1,31 +1,6 @@
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
-import {
-  FacebookShareButton,
-  TwitterShareButton,
-  LinkedinShareButton,
-  WhatsappShareButton,
-  RedditShareButton,
-  TelegramShareButton,
-  VKShareButton,
-  WeiboShareButton,
-  PinterestShareButton,
-  TumblrShareButton,
-  EmailShareButton
-} from 'react-share';
-import {
-  FacebookIcon,
-  TwitterIcon,
-  LinkedinIcon,
-  WhatsappIcon,
-  RedditIcon,
-  TelegramIcon,
-  VKIcon,
-  WeiboIcon,
-  PinterestIcon,
-  TumblrIcon,
-  EmailIcon
-} from 'react-share';
+// react-share is dynamically imported when the dialog opens to keep it out of the main bundle
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import {
   styled,
@@ -328,6 +303,7 @@ export default function Share({ token }) {
 
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [shareLib, setShareLib] = useState(null);
 
   const { name, ext, md5, exch } = token;
 
@@ -366,27 +342,61 @@ export default function Share({ token }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const socialPlatforms = [
-    {
-      Component: TwitterShareButton,
-      Icon: TwitterIcon,
-      props: { title, url, hashtags: ['crypto', 'XRPL'] }
-    },
-    {
-      Component: FacebookShareButton,
-      Icon: FacebookIcon,
-      props: { url, quote: title, hashtag: '#crypto' }
-    },
-    { Component: LinkedinShareButton, Icon: LinkedinIcon, props: { url, title, summary: desc } },
-    { Component: WhatsappShareButton, Icon: WhatsappIcon, props: { url, title, separator: ' - ' } },
-    { Component: TelegramShareButton, Icon: TelegramIcon, props: { url, title } },
-    { Component: RedditShareButton, Icon: RedditIcon, props: { url, title } },
-    {
-      Component: EmailShareButton,
-      Icon: EmailIcon,
-      props: { subject: title, body: `Check out this link: ${url}` }
+  // Dynamically load react-share when dialog opens
+  useEffect(() => {
+    let active = true;
+    if (open && !shareLib) {
+      import('react-share').then((mod) => {
+        if (!active) return;
+        setShareLib(mod);
+      });
     }
-  ];
+    return () => {
+      active = false;
+    };
+  }, [open, shareLib]);
+
+  const canWebShare = typeof navigator !== 'undefined' && !!navigator.share;
+  const handleWebShare = async () => {
+    if (!canWebShare) return;
+    try {
+      await navigator.share({ title, text: desc, url });
+    } catch (e) {
+      // user cancelled or not supported
+    }
+  };
+
+  const socialPlatforms = shareLib
+    ? [
+        {
+          Component: shareLib.TwitterShareButton,
+          Icon: shareLib.TwitterIcon,
+          props: { title, url, hashtags: ['crypto', 'XRPL'] }
+        },
+        {
+          Component: shareLib.FacebookShareButton,
+          Icon: shareLib.FacebookIcon,
+          props: { url, quote: title, hashtag: '#crypto' }
+        },
+        {
+          Component: shareLib.LinkedinShareButton,
+          Icon: shareLib.LinkedinIcon,
+          props: { url, title, summary: desc }
+        },
+        {
+          Component: shareLib.WhatsappShareButton,
+          Icon: shareLib.WhatsappIcon,
+          props: { url, title, separator: ' - ' }
+        },
+        { Component: shareLib.TelegramShareButton, Icon: shareLib.TelegramIcon, props: { url, title } },
+        { Component: shareLib.RedditShareButton, Icon: shareLib.RedditIcon, props: { url, title } },
+        {
+          Component: shareLib.EmailShareButton,
+          Icon: shareLib.EmailIcon,
+          props: { subject: title, body: `Check out this link: ${url}` }
+        }
+      ]
+    : [];
 
   return (
     <>
@@ -471,6 +481,16 @@ export default function Share({ token }) {
 
               <Divider sx={{ width: '100%', opacity: 0.3 }} />
 
+              {canWebShare && (
+                <Box sx={{ width: '100%' }}>
+                  <Stack direction="row" justifyContent="center">
+                    <Button variant="contained" size="small" onClick={handleWebShare}>
+                      Share via device
+                    </Button>
+                  </Stack>
+                </Box>
+              )}
+
               <Box sx={{ width: '100%' }}>
                 <Typography
                   variant="subtitle2"
@@ -494,6 +514,9 @@ export default function Share({ token }) {
                     py: 1
                   }}
                 >
+                  {socialPlatforms.length === 0 && (
+                    <Typography variant="body2" color="text.secondary">Loading share options…</Typography>
+                  )}
                   {socialPlatforms.map(({ Component, Icon, props }, index) => (
                     <Fade in={open} timeout={800 + index * 100} key={index}>
                       <SocialIconWrapper>

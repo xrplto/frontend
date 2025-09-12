@@ -1159,7 +1159,8 @@ const getTransactionDescription = (txData) => {
   }
 };
 
-import { useTheme } from '@mui/material/styles';
+// NOTE: useTheme is already imported from '@mui/material' at the top of the file.
+// Removing duplicate import to avoid "Identifier 'useTheme' has already been declared" error.
 const TransactionSummaryCard = ({ txData }) => {
   const theme = useTheme();
   const { hash, TransactionType, Account, Destination, Amount, meta, date, ledger_index, Fee } =

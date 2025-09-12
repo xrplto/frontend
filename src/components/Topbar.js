@@ -16,6 +16,7 @@ import WavesIcon from '@mui/icons-material/Waves';
 import SetMealIcon from '@mui/icons-material/SetMeal';
 import PetsIcon from '@mui/icons-material/Pets';
 import WaterIcon from '@mui/icons-material/Water';
+import { useTheme } from '@mui/material/styles';
 
 // Lazy load switchers
 const CurrencySwitcher = dynamic(() => import('./CurrencySwitcher'), { 
@@ -677,6 +678,7 @@ const Topbar = () => {
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
   const { darkMode, activeFiatCurrency, themeName } = useContext(AppContext);
+  const muiTheme = useTheme();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isSmallMobile = useMediaQuery('(max-width: 480px)');
   const isDesktop = useMediaQuery('(min-width: 1024px)');
@@ -691,33 +693,17 @@ const Topbar = () => {
   const [tradeFilter, setTradeFilter] = useState('All');
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
 
-  // Get theme-specific colors
-  const getThemeColors = () => {
-    // Import theme context if available
-    const themeContext = useContext(AppContext);
-    const currentTheme = themeContext?.theme;
-    
-    // Check if we're using SyncWaveTheme or other dark themes
-    const isSyncWave = currentTheme?.header?.background === 'rgba(13, 8, 24, 0.8)';
-    const isCustomTheme = currentTheme?.header?.background && currentTheme.header.background !== '#000000' && currentTheme.header.background !== '#ffffff';
-    
-    let backgroundColor;
-    if (isCustomTheme) {
-      backgroundColor = currentTheme.header.background;
-    } else {
-      backgroundColor = currentTheme?.palette?.background?.default || (darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)');
-    }
-    
+  // Get theme-specific colors without calling hooks in nested functions
+  const themeColors = useMemo(() => {
+    const backgroundColor = muiTheme?.palette?.background?.default || (darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)');
     return {
-      primaryColor: currentTheme?.palette?.primary?.main || (darkMode ? '#147DFE' : '#0080ff'),
+      primaryColor: muiTheme?.palette?.primary?.main || (darkMode ? '#147DFE' : '#0080ff'),
       backgroundColor,
-      paperBackground: currentTheme?.palette?.background?.paper || (darkMode ? '#0a0a0a' : '#f5f5f5'),
-      textPrimary: currentTheme?.palette?.text?.primary || (darkMode ? '#ffffff' : '#000000'),
-      textSecondary: currentTheme?.palette?.text?.secondary || (darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)')
+      paperBackground: muiTheme?.palette?.background?.paper || (darkMode ? '#0a0a0a' : 'rgba(245, 245, 245, 1)'),
+      textPrimary: muiTheme?.palette?.text?.primary || (darkMode ? '#ffffff' : '#000000'),
+      textSecondary: muiTheme?.palette?.text?.secondary || (darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)')
     };
-  };
-
-  const themeColors = getThemeColors();
+  }, [muiTheme, darkMode]);
   const primaryColor = themeColors.primaryColor;
 
   // Check if metrics are properly loaded

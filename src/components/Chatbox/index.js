@@ -27,7 +27,6 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectChatOpen, toggleChatOpen } from 'src/redux/chatSlice';
-import { io } from 'socket.io-client';
 import { AppContext } from 'src/AppContext';
 import { useTheme } from '@mui/material/styles';
 import PersonIcon from '@mui/icons-material/Person';
@@ -63,13 +62,7 @@ const CustomScrollBox = styled(Box)(({ theme }) => ({
 const drawerWidth = 600;
 const chatURL = 'http://37.27.134.126:5000'; //http://37.27.134.126:5000
 
-// Initialize socket outside the component to avoid multiple connections
-const socket = io(chatURL, {
-  path: '/chat',
-  autoConnect: false, // We'll handle connection manually
-  reconnectionAttempts: 5, // Number of reconnection attempts
-  reconnectionDelay: 1000 // Delay between reconnections
-});
+// Socket is now lazy-loaded and managed inside the component to keep it out of the initial bundle
 
 // Emoji Picker Component with Dynamic Styling
 function EmojiPicker({ onSelect }) {
@@ -231,6 +224,7 @@ function Chatbox() {
   const [pickerType, setPickerType] = useState('emoji');
 
   const emojiPickerRef = useRef(null);
+  const socketRef = useRef(null);
 
   // Debugging: Clear localStorage and sessionStorage on mount
   useEffect(() => {
@@ -276,12 +270,11 @@ function Chatbox() {
     };
   }, [showEmojiPicker]);
 
-  // Initialize and manage socket connection
+  // Initialize and manage socket connection (lazy-load socket.io-client)
   useEffect(() => {
-    // Connect the socket
-    socket.connect();
+    let mounted = true;
 
-    // Socket event handlers
+    // Socket event handlers (defined here to keep same references for on/off)
     const handleInit = (msg) => {
       console.log('init', msg);
       setChatHistory((previousHistory) => [...previousHistory, ...msg]);
@@ -299,16 +292,16 @@ function Chatbox() {
 
     const handleSocketConnect = () => {
       console.log('Socket connected successfully');
-      console.log('Socket ID:', socket.id);
-      console.log('Socket connected status:', socket.connected);
+      console.log('Socket ID:', socketRef.current?.id);
+      console.log('Socket connected status:', socketRef.current?.connected);
     };
 
     const handleSocketDisconnect = (reason) => {
       console.log('Socket disconnected:', reason);
-      console.log('Socket connected status:', socket.connected);
+      console.log('Socket connected status:', socketRef.current?.connected);
       if (reason !== 'io client disconnect') {
         console.log('Attempting to reconnect...');
-        socket.connect();
+        socketRef.current?.connect();
       }
     };
 
@@ -317,23 +310,41 @@ function Chatbox() {
       console.log('Socket connected status:', socket.connected);
     };
 
-    // Register socket event listeners
-    socket.on('init', handleInit);
-    socket.on('chat message', handleChatMessage);
-    socket.on('private message', handlePrivateMessage);
-    socket.on('connect', handleSocketConnect);
-    socket.on('disconnect', handleSocketDisconnect);
-    socket.on('error', handleSocketError);
+    // Lazy import socket.io-client to avoid in initial bundle
+    import('socket.io-client').then(({ io }) => {
+      if (!mounted) return;
+      socketRef.current = io(chatURL, {
+        path: '/chat',
+        autoConnect: false,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000
+      });
+
+      const socket = socketRef.current;
+      // Connect and register events
+      socket.connect();
+      socket.on('init', handleInit);
+      socket.on('chat message', handleChatMessage);
+      socket.on('private message', handlePrivateMessage);
+      socket.on('connect', handleSocketConnect);
+      socket.on('disconnect', handleSocketDisconnect);
+      socket.on('error', handleSocketError);
+    });
 
     // Cleanup on unmount
     return () => {
-      socket.off('init', handleInit);
-      socket.off('chat message', handleChatMessage);
-      socket.off('private message', handlePrivateMessage);
-      socket.off('connect', handleSocketConnect);
-      socket.off('disconnect', handleSocketDisconnect);
-      socket.off('error', handleSocketError);
-      socket.disconnect();
+      mounted = false;
+      const s = socketRef.current;
+      if (s) {
+        s.off('init', handleInit);
+        s.off('chat message', handleChatMessage);
+        s.off('private message', handlePrivateMessage);
+        s.off('connect', handleSocketConnect);
+        s.off('disconnect', handleSocketDisconnect);
+        s.off('error', handleSocketError);
+        s.disconnect();
+        socketRef.current = null;
+      }
     };
   }, []);
 
@@ -358,15 +369,16 @@ function Chatbox() {
       // Add message immediately to chat history (optimistic update)
       setChatHistory((previousHistory) => [...previousHistory, messageObj]);
 
-      if (recipient) {
-        socket.emit('private message', {
+      const s = socketRef.current;
+      if (recipient && s) {
+        s.emit('private message', {
           to: recipient,
           message: fullMessage,
           username: accountProfile.account,
           isPrivate: true
         });
-      } else {
-        socket.emit('chat message', {
+      } else if (s) {
+        s.emit('chat message', {
           message: fullMessage,
           username: accountProfile.account,
           rank: 'Member',

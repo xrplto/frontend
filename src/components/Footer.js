@@ -36,6 +36,32 @@ const FooterLink = ({ href, children }) => {
   );
 };
 
+// Extract nested component to top level to satisfy react/no-unstable-nested-components
+const Group = ({ label, items }) => (
+  <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.25 }}>
+    <Typography
+      variant="caption"
+      sx={{
+        textTransform: 'uppercase',
+        letterSpacing: 0.6,
+        fontWeight: 700,
+        color: (t) => alpha(t.palette.primary.main, 0.8)
+      }}
+    >
+      {label}
+    </Typography>
+    <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.4) }}>•</Typography>
+    {items.map((it, idx) => (
+      <Box key={it.label} sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+        <FooterLink href={it.href}>{it.label}</FooterLink>
+        {idx < items.length - 1 && (
+          <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.3) }}>/</Typography>
+        )}
+      </Box>
+    ))}
+  </Box>
+);
+
 function Footer() {
   const { darkMode } = useContext(AppContext);
   const year = new Date().getFullYear();
@@ -63,31 +89,6 @@ function Footer() {
     { href: 'https://www.reddit.com/r/xrplto/', label: 'Reddit' },
     { href: 'https://xrpl.to/discord/', label: 'Discord' }
   ];
-
-  const Group = ({ label, items }) => (
-    <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.25 }}>
-      <Typography
-        variant="caption"
-        sx={{
-          textTransform: 'uppercase',
-          letterSpacing: 0.6,
-          fontWeight: 700,
-          color: (t) => alpha(t.palette.primary.main, 0.8)
-        }}
-      >
-        {label}
-      </Typography>
-      <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.4) }}>•</Typography>
-      {items.map((it, idx) => (
-        <Box key={it.label} sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-          <FooterLink href={it.href}>{it.label}</FooterLink>
-          {idx < items.length - 1 && (
-            <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.3) }}>/</Typography>
-          )}
-        </Box>
-      ))}
-    </Box>
-  );
 
   return (
     <Root>

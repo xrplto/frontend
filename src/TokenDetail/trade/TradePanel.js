@@ -34,7 +34,8 @@ import PlaceOrder from './PlaceOrder';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import scientificToDecimal from 'scientific-to-decimal';
+// Convert scientific notation to full decimal string using Decimal.js
+const scientificToDecimal = (value) => new Decimal(value).toString();
 import { fNumberWithSuffix } from 'src/utils/formatNumber';
 
 // Utils

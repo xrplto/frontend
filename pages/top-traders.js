@@ -31,7 +31,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
-import ReactECharts from 'echarts-for-react';
+const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false });
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from '../src/components/Topbar';

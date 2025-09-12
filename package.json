@@ -21,7 +21,6 @@
     "decimal.js": "^10.6.0",
     "echarts": "^5.4.3",
     "echarts-for-react": "^3.0.2",
-    "form-data": "^4.0.0",
     "hashicon": "^0.3.0",
     "i18next": "^23.5.1",
     "i18next-browser-languagedetector": "^7.1.0",
@@ -51,8 +50,7 @@
     "ripple-address-codec": "^4.3.1",
     "socket.io-client": "^4.8.1",
     "swiper": "^11.1.14",
-    "xrpl": "^3.1.0",
-    "scientific-to-decimal": "^1.1.1"
+    "xrpl": "^3.1.0"
   },
   "scripts": {
     "dev": "next dev -p 3002",
