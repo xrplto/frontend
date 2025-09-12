@@ -45,7 +45,7 @@ export function fNumberWithCurreny(num, exchRate) {
 const trimDecimal = (num, threshold = 4) => {
   // former f, fp
   //console.log('trimDecimal-ninit', num, typeof num, isNaN(num));
-  num = typeof num == 'string' ? num : num.toString();
+  num = typeof num === 'string' ? num : num.toString();
   //console.log('trimDecimal-string', num, typeof num);
   num = num.includes('e') ? new Decimal(num).toFixed() : num;
   //console.log('trimDecimal', num, typeof num);

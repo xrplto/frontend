@@ -74,7 +74,8 @@ const jsonLdSchema = {
 };
 
 function XRPLToApp({ Component, pageProps, router }) {
-  const isUnderMaintenance = process.env.MAINTENANCE;
+  // Treat MAINTENANCE env as boolean string ("true"/"false")
+  const isUnderMaintenance = process.env.MAINTENANCE === 'true';
   const { isOpen, msg, variant, openSnackbar, closeSnackbar } = useSnackbar();
 
   // Memoize ogp to prevent unnecessary re-renders

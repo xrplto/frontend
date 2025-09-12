@@ -38,7 +38,8 @@ const OverviewWrapper = styled(Box)(
 );
 
 export default function CollectedCreatedNFTs({ type, account, limit, collection }) {
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  // Allow overriding via env; fall back to current public API to avoid breaking
+  const BASE_URL = process.env.NEXT_PUBLIC_NFT_API_URL || 'https://api.xrpnft.com/api';
 
   const { darkMode } = useContext(AppContext);
   const theme = useTheme();

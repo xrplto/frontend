@@ -181,7 +181,7 @@ function Store() {
         };
         console.log('Transaction body:', body);
 
-        if (wallet_type == 'xaman') {
+        if (wallet_type === 'xaman') {
           console.log('Initiating XUMM transfer');
           const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
           console.log('XUMM transfer response:', res2.data);
@@ -198,7 +198,7 @@ function Store() {
             setSnackbarMessage('Please complete the payment in XUMM.');
             setSnackbarOpen(true);
           }
-        } else if (wallet_type == 'gem') {
+        } else if (wallet_type === 'gem') {
           await isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               await submitTransaction({
@@ -233,7 +233,7 @@ function Store() {
               setPageLoading(false);
             }
           });
-        } else if (wallet_type == 'crossmark') {
+        } else if (wallet_type === 'crossmark') {
           await sdk.methods.signAndSubmitAndWait(body).then(async ({ response }) => {
             if (response.data.meta.isSuccess) {
               const response = await fetch(`${chatURL}/api/purchase-chat-feature`, {

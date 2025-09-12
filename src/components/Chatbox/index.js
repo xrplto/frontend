@@ -270,9 +270,18 @@ function Chatbox() {
     };
   }, [showEmojiPicker]);
 
-  // Initialize and manage socket connection (lazy-load socket.io-client)
+  // Initialize and manage socket connection (lazy-load when drawer opens)
   useEffect(() => {
     let mounted = true;
+    if (!chatOpen) {
+      // If drawer is closed, ensure socket is cleaned up
+      if (socketRef.current) {
+        const s = socketRef.current;
+        s.disconnect();
+        socketRef.current = null;
+      }
+      return () => { mounted = false; };
+    }
 
     // Socket event handlers (defined here to keep same references for on/off)
     const handleInit = (msg) => {
@@ -310,7 +319,7 @@ function Chatbox() {
       console.log('Socket connected status:', socket.connected);
     };
 
-    // Lazy import socket.io-client to avoid in initial bundle
+    // Lazy import socket.io-client only when chat opens
     import('socket.io-client').then(({ io }) => {
       if (!mounted) return;
       socketRef.current = io(chatURL, {
@@ -346,7 +355,7 @@ function Chatbox() {
         socketRef.current = null;
       }
     };
-  }, []);
+  }, [chatOpen]);
 
   const sendMessage = () => {
     if (accountProfile?.account && (message.trim().length > 0 || nfts.length > 0)) {

@@ -291,7 +291,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
               await submitTransaction({
                 transaction: transferTxData
               }).then(({ type, result }) => {
-                if (type == 'response') {
+                if (type === 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
                 } else {
@@ -358,7 +358,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
   };
 
   const handleMsg = () => {
-    if (isProcessing == 1) return 'Pending Transferring';
+    if (isProcessing === 1) return 'Pending Transferring';
     if (!destination) return 'Enter an Account';
     else return 'Transfer';
   };

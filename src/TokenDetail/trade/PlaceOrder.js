@@ -336,7 +336,7 @@ export default function PlaceOrder({
               dispatch(updateProcess(1));
 
               await createOffer(offer).then(({ type, result }) => {
-                if (type == 'response') {
+                if (type === 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
                 } else {

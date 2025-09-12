@@ -5,8 +5,9 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
     enabled: process.env.ANALYZE === 'true',
 })
 
-const isProd = process.env.RUN_ENV === 'production';
-const isDev = process.env.RUN_ENV === 'development';
+// Support RUN_ENV while falling back to NODE_ENV for safety
+const isProd = (process.env.RUN_ENV ? process.env.RUN_ENV === 'production' : process.env.NODE_ENV === 'production');
+const isDev = (process.env.RUN_ENV ? process.env.RUN_ENV === 'development' : process.env.NODE_ENV !== 'production');
 
 const config = {
   poweredByHeader: false,
@@ -17,12 +18,8 @@ const config = {
     MAINTENANCE: process.env.MAINTENANCE,
     RUN_ENV: process.env.RUN_ENV
   },
-  // Generate source maps in development for better debugging
-  productionBrowserSourceMaps: isDev,
-  compiler: {
-    // Disable removeConsole as it can cause issues with module resolution
-    // removeConsole: process.env.NODE_ENV === 'production',
-  },
+  // Only generate production source maps when explicitly enabled elsewhere
+  productionBrowserSourceMaps: false,
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],

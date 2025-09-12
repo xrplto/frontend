@@ -379,7 +379,7 @@ export default function Advertise() {
               await submitTransaction({
                 transaction: transactionData
               }).then(({ type, result }) => {
-                if (type == 'response') {
+                if (type === 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
                   setTimeout(() => {

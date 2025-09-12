@@ -612,7 +612,7 @@ export const FloatingPinnedChart = memo(() => {
               await submitTransaction({
                 transaction: transactionData
               }).then(({ type, result }) => {
-                if (type == 'response') {
+                if (type === 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
                   setTimeout(() => {
@@ -729,7 +729,7 @@ export const FloatingPinnedChart = memo(() => {
 
               dispatch(updateProcess(1));
               await setTrustline(trustSet).then(({ type, result }) => {
-                if (type == 'response') {
+                if (type === 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
                   setTimeout(() => {

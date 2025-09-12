@@ -1559,7 +1559,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               await submitTransaction({
                 transaction: transactionData
               }).then(({ type, result }) => {
-                if (type == 'response') {
+                if (type === 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
                   setTimeout(() => {
@@ -1702,7 +1702,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const handleChangeAmount1 = (e) => {
     let value = e.target.value;
 
-    if (value == '.') value = '0.';
+    if (value === '.') value = '0.';
     if (isNaN(Number(value))) return;
 
     setAmount1(value);
@@ -1733,7 +1733,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const handleChangeAmount2 = (e) => {
     let value = e.target.value;
 
-    if (value == '.') value = '0.';
+    if (value === '.') value = '0.';
     if (isNaN(Number(value))) return;
 
     setAmount2(value);
@@ -1826,7 +1826,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
 
   const handleMsg = () => {
-    if (isProcessing == 1) return 'Pending Exchanging';
+    if (isProcessing === 1) return 'Pending Exchanging';
     
     // Check for missing trustlines
     if (isLoggedIn && ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))) {
@@ -1903,7 +1903,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
               dispatch(updateProcess(1));
               await setTrustline(trustSet).then(({ type, result }) => {
-                if (type == 'response') {
+                if (type === 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
                   setTimeout(() => {
@@ -4010,7 +4010,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   fullWidth
                   onClick={handlePlaceOrder}
                   disabled={
-                    isProcessing == 1 || 
+                    isProcessing === 1 || 
                     (!isLoggedIn) ||
                     (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
                   }

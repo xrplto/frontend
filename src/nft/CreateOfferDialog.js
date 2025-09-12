@@ -358,7 +358,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
               await submitTransaction({
                 transaction: offerTxData
               }).then(({ type, result }) => {
-                if (type == 'response') {
+                if (type === 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
                 } else {
@@ -430,7 +430,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
   };
 
   const handleMsg = () => {
-    if (isProcessing == 1) return 'Pending Creating';
+    if (isProcessing === 1) return 'Pending Creating';
     if (!amount) return 'Enter an Amount';
     else return 'Create';
   };
@@ -662,14 +662,14 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
               <Button
                 variant="contained"
                 startIcon={
-                  isProcessing == 1 ? (
+                  isProcessing === 1 ? (
                     <CircularProgress disableShrink size={20} color="inherit" />
                   ) : (
                     <AddCircleIcon />
                   )
                 }
                 onClick={handleCreateOffer}
-                disabled={isProcessing == 1 || !amount}
+                disabled={isProcessing === 1 || !amount}
                 sx={{
                   minWidth: 200,
                   height: '52px',

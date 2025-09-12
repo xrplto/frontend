@@ -456,7 +456,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
 
               dispatch(updateProcess(1));
               await setTrustline(trustSet).then(({ type, result }) => {
-                if (type == 'response') {
+                if (type === 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
                 } else {
@@ -611,7 +611,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
         LimitAmount.value = '0';
 
         body = { LimitAmount, Flags, user_token, TransactionType: 'TrustSet' };
-        if (wallet_type == 'xaman') {
+        if (wallet_type === 'xaman') {
           const res1 = await axios.post(`${BASE_URL}/xumm/trustset`, body);
           if (res1.status === 200) {
             const uuid = res1.data.data.uuid;
@@ -624,7 +624,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
             setNextUrl(nextlink);
             setOpenScanQR(true);
           }
-        } else if (wallet_type == 'gem') {
+        } else if (wallet_type === 'gem') {
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               await submitTransaction({
@@ -641,7 +641,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
               handleConfirmClose();
             }
           });
-        } else if (wallet_type == 'crossmark') {
+        } else if (wallet_type === 'crossmark') {
           await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
             if (response.data.meta.isSuccess) {
               setXamanStep(4);
@@ -668,7 +668,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
           SourceTag: 20221212,
           DestinationTag: 20221212
         };
-        if (wallet_type == 'xaman') {
+        if (wallet_type === 'xaman') {
           const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
           if (res2.status === 200) {
             const uuid = res2.data.data.uuid;
@@ -681,7 +681,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
             setNextUrl(nextlink);
             setOpenScanQR(true);
           }
-        } else if (wallet_type == 'gem') {
+        } else if (wallet_type === 'gem') {
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               await submitTransaction({
@@ -698,7 +698,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
               handleConfirmClose();
             }
           });
-        } else if (wallet_type == 'crossmark') {
+        } else if (wallet_type === 'crossmark') {
           await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
             if (response.data.meta.isSuccess) {
               setXamanStep(2);

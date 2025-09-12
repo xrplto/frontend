@@ -142,7 +142,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
                             await submitTransaction({
                                 transaction: burnTxData
                             }).then(({ type, result }) => {
-                                if (type == "response") {
+                                if (type === "response") {
                                     dispatch(updateProcess(2));
                                     dispatch(updateTxHash(result?.hash));
                                 }
