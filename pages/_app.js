@@ -40,7 +40,7 @@ if (typeof window !== 'undefined') {
 // Lazy load non-critical components
 const XSnackbar = dynamic(() => import('src/components/Snackbar'), { ssr: false, loading: () => null });
 const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), { ssr: false, loading: () => null });
-const NextNProgress = dynamic(() => import('nextjs-progressbar'), { ssr: false, loading: () => null });
+const ProgressBar = dynamic(() => import('src/components/ProgressBar'), { ssr: false, loading: () => null });
 const PinnedChartTracker = dynamic(() => import('src/components/PinnedChartTracker'), { ssr: false, loading: () => null });
 const Wallet = dynamic(() => import('src/components/Wallet'), { ssr: false, loading: () => null });
 const ErrorDebugger = dynamic(() => import('src/components/ErrorDebugger').catch(() => ({ default: () => null })), { 
@@ -162,7 +162,7 @@ function XRPLToApp({ Component, pageProps, router }) {
       </Head>
 
       <ContextProvider data={data} openSnackbar={openSnackbar}>
-        <NextNProgress />
+        <ProgressBar />
         <ThemeProvider>
           <SnackbarProvider
             maxSnack={2}

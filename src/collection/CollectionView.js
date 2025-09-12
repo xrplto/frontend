@@ -2,7 +2,14 @@ import React, { useState, useEffect, useContext, useCallback, useMemo, useRef, l
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import debounce from 'lodash.debounce';
+// Native debounce implementation
+const debounce = (func, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func.apply(null, args), delay);
+  };
+};
 
 // Lazy load heavy components
 const InfiniteScroll = dynamic(() => import('react-infinite-scroll-component'), {
