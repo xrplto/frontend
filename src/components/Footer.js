@@ -1,126 +1,124 @@
 import React, { useContext } from 'react';
 import Image from 'next/image';
-import { alpha, Box, Container, Grid, Link, Stack, styled, Typography } from '@mui/material';
+import { Box, Container, Link, Typography } from '@mui/material';
+import { styled, alpha } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
 
-const FooterWrapper = styled(Box)(
-  ({ theme }) => `
-    width: 100%;
-    display: flex;
-    align-items: center;
-    margin-bottom: ${theme.spacing(1)};
-  `
-);
+const Root = styled('footer')(({ theme }) => ({
+  width: '100%',
+  borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+  background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, transparent 60%)`,
+  marginTop: theme.spacing(3)
+}));
+
+const FooterLink = ({ href, children }) => {
+  const external = /^https?:\/\//.test(href || '');
+  return (
+    <Link
+      href={href}
+      underline="none"
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noreferrer noopener' : undefined}
+      sx={{
+        color: 'text.secondary',
+        fontSize: '0.86rem',
+        px: 0.5,
+        borderRadius: 1,
+        transition: 'all .15s ease',
+        '&:hover': {
+          color: 'primary.main',
+          backgroundColor: (t) => alpha(t.palette.primary.main, 0.06)
+        }
+      }}
+    >
+      {children}
+    </Link>
+  );
+};
 
 function Footer() {
   const { darkMode } = useContext(AppContext);
-  const img = darkMode ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
+  const year = new Date().getFullYear();
+  const logo = darkMode ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
 
-  const linkStyles = {
-    mt: 0.75,
-    display: 'inline-flex',
-    underline: 'none',
-    target: '_blank',
-    rel: 'noreferrer noopener'
-  };
+  const products = [
+    { href: '/swap', label: 'Token Swap' },
+    { href: '/market-metrics', label: 'Market Metrics' },
+    { href: '/top-traders', label: 'Top Traders' },
+    { href: '/api-docs', label: 'Token API' }
+  ];
+  const company = [
+    { href: '/about', label: 'About' },
+    { href: '/terms', label: 'Terms' },
+    { href: '/privacy', label: 'Privacy' },
+    { href: '/disclaimer', label: 'Disclaimer' }
+  ];
+  const support = [
+    { href: 'https://hmc0r1fnxt5.typeform.com/to/jd3HUclQ', label: 'Request' },
+    { href: '/faq', label: 'FAQ' }
+  ];
+  const socials = [
+    { href: 'https://twitter.com/xrplto', label: 'Twitter' },
+    { href: 'https://t.me/xrplto/', label: 'Telegram' },
+    { href: 'https://www.reddit.com/r/xrplto/', label: 'Reddit' },
+    { href: 'https://xrpl.to/discord/', label: 'Discord' }
+  ];
 
-  return (
-    <FooterWrapper>
-      <Container
-        maxWidth="xl"
+  const Group = ({ label, items }) => (
+    <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.25 }}>
+      <Typography
+        variant="caption"
         sx={{
-          mt: 2,
-          mb: 4,
-          '& .MuiLink-root': {
-            color: darkMode ? 'rgb(189, 189, 189) !important' : 'rgb(97, 97, 97) !important',
-            '&:hover': {
-              color: darkMode ? '#00C853 !important' : '#3949AB !important'
-            }
-          }
+          textTransform: 'uppercase',
+          letterSpacing: 0.6,
+          fontWeight: 700,
+          color: (t) => alpha(t.palette.primary.main, 0.8)
         }}
       >
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={5} lg={5} sx={{ mt: 1 }}>
-            <Link
-              href="/"
-              sx={{ pl: 0, pr: 0, py: 2 }}
-              underline="none"
-              rel="noreferrer noopener nofollow"
-            >
-              <Image src={img} width={100} height={37} alt="XRPL.to Logo" priority />
+        {label}
+      </Typography>
+      <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.4) }}>•</Typography>
+      {items.map((it, idx) => (
+        <Box key={it.label} sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+          <FooterLink href={it.href}>{it.label}</FooterLink>
+          {idx < items.length - 1 && (
+            <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.3) }}>/</Typography>
+          )}
+        </Box>
+      ))}
+    </Box>
+  );
+
+  return (
+    <Root>
+      <Container maxWidth={false} sx={{ px: { xs: 2, md: 4, xl: 8 }, py: 1.25, pb: { xs: 7, md: 7 } }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1,
+            flexWrap: 'wrap'
+          }}
+        >
+          <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+            <Link href="/" underline="none" sx={{ display: 'inline-flex' }}>
+              <Image src={logo} alt="XRPL.to" width={110} height={38} priority />
             </Link>
-          </Grid>
-
-          <Grid item xs={12} md={7} lg={7} sx={{ mt: 1 }}>
-            <Grid container spacing={2}>
-              {[
-                {
-                  title: 'Products',
-                  links: [
-                    { href: '/swap', label: 'Token Swap' },
-                    { href: '/market-metrics', label: 'Market Metrics' },
-                    { href: '/top-traders', label: 'Top Traders' },
-                    { href: '/api-docs', label: 'Token API' },
-                    { href: '/sitemap/tokens', label: 'Sitemap' }
-                  ]
-                },
-                {
-                  title: 'Company',
-                  links: [
-                    { href: '/about', label: 'About us' },
-                    { href: '/terms', label: 'Terms of use' },
-                    { href: '/privacy', label: 'Privacy Policy' },
-                    { href: '/disclaimer', label: 'Disclaimer' }
-                  ]
-                },
-                {
-                  title: 'Support',
-                  links: [
-                    { href: 'https://hmc0r1fnxt5.typeform.com/to/jd3HUclQ', label: 'Request Form' },
-                    { href: '/faq', label: 'FAQ' }
-                  ]
-                },
-                {
-                  title: 'Socials',
-                  links: [
-                    { href: 'https://twitter.com/xrplto', label: 'Twitter' },
-                    { href: 'https://www.facebook.com/xrpl.to/', label: 'Facebook' },
-                    { href: 'https://t.me/xrplto/', label: 'Telegram' },
-                    { href: 'https://www.reddit.com/r/xrplto/', label: 'Reddit' },
-                    { href: 'https://xrpl.to/discord/', label: 'Discord' }
-                  ]
-                }
-              ].map((section) => (
-                <Grid item xs={6} sm={6} md={3} lg={3} key={section.title} sx={{ mt: 1 }}>
-                  <Stack spacing={1}>
-                    <Typography variant="h2" sx={{ fontWeight: 600, fontSize: '1rem' }}>
-                      {section.title}
-                    </Typography>
-                    {section.links.map((link) => (
-                      <Link
-                        key={link.label}
-                        href={link.href}
-                        sx={{ ...linkStyles, mt: link === section.links[0] ? 1 : 0.75 }}
-                      >
-                        <Typography variant="link" sx={{ fontSize: '0.9rem' }}>
-                          {link.label}
-                        </Typography>
-                      </Link>
-                    ))}
-                  </Stack>
-                </Grid>
-              ))}
-            </Grid>
-          </Grid>
-
-          <Grid item xs={12} sx={{ mt: 2 }}>
-            <Typography textAlign="left" variant="subtitle1" sx={{ fontSize: '0.85rem' }}>
-              &copy; 2025 xrpl.to. All rights reserved
+            <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'none', md: 'inline' } }}>
+              © {year}
             </Typography>
-          </Grid>
-        </Grid>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flex: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+            <Group label="Products" items={products} />
+            <Group label="Company" items={company} />
+            <Group label="Support" items={support} />
+            <Group label="Socials" items={socials} />
+          </Box>
+        </Box>
       </Container>
-    </FooterWrapper>
+    </Root>
   );
 }
 
