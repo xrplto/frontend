@@ -124,6 +124,11 @@ export default function Description({
           0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
         position: 'relative',
         overflow: 'hidden',
+        // Sidebar sizing: compact and right-aligned
+        // Slightly inset to align with TokenSummary
+        width: '100%',
+        maxWidth: { md: 'calc(100% - 16px)' },
+        ml: { md: 'auto' },
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&::before': {
           display: 'none'

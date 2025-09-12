@@ -816,7 +816,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
   }
 
   return (
-    <Stack spacing={1}>
+    <Stack spacing={1} sx={{ mx: 0, width: '100%' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={tabValue} onChange={handleTabChange} aria-label="trading tabs">
           <Tab label="Trading History" />

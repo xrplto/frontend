@@ -955,6 +955,9 @@ const PriceChartAdvanced = memo(({ token }) => {
     <Paper 
       elevation={0} 
       sx={{ 
+        // Keep within grid column to preserve two-column layout
+        mx: 0,
+        width: '100%',
         p: isMobile ? 1 : 2,
         pr: isMobile ? 0.5 : 2,
         background: theme.chart?.background || (isDark ? '#0d0d0d' : '#fafafa'),

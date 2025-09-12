@@ -54,6 +54,9 @@ const StyledCard = styled(Card)(({ theme }) => ({
     0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
   position: 'relative',
   overflow: 'hidden',
+  // Slightly inset to align with TokenSummary
+  width: '100%',
+  [theme.breakpoints.up('md')]: { maxWidth: 'calc(100% - 16px)', marginLeft: 'auto' },
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&::before': {
     display: 'none'

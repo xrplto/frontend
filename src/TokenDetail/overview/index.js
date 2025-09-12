@@ -160,47 +160,57 @@ const Overview = memo(({ token, onTransactionClick }) => {
   if (!user) user = token.name;
 
   return (
-    <Grid container spacing={{ xs: 0, md: 3 }}>
-      <Grid item xs={12} md={12} lg={8}>
-        <PriceChart token={token} />
-        {!isMobile && !isTablet && (
-          <>
-            <TradingHistory 
-              tokenId={token.md5} 
-              amm={token.AMM} 
-              token={token} 
-              pairs={pairs} 
-              onTransactionClick={onTransactionClick}
-            />
-            {/* <MDEditor value={description} renderHTML={text => <ReactMarkdown children={text} />} onChange={handleEditorChange} style={{ height: '500px' }} /> */}
-          </>
-        )}
-      </Grid>
-      <Grid item xs={12} md={12} lg={4}>
-        <Swap token={token} />
-        <PriceStatistics token={token} sx={{ mt: 3 }} />
-        <Description
-          token={token}
-          showEditor={showEditor}
-          setShowEditor={setShowEditor}
-          description={description}
-          onApplyDescription={onApplyDescription}
-          mdEditor={showEditor ? (
-            <MDEditor
-              value={description}
-              renderHTML={(text) => mdParser.render(text)}
-              onChange={handleEditorChange}
-              style={{ height: '400px' }}
-              view={{ menu: true, md: true, html: true, fullScreen: false, hideMenu: false }}
-              canView={{ menu: true, md: true, html: true, fullScreen: false, hideMenu: true }}
-            />
-          ) : null}
-        />
-        <Box sx={{ mt: 1.5 }}>
-          <TrendingTokens />
+    <>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: 'flex-start',
+          gap: { xs: 0, md: 3 }
+        }}
+      >
+        <Box sx={{ flex: { md: '0 0 70%' }, maxWidth: { md: '70%' }, width: '100%' }}>
+          <PriceChart token={token} />
+          {!isMobile && !isTablet && (
+            <Box sx={{ mt: 3 }}>
+              <TradingHistory 
+                tokenId={token.md5} 
+                amm={token.AMM} 
+                token={token} 
+                pairs={pairs} 
+                onTransactionClick={onTransactionClick}
+              />
+            </Box>
+          )}
         </Box>
-      </Grid>
-    </Grid>
+        <Box sx={{ flex: { md: '0 0 30%' }, maxWidth: { md: '30%' }, width: '100%' }}>
+          <Swap token={token} />
+          <PriceStatistics token={token} sx={{ mt: 3 }} />
+          <Description
+            token={token}
+            showEditor={showEditor}
+            setShowEditor={setShowEditor}
+            description={description}
+            onApplyDescription={onApplyDescription}
+            mdEditor={showEditor ? (
+              <MDEditor
+                value={description}
+                renderHTML={(text) => mdParser.render(text)}
+                onChange={handleEditorChange}
+                style={{ height: '400px' }}
+                view={{ menu: true, md: true, html: true, fullScreen: false, hideMenu: false }}
+                canView={{ menu: true, md: true, html: true, fullScreen: false, hideMenu: true }}
+              />
+            ) : null}
+          />
+          <Box sx={{ mt: 1.5 }}>
+            <TrendingTokens />
+          </Box>
+        </Box>
+      </Box>
+
+      
+    </>
   );
 });
 

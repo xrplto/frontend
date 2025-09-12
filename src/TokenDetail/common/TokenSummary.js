@@ -454,6 +454,9 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
     <Box
       sx={{
         p: { xs: 0.3, sm: 0.4 },
+        // Slightly widen more on desktop for alignment
+        width: { md: 'calc(100% + 24px)' },
+        mr: { md: '-24px' },
         borderRadius: { xs: '6px', sm: '8px' },
         background: 'transparent',
         backdropFilter: 'none',
