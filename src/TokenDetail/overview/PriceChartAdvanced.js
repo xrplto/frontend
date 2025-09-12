@@ -540,16 +540,13 @@ const PriceChartAdvanced = memo(({ token }) => {
       if (range && dataRef.current && dataRef.current.length > 0) {
         clearTimeout(zoomCheckTimeout);
         zoomCheckTimeout = setTimeout(() => {
-          // Get the full data range
+          // Determine if user has scrolled away from the most recent bars.
+          // Only this condition will pause auto-updates to avoid false positives.
           const dataLength = dataRef.current.length;
-          // Check if we're seeing less than 95% of the data (allowing some margin)
-          const visibleBars = range.to - range.from;
-          const isZoomed = visibleBars < (dataLength * 0.95);
-          
-          // Also check if user has scrolled away from the latest data
-          const isScrolledAway = range.to < (dataLength - 5); // Not showing last 5 bars
-          const shouldPauseUpdates = isZoomed || isScrolledAway;
-          
+          const isScrolledAway = range.to < (dataLength - 2); // not showing last ~2 bars
+
+          const shouldPauseUpdates = isScrolledAway;
+
           if (shouldPauseUpdates !== isUserZoomedRef.current) {
             setIsUserZoomed(shouldPauseUpdates);
             isUserZoomedRef.current = shouldPauseUpdates;
@@ -1023,7 +1020,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           )}
           <Box sx={{ 
             ml: 2, 
-            minWidth: isUserZoomed ? 140 : 80,
+            minWidth: 140,
             display: 'inline-flex',
             alignItems: 'center',
             height: 20,
