@@ -2,9 +2,30 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Decimal from 'decimal.js';
 import PropTypes from 'prop-types';
+import dynamic from 'next/dynamic';
 // import { ColorExtractor } from 'react-color-extractor';
-import useWindowSize from 'react-use/lib/useWindowSize';
-import Confetti from 'react-confetti';
+// Native window size hook
+const useWindowSize = () => {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  
+  useEffect(() => {
+    const updateSize = () => {
+      setSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+  
+  return size;
+};
+
+// Lazy load confetti only when component renders
+const Confetti = dynamic(() => import('react-confetti'), {
+  ssr: false,
+  loading: () => null
+});
 
 // Material
 import { useTheme } from '@mui/material/styles';
