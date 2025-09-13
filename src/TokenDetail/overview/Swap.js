@@ -38,7 +38,7 @@ import { processOrderbookOffers } from 'src/utils/orderbookService';
 import Image from 'next/image';
 import { PuffLoader } from 'react-spinners';
 import { enqueueSnackbar } from 'notistack';
-import OrderBook from 'src/TokenDetail/trade/OrderBook';
+import OrderBookTable from 'src/TokenDetail/trade/OrderBookTable';
 const Orders = React.lazy(() => import('src/TokenDetail/trade/account/Orders'));
 
 const pulse = keyframes`
@@ -2107,28 +2107,95 @@ const Swap = ({ token }) => {
             overflow: 'auto',
             backgroundColor: alpha(theme.palette.background.default, 0.01)
           }}>
-            <OrderBook
-              pair={{
-                curr1: { ...curr1, name: curr1.name || curr1.currency },
-                curr2: { ...curr2, name: curr2.name || curr2.currency }
-              }}
-              asks={asks}
-              bids={bids}
-              limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
-              isBuyOrder={!revert}
-              onAskClick={(e, idx) => {
-                if (asks && asks[idx]) {
-                  setLimitPrice(asks[idx].price.toString());
-                  setOrderType('limit');
-                }
-              }}
-              onBidClick={(e, idx) => {
-                if (bids && bids[idx]) {
-                  setLimitPrice(bids[idx].price.toString());
-                  setOrderType('limit');
-                }
-              }}
-            />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {/* Asks (Sell Orders) */}
+              <Box>
+                <Typography variant="caption" sx={{ color: theme.palette.error.main, fontWeight: 600, mb: 0.5, display: 'block' }}>
+                  Sell Orders
+                </Typography>
+                <OrderBookTable
+                  levels={asks}
+                  orderType={2} // ORDER_TYPE_ASKS
+                  pair={{
+                    curr1: { ...curr1, name: curr1.name || curr1.currency },
+                    curr2: { ...curr2, name: curr2.name || curr2.currency }
+                  }}
+                  selected={[0, 0]}
+                  limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
+                  isBuyOrder={!revert}
+                  onMouseOver={() => {}}
+                  onMouseLeave={() => {}}
+                  onClick={(e, idx) => {
+                    if (asks && asks[idx]) {
+                      setLimitPrice(asks[idx].price.toString());
+                      setOrderType('limit');
+                    }
+                  }}
+                  getIndicatorProgress={(value) => {
+                    if (isNaN(value)) return 0;
+                    let totA = 0, avgA = 0, totB = 0, avgB = 0;
+                    if (asks.length >= 1) {
+                      totA = Number(asks[asks.length - 1].sumAmount);
+                      avgA = totA / asks.length;
+                    }
+                    if (bids.length >= 1) {
+                      totB = Number(bids[bids.length - 1].sumAmount);
+                      avgB = totB / bids.length;
+                    }
+                    const avg = (Number(avgA) + Number(avgB)) / 2;
+                    const max100 = (avg / 50) * 100;
+                    const progress = value / max100 > 1 ? 1 : value / max100;
+                    return (progress * 100).toFixed(0);
+                  }}
+                  allBids={bids}
+                  allAsks={asks}
+                />
+              </Box>
+              
+              {/* Bids (Buy Orders) */}
+              <Box>
+                <Typography variant="caption" sx={{ color: theme.palette.success.main, fontWeight: 600, mb: 0.5, display: 'block' }}>
+                  Buy Orders
+                </Typography>
+                <OrderBookTable
+                  levels={bids}
+                  orderType={1} // ORDER_TYPE_BIDS
+                  pair={{
+                    curr1: { ...curr1, name: curr1.name || curr1.currency },
+                    curr2: { ...curr2, name: curr2.name || curr2.currency }
+                  }}
+                  selected={[0, 0]}
+                  limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
+                  isBuyOrder={!revert}
+                  onMouseOver={() => {}}
+                  onMouseLeave={() => {}}
+                  onClick={(e, idx) => {
+                    if (bids && bids[idx]) {
+                      setLimitPrice(bids[idx].price.toString());
+                      setOrderType('limit');
+                    }
+                  }}
+                  getIndicatorProgress={(value) => {
+                    if (isNaN(value)) return 0;
+                    let totA = 0, avgA = 0, totB = 0, avgB = 0;
+                    if (asks.length >= 1) {
+                      totA = Number(asks[asks.length - 1].sumAmount);
+                      avgA = totA / asks.length;
+                    }
+                    if (bids.length >= 1) {
+                      totB = Number(bids[bids.length - 1].sumAmount);
+                      avgB = totB / bids.length;
+                    }
+                    const avg = (Number(avgA) + Number(avgB)) / 2;
+                    const max100 = (avg / 50) * 100;
+                    const progress = value / max100 > 1 ? 1 : value / max100;
+                    return (progress * 100).toFixed(0);
+                  }}
+                  allBids={bids}
+                  allAsks={asks}
+                />
+              </Box>
+            </Box>
           </Box>
         </Box>
       )}
