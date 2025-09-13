@@ -674,7 +674,34 @@ const TransactionDetailsPanel = memo(({
               </Box>
               <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                 {asks.length > 0 ? (
-                  <Stack spacing={0.5} sx={{ p: 1 }}>
+                  <>
+                    <Box
+                      sx={{
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 2,
+                        px: 1,
+                        py: 0.5,
+                        background: theme.palette.background.paper,
+                        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.error.main, fontWeight: 600 }}>
+                          Price
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7) }}>
+                          Amount
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: alpha(theme.palette.text.secondary, 0.7), display: { xs: 'none', sm: 'inline' } }}
+                        >
+                          Cum
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Stack spacing={0.5} sx={{ p: 1 }}>
                     {(() => {
                       const askSlice = asks.slice(0, 30);
                       return askSlice
@@ -689,6 +716,7 @@ const TransactionDetailsPanel = memo(({
                                 if (onAskClick) onAskClick(e, origIdx);
                               }}
                               sx={{
+                                position: 'relative',
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 fontSize: '0.75rem',
@@ -699,21 +727,35 @@ const TransactionDetailsPanel = memo(({
                                 '&:hover': { background: alpha(theme.palette.error.main, 0.06) }
                               }}
                             >
-                              <Typography variant="caption" sx={{ color: theme.palette.error.main }}>
-                                {level.price}
-                              </Typography>
-                              <Typography variant="caption">{level.amount}</Typography>
-                              <Typography
-                                variant="caption"
-                                sx={{ display: { xs: 'none', sm: 'inline' }, color: alpha(theme.palette.text.secondary, 0.8) }}
-                              >
-                                {level.sumAmount}
-                              </Typography>
-                            </Box>
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            left: 0,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            height: '70%',
+                            width: `${getIndicatorProgress(level.amount)}%`,
+                            background: alpha(theme.palette.error.main, 0.08),
+                            borderRadius: '4px',
+                            pointerEvents: 'none'
+                          }}
+                        />
+                        <Typography variant="caption" sx={{ color: theme.palette.error.main, position: 'relative', zIndex: 1 }}>
+                          {fNumber(level.price)}
+                        </Typography>
+                        <Typography variant="caption" sx={{ position: 'relative', zIndex: 1 }}>{fNumber(level.amount)}</Typography>
+                         <Typography
+                           variant="caption"
+                          sx={{ display: { xs: 'none', sm: 'inline' }, color: alpha(theme.palette.text.secondary, 0.8), position: 'relative', zIndex: 1 }}
+                          >
+                                {fNumber(level.sumAmount)}
+                          </Typography>
+                      </Box>
                           );
                         });
                     })()}
                   </Stack>
+                  </>
                 ) : (
                   <Box sx={{ p: 2, textAlign: 'center' }}>
                     <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8) }}>
@@ -757,12 +799,40 @@ const TransactionDetailsPanel = memo(({
               </Box>
               <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                 {bids.length > 0 ? (
-                  <Stack spacing={0.5} sx={{ p: 1 }}>
+                  <>
+                    <Box
+                      sx={{
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 2,
+                        px: 1,
+                        py: 0.5,
+                        background: theme.palette.background.paper,
+                        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.success.main, fontWeight: 600 }}>
+                          Price
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7) }}>
+                          Amount
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: alpha(theme.palette.text.secondary, 0.7), display: { xs: 'none', sm: 'inline' } }}
+                        >
+                          Cum
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Stack spacing={0.5} sx={{ p: 1 }}>
                     {bids.slice(0, 30).map((level, idx) => (
                       <Box
                         key={`bid-${idx}-${level.price}-${level.amount}`}
                         onClick={(e) => { if (onBidClick) onBidClick(e, idx); }}
                         sx={{
+                          position: 'relative',
                           display: 'flex',
                           justifyContent: 'space-between',
                           fontSize: '0.75rem',
@@ -773,16 +843,30 @@ const TransactionDetailsPanel = memo(({
                           '&:hover': { background: alpha(theme.palette.success.main, 0.06) }
                         }}
                       >
-                        <Typography variant="caption" sx={{ color: theme.palette.success.main }}>
-                          {level.price}
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            left: 0,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            height: '70%',
+                            width: `${getIndicatorProgress(level.amount)}%`,
+                            background: alpha(theme.palette.success.main, 0.08),
+                            borderRadius: '4px',
+                            pointerEvents: 'none'
+                          }}
+                        />
+                        <Typography variant="caption" sx={{ color: theme.palette.success.main, position: 'relative', zIndex: 1 }}>
+                          {fNumber(level.price)}
                         </Typography>
-                        <Typography variant="caption">{level.amount}</Typography>
-                        <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'inline' }, color: alpha(theme.palette.text.secondary, 0.8) }}>
-                          {level.sumAmount}
+                        <Typography variant="caption" sx={{ position: 'relative', zIndex: 1 }}>{fNumber(level.amount)}</Typography>
+                        <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'inline' }, color: alpha(theme.palette.text.secondary, 0.8), position: 'relative', zIndex: 1 }}>
+                          {fNumber(level.sumAmount)}
                         </Typography>
                       </Box>
                     ))}
                   </Stack>
+                  </>
                 ) : (
                   <Box sx={{ p: 2, textAlign: 'center' }}>
                     <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8) }}>
