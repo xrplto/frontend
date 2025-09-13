@@ -183,7 +183,7 @@ const Overview = memo(({ token, onTransactionClick, onOrderBookToggle, orderBook
             </Box>
           )}
         </Box>
-        <Box sx={{ flex: { md: '0 0 30%' }, maxWidth: { md: '30%' }, width: '100%' }}>
+        <Box sx={{ flex: { md: '0 0 30%' }, maxWidth: { md: '30%' }, width: '100%', pr: { md: 1.5, lg: 2 } }}>
           <Swap 
             token={token}
             onOrderBookToggle={onOrderBookToggle}

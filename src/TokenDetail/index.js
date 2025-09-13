@@ -130,13 +130,13 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
           pr: {
             md: (txDetailsOpen && orderBookPanelOpen) ? '520px' : 
                 txDetailsOpen ? '256px' : 
-                orderBookPanelOpen ? '280px' : 0,
+                orderBookPanelOpen ? '312px' : 0,
             lg: (txDetailsOpen && orderBookPanelOpen) ? '576px' : 
                 txDetailsOpen ? '272px' : 
-                orderBookPanelOpen ? '320px' : 0,
+                orderBookPanelOpen ? '352px' : 0,
             xl: (txDetailsOpen && orderBookPanelOpen) ? '632px' : 
                 txDetailsOpen ? '288px' : 
-                orderBookPanelOpen ? '360px' : 0
+                orderBookPanelOpen ? '392px' : 0
           },
           pl: {
             md: creatorTxOpen ? '240px' : 0,
@@ -147,13 +147,15 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
       >
         {!isMobile && <LinkCascade token={token} />}
         
-        <TokenSummary 
-          token={token} 
-          onCreatorTxToggle={handleCreatorTxToggle}
-          creatorTxOpen={creatorTxOpen}
-          latestCreatorTx={latestCreatorTx}
-          setLatestCreatorTx={setLatestCreatorTx}
-        />
+        <Box sx={{ pr: { md: 1.5, lg: 2 } }}>
+          <TokenSummary 
+            token={token} 
+            onCreatorTxToggle={handleCreatorTxToggle}
+            creatorTxOpen={creatorTxOpen}
+            latestCreatorTx={latestCreatorTx}
+            setLatestCreatorTx={setLatestCreatorTx}
+          />
+        </Box>
 
         {!isMobile && (
           <Divider orientation="horizontal" sx={{ mt: 2, mb: 2 }} variant="middle" flexItem />

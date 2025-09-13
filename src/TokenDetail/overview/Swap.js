@@ -547,6 +547,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   // Directly shift layout from here when OrderBook is open (desktop only)
   useEffect(() => {
+    // If a global toggle is provided (TokenDetail manages layout),
+    // do not apply local root padding/class. Let the parent handle spacing.
+    if (onOrderBookToggle) return;
     const root = typeof document !== 'undefined' ? document.getElementById('__next') : null;
     if (!root) return;
 
@@ -570,7 +573,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const prev = root.style.paddingRight;
       if (!root.hasAttribute('data-prev-pr-ob') && (!prev || prev === '')) {
         root.setAttribute('data-prev-pr-ob', prev);
-        root.style.paddingRight = `${width}px`;
+        // Add a slightly larger gutter (32px) so content doesn't touch the panel
+        root.style.paddingRight = `${width + 32}px`;
       }
       root.classList.add('orderbook-shift');
     };
