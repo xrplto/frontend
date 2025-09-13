@@ -366,8 +366,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           .sub(inputPrice)
           .mul(100)
           .div(inputPrice)
-          .toDP(2, Decimal.ROUND_DOWN)
-          .toNumber()
+          .toFixed(2)
       : 0;
 
   // Helper function to convert hex currency code to readable name

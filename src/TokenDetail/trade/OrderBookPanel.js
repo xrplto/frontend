@@ -5,15 +5,72 @@ import {
   Typography,
   Stack,
   Divider,
-  useTheme
+  useTheme,
+  Paper
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import OrderBookTable from './OrderBookTable';
 import { calculateSpread } from 'src/utils/orderbookService';
 import { fNumber } from 'src/utils/formatNumber';
+
+const StyledPanel = styled(Paper)(({ theme }) => ({
+  position: 'fixed',
+  top: 56,
+  right: 0,
+  overflow: 'hidden',
+  transition: 'transform 0.3s ease-in-out',
+  display: 'flex',
+  flexDirection: 'column',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.9)} 100%)`,
+  backdropFilter: 'blur(32px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
+  [theme.breakpoints.down('md')]: {
+    display: 'none'
+  },
+  [theme.breakpoints.up('md')]: {
+    width: 280,
+    height: 'calc(100vh - 56px)'
+  },
+  [theme.breakpoints.up('lg')]: {
+    width: 320
+  },
+  [theme.breakpoints.up('xl')]: {
+    width: 360
+  }
+}));
+
+const HeaderSection = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(1.5),
+  paddingBottom: theme.spacing(1),
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+  flexShrink: 0,
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.05)} 100%)`,
+  backdropFilter: 'blur(20px)'
+}));
+
+const SectionHeader = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(1),
+  flexShrink: 0,
+  borderRadius: '8px',
+  margin: theme.spacing(0.5),
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.08)} 0%, ${alpha(theme.palette.background.paper, 0.04)} 100%)`,
+  backdropFilter: 'blur(16px)',
+  transition: 'all 0.2s ease'
+}));
+
+const SpreadSection = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(0.75, 1),
+  flex: '0 0 auto',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.08)} 0%, ${alpha(theme.palette.warning.main, 0.04)} 100%)`,
+  backdropFilter: 'blur(16px)',
+  borderTop: `1px dashed ${alpha(theme.palette.warning.main, 0.3)}`,
+  borderBottom: `1px dashed ${alpha(theme.palette.warning.main, 0.3)}`,
+  margin: theme.spacing(0, 0.5)
+}));
 
 const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBuyOrder, onAskClick, onBidClick, isSecondary = false, autoShiftContent = false }) => {
   const theme = useTheme();
@@ -82,39 +139,18 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
   };
 
   return (
-    <Box
+    <StyledPanel
       sx={{
-        position: 'fixed',
-        top: { xs: 56, sm: 56, md: 56 },
         right: isSecondary ? { md: '240px', lg: '256px', xl: '272px' } : 0,
-        width: { md: 280, lg: 320, xl: 360 },
-        height: { xs: 'calc(100vh - 56px)', sm: 'calc(100vh - 56px)', md: 'calc(100vh - 56px)' },
-        borderLeft: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-        backgroundColor: theme.palette.background.paper,
-        boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(
-          theme.palette.common.black,
-          0.04
-        )}`,
-        overflow: 'hidden',
         transform: open ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform 0.3s ease-in-out',
-        display: { xs: 'none', md: 'flex' },
-        flexDirection: 'column',
         zIndex: theme.zIndex.drawer - 1 // Ensure it's below the TransactionDetailsPanel Drawer
       }}
     >
         {/* Header */}
-        <Box
-          sx={{
-            p: 1.5,
-            pb: 1,
-            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            flexShrink: 0
-          }}
-        >
+        <HeaderSection>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Stack direction="row" alignItems="center" spacing={0.5}>
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: theme.palette.text.primary }}>
                 Order Book
               </Typography>
             </Stack>
@@ -123,12 +159,18 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
               size="small" 
               onClick={onClose}
               sx={{ 
+                borderRadius: '8px',
+                padding: '6px',
+                background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.05)} 100%)`,
+                backdropFilter: 'blur(16px)',
+                transition: 'all 0.2s ease',
                 '&:hover': { 
-                  background: alpha(theme.palette.error.main, 0.1) 
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.15)} 0%, ${alpha(theme.palette.error.main, 0.08)} 100%)`,
+                  transform: 'scale(1.05)'
                 }
               }}
             >
-              <CloseIcon sx={{ fontSize: 18 }} />
+              <CloseIcon sx={{ fontSize: 16, color: theme.palette.text.secondary }} />
             </IconButton>
           </Stack>
           
@@ -136,29 +178,35 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
             <Typography 
               variant="caption" 
               sx={{ 
-                color: alpha(theme.palette.text.secondary, 0.7),
-                fontSize: '0.7rem',
+                color: alpha(theme.palette.text.secondary, 0.8),
+                fontSize: '0.75rem',
                 display: 'block',
-                mt: 0.25
+                mt: 0.5,
+                fontWeight: 500
               }}
             >
               {pair.curr1?.name || pair.curr1?.currency}/{pair.curr2?.name || pair.curr2?.currency}
             </Typography>
           )}
-        </Box>
+        </HeaderSection>
         
         {/* Content split into equal halves */}
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {/* Top half: Asks */}
-          <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`, overflow: 'hidden' }}>
-            <Box sx={{ p: 1, backgroundColor: alpha(theme.palette.error.main, 0.02), flexShrink: 0 }}>
+          <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <SectionHeader sx={{ 
+              background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.08)} 0%, ${alpha(theme.palette.error.main, 0.04)} 100%)`,
+              '&:hover': {
+                background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.12)} 0%, ${alpha(theme.palette.error.main, 0.06)} 100%)`,
+              }
+            }}>
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <TrendingDownIcon sx={{ fontSize: '0.8rem', color: theme.palette.error.main }} />
+                <TrendingDownIcon sx={{ fontSize: '0.85rem', color: theme.palette.error.main }} />
                 <Typography variant="caption" sx={{ color: theme.palette.error.main, fontWeight: 600, fontSize: '0.75rem' }}>
                   Sell Orders ({asks.length})
                 </Typography>
               </Stack>
-            </Box>
+            </SectionHeader>
             <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
               <OrderBookTable
                 levels={asks}
@@ -183,44 +231,44 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
 
           {/* Middle spread bar */}
           {spread.spreadAmount > 0 ? (
-            <Box
-              sx={{
-                px: 1,
-                py: 0.75,
-                flex: '0 0 auto',
-                borderTop: `1px dashed ${alpha(theme.palette.warning.main, 0.4)}`,
-                borderBottom: `1px dashed ${alpha(theme.palette.warning.main, 0.4)}`,
-                backgroundColor: alpha(theme.palette.warning.main, 0.06)
-              }}
-            >
+            <SpreadSection>
               <Stack direction='row' spacing={1} justifyContent='space-between' alignItems='center'>
-                <Typography variant='caption' sx={{ fontWeight: 600, color: theme.palette.text.secondary }}>
+                <Typography variant='caption' sx={{ fontWeight: 600, color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
                   Spread
                 </Typography>
                 <Stack direction='row' spacing={1} alignItems='center'>
-                  <Typography variant='caption' sx={{ color: theme.palette.text.secondary }}>
+                  <Typography variant='caption' sx={{ color: theme.palette.text.secondary, fontSize: '0.7rem', fontWeight: 500 }}>
                     {fNumber(spread.spreadAmount)}
                   </Typography>
-                  <Typography variant='caption' sx={{ color: theme.palette.text.secondary }}>
+                  <Typography variant='caption' sx={{ color: theme.palette.warning.main, fontSize: '0.7rem', fontWeight: 600 }}>
                     ({Number(spread.spreadPercentage).toFixed(2)}%)
                   </Typography>
                 </Stack>
               </Stack>
-            </Box>
+            </SpreadSection>
           ) : (
-            <Divider sx={{ m: 0 }} />
+            <Box sx={{ 
+              height: '1px', 
+              background: `linear-gradient(90deg, transparent 0%, ${alpha(theme.palette.divider, 0.3)} 50%, transparent 100%)`,
+              margin: theme.spacing(0.5, 1)
+            }} />
           )}
 
           {/* Bottom half: Bids */}
           <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <Box sx={{ p: 1, backgroundColor: alpha(theme.palette.success.main, 0.02), flexShrink: 0 }}>
+            <SectionHeader sx={{ 
+              background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(theme.palette.success.main, 0.04)} 100%)`,
+              '&:hover': {
+                background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.12)} 0%, ${alpha(theme.palette.success.main, 0.06)} 100%)`,
+              }
+            }}>
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <TrendingUpIcon sx={{ fontSize: '0.8rem', color: theme.palette.success.main }} />
+                <TrendingUpIcon sx={{ fontSize: '0.85rem', color: theme.palette.success.main }} />
                 <Typography variant="caption" sx={{ color: theme.palette.success.main, fontWeight: 600, fontSize: '0.75rem' }}>
                   Buy Orders ({bids.length})
                 </Typography>
               </Stack>
-            </Box>
+            </SectionHeader>
             <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
               <OrderBookTable
                 levels={bids}
@@ -247,20 +295,27 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
           {bids.length === 0 && asks.length === 0 && (
             <Box 
               sx={{ 
-                py: 4, 
+                py: 3, 
                 textAlign: 'center',
-                borderRadius: '8px',
-                background: alpha(theme.palette.background.default, 0.5),
-                m: 2
+                borderRadius: '12px',
+                background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.05)} 100%)`,
+                backdropFilter: 'blur(16px)',
+                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                m: 1.5,
+                transition: 'all 0.2s ease'
               }}
             >
-              <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.7) }}>
+              <Typography variant="body2" sx={{ 
+                color: alpha(theme.palette.text.secondary, 0.8),
+                fontSize: '0.85rem',
+                fontWeight: 500
+              }}>
                 No orders available
               </Typography>
             </Box>
           )}
         </Box>
-    </Box>
+    </StyledPanel>
   );
 });
 
