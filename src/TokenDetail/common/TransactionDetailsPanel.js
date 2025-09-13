@@ -28,7 +28,6 @@ import { formatDistanceToNow } from 'date-fns';
 import Decimal from 'decimal.js-light';
 import { normalizeCurrencyCode, rippleTimeToISO8601, dropsToXrp } from 'src/utils/parse/utils';
 import { Client } from 'xrpl';
-import OrderBookTable from 'src/TokenDetail/trade/OrderBookTable';
 import { calculateSpread } from 'src/utils/orderbookService';
 
 const TransactionDetailsPanel = memo(({ 
@@ -675,20 +674,32 @@ const TransactionDetailsPanel = memo(({
               </Box>
               <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                 {asks.length > 0 ? (
-                  <OrderBookTable
-                    levels={asks}
-                    orderType={2}
-                    pair={pair}
-                    selected={[0, 0]}
-                    limitPrice={limitPrice}
-                    isBuyOrder={isBuyOrder}
-                    onMouseOver={() => {}}
-                    onMouseLeave={() => {}}
-                    onClick={(e, idx) => { if (onAskClick && asks && asks[idx]) onAskClick(e, idx); }}
-                    getIndicatorProgress={getIndicatorProgress}
-                    allBids={bids}
-                    allAsks={asks}
-                  />
+                  <Stack spacing={0.5} sx={{ p: 1 }}>
+                    {asks.slice(0, 30).map((level, idx) => (
+                      <Box
+                        key={`ask-${idx}-${level.price}-${level.amount}`}
+                        onClick={(e) => { if (onAskClick) onAskClick(e, idx); }}
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          fontSize: '0.75rem',
+                          cursor: 'pointer',
+                          px: 0.5,
+                          py: 0.25,
+                          borderRadius: '4px',
+                          '&:hover': { background: alpha(theme.palette.error.main, 0.06) }
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ color: theme.palette.error.main }}>
+                          {level.price}
+                        </Typography>
+                        <Typography variant="caption">{level.amount}</Typography>
+                        <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'inline' }, color: alpha(theme.palette.text.secondary, 0.8) }}>
+                          {level.sumAmount}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
                 ) : (
                   <Box sx={{ p: 2, textAlign: 'center' }}>
                     <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8) }}>
@@ -732,20 +743,32 @@ const TransactionDetailsPanel = memo(({
               </Box>
               <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                 {bids.length > 0 ? (
-                  <OrderBookTable
-                    levels={bids}
-                    orderType={1}
-                    pair={pair}
-                    selected={[0, 0]}
-                    limitPrice={limitPrice}
-                    isBuyOrder={isBuyOrder}
-                    onMouseOver={() => {}}
-                    onMouseLeave={() => {}}
-                    onClick={(e, idx) => { if (onBidClick && bids && bids[idx]) onBidClick(e, idx); }}
-                    getIndicatorProgress={getIndicatorProgress}
-                    allBids={bids}
-                    allAsks={asks}
-                  />
+                  <Stack spacing={0.5} sx={{ p: 1 }}>
+                    {bids.slice(0, 30).map((level, idx) => (
+                      <Box
+                        key={`bid-${idx}-${level.price}-${level.amount}`}
+                        onClick={(e) => { if (onBidClick) onBidClick(e, idx); }}
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          fontSize: '0.75rem',
+                          cursor: 'pointer',
+                          px: 0.5,
+                          py: 0.25,
+                          borderRadius: '4px',
+                          '&:hover': { background: alpha(theme.palette.success.main, 0.06) }
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ color: theme.palette.success.main }}>
+                          {level.price}
+                        </Typography>
+                        <Typography variant="caption">{level.amount}</Typography>
+                        <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'inline' }, color: alpha(theme.palette.text.secondary, 0.8) }}>
+                          {level.sumAmount}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
                 ) : (
                   <Box sx={{ p: 2, textAlign: 'center' }}>
                     <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8) }}>

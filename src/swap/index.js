@@ -84,11 +84,6 @@ import Image from 'next/image';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
-// Lazy load heavy components
-const OrderBook = dynamic(() => import('src/TokenDetail/trade/OrderBook'), {
-  loading: () => <div>Loading orderbook...</div>,
-  ssr: false
-});
 const Orders = dynamic(() => import('src/TokenDetail/trade/account/Orders'), {
   loading: () => <div>Loading orders...</div>,
   ssr: false
@@ -4118,35 +4113,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             </Stack>
           </Box>
           
-          <Box sx={{ 
-            height: { xs: '400px', md: 'calc(100vh - 300px)' }, 
-            maxHeight: '700px',
-            overflow: 'auto',
-            backgroundColor: alpha(theme.palette.background.default, 0.01)
-          }}>
-            {/* Use props data directly if local state is empty */}
-            <OrderBook
-              pair={{
-                curr1: { ...curr1, name: curr1.name || curr1.currency },
-                curr2: { ...curr2, name: curr2.name || curr2.currency }
-              }}
-              asks={(asks && asks.length > 0) ? asks : (propsAsks || [])}
-              bids={(bids && bids.length > 0) ? bids : (propsBids || [])}
-              limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
-              isBuyOrder={!revert} // true when buying curr2 with curr1
-              onAskClick={(e, idx) => {
-                const orderbookAsks = (asks && asks.length > 0) ? asks : (propsAsks || []);
-                if (orderbookAsks && orderbookAsks[idx]) {
-                  setLimitPrice(orderbookAsks[idx].price.toString());
-                }
-              }}
-              onBidClick={(e, idx) => {
-                const orderbookBids = (bids && bids.length > 0) ? bids : (propsBids || []);
-                if (orderbookBids && orderbookBids[idx]) {
-                  setLimitPrice(orderbookBids[idx].price.toString());
-                }
-              }}
-            />
+          <Box sx={{ p: 2, color: theme.palette.text.secondary }}>
+            <Typography variant="caption">Order book view removed.</Typography>
           </Box>
         </Box>
       )}

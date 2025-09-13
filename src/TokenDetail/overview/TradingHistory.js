@@ -46,9 +46,7 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 import PairsList from 'src/TokenDetail/market/PairsList';
 import TopTraders from 'src/TokenDetail/toptraders';
-import OrderBook from 'src/TokenDetail/trade/OrderBook';
 import TradePanel from 'src/TokenDetail/trade/TradePanel';
-import BidAskChart from 'src/TokenDetail/trade/BidAskChart';
 import PairsSelect from 'src/TokenDetail/trade/PairsSelect';
 import { lazy, Suspense } from 'react';
 import RichList from 'src/TokenDetail/RichList';
@@ -1166,50 +1164,41 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
       
       {tabValue === 1 && token && (
         <Stack spacing={2} sx={{ position: 'relative', zIndex: 1 }}>
-          <Box sx={{ 
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            p: 0.75, 
-            backgroundColor: 'transparent',
-            backdropFilter: 'none',
-            WebkitBackdropFilter: 'none',
-            borderRadius: 1, 
-            border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-            boxShadow: `
-              0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-              0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-              inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-            position: 'relative',
-            zIndex: 1000,
-            '& .MuiSelect-root': {
-              zIndex: 1001
-            },
-            '& .MuiPopper-root': {
-              zIndex: 1002
-            }
-          }}>
-            <Typography variant="body1" fontWeight="600" sx={{ minWidth: 'fit-content' }}>Trading Pair:</Typography>
-            <Box sx={{ minWidth: 200, maxWidth: 300 }}>
-              <PairsSelect 
-                token={token}
-                pair={selectedPair}
-                setPair={setSelectedPair}
-              />
-            </Box>
-          </Box>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={8}>
-              <OrderBook 
-                pair={selectedPair}
-                asks={orderBookData.asks}
-                bids={orderBookData.bids}
-                onAskClick={(e, idx) => setAskId(idx)}
-                onBidClick={(e, idx) => setBidId(idx)}
-              />
-            </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12}>
             <Stack spacing={2}>
+              <Box sx={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                p: 0.75, 
+                backgroundColor: 'transparent',
+                backdropFilter: 'none',
+                WebkitBackdropFilter: 'none',
+                borderRadius: 1, 
+                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                boxShadow: `
+                  0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+                  0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
+                  inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+                position: 'relative',
+                zIndex: 1000,
+                '& .MuiSelect-root': {
+                  zIndex: 1001
+                },
+                '& .MuiPopper-root': {
+                  zIndex: 1002
+                }
+              }}>
+                <Typography variant="body1" fontWeight="600" sx={{ minWidth: 'fit-content' }}>Trading Pair:</Typography>
+                <Box sx={{ minWidth: 200, maxWidth: 300 }}>
+                  <PairsSelect 
+                    token={token}
+                    pair={selectedPair}
+                    setPair={setSelectedPair}
+                  />
+                </Box>
+              </Box>
               <TradePanel 
                 pair={selectedPair}
                 asks={orderBookData.asks}
@@ -1217,40 +1206,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                 bidId={bidId}
                 askId={askId}
               />
-              <Box>
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  Depth Chart (Bids: {orderBookData.bids.length}, Asks: {orderBookData.asks.length})
-                </Typography>
-                {(orderBookData.bids.length > 0 || orderBookData.asks.length > 0) ? (
-                  <BidAskChart 
-                    asks={orderBookData.asks}
-                    bids={orderBookData.bids}
-                  />
-                ) : (
-                  <Box sx={{ 
-                    height: 256, 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    backgroundColor: 'transparent',
-                    backdropFilter: 'none',
-                    WebkitBackdropFilter: 'none',
-                    border: `1px dashed ${alpha(theme.palette.divider, 0.3)}`,
-                    borderRadius: 1,
-                    boxShadow: `
-                      0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                      0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-                  }}>
-                    <Typography color="text.secondary">
-                      Waiting for order book data...
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-            </Stack>
-          </Grid>
-        </Grid>
+             </Stack>
+           </Grid>
+         </Grid>
         </Stack>
       )}
       
