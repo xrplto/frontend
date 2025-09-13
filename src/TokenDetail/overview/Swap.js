@@ -41,6 +41,7 @@ import { PuffLoader } from 'react-spinners';
 import { enqueueSnackbar } from 'notistack';
 import TransactionDetailsPanel from 'src/TokenDetail/common/TransactionDetailsPanel';
 const Orders = React.lazy(() => import('src/TokenDetail/trade/account/Orders'));
+const DepthChart = React.lazy(() => import('src/TokenDetail/trade/DepthChart'));
 
 const pulse = keyframes`
   0% {
@@ -276,6 +277,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   // Add state for orderbook visibility
   const [showOrderbook, setShowOrderbook] = useState(false); // used only when not integrated
   const [showOrders, setShowOrders] = useState(false);
+  const [showDepth, setShowDepth] = useState(false);
 
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
@@ -1559,6 +1561,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               if (newValue === 'market') {
                 setShowOrderbook(false);
                 setShowOrders(false);
+                setShowDepth(false);
               }
             }}
             variant="fullWidth"
@@ -1990,6 +1993,19 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 <Button
                   size="small"
                   variant="text"
+                  onClick={() => setShowDepth(!showDepth)}
+                  sx={{
+                    fontSize: '0.65rem',
+                    textTransform: 'none',
+                    py: 0,
+                    minHeight: '24px'
+                  }}
+                >
+                  {showDepth ? 'Hide' : 'Show'} Depth
+                </Button>
+                <Button
+                  size="small"
+                  variant="text"
                   onClick={() => setShowOrders(!showOrders)}
                   sx={{
                     fontSize: '0.65rem',
@@ -2004,6 +2020,21 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               <Typography variant="caption" color="textSecondary" sx={{ textAlign: 'center', mt: 0.5, fontSize: '0.65rem' }}>
                 Tip: Use the order book to quickly pick a fair price.
               </Typography>
+            </Box>
+          )}
+
+          {/* Depth Chart - Only show in limit mode */}
+          {orderType === 'limit' && showDepth && (
+            <Box sx={{ px: 1, py: 0.5 }}>
+              <React.Suspense
+                fallback={
+                  <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
+                    <PuffLoader color={theme.palette.primary.main} size={20} />
+                  </Box>
+                }
+              >
+                <DepthChart asks={asks} bids={bids} height={220} />
+              </React.Suspense>
             </Box>
           )}
           
