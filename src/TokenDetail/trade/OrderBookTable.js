@@ -124,8 +124,12 @@ const OrderBookTable = memo(function OrderBookTable({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Calculate spread
+  // Calculate spread (currently displayed in parent panel)
   const spread = calculateSpread(allBids, allAsks);
+
+  const isBid = orderType === ORDER_TYPE_BIDS;
+  // For UI: display asks in descending order so the lowest ask is at the bottom
+  const visibleLevels = React.useMemo(() => (isBid ? levels : [...levels].slice().reverse()), [isBid, levels]);
   const formatNumber = (number) => new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 8
@@ -133,14 +137,13 @@ const OrderBookTable = memo(function OrderBookTable({
 
   const buildPriceLevels = () => {
     // Display all offers without limiting
-    return levels.map((level, idx) => {
+    return visibleLevels.map((level, idx) => {
       const price = fNumber(level.price);
       const avgPrice = fNumber(level.avgPrice);
       const amount = fNumber(level.amount);
       const sumAmount = fNumber(level.sumAmount);
       const sumValue = fNumber(level.sumValue);
       const isNew = level.isNew;
-      const isBid = orderType === ORDER_TYPE_BIDS;
       const depth = getIndicatorProgress(level.amount);
       const currName1 = pair?.curr1.name;
       const currName2 = pair?.curr2.name;
@@ -154,15 +157,13 @@ const OrderBookTable = memo(function OrderBookTable({
       );
       
       // Show insertion point for limit orders
-      const showInsertionPoint = limitPrice && limitPrice > 0 && (
-        (isBuyOrder && isBid && 
-          idx === 0 && level.price < limitPrice) || // Insert at top if limit > best bid
-        (isBuyOrder && isBid && 
-          idx > 0 && levels[idx-1] && levels[idx-1].price >= limitPrice && level.price < limitPrice) || // Insert between orders
-        (!isBuyOrder && !isBid && 
-          idx === 0 && level.price > limitPrice) || // Insert at top if limit < best ask  
-        (!isBuyOrder && !isBid && 
-          idx > 0 && levels[idx-1] && levels[idx-1].price <= limitPrice && level.price > limitPrice) // Insert between orders
+      // With both sides displayed in descending order, insertion logic is uniform:
+      // place marker where prev.price >= limitPrice > curr.price
+      const showInsertionPoint = Boolean(
+        limitPrice && limitPrice > 0 && ((isBuyOrder && isBid) || (!isBuyOrder && !isBid)) && (
+          (idx === 0 && limitPrice > level.price) ||
+          (idx > 0 && visibleLevels[idx - 1] && visibleLevels[idx - 1].price >= limitPrice && limitPrice > level.price)
+        )
       );
       const priceColor =
         isNew || isSelected
@@ -258,19 +259,8 @@ const OrderBookTable = memo(function OrderBookTable({
     });
   };
 
-  const isBid = orderType === ORDER_TYPE_BIDS;
-
   return (
     <Box>
-      {/* Spread Display */}
-      {orderType === ORDER_TYPE_ASKS && spread.spreadAmount > 0 && (
-        <Box sx={{ p: 1, textAlign: 'center', borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
-            Spread: {formatNumber(spread.spreadAmount)} ({spread.spreadPercentage.toFixed(2)}%)
-          </Typography>
-        </Box>
-      )}
-      
       <ModernTable size="small">
         <TableHead>
           <TableRow>

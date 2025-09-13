@@ -12,9 +12,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import OrderBookTable from './OrderBookTable';
+import { calculateSpread } from 'src/utils/orderbookService';
+import { fNumber } from 'src/utils/formatNumber';
 
 const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBuyOrder, onAskClick, onBidClick, isSecondary = false, autoShiftContent = false }) => {
   const theme = useTheme();
+  const spread = React.useMemo(() => calculateSpread(bids, asks), [bids, asks]);
 
   // When used standalone (e.g., inside Swap), shift the main content to the left
   // by adding padding-right to the Next.js root element. In TokenDetail, layout
@@ -144,11 +147,11 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
           )}
         </Box>
         
-        {/* Content */}
-        <Box sx={{ flex: 1, overflowY: 'auto' }}>
-          {/* Asks Section */}
-          <Box sx={{ borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-            <Box sx={{ p: 1, backgroundColor: alpha(theme.palette.error.main, 0.02) }}>
+        {/* Content split into equal halves */}
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {/* Top half: Asks */}
+          <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`, overflow: 'hidden' }}>
+            <Box sx={{ p: 1, backgroundColor: alpha(theme.palette.error.main, 0.02), flexShrink: 0 }}>
               <Stack direction="row" alignItems="center" spacing={0.5}>
                 <TrendingDownIcon sx={{ fontSize: '0.8rem', color: theme.palette.error.main }} />
                 <Typography variant="caption" sx={{ color: theme.palette.error.main, fontWeight: 600, fontSize: '0.75rem' }}>
@@ -156,31 +159,61 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
                 </Typography>
               </Stack>
             </Box>
-            <OrderBookTable
-              levels={asks}
-              orderType={2} // ORDER_TYPE_ASKS
-              pair={pair}
-              selected={[0, 0]}
-              limitPrice={limitPrice}
-              isBuyOrder={isBuyOrder}
-              onMouseOver={() => {}}
-              onMouseLeave={() => {}}
-              onClick={(e, idx) => {
-                if (onAskClick && asks && asks[idx]) {
-                  onAskClick(e, idx);
-                }
-              }}
-              getIndicatorProgress={getIndicatorProgress}
-              allBids={bids}
-              allAsks={asks}
-            />
+            <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+              <OrderBookTable
+                levels={asks}
+                orderType={2} // ORDER_TYPE_ASKS
+                pair={pair}
+                selected={[0, 0]}
+                limitPrice={limitPrice}
+                isBuyOrder={isBuyOrder}
+                onMouseOver={() => {}}
+                onMouseLeave={() => {}}
+                onClick={(e, idx) => {
+                  if (onAskClick && asks && asks[idx]) {
+                    onAskClick(e, idx);
+                  }
+                }}
+                getIndicatorProgress={getIndicatorProgress}
+                allBids={bids}
+                allAsks={asks}
+              />
+            </Box>
           </Box>
 
-          <Divider />
+          {/* Middle spread bar */}
+          {spread.spreadAmount > 0 ? (
+            <Box
+              sx={{
+                px: 1,
+                py: 0.75,
+                flex: '0 0 auto',
+                borderTop: `1px dashed ${alpha(theme.palette.warning.main, 0.4)}`,
+                borderBottom: `1px dashed ${alpha(theme.palette.warning.main, 0.4)}`,
+                backgroundColor: alpha(theme.palette.warning.main, 0.06)
+              }}
+            >
+              <Stack direction='row' spacing={1} justifyContent='space-between' alignItems='center'>
+                <Typography variant='caption' sx={{ fontWeight: 600, color: theme.palette.text.secondary }}>
+                  Spread
+                </Typography>
+                <Stack direction='row' spacing={1} alignItems='center'>
+                  <Typography variant='caption' sx={{ color: theme.palette.text.secondary }}>
+                    {fNumber(spread.spreadAmount)}
+                  </Typography>
+                  <Typography variant='caption' sx={{ color: theme.palette.text.secondary }}>
+                    ({Number(spread.spreadPercentage).toFixed(2)}%)
+                  </Typography>
+                </Stack>
+              </Stack>
+            </Box>
+          ) : (
+            <Divider sx={{ m: 0 }} />
+          )}
 
-          {/* Bids Section */}
-          <Box>
-            <Box sx={{ p: 1, backgroundColor: alpha(theme.palette.success.main, 0.02) }}>
+          {/* Bottom half: Bids */}
+          <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <Box sx={{ p: 1, backgroundColor: alpha(theme.palette.success.main, 0.02), flexShrink: 0 }}>
               <Stack direction="row" alignItems="center" spacing={0.5}>
                 <TrendingUpIcon sx={{ fontSize: '0.8rem', color: theme.palette.success.main }} />
                 <Typography variant="caption" sx={{ color: theme.palette.success.main, fontWeight: 600, fontSize: '0.75rem' }}>
@@ -188,24 +221,26 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
                 </Typography>
               </Stack>
             </Box>
-            <OrderBookTable
-              levels={bids}
-              orderType={1} // ORDER_TYPE_BIDS
-              pair={pair}
-              selected={[0, 0]}
-              limitPrice={limitPrice}
-              isBuyOrder={isBuyOrder}
-              onMouseOver={() => {}}
-              onMouseLeave={() => {}}
-              onClick={(e, idx) => {
-                if (onBidClick && bids && bids[idx]) {
-                  onBidClick(e, idx);
-                }
-              }}
-              getIndicatorProgress={getIndicatorProgress}
-              allBids={bids}
-              allAsks={asks}
-            />
+            <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+              <OrderBookTable
+                levels={bids}
+                orderType={1} // ORDER_TYPE_BIDS
+                pair={pair}
+                selected={[0, 0]}
+                limitPrice={limitPrice}
+                isBuyOrder={isBuyOrder}
+                onMouseOver={() => {}}
+                onMouseLeave={() => {}}
+                onClick={(e, idx) => {
+                  if (onBidClick && bids && bids[idx]) {
+                    onBidClick(e, idx);
+                  }
+                }}
+                getIndicatorProgress={getIndicatorProgress}
+                allBids={bids}
+                allAsks={asks}
+              />
+            </Box>
           </Box>
 
           {/* Empty State */}

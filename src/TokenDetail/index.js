@@ -130,13 +130,13 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
           pr: {
             md: (txDetailsOpen && orderBookPanelOpen) ? '520px' : 
                 txDetailsOpen ? '256px' : 
-                orderBookPanelOpen ? '312px' : 0,
+                orderBookPanelOpen ? '288px' : 0,
             lg: (txDetailsOpen && orderBookPanelOpen) ? '576px' : 
                 txDetailsOpen ? '272px' : 
-                orderBookPanelOpen ? '352px' : 0,
+                orderBookPanelOpen ? '328px' : 0,
             xl: (txDetailsOpen && orderBookPanelOpen) ? '632px' : 
                 txDetailsOpen ? '288px' : 
-                orderBookPanelOpen ? '392px' : 0
+                orderBookPanelOpen ? '368px' : 0
           },
           pl: {
             md: creatorTxOpen ? '240px' : 0,
@@ -147,7 +147,7 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
       >
         {!isMobile && <LinkCascade token={token} />}
         
-        <Box sx={{ pr: { md: 1.5, lg: 2 } }}>
+        <Box sx={{ pr: { md: orderBookPanelOpen ? 0.75 : 1.5, lg: orderBookPanelOpen ? 1 : 2 } }}>
           <TokenSummary 
             token={token} 
             onCreatorTxToggle={handleCreatorTxToggle}
