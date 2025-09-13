@@ -16,11 +16,11 @@ const ChartContainer = styled(Box)(({ theme }) => ({
   width: '100%'
 }));
 
-function prepareDepth(offers, isBid, maxPoints) {
+function prepareDepth(offers, isBid) {
   if (!offers || offers.length === 0) return [];
   const sorted = [...offers].sort((a, b) => (isBid ? b.price - a.price : a.price - b.price));
-  const limited = sorted.slice(0, maxPoints);
-  return limited.map((o, i) => ({ idx: i, price: Number(o.price) || 0, value: Number(o.sumAmount) || 0 }));
+  // Return all available levels; do not cap
+  return sorted.map((o, i) => ({ idx: i, price: Number(o.price) || 0, value: Number(o.sumAmount) || 0 }));
 }
 
 const DepthChart = memo(function DepthChart({ asks = [], bids = [], height = 220 }) {
@@ -33,9 +33,8 @@ const DepthChart = memo(function DepthChart({ asks = [], bids = [], height = 220
   const [hoverInfo, setHoverInfo] = useState(null);
 
   const { bidData, askData, scaleNote, totalBid, totalAsk } = useMemo(() => {
-    const maxPoints = 150;
-    const bidsDepth = prepareDepth(bids, true, maxPoints);
-    const asksDepth = prepareDepth(asks, false, maxPoints);
+    const bidsDepth = prepareDepth(bids, true);
+    const asksDepth = prepareDepth(asks, false);
 
     const maxY = Math.max(
       bidsDepth.length ? bidsDepth[bidsDepth.length - 1].value : 0,
@@ -202,24 +201,26 @@ const DepthChart = memo(function DepthChart({ asks = [], bids = [], height = 220
             <Typography variant="caption" color="text.secondary">
               Depth Chart {scaleNote ? `• ${scaleNote}` : ''}
             </Typography>
-            {hoverInfo && (
-              <Typography variant="caption" sx={{ color: hoverInfo.side === 'bid' ? theme.palette.success.main : theme.palette.error.main }}>
-                Px {hoverInfo.price?.toLocaleString(undefined, { maximumFractionDigits: 8 })} | Sum {hoverInfo.value?.toLocaleString()}
-              </Typography>
-            )}
+            <Box sx={{ textAlign: 'right' }}>
+              {hoverInfo && (
+                <Typography variant="caption" sx={{ display: 'block', color: hoverInfo.side === 'bid' ? theme.palette.success.main : theme.palette.error.main }}>
+                  Px {hoverInfo.price?.toLocaleString(undefined, { maximumFractionDigits: 8 })} | Sum {hoverInfo.value?.toLocaleString()}
+                </Typography>
+              )}
+              {(totalBid || totalAsk) && (
+                <Typography variant="caption" sx={{ display: 'block' }}>
+                  <Box component="span" sx={{ color: alpha(theme.palette.success.main, 0.9), mr: 0.5 }}>
+                    Σ Bid {Number(totalBid).toLocaleString()}
+                  </Box>
+                  ·
+                  <Box component="span" sx={{ color: alpha(theme.palette.error.main, 0.9), ml: 0.5 }}>
+                    Σ Ask {Number(totalAsk).toLocaleString()}
+                  </Box>
+                </Typography>
+              )}
+            </Box>
           </Box>
           <div ref={containerRef} style={{ width: '100%', height }} />
-          {/* Minimal totals per side */}
-          {(totalBid || totalAsk) && (
-            <>
-              <Box sx={{ position: 'absolute', left: 8, bottom: 6, fontSize: '0.65rem', color: alpha(theme.palette.success.main, 0.9), zIndex: 2, pointerEvents: 'none' }}>
-                Bid Σ {Number(totalBid).toLocaleString()}
-              </Box>
-              <Box sx={{ position: 'absolute', right: 8, bottom: 6, fontSize: '0.65rem', color: alpha(theme.palette.error.main, 0.9), zIndex: 2, pointerEvents: 'none' }}>
-                Ask Σ {Number(totalAsk).toLocaleString()}
-              </Box>
-            </>
-          )}
         </Box>
       )}
     </ChartContainer>
