@@ -2248,7 +2248,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   });
                   // Fall through to use the correct calculation below
                 } else {
-                  return displayRate.toFixed(3);
+                  return displayRate.toFixed(6);
                 }
               }
               
@@ -2315,7 +2315,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               console.log('Final calculated rate:', calculatedRate);
               console.log('=== End Exchange Rate Debug ===');
               
-              return calculatedRate.toFixed(3);
+              return calculatedRate.toFixed(6);
             })()
           }{' '}
           {curr2.name}
