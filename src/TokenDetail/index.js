@@ -129,13 +129,13 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
           minWidth: 0, // Prevent content overflow
           pr: {
             md: (txDetailsOpen && orderBookPanelOpen) ? '520px' : 
-                txDetailsOpen ? '240px' : 
+                txDetailsOpen ? '256px' : 
                 orderBookPanelOpen ? '280px' : 0,
             lg: (txDetailsOpen && orderBookPanelOpen) ? '576px' : 
-                txDetailsOpen ? '256px' : 
+                txDetailsOpen ? '272px' : 
                 orderBookPanelOpen ? '320px' : 0,
             xl: (txDetailsOpen && orderBookPanelOpen) ? '632px' : 
-                txDetailsOpen ? '272px' : 
+                txDetailsOpen ? '288px' : 
                 orderBookPanelOpen ? '360px' : 0
           },
           pl: {
