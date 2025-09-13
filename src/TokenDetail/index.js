@@ -30,10 +30,6 @@ const TransactionDetailsPanel = dynamic(() => import('./common/TransactionDetail
   ssr: false
 });
 
-const OrderBookPanel = dynamic(() => import('./trade/OrderBookPanel'), {
-  ssr: false
-});
-
 const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTransactionPanelToggle, transactionPanelOpen, onOrderBookToggle, orderBookOpen }) => {
   const { darkMode } = useContext(AppContext);
   const theme = useTheme();
@@ -42,7 +38,7 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
   const [latestCreatorTx, setLatestCreatorTx] = useState(null);
   const [selectedTxHash, setSelectedTxHash] = useState(null);
   const [txDetailsOpen, setTxDetailsOpen] = useState(transactionPanelOpen || false);
-  const [orderBookPanelOpen, setOrderBookPanelOpen] = useState(orderBookOpen || false);
+  const [panelMode, setPanelMode] = useState('transaction');
   const [orderBookData, setOrderBookData] = useState({
     pair: { curr1: { currency: 'XRP' }, curr2: token },
     asks: [],
@@ -63,7 +59,10 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
   }, [transactionPanelOpen]);
 
   useEffect(() => {
-    setOrderBookPanelOpen(orderBookOpen || false);
+    if (orderBookOpen !== undefined) {
+      setPanelMode(orderBookOpen ? 'orderbook' : 'transaction');
+      setTxDetailsOpen(!!orderBookOpen);
+    }
   }, [orderBookOpen]);
 
   // Memoize callback functions to prevent re-renders
@@ -78,15 +77,20 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
   // Handle transaction selection
   const handleSelectTransaction = useCallback((hash) => {
     setSelectedTxHash(hash);
+    setPanelMode('transaction');
     setTxDetailsOpen(true);
     if (onTransactionPanelToggle) {
       onTransactionPanelToggle(true);
     }
-  }, [onTransactionPanelToggle]);
+    if (onOrderBookToggle) {
+      onOrderBookToggle(false);
+    }
+  }, [onTransactionPanelToggle, onOrderBookToggle]);
 
   // Handle transaction details close
   const handleTxDetailsClose = useCallback(() => {
     setTxDetailsOpen(false);
+    setPanelMode('transaction');
     if (onTransactionPanelToggle) {
       onTransactionPanelToggle(false);
     }
@@ -94,19 +98,15 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
 
   // Handle orderbook panel toggle
   const handleOrderBookToggle = useCallback(() => {
-    const newState = !orderBookPanelOpen;
-    setOrderBookPanelOpen(newState);
-    if (onOrderBookToggle) {
-      onOrderBookToggle(newState);
-    }
-  }, [orderBookPanelOpen, onOrderBookToggle]);
+    const isOpen = txDetailsOpen && panelMode === 'orderbook';
+    const newState = !isOpen;
+    setPanelMode('orderbook');
+    setTxDetailsOpen(newState);
+    if (onOrderBookToggle) onOrderBookToggle(newState);
+    if (onTransactionPanelToggle) onTransactionPanelToggle(newState);
+  }, [txDetailsOpen, panelMode, onOrderBookToggle, onTransactionPanelToggle]);
 
-  const handleOrderBookClose = useCallback(() => {
-    setOrderBookPanelOpen(false);
-    if (onOrderBookToggle) {
-      onOrderBookToggle(false);
-    }
-  }, [onOrderBookToggle]);
+  // No separate OrderBook panel anymore; handled inside TransactionDetailsPanel
 
   return (
     <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'row' }}>
@@ -128,15 +128,9 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
           flex: 1,
           minWidth: 0, // Prevent content overflow
           pr: {
-            md: (txDetailsOpen && orderBookPanelOpen) ? '520px' : 
-                txDetailsOpen ? '256px' : 
-                orderBookPanelOpen ? '288px' : 0,
-            lg: (txDetailsOpen && orderBookPanelOpen) ? '576px' : 
-                txDetailsOpen ? '272px' : 
-                orderBookPanelOpen ? '328px' : 0,
-            xl: (txDetailsOpen && orderBookPanelOpen) ? '632px' : 
-                txDetailsOpen ? '288px' : 
-                orderBookPanelOpen ? '368px' : 0
+            md: txDetailsOpen ? (panelMode === 'orderbook' ? '288px' : '256px') : 0,
+            lg: txDetailsOpen ? (panelMode === 'orderbook' ? '328px' : '272px') : 0,
+            xl: txDetailsOpen ? (panelMode === 'orderbook' ? '368px' : '288px') : 0
           },
           pl: {
             md: creatorTxOpen ? '240px' : 0,
@@ -147,7 +141,7 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
       >
         {!isMobile && <LinkCascade token={token} />}
         
-        <Box sx={{ pr: { md: orderBookPanelOpen ? 0.75 : 1.5, lg: orderBookPanelOpen ? 1 : 2 } }}>
+        <Box sx={{ pr: { md: (txDetailsOpen && panelMode === 'orderbook') ? 0.75 : 1.5, lg: (txDetailsOpen && panelMode === 'orderbook') ? 1 : 2 } }}>
           <TokenSummary 
             token={token} 
             onCreatorTxToggle={handleCreatorTxToggle}
@@ -167,7 +161,7 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
           token={token} 
           onTransactionClick={handleSelectTransaction}
           onOrderBookToggle={handleOrderBookToggle}
-          orderBookOpen={orderBookPanelOpen}
+          orderBookOpen={txDetailsOpen && panelMode === 'orderbook'}
           onOrderBookData={(data) => setOrderBookData((prev) => ({ ...prev, ...data }))}
         />
       </Box>
@@ -179,14 +173,7 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
           onClose={handleTxDetailsClose}
           transactionHash={selectedTxHash}
           onSelectTransaction={handleSelectTransaction}
-        />
-      )}
-      
-      {/* OrderBook Panel - Right Sidebar (Outermost) */}
-      {!isMobile && (
-        <OrderBookPanel
-          open={orderBookPanelOpen}
-          onClose={handleOrderBookClose}
+          mode={panelMode}
           pair={orderBookData.pair}
           asks={orderBookData.asks}
           bids={orderBookData.bids}
@@ -194,10 +181,10 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
           isBuyOrder={orderBookData.isBuyOrder}
           onAskClick={orderBookData.onAskClick}
           onBidClick={orderBookData.onBidClick}
-          isSecondary={txDetailsOpen}
-          autoShiftContent={false}
         />
       )}
+      
+      {/* OrderBook now renders inside TransactionDetailsPanel (mode === 'orderbook') */}
     </Box>
   );
 });

@@ -39,7 +39,7 @@ import { processOrderbookOffers } from 'src/utils/orderbookService';
 import Image from 'next/image';
 import { PuffLoader } from 'react-spinners';
 import { enqueueSnackbar } from 'notistack';
-import OrderBookPanel from 'src/TokenDetail/trade/OrderBookPanel';
+import TransactionDetailsPanel from 'src/TokenDetail/common/TransactionDetailsPanel';
 const Orders = React.lazy(() => import('src/TokenDetail/trade/account/Orders'));
 
 const pulse = keyframes`
@@ -558,7 +558,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     const calcPanelWidth = () => {
       if (typeof window === 'undefined') return 0;
       const w = window.innerWidth || 0;
-      // Match OrderBookPanel widths
+      // Match TransactionDetailsPanel (orderbook mode) widths
       const { md = 900, lg = 1200, xl = 1536 } = (theme.breakpoints && theme.breakpoints.values) || {};
       if (w >= xl) return 360;
       if (w >= lg) return 320;
@@ -2250,11 +2250,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         nextUrl={nextUrl}
       />
       
-      {/* Orderbook Panel (embedded) - only when no global handler provided */}
+      {/* Orderbook Drawer (embedded) using TransactionDetailsPanel when no global handler */}
       {!onOrderBookToggle && (
-        <OrderBookPanel
-          open={showOrderbook}
+        <TransactionDetailsPanel
+          open={showOrderbook && orderType === 'limit'}
           onClose={() => setShowOrderbook(false)}
+          mode="orderbook"
           pair={{
             curr1: { ...curr1, name: curr1.name || curr1.currency },
             curr2: { ...curr2, name: curr2.name || curr2.currency }

@@ -8,7 +8,8 @@ import {
   useTheme,
   Paper,
   Tooltip,
-  Chip
+  Chip,
+  Modal
 } from '@mui/material';
 import { alpha, styled } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -19,30 +20,17 @@ import { calculateSpread } from 'src/utils/orderbookService';
 import { fNumber } from 'src/utils/formatNumber';
 
 const StyledPanel = styled(Paper)(({ theme }) => ({
-  position: 'fixed',
-  top: 56,
-  right: 0,
   overflow: 'hidden',
-  transition: 'transform 0.3s ease-in-out',
   display: 'flex',
   flexDirection: 'column',
   background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.9)} 100%)`,
   backdropFilter: 'blur(32px)',
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
-  [theme.breakpoints.down('md')]: {
-    display: 'none'
-  },
-  [theme.breakpoints.up('md')]: {
-    width: 280,
-    height: 'calc(100vh - 56px)'
-  },
-  [theme.breakpoints.up('lg')]: {
-    width: 320
-  },
-  [theme.breakpoints.up('xl')]: {
-    width: 360
-  }
+  width: { xs: '92%', sm: 420, md: 280, lg: 320, xl: 360 },
+  maxWidth: '92vw',
+  height: { xs: '80vh', md: 'calc(100vh - 56px)' },
+  borderRadius: { xs: 2, md: 2 }
 }));
 
 const HeaderSection = styled(Box)(({ theme }) => ({
@@ -80,60 +68,7 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
   const bestAsk = React.useMemo(() => (asks && asks[0] ? Number(asks[0].price) : null), [asks]);
   const bestBid = React.useMemo(() => (bids && bids[0] ? Number(bids[0].price) : null), [bids]);
 
-  // When used standalone (e.g., inside Swap), shift the main content to the left
-  // by adding padding-right to the Next.js root element. In TokenDetail, layout
-  // padding is already managed, so this should be disabled via autoShiftContent={false}.
-  React.useEffect(() => {
-    if (!autoShiftContent) return;
-    const root = typeof document !== 'undefined' ? document.getElementById('__next') : null;
-    if (!root) return;
-
-    const calcPanelWidth = () => {
-      if (typeof window === 'undefined') return 0;
-      const w = window.innerWidth || 0;
-      const { md, lg, xl } = theme.breakpoints.values || { md: 900, lg: 1200, xl: 1536 };
-      if (w >= xl) return 360;
-      if (w >= lg) return 320;
-      if (w >= md) return 280;
-      return 0;
-    };
-
-    if (open) {
-      const width = calcPanelWidth();
-      if (width > 0) {
-        // Preserve any existing inline paddingRight set by others
-        const prev = root.style.paddingRight;
-        root.setAttribute('data-prev-pr', prev);
-        root.style.paddingRight = `${width}px`;
-      }
-    } else {
-      // Restore previous padding when closing
-      const prev = root.getAttribute('data-prev-pr');
-      if (prev !== null) root.style.paddingRight = prev;
-      else root.style.removeProperty('padding-right');
-      root.removeAttribute('data-prev-pr');
-    }
-
-    return () => {
-      // Cleanup on unmount
-      const prev = root?.getAttribute('data-prev-pr');
-      if (root) {
-        if (prev !== null) root.style.paddingRight = prev;
-        else root.style.removeProperty('padding-right');
-        root.removeAttribute('data-prev-pr');
-      }
-    };
-  }, [open, autoShiftContent, theme.breakpoints.values]);
-
-  // Close on Escape for convenience
-  React.useEffect(() => {
-    if (!open) return;
-    const onKey = (e) => {
-      if (e.key === 'Escape') onClose?.();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  // Deprecated: previously shifted layout when as a fixed panel. No-op for modal.
 
   const getIndicatorProgress = (value) => {
     if (isNaN(value)) return 0;
@@ -152,14 +87,19 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
     return (progress * 100).toFixed(0);
   };
 
+  const modalSx = {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-start',
+    pt: '56px',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    backgroundColor: alpha(theme.palette.background.default, 0.5)
+  };
+
   return (
-    <StyledPanel
-      sx={{
-        right: isSecondary ? { md: '240px', lg: '256px', xl: '272px' } : 0,
-        transform: open ? 'translateX(0)' : 'translateX(100%)',
-        zIndex: theme.zIndex.drawer - 1 // Ensure it's below the TransactionDetailsPanel Drawer
-      }}
-    >
+    <Modal open={!!open} onClose={onClose} keepMounted sx={modalSx}>
+      <StyledPanel>
         {/* Header */}
         <HeaderSection>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -370,7 +310,8 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
             </Box>
           )}
         </Box>
-    </StyledPanel>
+      </StyledPanel>
+    </Modal>
   );
 });
 
