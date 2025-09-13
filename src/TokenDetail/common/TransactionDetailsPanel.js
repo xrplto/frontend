@@ -672,7 +672,7 @@ const TransactionDetailsPanel = memo(({
                   </Typography>
                 </Stack>
               </Box>
-              <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+            <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                 {asks.length > 0 ? (
                   <>
                     <Box
@@ -702,59 +702,76 @@ const TransactionDetailsPanel = memo(({
                       </Box>
                     </Box>
                     <Stack spacing={0.5} sx={{ p: 1 }}>
-                    {(() => {
-                      const askSlice = asks.slice(0, 30);
-                      return askSlice
-                        .slice()
-                        .reverse()
-                        .map((level, idx) => {
+                      {(() => {
+                        const askSlice = asks.slice(0, 30);
+                        const displayAsks = askSlice.slice().reverse();
+                        const lp = typeof limitPrice === 'number' ? limitPrice : null;
+                        return displayAsks.map((level, idx) => {
                           const origIdx = askSlice.length - 1 - idx;
+                          const prev = idx > 0 ? displayAsks[idx - 1] : null;
+                          const showMarker = Boolean(
+                            lp != null && isBuyOrder && (
+                              (idx === 0 && Number(level.price) <= lp) ||
+                              (prev && Number(prev.price) > lp && Number(level.price) <= lp)
+                            )
+                          );
                           return (
-                            <Box
-                              key={`ask-${origIdx}-${level.price}-${level.amount}`}
-                              onClick={(e) => {
-                                if (onAskClick) onAskClick(e, origIdx);
-                              }}
-                              sx={{
-                                position: 'relative',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                fontSize: '0.75rem',
-                                cursor: 'pointer',
-                                px: 0.5,
-                                py: 0.25,
-                                borderRadius: '4px',
-                                '&:hover': { background: alpha(theme.palette.error.main, 0.06) }
-                              }}
-                            >
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            left: 0,
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            height: '70%',
-                            width: `${getIndicatorProgress(level.amount)}%`,
-                            background: alpha(theme.palette.error.main, 0.08),
-                            borderRadius: '4px',
-                            pointerEvents: 'none'
-                          }}
-                        />
-                        <Typography variant="caption" sx={{ color: theme.palette.error.main, position: 'relative', zIndex: 1 }}>
-                          {fNumber(level.price)}
-                        </Typography>
-                        <Typography variant="caption" sx={{ position: 'relative', zIndex: 1 }}>{fNumber(level.amount)}</Typography>
-                         <Typography
-                           variant="caption"
-                          sx={{ display: { xs: 'none', sm: 'inline' }, color: alpha(theme.palette.text.secondary, 0.8), position: 'relative', zIndex: 1 }}
-                          >
-                                {fNumber(level.sumAmount)}
-                          </Typography>
-                      </Box>
+                            <React.Fragment key={`ask-${origIdx}-${level.price}-${level.amount}`}>
+                              {showMarker && (
+                                <Box sx={{
+                                  display: 'flex', alignItems: 'center', gap: 0.5, px: 0.5, py: 0.25
+                                }}>
+                                  <Box sx={{ flex: 1, height: '1px', background: alpha(theme.palette.primary.main, 0.35) }} />
+                                  <Typography variant="caption" sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>
+                                    Your buy limit
+                                  </Typography>
+                                  <Box sx={{ flex: 1, height: '1px', background: alpha(theme.palette.primary.main, 0.35) }} />
+                                </Box>
+                              )}
+                              <Box
+                                onClick={(e) => { if (onAskClick) onAskClick(e, origIdx); }}
+                                sx={{
+                                  position: 'relative',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  fontSize: '0.75rem',
+                                  cursor: 'pointer',
+                                  px: 0.5,
+                                  py: 0.25,
+                                  borderRadius: '4px',
+                                  background: showMarker ? alpha(theme.palette.primary.main, 0.06) : 'transparent',
+                                  '&:hover': { background: alpha(theme.palette.error.main, 0.06) }
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    height: '70%',
+                                    width: `${getIndicatorProgress(level.amount)}%`,
+                                    background: alpha(theme.palette.error.main, 0.08),
+                                    borderRadius: '4px',
+                                    pointerEvents: 'none'
+                                  }}
+                                />
+                                <Typography variant="caption" sx={{ color: theme.palette.error.main, position: 'relative', zIndex: 1 }}>
+                                  {fNumber(level.price)}
+                                </Typography>
+                                <Typography variant="caption" sx={{ position: 'relative', zIndex: 1 }}>{fNumber(level.amount)}</Typography>
+                                <Typography
+                                  variant="caption"
+                                  sx={{ display: { xs: 'none', sm: 'inline' }, color: alpha(theme.palette.text.secondary, 0.8), position: 'relative', zIndex: 1 }}
+                                >
+                                  {fNumber(level.sumAmount)}
+                                </Typography>
+                              </Box>
+                            </React.Fragment>
                           );
                         });
-                    })()}
-                  </Stack>
+                      })()}
+                    </Stack>
                   </>
                 ) : (
                   <Box sx={{ p: 2, textAlign: 'center' }}>
@@ -827,45 +844,69 @@ const TransactionDetailsPanel = memo(({
                       </Box>
                     </Box>
                     <Stack spacing={0.5} sx={{ p: 1 }}>
-                    {bids.slice(0, 30).map((level, idx) => (
-                      <Box
-                        key={`bid-${idx}-${level.price}-${level.amount}`}
-                        onClick={(e) => { if (onBidClick) onBidClick(e, idx); }}
-                        sx={{
-                          position: 'relative',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          fontSize: '0.75rem',
-                          cursor: 'pointer',
-                          px: 0.5,
-                          py: 0.25,
-                          borderRadius: '4px',
-                          '&:hover': { background: alpha(theme.palette.success.main, 0.06) }
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            left: 0,
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            height: '70%',
-                            width: `${getIndicatorProgress(level.amount)}%`,
-                            background: alpha(theme.palette.success.main, 0.08),
-                            borderRadius: '4px',
-                            pointerEvents: 'none'
-                          }}
-                        />
-                        <Typography variant="caption" sx={{ color: theme.palette.success.main, position: 'relative', zIndex: 1 }}>
-                          {fNumber(level.price)}
-                        </Typography>
-                        <Typography variant="caption" sx={{ position: 'relative', zIndex: 1 }}>{fNumber(level.amount)}</Typography>
-                        <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'inline' }, color: alpha(theme.palette.text.secondary, 0.8), position: 'relative', zIndex: 1 }}>
-                          {fNumber(level.sumAmount)}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Stack>
+                      {(() => {
+                        const bidSlice = bids.slice(0, 30);
+                        const lp = typeof limitPrice === 'number' ? limitPrice : null;
+                        return bidSlice.map((level, idx) => {
+                          const prev = idx > 0 ? bidSlice[idx - 1] : null;
+                          const showMarker = Boolean(
+                            lp != null && !isBuyOrder && (
+                              (idx === 0 && Number(level.price) < lp) ||
+                              (prev && Number(prev.price) >= lp && Number(level.price) < lp)
+                            )
+                          );
+                          return (
+                            <React.Fragment key={`bid-${idx}-${level.price}-${level.amount}`}>
+                              {showMarker && (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 0.5, py: 0.25 }}>
+                                  <Box sx={{ flex: 1, height: '1px', background: alpha(theme.palette.primary.main, 0.35) }} />
+                                  <Typography variant="caption" sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>
+                                    Your sell limit
+                                  </Typography>
+                                  <Box sx={{ flex: 1, height: '1px', background: alpha(theme.palette.primary.main, 0.35) }} />
+                                </Box>
+                              )}
+                              <Box
+                                onClick={(e) => { if (onBidClick) onBidClick(e, idx); }}
+                                sx={{
+                                  position: 'relative',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  fontSize: '0.75rem',
+                                  cursor: 'pointer',
+                                  px: 0.5,
+                                  py: 0.25,
+                                  borderRadius: '4px',
+                                  background: showMarker ? alpha(theme.palette.primary.main, 0.06) : 'transparent',
+                                  '&:hover': { background: alpha(theme.palette.success.main, 0.06) }
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    height: '70%',
+                                    width: `${getIndicatorProgress(level.amount)}%`,
+                                    background: alpha(theme.palette.success.main, 0.08),
+                                    borderRadius: '4px',
+                                    pointerEvents: 'none'
+                                  }}
+                                />
+                                <Typography variant="caption" sx={{ color: theme.palette.success.main, position: 'relative', zIndex: 1 }}>
+                                  {fNumber(level.price)}
+                                </Typography>
+                                <Typography variant="caption" sx={{ position: 'relative', zIndex: 1 }}>{fNumber(level.amount)}</Typography>
+                                <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'inline' }, color: alpha(theme.palette.text.secondary, 0.8), position: 'relative', zIndex: 1 }}>
+                                  {fNumber(level.sumAmount)}
+                                </Typography>
+                              </Box>
+                            </React.Fragment>
+                          );
+                        });
+                      })()}
+                    </Stack>
                   </>
                 ) : (
                   <Box sx={{ p: 2, textAlign: 'center' }}>

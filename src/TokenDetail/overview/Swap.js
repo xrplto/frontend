@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import {
   Button,
   Stack,
@@ -530,7 +530,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       asks,
       bids,
       limitPrice: orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null,
-      isBuyOrder: !revert,
+      isBuyOrder: !!revert,
       onAskClick: (e, idx) => {
         if (asks && asks[idx]) {
           setLimitPrice(asks[idx].price.toString());
@@ -547,6 +547,34 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     onOrderBookData(data);
   }, [onOrderBookData, curr1, curr2, asks, bids, orderType, limitPrice, revert]);
 
+  const isPanelOpen = (onOrderBookToggle ? !!orderBookOpen : !!showOrderbook) && orderType === 'limit';
+
+  // Derived pricing for Limit UI helpers
+  const { bestBid, bestAsk, midPrice, spreadPct } = useMemo(() => {
+    const bb = bids && bids.length ? Number(bids[0]?.price) : null;
+    const ba = asks && asks.length ? Number(asks[0]?.price) : null;
+    const mid = bb != null && ba != null ? (bb + ba) / 2 : null;
+    const spread = bb != null && ba != null && mid ? ((ba - bb) / mid) * 100 : null;
+    return { bestBid: bb, bestAsk: ba, midPrice: mid, spreadPct: spread };
+  }, [asks, bids]);
+
+  // Warn if the user sets an outlier limit price vs best bid/ask
+  const priceWarning = useMemo(() => {
+    const THRESHOLD = 5; // %
+    const lp = Number(limitPrice);
+    if (!lp || !isFinite(lp)) return null;
+    // revert === true means Buy (from existing summary text)
+    if (revert && bestAsk != null) {
+      const pct = ((lp - Number(bestAsk)) / Number(bestAsk)) * 100;
+      if (pct > THRESHOLD) return { kind: 'buy', pct, ref: Number(bestAsk) };
+    }
+    if (!revert && bestBid != null) {
+      const pct = ((Number(bestBid) - lp) / Number(bestBid)) * 100;
+      if (pct > THRESHOLD) return { kind: 'sell', pct, ref: Number(bestBid) };
+    }
+    return null;
+  }, [limitPrice, bestAsk, bestBid, revert]);
+
   // Directly shift layout from here when OrderBook is open (desktop only)
   useEffect(() => {
     // If a global toggle is provided (TokenDetail manages layout),
@@ -554,8 +582,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     if (onOrderBookToggle) return;
     const root = typeof document !== 'undefined' ? document.getElementById('__next') : null;
     if (!root) return;
-
-    const isPanelOpen = (onOrderBookToggle ? !!orderBookOpen : !!showOrderbook) && orderType === 'limit';
 
     const calcPanelWidth = () => {
       if (typeof window === 'undefined') return 0;
@@ -1851,6 +1877,65 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       setLimitPrice(val);
                     }
                   }}
+                  endAdornment={
+                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mr: 0.5 }}>
+                      <Tooltip title="Decrease price by 1%">
+                        <span>
+                          <Button
+                            size="small"
+                            variant="text"
+                            disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
+                            onClick={() => {
+                              const mid = (bestBid != null && bestAsk != null) ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                              const base = Number(limitPrice || mid || 0);
+                              if (!base) return;
+                              const next = new Decimal(base).mul(0.99).toFixed(6);
+                              setLimitPrice(next);
+                            }}
+                            sx={{ textTransform: 'none', fontSize: '0.65rem', minHeight: '22px', px: 0.75 }}
+                          >
+                            -1%
+                          </Button>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title="Set to midpoint between best bid and ask">
+                        <span>
+                          <Button
+                            size="small"
+                            variant="text"
+                            disabled={!(bestBid != null && bestAsk != null)}
+                            onClick={() => {
+                              const mid = (bestBid != null && bestAsk != null) ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                              if (mid == null) return;
+                              setLimitPrice(String(new Decimal(mid).toFixed(6)));
+                            }}
+                            sx={{ textTransform: 'none', fontSize: '0.65rem', minHeight: '22px', px: 0.75 }}
+                          >
+                            Mid
+                          </Button>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title="Increase price by 1%">
+                        <span>
+                          <Button
+                            size="small"
+                            variant="text"
+                            disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
+                            onClick={() => {
+                              const mid = (bestBid != null && bestAsk != null) ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                              const base = Number(limitPrice || mid || 0);
+                              if (!base) return;
+                              const next = new Decimal(base).mul(1.01).toFixed(6);
+                              setLimitPrice(next);
+                            }}
+                            sx={{ textTransform: 'none', fontSize: '0.65rem', minHeight: '22px', px: 0.75 }}
+                          >
+                            +1%
+                          </Button>
+                        </span>
+                      </Tooltip>
+                    </Stack>
+                  }
                   sx={{
                     backgroundColor: alpha(theme.palette.background.paper, 0.05),
                     borderRadius: '6px',
@@ -1861,8 +1946,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     }
                   }}
                 />
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <Tooltip title="Set to the best available sell price">
+                <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                  <Tooltip title="Set to best available sell price (ask)">
                     <span>
                       <Button
                         size="small"
@@ -1875,7 +1960,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       </Button>
                     </span>
                   </Tooltip>
-                  <Tooltip title="Set to the best available buy price">
+                  <Tooltip title="Set to best available buy price (bid)">
                     <span>
                       <Button
                         size="small"
@@ -1888,24 +1973,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       </Button>
                     </span>
                   </Tooltip>
-                  <Tooltip title="Set to the midpoint between best bid and ask">
-                    <span>
-                      <Button
-                        size="small"
-                        variant="text"
-                        disabled={!asks || !bids || asks.length === 0 || bids.length === 0}
-                        onClick={() => {
-                          if (asks && bids && asks[0] && bids[0]) {
-                            const mid = (Number(asks[0].price) + Number(bids[0].price)) / 2;
-                            setLimitPrice(String(new Decimal(mid).toFixed(6)));
-                          }
-                        }}
-                        sx={{ textTransform: 'none', fontSize: '0.7rem', minHeight: '22px' }}
-                      >
-                        Mid
-                      </Button>
-                    </span>
-                  </Tooltip>
                   <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.65rem' }}>
                     Tip: Click an order book row to fill price
                   </Typography>
@@ -1915,7 +1982,25 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     Enter a valid limit price greater than 0.
                   </Typography>
                 )}
-                
+                {orderType === 'limit' && priceWarning && (
+                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.warning.main }}>
+                    {priceWarning.kind === 'buy'
+                      ? `Your buy price is ${new Decimal(priceWarning.pct).toFixed(2)}% above best ask (${new Decimal(priceWarning.ref).toFixed(6)}).`
+                      : `Your sell price is ${new Decimal(priceWarning.pct).toFixed(2)}% below best bid (${new Decimal(priceWarning.ref).toFixed(6)}).`}
+                  </Typography>
+                )}
+                {bestBid != null && bestAsk != null && (
+                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.65rem' }}>
+                    {(() => {
+                      const bb = Number(bestBid);
+                      const ba = Number(bestAsk);
+                      const mid = (bb + ba) / 2;
+                      const spread = mid ? ((ba - bb) / mid) * 100 : null;
+                      return `Bid ${new Decimal(bb).toFixed(6)} · Ask ${new Decimal(ba).toFixed(6)}${spread != null ? ` · Spread ${new Decimal(spread).toFixed(2)}%` : ''}`;
+                    })()}
+                  </Typography>
+                )}
+
                 {/* Order Expiration */}
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                   <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.7rem' }}>
@@ -2294,7 +2379,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           asks={asks}
           bids={bids}
           limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
-          isBuyOrder={!revert}
+          isBuyOrder={!!revert}
           onAskClick={(e, idx) => {
             if (asks && asks[idx]) {
               setLimitPrice(asks[idx].price.toString());
