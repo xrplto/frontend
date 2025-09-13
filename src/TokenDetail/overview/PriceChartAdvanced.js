@@ -389,11 +389,15 @@ const PriceChartAdvanced = memo(({ token }) => {
     return () => controller.abort();
   }, [token.md5, range, BASE_URL, chartType]);
 
-  // Create chart only when chart type changes AND data is available
+  // Create chart only when chart type changes AND relevant data is available
   useEffect(() => {
-    
-    // Wait for container and data to be available
-    if (!chartContainerRef.current || loading || !data || data.length === 0) {
+    // Determine which dataset is relevant for current chart type
+    const hasChartData = chartType === 'holders'
+      ? (holderData && holderData.length > 0)
+      : (data && data.length > 0);
+
+    // Wait for container and the relevant data to be available
+    if (!chartContainerRef.current || loading || !hasChartData) {
       return;
     }
     
@@ -744,7 +748,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         chartRef.current = null;
       }
     };
-  }, [chartType, isDark, isMobile, data, theme, isFullscreen, activeFiatCurrency]);
+  }, [chartType, isDark, isMobile, data, holderData, theme, isFullscreen, activeFiatCurrency]);
 
   // Handle fullscreen resize
   useEffect(() => {
@@ -1285,21 +1289,29 @@ const PriceChartAdvanced = memo(({ token }) => {
         mr: isMobile ? -0.5 : 0,
         ml: isMobile ? -0.5 : 0
       }}>
+        <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
         {(() => {
-          
-          if (loading) {
+          const hasChartData = chartType === 'holders'
+            ? (holderData && holderData.length > 0)
+            : (data && data.length > 0);
+
+          // Only overlay spinner if no chart instance exists yet
+          if (loading && !chartRef.current) {
             return (
               <Box sx={{ 
                 position: 'absolute', 
                 inset: 0, 
                 display: 'flex', 
                 alignItems: 'center', 
-                justifyContent: 'center' 
+                justifyContent: 'center',
+                pointerEvents: 'none'
               }}>
                 <CircularProgress size={24} />
               </Box>
             );
-          } else if (!data || data.length === 0) {
+          }
+
+          if (!hasChartData && !loading) {
             return (
               <Box sx={{ 
                 position: 'absolute', 
@@ -1311,11 +1323,8 @@ const PriceChartAdvanced = memo(({ token }) => {
                 <Typography color="text.secondary">No data available</Typography>
               </Box>
             );
-          } else {
-            return (
-              <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
-            );
           }
+          return null;
         })()}
       </Box>
     </Paper>
