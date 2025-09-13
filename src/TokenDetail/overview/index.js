@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { useState, useEffect, useContext } from 'react';
 
 // Material
-import { Grid, Stack, useTheme, useMediaQuery, Typography, Paper, Button, Box } from '@mui/material';
+import { Grid, Stack, useTheme, useMediaQuery, Typography, Paper, Box } from '@mui/material';
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -217,18 +217,6 @@ const Overview = memo(({ token, onTransactionClick, onOrderBookToggle, orderBook
             <TrendingTokens />
           </Box>
           
-          {/* Test OrderBook Panel Button */}
-          {onOrderBookToggle && (
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <Button 
-                variant="contained" 
-                onClick={onOrderBookToggle}
-                color="primary"
-              >
-                {orderBookOpen ? 'Close OrderBook' : 'Show OrderBook'}
-              </Button>
-            </Box>
-          )}
         </Box>
       </Box>
 
