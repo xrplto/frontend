@@ -1,5 +1,4 @@
-import Decimal from 'decimal.js-light';
-import React, { useEffect, useState, memo } from 'react';
+import React, { memo } from 'react';
 
 // Material
 import {

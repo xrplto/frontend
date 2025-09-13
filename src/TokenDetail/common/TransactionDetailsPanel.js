@@ -8,9 +8,7 @@ import {
   CircularProgress,
   Alert,
   useTheme,
-  Fade,
   Tooltip,
-  Badge,
   Divider,
   Avatar,
   Drawer
@@ -25,10 +23,8 @@ import ErrorIcon from '@mui/icons-material/Error';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import axios from 'axios';
 import { fNumber } from 'src/utils/formatNumber';
 import { formatDistanceToNow } from 'date-fns';
-import { parseAmount } from 'src/utils/parse/amount';
 import Decimal from 'decimal.js-light';
 import { normalizeCurrencyCode, rippleTimeToISO8601, dropsToXrp } from 'src/utils/parse/utils';
 import { Client } from 'xrpl';
@@ -156,34 +152,6 @@ const TransactionDetailsPanel = memo(({
     return formatDistanceToNow(txDate, { addSuffix: true });
   };
 
-  const getTransactionIcon = (type) => {
-    switch (type) {
-      case 'Payment':
-        return 'mdi:cash-fast';
-      case 'OfferCreate':
-        return 'mdi:swap-horizontal';
-      case 'OfferCancel':
-        return 'mdi:close-circle-outline';
-      case 'TrustSet':
-        return 'mdi:link-variant';
-      case 'NFTokenMint':
-        return 'mdi:creation';
-      case 'NFTokenCreateOffer':
-        return 'mdi:tag-outline';
-      case 'NFTokenAcceptOffer':
-        return 'mdi:check-circle-outline';
-      case 'NFTokenCancelOffer':
-        return 'mdi:cancel';
-      case 'NFTokenBurn':
-        return 'mdi:fire';
-      case 'AMMDeposit':
-        return 'mdi:bank-plus';
-      case 'AMMWithdraw':
-        return 'mdi:bank-minus';
-      default:
-        return 'mdi:transfer';
-    }
-  };
 
   const getTransactionColor = (result) => {
     if (result === 'tesSUCCESS') {

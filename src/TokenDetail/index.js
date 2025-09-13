@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic';
-import { useContext, useState, useEffect, useCallback, memo, useMemo } from 'react';
+import { useContext, useState, useEffect, useCallback, memo } from 'react';
 
 // Material
 import { Box, Divider, useTheme, useMediaQuery } from '@mui/material';
