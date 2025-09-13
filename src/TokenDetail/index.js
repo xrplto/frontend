@@ -30,7 +30,11 @@ const TransactionDetailsPanel = dynamic(() => import('./common/TransactionDetail
   ssr: false
 });
 
-const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTransactionPanelToggle, transactionPanelOpen }) => {
+const OrderBookPanel = dynamic(() => import('./trade/OrderBookPanel'), {
+  ssr: false
+});
+
+const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTransactionPanelToggle, transactionPanelOpen, onOrderBookToggle, orderBookOpen }) => {
   const { darkMode } = useContext(AppContext);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -38,6 +42,16 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
   const [latestCreatorTx, setLatestCreatorTx] = useState(null);
   const [selectedTxHash, setSelectedTxHash] = useState(null);
   const [txDetailsOpen, setTxDetailsOpen] = useState(transactionPanelOpen || false);
+  const [orderBookPanelOpen, setOrderBookPanelOpen] = useState(orderBookOpen || false);
+  const [orderBookData, setOrderBookData] = useState({
+    pair: { curr1: { currency: 'XRP' }, curr2: token },
+    asks: [],
+    bids: [],
+    limitPrice: null,
+    isBuyOrder: true,
+    onAskClick: () => {},
+    onBidClick: () => {}
+  });
 
   // Sync internal state with parent
   useEffect(() => {
@@ -47,6 +61,10 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
   useEffect(() => {
     setTxDetailsOpen(transactionPanelOpen || false);
   }, [transactionPanelOpen]);
+
+  useEffect(() => {
+    setOrderBookPanelOpen(orderBookOpen || false);
+  }, [orderBookOpen]);
 
   // Memoize callback functions to prevent re-renders
   const handleCreatorTxToggle = useCallback(() => {
@@ -74,8 +92,24 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
     }
   }, [onTransactionPanelToggle]);
 
+  // Handle orderbook panel toggle
+  const handleOrderBookToggle = useCallback(() => {
+    const newState = !orderBookPanelOpen;
+    setOrderBookPanelOpen(newState);
+    if (onOrderBookToggle) {
+      onOrderBookToggle(newState);
+    }
+  }, [orderBookPanelOpen, onOrderBookToggle]);
+
+  const handleOrderBookClose = useCallback(() => {
+    setOrderBookPanelOpen(false);
+    if (onOrderBookToggle) {
+      onOrderBookToggle(false);
+    }
+  }, [onOrderBookToggle]);
+
   return (
-    <Box sx={{ position: 'relative', display: 'flex' }}>
+    <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'row' }}>
       {/* Creator Transactions Panel - Always render but conditionally show */}
       {!isMobile && (
         <CreatorTransactionsDialog
@@ -94,9 +128,15 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
           flex: 1,
           minWidth: 0, // Prevent content overflow
           pr: {
-            md: txDetailsOpen ? '240px' : 0,
-            lg: txDetailsOpen ? '256px' : 0,
-            xl: txDetailsOpen ? '272px' : 0
+            md: (txDetailsOpen && orderBookPanelOpen) ? '520px' : 
+                txDetailsOpen ? '240px' : 
+                orderBookPanelOpen ? '280px' : 0,
+            lg: (txDetailsOpen && orderBookPanelOpen) ? '576px' : 
+                txDetailsOpen ? '256px' : 
+                orderBookPanelOpen ? '320px' : 0,
+            xl: (txDetailsOpen && orderBookPanelOpen) ? '632px' : 
+                txDetailsOpen ? '272px' : 
+                orderBookPanelOpen ? '360px' : 0
           },
           pl: {
             md: creatorTxOpen ? '240px' : 0,
@@ -121,16 +161,39 @@ const TokenDetail = memo(({ token, onCreatorPanelToggle, creatorPanelOpen, onTra
 
         <div id="back-to-top-tab-anchor" />
 
-        <Overview token={token} onTransactionClick={handleSelectTransaction} />
+        <Overview 
+          token={token} 
+          onTransactionClick={handleSelectTransaction}
+          onOrderBookToggle={handleOrderBookToggle}
+          orderBookOpen={orderBookPanelOpen}
+          onOrderBookData={(data) => setOrderBookData((prev) => ({ ...prev, ...data }))}
+        />
       </Box>
       
-      {/* Transaction Details Panel - Right Sidebar */}
+      {/* Transaction Details Panel - Right Sidebar (Closest to content) */}
       {!isMobile && (
         <TransactionDetailsPanel
           open={txDetailsOpen}
           onClose={handleTxDetailsClose}
           transactionHash={selectedTxHash}
           onSelectTransaction={handleSelectTransaction}
+        />
+      )}
+      
+      {/* OrderBook Panel - Right Sidebar (Outermost) */}
+      {!isMobile && (
+        <OrderBookPanel
+          open={orderBookPanelOpen}
+          onClose={handleOrderBookClose}
+          pair={orderBookData.pair}
+          asks={orderBookData.asks}
+          bids={orderBookData.bids}
+          limitPrice={orderBookData.limitPrice}
+          isBuyOrder={orderBookData.isBuyOrder}
+          onAskClick={orderBookData.onAskClick}
+          onBidClick={orderBookData.onBidClick}
+          isSecondary={txDetailsOpen}
+          autoShiftContent={false}
         />
       )}
     </Box>

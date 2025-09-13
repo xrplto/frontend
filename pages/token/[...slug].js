@@ -33,6 +33,7 @@ function Detail({ data }) {
   const [hasClosedTrustset, setHasClosedTrustset] = useState(false);
   const [creatorPanelOpen, setCreatorPanelOpen] = useState(false);
   const [transactionPanelOpen, setTransactionPanelOpen] = useState(false);
+  const [orderBookOpen, setOrderBookOpen] = useState(false);
   const WSS_FEED_URL = `wss://api.xrpl.to/ws/token/${token.md5}`;
 
   useWebSocket(WSS_FEED_URL, {
@@ -83,8 +84,8 @@ function Detail({ data }) {
       <Header />
 
       <Container
-        maxWidth={creatorPanelOpen || transactionPanelOpen ? false : 'xl'}
-        sx={creatorPanelOpen || transactionPanelOpen ? { width: '100%', px: 2 } : undefined}
+        maxWidth={creatorPanelOpen || transactionPanelOpen || orderBookOpen ? false : 'xl'}
+        sx={creatorPanelOpen || transactionPanelOpen || orderBookOpen ? { width: '100%', px: 2 } : undefined}
       >
         <TokenDetail 
           token={token} 
@@ -93,6 +94,8 @@ function Detail({ data }) {
           creatorPanelOpen={creatorPanelOpen}
           onTransactionPanelToggle={(open) => setTransactionPanelOpen(open)}
           transactionPanelOpen={transactionPanelOpen}
+          onOrderBookToggle={(open) => setOrderBookOpen(open)}
+          orderBookOpen={orderBookOpen}
         />
       </Container>
 

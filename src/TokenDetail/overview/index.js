@@ -78,7 +78,7 @@ const useIntersectionObserver = (ref, options = {}) => {
 
 // ----------------------------------------------------------------------
 
-const Overview = memo(({ token, onTransactionClick }) => {
+const Overview = memo(({ token, onTransactionClick, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
@@ -184,7 +184,12 @@ const Overview = memo(({ token, onTransactionClick }) => {
           )}
         </Box>
         <Box sx={{ flex: { md: '0 0 30%' }, maxWidth: { md: '30%' }, width: '100%' }}>
-          <Swap token={token} />
+          <Swap 
+            token={token}
+            onOrderBookToggle={onOrderBookToggle}
+            orderBookOpen={orderBookOpen}
+            onOrderBookData={onOrderBookData}
+          />
           <PriceStatistics token={token} sx={{ mt: 3 }} />
           <Description
             token={token}
@@ -206,6 +211,19 @@ const Overview = memo(({ token, onTransactionClick }) => {
           <Box sx={{ mt: 1.5 }}>
             <TrendingTokens />
           </Box>
+          
+          {/* Test OrderBook Panel Button */}
+          {onOrderBookToggle && (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Button 
+                variant="contained" 
+                onClick={onOrderBookToggle}
+                color="primary"
+              >
+                {orderBookOpen ? 'Close OrderBook' : 'Show OrderBook'}
+              </Button>
+            </Box>
+          )}
         </Box>
       </Box>
 

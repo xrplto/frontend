@@ -38,7 +38,7 @@ import { processOrderbookOffers } from 'src/utils/orderbookService';
 import Image from 'next/image';
 import { PuffLoader } from 'react-spinners';
 import { enqueueSnackbar } from 'notistack';
-import OrderBookTable from 'src/TokenDetail/trade/OrderBookTable';
+import OrderBookPanel from 'src/TokenDetail/trade/OrderBookPanel';
 const Orders = React.lazy(() => import('src/TokenDetail/trade/account/Orders'));
 
 const pulse = keyframes`
@@ -206,7 +206,7 @@ const SummaryBox = styled(Paper)(({ theme }) => ({
   marginBottom: theme.spacing(1)
 }));
 
-const Swap = ({ token }) => {
+const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const WSS_URL = 'wss://xrplcluster.com';
 
   const [sellAmount, setSellAmount] = useState('');
@@ -257,6 +257,8 @@ const Swap = ({ token }) => {
   const [focusTop, setFocusTop] = useState(false);
   const [focusBottom, setFocusBottom] = useState(false);
 
+  
+
   // Add trustline states
   const [trustlines, setTrustlines] = useState([]);
   const [hasTrustline1, setHasTrustline1] = useState(true);
@@ -271,7 +273,7 @@ const Swap = ({ token }) => {
   const [expiryHours, setExpiryHours] = useState(24);
   
   // Add state for orderbook visibility
-  const [showOrderbook, setShowOrderbook] = useState(false);
+  const [showOrderbook, setShowOrderbook] = useState(false); // used only when not integrated
   const [showOrders, setShowOrders] = useState(false);
 
   const amount = revert ? amount2 : amount1;
@@ -514,6 +516,78 @@ const Swap = ({ token }) => {
     };
   }, [wsReady, pair, revert, sendJsonMessage]);
   // Orderbook related useEffect - END
+
+  // Provide order book data upward when integrated with global panel
+  useEffect(() => {
+    if (!onOrderBookData) return;
+    const data = {
+      pair: {
+        curr1: { ...curr1, name: curr1.name || curr1.currency },
+        curr2: { ...curr2, name: curr2.name || curr2.currency }
+      },
+      asks,
+      bids,
+      limitPrice: orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null,
+      isBuyOrder: !revert,
+      onAskClick: (e, idx) => {
+        if (asks && asks[idx]) {
+          setLimitPrice(asks[idx].price.toString());
+          setOrderType('limit');
+        }
+      },
+      onBidClick: (e, idx) => {
+        if (bids && bids[idx]) {
+          setLimitPrice(bids[idx].price.toString());
+          setOrderType('limit');
+        }
+      }
+    };
+    onOrderBookData(data);
+  }, [onOrderBookData, curr1, curr2, asks, bids, orderType, limitPrice, revert]);
+
+  // Directly shift layout from here when OrderBook is open (desktop only)
+  useEffect(() => {
+    const root = typeof document !== 'undefined' ? document.getElementById('__next') : null;
+    if (!root) return;
+
+    const isPanelOpen = (onOrderBookToggle ? !!orderBookOpen : !!showOrderbook) && orderType === 'limit';
+
+    const calcPanelWidth = () => {
+      if (typeof window === 'undefined') return 0;
+      const w = window.innerWidth || 0;
+      // Match OrderBookPanel widths
+      const { md = 900, lg = 1200, xl = 1536 } = (theme.breakpoints && theme.breakpoints.values) || {};
+      if (w >= xl) return 360;
+      if (w >= lg) return 320;
+      if (w >= md) return 280;
+      return 0;
+    };
+
+    const applyShift = () => {
+      const width = calcPanelWidth();
+      if (width <= 0) return removeShift();
+      // Only set padding-right if nothing else already set it (avoid double-shift)
+      const prev = root.style.paddingRight;
+      if (!root.hasAttribute('data-prev-pr-ob') && (!prev || prev === '')) {
+        root.setAttribute('data-prev-pr-ob', prev);
+        root.style.paddingRight = `${width}px`;
+      }
+      root.classList.add('orderbook-shift');
+    };
+
+    const removeShift = () => {
+      const prev = root.getAttribute('data-prev-pr-ob');
+      if (prev !== null) root.style.paddingRight = prev;
+      else root.style.removeProperty('padding-right');
+      root.removeAttribute('data-prev-pr-ob');
+      root.classList.remove('orderbook-shift');
+    };
+
+    if (isPanelOpen) applyShift();
+    else removeShift();
+
+    return removeShift;
+  }, [orderType, orderBookOpen, onOrderBookToggle, showOrderbook, theme.breakpoints]);
 
   // web socket process messages for orderbook
   const processMessages = (event) => {
@@ -1798,7 +1872,10 @@ const Swap = ({ token }) => {
                 <Button
                   size="small"
                   variant="text"
-                  onClick={() => setShowOrderbook(!showOrderbook)}
+                  onClick={() => {
+                    if (onOrderBookToggle) onOrderBookToggle(!orderBookOpen);
+                    else setShowOrderbook(!showOrderbook);
+                  }}
                   sx={{
                     fontSize: '0.65rem',
                     textTransform: 'none',
@@ -1806,7 +1883,7 @@ const Swap = ({ token }) => {
                     minHeight: '24px'
                   }}
                 >
-                  {showOrderbook ? 'Hide' : 'Show'} Book
+                  {(onOrderBookToggle ? orderBookOpen : showOrderbook) ? 'Hide' : 'Show'} Book
                 </Button>
                 <Button
                   size="small"
@@ -2055,149 +2132,32 @@ const Swap = ({ token }) => {
         nextUrl={nextUrl}
       />
       
-      {/* Orderbook Display */}
-      {showOrderbook && (
-        <Box
-          sx={{
-            mt: 2,
-            width: '100%',
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: '12px',
-            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-            overflow: 'hidden',
-            boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`
+      {/* Orderbook Panel (embedded) - only when no global handler provided */}
+      {!onOrderBookToggle && (
+        <OrderBookPanel
+          open={showOrderbook}
+          onClose={() => setShowOrderbook(false)}
+          pair={{
+            curr1: { ...curr1, name: curr1.name || curr1.currency },
+            curr2: { ...curr2, name: curr2.name || curr2.currency }
           }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              p: 1.5,
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-              background: alpha(theme.palette.background.paper, 0.02)
-            }}
-          >
-            <Typography variant="h6" sx={{ fontSize: '0.85rem', fontWeight: 600, color: theme.palette.text.primary }}>
-              Orderbook
-            </Typography>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
-                {curr1.name}/{curr2.name}
-              </Typography>
-              <IconButton
-                size="small"
-                onClick={() => setShowOrderbook(false)}
-                sx={{ 
-                  color: theme.palette.text.secondary,
-                  p: 0.5,
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.action.active, 0.08)
-                  }
-                }}
-              >
-                <CloseIcon sx={{ width: 16, height: 16 }} />
-              </IconButton>
-            </Stack>
-          </Box>
-          
-          <Box sx={{ 
-            height: { xs: '250px', md: '350px' }, 
-            maxHeight: '400px',
-            overflow: 'auto',
-            backgroundColor: alpha(theme.palette.background.default, 0.01)
-          }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {/* Asks (Sell Orders) */}
-              <Box>
-                <Typography variant="caption" sx={{ color: theme.palette.error.main, fontWeight: 600, mb: 0.5, display: 'block' }}>
-                  Sell Orders
-                </Typography>
-                <OrderBookTable
-                  levels={asks}
-                  orderType={2} // ORDER_TYPE_ASKS
-                  pair={{
-                    curr1: { ...curr1, name: curr1.name || curr1.currency },
-                    curr2: { ...curr2, name: curr2.name || curr2.currency }
-                  }}
-                  selected={[0, 0]}
-                  limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
-                  isBuyOrder={!revert}
-                  onMouseOver={() => {}}
-                  onMouseLeave={() => {}}
-                  onClick={(e, idx) => {
-                    if (asks && asks[idx]) {
-                      setLimitPrice(asks[idx].price.toString());
-                      setOrderType('limit');
-                    }
-                  }}
-                  getIndicatorProgress={(value) => {
-                    if (isNaN(value)) return 0;
-                    let totA = 0, avgA = 0, totB = 0, avgB = 0;
-                    if (asks.length >= 1) {
-                      totA = Number(asks[asks.length - 1].sumAmount);
-                      avgA = totA / asks.length;
-                    }
-                    if (bids.length >= 1) {
-                      totB = Number(bids[bids.length - 1].sumAmount);
-                      avgB = totB / bids.length;
-                    }
-                    const avg = (Number(avgA) + Number(avgB)) / 2;
-                    const max100 = (avg / 50) * 100;
-                    const progress = value / max100 > 1 ? 1 : value / max100;
-                    return (progress * 100).toFixed(0);
-                  }}
-                  allBids={bids}
-                  allAsks={asks}
-                />
-              </Box>
-              
-              {/* Bids (Buy Orders) */}
-              <Box>
-                <Typography variant="caption" sx={{ color: theme.palette.success.main, fontWeight: 600, mb: 0.5, display: 'block' }}>
-                  Buy Orders
-                </Typography>
-                <OrderBookTable
-                  levels={bids}
-                  orderType={1} // ORDER_TYPE_BIDS
-                  pair={{
-                    curr1: { ...curr1, name: curr1.name || curr1.currency },
-                    curr2: { ...curr2, name: curr2.name || curr2.currency }
-                  }}
-                  selected={[0, 0]}
-                  limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
-                  isBuyOrder={!revert}
-                  onMouseOver={() => {}}
-                  onMouseLeave={() => {}}
-                  onClick={(e, idx) => {
-                    if (bids && bids[idx]) {
-                      setLimitPrice(bids[idx].price.toString());
-                      setOrderType('limit');
-                    }
-                  }}
-                  getIndicatorProgress={(value) => {
-                    if (isNaN(value)) return 0;
-                    let totA = 0, avgA = 0, totB = 0, avgB = 0;
-                    if (asks.length >= 1) {
-                      totA = Number(asks[asks.length - 1].sumAmount);
-                      avgA = totA / asks.length;
-                    }
-                    if (bids.length >= 1) {
-                      totB = Number(bids[bids.length - 1].sumAmount);
-                      avgB = totB / bids.length;
-                    }
-                    const avg = (Number(avgA) + Number(avgB)) / 2;
-                    const max100 = (avg / 50) * 100;
-                    const progress = value / max100 > 1 ? 1 : value / max100;
-                    return (progress * 100).toFixed(0);
-                  }}
-                  allBids={bids}
-                  allAsks={asks}
-                />
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+          asks={asks}
+          bids={bids}
+          limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
+          isBuyOrder={!revert}
+          onAskClick={(e, idx) => {
+            if (asks && asks[idx]) {
+              setLimitPrice(asks[idx].price.toString());
+              setOrderType('limit');
+            }
+          }}
+          onBidClick={(e, idx) => {
+            if (bids && bids[idx]) {
+              setLimitPrice(bids[idx].price.toString());
+              setOrderType('limit');
+            }
+          }}
+        />
       )}
       
       {/* Orders Display */}
