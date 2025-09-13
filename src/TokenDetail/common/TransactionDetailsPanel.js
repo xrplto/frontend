@@ -675,30 +675,44 @@ const TransactionDetailsPanel = memo(({
               <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                 {asks.length > 0 ? (
                   <Stack spacing={0.5} sx={{ p: 1 }}>
-                    {asks.slice(0, 30).map((level, idx) => (
-                      <Box
-                        key={`ask-${idx}-${level.price}-${level.amount}`}
-                        onClick={(e) => { if (onAskClick) onAskClick(e, idx); }}
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          fontSize: '0.75rem',
-                          cursor: 'pointer',
-                          px: 0.5,
-                          py: 0.25,
-                          borderRadius: '4px',
-                          '&:hover': { background: alpha(theme.palette.error.main, 0.06) }
-                        }}
-                      >
-                        <Typography variant="caption" sx={{ color: theme.palette.error.main }}>
-                          {level.price}
-                        </Typography>
-                        <Typography variant="caption">{level.amount}</Typography>
-                        <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'inline' }, color: alpha(theme.palette.text.secondary, 0.8) }}>
-                          {level.sumAmount}
-                        </Typography>
-                      </Box>
-                    ))}
+                    {(() => {
+                      const askSlice = asks.slice(0, 30);
+                      return askSlice
+                        .slice()
+                        .reverse()
+                        .map((level, idx) => {
+                          const origIdx = askSlice.length - 1 - idx;
+                          return (
+                            <Box
+                              key={`ask-${origIdx}-${level.price}-${level.amount}`}
+                              onClick={(e) => {
+                                if (onAskClick) onAskClick(e, origIdx);
+                              }}
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                fontSize: '0.75rem',
+                                cursor: 'pointer',
+                                px: 0.5,
+                                py: 0.25,
+                                borderRadius: '4px',
+                                '&:hover': { background: alpha(theme.palette.error.main, 0.06) }
+                              }}
+                            >
+                              <Typography variant="caption" sx={{ color: theme.palette.error.main }}>
+                                {level.price}
+                              </Typography>
+                              <Typography variant="caption">{level.amount}</Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{ display: { xs: 'none', sm: 'inline' }, color: alpha(theme.palette.text.secondary, 0.8) }}
+                              >
+                                {level.sumAmount}
+                              </Typography>
+                            </Box>
+                          );
+                        });
+                    })()}
                   </Stack>
                 ) : (
                   <Box sx={{ p: 2, textAlign: 'center' }}>
