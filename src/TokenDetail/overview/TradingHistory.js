@@ -36,13 +36,18 @@ import {
   Popover,
   Tabs,
   Tab,
-  Grid
+  Grid,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import SmartToy from '@mui/icons-material/SmartToy';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import CloseIcon from '@mui/icons-material/Close';
 import { getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 import PairsList from 'src/TokenDetail/market/PairsList';
 import TopTraders from 'src/TokenDetail/toptraders';
@@ -497,6 +502,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
   const [bidId, setBidId] = useState(-1);
   const [askId, setAskId] = useState(-1);
   const [selectedPair, setSelectedPair] = useState(() => token ? getInitPair(token) : null);
+  const [orderBookOpen, setOrderBookOpen] = useState(false);
   
   const WSS_URL = 'wss://xrplcluster.com';
   
@@ -815,14 +821,16 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
 
   return (
     <Stack spacing={1} sx={{ mx: 0, width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Tabs value={tabValue} onChange={handleTabChange} aria-label="trading tabs">
           <Tab label="Trading History" />
-          <Tab label="Order Book" />
           <Tab label="Trading Pairs" />
           <Tab label="Top Traders" />
           <Tab label="Rich List" />
         </Tabs>
+        <Button variant="outlined" size="small" onClick={() => setOrderBookOpen(true)} sx={{ mr: 1 }}>
+          Quick Trade
+        </Button>
       </Box>
       
       {tabValue === 0 && (
@@ -1162,10 +1170,16 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
         </>
       )}
       
-      {tabValue === 1 && token && (
-        <Stack spacing={2} sx={{ position: 'relative', zIndex: 1 }}>
-          <Grid container spacing={2}>
-          <Grid item xs={12}>
+      {/* Quick Trade Modal */}
+      <Dialog open={orderBookOpen} onClose={() => setOrderBookOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          Quick Trade
+          <IconButton size="small" onClick={() => setOrderBookOpen(false)}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {token && (
             <Stack spacing={2}>
               <Box sx={{ 
                 display: 'flex',
@@ -1180,15 +1194,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                 boxShadow: `
                   0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
                   0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                  inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-                position: 'relative',
-                zIndex: 1000,
-                '& .MuiSelect-root': {
-                  zIndex: 1001
-                },
-                '& .MuiPopper-root': {
-                  zIndex: 1002
-                }
+                  inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
               }}>
                 <Typography variant="body1" fontWeight="600" sx={{ minWidth: 'fit-content' }}>Trading Pair:</Typography>
                 <Box sx={{ minWidth: 200, maxWidth: 300 }}>
@@ -1206,21 +1212,20 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                 bidId={bidId}
                 askId={askId}
               />
-             </Stack>
-           </Grid>
-         </Grid>
-        </Stack>
-      )}
+            </Stack>
+          )}
+        </DialogContent>
+      </Dialog>
       
-      {tabValue === 2 && token && pairs && (
+      {tabValue === 1 && token && pairs && (
         <PairsList token={token} pairs={pairs} />
       )}
       
-      {tabValue === 3 && token && (
+      {tabValue === 2 && token && (
         <TopTraders token={token} />
       )}
       
-      {tabValue === 4 && token && (
+      {tabValue === 3 && token && (
         <Suspense fallback={<CircularProgress />}>
           <RichList token={token} amm={amm} />
         </Suspense>
