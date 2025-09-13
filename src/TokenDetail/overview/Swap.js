@@ -125,6 +125,13 @@ const ConverterFrame = styled('div')(
 `
 );
 
+// Wrap just the two amount rows so the swap icon stays centered between them
+const AmountRows = styled('div')(
+  () => `
+    position: relative;
+  `
+);
+
 const ToggleContent = styled('div')(
   ({ theme }) => css`
     cursor: pointer;
@@ -1607,6 +1614,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         </Box>
         
         <ConverterFrame>
+          <AmountRows>
           <CurrencyContent style={{ backgroundColor: color1 }}>
             <Box display="flex" flexDirection="column" flex="1" gap="3px">
               <Box display="flex" justifyContent="space-between" alignItems="top" width="100%">
@@ -1787,6 +1795,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               />
             </IconButton>
           </ToggleContent>
+          </AmountRows>
 
           {/* Add slippage control */}
           <Box sx={{ px: 1.5, py: 0.5 }}>
@@ -1982,13 +1991,29 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     Enter a valid limit price greater than 0.
                   </Typography>
                 )}
-                {orderType === 'limit' && priceWarning && (
-                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.warning.main }}>
-                    {priceWarning.kind === 'buy'
-                      ? `Your buy price is ${new Decimal(priceWarning.pct).toFixed(2)}% above best ask (${new Decimal(priceWarning.ref).toFixed(6)}).`
-                      : `Your sell price is ${new Decimal(priceWarning.pct).toFixed(2)}% below best bid (${new Decimal(priceWarning.ref).toFixed(6)}).`}
-                  </Typography>
-                )}
+                {orderType === 'limit' && priceWarning && (() => {
+                  const baseMsg = priceWarning.kind === 'buy'
+                    ? `Your buy price is ${new Decimal(priceWarning.pct).toFixed(2)}% above best ask (${new Decimal(priceWarning.ref).toFixed(6)}).`
+                    : `Your sell price is ${new Decimal(priceWarning.pct).toFixed(2)}% below best bid (${new Decimal(priceWarning.ref).toFixed(6)}).`;
+                  const lp = Number(limitPrice);
+                  const marketable = priceWarning.kind === 'buy'
+                    ? (bestAsk != null && lp >= Number(bestAsk))
+                    : (bestBid != null && lp <= Number(bestBid));
+                  if (marketable) {
+                    return (
+                      <Alert severity="error" sx={{ mt: 0.5, py: 0.5 }}>
+                        <Typography variant="caption" sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'error.main' }}>
+                          Immediate execution! {baseMsg} This order will fill instantly at market. Review price and amount carefully.
+                        </Typography>
+                      </Alert>
+                    );
+                  }
+                  return (
+                    <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.warning.main }}>
+                      {baseMsg}
+                    </Typography>
+                  );
+                })()}
                 {bestBid != null && bestAsk != null && (
                   <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.65rem' }}>
                     {(() => {
