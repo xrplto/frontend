@@ -88,6 +88,11 @@ const Orders = dynamic(() => import('src/TokenDetail/trade/account/Orders'), {
   loading: () => <div>Loading orders...</div>,
   ssr: false
 });
+// Orderbook / Tx details side panel (used in orderbook mode)
+const TransactionDetailsPanel = dynamic(
+  () => import('src/TokenDetail/common/TransactionDetailsPanel'),
+  { ssr: false }
+);
 // import Dialog from 'src/components/Dialog'; // No longer needed - using side panel instead
 
 // Router
@@ -2946,7 +2951,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     <Box
       sx={{ 
         width: '100%', 
-        maxWidth: showOrderbook && !showTokenSelector ? '1200px' : '800px', 
+        maxWidth: '800px',
         margin: '0 auto', 
         px: { xs: 0.5, sm: 2, md: 3 },
         transition: 'max-width 0.3s ease'
@@ -2995,8 +3000,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         >
           <Stack sx={{ 
             width: '100%', 
-            flex: showOrderbook ? '0 0 auto' : '1',
-            maxWidth: showOrderbook ? '480px' : '100%',
+            flex: 1,
+            maxWidth: '100%',
             transition: 'all 0.3s ease' 
           }}>
         {/* Minimalist Swap Container */}
@@ -4056,68 +4061,32 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
       </Stack>
 
-      {/* Orderbook Side Panel */}
-      {showOrderbook && (
-        <Box
-          sx={{
-            width: { xs: '100%', md: '400px' },
-            flex: { md: '0 0 400px' },
-            backgroundColor: 'transparent',
-            backdropFilter: 'blur(24px)',
-            borderRadius: '20px',
-            border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-            boxShadow: `0 20px 40px ${alpha(theme.palette.common.black, 0.04)}`,
-            overflow: 'hidden',
-            animation: 'slideIn 0.3s ease-out',
-            '@keyframes slideIn': {
-              from: {
-                opacity: 0,
-                transform: 'translateX(20px)'
-              },
-              to: {
-                opacity: 1,
-                transform: 'translateX(0)'
-              }
-            }
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              p: 2,
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-              background: alpha(theme.palette.background.paper, 0.02)
-            }}
-          >
-            <Typography variant="h6" sx={{ fontSize: '0.95rem', fontWeight: 600, color: theme.palette.text.primary }}>
-              Orderbook
-            </Typography>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.75rem' }}>
-                {curr1.name}/{curr2.name}
-              </Typography>
-              <IconButton
-                size="small"
-                onClick={() => setShowOrderbook(false)}
-                sx={{ 
-                  color: theme.palette.text.secondary,
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.action.active, 0.08)
-                  }
-                }}
-              >
-                <CloseIcon sx={{ width: 18, height: 18 }} />
-              </IconButton>
-            </Stack>
-          </Box>
-          
-          <Box sx={{ p: 2, color: theme.palette.text.secondary }}>
-            <Typography variant="caption">Order book view removed.</Typography>
-          </Box>
-        </Box>
-      )}
+      {/* Orderbook Drawer (embedded) using TransactionDetailsPanel) */}
+      <TransactionDetailsPanel
+        open={showOrderbook && orderType === 'limit'}
+        onClose={() => setShowOrderbook(false)}
+        mode="orderbook"
+        pair={{
+          curr1: { ...curr1, name: curr1.name || curr1.currency },
+          curr2: { ...curr2, name: curr2.name || curr2.currency }
+        }}
+        asks={asks}
+        bids={bids}
+        limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
+        isBuyOrder={!!revert}
+        onAskClick={(e, idx) => {
+          if (asks && asks[idx]) {
+            setLimitPrice(asks[idx].price.toString());
+            setOrderType('limit');
+          }
+        }}
+        onBidClick={(e, idx) => {
+          if (bids && bids[idx]) {
+            setLimitPrice(bids[idx].price.toString());
+            setOrderType('limit');
+          }
+        }}
+      />
         </Stack>
         </Box>
       </Box>
