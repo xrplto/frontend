@@ -32,7 +32,7 @@ const DepthChart = memo(function DepthChart({ asks = [], bids = [], height = 220
   const priceIndexMapRef = useRef(new Map());
   const [hoverInfo, setHoverInfo] = useState(null);
 
-  const { bidData, askData, scaleNote } = useMemo(() => {
+  const { bidData, askData, scaleNote, totalBid, totalAsk } = useMemo(() => {
     const maxPoints = 150;
     const bidsDepth = prepareDepth(bids, true, maxPoints);
     const asksDepth = prepareDepth(asks, false, maxPoints);
@@ -47,7 +47,9 @@ const DepthChart = memo(function DepthChart({ asks = [], bids = [], height = 220
     const out = {
       bidData: [],
       askData: [],
-      scaleNote: scaleDown > 1 ? 'values scaled (x1e6)' : ''
+      scaleNote: scaleDown > 1 ? 'values scaled (x1e6)' : '',
+      totalBid: 0,
+      totalAsk: 0
     };
 
     priceIndexMapRef.current = new Map();
@@ -59,12 +61,22 @@ const DepthChart = memo(function DepthChart({ asks = [], bids = [], height = 220
       priceIndexMapRef.current.set(t, { price: p.price, side: 'bid', rawValue: p.value });
       t += 1;
     }
+    // total bid depth is last cumulative value on bids side; fall back to sum if missing
+    const bidCum = bids && bids.length
+      ? (typeof bids[bids.length - 1].sumAmount === 'number' ? bids[bids.length - 1].sumAmount : bids.reduce((s, o) => s + (Number(o.amount) || 0), 0))
+      : 0;
+    out.totalBid = scale(bidCum);
     t += 1; // small gap between sides on x axis
     for (const p of asksDepth) {
       out.askData.push({ time: t, value: scale(p.value) });
       priceIndexMapRef.current.set(t, { price: p.price, side: 'ask', rawValue: p.value });
       t += 1;
     }
+    // total ask depth is last cumulative value on asks side; fall back to sum if missing
+    const askCum = asks && asks.length
+      ? (typeof asks[asks.length - 1].sumAmount === 'number' ? asks[asks.length - 1].sumAmount : asks.reduce((s, o) => s + (Number(o.amount) || 0), 0))
+      : 0;
+    out.totalAsk = scale(askCum);
 
     return out;
   }, [asks, bids]);
@@ -197,6 +209,17 @@ const DepthChart = memo(function DepthChart({ asks = [], bids = [], height = 220
             )}
           </Box>
           <div ref={containerRef} style={{ width: '100%', height }} />
+          {/* Minimal totals per side */}
+          {(totalBid || totalAsk) && (
+            <>
+              <Box sx={{ position: 'absolute', left: 8, bottom: 6, fontSize: '0.65rem', color: alpha(theme.palette.success.main, 0.9), zIndex: 2, pointerEvents: 'none' }}>
+                Bid Σ {Number(totalBid).toLocaleString()}
+              </Box>
+              <Box sx={{ position: 'absolute', right: 8, bottom: 6, fontSize: '0.65rem', color: alpha(theme.palette.error.main, 0.9), zIndex: 2, pointerEvents: 'none' }}>
+                Ask Σ {Number(totalAsk).toLocaleString()}
+              </Box>
+            </>
+          )}
         </Box>
       )}
     </ChartContainer>
