@@ -13,7 +13,8 @@ import {
   Chip,
   Select,
   MenuItem,
-  Paper
+  Paper,
+  Tooltip
 } from '@mui/material';
 import { styled, useTheme, keyframes, alpha, css } from '@mui/material/styles';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
@@ -1425,6 +1426,24 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     if (accountPairBalance?.curr1.value > 0) setAmount1(accountPairBalance?.curr1.value);
   };
 
+  const onFillPercent = (pct) => {
+    // pct is 0.25, 0.5, 0.75
+    if (!accountPairBalance?.curr1?.value) return;
+    const bal = Number(accountPairBalance.curr1.value) || 0;
+    if (bal <= 0) return;
+    const val = new Decimal(bal).mul(pct).toFixed(6, Decimal.ROUND_DOWN);
+    setAmount1(val);
+    // Trigger counterpart calculation similar to manual input
+    const hasValidRates =
+      (curr1?.currency === 'XRP' || curr2?.currency === 'XRP')
+        ? tokenExch1 > 0 || tokenExch2 > 0
+        : tokenExch1 > 0 && tokenExch2 > 0;
+    if (hasValidRates) {
+      const calculatedValue = calcQuantity(val, 'AMOUNT');
+      if (calculatedValue && calculatedValue !== '0') setAmount2(calculatedValue);
+    }
+  };
+
   // Add trustline creation function
   const onCreateTrustline = async (currency) => {
     if (!accountProfile || !accountProfile.account) return;
@@ -1597,19 +1616,32 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       {accountPairBalance?.curr1.value}
                     </Typography>
                   </Typography>
-
-                  <Button
-                    sx={{ px: { xs: 0.75, sm: 0.5 }, py: 0, minWidth: 0, fontSize: { xs: '0.7rem', sm: '0.75rem' }, height: { xs: '24px', sm: '20px' } }}
-                    onClick={onFillMax}
-                  >
-                    MAX
-                  </Button>
+                  <Stack direction="row" spacing={0.25}>
+                    {[0.25, 0.5, 0.75].map((p) => (
+                      <Button
+                        key={p}
+                        sx={{ px: { xs: 0.75, sm: 0.5 }, py: 0, minWidth: 0, fontSize: { xs: '0.7rem', sm: '0.75rem' }, height: { xs: '24px', sm: '20px' } }}
+                        disabled={!accountPairBalance?.curr1?.value}
+                        onClick={() => onFillPercent(p)}
+                      >
+                        {Math.round(p * 100)}%
+                      </Button>
+                    ))}
+                    <Button
+                      sx={{ px: { xs: 0.75, sm: 0.5 }, py: 0, minWidth: 0, fontSize: { xs: '0.7rem', sm: '0.75rem' }, height: { xs: '24px', sm: '20px' } }}
+                      disabled={!accountPairBalance?.curr1?.value}
+                      onClick={onFillMax}
+                    >
+                      MAX
+                    </Button>
+                  </Stack>
                 </Stack>
               )}
               <Input
                 placeholder="0"
                 autoComplete="new-password"
                 disableUnderline
+                inputProps={{ 'aria-label': `Amount of ${curr1?.name || curr1?.currency} to sell` }}
                 value={amount1}
                 onChange={handleChangeAmount1}
                 sx={{
@@ -1677,6 +1709,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 placeholder="0"
                 autoComplete="new-password"
                 disableUnderline
+                inputProps={{ 'aria-label': `Amount of ${curr2?.name || curr2?.currency} to buy` }}
                 value={amount2}
                 onChange={handleChangeAmount2}
                 sx={{
@@ -1776,8 +1809,19 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.7rem' } }}>
                   %
                 </Typography>
+                <Chip
+                  size="small"
+                  label={`Impact ${priceImpact}%`}
+                  color={Number(priceImpact) > 2 ? 'warning' : 'default'}
+                  sx={{ height: { xs: 18, sm: 18 }, fontSize: '0.65rem' }}
+                />
               </Stack>
             </Stack>
+            {Number(slippage) > 5 && (
+              <Typography variant="caption" color="warning.main" sx={{ display: 'block', mt: 0.5, fontSize: '0.7rem' }}>
+                High slippage increases the risk of a worse execution.
+              </Typography>
+            )}
           </Box>
 
 
@@ -1792,6 +1836,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   placeholder="0.00"
                   fullWidth
                   disableUnderline
+                  inputProps={{ 'aria-label': `Limit price in ${curr2?.name || curr2?.currency} per ${curr1?.name || curr1?.currency}` }}
                   value={limitPrice}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -1813,6 +1858,60 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     }
                   }}
                 />
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Tooltip title="Set to the best available sell price">
+                    <span>
+                      <Button
+                        size="small"
+                        variant="text"
+                        disabled={!asks || asks.length === 0}
+                        onClick={() => asks && asks[0] && setLimitPrice(String(asks[0].price))}
+                        sx={{ textTransform: 'none', fontSize: '0.7rem', minHeight: '22px' }}
+                      >
+                        Best Ask
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title="Set to the best available buy price">
+                    <span>
+                      <Button
+                        size="small"
+                        variant="text"
+                        disabled={!bids || bids.length === 0}
+                        onClick={() => bids && bids[0] && setLimitPrice(String(bids[0].price))}
+                        sx={{ textTransform: 'none', fontSize: '0.7rem', minHeight: '22px' }}
+                      >
+                        Best Bid
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title="Set to the midpoint between best bid and ask">
+                    <span>
+                      <Button
+                        size="small"
+                        variant="text"
+                        disabled={!asks || !bids || asks.length === 0 || bids.length === 0}
+                        onClick={() => {
+                          if (asks && bids && asks[0] && bids[0]) {
+                            const mid = (Number(asks[0].price) + Number(bids[0].price)) / 2;
+                            setLimitPrice(String(new Decimal(mid).toFixed(6)));
+                          }
+                        }}
+                        sx={{ textTransform: 'none', fontSize: '0.7rem', minHeight: '22px' }}
+                      >
+                        Mid
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.65rem' }}>
+                    Tip: Click an order book row to fill price
+                  </Typography>
+                </Stack>
+                {orderType === 'limit' && (!limitPrice || Number(limitPrice) <= 0) && (
+                  <Typography variant="caption" color="error" sx={{ fontSize: '0.7rem' }}>
+                    Enter a valid limit price greater than 0.
+                  </Typography>
+                )}
                 
                 {/* Order Expiration */}
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -1902,6 +2001,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   {showOrders ? 'Hide' : 'Show'} Orders
                 </Button>
               </Stack>
+              <Typography variant="caption" color="textSecondary" sx={{ textAlign: 'center', mt: 0.5, fontSize: '0.65rem' }}>
+                Tip: Use the order book to quickly pick a fair price.
+              </Typography>
             </Box>
           )}
           
@@ -2124,6 +2226,19 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           </ExchangeButton>
         ) : (
           <ConnectWallet pair={pair} />
+        )}
+        {/* Inline guidance for trustlines and balance */}
+        {isLoggedIn && errMsg && (
+          <Alert severity={errMsg.toLowerCase().includes('trustline') ? 'warning' : 'error'} sx={{ mt: 1 }}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+              <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>{errMsg}</Typography>
+              {errMsg.toLowerCase().includes('trustline') && (
+                <Button size="small" variant="outlined" onClick={() => onCreateTrustline(!hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2)} sx={{ textTransform: 'none' }}>
+                  Create Trustline
+                </Button>
+              )}
+            </Stack>
+          </Alert>
         )}
       </Stack>
 

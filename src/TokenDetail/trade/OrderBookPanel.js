@@ -6,7 +6,9 @@ import {
   Stack,
   Divider,
   useTheme,
-  Paper
+  Paper,
+  Tooltip,
+  Chip
 } from '@mui/material';
 import { alpha, styled } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -75,6 +77,8 @@ const SpreadSection = styled(Box)(({ theme }) => ({
 const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBuyOrder, onAskClick, onBidClick, isSecondary = false, autoShiftContent = false }) => {
   const theme = useTheme();
   const spread = React.useMemo(() => calculateSpread(bids, asks), [bids, asks]);
+  const bestAsk = React.useMemo(() => (asks && asks[0] ? Number(asks[0].price) : null), [asks]);
+  const bestBid = React.useMemo(() => (bids && bids[0] ? Number(bids[0].price) : null), [bids]);
 
   // When used standalone (e.g., inside Swap), shift the main content to the left
   // by adding padding-right to the Next.js root element. In TokenDetail, layout
@@ -120,6 +124,16 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
       }
     };
   }, [open, autoShiftContent, theme.breakpoints.values]);
+
+  // Close on Escape for convenience
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose?.();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
 
   const getIndicatorProgress = (value) => {
     if (isNaN(value)) return 0;
@@ -169,11 +183,12 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
                   transform: 'scale(1.05)'
                 }
               }}
+              aria-label="Close order book"
             >
               <CloseIcon sx={{ fontSize: 16, color: theme.palette.text.secondary }} />
             </IconButton>
           </Stack>
-          
+
           {pair && (
             <Typography 
               variant="caption" 
@@ -188,6 +203,30 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
               {pair.curr1?.name || pair.curr1?.currency}/{pair.curr2?.name || pair.curr2?.currency}
             </Typography>
           )}
+
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+            <Tooltip title="Highest price buyers are willing to pay">
+              <Chip
+                size="small"
+                color="success"
+                variant="outlined"
+                label={bestBid != null ? `Best Bid ${fNumber(bestBid)}` : 'No bids'}
+                sx={{ height: 22, fontSize: '0.7rem' }}
+              />
+            </Tooltip>
+            <Tooltip title="Lowest price sellers are willing to accept">
+              <Chip
+                size="small"
+                color="error"
+                variant="outlined"
+                label={bestAsk != null ? `Best Ask ${fNumber(bestAsk)}` : 'No asks'}
+                sx={{ height: 22, fontSize: '0.7rem' }}
+              />
+            </Tooltip>
+            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '0.7rem' }}>
+              Tip: Click a row to set price
+            </Typography>
+          </Stack>
         </HeaderSection>
         
         {/* Content split into equal halves */}
@@ -208,24 +247,32 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
               </Stack>
             </SectionHeader>
             <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-              <OrderBookTable
-                levels={asks}
-                orderType={2} // ORDER_TYPE_ASKS
-                pair={pair}
-                selected={[0, 0]}
-                limitPrice={limitPrice}
-                isBuyOrder={isBuyOrder}
-                onMouseOver={() => {}}
-                onMouseLeave={() => {}}
-                onClick={(e, idx) => {
-                  if (onAskClick && asks && asks[idx]) {
-                    onAskClick(e, idx);
-                  }
-                }}
-                getIndicatorProgress={getIndicatorProgress}
-                allBids={bids}
-                allAsks={asks}
-              />
+              {asks.length > 0 ? (
+                <OrderBookTable
+                  levels={asks}
+                  orderType={2} // ORDER_TYPE_ASKS
+                  pair={pair}
+                  selected={[0, 0]}
+                  limitPrice={limitPrice}
+                  isBuyOrder={isBuyOrder}
+                  onMouseOver={() => {}}
+                  onMouseLeave={() => {}}
+                  onClick={(e, idx) => {
+                    if (onAskClick && asks && asks[idx]) {
+                      onAskClick(e, idx);
+                    }
+                  }}
+                  getIndicatorProgress={getIndicatorProgress}
+                  allBids={bids}
+                  allAsks={asks}
+                />
+              ) : (
+                <Box sx={{ p: 2, textAlign: 'center' }}>
+                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8) }}>
+                    No sell orders
+                  </Typography>
+                </Box>
+              )}
             </Box>
           </Box>
 
@@ -270,24 +317,32 @@ const OrderBookPanel = memo(({ open, onClose, pair, asks, bids, limitPrice, isBu
               </Stack>
             </SectionHeader>
             <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-              <OrderBookTable
-                levels={bids}
-                orderType={1} // ORDER_TYPE_BIDS
-                pair={pair}
-                selected={[0, 0]}
-                limitPrice={limitPrice}
-                isBuyOrder={isBuyOrder}
-                onMouseOver={() => {}}
-                onMouseLeave={() => {}}
-                onClick={(e, idx) => {
-                  if (onBidClick && bids && bids[idx]) {
-                    onBidClick(e, idx);
-                  }
-                }}
-                getIndicatorProgress={getIndicatorProgress}
-                allBids={bids}
-                allAsks={asks}
-              />
+              {bids.length > 0 ? (
+                <OrderBookTable
+                  levels={bids}
+                  orderType={1} // ORDER_TYPE_BIDS
+                  pair={pair}
+                  selected={[0, 0]}
+                  limitPrice={limitPrice}
+                  isBuyOrder={isBuyOrder}
+                  onMouseOver={() => {}}
+                  onMouseLeave={() => {}}
+                  onClick={(e, idx) => {
+                    if (onBidClick && bids && bids[idx]) {
+                      onBidClick(e, idx);
+                    }
+                  }}
+                  getIndicatorProgress={getIndicatorProgress}
+                  allBids={bids}
+                  allAsks={asks}
+                />
+              ) : (
+                <Box sx={{ p: 2, textAlign: 'center' }}>
+                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.8) }}>
+                    No buy orders
+                  </Typography>
+                </Box>
+              )}
             </Box>
           </Box>
 
