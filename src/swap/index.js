@@ -43,8 +43,6 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 
-// Additional icons for future replacement (lucide-react not installed)
-
 // Material UI Icons
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import InfoIcon from '@mui/icons-material/Info';
@@ -93,93 +91,13 @@ const TransactionDetailsPanel = dynamic(
   () => import('src/TokenDetail/common/TransactionDetailsPanel'),
   { ssr: false }
 );
-// import Dialog from 'src/components/Dialog'; // No longer needed - using side panel instead
 
 // Router
 import { useRouter } from 'next/router';
 
-const CurrencyContent = memo(styled('div')(
-  ({ theme }) => `
-    box-sizing: border-box;
-    margin: 0;
-    display: flex;
-    flex: 1 1 0%;
-    flex-direction: row;
-    padding: 12px;
-    border-radius: 10px;
-    align-items: center;
-    background: ${alpha(theme.palette.background.paper, 0.6)};
-    backdrop-filter: blur(10px);
-    border: 1px solid ${alpha(theme.palette.divider, 0.08)};
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    &:hover {
-      background: ${alpha(theme.palette.background.paper, 0.8)};
-      border-color: ${alpha(theme.palette.primary.main, 0.2)};
-      transform: translateY(-1px);
-    }
-    
-    &:not(:first-of-type) {
-      margin-top: 6px;
-    }
-    
-    @media (max-width: 600px) {
-      padding: 10px;
-      border-radius: 8px;
-    }
-`
-));
 
-const InputContent = memo(styled('div')(
-  ({ theme }) => `
-    box-sizing: border-box;
-    margin: 0px;
-    display: flex;
-    flex: 1 1 0%;
-    flex-direction: column;
-    -webkit-box-align: flex-end;
-    align-items: flex-end;
-    -webkit-box-pack: flex-end;
-    justify-content: flex-end;
-    color: rgb(255, 255, 255);
-`
-));
 
-let border; // webxtor SEO fix
-if (typeof theme !== 'undefined' && theme.currency) {
-  border = theme.currency.border;
-}
-const OverviewWrapper = memo(styled('div')(
-  ({ theme }) => `
-    flex-direction: column;
-    box-sizing: border-box;
-    border-radius: 16px;
-    display: flex;
-    background: ${alpha(theme.palette.background.paper, 0.95)};
-    backdrop-filter: blur(20px);
-    border: 1px solid ${alpha(theme.palette.divider, 0.08)};
-    width: 100%;
-    max-width: 380px;
-    margin: 0 auto;
-    box-shadow: 0 10px 30px ${alpha(theme.palette.common.black, 0.08)};
-    overflow: hidden;
 
-    @media (max-width: 600px) {
-        border-radius: 12px;
-        margin: 0 8px;
-        box-shadow: 0 5px 15px ${alpha(theme.palette.common.black, 0.06)};
-    }
-`
-));
-
-const ConverterFrame = memo(styled('div')(
-  ({ theme }) => `
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-`
-));
 
 const ExchangeButton = memo(styled(Button)(
   ({ theme }) => `
@@ -400,54 +318,6 @@ const StatusIndicator = styled('div')(
 );
 
 
-const ShareButton = styled(Button)(
-  ({ theme }) => `
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 10px;
-    font-weight: 600;
-    min-width: 45px;
-    height: 24px;
-    text-transform: none;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    background: ${alpha(theme.palette.info.main, 0.08)};
-    color: ${theme.palette.info.main};
-    border: 1px solid ${alpha(theme.palette.info.main, 0.2)};
-    
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, ${alpha(
-        theme.palette.info.main,
-        0.2
-      )}, transparent);
-      transition: left 0.5s;
-    }
-    
-    &:hover {
-      background: ${alpha(theme.palette.info.main, 0.12)};
-      border-color: ${alpha(theme.palette.info.main, 0.3)};
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px ${alpha(theme.palette.info.main, 0.15)};
-      
-      &::before {
-        left: 100%;
-      }
-    }
-    
-    &:active {
-      transform: translateY(0);
-      transition: transform 0.1s;
-    }
-`
-);
 
 // Token Selector Components
 const MAX_RECENT_SEARCHES = 6;
@@ -579,7 +449,6 @@ function truncate(str, n) {
 
 function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAsks }) {
   const theme = useTheme();
-  const QR_BLUR = '/static/blurqr.webp';
   const router = useRouter();
 
   const dispatch = useDispatch();
@@ -962,9 +831,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         .then((allTrustlines) => {
           setTrustlines(allTrustlines);
 
-          // Debug: Log the first trustline to understand the structure
-          if (allTrustlines.length > 0) {
-          }
 
 
           // Helper function to normalize currency codes for comparison
@@ -1054,7 +920,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               const issuerMatch = issuersMatch(line, curr1.issuer);
               const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency);
 
-              // Debug specific currency matches
 
               return currencyMatch && (issuerMatch || isStandardCurrency);
             });
@@ -1088,49 +953,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           setHasTrustline1(hasCurr1Trustline);
           setHasTrustline2(hasCurr2Trustline);
 
-          // Debug: Log all available currencies in trustlines
-          const availableCurrencies = allTrustlines.map((line) => ({
-            balance: line.Balance?.currency,
-            currency: line.currency,
-            _currency: line._currency,
-            highLimit: line.HighLimit?.currency,
-            lowLimit: line.LowLimit?.currency,
-            issuer: line._token1 || line._token2
-          }));
 
-          // Debug: Check if we can find any SCRAP-like currencies
-          const scrapLikeCurrencies = allTrustlines.filter((line) => {
-            const currencies = [
-              line.Balance?.currency,
-              line.currency,
-              line._currency,
-              line.HighLimit?.currency,
-              line.LowLimit?.currency
-            ].filter(Boolean);
-
-            return currencies.some((curr) => {
-              if (!curr) return false;
-              // Check if it contains "scrap" when converted from hex
-              try {
-                if (curr.length === 40 && /^[0-9A-Fa-f]+$/.test(curr)) {
-                  const cleanHex = curr.replace(/00+$/, '');
-                  let ascii = '';
-                  for (let i = 0; i < cleanHex.length; i += 2) {
-                    const byte = parseInt(cleanHex.substr(i, 2), 16);
-                    if (byte > 0) ascii += String.fromCharCode(byte);
-                  }
-                  return ascii.toLowerCase().includes('scrap');
-                }
-                return curr.toLowerCase().includes('scrap');
-              } catch (e) {
-                return false;
-              }
-            });
-          });
-
-          if (scrapLikeCurrencies.length > 0) {
-          } else {
-          }
         })
         .catch((err) => {
         });
@@ -1172,7 +995,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     function getTokenPrice() {
       // Check if tokens have required md5 properties
       if (!token1?.md5 || !token2?.md5) {
-        console.log('Missing md5 for tokens:', { token1: token1?.md5, token2: token2?.md5 });
         return;
       }
 
@@ -1180,13 +1002,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       const md51 = token1.md5;
       const md52 = token2.md5;
 
-      console.log('Fetching rates for:', { md51, md52 });
 
       // Get dynamic exchange rates from API
       axios
         .get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`)
         .then((res) => {
-          console.log('Rate response:', res.data);
           let ret = res.status === 200 ? res.data : undefined;
           if (ret) {
             // Use the rates as they come from the API
@@ -1195,7 +1015,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           }
         })
         .catch((err) => {
-          console.error('Failed to fetch rates:', err);
         })
         .then(function () {
           // always executed
@@ -1253,7 +1072,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       try {
         const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
         const res = ret.data.data.response;
-        // const account = res.account;
         const dispatched_result = res.dispatched_result;
 
         return dispatched_result;
@@ -1297,7 +1115,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       try {
         const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
         const res = ret.data.data.response;
-        // const account = res.account;
         const resolved_at = res.resolved_at;
         if (resolved_at) {
           startInterval();
@@ -1630,15 +1447,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       const token1IsXRP = token1?.currency === 'XRP';
       const token2IsXRP = token2?.currency === 'XRP';
 
-      console.log('calcQuantity inputs:', { 
-        amount, 
-        active, 
-        revert, 
-        token1IsXRP, 
-        token2IsXRP, 
-        rate1: rate1.toString(), 
-        rate2: rate2.toString() 
-      });
 
       // API rates depend on token order:
       // When token1=XRP, token2=RLUSD: rate1=1, rate2=XRP per RLUSD (e.g., 2.84)
@@ -1651,47 +1459,37 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         // rate2 = XRP per RLUSD, so divide XRP by rate2 to get RLUSD
         if (active === 'AMOUNT') {
           result = !revert ? amt.div(rate2) : amt.mul(rate2);
-          console.log('XRP->Token, AMOUNT branch:', !revert ? 'amt.div(rate2)' : 'amt.mul(rate2)', result.toString());
         } else {
           result = !revert ? amt.mul(rate2) : amt.div(rate2);
-          console.log('XRP->Token, VALUE branch:', !revert ? 'amt.mul(rate2)' : 'amt.div(rate2)', result.toString());
         }
       } else if (!token1IsXRP && token2IsXRP) {
         // Token -> XRP (e.g., RLUSD -> XRP)
         // rate1 = XRP per RLUSD, so multiply RLUSD by rate1 to get XRP
         if (active === 'AMOUNT') {
           result = !revert ? amt.mul(rate1) : amt.div(rate1);
-          console.log('Token->XRP, AMOUNT branch:', !revert ? 'amt.mul(rate1)' : 'amt.div(rate1)', result.toString());
         } else {
           result = !revert ? amt.div(rate1) : amt.mul(rate1);
-          console.log('Token->XRP, VALUE branch:', !revert ? 'amt.div(rate1)' : 'amt.mul(rate1)', result.toString());
         }
       } else {
         // Non-XRP pairs
         if (active === 'AMOUNT') {
           result = !revert ? amt.mul(rate1).div(rate2) : amt.mul(rate2).div(rate1);
-          console.log('Non-XRP, AMOUNT branch:', result.toString());
         } else {
           result = !revert ? amt.mul(rate2).div(rate1) : amt.mul(rate1).div(rate2);
-          console.log('Non-XRP, VALUE branch:', result.toString());
         }
       }
       
-      console.log('Final result before checks:', result.toString());
       
       // Check if result is valid - use toString and check for invalid values
       const resultStr = result.toString();
       if (resultStr === 'NaN' || resultStr === 'Infinity' || resultStr === '-Infinity') {
-        console.log('Result is NaN or not finite:', resultStr);
         return '';
       }
       
       // Use safe precision for XRPL (max 16 significant digits total)
       const finalValue = result.toFixed(6, Decimal.ROUND_DOWN);
-      console.log('Final calculated value:', finalValue);
       return finalValue;
     } catch (e) {
-      console.error('calcQuantity error:', e);
       return '';
     }
   };
@@ -1736,7 +1534,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     const token1IsXRP = token1?.currency === 'XRP';
     const token2IsXRP = token2?.currency === 'XRP';
 
-    console.log('Amount1 changed:', { value, token1IsXRP, token2IsXRP, tokenExch1, tokenExch2 });
 
     // Check if we have valid rates for calculation
     const hasValidRates =
@@ -1744,13 +1541,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         ? tokenExch1 > 0 || tokenExch2 > 0
         : tokenExch1 > 0 && tokenExch2 > 0;
 
-    console.log('Has valid rates:', hasValidRates);
 
     if (value && value !== '' && hasValidRates) {
       const activeType = revert ? 'VALUE' : 'AMOUNT';
       const calculatedValue = calcQuantity(value, activeType);
 
-      console.log('Calculated value:', calculatedValue);
 
       if (calculatedValue && calculatedValue !== '0') {
         setAmount2(calculatedValue);
@@ -3660,137 +3455,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               </Box>
             )}
 
-            {/* OLD Minimalist Settings - REMOVED */}
-            {false && orderType !== 'limit' && (
-              <Box
-              sx={{
-                mt: 2,
-                p: 2,
-                borderRadius: '12px',
-                backgroundColor: alpha(theme.palette.background.paper, 0.03),
-                border: `1px solid ${alpha(theme.palette.divider, 0.03)}`
-              }}
-            >
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                sx={{ width: '100%' }}
-              >
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    Slippage
-                  </Typography>
-                  <Tooltip title="Maximum price movement you're willing to accept" arrow>
-                    <InfoIcon
-                      icon={InfoIcon}
-                      width={16}
-                      height={16}
-                      style={{
-                        color:
-                          theme.palette.mode === 'dark'
-                            ? 'rgba(255,255,255,0.5)'
-                            : 'rgba(0,0,0,0.5)',
-                        cursor: 'help'
-                      }}
-                    />
-                  </Tooltip>
-                </Stack>
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  {[1, 3, 5].map((preset) => (
-                    <Button
-                      key={preset}
-                      size="small"
-                      variant={slippage === preset ? 'contained' : 'text'}
-                      onClick={() => setSlippage(preset)}
-                      sx={{
-                        minWidth: '32px',
-                        height: '28px',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        padding: '4px 8px',
-                        borderRadius: '6px',
-                        ...(slippage === preset
-                          ? {
-                              background: theme.palette.primary.main,
-                              color: 'white',
-                              '&:hover': {
-                                background: theme.palette.primary.dark
-                              }
-                            }
-                          : {
-                              color:
-                                theme.palette.mode === 'dark'
-                                  ? 'rgba(255,255,255,0.7)'
-                                  : 'rgba(0,0,0,0.7)',
-                              '&:hover': {
-                                background:
-                                  theme.palette.mode === 'dark'
-                                    ? 'rgba(255,255,255,0.08)'
-                                    : 'rgba(0,0,0,0.04)'
-                              }
-                            })
-                      }}
-                    >
-                      {preset}%
-                    </Button>
-                  ))}
-                  <Stack direction="row" alignItems="center" spacing={0.5}>
-                    <Input
-                      value={slippage}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (
-                          val === '' ||
-                          (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 50)
-                        ) {
-                          setSlippage(val === '' ? 0 : parseFloat(val));
-                        }
-                      }}
-                      disableUnderline
-                      sx={{
-                        width: { xs: '45px', sm: '55px' },
-                        input: {
-                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                          fontWeight: 600,
-                          textAlign: 'center',
-                          padding: { xs: '4px 6px', sm: '6px 8px' },
-                          border: `1px solid ${
-                            theme.palette.mode === 'dark'
-                              ? 'rgba(255, 255, 255, 0.2)'
-                              : 'rgba(0, 0, 0, 0.2)'
-                          }`,
-                          borderRadius: '6px',
-                          background:
-                            theme.palette.mode === 'dark'
-                              ? 'rgba(255,255,255,0.05)'
-                              : 'rgba(0,0,0,0.02)',
-                          color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                          '&:focus': {
-                            borderColor: theme.palette.primary.main,
-                            outline: 'none'
-                          }
-                        }
-                      }}
-                    />
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color:
-                          theme.palette.mode === 'dark'
-                            ? 'rgba(255,255,255,0.7)'
-                            : 'rgba(0,0,0,0.7)',
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        fontWeight: 500
-                      }}
-                    >
-                      %
-                    </Typography>
-                  </Stack>
-                </Stack>
-              </Stack>
-            </Box>
-            )}
 
             {/* User's Open Orders - Display when button is clicked */}
             {showOrders && accountProfile?.account && (
