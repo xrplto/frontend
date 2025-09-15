@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useState, useEffect, useContext, useMemo, useCallback, memo } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useCallback, memo, useRef } from 'react';
 import {
   Box,
   Table,
@@ -27,6 +27,161 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import { AppContext } from 'src/AppContext';
 import { formatMonthYearDate } from 'src/utils/formatTime';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatNumber';
+import dynamic from 'next/dynamic';
+
+// Lazy load chart component
+const LoadChart = dynamic(() => import('src/components/LoadChart'), {
+  ssr: false,
+  loading: () => (
+    <div style={{
+      width: '260px',
+      height: '60px',
+      background: 'rgba(128, 128, 128, 0.05)',
+      borderRadius: '4px'
+    }} />
+  )
+});
+
+// Optimized chart wrapper with direct canvas rendering
+const OptimizedChart = memo(({ salesData, darkMode }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const chartRef = useRef(null);
+  const canvasRef = useRef(null);
+  const observerRef = useRef(null);
+  const theme = useTheme();
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    observerRef.current = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          if (observerRef.current) {
+            observerRef.current.disconnect();
+          }
+        }
+      },
+      {
+        rootMargin: '100px',
+        threshold: 0.01
+      }
+    );
+
+    observerRef.current.observe(chartRef.current);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  // Draw chart on canvas
+  useEffect(() => {
+    if (!salesData || !canvasRef.current || !isVisible) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    if (!salesData.length) return;
+
+    // Set canvas size
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    const width = rect.width;
+    const height = rect.height;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+
+    if (salesData.length < 2) return;
+
+    // Calculate min/max for scaling
+    const values = salesData.map(d => d.value);
+    const minValue = Math.min(...values);
+    const maxValue = Math.max(...values);
+    const range = maxValue - minValue;
+
+    // Scale points to canvas with padding
+    const padding = height * 0.1;
+    const chartHeight = height - (padding * 2);
+
+    const points = salesData.map((item, index) => {
+      const x = (index / (salesData.length - 1)) * width;
+      const y = range === 0 ? height / 2 : padding + chartHeight - ((item.value - minValue) / range) * chartHeight;
+      return { x, y };
+    });
+
+    const color = '#00AB55';
+
+    // Draw gradient fill
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, color + '66');
+    gradient.addColorStop(1, color + '00');
+
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, height - padding);
+    points.forEach(point => ctx.lineTo(point.x, point.y));
+    ctx.lineTo(points[points.length - 1].x, height - padding);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    // Draw line
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    points.forEach(point => ctx.lineTo(point.x, point.y));
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+  }, [salesData, isVisible, theme]);
+
+  // Don't render chart until visible
+  if (!isVisible) {
+    return (
+      <div
+        ref={chartRef}
+        style={{
+          width: '260px',
+          height: '60px',
+          background: 'rgba(128, 128, 128, 0.05)',
+          borderRadius: '4px',
+          contain: 'layout size style'
+        }}
+      />
+    );
+  }
+
+  return (
+    <div ref={chartRef} style={{
+      width: '260px',
+      height: '60px',
+      display: 'inline-block',
+      contain: 'layout size style'
+    }}>
+      <canvas
+        ref={canvasRef}
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'block'
+        }}
+      />
+    </div>
+  );
+}, (prevProps, nextProps) => {
+  return JSON.stringify(prevProps.salesData) === JSON.stringify(nextProps.salesData) &&
+         prevProps.darkMode === nextProps.darkMode;
+});
+
+OptimizedChart.displayName = 'OptimizedChart';
 
 // Styled Components
 const StickyTableCell = styled(TableCell)({
@@ -94,7 +249,7 @@ const TABLE_HEAD = (isMobile) => {
         id: 'name',
         label: 'Collection',
         align: 'left',
-        width: '45%',
+        width: '35%',
         order: false
       },
       {
@@ -102,23 +257,31 @@ const TABLE_HEAD = (isMobile) => {
         id: 'floor.amount',
         label: 'Floor',
         align: 'right',
-        width: '18%',
+        width: '15%',
         order: true
       },
       {
         no: 2,
-        id: 'volume',
-        label: '24h Vol',
+        id: 'floor1dPercent',
+        label: '24h %',
         align: 'right',
-        width: '18%',
+        width: '15%',
         order: true
       },
       {
         no: 3,
-        id: 'totalVolume',
-        label: 'Total',
+        id: 'sales24h',
+        label: 'Sales',
         align: 'right',
-        width: '19%',
+        width: '15%',
+        order: true
+      },
+      {
+        no: 4,
+        id: 'totalVolume',
+        label: 'Volume',
+        align: 'right',
+        width: '20%',
         order: true
       }
     ];
@@ -129,7 +292,7 @@ const TABLE_HEAD = (isMobile) => {
       id: 'name',
       label: 'Collection',
       align: 'left',
-      width: '35%',
+      width: '25%',
       order: false
     },
     {
@@ -137,40 +300,72 @@ const TABLE_HEAD = (isMobile) => {
       id: 'floor.amount',
       label: 'Floor',
       align: 'right',
-      width: '13%',
+      width: '10%',
       order: true
     },
     {
       no: 2,
-      id: 'volume',
-      label: 'Volume (24h)',
+      id: 'floor1dPercent',
+      label: 'Floor 24h %',
       align: 'right',
-      width: '13%',
+      width: '10%',
       order: true
     },
     {
       no: 3,
-      id: 'totalVolume',
-      label: 'Total Volume',
+      id: 'totalVol24h',
+      label: 'Volume (24h)',
       align: 'right',
-      width: '13%',
+      width: '12%',
       order: true
     },
     {
       no: 4,
-      id: 'owners',
-      label: 'Owners',
+      id: 'sales24h',
+      label: 'Sales (24h)',
       align: 'right',
-      width: '13%',
+      width: '10%',
       order: true
     },
     {
       no: 5,
+      id: 'marketcap.amount',
+      label: 'Market Cap',
+      align: 'right',
+      width: '12%',
+      order: true
+    },
+    {
+      no: 6,
+      id: 'listedCount',
+      label: 'Listed',
+      align: 'right',
+      width: '8%',
+      order: true
+    },
+    {
+      no: 7,
+      id: 'owners',
+      label: 'Owners',
+      align: 'right',
+      width: '8%',
+      order: true
+    },
+    {
+      no: 8,
       id: 'items',
       label: 'Supply',
       align: 'right',
-      width: '13%',
+      width: '5%',
       order: true
+    },
+    {
+      no: 9,
+      id: 'sparkline',
+      label: '30D Chart',
+      align: 'center',
+      width: '20%',
+      order: false
     }
   ];
 };
@@ -275,7 +470,14 @@ const Row = memo(({ id, item }) => {
     totalVol24h,
     totalVolume,
     floor,
-    owners
+    owners,
+    sales24h,
+    listedCount,
+    marketcap,
+    floor1dPercent,
+    website,
+    twitter,
+    graphData30d
   } = item;
 
   const { darkMode } = useContext(AppContext);
@@ -285,9 +487,41 @@ const Row = memo(({ id, item }) => {
   const floorPrice = floor?.amount || 0;
   const volume24h = fVolume(totalVol24h || 0);
   const totalVolumeDisplay = fVolume(totalVolume || 0);
+  const marketCapAmount = marketcap?.amount || 0;
+  const floorChangePercent = floor1dPercent || 0;
 
   const strDateTime = formatMonthYearDate(created);
   const logoImageUrl = `https://s1.xrpnft.com/collection/${logoImage}`;
+
+  // Format floor change percentage with color
+  const getFloorChangeColor = (percent) => {
+    if (percent > 0) return '#00AB55'; // Green for positive
+    if (percent < 0) return '#FF4842'; // Red for negative
+    return '#919EAB'; // Gray for zero/neutral
+  };
+
+  const formatFloorChange = (percent) => {
+    if (percent === 0) return '0%';
+    const sign = percent > 0 ? '+' : '';
+    return `${sign}${percent.toFixed(1)}%`;
+  };
+
+  // Process chart data for sparkline
+  const salesData = useMemo(() => {
+    if (!graphData30d || !Array.isArray(graphData30d)) return null;
+
+    const processedData = graphData30d
+      .filter(item => item && item.date)
+      .map(item => ({
+        date: item.date,
+        value: (item.sales || 0) // Use sales count for the chart
+      }))
+      .slice(-30); // Get last 30 days
+
+    if (processedData.length === 0) return null;
+
+    return processedData;
+  }, [graphData30d]);
 
   const tableRowStyle = useMemo(
     () => ({
@@ -392,7 +626,10 @@ const Row = memo(({ id, item }) => {
                   color: darkMode ? '#919EAB' : '#637381'
                 }}
               >
-                {strDateTime}
+                {isMobile ?
+                  `${fIntNumber(items)} items • ${fIntNumber(owners)} owners • ${fIntNumber(sales24h || 0)} sales`
+                  : strDateTime
+                }
               </Typography>
             </Stack>
           </Link>
@@ -418,12 +655,42 @@ const Row = memo(({ id, item }) => {
           variant={isMobile ? 'subtitle2' : 'h6'}
           noWrap
           sx={{
-            color: '#00AB55',
+            color: getFloorChangeColor(floorChangePercent),
             fontWeight: '600',
             fontSize: isMobile ? '12px' : '16px'
           }}
         >
-          ✕ {volume24h}
+          {formatFloorChange(floorChangePercent)}
+        </Typography>
+      </TableCell>
+
+      {!isMobile && (
+        <TableCell align="right" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              color: '#00AB55',
+              fontWeight: '600',
+              fontSize: '16px'
+            }}
+          >
+            ✕ {volume24h}
+          </Typography>
+        </TableCell>
+      )}
+
+      <TableCell align="right" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
+        <Typography
+          variant={isMobile ? 'subtitle2' : 'h6'}
+          noWrap
+          sx={{
+            fontWeight: '600',
+            fontSize: isMobile ? '12px' : '16px',
+            color: darkMode ? '#fff' : '#212B36'
+          }}
+        >
+          {fIntNumber(sales24h || 0)}
         </Typography>
       </TableCell>
 
@@ -437,49 +704,91 @@ const Row = memo(({ id, item }) => {
             fontSize: isMobile ? '12px' : '16px'
           }}
         >
-          ✕ {totalVolumeDisplay}
+          ✕ {isMobile ? fVolume(totalVolume || 0) : totalVolumeDisplay}
         </Typography>
       </TableCell>
 
-      <TableCell
-        align="right"
-        sx={{
-          padding: isMobile ? '8px 4px' : '16px 12px',
-          display: { xs: 'none', sm: 'table-cell' }
-        }}
-      >
-        <Typography
-          variant="h6"
-          noWrap
-          sx={{
-            fontWeight: '600',
-            fontSize: isMobile ? '12px' : '16px',
-            color: darkMode ? '#fff' : '#212B36'
-          }}
-        >
-          {fIntNumber(owners || 0)}
-        </Typography>
-      </TableCell>
+      {!isMobile && (
+        <TableCell align="right" sx={{ padding: '16px 12px' }}>
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              color: '#00AB55',
+              fontWeight: '600',
+              fontSize: '16px'
+            }}
+          >
+            ✕ {fVolume(marketCapAmount)}
+          </Typography>
+        </TableCell>
+      )}
 
-      <TableCell
-        align="right"
-        sx={{
-          padding: isMobile ? '8px 4px' : '16px 12px',
-          display: { xs: 'none', sm: 'table-cell' }
-        }}
-      >
-        <Typography
-          variant="h6"
-          noWrap
-          sx={{
-            fontWeight: '600',
-            fontSize: isMobile ? '12px' : '16px',
-            color: darkMode ? '#fff' : '#212B36'
-          }}
-        >
-          {fIntNumber(items)}
-        </Typography>
-      </TableCell>
+      {!isMobile && (
+        <TableCell align="right" sx={{ padding: '16px 12px' }}>
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              fontWeight: '600',
+              fontSize: '16px',
+              color: darkMode ? '#fff' : '#212B36'
+            }}
+          >
+            {fIntNumber(listedCount || 0)}
+          </Typography>
+        </TableCell>
+      )}
+
+      {!isMobile && (
+        <TableCell align="right" sx={{ padding: '16px 12px' }}>
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              fontWeight: '600',
+              fontSize: '16px',
+              color: darkMode ? '#fff' : '#212B36'
+            }}
+          >
+            {fIntNumber(owners || 0)}
+          </Typography>
+        </TableCell>
+      )}
+
+      {!isMobile && (
+        <TableCell align="right" sx={{ padding: '16px 12px' }}>
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              fontWeight: '600',
+              fontSize: '16px',
+              color: darkMode ? '#fff' : '#212B36'
+            }}
+          >
+            {fIntNumber(items)}
+          </Typography>
+        </TableCell>
+      )}
+
+      {!isMobile && (
+        <TableCell align="center" sx={{ padding: '16px 12px', minWidth: '280px' }}>
+          {salesData ? (
+            <OptimizedChart salesData={salesData} darkMode={darkMode} />
+          ) : (
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.disabled,
+                fontSize: '12px'
+              }}
+            >
+              No data
+            </Typography>
+          )}
+        </TableCell>
+      )}
     </TableRow>
   );
 });
