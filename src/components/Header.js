@@ -456,7 +456,7 @@ function Header(props) {
                       left: tokensAnchorEl ? tokensAnchorEl.offsetLeft : 0,
                       mt: 0,
                       minWidth: 600,
-                      borderRadius: 8,
+                      borderRadius: 4,
                       border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                       boxShadow: theme.palette.mode === 'dark'
                         ? `0 4px 20px ${alpha('#000000', 0.3)}`
@@ -518,7 +518,7 @@ function Header(props) {
                               gap: 1.5,
                               py: 1,
                               px: 1.5,
-                              borderRadius: 2,
+                              borderRadius: 1,
                               cursor: 'pointer',
                               transition: 'all 0.2s ease',
                               '&:hover': {
@@ -560,7 +560,7 @@ function Header(props) {
                               gap: 1.5,
                               py: 1,
                               px: 1.5,
-                              borderRadius: 2,
+                              borderRadius: 1,
                               cursor: 'pointer',
                               transition: 'all 0.2s ease',
                               '&:hover': {
@@ -599,7 +599,7 @@ function Header(props) {
                               gap: 1.5,
                               py: 1,
                               px: 1.5,
-                              borderRadius: 2,
+                              borderRadius: 1,
                               cursor: 'pointer',
                               transition: 'all 0.2s ease',
                               '&:hover': {

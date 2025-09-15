@@ -519,12 +519,45 @@ function SearchModal({ open, onClose }) {
                         <ListItemText
                           primary={
                             <Stack direction="row" alignItems="center" spacing={0.5}>
-                              <Typography fontSize="0.85rem" noWrap>{token.user}</Typography>
+                              <Typography
+                                fontSize="0.85rem"
+                                noWrap
+                                sx={{
+                                  position: 'relative',
+                                  ...(shouldHighlight && {
+                                    background: `linear-gradient(90deg, ${theme.palette.warning.main}, ${theme.palette.warning.light})`,
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text',
+                                    fontWeight: 600,
+                                    '&:after': {
+                                      content: '"✓"',
+                                      position: 'absolute',
+                                      right: -12,
+                                      top: '50%',
+                                      transform: 'translateY(-50%)',
+                                      fontSize: '0.7rem',
+                                      color: theme.palette.warning.main,
+                                      fontWeight: 700,
+                                      animation: 'verified-pulse 2s ease-in-out infinite'
+                                    },
+                                    '@keyframes verified-pulse': {
+                                      '0%, 100%': {
+                                        opacity: 0.8,
+                                        transform: 'translateY(-50%) scale(1)'
+                                      },
+                                      '50%': {
+                                        opacity: 1,
+                                        transform: 'translateY(-50%) scale(1.1)'
+                                      }
+                                    }
+                                  })
+                                }}
+                              >
+                                {token.user}
+                              </Typography>
                               {token.verified && (
                                 <Chip label="Verified" size="small" color="primary" sx={{ height: 16, fontSize: '0.6rem' }} />
-                              )}
-                              {shouldHighlight && (
-                                <Chip label="Original" size="small" color="success" sx={{ height: 16, fontSize: '0.6rem' }} />
                               )}
                             </Stack>
                           }
