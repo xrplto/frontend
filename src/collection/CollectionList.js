@@ -8,8 +8,6 @@ import {
   TableCell,
   TableHead,
   TableSortLabel,
-  ToggleButton,
-  ToggleButtonGroup,
   useMediaQuery,
   useTheme,
   styled,
@@ -26,7 +24,6 @@ import {
 import { visuallyHidden } from '@mui/utils';
 import EditIcon from '@mui/icons-material/Edit';
 import VerifiedIcon from '@mui/icons-material/Verified';
-import { CollectionListType } from 'src/utils/constants';
 import { AppContext } from 'src/AppContext';
 import { formatMonthYearDate } from 'src/utils/formatTime';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatNumber';
@@ -266,7 +263,7 @@ const ListHead = memo(({ order, orderBy, onRequestSort, scrollTopLength = 0 }) =
 });
 
 // Row Component
-const Row = memo(({ id, item, isMine }) => {
+const Row = memo(({ id, item }) => {
   const {
     uuid,
     name,
@@ -325,11 +322,6 @@ const Row = memo(({ id, item, isMine }) => {
     document.location = `/collection/${slug}`;
   };
 
-  const handleEditCollection = (e) => {
-    e.stopPropagation();
-    document.location = `/collection/${slug}/edit`;
-  };
-
   return (
     <TableRow key={uuid} sx={tableRowStyle} onClick={handleRowClick}>
       <TableCell align="left" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
@@ -356,30 +348,6 @@ const Row = memo(({ id, item, isMine }) => {
           >
             <CollectionImageWrapper>
               <IconImage src={logoImageUrl} alt={`${name} Logo`} loading="lazy" />
-              {isMine && (
-                <Tooltip title="Edit Collection">
-                  <IconButton
-                    onClick={handleEditCollection}
-                    sx={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                      color: 'white',
-                      opacity: 0,
-                      transition: 'opacity 0.2s',
-                      '&:hover': {
-                        opacity: 1,
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)'
-                      }
-                    }}
-                  >
-                    <EditIcon sx={{ fontSize: isMobile ? '12px' : '16px' }} />
-                  </IconButton>
-                </Tooltip>
-              )}
             </CollectionImageWrapper>
           </Box>
 
@@ -622,59 +590,34 @@ const ListToolbar = ({ rows, setRows, page, setPage, total }) => {
 export default function CollectionList({ type, category }) {
   const BASE_URL = 'https://api.xrpnft.com/api';
 
-  const { accountProfile, openSnackbar } = useContext(AppContext);
-  const account = accountProfile?.account;
-  const accountToken = accountProfile?.token;
-
-  const [filter, setFilter] = useState('');
   const [page, setPage] = useState(0);
-  const [rows, setRows] = useState(100);
+  const [rows, setRows] = useState(50);
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('totalVol24h');
 
   const [total, setTotal] = useState(0);
   const [collections, setCollections] = useState([]);
 
-  const [choice, setChoice] = useState('all');
-
   const [sync, setSync] = useState(0);
-
-  const isMine = type === CollectionListType.MINE;
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     const loadCollections = () => {
-      if (isMine && (!account || !accountToken)) {
-        openSnackbar('Please login', 'error');
-        return;
-      }
+      const params = new URLSearchParams({
+        limit: rows.toString(),
+        orderBy: orderBy,
+        order: order,
+        compact: 'true'
+      });
 
-      const body = {
-        filter,
-        type,
-        page,
-        limit: rows,
-        order,
-        orderBy,
-        choice
-      };
-
-      if (type === CollectionListType.ALL) {
-        // Additional handling for ALL type if necessary
-      } else if (type === CollectionListType.MINE) {
-        body.account = account;
-      } else if (type === CollectionListType.CATEGORY) {
-        body.category = category;
-      } else if (type === CollectionListType.LANDING) {
-        // Additional handling for LANDING type if necessary
+      if (page > 0) {
+        params.append('offset', (page * rows).toString());
       }
 
       axios
-        .post(`${BASE_URL}/collection/getlistbyorder`, body, {
-          headers: { 'x-access-token': accountToken }
-        })
+        .get(`${BASE_URL}/collections?${params.toString()}`)
         .then((res) => {
           try {
             if (res.status === 200 && res.data) {
@@ -691,17 +634,8 @@ export default function CollectionList({ type, category }) {
         });
     };
     loadCollections();
-  }, [sync, order, orderBy, page, rows, account]);
+  }, [sync, order, orderBy, page, rows]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setPage(0);
-      setSync(sync + 1);
-    }, 500);
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [filter]);
 
   const handleRequestSort = useCallback(
     (event, id) => {
@@ -714,25 +648,10 @@ export default function CollectionList({ type, category }) {
     [orderBy, order, sync]
   );
 
-  const handleChangeChoice = useCallback(
-    (event, newValue) => {
-      if (newValue && choice !== newValue) {
-        setChoice(newValue);
-        setSync(sync + 1);
-      }
-    },
-    [choice, sync]
-  );
 
   return (
     <>
       <Box sx={{ mb: 1 }} />
-
-      {type !== CollectionListType.LANDING && (
-        <ToggleButtonGroup color="primary" value={choice} exclusive onChange={handleChangeChoice}>
-          {/* Your existing ToggleButtons for choices */}
-        </ToggleButtonGroup>
-      )}
 
       <Box
         sx={{
@@ -751,7 +670,7 @@ export default function CollectionList({ type, category }) {
           <ListHead order={order} orderBy={orderBy} onRequestSort={handleRequestSort} />
           <TableBody>
             {collections.map((row, idx) => (
-              <Row key={row.slug || row.name || idx} id={page * rows + idx + 1} item={row} isMine={isMine} />
+              <Row key={row.slug || row.name || idx} id={page * rows + idx + 1} item={row} />
             ))}
           </TableBody>
         </Table>
