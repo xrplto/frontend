@@ -480,7 +480,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   const [accountPairBalance, setAccountPairBalance] = useState(null);
 
-  const [loadingPrice, setLoadingPrice] = useState(false);
   const [focusTop, setFocusTop] = useState(false);
   const [focusBottom, setFocusBottom] = useState(false);
 
@@ -527,6 +526,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [categories, setCategories] = useState([]);
   const [apiTags, setApiTags] = useState([]);
 
+  // URL parsing and token loading state
+  const [isLoadingFromUrl, setIsLoadingFromUrl] = useState(false);
+  const [urlParsed, setUrlParsed] = useState(false);
+
   const amount = revert ? amount2 : amount1;
   let value = revert ? amount1 : amount2;
   const setAmount = revert ? setAmount2 : setAmount1;
@@ -534,50 +537,41 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const curr1IsXRP = curr1?.currency === 'XRP';
   const curr2IsXRP = curr2?.currency === 'XRP';
 
-  const tokenPrice1 = (() => {
+  // Helper function to calculate token price in fiat
+  const calculateTokenPrice = useCallback((token, otherToken, amount, tokenExch, activeFiatCurrency, metrics) => {
     try {
-      const token1IsXRP = token1?.currency === 'XRP';
-      const token2IsXRP = token2?.currency === 'XRP';
-      const token1IsRLUSD = token1?.currency === 'RLUSD' || token1?.name === 'RLUSD';
+      const tokenIsXRP = token?.currency === 'XRP';
+      const otherTokenIsXRP = otherToken?.currency === 'XRP';
+      const tokenIsRLUSD = token?.currency === 'RLUSD' || token?.name === 'RLUSD';
       
       if (activeFiatCurrency === 'XRP') {
         // When display currency is XRP, show XRP value
-        if (token1IsXRP) {
-          // If token1 is already XRP, just return the amount
-          return new Decimal(amount1 || 0).toNumber();
-        } else if (token2IsXRP && tokenExch1 > 0) {
-          // For tokens paired with XRP, tokenExch1 tells us XRP per token
-          // So multiply amount1 by tokenExch1 to get XRP value
-          return new Decimal(amount1 || 0).mul(tokenExch1).toNumber();
+        if (tokenIsXRP) {
+          return new Decimal(amount || 0).toNumber();
+        } else if (otherTokenIsXRP && tokenExch > 0) {
+          return new Decimal(amount || 0).mul(tokenExch).toNumber();
         } else {
-          // For non-XRP pairs when displaying in XRP
           return 0;
         }
       } else {
         // For other fiat currencies (USD, EUR, etc.)
-        if (token1IsXRP) {
-          // If token1 is XRP, convert to selected fiat currency
-          return new Decimal(amount1 || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
-        } else if (token2IsXRP && token1IsRLUSD) {
-          // If token1 is RLUSD and token2 is XRP
-          // RLUSD is pegged to USD, so 1 RLUSD = 1 USD
+        if (tokenIsXRP) {
+          return new Decimal(amount || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
+        } else if (otherTokenIsXRP && tokenIsRLUSD) {
           if (activeFiatCurrency === 'USD') {
-            return new Decimal(amount1 || 0).toNumber();
+            return new Decimal(amount || 0).toNumber();
           } else {
-            // Convert USD to target currency
-            const usdValue = new Decimal(amount1 || 0);
+            const usdValue = new Decimal(amount || 0);
             const usdToXrp = new Decimal(metrics['USD'] || 1);
             const targetToXrp = new Decimal(metrics[activeFiatCurrency] || 1);
             return usdValue.mul(usdToXrp).div(targetToXrp).toNumber();
           }
-        } else if (token2IsXRP) {
-          // If token1 is a token and token2 is XRP, first convert to XRP using rate1, then to fiat
-          const xrpValue = new Decimal(amount1 || 0).mul(tokenExch1 || 0);
+        } else if (otherTokenIsXRP) {
+          const xrpValue = new Decimal(amount || 0).mul(tokenExch || 0);
           return xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
         } else {
-          // For non-XRP pairs, show fiat value
-          return new Decimal(tokenExch1 || 0)
-            .mul(amount1 || 0)
+          return new Decimal(tokenExch || 0)
+            .mul(amount || 0)
             .div(metrics[activeFiatCurrency] || 1)
             .toNumber();
         }
@@ -585,90 +579,76 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     } catch (e) {
       return 0;
     }
-  }, [token1, token2, amount1, tokenExch1, metrics, activeFiatCurrency]);
+  }, []);
+
+  const tokenPrice1 = useMemo(() => 
+    calculateTokenPrice(token1, token2, amount1, tokenExch1, activeFiatCurrency, metrics),
+    [calculateTokenPrice, token1, token2, amount1, tokenExch1, activeFiatCurrency, metrics]
+  );
   
-  const tokenPrice2 = useMemo(() => {
-    try {
-      const token1IsXRP = token1?.currency === 'XRP';
-      const token2IsXRP = token2?.currency === 'XRP';
-      const token2IsRLUSD = token2?.currency === 'RLUSD' || token2?.name === 'RLUSD';
-      
-      if (activeFiatCurrency === 'XRP') {
-        // When display currency is XRP, show XRP value
-        if (token2IsXRP) {
-          // If token2 is already XRP, just return the amount
-          return new Decimal(amount2 || 0).toNumber();
-        } else if (token1IsXRP && tokenExch2 > 0) {
-          // For tokens paired with XRP
-          // Based on the actual behavior: if we're getting 7.95 when dividing,
-          // then tokenExch2 must be ~0.354 (XRP per RLUSD)
-          // So we need to multiply: 2.82 RLUSD × 0.354 = ~1 XRP
-          const xrpValue = new Decimal(amount2 || 0).mul(tokenExch2).toNumber();
-          return xrpValue;
-        } else {
-          // For non-XRP pairs when displaying in XRP
-          return 0;
-        }
-      } else {
-        // For other fiat currencies (USD, EUR, etc.)
-        if (token2IsXRP) {
-          // If token2 is XRP, convert to selected fiat currency
-          // metrics contains XRP price in each currency (e.g., 1 USD = 0.357 XRP)
-          // So to get fiat value: XRP amount / (Fiat/XRP rate)
-          return new Decimal(amount2 || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
-        } else if (token1IsXRP && token2IsRLUSD) {
-          // If token2 is RLUSD and token1 is XRP
-          // RLUSD is pegged to USD, so 1 RLUSD = 1 USD
-          if (activeFiatCurrency === 'USD') {
-            // If displaying in USD, just return the RLUSD amount as-is
-            return new Decimal(amount2 || 0).toNumber();
-          } else {
-            // For other currencies, RLUSD = USD, so we need to convert USD to target currency
-            // metrics contains XRP price in each currency (e.g., 1 USD = 0.357 XRP)
-            // To convert: RLUSD amount * (USD/XRP rate) / (TargetCurrency/XRP rate)
-            const usdValue = new Decimal(amount2 || 0); // RLUSD amount = USD value
-            const usdToXrp = new Decimal(metrics['USD'] || 1);
-            const targetToXrp = new Decimal(metrics[activeFiatCurrency] || 1);
-            // USD value * (USD/XRP) / (Target/XRP) = Target value
-            return usdValue.mul(usdToXrp).div(targetToXrp).toNumber();
-          }
-        } else if (token1IsXRP) {
-          // For other tokens when token1 is XRP
-          // Special handling for RLUSD when displaying in USD
-          if (token2IsRLUSD && activeFiatCurrency === 'USD') {
-            // RLUSD is pegged 1:1 with USD
-            return new Decimal(amount2 || 0).toNumber();
-          }
-          // For other cases, convert through XRP
-          // tokenExch2 tells us XRP per token, so multiply to get XRP value
-          const xrpValue = new Decimal(amount2 || 0).mul(tokenExch2 || 0);
-          // Then convert XRP to fiat. metrics[currency] contains Fiat/XRP rate
-          // So divide XRP by the rate to get fiat value
-          return xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
-        } else {
-          // For non-XRP pairs, show fiat value
-          return new Decimal(tokenExch2 || 0)
-            .mul(amount2 || 0)
-            .div(metrics[activeFiatCurrency] || 1)
-            .toNumber();
-        }
-      }
-    } catch (e) {
-      return 0;
-    }
-  }, [token1, token2, amount2, tokenExch2, metrics, activeFiatCurrency]);
+  const tokenPrice2 = useMemo(() => 
+    calculateTokenPrice(token2, token1, amount2, tokenExch2, activeFiatCurrency, metrics),
+    [calculateTokenPrice, token2, token1, amount2, tokenExch2, activeFiatCurrency, metrics]
+  );
 
   const inputPrice = revert ? tokenPrice2 : tokenPrice1;
   const outputPrice = revert ? tokenPrice1 : tokenPrice2;
-  const priceImpact =
-    inputPrice > 0
-      ? new Decimal(outputPrice)
-          .sub(inputPrice)
-          .mul(100)
-          .div(inputPrice)
-          .toDP(2, Decimal.ROUND_DOWN)
-          .toNumber()
-      : 0;
+  const priceImpact = useMemo(() => {
+    if (inputPrice <= 0) return 0;
+    
+    const result = new Decimal(outputPrice)
+      .sub(inputPrice)
+      .mul(100)
+      .div(inputPrice)
+      .toNumber();
+    
+    // Round to 2 decimal places
+    return Math.round(result * 100) / 100;
+  }, [inputPrice, outputPrice]);
+
+  // Helper function to format token price for charts
+  const formatTokenPrice = useCallback((token, otherToken, tokenExch, latestPrice) => {
+    if (token.currency === 'XRP') {
+      return `$${fNumber(latestPrice || token.exch || tokenExch)}`;
+    }
+    
+    // Special handling for RLUSD when paired with XRP
+    if ((token.currency === 'RLUSD' || token.name === 'RLUSD') && otherToken.currency === 'XRP') {
+      let price = Number(tokenExch);
+      if (isNaN(price) || price === 0) {
+        // Try calculating from other token exchange rate
+        const otherExch = token === token1 ? tokenExch2 : tokenExch1;
+        price = otherExch > 0 ? 1 / otherExch : 0;
+      }
+      if (price > 0) {
+        return `${price.toFixed(4)} XRP`;
+      }
+    }
+    
+    // Use token.exch first, then tokenExch, then latestPrice
+    let price = Number(token.exch || tokenExch || latestPrice);
+    if (isNaN(price) || price === 0) return '0 XRP';
+    
+    // Format based on size
+    if (price >= 1) {
+      return `${price.toFixed(4)} XRP`;
+    }
+    
+    // Handle scientific notation for small numbers
+    const priceStr = price.toString();
+    if (priceStr.includes('e')) {
+      const exponent = parseInt(priceStr.split('e')[1]);
+      const decimalPlaces = Math.abs(exponent) + 4;
+      const formattedPrice = price.toFixed(Math.min(decimalPlaces, 20));
+      return `${formattedPrice.replace(/\.?0+$/, '')} XRP`;
+    }
+    
+    // Regular small numbers
+    if (price >= 0.01) return `${price.toFixed(6)} XRP`;
+    if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
+    if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
+    return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
+  }, [token1, token2, tokenExch1, tokenExch2]);
 
   // Helper function to convert hex currency code to readable name
   const getCurrencyDisplayName = (currency, tokenName) => {
@@ -998,7 +978,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         return;
       }
 
-      setLoadingPrice(true);
       const md51 = token1.md5;
       const md52 = token2.md5;
 
@@ -1016,9 +995,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         })
         .catch((err) => {
         })
-        .then(function () {
-          // always executed
-          setLoadingPrice(false);
+        .catch(() => {
+          // Silently handle errors
         });
     }
     
@@ -1146,8 +1124,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       // When revert=true, the displayed tokens are actually swapped internally
       
       // We should always use what the user sees in the UI
-      const curr1 = token1;  // Top field token ("You pay")
-      const curr2 = token2;  // Bottom field token ("You receive")
+      const swapCurr1 = token1;  // Top field token ("You pay")
+      const swapCurr2 = token2;  // Bottom field token ("You receive")
       const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
@@ -1172,11 +1150,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           const amount1Decimal = new Decimal(amount1);
           
           // Determine which direction to calculate based on currencies
-          if (curr1.currency === 'XRP' && curr2.currency !== 'XRP') {
+          if (swapCurr1.currency === 'XRP' && swapCurr2.currency !== 'XRP') {
             // XRP -> Token: multiply XRP amount by limit price (Token per XRP)
             // If limit price is "3.06 RLUSD per XRP", then 1 XRP * 3.06 = 3.06 RLUSD
             limitAmount2 = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-          } else if (curr1.currency !== 'XRP' && curr2.currency === 'XRP') {
+          } else if (swapCurr1.currency !== 'XRP' && swapCurr2.currency === 'XRP') {
             // Token -> XRP: divide token amount by limit price (Token per XRP)
             // If limit price is "3.06 RLUSD per XRP", then to get XRP: RLUSD amount / 3.06
             limitAmount2 = amount1Decimal.div(limitPriceDecimal).toFixed(6);
@@ -1192,25 +1170,25 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         if (revert) {
           // Selling curr2 to get curr1
           TakerGets = {
-            currency: curr1.currency,
-            issuer: curr1.issuer,
+            currency: swapCurr1.currency,
+            issuer: swapCurr1.issuer,
             value: amount1.toString()
           };
           TakerPays = {
-            currency: curr2.currency,
-            issuer: curr2.issuer,
+            currency: swapCurr2.currency,
+            issuer: swapCurr2.issuer,
             value: limitAmount2.toString()
           };
         } else {
           // Selling curr1 to get curr2
           TakerGets = {
-            currency: curr2.currency,
-            issuer: curr2.issuer,
+            currency: swapCurr2.currency,
+            issuer: swapCurr2.issuer,
             value: limitAmount2.toString()
           };
           TakerPays = {
-            currency: curr1.currency,
-            issuer: curr1.issuer,
+            currency: swapCurr1.currency,
+            issuer: swapCurr1.issuer,
             value: amount1.toString()
           };
         }
@@ -1278,8 +1256,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         // This means: Spend amount1 of curr1 to get amount2 of curr2
         
         // Always: Send from top field (curr1/amount1), Receive in bottom field (curr2/amount2)
-        const sendCurrency = curr1;
-        const receiveCurrency = curr2;
+        const sendCurrency = swapCurr1;
+        const receiveCurrency = swapCurr2;
         const sendAmount = amount1;
         const receiveAmount = amount2;
         
@@ -1289,7 +1267,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         
         // Build SendMax (what we're spending) - handle XRP special case
         if (sendCurrency.currency === 'XRP') {
-          SendMax = new Decimal(sendAmount).mul(1000000).toFixed(0, Decimal.ROUND_DOWN); // Convert to drops
+          SendMax = new Decimal(sendAmount).mul(1000000).toFixed(0, 1); // Convert to drops
         } else {
           SendMax = {
             currency: sendCurrency.currency,
@@ -1297,18 +1275,18 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             // For 100% sells, use more precision to ensure all tokens are sold
             value: isSelling100Percent 
               ? sendAmount  // Use exact balance string
-              : new Decimal(sendAmount).toFixed(6, Decimal.ROUND_DOWN)  // Use safe precision for XRPL
+              : new Decimal(sendAmount).toFixed(6, 1)  // Use safe precision for XRPL
           };
         }
         
         // Build Amount (what we want to receive) - handle XRP special case
         if (receiveCurrency.currency === 'XRP') {
-          Amount = new Decimal(receiveAmount).mul(1000000).toFixed(0, Decimal.ROUND_DOWN); // Convert to drops
+          Amount = new Decimal(receiveAmount).mul(1000000).toFixed(0, 1); // Convert to drops
         } else {
           Amount = {
             currency: receiveCurrency.currency,
             issuer: receiveCurrency.issuer,
-            value: new Decimal(receiveAmount).toFixed(6, Decimal.ROUND_DOWN)  // Use safe precision for XRPL
+            value: new Decimal(receiveAmount).toFixed(6, 1)  // Use safe precision for XRPL
           };
         }
 
@@ -1322,11 +1300,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           DeliverMin = {
             currency: Amount.currency,
             issuer: Amount.issuer,
-            value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(6, Decimal.ROUND_DOWN)  // Safe precision for XRPL
+            value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(6, 1)  // Safe precision for XRPL
           };
         } else {
           // For XRP amounts (strings) - Amount is already in drops
-          DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(0, Decimal.ROUND_DOWN);
+          DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(0, 1);
         }
 
         transactionData = {
@@ -1487,7 +1465,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       }
       
       // Use safe precision for XRPL (max 16 significant digits total)
-      const finalValue = result.toFixed(6, Decimal.ROUND_DOWN);
+      const finalValue = result.toFixed(6, 1);
       return finalValue;
     } catch (e) {
       return '';
@@ -1603,7 +1581,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     }
   };
 
-  const onRevertExchange = () => {
+  const onRevertExchange = useCallback(() => {
     setIsSwitching(true);
 
     // Store current tokens
@@ -1627,14 +1605,34 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
     // Update URL with switched tokens - only if we're not loading from URL
     if (urlParsed && !isLoadingFromUrl && typeof window !== 'undefined') {
-      updateUrl(tempToken2, tempToken1);
+      // Inline URL update to avoid dependency issues
+      if (tempToken2 && tempToken1) {
+        const createUrlString = (token) => {
+          if (!token) return '';
+          if (token.currency === 'XRP') return 'xrp';
+          return `${token.currency}-${token.issuer}`;
+        };
+        
+        const currency1String = createUrlString(tempToken2);
+        const currency2String = createUrlString(tempToken1);
+        
+        if (currency1String && currency2String) {
+          const newPath = `/swap/${currency1String}/${currency2String}`;
+          const currentCurrency1 = router.query.currencies?.[0];
+          const currentCurrency2 = router.query.currencies?.[1];
+          
+          if (currentCurrency1 !== currency1String || currentCurrency2 !== currency2String) {
+            router.push(newPath, undefined, { shallow: true });
+          }
+        }
+      }
     }
 
     // Complete the switching animation without restoring amounts
     setTimeout(() => {
       setIsSwitching(false);
     }, 200);
-  };
+  }, [token1, token2, revert, urlParsed, isLoadingFromUrl, router]);
 
   // Add keyboard shortcut handler
   useEffect(() => {
@@ -1647,7 +1645,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [revert, amount1, amount2]);
+  }, [onRevertExchange]);
 
 
   const handleMsg = () => {
@@ -1782,9 +1780,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     setLoading(false);
   };
 
-  // Add URL parsing and token loading state
-  const [isLoadingFromUrl, setIsLoadingFromUrl] = useState(false);
-  const [urlParsed, setUrlParsed] = useState(false);
 
   // Helper function to create URL-friendly currency string
   const createCurrencyUrlString = (token) => {
@@ -1823,7 +1818,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   };
 
   // Function to update URL based on current tokens
-  const updateUrl = (token1, token2) => {
+  const updateUrl = useCallback((token1, token2) => {
     if (!token1 || !token2) return;
 
     const currency1String = createCurrencyUrlString(token1);
@@ -1840,7 +1835,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         router.push(newPath, undefined, { shallow: true });
       }
     }
-  };
+  }, [router]);
 
   // Function to find token by currency and issuer
   const findTokenByCurrencyAndIssuer = async (currency, issuer) => {
@@ -2092,7 +2087,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     };
     
     fetchCategories();
-  }, [BASE_URL]);
+  }, []);
 
   // Token Selector Functions
   useEffect(() => {
@@ -3810,47 +3805,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     </Typography>
                     {(token1.exch || tokenExch1 || latestPrice1) && (
                       <Typography variant="h6" fontWeight={700} color="text.primary">
-                        {token1.currency === 'XRP' 
-                          ? `$${fNumber(latestPrice1 || token1.exch || tokenExch1)}`
-                          : (() => {
-                              // Special handling for RLUSD when paired with XRP
-                              if ((token1.currency === 'RLUSD' || token1.name === 'RLUSD') && token2.currency === 'XRP') {
-                                // tokenExch1 contains XRP per RLUSD rate
-                                let price = Number(tokenExch1);
-                                if (isNaN(price) || price === 0) {
-                                  // If no rate1, try to calculate from rate2
-                                  price = tokenExch2 > 0 ? 1 / tokenExch2 : 0;
-                                }
-                                if (price > 0) {
-                                  return `${price.toFixed(4)} XRP`;
-                                }
-                              }
-                              
-                              // Use token.exch first, then tokenExch1, then latestPrice1
-                              let price = Number(token1.exch || tokenExch1 || latestPrice1);
-                              if (isNaN(price) || price === 0) return '0 XRP';
-                              
-                              // Format based on size
-                              if (price >= 1) {
-                                return `${price.toFixed(4)} XRP`;
-                              }
-                              
-                              // Handle scientific notation for small numbers
-                              const priceStr = price.toString();
-                              if (priceStr.includes('e')) {
-                                const exponent = parseInt(priceStr.split('e')[1]);
-                                const decimalPlaces = Math.abs(exponent) + 4;
-                                const formattedPrice = price.toFixed(Math.min(decimalPlaces, 20));
-                                return `${formattedPrice.replace(/\.?0+$/, '')} XRP`;
-                              }
-                              
-                              // Regular small numbers
-                              if (price >= 0.01) return `${price.toFixed(6)} XRP`;
-                              if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
-                              if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
-                              return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
-                            })()
-                        }
+                        {formatTokenPrice(token1, token2, tokenExch1, latestPrice1)}
                       </Typography>
                     )}
                   </Stack>
@@ -3892,47 +3847,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     </Typography>
                     {(token2.exch || tokenExch2 || latestPrice2) && (
                       <Typography variant="h6" fontWeight={700} color="text.primary">
-                        {token2.currency === 'XRP' 
-                          ? `$${fNumber(latestPrice2 || token2.exch || tokenExch2)}`
-                          : (() => {
-                              // Special handling for RLUSD when paired with XRP
-                              if ((token2.currency === 'RLUSD' || token2.name === 'RLUSD') && token1.currency === 'XRP') {
-                                // tokenExch2 contains XRP per RLUSD rate
-                                let price = Number(tokenExch2);
-                                if (isNaN(price) || price === 0) {
-                                  // If no rate2, try to calculate from rate1
-                                  price = tokenExch1 > 0 ? 1 / tokenExch1 : 0;
-                                }
-                                if (price > 0) {
-                                  return `${price.toFixed(4)} XRP`;
-                                }
-                              }
-                              
-                              // Use token.exch first, then tokenExch2, then latestPrice2
-                              let price = Number(token2.exch || tokenExch2 || latestPrice2);
-                              if (isNaN(price) || price === 0) return '0 XRP';
-                              
-                              // Format based on size
-                              if (price >= 1) {
-                                return `${price.toFixed(4)} XRP`;
-                              }
-                              
-                              // Handle scientific notation for small numbers
-                              const priceStr = price.toString();
-                              if (priceStr.includes('e')) {
-                                const exponent = parseInt(priceStr.split('e')[1]);
-                                const decimalPlaces = Math.abs(exponent) + 4;
-                                const formattedPrice = price.toFixed(Math.min(decimalPlaces, 20));
-                                return `${formattedPrice.replace(/\.?0+$/, '')} XRP`;
-                              }
-                              
-                              // Regular small numbers
-                              if (price >= 0.01) return `${price.toFixed(6)} XRP`;
-                              if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
-                              if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
-                              return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
-                            })()
-                        }
+                        {formatTokenPrice(token2, token1, tokenExch2, latestPrice2)}
                       </Typography>
                     )}
                   </Stack>
