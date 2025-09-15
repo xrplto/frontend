@@ -43,7 +43,6 @@ import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 
 // Components
-//import { ImageSelect } from './ImageSelect';
 import EditDialog from './EditDialog';
 import AddDialog from './AddDialog';
 

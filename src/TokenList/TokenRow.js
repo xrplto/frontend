@@ -3,6 +3,7 @@ import { useState, useEffect, useContext, memo, useMemo, useCallback, useRef } f
 import React from 'react';
 import styled from '@emotion/styled';
 import { useTheme } from '@mui/material/styles';
+import Image from 'next/image';
 
 import { AppContext } from 'src/AppContext';
 import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
@@ -315,12 +316,12 @@ const OptimizedImage = memo(({ src, alt, size, onError, priority = false, md5 })
   
   return (
     <div ref={imgRef} style={{ width: size, height: size, borderRadius: '50%', overflow: 'hidden' }}>
-      <img
+      <Image
         src={imgSrc}
         alt={alt}
         width={size}
         height={size}
-        loading={priority ? 'eager' : 'lazy'}
+        priority={priority}
         onError={handleError}
         style={{ 
           width: '100%', 
@@ -1046,6 +1047,7 @@ const FTokenRow = React.memo(function FTokenRow({
   }), [marketcap, vol24hxrp, tvl, exchRate]);
   
   const formatValue = (val, type = 'number') => {
+    if (val === undefined || val === null || isNaN(val)) return '0';
     if (val >= 1e12) return `${(val / 1e12).toFixed(1)}T`;
     if (val >= 1e9) return `${(val / 1e9).toFixed(1)}B`;
     if (val >= 1e6) return `${(val / 1e6).toFixed(1)}M`;

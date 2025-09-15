@@ -56,19 +56,23 @@ const trimDecimal = (num, threshold = 4) => {
 };
 
 export function fIntNumber(number) {
+  if (number === undefined || number === null || isNaN(number)) return '0';
   return formatDecimal(new Decimal(number), 0); //former numeral()
 }
 
 export function fCurrency(number) {
+  if (number === undefined || number === null || isNaN(number)) return '0';
   return formatDecimal(new Decimal(number), Number.isInteger(number) ? 0 : 2); //former numeral()
 }
 
 export function fCurrency3(number) {
   // option: Intl.NumberFormat but up to 20 minimumFractionDigits
+  if (number === undefined || number === null || isNaN(number)) return '0';
   return formatDecimal(new Decimal(number), Number.isInteger(number) ? 0 : 3); //former numeral()
 }
 
 export function fCurrency5(number) {
+  if (number === undefined || number === null || isNaN(number)) return '0';
   if (number < 1)
     return trimDecimal(number); //f(number);
   else {
@@ -79,6 +83,7 @@ export function fCurrency5(number) {
 }
 
 export function fPercent(number) {
+  if (number === undefined || number === null || isNaN(number)) return '0';
   if (number < 1) return trimDecimal(number, 2);
   //number.toFixed(2); //webxtor: as in other places//fp(number);
   else {

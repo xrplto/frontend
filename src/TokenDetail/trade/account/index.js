@@ -17,8 +17,6 @@ import {
 import History from './History';
 import Orders from './Orders';
 // ----------------------------------------------------------------------
-//import StackStyle from 'src/components/StackStyle';
-// ----------------------------------------------------------------------
 
 function TabPanel(props) {
     const { children, value, id, ...other } = props;

@@ -15,7 +15,12 @@ import { XRP_TOKEN, USD_TOKEN } from 'src/utils/constants';
 
 // Components
 import Logo from 'src/components/Logo';
-import Swap from 'src/swap';
+import dynamic from 'next/dynamic';
+
+const Swap = dynamic(() => import('src/swap'), {
+  loading: () => <div>Loading swap interface...</div>,
+  ssr: false
+});
 
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';

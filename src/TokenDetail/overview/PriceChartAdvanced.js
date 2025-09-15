@@ -17,6 +17,7 @@ import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
 import { PinChartButton, usePinnedCharts } from 'src/components/PinnedChartTracker';
+import { throttle } from 'src/utils/lodashLite';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
@@ -27,23 +28,6 @@ import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 
-// Performance: Throttle chart updates
-const throttle = (func, delay) => {
-  let lastCall = 0;
-  let timeout;
-  return (...args) => {
-    const now = Date.now();
-    if (now - lastCall >= delay) {
-      lastCall = now;
-      return func(...args);
-    }
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      lastCall = Date.now();
-      func(...args);
-    }, delay - (now - lastCall));
-  };
-};
 
 const PriceChartAdvanced = memo(({ token }) => {
   const theme = useTheme();

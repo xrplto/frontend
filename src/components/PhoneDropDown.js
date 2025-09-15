@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { useContext } from 'react';
 import { Link as MuiLink } from '@mui/material';
 import BarChartIcon from '@mui/icons-material/BarChart';
@@ -9,12 +8,11 @@ import VisibilityIcon from '@mui/icons-material/Visibility'; // Most Viewed
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'; // Recently Added
 import StarIcon from '@mui/icons-material/Star'; // Spotlight
 import { AppContext } from 'src/AppContext';
-import { styled, Link, Menu, useTheme, MenuItem } from '@mui/material';
+import { styled, useTheme } from '@mui/material';
 
 
 
 const PhoneDropDown = () => {
-  const { t } = useTranslation();
   const theme = useTheme();
   const { darkMode } = useContext(AppContext);
   const StyledLink = styled('li')(
