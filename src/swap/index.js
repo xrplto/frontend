@@ -1170,14 +1170,23 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   useEffect(() => {
     function getTokenPrice() {
+      // Check if tokens have required md5 properties
+      if (!token1?.md5 || !token2?.md5) {
+        console.log('Missing md5 for tokens:', { token1: token1?.md5, token2: token2?.md5 });
+        return;
+      }
+
       setLoadingPrice(true);
       const md51 = token1.md5;
       const md52 = token2.md5;
+
+      console.log('Fetching rates for:', { md51, md52 });
 
       // Get dynamic exchange rates from API
       axios
         .get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`)
         .then((res) => {
+          console.log('Rate response:', res.data);
           let ret = res.status === 200 ? res.data : undefined;
           if (ret) {
             // Use the rates as they come from the API
@@ -1186,13 +1195,18 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           }
         })
         .catch((err) => {
+          console.error('Failed to fetch rates:', err);
         })
         .then(function () {
           // always executed
           setLoadingPrice(false);
         });
     }
-    getTokenPrice();
+    
+    // Only call if both tokens exist
+    if (token1 && token2) {
+      getTokenPrice();
+    }
   }, [token1, token2]);
 
   useEffect(() => {
@@ -1616,6 +1630,16 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       const token1IsXRP = token1?.currency === 'XRP';
       const token2IsXRP = token2?.currency === 'XRP';
 
+      console.log('calcQuantity inputs:', { 
+        amount, 
+        active, 
+        revert, 
+        token1IsXRP, 
+        token2IsXRP, 
+        rate1: rate1.toString(), 
+        rate2: rate2.toString() 
+      });
+
       // API rates depend on token order:
       // When token1=XRP, token2=RLUSD: rate1=1, rate2=XRP per RLUSD (e.g., 2.84)
       // When token1=RLUSD, token2=XRP: rate1=XRP per RLUSD (e.g., 2.84), rate2=1
@@ -1627,33 +1651,47 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         // rate2 = XRP per RLUSD, so divide XRP by rate2 to get RLUSD
         if (active === 'AMOUNT') {
           result = !revert ? amt.div(rate2) : amt.mul(rate2);
+          console.log('XRP->Token, AMOUNT branch:', !revert ? 'amt.div(rate2)' : 'amt.mul(rate2)', result.toString());
         } else {
           result = !revert ? amt.mul(rate2) : amt.div(rate2);
+          console.log('XRP->Token, VALUE branch:', !revert ? 'amt.mul(rate2)' : 'amt.div(rate2)', result.toString());
         }
       } else if (!token1IsXRP && token2IsXRP) {
         // Token -> XRP (e.g., RLUSD -> XRP)
         // rate1 = XRP per RLUSD, so multiply RLUSD by rate1 to get XRP
         if (active === 'AMOUNT') {
           result = !revert ? amt.mul(rate1) : amt.div(rate1);
+          console.log('Token->XRP, AMOUNT branch:', !revert ? 'amt.mul(rate1)' : 'amt.div(rate1)', result.toString());
         } else {
           result = !revert ? amt.div(rate1) : amt.mul(rate1);
+          console.log('Token->XRP, VALUE branch:', !revert ? 'amt.div(rate1)' : 'amt.mul(rate1)', result.toString());
         }
       } else {
         // Non-XRP pairs
         if (active === 'AMOUNT') {
           result = !revert ? amt.mul(rate1).div(rate2) : amt.mul(rate2).div(rate1);
+          console.log('Non-XRP, AMOUNT branch:', result.toString());
         } else {
           result = !revert ? amt.mul(rate2).div(rate1) : amt.mul(rate1).div(rate2);
+          console.log('Non-XRP, VALUE branch:', result.toString());
         }
       }
       
-      if (result.isNaN() || !result.isFinite()) {
+      console.log('Final result before checks:', result.toString());
+      
+      // Check if result is valid - use toString and check for invalid values
+      const resultStr = result.toString();
+      if (resultStr === 'NaN' || resultStr === 'Infinity' || resultStr === '-Infinity') {
+        console.log('Result is NaN or not finite:', resultStr);
         return '';
       }
       
       // Use safe precision for XRPL (max 16 significant digits total)
-      return result.toFixed(6, Decimal.ROUND_DOWN);
+      const finalValue = result.toFixed(6, Decimal.ROUND_DOWN);
+      console.log('Final calculated value:', finalValue);
+      return finalValue;
     } catch (e) {
+      console.error('calcQuantity error:', e);
       return '';
     }
   };
@@ -1694,19 +1732,25 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     setAmount1(value);
     setActive('AMOUNT'); // Top field is always AMOUNT
 
-    // Calculate using token prices
-    const curr1IsXRP = curr1?.currency === 'XRP';
-    const curr2IsXRP = curr2?.currency === 'XRP';
+    // Calculate using token prices - use token1/token2, not curr1/curr2
+    const token1IsXRP = token1?.currency === 'XRP';
+    const token2IsXRP = token2?.currency === 'XRP';
+
+    console.log('Amount1 changed:', { value, token1IsXRP, token2IsXRP, tokenExch1, tokenExch2 });
 
     // Check if we have valid rates for calculation
     const hasValidRates =
-      curr1IsXRP || curr2IsXRP
+      token1IsXRP || token2IsXRP
         ? tokenExch1 > 0 || tokenExch2 > 0
         : tokenExch1 > 0 && tokenExch2 > 0;
+
+    console.log('Has valid rates:', hasValidRates);
 
     if (value && value !== '' && hasValidRates) {
       const activeType = revert ? 'VALUE' : 'AMOUNT';
       const calculatedValue = calcQuantity(value, activeType);
+
+      console.log('Calculated value:', calculatedValue);
 
       if (calculatedValue && calculatedValue !== '0') {
         setAmount2(calculatedValue);
@@ -1725,13 +1769,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     setAmount2(value);
     setActive('VALUE'); // Bottom field is always VALUE
 
-    // Calculate using token prices
-    const curr1IsXRP = curr1?.currency === 'XRP';
-    const curr2IsXRP = curr2?.currency === 'XRP';
+    // Calculate using token prices - use token1/token2, not curr1/curr2
+    const token1IsXRP = token1?.currency === 'XRP';
+    const token2IsXRP = token2?.currency === 'XRP';
 
     // Check if we have valid rates for calculation
     const hasValidRates =
-      curr1IsXRP || curr2IsXRP
+      token1IsXRP || token2IsXRP
         ? tokenExch1 > 0 || tokenExch2 > 0
         : tokenExch1 > 0 && tokenExch2 > 0;
 

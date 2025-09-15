@@ -62,11 +62,6 @@ export const processOrderbookOffers = (offers, orderType = 'bids') => {
   let sumAmount = 0;
   let sumValue = 0;
 
-  // Debug logging
-  console.log(`[processOrderbookOffers] Processing ${orderType}:`, offers.length, 'offers');
-  if (offers.length > 0) {
-    console.log(`[processOrderbookOffers] First offer sample:`, offers[0]);
-  }
 
   // Check if we're dealing with XRP
   const firstOffer = offers[0];
@@ -161,13 +156,6 @@ export const processOrderbookOffers = (offers, orderType = 'bids') => {
     order.avgPrice = cumSum > 0 ? cumValue / cumSum : 0;
   });
 
-  console.log(`[processOrderbookOffers] Processed ${orderType}:`, processed.length, 'valid offers');
-  if (processed.length > 0) {
-    console.log(`[processOrderbookOffers] First processed ${orderType}:`, processed[0]);
-    if (orderType === 'bids' && processed.length > 1) {
-      console.log(`[processOrderbookOffers] Bid prices (should be descending):`, processed.slice(0, 5).map(p => p.price));
-    }
-  }
 
   return processed;
 };
