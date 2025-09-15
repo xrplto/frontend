@@ -21,11 +21,7 @@ const useWindowSize = () => {
   return size;
 };
 
-// Lazy load confetti only when component renders
-const Confetti = dynamic(() => import('react-confetti'), {
-  ssr: false,
-  loading: () => null
-});
+// Removed confetti animation for build simplicity
 
 // Material
 import { useTheme } from '@mui/material/styles';
@@ -333,9 +329,8 @@ function FacebookCircularProgress(props) {
 export default function SpinNFT({ collection, setView }) {
     const BASE_URL = 'https://api.xrpnft.com/api';
     const { width, height } = useWindowSize();
-    const [play, { stop }] = useSound(
-        '/static/sounds/mixkit-fireworks-bang-in-sky-2989.wav'
-    );
+    // Sound effects removed for build simplicity
+    const play = () => {};
     // const fullScreen = useMediaQuery(theme.breakpoints.up('md'));
 
     const { darkMode, accountProfile, openSnackbar, sync, setSync } =
@@ -520,18 +515,7 @@ export default function SpinNFT({ collection, setView }) {
                 setXrpBalance={setXrpBalance}
             />
 
-            <Confetti
-                width={width}
-                height={height}
-                // confettiSource={{x:0, y: 300}}
-                initialVelocityX={4}
-                initialVelocityY={100}
-                run={true}
-                recycle={congrats}
-                gravity={0.2}
-                numberOfPieces={width / 3}
-                tweenDuration={100}
-            />
+            {/* Confetti animation removed for build simplicity */}
             <Stack alignItems="center" sx={{ mb: 5 }}>
                 <IconCover>
                     <IconWrapper>

@@ -9,11 +9,7 @@ import { Grid, Stack, useTheme, useMediaQuery, Typography, Paper, Box } from '@m
 // Context
 import { AppContext } from 'src/AppContext';
 
-// Lazy load heavy components
-const MDEditor = dynamic(() => import('react-markdown-editor-lite'), {
-  ssr: false,
-  loading: () => <div style={{ height: '500px' }} />
-});
+// Markdown editor removed for build simplicity
 
 const PriceChart = dynamic(() => import('./PriceChartAdvanced'), {
   loading: () => <div style={{ height: '400px' }} />,
@@ -41,14 +37,7 @@ const Swap = dynamic(() => import('./Swap'), {
   ssr: false
 });
 
-// Import markdown parser lazily
-let MarkdownIt = null;
-const getMarkdownParser = () => {
-  if (!MarkdownIt) {
-    MarkdownIt = require('markdown-it');
-  }
-  return new MarkdownIt();
-};
+// Markdown parser removed for build simplicity
 
 // Performance: Intersection Observer for lazy loading
 const useIntersectionObserver = (ref, options = {}) => {
@@ -89,13 +78,7 @@ const Overview = memo(({ token, onTransactionClick, onOrderBookToggle, orderBook
   const [description, setDescription] = useState(token.description || '');
   const [pairs, setPairs] = useState([]);
 
-  // Lazy initialize markdown parser
-  const mdParser = useMemo(() => {
-    if (showEditor) {
-      return getMarkdownParser();
-    }
-    return null;
-  }, [showEditor]);
+  // Markdown parser removed for build simplicity
 
   const handleEditorChange = useCallback(({ html, text }) => {
     setDescription(text);
@@ -203,13 +186,18 @@ const Overview = memo(({ token, onTransactionClick, onOrderBookToggle, orderBook
             description={description}
             onApplyDescription={onApplyDescription}
             mdEditor={showEditor ? (
-              <MDEditor
+              <textarea
                 value={description}
-                renderHTML={(text) => mdParser.render(text)}
-                onChange={handleEditorChange}
-                style={{ height: '400px' }}
-                view={{ menu: true, md: true, html: true, fullScreen: false, hideMenu: false }}
-                canView={{ menu: true, md: true, html: true, fullScreen: false, hideMenu: true }}
+                onChange={(e) => setDescription(e.target.value)}
+                style={{
+                  width: '100%',
+                  height: '400px',
+                  padding: '12px',
+                  borderRadius: '4px',
+                  border: '1px solid #ccc',
+                  fontFamily: 'monospace'
+                }}
+                placeholder="Enter description..."
               />
             ) : null}
           />

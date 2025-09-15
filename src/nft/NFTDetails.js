@@ -1,6 +1,5 @@
-import React, { memo, useMemo, useState, useContext, lazy, Suspense } from 'react';
+import React, { memo, useMemo, useState, useContext } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-const Lightbox = lazy(() => import('react-awesome-lightbox'));
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 const Swiper = dynamic(() => import('swiper/react').then((mod) => mod.Swiper), { ssr: false });

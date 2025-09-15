@@ -7,7 +7,6 @@ import { CacheProvider } from '@emotion/react';
 import createEmotionCache from 'src/theme/createEmotionCache';
 import { CssBaseline, styled } from '@mui/material';
 import { ContextProvider, AppContext } from 'src/AppContext';
-import { useSnackbar } from 'src/hooks';
 import { useContext, useEffect, useState } from 'react';
 import './zMain.css';
 import { SnackbarProvider } from 'notistack';
@@ -200,7 +199,21 @@ function AppPageLayout({ children }) {
 function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmotionCache }) {
   // Treat MAINTENANCE env as boolean string ("true"/"false")
   const isUnderMaintenance = process.env.MAINTENANCE === 'true';
-  const { isOpen, msg, variant, openSnackbar, closeSnackbar } = useSnackbar();
+
+  // Inline snackbar hook logic (previously useSnackbar hook)
+  const [isOpen, setIsOpen] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [variant, setVariant] = useState('success');
+
+  const openSnackbar = (msg, variant) => {
+    setMsg(msg);
+    setVariant(variant);
+    setIsOpen(true);
+  };
+
+  const closeSnackbar = () => {
+    setIsOpen(false);
+  };
 
   // Memoize ogp to prevent unnecessary re-renders
   const ogp = useMemo(() => pageProps.ogp || {}, [pageProps.ogp]);
