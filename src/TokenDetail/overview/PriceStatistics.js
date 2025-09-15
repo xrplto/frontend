@@ -53,7 +53,6 @@ import { fDate } from 'src/utils/formatTime';
 import NumberTooltip from 'src/components/NumberTooltip';
 
 // ----------------------------------------------------------------------
-import StackStyle from 'src/components/StackStyle';
 import { currencySymbols } from 'src/utils/constants';
 import { AppContext } from 'src/AppContext';
 

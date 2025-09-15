@@ -18,7 +18,6 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
-import StackStyle from 'src/components/StackStyle';
 
 import { useContext, useState, useEffect } from 'react';
 import { AppContext } from 'src/AppContext';

@@ -1,16 +1,17 @@
 import Head from 'next/head';
 import React, { memo, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/router';
 import ThemeProvider from 'src/theme/ThemeProvider';
 import { CacheProvider } from '@emotion/react';
 import createEmotionCache from 'src/theme/createEmotionCache';
-import { CssBaseline } from '@mui/material';
-import { ContextProvider } from 'src/AppContext';
+import { CssBaseline, styled } from '@mui/material';
+import { ContextProvider, AppContext } from 'src/AppContext';
 import { useSnackbar } from 'src/hooks';
+import { useContext, useEffect, useState } from 'react';
 import './zMain.css';
 import { SnackbarProvider } from 'notistack';
 import i18n from 'src/utils/i18n';
-import PageLayout from 'src/components/PageLayout';
 
 // Polyfills for Safari iOS compatibility
 if (typeof window !== 'undefined') {
@@ -42,7 +43,6 @@ if (typeof window !== 'undefined') {
 // Lazy load non-critical components
 const XSnackbar = dynamic(() => import('src/components/Snackbar'), { ssr: false, loading: () => null });
 const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), { ssr: false, loading: () => null });
-const ProgressBar = dynamic(() => import('src/components/ProgressBar'), { ssr: false, loading: () => null });
 const PinnedChartTracker = dynamic(() => import('src/components/PinnedChartTracker'), { ssr: false, loading: () => null });
 const Wallet = dynamic(() => import('src/components/Wallet'), { ssr: false, loading: () => null });
 const ErrorDebugger = dynamic(() => import('src/components/ErrorDebugger').catch(() => ({ default: () => null })), { 
@@ -76,6 +76,126 @@ const jsonLdSchema = {
 };
 
 const clientSideEmotionCache = createEmotionCache();
+
+// Inline ProgressBar styled components
+const ProgressBarContainer = styled('div')(({ theme, show }) => ({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  height: '3px',
+  zIndex: 9999,
+  opacity: show ? 1 : 0,
+  transition: 'opacity 0.2s ease-in-out',
+}));
+
+const ProgressBarFill = styled('div')(({ theme, progress }) => ({
+  height: '100%',
+  backgroundColor: theme.palette.primary.main,
+  width: `${progress}%`,
+  transition: 'width 0.3s ease-out',
+  boxShadow: `0 0 10px ${theme.palette.primary.main}`,
+}));
+
+// Inline ProgressBar component
+function AppProgressBar({ router }) {
+  const [progress, setProgress] = useState(0);
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    let timer;
+
+    const handleStart = () => {
+      setShow(true);
+      setProgress(10);
+    };
+
+    const handleComplete = () => {
+      setProgress(100);
+      timer = setTimeout(() => {
+        setShow(false);
+        setProgress(0);
+      }, 200);
+    };
+
+    const handleError = () => {
+      setProgress(100);
+      timer = setTimeout(() => {
+        setShow(false);
+        setProgress(0);
+      }, 200);
+    };
+
+    router.events.on('routeChangeStart', handleStart);
+    router.events.on('routeChangeComplete', handleComplete);
+    router.events.on('routeChangeError', handleError);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      router.events.off('routeChangeStart', handleStart);
+      router.events.off('routeChangeComplete', handleComplete);
+      router.events.off('routeChangeError', handleError);
+    };
+  }, [router.events]);
+
+  // Simulate progress while loading
+  useEffect(() => {
+    let interval;
+    if (show && progress > 0 && progress < 90) {
+      interval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) return prev;
+          return prev + Math.random() * 10;
+        });
+      }, 500);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [show, progress]);
+
+  return (
+    <ProgressBarContainer show={show}>
+      <ProgressBarFill progress={progress} />
+    </ProgressBarContainer>
+  );
+}
+
+// Inline PageLayout component
+function AppPageLayout({ children }) {
+  const { accountProfile, open } = useContext(AppContext);
+  const router = useRouter();
+
+  // Check if we're on the API docs page
+  const isApiDocsPage = router.pathname === '/api-docs';
+
+  return (
+    <div>
+      {/* Main content with padding for fixed headers */}
+      <div style={{
+        paddingTop: isApiDocsPage ? '0' : '56px',
+        marginRight: accountProfile && open ? '350px' : '0',
+        transition: 'margin-right 0.3s ease'
+      }}>
+        {children}
+      </div>
+
+      {/* Embedded wallet panel - positioned below header */}
+      {accountProfile && open && (
+        <div style={{
+          position: 'fixed',
+          top: '56px',
+          right: '0',
+          width: '350px',
+          height: 'calc(100vh - 48px)',
+          zIndex: 1000
+        }}>
+          <Wallet embedded={true} />
+        </div>
+      )}
+    </div>
+  );
+}
 
 function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmotionCache }) {
   // Treat MAINTENANCE env as boolean string ("true"/"false")
@@ -168,7 +288,7 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
       </Head>
 
       <ContextProvider data={data} openSnackbar={openSnackbar}>
-        <ProgressBar />
+        <AppProgressBar router={router} />
         <ThemeProvider>
           <SnackbarProvider
             maxSnack={2}
@@ -179,9 +299,9 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
           >
             <PinnedChartTracker>
               <CssBaseline />
-              <PageLayout>
+              <AppPageLayout>
                 <Component {...pageProps} />
-              </PageLayout>
+              </AppPageLayout>
               <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
               <TransactionAlert />
               {typeof window !== 'undefined' && ErrorDebugger && <ErrorDebugger />}

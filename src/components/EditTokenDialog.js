@@ -8,8 +8,11 @@ import {
   useTheme,
   Avatar,
   Backdrop,
+  Button,
   Chip,
   Dialog,
+  DialogActions,
+  DialogContent,
   DialogTitle,
   Divider,
   Grid,
@@ -20,12 +23,13 @@ import {
   TableBody,
   TableCell,
   TableRow,
+  TextField,
   Tooltip,
   Typography
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 
-import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Check as CheckIcon, Close as CloseIcon, AddCircle as AddCircleIcon } from '@mui/icons-material';
 
 // Iconify
 import InfoIcon from '@mui/icons-material/Info';
@@ -44,7 +48,6 @@ import { selectMetrics } from 'src/redux/statusSlice';
 
 // Components
 import EditDialog from './EditDialog';
-import AddDialog from './AddDialog';
 
 const AdminDialog = styled(Dialog)(({ theme }) => ({
   // boxShadow: theme.customShadows.z0,
@@ -118,6 +121,10 @@ export default function EditTokenDialog({ token, setToken }) {
 
   const [tags, setTags] = useState(token.tags);
 
+  // AddDialog inline state
+  const [addTagVal, setAddTagVal] = useState('');
+  const [addTagOpen, setAddTagOpen] = useState(false);
+
   const handleDeleteTags = (tagToDelete) => () => {
     setTags((tags) => tags.filter((tag) => tag !== tagToDelete));
   };
@@ -135,6 +142,26 @@ export default function EditTokenDialog({ token, setToken }) {
     } else {
       setTags([val]);
     }
+  };
+
+  // AddDialog inline handlers
+  const handleAddTagClickOpen = () => {
+    setAddTagOpen(true);
+  };
+
+  const handleAddTagClose = () => {
+    setAddTagVal('');
+    setAddTagOpen(false);
+  };
+
+  const handleAddTagOK = () => {
+    setAddTagOpen(false);
+    onAddTag(addTagVal);
+    setAddTagVal('');
+  };
+
+  const onChangeAddTagValue = (event) => {
+    setAddTagVal(event.target.value);
   };
 
   const onUpdateToken = async (data) => {
@@ -650,7 +677,9 @@ export default function EditTokenDialog({ token, setToken }) {
                       );
                     })}
                   <Grid item>
-                    <AddDialog label="Tag" onAddTag={onAddTag} />
+                    <IconButton onClick={handleAddTagClickOpen} size="small" edge="end" aria-label="add tag">
+                      <AddCircleIcon fontSize="inherit" />
+                    </IconButton>
                   </Grid>
                 </Grid>
               </TableCell>
@@ -921,6 +950,26 @@ export default function EditTokenDialog({ token, setToken }) {
           </TableBody>
         </Table>
       </AdminDialog>
+
+      {/* Inline AddTag Dialog */}
+      <Dialog open={addTagOpen} onClose={handleAddTagClose}>
+        <DialogContent>
+          <TextField
+            value={addTagVal}
+            onChange={onChangeAddTagValue}
+            autoFocus
+            margin="dense"
+            id="tag-name"
+            label="Tag"
+            variant="standard"
+            style={{width: '300px'}}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleAddTagClose}>Cancel</Button>
+          <Button onClick={handleAddTagOK}>OK</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
