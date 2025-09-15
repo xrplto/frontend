@@ -1340,34 +1340,22 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           const limitPriceDecimal = new Decimal(limitPrice);
           const amount1Decimal = new Decimal(amount1);
           
-          console.log('=== LIMIT ORDER CALCULATION ===');
-          console.log('Limit Price Entered:', limitPrice);
-          console.log('Amount1 (input):', amount1);
-          console.log('Curr1:', curr1.currency);
-          console.log('Curr2:', curr2.currency);
-          
           // Determine which direction to calculate based on currencies
           if (curr1.currency === 'XRP' && curr2.currency !== 'XRP') {
             // XRP -> Token: multiply XRP amount by limit price (Token per XRP)
             // If limit price is "3.06 RLUSD per XRP", then 1 XRP * 3.06 = 3.06 RLUSD
             limitAmount2 = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-            console.log('XRP -> Token: Multiplying', amount1, 'XRP by', limitPrice, 'Token/XRP =', limitAmount2, curr2.currency);
           } else if (curr1.currency !== 'XRP' && curr2.currency === 'XRP') {
             // Token -> XRP: divide token amount by limit price (Token per XRP)
             // If limit price is "3.06 RLUSD per XRP", then to get XRP: RLUSD amount / 3.06
             limitAmount2 = amount1Decimal.div(limitPriceDecimal).toFixed(6);
-            console.log('Token -> XRP: Dividing', amount1, curr1.currency, 'by', limitPrice, 'Token/XRP =', limitAmount2, 'XRP');
           } else {
             // Non-XRP pair: use limit price as direct exchange rate
             limitAmount2 = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-            console.log('Non-XRP pair: Multiplying', amount1, 'by', limitPrice, '=', limitAmount2);
           }
-          console.log('Calculated limitAmount2:', limitAmount2);
-          console.log('==============================');
         } else {
           // Fallback to calculated amount2 if no limit price
           limitAmount2 = amount2;
-          console.log('No limit price provided, using market amount2:', amount2);
         }
 
         if (revert) {
@@ -1580,8 +1568,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           });
           break;
         case 'crossmark':
-          console.log('=== SENDING TO CROSSMARK ===');
-          console.log('Final transaction being sent:', JSON.stringify(transactionData, null, 2));
           dispatch(updateProcess(1));
           await sdk.methods.signAndSubmitAndWait(transactionData).then(({ response }) => {
             if (response.data.meta.isSuccess) {
@@ -2258,7 +2244,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           setCategories(dynamicCategories);
         }
       } catch (err) {
-        console.error('Error fetching categories:', err);
         // Set basic categories as fallback
         setCategories([
           { value: 'all', label: 'All Tokens' },
@@ -2316,7 +2301,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         setSelectorTokens([xrpToken, ...tokenList]);
       }
     } catch (err) {
-      console.error('Load tokens error:', err);
       // Still include XRP even on error
       const xrpToken = {
         md5: '84e5efeb89c4eae8f68188982dc290d8',
@@ -2369,7 +2353,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             });
           }
         } catch (err) {
-          console.error('Search error:', err);
         }
       }
 
@@ -2433,7 +2416,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           setFilteredTokens(selectorTokens);
         }
       } catch (err) {
-        console.error('Category filter error:', err);
         // Fall back to showing all tokens
         setFilteredTokens(selectorTokens);
       } finally {
