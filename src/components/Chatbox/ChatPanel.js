@@ -24,9 +24,16 @@ import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import UserSummary from './UserSummary';
 import { rankGlowEffect, lightningEffect, activeRankColors } from './RankStyles';
+import { ranks } from './RankItems';
 import NFTDisplay from './NFTDisplay';
 import Trade from './Trade';
 import React from 'react';
+
+// Create a mapping object for ranks
+const ranksMap = ranks.reduce((acc, rank) => {
+  acc[rank.id] = rank;
+  return acc;
+}, {});
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -334,7 +341,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                             activeRankColors[activeRanks[chat.username]] ||
                             theme.palette.text.primary
                           }
-                          rankName={ranks[activeRanks[chat.username]]?.name}
+                          rankName={ranksMap[activeRanks[chat.username]]?.name}
                           rank={activeRanks[chat.username]}
                           handleTrade={() => {
                             setTrader(chat);
