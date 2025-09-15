@@ -9,7 +9,6 @@ import { configureRedux } from 'src/redux/store';
 
 // Loader
 import { PuffLoader } from 'react-spinners';
-import { PersistGate } from 'redux-persist/integration/react';
 
 export const AppContext = createContext({});
 

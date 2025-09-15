@@ -1,4 +1,4 @@
-const { createSlice } = require("@reduxjs/toolkit")
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
     isProcessing: 0, //0: initial, 1: open sign, 2: success, 3: reject

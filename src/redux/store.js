@@ -2,100 +2,47 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import statusReducer from './statusSlice';
 import transactionReducer from './transactionSlice';
-import chatReducer from './chatSlice';
-import { CookieStorage } from 'redux-persist-cookie-storage';
-import Cookies from './customCookiesParser';
-import { persistReducer } from 'redux-persist';
-import { currencyConfig } from 'src/utils/constants';
-
-const initialState = {
-  metrics: {
-    total: 0,
-    USD: 100,
-    EUR: 100,
-    JPY: 100,
-    CNY: 100,
-    XRP: 1,
-    H24: {
-      transactions24H: 0,
-      tradedXRP24H: 0,
-      tradedTokens24H: 0,
-      activeAddresses24H: 0,
-      totalAddresses: 0,
-      totalOffers: 0,
-      totalTrustLines: 0
-    },
-    global: {
-      gMarketcap: 0,
-      gMarketcapPro: 0,
-      gDexVolume: 0,
-      gDexVolumePro: 0,
-      gScamVolume: 0,
-      gScamVolumePro: 0,
-      gStableVolume: 0,
-      gStableVolumePro: 0,
-      gXRPdominance: 0,
-      gXRPdominancePro: 0,
-      sentimentScore: 0
-    },
-    tokenCreation: []
-  },
-  filteredCount: 0,
-  activeFiatCurrency: currencyConfig.activeFiatCurrency
-};
-
-const persistConfig = {
-  key: 'root',
-  storage: new CookieStorage(Cookies)
-};
 
 const rootReducer = combineReducers({
   status: statusReducer,
-  transaction: transactionReducer,
-  chat: chatReducer
+  transaction: transactionReducer
 });
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
-
 const store = configureStore({
-  reducer: persistedReducer,
-  preloadedState: { status: initialState },
+  reducer: rootReducer,
   devTools: process.env.NODE_ENV !== 'production'
 });
 
 export default store;
 
-// export const persistor = globalThis.window ? persistStore(store) : store;
 
 export function configureRedux(data) {
-  let defaultState = initialState;
-  if (data) {
-    defaultState = {
+  const preloadedState = data ? {
+    status: {
       metrics: {
-        total: data.total,
-        USD: data.exch.USD,
-        EUR: data.exch.EUR,
-        JPY: data.exch.JPY,
-        CNY: data.exch.CNY,
+        USD: data.exch?.USD || 100,
+        EUR: data.exch?.EUR || 100,
+        JPY: data.exch?.JPY || 100,
+        CNY: data.exch?.CNY || 100,
         XRP: 1,
-        H24: data.H24,
-        global: { ...initialState.metrics.global, ...data.global },
-        tokenCreation: data.tokenCreation
+        H24: data.H24 || {},
+        global: {
+          total: data.total || 0,
+          ...data.global
+        },
+        tokenCreation: data.tokenCreation || []
       },
-      filteredCount: data.count,
-      activeFiatCurrency: defaultState.activeFiatCurrency
-    };
-  }
+      filteredCount: data.count || 0,
+      activeFiatCurrency: 'USD'
+    }
+  } : undefined;
 
-  const _store = configureStore({
+  return configureStore({
     reducer: {
       status: statusReducer,
-      transaction: transactionReducer,
-      chat: chatReducer
+      transaction: transactionReducer
     },
-    preloadedState: { status: defaultState },
+    preloadedState,
     devTools: process.env.NODE_ENV !== 'production'
   });
-
-  return _store;
 }

@@ -68,73 +68,18 @@ const statusSlice = createSlice({
 
 export const { update_metrics, update_filteredCount, update_activeCurrency } = statusSlice.actions;
 
-// Base selectors
-const selectStatus = (state) => state.status;
-const selectMetricsBase = (state) => state.status.metrics;
+// Simple selectors (no memoization needed for basic property access)
+export const selectMetrics = (state) => state.status.metrics;
+export const selectFilteredCount = (state) => state.status.filteredCount;
+export const selectActiveFiatCurrency = (state) => state.status.activeFiatCurrency;
+export const selectTokenCreation = (state) => state.status.metrics.tokenCreation;
+export const selectGlobalMetrics = (state) => state.status.metrics.global;
 
-// Memoized selectors
-export const selectMetrics = createSelector(
-  [selectMetricsBase],
-  (metrics) => metrics
-);
-
-export const selectFilteredCount = createSelector(
-  [selectStatus],
-  (status) => status.filteredCount
-);
-
-export const selectActiveFiatCurrency = createSelector(
-  [selectStatus],
-  (status) => status.activeFiatCurrency
-);
-
-export const selectTokenCreation = createSelector(
-  [selectMetricsBase],
-  (metrics) => metrics.tokenCreation
-);
-
-// Memoized selector for exchange rate
+// Memoized selector only for computed values
 export const selectExchangeRate = createSelector(
-  [selectMetricsBase, (state, currency) => currency],
+  [selectMetrics, (state, currency) => currency],
   (metrics, currency) => metrics[currency] || 1
-);
-
-// Memoized selector for global metrics
-export const selectGlobalMetrics = createSelector(
-  [selectMetricsBase],
-  (metrics) => metrics.global
 );
 
 export default statusSlice.reducer;
 
-// export function configureRedux(data) {
-//   let defaultState = initialState;
-//   if (data) {
-//     defaultState = {
-//       metrics: {
-//         total: data.total,
-//         USD: data.exch.USD,
-//         EUR: data.exch.EUR,
-//         JPY: data.exch.JPY,
-//         CNY: data.exch.CNY,
-//         H24: data.H24,
-//         global: data.global
-//       },
-//       filteredCount: data.count,
-//       activeFiatCurrency: defaultState.activeFiatCurrency
-//     };
-//   }
-
-//   const persistedReducer = persistReducer(persistConfig, combineReducers({
-//     status: statusSlice.reducer
-//   }));
-
-//   const store = configureStore({
-//     reducer: persistedReducer,
-//     preloadedState: { status: defaultState },
-//     devTools: process.env.NODE_ENV !== "production",
-//     middleware: [thunk],
-//   });
-
-//   return store;
-// }
