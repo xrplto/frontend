@@ -173,25 +173,6 @@ const Trade = ({ open, onClose, tradePartner }) => {
     }
   };
 
-  const getLines = () => {
-    setLoading(true);
-    axios
-      .get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=${rows}`)
-      .then((res) => {
-        let ret = res.status === 200 ? res.data : undefined;
-        if (ret) {
-          setTotal(ret.total);
-          setLines(ret.lines);
-        }
-      })
-      .catch((err) => {
-        console.log('Error on getting account lines!!!', err);
-      })
-      .then(function () {
-        setLoading(false);
-      });
-  };
-
   const processLines = (lines, account) => {
     return lines.map((line) => {
       const { currency, account: issuer } = line;

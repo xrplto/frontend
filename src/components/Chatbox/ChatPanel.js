@@ -82,51 +82,6 @@ const CustomScrollBox = styled(Stack)(({ theme }) => ({
   }
 }));
 
-const ranks = {
-  riddler: {
-    id: 'riddler',
-    name: 'Riddler',
-    price: 5,
-    description: 'Entry-level rank for XRP puzzle solvers',
-    color: '#FFD700'
-  },
-  rippler: {
-    id: 'rippler',
-    name: 'Rippler',
-    price: 0.0001,
-    description: 'Intermediate rank for XRP enthusiasts',
-    color: '#4CAF50'
-  },
-  validator: {
-    id: 'validator',
-    name: 'Validator',
-    price: 0.0001,
-    description: 'Advanced rank with enhanced features',
-    color: '#2196F3'
-  },
-  escrow: {
-    id: 'escrow',
-    name: 'Escrow Master',
-    price: 0.0001,
-    description: 'Elite rank with exclusive XRP-themed perks',
-    color: '#9C27B0'
-  },
-  ledger: {
-    id: 'ledger',
-    name: 'Ledger Guardian',
-    price: 0.0001,
-    description: 'Legendary rank for true XRP aficionados',
-    color: '#F44336'
-  },
-  verified: {
-    id: 'verified',
-    name: 'Verified',
-    price: 0.0001,
-    description: 'Exclusive verified status with premium benefits',
-    color: '#1DA1F2'
-  }
-};
-
 // Memoized message content component to prevent expensive re-renders
 const MessageContent = React.memo(({ message, isPrivate, theme }) => {
   const messageParts = useMemo(() => {

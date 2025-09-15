@@ -1,5 +1,3 @@
-import { normalizeAmount } from 'src/utils/normalizers';
-
 // Material
 import {
     useTheme, useMediaQuery,
@@ -14,7 +12,6 @@ import {
     Typography
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { alpha } from '@mui/material/styles';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 

@@ -23,6 +23,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useTranslation } from 'react-i18next';
 import { useState, useContext, useEffect, forwardRef, memo, useCallback, lazy, Suspense, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -33,8 +34,10 @@ import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
 const WalletConnectModal = lazy(() => import('./WalletConnectModal'));
 const SearchModal = lazy(() => import('./SearchModal'));
+const Chatbox = lazy(() => import('./Chatbox'));
 import Wallet from 'src/components/Wallet';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
+import { selectChatOpen, toggleChatOpen } from 'src/redux/chatSlice';
 
 // Iconify
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -267,6 +270,7 @@ function Header(props) {
   const theme = useTheme();
   const dispatch = useDispatch();
   const isProcessing = useSelector(selectProcess);
+  const chatOpen = useSelector(selectChatOpen);
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const isTabletOrMobile = useMediaQuery(theme.breakpoints.down('lg'));
   
@@ -331,6 +335,10 @@ function Header(props) {
     window.location.href = path;
     handleTokensClose();
   }, [handleTokensClose]);
+
+  const handleChatOpen = useCallback(() => {
+    dispatch(toggleChatOpen());
+  }, [dispatch]);
 
   useEffect(() => {
     if (isProcessing === 1 && isClosed) {
@@ -775,6 +783,23 @@ function Header(props) {
                     />
                   </Link>
                 )}
+                <IconButton
+                  aria-label="Open chat"
+                  onClick={handleChatOpen}
+                  sx={{
+                    padding: { xs: '8px', sm: '10px' },
+                    minWidth: { xs: '40px', sm: '44px' },
+                    minHeight: { xs: '40px', sm: '44px' },
+                    mr: 1,
+                    color: chatOpen ? 'primary.main' : 'text.primary',
+                    backgroundColor: chatOpen ? 'action.selected' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: 'action.hover'
+                    }
+                  }}
+                >
+                  <ChatBubbleOutlineIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
+                </IconButton>
                 <Wallet style={{ marginRight: '4px' }} buttonOnly={true} />
               </Stack>
             )}
@@ -809,6 +834,10 @@ function Header(props) {
 
       <Suspense fallback={null}>
         <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <Chatbox />
       </Suspense>
     </HeaderWrapper>
   );

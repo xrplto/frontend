@@ -22,7 +22,6 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
-import { motion } from 'framer-motion';
 import PropTypes from 'prop-types';
 import { AppContext } from 'src/AppContext';
 
@@ -58,9 +57,16 @@ const ChatNFTCard = ({ nft, onSelect, isSelected }) => {
   const name = nft.meta?.name || nft.meta?.Name || 'No Name';
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+    <Box
+      sx={{
+        transition: 'transform 0.2s ease-in-out',
+        '&:hover': {
+          transform: 'scale(1.05)',
+        },
+        '&:active': {
+          transform: 'scale(0.95)',
+        },
+      }}
     >
       <Card
         onClick={() => onSelect(nft)}
@@ -128,7 +134,7 @@ const ChatNFTCard = ({ nft, onSelect, isSelected }) => {
           </Typography>
         </Box>
       </Card>
-    </motion.div>
+    </Box>
   );
 };
 
@@ -139,7 +145,7 @@ ChatNFTCard.propTypes = {
 };
 
 // ChatCollectionCard Component
-const CardWrapper = styled(motion.div)(
+const CardWrapper = styled(Box)(
   ({ theme }) => `
     border-radius: 12px;
     overflow: hidden;
@@ -148,9 +154,14 @@ const CardWrapper = styled(motion.div)(
     background: ${alpha(theme.palette.background.paper, 0.8)};
     backdrop-filter: blur(8px);
     transition: all 0.3s ease-in-out;
+    cursor: pointer;
     &:hover {
       box-shadow: ${theme.shadows[10]};
       background: ${alpha(theme.palette.background.paper, 0.9)};
+      transform: scale(1.05);
+    }
+    &:active {
+      transform: scale(0.95);
     }
   `
 );
@@ -179,8 +190,6 @@ const ChatCollectionCard = ({ collectionData, onSelect }) => {
   return (
     <CardWrapper
       onClick={handleClick}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
     >
       <Box display="flex" flexDirection="column" alignItems="center" height="100%" p={1.5}>
         {loadingImg ? (

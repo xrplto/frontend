@@ -226,12 +226,6 @@ function Chatbox() {
   const emojiPickerRef = useRef(null);
   const socketRef = useRef(null);
 
-  // Debugging: Clear localStorage and sessionStorage on mount
-  useEffect(() => {
-    // Uncomment the lines below to clear storage for debugging
-    // localStorage.clear();
-    // sessionStorage.clear();
-  }, []);
 
   const handleMenuClick = (event) => {
     event.preventDefault();
@@ -316,7 +310,7 @@ function Chatbox() {
 
     const handleSocketError = (error) => {
       console.error('Socket encountered error:', error);
-      console.log('Socket connected status:', socket.connected);
+      console.log('Socket connected status:', socketRef.current?.connected);
     };
 
     // Lazy import socket.io-client only when chat opens

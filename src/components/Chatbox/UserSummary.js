@@ -387,12 +387,4 @@ const InfoItem = ({ label, value, valueColor }) => (
   </Box>
 );
 
-const handleSendTip = (user) => {
-  console.log(`Sending to ${user.username}`);
-};
-
-const handleSendMessage = (user) => {
-  console.log(`Sending message to ${user.username}`);
-};
-
 export default UserSummary;
