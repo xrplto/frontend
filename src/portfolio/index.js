@@ -39,7 +39,11 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import Ranks from './Ranks';
-import { activeRankColors, rankGlowEffect } from 'src/components/Chatbox/RankStyles';
+// Temporary inline rank colors (previously from Chatbox/RankStyles)
+const activeRankColors = {
+  verified: '#1DA1F2'
+};
+const rankGlowEffect = {};
 import axios from 'axios';
 
 // Get base URL from environment

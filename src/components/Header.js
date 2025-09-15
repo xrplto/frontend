@@ -34,7 +34,6 @@ import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
 const WalletConnectModal = lazy(() => import('./WalletConnectModal'));
 const SearchModal = lazy(() => import('./SearchModal'));
-const Chatbox = lazy(() => import('./Chatbox'));
 import Wallet from 'src/components/Wallet';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 import { selectChatOpen, toggleChatOpen } from 'src/redux/chatSlice';
@@ -836,9 +835,6 @@ function Header(props) {
         <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
       </Suspense>
 
-      <Suspense fallback={null}>
-        <Chatbox />
-      </Suspense>
     </HeaderWrapper>
   );
 }
