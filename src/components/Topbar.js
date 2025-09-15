@@ -59,29 +59,33 @@ const TopWrapper = styled.header`
   width: 100%;
   display: flex;
   align-items: center;
-  height: 36px;
+  height: 40px;
   background: ${props => props.backgroundColor};
-  border-top: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'};
+  border-top: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 1099;
-  box-shadow: 0 -1px 8px ${props => props.darkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.08)'};
-  backdrop-filter: blur(20px) saturate(120%);
-  font-family: 'JetBrains Mono', monospace;
+  box-shadow: 0 -1px 12px ${props => props.darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.06)'};
+  backdrop-filter: blur(24px) saturate(140%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   overflow-x: hidden;
+
+  ${media.down('md')} {
+    height: 36px;
+  }
 `;
 
 const Container = styled.div`
   width: 100%;
   max-width: 100%;
-  padding: 0 8px;
+  padding: 0 16px;
   margin: 0 auto;
   height: 100%;
   display: flex;
   align-items: center;
-  
+
   ${media.down('md')} {
     padding: 0 2px;
   }
@@ -104,31 +108,33 @@ const ContentWrapper = styled.nav`
 `;
 
 const APILabel = styled.button`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: ${props => props.textColor};
   text-decoration: none;
-  margin-left: 3px;
-  background: ${props => props.primaryColor ? `${props.primaryColor}14` : 'rgba(0,128,255,0.08)'};
-  padding: 4px 8px;
-  border-radius: 6px;
+  margin-left: 6px;
+  background: ${props => props.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'};
+  padding: 6px 12px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 3px;
-  min-height: 26px;
-  border: 1px solid ${props => props.primaryColor ? `${props.primaryColor}26` : 'rgba(0,128,255,0.15)'};
+  gap: 6px;
+  min-height: 30px;
+  border: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   cursor: pointer;
-  transition: all 0.2s;
-  
+  transition: all 0.2s ease;
+
   &:hover {
-    background: ${props => props.primaryColor ? `${props.primaryColor}1f` : 'rgba(0,128,255,0.12)'};
+    background: ${props => props.primaryColor ? `${props.primaryColor}15` : 'rgba(0,128,255,0.1)'};
+    border-color: ${props => props.primaryColor ? `${props.primaryColor}30` : 'rgba(0,128,255,0.2)'};
+    transform: translateY(-1px);
   }
-  
+
   &:focus {
     outline: 2px solid ${props => props.primaryColor || '#0080ff'};
     outline-offset: 2px;
   }
-  
+
   ${media.down('md')} {
     min-height: 44px;
     padding: 8px 12px;
@@ -201,19 +207,20 @@ const LiveButton = styled.button`
 `;
 
 const H24Style = styled.div`
-  cursor: pointer;
-  padding: 2px 4px;
+  padding: 4px 8px;
   background: ${props => props.primaryColor || '#0080ff'};
-  border-radius: 4px;
-  min-width: 24px;
+  border-radius: 12px;
+  min-width: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-  transition: background 0.2s;
-  
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+  margin: 0 8px;
+
   &:hover {
-    filter: brightness(0.9);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
   }
 `;
 
@@ -241,35 +248,38 @@ const PulsatingCircle = styled.div`
 const MetricContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 3px;
-  padding: 2px 4px;
-  border-radius: 4px;
-  background: transparent;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: ${props => props.darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
   min-width: auto;
   position: relative;
-  transition: background 0.2s;
-  
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+
   &:hover {
-    background: rgba(0,0,0,0.04);
+    background: ${props => props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'};
+    border-color: ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   }
 `;
 
 const MetricLabel = styled.span`
   color: ${props => props.textSecondary};
-  font-weight: 600;
-  font-size: 0.55rem;
+  font-weight: 500;
+  font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
   line-height: 1;
   font-family: inherit;
+  opacity: 0.7;
 `;
 
 const MetricValue = styled.span`
-  font-weight: 600;
-  font-size: 0.8rem;
+  font-weight: 700;
+  font-size: 0.85rem;
   line-height: 1;
-  font-family: inherit;
-  letter-spacing: -0.01em;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -0.02em;
   color: ${props => props.color || props.textPrimary};
 `;
 
@@ -904,8 +914,8 @@ const Topbar = () => {
                 </LiveButton>
               </MobileContainer>
             ) : (
-              <Stack direction="row" spacing={0.5} alignItems="center" flex={1}>
-                <MetricContainer>
+              <Stack direction="row" spacing={1.5} alignItems="center" flex={1}>
+                <MetricContainer darkMode={darkMode}>
                   <MetricLabel textSecondary={themeColors.textSecondary}>{t('Addresses')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#54D62C">
@@ -916,7 +926,7 @@ const Topbar = () => {
                   )}
                 </MetricContainer>
 
-                <MetricContainer>
+                <MetricContainer darkMode={darkMode}>
                   <MetricLabel textSecondary={themeColors.textSecondary}>{t('Tokens')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#FF6B6B">
@@ -927,7 +937,7 @@ const Topbar = () => {
                   )}
                 </MetricContainer>
 
-                <MetricContainer>
+                <MetricContainer darkMode={darkMode}>
                   <MetricLabel textSecondary={themeColors.textSecondary}>{t('Offers')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#FFC107">
@@ -938,7 +948,7 @@ const Topbar = () => {
                   )}
                 </MetricContainer>
 
-                <MetricContainer>
+                <MetricContainer darkMode={darkMode}>
                   <MetricLabel textSecondary={themeColors.textSecondary}>{t('Trustlines')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#FFA48D">
@@ -963,7 +973,7 @@ const Topbar = () => {
                   </Typography>
                 </H24Style>
 
-                <MetricContainer>
+                <MetricContainer darkMode={darkMode}>
                   <MetricLabel textSecondary={themeColors.textSecondary}>{t('Trades')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#74CAFF">
@@ -974,7 +984,7 @@ const Topbar = () => {
                   )}
                 </MetricContainer>
 
-                <MetricContainer>
+                <MetricContainer darkMode={darkMode}>
                   <MetricLabel textSecondary={themeColors.textSecondary}>{t('Vol')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#ef4444">
@@ -992,7 +1002,7 @@ const Topbar = () => {
                   )}
                 </MetricContainer>
 
-                <MetricContainer>
+                <MetricContainer darkMode={darkMode}>
                   <MetricLabel textSecondary={themeColors.textSecondary}>{t('Tokens Traded')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#3366FF">
@@ -1003,7 +1013,7 @@ const Topbar = () => {
                   )}
                 </MetricContainer>
 
-                <MetricContainer>
+                <MetricContainer darkMode={darkMode}>
                   <MetricLabel textSecondary={themeColors.textSecondary}>{t('Active Addresses')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#54D62C">
@@ -1014,7 +1024,7 @@ const Topbar = () => {
                   )}
                 </MetricContainer>
 
-                <MetricContainer>
+                <MetricContainer darkMode={darkMode}>
                   <MetricLabel textSecondary={themeColors.textSecondary}>{t('Unique Traders')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#2196F3">
@@ -1025,7 +1035,7 @@ const Topbar = () => {
                   )}
                 </MetricContainer>
 
-                <MetricContainer>
+                <MetricContainer darkMode={darkMode}>
                   <MetricLabel textSecondary={themeColors.textSecondary}>{t('Total TVL')}</MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#8E44AD">
@@ -1045,7 +1055,7 @@ const Topbar = () => {
               </Stack>
             )}
             {!isMobile && (
-              <Box display="flex" alignItems="center" gap={0.25} style={{ paddingLeft: '6px' }}>
+              <Box display="flex" alignItems="center" gap={0.75} style={{ paddingLeft: '12px' }}>
                 <CurrencySwitcher />
                 <ThemeSwitcher />
                 <APILabel
@@ -1057,21 +1067,22 @@ const Topbar = () => {
                   type="button"
                   textColor={themeColors.textPrimary}
                   primaryColor={primaryColor}
+                  darkMode={darkMode}
                 >
                   <PulsatingCircle primaryColor={primaryColor} />
-                  <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.65rem', fontFamily: 'Inter, sans-serif' }}>
+                  <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif' }}>
                     Live Trades
                   </Typography>
                 </APILabel>
                 <APILabel
                   as="a"
                   href="/api-docs"
-                  style={{ marginLeft: '2px' }}
                   aria-label="API documentation"
                   textColor={themeColors.textPrimary}
                   primaryColor={primaryColor}
+                  darkMode={darkMode}
                 >
-                  <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.65rem', fontFamily: 'Inter, sans-serif' }}>
+                  <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif' }}>
                     API
                   </Typography>
                 </APILabel>
