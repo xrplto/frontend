@@ -90,7 +90,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 // Utils & Context
 import { AppContext } from 'src/AppContext';
-import AccountTransactions from 'src/explore/CollectionActivity';
+import AccountTransactions from 'src/components/CollectionActivity';
 import Watch from 'src/components/Watch';
 import { getMinterName } from 'src/utils/constants';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatNumber';

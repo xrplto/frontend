@@ -306,7 +306,7 @@ export default function HistoryList({ nft }) {
                       </Stack>
                     </StyledTableCell>
                     <StyledTableCell align="right">
-                      {row.type === 'SALE' ? (
+                      {row.type === 'SALE' && row.cost ? (
                         <PriceText>
                           {row.cost.currency === 'XRP' ? '✕' : ''} {fNumber(row.cost.amount)}{' '}
                           {normalizeCurrencyCodeXummImpl(row.cost.currency)}

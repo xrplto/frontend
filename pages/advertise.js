@@ -39,7 +39,7 @@ import {
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import useDebounce from 'src/hooks/useDebounce';
+import useDebounce from 'src/hooks';
 import { AppContext } from 'src/AppContext';
 import ConnectWallet from 'src/components/ConnectWallet';
 import { useDispatch, useSelector } from 'react-redux';

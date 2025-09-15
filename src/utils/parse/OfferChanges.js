@@ -4,7 +4,7 @@ function removeUndefined(obj) {
     return require("lodash").omitBy(obj, value => value == null);
 }
 const { rippleToUnixTimestamp } = require("./utils");
-const { parseAmount } = require('./amount');
+const { parseAmount } = require('./utils');
 
 let tx;
 let hash;

@@ -6,7 +6,7 @@ import { CacheProvider } from '@emotion/react';
 import createEmotionCache from 'src/theme/createEmotionCache';
 import { CssBaseline } from '@mui/material';
 import { ContextProvider } from 'src/AppContext';
-import { useSnackbar } from 'src/components/useSnackbar';
+import { useSnackbar } from 'src/hooks';
 import './zMain.css';
 import { SnackbarProvider } from 'notistack';
 import i18n from 'src/utils/i18n';

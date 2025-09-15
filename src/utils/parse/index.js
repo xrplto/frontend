@@ -1,6 +1,5 @@
-const { parseAmount } = require('./amount');
+const { parseAmount, rippleToUnixTimestamp } = require('./utils');
 const { parseOfferChanges } = require('./OfferChanges');
-const { rippleToUnixTimestamp } = require('./utils');
 
 module.exports = {
     parseAmount,

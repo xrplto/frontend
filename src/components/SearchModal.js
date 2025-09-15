@@ -25,7 +25,7 @@ import CollectionsIcon from '@mui/icons-material/Collections';
 import { useState, useEffect, useRef, useCallback, useContext, useMemo, memo, lazy, Suspense } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import useDebounce from 'src/hooks/useDebounce';
+import useDebounce from 'src/hooks';
 import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';

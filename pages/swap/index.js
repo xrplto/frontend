@@ -20,7 +20,7 @@ import { processOrderbookOffers } from 'src/utils/orderbookService';
 import Logo from 'src/components/Logo';
 
 // Lazy load the heavy swap component (165KB)
-const Swap = dynamic(() => import('src/swap'), {
+const Swap = dynamic(() => import('src/components/SwapInterface'), {
   loading: () => (
     <Box display="flex" justifyContent="center" p={4}>
       <CircularProgress />

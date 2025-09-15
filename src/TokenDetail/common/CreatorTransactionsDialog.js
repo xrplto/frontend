@@ -22,7 +22,7 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import { Client } from 'xrpl';
 import { fNumber } from 'src/utils/formatNumber';
 import { formatDistanceToNow } from 'date-fns';
-import { parseAmount } from 'src/utils/parse/amount';
+import { parseAmount } from 'src/utils/parse/utils';
 import Decimal from 'decimal.js-light';
 import { normalizeCurrencyCode } from 'src/utils/parse/utils';
 

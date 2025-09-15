@@ -794,7 +794,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                               return `${isIncoming ? '💰' : '📤'} ${fNumber(xrpAmount)} XRP`;
                             } else if (amountToShow && typeof amountToShow === 'object') {
                               // Token payment
-                              const { parseAmount } = require('src/utils/parse/amount');
+                              const { parseAmount } = require('src/utils/parse/utils');
                               const { normalizeCurrencyCode } = require('src/utils/parse/utils');
                               const amount = parseAmount(amountToShow);
                               if (amount && typeof amount === 'object') {
@@ -1445,7 +1445,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
                                       return `${isIncoming ? 'Received' : 'Sent'} ${fNumber(xrpAmount)} XRP`;
                                     } else if (amountToShow && typeof amountToShow === 'object') {
                                       // Token payment
-                                      const { parseAmount } = require('src/utils/parse/amount');
+                                      const { parseAmount } = require('src/utils/parse/utils');
                                       const { normalizeCurrencyCode } = require('src/utils/parse/utils');
                                       const Decimal = require('decimal.js-light');
                                       const amount = parseAmount(amountToShow);

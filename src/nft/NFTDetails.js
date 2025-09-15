@@ -227,16 +227,6 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
   
-  const [sliderRef, instanceRef] = useKeenSlider({
-    initial: 0,
-    loop: true,
-    slideChanged(slider) {
-      setCurrentSlide(slider.track.details.rel);
-    },
-    created() {
-      setLoadedSlider(true);
-    }
-  });
 
   // Get media URLs
   let imageUrl = getNftFilesUrls(nft, 'image');
@@ -370,25 +360,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
       <MediaContainer>
         {((imageUrl && contentTab === 'image') || (animationUrl && contentTab === 'animation')) && (
           <>
-            {typeof imgOrAnimUrl === 'object' && imgOrAnimUrl.length > 1 ? (
-              <div className="navigation-wrapper" style={{ width: '100%', height: '100%' }}>
-                <div ref={sliderRef} className="keen-slider" style={{ height: '100%' }}>
-                  {imgOrAnimUrl.map((file, index) => (
-                    <div key={index} className={`keen-slider__slide number-slide${index + 1}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                      {renderImageLink(file)}
-                    </div>
-                  ))}
-                </div>
-                {loadedSlider && instanceRef.current && (
-                  <>
-                    <Arrow left onClick={(e) => e.stopPropagation() || instanceRef.current?.prev()} disabled={currentSlide === 0} />
-                    <Arrow onClick={(e) => e.stopPropagation() || instanceRef.current?.next()} disabled={currentSlide === instanceRef.current.track.details.slides.length - 1} />
-                  </>
-                )}
-              </div>
-            ) : (
-              renderImageLink(typeof imgOrAnimUrl === 'string' ? imgOrAnimUrl : imgOrAnimUrl[0])
-            )}
+            {renderImageLink(typeof imgOrAnimUrl === 'string' ? imgOrAnimUrl : imgOrAnimUrl[0])}
             <Modal open={openImage} onClose={() => setOpenImage(false)} closeAfterTransition BackdropComponent={Backdrop}>
               <Box sx={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh', outline: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <img src={selectedImageUrl} alt={NFTName} style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }} />

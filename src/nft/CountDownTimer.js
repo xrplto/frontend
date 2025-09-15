@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCountdown } from './useCountDown';
+import { useCountdown } from 'src/hooks';
 
 // Material
 import {

@@ -49,7 +49,7 @@ import { AppContext } from 'src/AppContext';
 import { fNumber, fPercent } from 'src/utils/formatNumber';
 
 // Components
-import { StatsModal } from 'src/components/trader/TraderStats';
+import { StatsModal } from 'src/components/TraderStats';
 import dynamic from 'next/dynamic';
 
 const SankeyModal = dynamic(() => import('src/components/SankeyModal'), {

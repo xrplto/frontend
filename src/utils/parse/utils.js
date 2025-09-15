@@ -483,11 +483,11 @@ export function parseNFTokenID(NFTokenID) {
   //   A   B                      C                        D        E
   // 0008 1388 2177B00DF84CA4B8DD59778594F472EF0F56E435 99AE2184 00000DEA
   if (!NFTokenID || NFTokenID.length !== 64) return { flag: 0, royalty: 0, issuer: '', taxon: 0 };
-  const flag = new Decimal('0x' + NFTokenID.slice(0, 4)).toNumber();
-  const royalty = new Decimal('0x' + NFTokenID.slice(4, 8)).toNumber();
+  const flag = parseInt(NFTokenID.slice(0, 4), 16);
+  const royalty = parseInt(NFTokenID.slice(4, 8), 16);
   const issuer = encodeAccountID(Buffer.from(NFTokenID.slice(8, 48), 'hex'));
-  const scrambledTaxon = new Decimal('0x' + NFTokenID.slice(48, 56)).toNumber();
-  const tokenSeq = new Decimal('0x' + NFTokenID.slice(56, 64)).toNumber();
+  const scrambledTaxon = parseInt(NFTokenID.slice(48, 56), 16);
+  const tokenSeq = parseInt(NFTokenID.slice(56, 64), 16);
 
   const taxon = cipheredTaxon(tokenSeq, scrambledTaxon);
 
@@ -505,6 +505,24 @@ export function convertHexToString(hex, encoding = 'utf8') {
     ret = Buffer.from(hex, 'hex').toString(encoding);
   } catch (err) {}
   return ret;
+}
+
+// Parse amount function (from amount.js)
+export function parseAmount(amount) {
+    if (typeof amount === 'string') {
+        return {
+            issuer: 'XRPL',
+            currency: 'XRP',
+            name: 'XRP',
+            value: dropsToXrp(amount)
+        }
+    }
+    return {
+        issuer: amount.issuer,
+        currency: amount.currency,
+        name: normalizeCurrencyCode(amount.currency),
+        value: amount.value,
+    }
 }
 
 export {
