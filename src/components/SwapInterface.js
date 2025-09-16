@@ -3366,15 +3366,38 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
             {/* Limit Order UI */}
             {orderType === 'limit' && (
-              <Box sx={{ mt: 2, mb: 2 }}>
+              <Box
+                sx={{
+                  mt: 1.5,
+                  mb: 1.5,
+                  p: 1.5,
+                  borderRadius: '10px',
+                  backgroundColor: alpha(theme.palette.background.paper, 0.2),
+                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                }}
+              >
                 <Stack spacing={1.5}>
                   {/* Limit Price Input */}
                   <Box>
-                    <Typography variant="caption" color="text.secondary" fontSize="0.7rem" sx={{ mb: 0.5 }}>
-                      Limit Price ({token2.name || token2.currency} per {token1.name || token1.currency})
-                    </Typography>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.65rem',
+                          fontWeight: 600,
+                          color: theme.palette.text.secondary,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.03em'
+                        }}
+                      >
+                        Limit Price
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: theme.palette.text.secondary, opacity: 0.7 }}>
+                        {token2.name || token2.currency} per {token1.name || token1.currency}
+                      </Typography>
+                    </Stack>
                     <Input
-                      placeholder="Enter price"
+                      placeholder="0.00"
                       fullWidth
                       disableUnderline
                       value={limitPrice}
@@ -3389,102 +3412,133 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         }
                       }}
                       sx={{
-                        backgroundColor: alpha(theme.palette.background.paper, 0.05),
+                        backgroundColor: alpha(theme.palette.background.default, 0.4),
                         borderRadius: '8px',
                         padding: '8px 12px',
                         border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                        transition: 'all 0.2s ease',
                         input: {
-                          fontSize: '0.85rem',
-                          fontWeight: 600
+                          fontSize: '0.9rem',
+                          fontWeight: 600,
+                          fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif'
                         },
                         '&:hover': {
                           borderColor: alpha(theme.palette.primary.main, 0.2)
                         },
                         '&:focus-within': {
                           borderColor: theme.palette.primary.main,
-                          backgroundColor: alpha(theme.palette.background.paper, 0.08)
+                          backgroundColor: alpha(theme.palette.background.default, 0.6)
                         }
                       }}
                     />
                   </Box>
-                  
+
                   {/* Quick Price Select */}
                   {(bids[0] || asks[0]) && (
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      <Typography variant="caption" color="text.secondary" fontSize="0.65rem">
-                        Quick:
-                      </Typography>
+                    <Stack direction="row" spacing={0.75}>
                       {bids[0] && (
-                        <Chip
-                          label={`Bid: ${bids[0].price.toFixed(3)}`}
-                          size="small"
+                        <Box
                           onClick={() => setLimitPrice(bids[0].price.toFixed(6))}
                           sx={{
-                            height: '18px',
-                            fontSize: '0.6rem',
+                            flex: 1,
+                            px: 1,
+                            py: 0.5,
+                            borderRadius: '6px',
                             cursor: 'pointer',
-                            backgroundColor: alpha(theme.palette.success.main, 0.1),
-                            color: theme.palette.success.main,
+                            backgroundColor: alpha(theme.palette.success.main, 0.08),
+                            border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                            transition: 'all 0.2s ease',
+                            textAlign: 'center',
                             '&:hover': {
-                              backgroundColor: alpha(theme.palette.success.main, 0.2)
+                              backgroundColor: alpha(theme.palette.success.main, 0.15)
                             }
                           }}
-                        />
+                        >
+                          <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 600, color: theme.palette.success.main }}>
+                            Bid: {bids[0].price.toFixed(4)}
+                          </Typography>
+                        </Box>
                       )}
                       {asks[0] && (
-                        <Chip
-                          label={`Ask: ${asks[0].price.toFixed(3)}`}
-                          size="small"
+                        <Box
                           onClick={() => setLimitPrice(asks[0].price.toFixed(6))}
                           sx={{
-                            height: '18px',
-                            fontSize: '0.6rem',
+                            flex: 1,
+                            px: 1,
+                            py: 0.5,
+                            borderRadius: '6px',
                             cursor: 'pointer',
-                            backgroundColor: alpha(theme.palette.error.main, 0.1),
-                            color: theme.palette.error.main,
+                            backgroundColor: alpha(theme.palette.error.main, 0.08),
+                            border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
+                            transition: 'all 0.2s ease',
+                            textAlign: 'center',
                             '&:hover': {
-                              backgroundColor: alpha(theme.palette.error.main, 0.2)
+                              backgroundColor: alpha(theme.palette.error.main, 0.15)
                             }
                           }}
-                        />
+                        >
+                          <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 600, color: theme.palette.error.main }}>
+                            Ask: {asks[0].price.toFixed(4)}
+                          </Typography>
+                        </Box>
                       )}
                     </Stack>
                   )}
-                  
+
                   {/* Expiration Setting */}
                   <Box>
-                    <Typography variant="caption" color="text.secondary" fontSize="0.7rem" sx={{ mb: 0.5 }}>
-                      Order Expiration
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.65rem',
+                        fontWeight: 600,
+                        color: theme.palette.text.secondary,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.03em',
+                        mb: 0.5,
+                        display: 'block'
+                      }}
+                    >
+                      Expires
                     </Typography>
-                    <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                    <Stack direction="row" spacing={0.5}>
                       {[
                         { value: 'never', label: 'Never' },
-                        { value: '1h', label: '1 Hour' },
-                        { value: '24h', label: '1 Day' },
-                        { value: '7d', label: '7 Days' },
-                        { value: '30d', label: '30 Days' }
+                        { value: '1h', label: '1h' },
+                        { value: '24h', label: '1d' },
+                        { value: '7d', label: '7d' }
                       ].map(exp => (
-                        <Chip
+                        <Box
                           key={exp.value}
-                          label={exp.label}
-                          size="small"
                           onClick={() => setOrderExpiry(exp.value)}
                           sx={{
-                            height: '20px',
-                            fontSize: '0.6rem',
+                            flex: 1,
+                            px: 0.75,
+                            py: 0.5,
+                            borderRadius: '6px',
                             cursor: 'pointer',
-                            backgroundColor: orderExpiry === exp.value 
-                              ? theme.palette.primary.main 
-                              : alpha(theme.palette.action.selected, 0.08),
-                            color: orderExpiry === exp.value ? 'white' : theme.palette.text.secondary,
-                            mb: 0.5,
+                            textAlign: 'center',
+                            backgroundColor: orderExpiry === exp.value
+                              ? alpha(theme.palette.primary.main, 0.12)
+                              : alpha(theme.palette.background.default, 0.2),
+                            color: orderExpiry === exp.value
+                              ? theme.palette.primary.main
+                              : theme.palette.text.secondary,
+                            border: `1px solid ${orderExpiry === exp.value
+                              ? alpha(theme.palette.primary.main, 0.2)
+                              : alpha(theme.palette.divider, 0.08)}`,
+                            transition: 'all 0.2s ease',
                             '&:hover': {
-                              backgroundColor: orderExpiry === exp.value 
-                                ? theme.palette.primary.dark 
-                                : alpha(theme.palette.action.selected, 0.16)
+                              backgroundColor: orderExpiry === exp.value
+                                ? alpha(theme.palette.primary.main, 0.18)
+                                : alpha(theme.palette.background.default, 0.3)
                             }
                           }}
-                        />
+                        >
+                          <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 600 }}>
+                            {exp.label}
+                          </Typography>
+                        </Box>
                       ))}
                     </Stack>
                     {orderExpiry === 'custom' && (
