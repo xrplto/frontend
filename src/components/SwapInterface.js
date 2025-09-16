@@ -2949,68 +2949,139 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               <Box sx={{ p: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>You pay</Typography>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        mb: 1,
+                        display: 'block',
+                        fontSize: '0.75rem',
+                        fontWeight: 500,
+                        letterSpacing: '0.02em'
+                      }}
+                    >
+                      You pay
+                    </Typography>
                     {renderTokenSelector(token1, () => setPanel1Open(true), "Select token to swap from")}
                   </Box>
-                  <Box sx={{ textAlign: 'right' }}>
-                    <Input
-                      placeholder="0"
-                      disableUnderline
-                      value={amount1}
-                      onChange={handleChangeAmount1}
-                      inputMode="decimal"
+                  <Box sx={{ textAlign: 'right', flex: 1, maxWidth: '60%' }}>
+                    <Box
                       sx={{
-                        input: {
-                          textAlign: 'right',
-                          fontSize: { xs: '20px', sm: '28px' },
-                          fontWeight: 600,
-                          padding: 0,
-                          background: 'transparent',
-                          color: theme.palette.text.primary,
-                          '&::placeholder': {
-                            color: alpha(theme.palette.text.primary, 0.25)
-                          }
+                        position: 'relative',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: -2,
+                          left: 0,
+                          right: 0,
+                          height: 2,
+                          background: focusTop
+                            ? `linear-gradient(90deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.3)})`
+                            : 'transparent',
+                          borderRadius: 1,
+                          transition: 'all 0.3s ease'
                         }
                       }}
-                      onFocus={() => setFocusTop(true)}
-                      onBlur={() => setFocusTop(false)}
-                    />
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                      {tokenPrice1 > 0 && `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}`}
+                    >
+                      <Input
+                        placeholder="0.00"
+                        disableUnderline
+                        value={amount1}
+                        onChange={handleChangeAmount1}
+                        inputMode="decimal"
+                        sx={{
+                          width: '100%',
+                          input: {
+                            textAlign: 'right',
+                            fontSize: { xs: '24px', sm: '32px' },
+                            fontWeight: 700,
+                            padding: '8px 0',
+                            background: 'transparent',
+                            color: theme.palette.text.primary,
+                            border: 'none',
+                            outline: 'none',
+                            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+                            letterSpacing: '-0.02em',
+                            transition: 'all 0.2s ease',
+                            '&::placeholder': {
+                              color: alpha(theme.palette.text.primary, 0.3),
+                              fontWeight: 400
+                            },
+                            '&:focus': {
+                              transform: 'scale(1.02)',
+                              transformOrigin: 'right center'
+                            }
+                          }
+                        }}
+                        onFocus={() => setFocusTop(true)}
+                        onBlur={() => setFocusTop(false)}
+                      />
+                    </Box>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        mt: 1,
+                        display: 'block',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        opacity: focusTop ? 1 : 0.7,
+                        transition: 'opacity 0.2s ease'
+                      }}
+                    >
+                      {tokenPrice1 > 0 ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}` : ' '}
                     </Typography>
                   </Box>
                 </Stack>
                 {isLoggedIn && accountPairBalance && (
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="caption" color="text.secondary">
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        fontSize: '0.75rem',
+                        fontWeight: 500,
+                        letterSpacing: '0.01em'
+                      }}
+                    >
                       Balance: {fNumber(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value)}
                     </Typography>
                     {(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value) > 0 && (
-                      <Stack direction="row" spacing={0.5}>
+                      <Stack direction="row" spacing={0.75}>
                         {[25, 50, 100].map(percent => (
-                          <Chip
+                          <Box
                             key={percent}
-                            label={`${percent}%`}
-                            size="small"
                             onClick={() => {
                               const balance = revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value;
-                              // For 100%, use the exact balance to avoid leaving dust
-                              const newAmount = percent === 100 
-                                ? balance.toString()  // Use exact balance string
+                              const newAmount = percent === 100
+                                ? balance.toString()
                                 : (balance * percent / 100).toFixed(6);
                               handleChangeAmount1({ target: { value: newAmount } });
                             }}
                             sx={{
-                              height: '20px',
+                              px: 1.5,
+                              py: 0.5,
+                              borderRadius: '8px',
                               fontSize: '0.7rem',
+                              fontWeight: 600,
                               cursor: 'pointer',
-                              backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                              backgroundColor: alpha(theme.palette.primary.main, 0.1),
                               color: theme.palette.primary.main,
+                              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                              transition: 'all 0.2s ease',
                               '&:hover': {
-                                backgroundColor: alpha(theme.palette.primary.main, 0.15),
+                                backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                                borderColor: theme.palette.primary.main,
+                                transform: 'translateY(-1px)',
+                                boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.15)}`
+                              },
+                              '&:active': {
+                                transform: 'translateY(0)'
                               }
                             }}
-                          />
+                          >
+                            {percent}%
+                          </Box>
                         ))}
                       </Stack>
                     )}
@@ -3075,34 +3146,87 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               <Box sx={{ p: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>You receive</Typography>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        mb: 1,
+                        display: 'block',
+                        fontSize: '0.75rem',
+                        fontWeight: 500,
+                        letterSpacing: '0.02em'
+                      }}
+                    >
+                      You receive
+                    </Typography>
                     {renderTokenSelector(token2, () => setPanel2Open(true), "Select token to receive")}
                   </Box>
-                  <Box sx={{ textAlign: 'right' }}>
-                    <Input
-                      placeholder="0"
-                      disableUnderline
-                      value={amount1 === '' ? '' : amount2}
-                      onChange={handleChangeAmount2}
-                      inputMode="decimal"
+                  <Box sx={{ textAlign: 'right', flex: 1, maxWidth: '60%' }}>
+                    <Box
                       sx={{
-                        input: {
-                          textAlign: 'right',
-                          fontSize: { xs: '20px', sm: '28px' },
-                          fontWeight: 600,
-                          padding: 0,
-                          background: 'transparent',
-                          color: theme.palette.text.primary,
-                          '&::placeholder': {
-                            color: alpha(theme.palette.text.primary, 0.25)
-                          }
+                        position: 'relative',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: -2,
+                          left: 0,
+                          right: 0,
+                          height: 2,
+                          background: focusBottom
+                            ? `linear-gradient(90deg, ${theme.palette.secondary.main || theme.palette.primary.main}, ${alpha(theme.palette.secondary.main || theme.palette.primary.main, 0.3)})`
+                            : 'transparent',
+                          borderRadius: 1,
+                          transition: 'all 0.3s ease'
                         }
                       }}
-                      onFocus={() => setFocusBottom(true)}
-                      onBlur={() => setFocusBottom(false)}
-                    />
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                      {tokenPrice2 > 0 && `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}`}
+                    >
+                      <Input
+                        placeholder="0.00"
+                        disableUnderline
+                        value={amount1 === '' ? '' : amount2}
+                        onChange={handleChangeAmount2}
+                        inputMode="decimal"
+                        sx={{
+                          width: '100%',
+                          input: {
+                            textAlign: 'right',
+                            fontSize: { xs: '24px', sm: '32px' },
+                            fontWeight: 700,
+                            padding: '8px 0',
+                            background: 'transparent',
+                            color: theme.palette.text.primary,
+                            border: 'none',
+                            outline: 'none',
+                            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+                            letterSpacing: '-0.02em',
+                            transition: 'all 0.2s ease',
+                            '&::placeholder': {
+                              color: alpha(theme.palette.text.primary, 0.3),
+                              fontWeight: 400
+                            },
+                            '&:focus': {
+                              transform: 'scale(1.02)',
+                              transformOrigin: 'right center'
+                            }
+                          }
+                        }}
+                        onFocus={() => setFocusBottom(true)}
+                        onBlur={() => setFocusBottom(false)}
+                      />
+                    </Box>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        mt: 1,
+                        display: 'block',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        opacity: focusBottom ? 1 : 0.7,
+                        transition: 'opacity 0.2s ease'
+                      }}
+                    >
+                      {tokenPrice2 > 0 ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}` : ' '}
                     </Typography>
                   </Box>
                 </Stack>
