@@ -820,11 +820,32 @@ export default function Summary() {
                 </Stack>
               </MetricBox>
 
+              <MetricBox>
+                <MetricTitle>Average Token RSI</MetricTitle>
+                <MetricValue style={{
+                  color: (metrics.global?.avgRSI24h || 50) <= 30 ? '#ef4444' :
+                         (metrics.global?.avgRSI24h || 50) >= 70 ? '#16a34a' :
+                         theme.palette.text.primary
+                }}>
+                  {(metrics.global?.avgRSI24h || 50).toFixed(1)}
+                </MetricValue>
+                <ContentTypography style={{
+                  color: (metrics.global?.avgRSI24h || 50) <= 30 ? '#ef4444' :
+                         (metrics.global?.avgRSI24h || 50) >= 70 ? '#16a34a' :
+                         theme.palette.text.secondary,
+                  fontWeight: 600
+                }}>
+                  {(metrics.global?.avgRSI24h || 50) <= 30 ? 'Oversold' :
+                   (metrics.global?.avgRSI24h || 50) >= 70 ? 'Overbought' :
+                   'Neutral'}
+                </ContentTypography>
+              </MetricBox>
+
               <ChartMetricBox>
                 <MetricTitle>New Tokens (30d)</MetricTitle>
-                <TokenChart 
-                  data={chartData} 
-                  theme={theme} 
+                <TokenChart
+                  data={chartData}
+                  theme={theme}
                   activeFiatCurrency={activeFiatCurrency}
                   darkMode={darkMode}
                 />
