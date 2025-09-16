@@ -2764,49 +2764,51 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const isToken1Selector = panel1Open;
 
   return (
-    <Box
-      sx={{ 
-        width: '100%', 
-        maxWidth: '800px',
-        margin: '0 auto', 
-        px: { xs: 0.5, sm: 2, md: 3 },
-        transition: 'max-width 0.3s ease'
-      }}
-    >
-      <Box sx={{ position: 'relative', width: '100%' }}>
-        {/* Token Selector */}
-        <Box
-          sx={{
-            opacity: showTokenSelector ? 1 : 0,
-            visibility: showTokenSelector ? 'visible' : 'hidden',
-            position: showTokenSelector ? 'relative' : 'absolute',
-            width: '100%',
-            transition: 'opacity 0.3s ease, visibility 0.3s ease',
-            pointerEvents: showTokenSelector ? 'auto' : 'none'
-          }}
-        >
-          {(panel1Open || panel2Open) && renderTokenSelectorPanel(
-            currentSelectorToken, 
-            selectorTitle, 
-            isToken1Selector,
-            () => {
-              setPanel1Open(false);
-              setPanel2Open(false);
-            }
-          )}
-        </Box>
+    <Box sx={{ width: '100%' }}>
+      {/* Swap Interface Container */}
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: '800px',
+          margin: '0 auto',
+          px: { xs: 0.5, sm: 2, md: 3 },
+          transition: 'max-width 0.3s ease'
+        }}
+      >
+        <Box sx={{ position: 'relative', width: '100%' }}>
+          {/* Token Selector */}
+          <Box
+            sx={{
+              opacity: showTokenSelector ? 1 : 0,
+              visibility: showTokenSelector ? 'visible' : 'hidden',
+              position: showTokenSelector ? 'relative' : 'absolute',
+              width: '100%',
+              transition: 'opacity 0.3s ease, visibility 0.3s ease',
+              pointerEvents: showTokenSelector ? 'auto' : 'none'
+            }}
+          >
+            {(panel1Open || panel2Open) && renderTokenSelectorPanel(
+              currentSelectorToken,
+              selectorTitle,
+              isToken1Selector,
+              () => {
+                setPanel1Open(false);
+                setPanel2Open(false);
+              }
+            )}
+          </Box>
 
-        {/* Swap UI */}
-        <Box
-          sx={{
-            opacity: showTokenSelector ? 0 : 1,
-            visibility: showTokenSelector ? 'hidden' : 'visible',
-            position: showTokenSelector ? 'absolute' : 'relative',
-            width: '100%',
-            transition: 'opacity 0.3s ease, visibility 0.3s ease',
-            pointerEvents: showTokenSelector ? 'none' : 'auto'
-          }}
-        >
+          {/* Swap UI */}
+          <Box
+            sx={{
+              opacity: showTokenSelector ? 0 : 1,
+              visibility: showTokenSelector ? 'hidden' : 'visible',
+              position: showTokenSelector ? 'absolute' : 'relative',
+              width: '100%',
+              transition: 'opacity 0.3s ease, visibility 0.3s ease',
+              pointerEvents: showTokenSelector ? 'none' : 'auto'
+            }}
+          >
         <Stack
           direction={{ xs: 'column', md: 'row' }}
           spacing={{ xs: 1, md: 3 }}
@@ -3775,95 +3777,104 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         </Stack>
         </Box>
       </Box>
+      </Box>
 
-      {/* Chart Display - At the bottom of the UI */}
+      {/* Chart Display - Full width sparklines matching swap container */}
       {(token1 || token2) && !showTokenSelector && (
-        <Box sx={{ mt: 4, width: '100%', maxWidth: '800px', margin: '40px auto 20px' }}>
-          <Grid container spacing={2}>
+        <Box
+          sx={{
+            mt: 4,
+            width: '100%',
+            maxWidth: '800px',
+            margin: '40px auto 20px',
+            px: { xs: 0.5, sm: 2, md: 3 }
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              width: '100%'
+            }}
+          >
             {token1 && (
-              <Grid item xs={12} md={6}>
-                <Box
-                  sx={{
-                    p: 2.5,
-                    borderRadius: '20px',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                    backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.06)}`,
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.background.paper, 0.7),
-                      borderColor: alpha(theme.palette.primary.main, 0.15),
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 12px 32px ${alpha(theme.palette.common.black, 0.08)}`
-                    }
-                  }}
-                >
-                  <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 1.5 }}>
-                    <Typography variant="subtitle2" color="text.secondary" fontWeight={500}>
-                      {token1.name} Price (24h)
+              <Box
+                sx={{
+                  flex: '1 1 50%',
+                  minWidth: 0,
+                  p: 1.5,
+                  borderRadius: '12px',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                  backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                  backdropFilter: 'blur(20px)',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.background.paper, 0.7),
+                    borderColor: alpha(theme.palette.primary.main, 0.15)
+                  }
+                }}
+              >
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                    {token1.name}
+                  </Typography>
+                  {(token1.exch || tokenExch1 || latestPrice1) && (
+                    <Typography variant="caption" fontWeight={700} color="text.primary" sx={{ fontSize: '0.75rem' }}>
+                      {formatTokenPrice(token1, token2, tokenExch1, latestPrice1)}
                     </Typography>
-                    {(token1.exch || tokenExch1 || latestPrice1) && (
-                      <Typography variant="h6" fontWeight={700} color="text.primary">
-                        {formatTokenPrice(token1, token2, tokenExch1, latestPrice1)}
-                      </Typography>
-                    )}
-                  </Stack>
-                  <Box sx={{ height: '140px' }}>
-                    <Sparkline
-                      url={`${BASE_URL}/sparkline/${token1.md5}?period=24h`}
-                      style={{ width: '100%', height: '100%' }}
-                      showGradient={true}
-                      lineWidth={2}
-                      animation={true}
-                    />
-                  </Box>
+                  )}
+                </Stack>
+                <Box sx={{ height: '80px', width: '100%' }}>
+                  <Sparkline
+                    url={`${BASE_URL}/sparkline/${token1.md5}?period=24h`}
+                    style={{ width: '100%', height: '100%' }}
+                    showGradient={true}
+                    lineWidth={2}
+                    animation={true}
+                  />
                 </Box>
-              </Grid>
+              </Box>
             )}
             
             {token2 && (
-              <Grid item xs={12} md={6}>
-                <Box
-                  sx={{
-                    p: 2.5,
-                    borderRadius: '20px',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                    backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.06)}`,
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.background.paper, 0.7),
-                      borderColor: alpha(theme.palette.primary.main, 0.15),
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 12px 32px ${alpha(theme.palette.common.black, 0.08)}`
-                    }
-                  }}
-                >
-                  <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 1.5 }}>
-                    <Typography variant="subtitle2" color="text.secondary" fontWeight={500}>
-                      {token2.name} Price (24h)
+              <Box
+                sx={{
+                  flex: '1 1 50%',
+                  minWidth: 0,
+                  p: 1.5,
+                  borderRadius: '12px',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                  backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                  backdropFilter: 'blur(20px)',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.background.paper, 0.7),
+                    borderColor: alpha(theme.palette.primary.main, 0.15)
+                  }
+                }}
+              >
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                    {token2.name}
+                  </Typography>
+                  {(token2.exch || tokenExch2 || latestPrice2) && (
+                    <Typography variant="caption" fontWeight={700} color="text.primary" sx={{ fontSize: '0.75rem' }}>
+                      {formatTokenPrice(token2, token1, tokenExch2, latestPrice2)}
                     </Typography>
-                    {(token2.exch || tokenExch2 || latestPrice2) && (
-                      <Typography variant="h6" fontWeight={700} color="text.primary">
-                        {formatTokenPrice(token2, token1, tokenExch2, latestPrice2)}
-                      </Typography>
-                    )}
-                  </Stack>
-                  <Box sx={{ height: '140px' }}>
-                    <Sparkline
-                      url={`${BASE_URL}/sparkline/${token2.md5}?period=24h`}
-                      style={{ width: '100%', height: '100%' }}
-                      showGradient={true}
-                      lineWidth={2}
-                      animation={true}
-                    />
-                  </Box>
+                  )}
+                </Stack>
+                <Box sx={{ height: '80px', width: '100%' }}>
+                  <Sparkline
+                    url={`${BASE_URL}/sparkline/${token2.md5}?period=24h`}
+                    style={{ width: '100%', height: '100%' }}
+                    showGradient={true}
+                    lineWidth={2}
+                    animation={true}
+                  />
                 </Box>
-              </Grid>
+              </Box>
             )}
-          </Grid>
+          </Box>
         </Box>
       )}
     </Box>
