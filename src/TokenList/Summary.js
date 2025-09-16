@@ -696,7 +696,7 @@ export default function Summary() {
           </div>
         ) : (
           <div style={{ width: '100%' }}>
-            <Grid cols={8} mdCols={4} smCols={3}>
+            <Grid cols={7} mdCols={4} smCols={2}>
               <MetricBox>
                 <MetricTitle>Market Cap</MetricTitle>
                 <MetricValue>
@@ -733,115 +733,97 @@ export default function Summary() {
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>Stables</MetricTitle>
-                <MetricValue>
-                  {currencySymbols[activeFiatCurrency]}
-                  {formatNumberWithDecimals(new Decimal(metrics.global?.gStableVolume || 0).div(fiatRate).toNumber())}
-                </MetricValue>
-                <PercentageChange isPositive={(metrics.global?.gStableVolumePro || 0) >= 0}>
-                  {(metrics.global?.gStableVolumePro || 0) >= 0 ? '▲' : '▼'}
-                  {Math.abs(metrics.global?.gStableVolumePro || 0).toFixed(2)}%
-                </PercentageChange>
-              </MetricBox>
-
-              <MetricBox>
-                <MetricTitle>Memes</MetricTitle>
-                <MetricValue>
-                  {currencySymbols[activeFiatCurrency]}
-                  {formatNumberWithDecimals(new Decimal(metrics.global?.gMemeVolume || 0).div(fiatRate).toNumber())}
-                </MetricValue>
-                <PercentageChange isPositive={(metrics.global?.gMemeVolumePro || 0) >= 0}>
-                  {(metrics.global?.gMemeVolumePro || 0) >= 0 ? '▲' : '▼'}
-                  {Math.abs(metrics.global?.gMemeVolumePro || 0).toFixed(2)}%
-                </PercentageChange>
-              </MetricBox>
-
-              <MetricBox>
-                <MetricTitle>Market Sentiment</MetricTitle>
-                <Stack direction="row" alignItems="center" spacing="8px" style={{ marginBottom: '8px' }}>
-                  <MetricValue style={{ margin: 0, fontSize: '1.25rem' }}>
-                    {(metrics.global?.sentimentScore || 0).toFixed(1)}
-                  </MetricValue>
-                  <div style={{ 
-                    background: `conic-gradient(${
-                      metrics.global?.sentimentScore >= 80 ? '#16a34a' : 
-                      metrics.global?.sentimentScore >= 60 ? '#4ade80' :
-                      metrics.global?.sentimentScore >= 40 ? '#fbbf24' :
-                      metrics.global?.sentimentScore >= 20 ? '#f97316' : '#ef4444'
-                    } ${(metrics.global?.sentimentScore || 0) * 3.6}deg, rgba(255,255,255,0.1) 0deg)`,
-                    borderRadius: '50%',
-                    width: '24px',
-                    height: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '10px'
-                  }}>
-                    <div style={{
-                      background: darkMode ? '#1c1c1c' : 'white',
-                      borderRadius: '50%',
-                      width: '16px',
-                      height: '16px'
-                    }}></div>
-                  </div>
-                </Stack>
-                <Stack direction="row" alignItems="center" spacing="6px">
-                  <TrendingUpIcon 
-                    icon={
-                      metrics.global?.sentimentScore >= 80 ? "mdi:trending-up" :
-                      metrics.global?.sentimentScore >= 60 ? "mdi:thumb-up" :
-                      metrics.global?.sentimentScore >= 40 ? "mdi:minus" :
-                      metrics.global?.sentimentScore >= 20 ? "mdi:thumb-down" : "mdi:trending-down"
-                    } 
-                    width="16" 
-                    height="16" 
-                    style={{ color: 
-                      metrics.global?.sentimentScore >= 80 ? '#16a34a' :
-                      metrics.global?.sentimentScore >= 60 ? '#4ade80' :
-                      metrics.global?.sentimentScore >= 40 ? '#fbbf24' :
-                      metrics.global?.sentimentScore >= 20 ? '#f97316' : '#ef4444'
-                    }} 
-                  />
-                  <ContentTypography style={{ 
-                    color: 
-                      metrics.global?.sentimentScore >= 80 ? '#16a34a' :
-                      metrics.global?.sentimentScore >= 60 ? '#4ade80' :
-                      metrics.global?.sentimentScore >= 40 ? '#fbbf24' :
-                      metrics.global?.sentimentScore >= 20 ? '#f97316' : '#ef4444',
-                    fontWeight: 600
-                  }}>
-                    {
-                      metrics.global?.sentimentScore >= 80 ? 'Very Bullish' :
-                      metrics.global?.sentimentScore >= 60 ? 'Bullish' :
-                      metrics.global?.sentimentScore >= 40 ? 'Neutral' :
-                      metrics.global?.sentimentScore >= 20 ? 'Bearish' : 'Very Bearish'
-                    }
-                  </ContentTypography>
+                <MetricTitle>Category Volume</MetricTitle>
+                <Stack direction="column" spacing="2px">
+                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <ContentTypography style={{ fontSize: '0.65rem' }}>Stables</ContentTypography>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MetricValue style={{ fontSize: '0.9rem', margin: 0 }}>
+                        {currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(new Decimal(metrics.global?.gStableVolume || 0).div(fiatRate).toNumber())}
+                      </MetricValue>
+                      <PercentageChange style={{ fontSize: '0.7rem' }} isPositive={(metrics.global?.gStableVolumePro || 0) >= 0}>
+                        {(metrics.global?.gStableVolumePro || 0) >= 0 ? '▲' : '▼'}{Math.abs(metrics.global?.gStableVolumePro || 0).toFixed(1)}%
+                      </PercentageChange>
+                    </div>
+                  </Stack>
+                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <ContentTypography style={{ fontSize: '0.65rem' }}>Memes</ContentTypography>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MetricValue style={{ fontSize: '0.9rem', margin: 0 }}>
+                        {currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(new Decimal(metrics.global?.gMemeVolume || 0).div(fiatRate).toNumber())}
+                      </MetricValue>
+                      <PercentageChange style={{ fontSize: '0.7rem' }} isPositive={(metrics.global?.gMemeVolumePro || 0) >= 0}>
+                        {(metrics.global?.gMemeVolumePro || 0) >= 0 ? '▲' : '▼'}{Math.abs(metrics.global?.gMemeVolumePro || 0).toFixed(1)}%
+                      </PercentageChange>
+                    </div>
+                  </Stack>
                 </Stack>
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>Average Token RSI</MetricTitle>
-                <MetricValue style={{
-                  color: (metrics.global?.avgRSI24h || 50) <= 30 ? '#ef4444' :
-                         (metrics.global?.avgRSI24h || 50) >= 70 ? '#16a34a' :
-                         theme.palette.text.primary
-                }}>
-                  {(metrics.global?.avgRSI24h || 50).toFixed(1)}
-                </MetricValue>
-                <ContentTypography style={{
-                  color: (metrics.global?.avgRSI24h || 50) <= 30 ? '#ef4444' :
-                         (metrics.global?.avgRSI24h || 50) >= 70 ? '#16a34a' :
-                         theme.palette.text.secondary,
-                  fontWeight: 600
-                }}>
-                  {(metrics.global?.avgRSI24h || 50) <= 30 ? 'Oversold' :
-                   (metrics.global?.avgRSI24h || 50) >= 70 ? 'Overbought' :
-                   'Neutral'}
-                </ContentTypography>
+                <MetricTitle>Market Indicators</MetricTitle>
+                <Stack direction="column" spacing="2px">
+                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <ContentTypography style={{ fontSize: '0.65rem' }}>Sentiment</ContentTypography>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MetricValue style={{
+                        fontSize: '0.9rem',
+                        margin: 0,
+                        color:
+                          metrics.global?.sentimentScore >= 80 ? '#16a34a' :
+                          metrics.global?.sentimentScore >= 60 ? '#4ade80' :
+                          metrics.global?.sentimentScore >= 40 ? '#fbbf24' :
+                          metrics.global?.sentimentScore >= 20 ? '#f97316' : '#ef4444'
+                      }}>
+                        {(metrics.global?.sentimentScore || 0).toFixed(1)}
+                      </MetricValue>
+                      <ContentTypography style={{
+                        fontSize: '0.65rem',
+                        color:
+                          metrics.global?.sentimentScore >= 80 ? '#16a34a' :
+                          metrics.global?.sentimentScore >= 60 ? '#4ade80' :
+                          metrics.global?.sentimentScore >= 40 ? '#fbbf24' :
+                          metrics.global?.sentimentScore >= 20 ? '#f97316' : '#ef4444',
+                        fontWeight: 600
+                      }}>
+                        {
+                          metrics.global?.sentimentScore >= 80 ? 'V.Bull' :
+                          metrics.global?.sentimentScore >= 60 ? 'Bull' :
+                          metrics.global?.sentimentScore >= 40 ? 'Neutral' :
+                          metrics.global?.sentimentScore >= 20 ? 'Bear' : 'V.Bear'
+                        }
+                      </ContentTypography>
+                    </div>
+                  </Stack>
+                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <ContentTypography style={{ fontSize: '0.65rem' }}>Avg RSI</ContentTypography>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MetricValue style={{
+                        fontSize: '0.9rem',
+                        margin: 0,
+                        color: (metrics.global?.avgRSI24h || 50) <= 30 ? '#ef4444' :
+                               (metrics.global?.avgRSI24h || 50) >= 70 ? '#16a34a' :
+                               theme.palette.text.primary
+                      }}>
+                        {(metrics.global?.avgRSI24h || 50).toFixed(1)}
+                      </MetricValue>
+                      <ContentTypography style={{
+                        fontSize: '0.65rem',
+                        color: (metrics.global?.avgRSI24h || 50) <= 30 ? '#ef4444' :
+                               (metrics.global?.avgRSI24h || 50) >= 70 ? '#16a34a' :
+                               theme.palette.text.secondary,
+                        fontWeight: 600
+                      }}>
+                        {(metrics.global?.avgRSI24h || 50) <= 30 ? 'Oversold' :
+                         (metrics.global?.avgRSI24h || 50) >= 70 ? 'Overbought' :
+                         'Neutral'}
+                      </ContentTypography>
+                    </div>
+                  </Stack>
+                </Stack>
               </MetricBox>
 
-              <ChartMetricBox>
+              <MetricBox style={{ gridColumn: 'span 2' }}>
                 <MetricTitle>New Tokens (30d)</MetricTitle>
                 <TokenChart
                   data={chartData}
@@ -849,7 +831,7 @@ export default function Summary() {
                   activeFiatCurrency={activeFiatCurrency}
                   darkMode={darkMode}
                 />
-              </ChartMetricBox>
+              </MetricBox>
             </Grid>
           </div>
         )}
