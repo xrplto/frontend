@@ -2769,7 +2769,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       <Box
         sx={{
           width: '100%',
-          maxWidth: '800px',
+          maxWidth: '680px',
           margin: '0 auto',
           px: { xs: 0.5, sm: 2, md: 3 },
           transition: 'max-width 0.3s ease'
@@ -2965,58 +2965,39 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     {renderTokenSelector(token1, () => setPanel1Open(true), "Select token to swap from")}
                   </Box>
                   <Box sx={{ textAlign: 'right', flex: 1, maxWidth: '60%' }}>
-                    <Box
+                    <Input
+                      placeholder="0.00"
+                      disableUnderline
+                      value={amount1}
+                      onChange={handleChangeAmount1}
+                      inputMode="decimal"
                       sx={{
-                        position: 'relative',
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          bottom: -2,
-                          left: 0,
-                          right: 0,
-                          height: 2,
-                          background: focusTop
-                            ? `linear-gradient(90deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.3)})`
-                            : 'transparent',
-                          borderRadius: 1,
-                          transition: 'all 0.3s ease'
+                        width: '100%',
+                        input: {
+                          textAlign: 'right',
+                          fontSize: { xs: '24px', sm: '32px' },
+                          fontWeight: 700,
+                          padding: '8px 0',
+                          background: 'transparent',
+                          color: theme.palette.text.primary,
+                          border: 'none',
+                          outline: 'none',
+                          fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+                          letterSpacing: '-0.02em',
+                          transition: 'all 0.2s ease',
+                          '&::placeholder': {
+                            color: alpha(theme.palette.text.primary, 0.3),
+                            fontWeight: 400
+                          },
+                          '&:focus': {
+                            transform: 'scale(1.02)',
+                            transformOrigin: 'right center'
+                          }
                         }
                       }}
-                    >
-                      <Input
-                        placeholder="0.00"
-                        disableUnderline
-                        value={amount1}
-                        onChange={handleChangeAmount1}
-                        inputMode="decimal"
-                        sx={{
-                          width: '100%',
-                          input: {
-                            textAlign: 'right',
-                            fontSize: { xs: '24px', sm: '32px' },
-                            fontWeight: 700,
-                            padding: '8px 0',
-                            background: 'transparent',
-                            color: theme.palette.text.primary,
-                            border: 'none',
-                            outline: 'none',
-                            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-                            letterSpacing: '-0.02em',
-                            transition: 'all 0.2s ease',
-                            '&::placeholder': {
-                              color: alpha(theme.palette.text.primary, 0.3),
-                              fontWeight: 400
-                            },
-                            '&:focus': {
-                              transform: 'scale(1.02)',
-                              transformOrigin: 'right center'
-                            }
-                          }
-                        }}
-                        onFocus={() => setFocusTop(true)}
-                        onBlur={() => setFocusTop(false)}
-                      />
-                    </Box>
+                      onFocus={() => setFocusTop(true)}
+                      onBlur={() => setFocusTop(false)}
+                    />
                     <Typography
                       variant="caption"
                       color="text.secondary"
@@ -3162,58 +3143,39 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     {renderTokenSelector(token2, () => setPanel2Open(true), "Select token to receive")}
                   </Box>
                   <Box sx={{ textAlign: 'right', flex: 1, maxWidth: '60%' }}>
-                    <Box
+                    <Input
+                      placeholder="0.00"
+                      disableUnderline
+                      value={amount1 === '' ? '' : amount2}
+                      onChange={handleChangeAmount2}
+                      inputMode="decimal"
                       sx={{
-                        position: 'relative',
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          bottom: -2,
-                          left: 0,
-                          right: 0,
-                          height: 2,
-                          background: focusBottom
-                            ? `linear-gradient(90deg, ${theme.palette.secondary.main || theme.palette.primary.main}, ${alpha(theme.palette.secondary.main || theme.palette.primary.main, 0.3)})`
-                            : 'transparent',
-                          borderRadius: 1,
-                          transition: 'all 0.3s ease'
+                        width: '100%',
+                        input: {
+                          textAlign: 'right',
+                          fontSize: { xs: '24px', sm: '32px' },
+                          fontWeight: 700,
+                          padding: '8px 0',
+                          background: 'transparent',
+                          color: theme.palette.text.primary,
+                          border: 'none',
+                          outline: 'none',
+                          fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+                          letterSpacing: '-0.02em',
+                          transition: 'all 0.2s ease',
+                          '&::placeholder': {
+                            color: alpha(theme.palette.text.primary, 0.3),
+                            fontWeight: 400
+                          },
+                          '&:focus': {
+                            transform: 'scale(1.02)',
+                            transformOrigin: 'right center'
+                          }
                         }
                       }}
-                    >
-                      <Input
-                        placeholder="0.00"
-                        disableUnderline
-                        value={amount1 === '' ? '' : amount2}
-                        onChange={handleChangeAmount2}
-                        inputMode="decimal"
-                        sx={{
-                          width: '100%',
-                          input: {
-                            textAlign: 'right',
-                            fontSize: { xs: '24px', sm: '32px' },
-                            fontWeight: 700,
-                            padding: '8px 0',
-                            background: 'transparent',
-                            color: theme.palette.text.primary,
-                            border: 'none',
-                            outline: 'none',
-                            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-                            letterSpacing: '-0.02em',
-                            transition: 'all 0.2s ease',
-                            '&::placeholder': {
-                              color: alpha(theme.palette.text.primary, 0.3),
-                              fontWeight: 400
-                            },
-                            '&:focus': {
-                              transform: 'scale(1.02)',
-                              transformOrigin: 'right center'
-                            }
-                          }
-                        }}
-                        onFocus={() => setFocusBottom(true)}
-                        onBlur={() => setFocusBottom(false)}
-                      />
-                    </Box>
+                      onFocus={() => setFocusBottom(true)}
+                      onBlur={() => setFocusBottom(false)}
+                    />
                     <Typography
                       variant="caption"
                       color="text.secondary"
@@ -3909,7 +3871,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           sx={{
             mt: 4,
             width: '100%',
-            maxWidth: '800px',
+            maxWidth: '680px',
             margin: '40px auto 20px',
             px: { xs: 0.5, sm: 2, md: 3 }
           }}
