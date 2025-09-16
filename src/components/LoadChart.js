@@ -23,7 +23,7 @@ const setCachedData = (url, data) => {
   });
 };
 
-const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
+const LoadChart = ({ url, showGradient = true, lineWidth = 2, interpolationFactor = 2, ...props }) => {
   const theme = useTheme();
   const [chartData, setChartData] = useState(null);
   const [isError, setIsError] = useState(false);
@@ -35,6 +35,31 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
     triggerOnce: true,
     threshold: 0.1
   });
+
+  // Linear interpolation between two points
+  const interpolatePoints = (points, factor) => {
+    if (factor <= 1 || points.length < 2) return points;
+
+    const interpolated = [];
+
+    for (let i = 0; i < points.length - 1; i++) {
+      interpolated.push(points[i]);
+
+      // Add interpolated points between current and next
+      for (let j = 1; j < factor; j++) {
+        const t = j / factor;
+        const interpolatedPoint = {
+          x: points[i].x + (points[i + 1].x - points[i].x) * t,
+          y: points[i].y + (points[i + 1].y - points[i].y) * t
+        };
+        interpolated.push(interpolatedPoint);
+      }
+    }
+
+    // Add the last point
+    interpolated.push(points[points.length - 1]);
+    return interpolated;
+  };
 
   // Draw chart on canvas
   useEffect(() => {
@@ -79,32 +104,35 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, ...props }) => {
       return { x, y };
     });
 
+    // Interpolate points for smoother sparklines
+    const interpolatedPoints = interpolatePoints(points, interpolationFactor);
+
     // Draw gradient fill if enabled
     if (showGradient) {
       const gradient = ctx.createLinearGradient(0, 0, 0, height);
       gradient.addColorStop(0, color + '66');
       gradient.addColorStop(1, color + '00');
-      
+
       ctx.beginPath();
-      ctx.moveTo(points[0].x, height - padding);
-      points.forEach(point => ctx.lineTo(point.x, point.y));
-      ctx.lineTo(points[points.length - 1].x, height - padding);
+      ctx.moveTo(interpolatedPoints[0].x, height - padding);
+      interpolatedPoints.forEach(point => ctx.lineTo(point.x, point.y));
+      ctx.lineTo(interpolatedPoints[interpolatedPoints.length - 1].x, height - padding);
       ctx.closePath();
       ctx.fillStyle = gradient;
       ctx.fill();
     }
 
-    // Draw line
+    // Draw line with interpolated points
     ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    points.forEach(point => ctx.lineTo(point.x, point.y));
+    ctx.moveTo(interpolatedPoints[0].x, interpolatedPoints[0].y);
+    interpolatedPoints.forEach(point => ctx.lineTo(point.x, point.y));
     ctx.strokeStyle = color;
     ctx.lineWidth = lineWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
 
-  }, [chartData, showGradient, lineWidth, theme]);
+  }, [chartData, showGradient, lineWidth, interpolationFactor, theme]);
 
   // Fetch data when URL changes or component comes into view
   useEffect(() => {

@@ -1061,7 +1061,7 @@ const FTokenRow = React.memo(function FTokenRow({
     const isNewPage = window.location.pathname === '/new';
     const cacheMs = isNewPage ? 15000 : 300000; // 15s or 5min
     const cacheTime = Math.floor(Date.now() / cacheMs);
-    return `${BASE_URL}/sparkline/${md5}?period=24h&lightweight=true&maxPoints=15&cache=${cacheTime}`;
+    return `${BASE_URL}/sparkline/${md5}?period=24h&lightweight=true&maxPoints=100&cache=${cacheTime}`;
   }, [BASE_URL, md5, isMobile]);
   
   if (isMobile) {
