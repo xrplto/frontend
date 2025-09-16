@@ -30,7 +30,7 @@ import { fNumber, fIntNumber, fVolume } from 'src/utils/formatNumber';
 import dynamic from 'next/dynamic';
 
 // Lazy load chart component
-const LoadChart = dynamic(() => import('src/components/LoadChart'), {
+const Sparkline = dynamic(() => import('src/components/Sparkline'), {
   ssr: false,
   loading: () => (
     <div style={{

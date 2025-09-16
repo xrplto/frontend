@@ -38,7 +38,7 @@ import { AppContext } from 'src/AppContext';
 import { useInView } from 'react-intersection-observer';
 
 // ----------------------------------------------------------------------
-import LoadChart from 'src/components/LoadChart';
+import Sparkline from 'src/components/Sparkline';
 
 // ----------------------------------------------------------------------
 
@@ -267,7 +267,7 @@ const ChartBox = ({ darkMode, sparkline, id, isMobile }) => {
               }
             }}
           >
-            <LoadChart
+            <Sparkline
               url={`${BASE_URL}/sparkline/${sparkline}?period=24h`}
               showGradient={true}
               lineWidth={2}

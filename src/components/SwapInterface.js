@@ -7,7 +7,7 @@ import Decimal from 'decimal.js-light';
 Decimal.set({ precision: 50 });
 
 // Lazy load heavy components
-const LoadChart = dynamic(() => import('src/components/LoadChart'), {
+const Sparkline = dynamic(() => import('src/components/Sparkline'), {
   loading: () => <div style={{ height: 300 }}>Loading chart...</div>,
   ssr: false
 });
@@ -2935,7 +2935,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)'
                   }}
                 >
-                  <LoadChart
+                  <Sparkline
                     url={`${BASE_URL}/sparkline/${token1.md5}?period=24h&lightweight=true`}
                     style={{ width: '100%', height: '100%' }}
                     showGradient={false}
@@ -3061,7 +3061,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)'
                   }}
                 >
-                  <LoadChart
+                  <Sparkline
                     url={`${BASE_URL}/sparkline/${token2.md5}?period=24h&lightweight=true`}
                     style={{ width: '100%', height: '100%' }}
                     showGradient={false}
@@ -3810,7 +3810,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     )}
                   </Stack>
                   <Box sx={{ height: '140px' }}>
-                    <LoadChart
+                    <Sparkline
                       url={`${BASE_URL}/sparkline/${token1.md5}?period=24h`}
                       style={{ width: '100%', height: '100%' }}
                       showGradient={true}
@@ -3852,7 +3852,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     )}
                   </Stack>
                   <Box sx={{ height: '140px' }}>
-                    <LoadChart
+                    <Sparkline
                       url={`${BASE_URL}/sparkline/${token2.md5}?period=24h`}
                       style={{ width: '100%', height: '100%' }}
                       showGradient={true}

@@ -23,7 +23,7 @@ const setCachedData = (url, data) => {
   });
 };
 
-const LoadChart = ({ url, showGradient = true, lineWidth = 2, interpolationFactor = 2, ...props }) => {
+const Sparkline = ({ url, showGradient = true, lineWidth = 2, interpolationFactor = 2, ...props }) => {
   const theme = useTheme();
   const [chartData, setChartData] = useState(null);
   const [isError, setIsError] = useState(false);
@@ -296,4 +296,4 @@ const LoadChart = ({ url, showGradient = true, lineWidth = 2, interpolationFacto
   );
 };
 
-export default memo(LoadChart);
+export default memo(Sparkline);

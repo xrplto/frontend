@@ -12,7 +12,7 @@ import { currencySymbols } from 'src/utils/constants';
 import dynamic from 'next/dynamic';
 
 // Lazy load chart component
-const LoadChart = dynamic(() => import('src/components/LoadChart'), {
+const Sparkline = dynamic(() => import('src/components/Sparkline'), {
   ssr: false,
   loading: () => (
     <div style={{ 
@@ -80,7 +80,7 @@ const OptimizedChart = memo(({ url, darkMode }) => {
       display: 'inline-block',
       contain: 'layout size style'
     }}>
-      <LoadChart
+      <Sparkline
         url={url}
         style={{ width: '100%', height: '100%' }}
         animation={false}
@@ -715,7 +715,7 @@ const DesktopTokenRow = ({
               <StyledCell align="right" darkMode={darkMode} style={{ minWidth: '280px', paddingLeft: '16px' }}>
                 {sparklineUrl ? (
                   <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
-                    <LoadChart
+                    <Sparkline
                       url={sparklineUrl}
                       style={{ width: '100%', height: '100%' }}
                       animation={false}
@@ -870,7 +870,7 @@ const DesktopTokenRow = ({
                 <StyledCell key="sparkline" align="right" darkMode={darkMode} style={{ minWidth: '280px', paddingLeft: '16px' }}>
                   {sparklineUrl ? (
                     <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
-                      <LoadChart
+                      <Sparkline
                         url={sparklineUrl}
                         style={{ width: '100%', height: '100%' }}
                         animation={false}
