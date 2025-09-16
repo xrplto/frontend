@@ -2911,14 +2911,22 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               sx={{
                 position: 'relative',
                 borderRadius: '20px',
-                border: `1px solid ${focusTop ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.06)}`,
+                border: `1px solid ${focusTop ? alpha(theme.palette.primary.main, 0.3) : alpha(theme.palette.divider, 0.08)}`,
                 transition: 'all 0.3s ease',
-                backgroundColor: alpha(theme.palette.background.paper, 0.3),
-                backdropFilter: 'blur(10px)',
+                backgroundColor: alpha(theme.palette.background.paper, 0.5),
+                backdropFilter: 'blur(12px)',
                 overflow: 'hidden',
+                background: `linear-gradient(135deg,
+                  ${alpha(theme.palette.background.paper, 0.6)},
+                  ${alpha(theme.palette.background.paper, 0.4)})`,
+                boxShadow: focusTop
+                  ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.1)}`
+                  : 'none',
                 '&:hover': {
-                  backgroundColor: alpha(theme.palette.background.paper, 0.4),
-                  borderColor: alpha(theme.palette.primary.main, 0.1)
+                  backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                  borderColor: alpha(theme.palette.primary.main, 0.15),
+                  transform: 'translateY(-1px)',
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
                 }
               }}
             >
@@ -2951,16 +2959,29 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   <Box sx={{ flex: 1 }}>
                     <Typography
                       variant="caption"
-                      color="text.secondary"
                       sx={{
                         mb: 1,
                         display: 'block',
                         fontSize: '0.75rem',
-                        fontWeight: 500,
-                        letterSpacing: '0.02em'
+                        fontWeight: 600,
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase',
+                        color: theme.palette.text.primary,
+                        opacity: 0.9
                       }}
                     >
-                      You pay
+                      <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                        <Box
+                          sx={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: '50%',
+                            backgroundColor: theme.palette.error.main,
+                            opacity: 0.8
+                          }}
+                        />
+                        You pay
+                      </Box>
                     </Typography>
                     {renderTokenSelector(token1, () => setPanel1Open(true), "Select token to swap from")}
                   </Box>
@@ -3089,14 +3110,22 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               sx={{
                 position: 'relative',
                 borderRadius: '20px',
-                border: `1px solid ${focusBottom ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.06)}`,
+                border: `2px dashed ${focusBottom ? alpha(theme.palette.primary.main, 0.25) : alpha(theme.palette.divider, 0.12)}`,
                 transition: 'all 0.3s ease',
-                backgroundColor: alpha(theme.palette.background.paper, 0.3),
-                backdropFilter: 'blur(10px)',
+                backgroundColor: alpha(theme.palette.background.default, 0.3),
+                backdropFilter: 'blur(8px)',
                 overflow: 'hidden',
+                background: `linear-gradient(135deg,
+                  ${alpha(theme.palette.background.default, 0.2)},
+                  ${alpha(theme.palette.background.paper, 0.1)})`,
+                opacity: amount2 ? 1 : 0.9,
+                boxShadow: focusBottom
+                  ? `inset 0 0 0 1px ${alpha(theme.palette.primary.main, 0.1)}`
+                  : `inset 0 2px 4px ${alpha(theme.palette.common.black, 0.05)}`,
                 '&:hover': {
-                  backgroundColor: alpha(theme.palette.background.paper, 0.4),
-                  borderColor: alpha(theme.palette.primary.main, 0.1)
+                  backgroundColor: alpha(theme.palette.background.default, 0.4),
+                  borderColor: alpha(theme.palette.primary.main, 0.2),
+                  opacity: 1
                 }
               }}
             >
@@ -3129,16 +3158,29 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   <Box sx={{ flex: 1 }}>
                     <Typography
                       variant="caption"
-                      color="text.secondary"
                       sx={{
                         mb: 1,
                         display: 'block',
                         fontSize: '0.75rem',
-                        fontWeight: 500,
-                        letterSpacing: '0.02em'
+                        fontWeight: 600,
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase',
+                        color: theme.palette.text.secondary,
+                        opacity: 0.8
                       }}
                     >
-                      You receive
+                      <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                        <Box
+                          sx={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: '50%',
+                            backgroundColor: theme.palette.success.main,
+                            opacity: 0.7
+                          }}
+                        />
+                        You receive
+                      </Box>
                     </Typography>
                     {renderTokenSelector(token2, () => setPanel2Open(true), "Select token to receive")}
                   </Box>
