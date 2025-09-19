@@ -801,21 +801,21 @@ export default function Summary() {
                       <MetricValue style={{
                         fontSize: '0.9rem',
                         margin: 0,
-                        color: (metrics.global?.avgRSI24h || 50) <= 30 ? '#ef4444' :
-                               (metrics.global?.avgRSI24h || 50) >= 70 ? '#16a34a' :
+                        color: (metrics.global?.avgRSI || 50) <= 30 ? '#ef4444' :
+                               (metrics.global?.avgRSI || 50) >= 70 ? '#16a34a' :
                                theme.palette.text.primary
                       }}>
-                        {(metrics.global?.avgRSI24h || 50).toFixed(1)}
+                        {(metrics.global?.avgRSI || 50).toFixed(1)}
                       </MetricValue>
                       <ContentTypography style={{
                         fontSize: '0.65rem',
-                        color: (metrics.global?.avgRSI24h || 50) <= 30 ? '#ef4444' :
-                               (metrics.global?.avgRSI24h || 50) >= 70 ? '#16a34a' :
+                        color: (metrics.global?.avgRSI || 50) <= 30 ? '#ef4444' :
+                               (metrics.global?.avgRSI || 50) >= 70 ? '#16a34a' :
                                theme.palette.text.secondary,
                         fontWeight: 600
                       }}>
-                        {(metrics.global?.avgRSI24h || 50) <= 30 ? 'Oversold' :
-                         (metrics.global?.avgRSI24h || 50) >= 70 ? 'Overbought' :
+                        {(metrics.global?.avgRSI || 50) <= 30 ? 'Oversold' :
+                         (metrics.global?.avgRSI || 50) >= 70 ? 'Overbought' :
                          'Neutral'}
                       </ContentTypography>
                     </div>
