@@ -60,6 +60,9 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [athData, setAthData] = useState({ price: null, percentDown: null });
   const [rsiValues, setRsiValues] = useState({});
+  const rsiValuesRef = useRef({});
+  const [showRSI, setShowRSI] = useState(false);
+  const showRSIRef = useRef(false);
   const [holderData, setHolderData] = useState(null);
   const [userTrades, setUserTrades] = useState([]);
   const [isUserZoomed, setIsUserZoomed] = useState(false);
@@ -297,6 +300,7 @@ const PriceChartAdvanced = memo(({ token }) => {
             rsiMap[r.time] = r.value;
           });
           setRsiValues(rsiMap);
+          rsiValuesRef.current = rsiMap;
           
           setLoading(false);
           setIsUpdating(false);
@@ -612,9 +616,9 @@ const PriceChartAdvanced = memo(({ token }) => {
             <div style="display: flex; justify-content: space-between; color: ${changeColor}">
               <span>Chg:</span><span>${change}%</span>
             </div>
-            ${indicators.find(i => i.id === 'rsi') && rsiValues[candle.time] ? `
-              <div style=\"display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}; color: ${rsiValues[candle.time] > 70 ? '#FF5252' : rsiValues[candle.time] < 30 ? '#00E676' : 'inherit'}\">
-                <span>RSI:</span><span>${rsiValues[candle.time].toFixed(2)}</span>
+            ${showRSIRef.current && rsiValuesRef.current[candle.time] ? `
+              <div style=\"display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}; color: ${rsiValuesRef.current[candle.time] > 70 ? '#FF5252' : rsiValuesRef.current[candle.time] < 30 ? '#00E676' : 'inherit'}\">
+                <span>RSI:</span><span>${rsiValuesRef.current[candle.time].toFixed(2)}</span>
               </div>
             ` : ''}
           `;
@@ -623,9 +627,9 @@ const PriceChartAdvanced = memo(({ token }) => {
             <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
             <div style="display: flex; justify-content: space-between"><span>Price:</span><span>${symbol}${formatPrice(candle.close || candle.value)}</span></div>
             <div style="display: flex; justify-content: space-between"><span>Vol:</span><span>${(candle.volume || 0).toLocaleString()}</span></div>
-            ${indicators.find(i => i.id === 'rsi') && rsiValues[candle.time] ? `
-              <div style=\"display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}; color: ${rsiValues[candle.time] > 70 ? '#FF5252' : rsiValues[candle.time] < 30 ? '#00E676' : 'inherit'}\">
-                <span>RSI:</span><span>${rsiValues[candle.time].toFixed(2)}</span>
+            ${showRSIRef.current && rsiValuesRef.current[candle.time] ? `
+              <div style=\"display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}; color: ${rsiValuesRef.current[candle.time] > 70 ? '#FF5252' : rsiValuesRef.current[candle.time] < 30 ? '#00E676' : 'inherit'}\">
+                <span>RSI:</span><span>${rsiValuesRef.current[candle.time].toFixed(2)}</span>
               </div>
             ` : ''}
           `;
@@ -969,8 +973,82 @@ const PriceChartAdvanced = memo(({ token }) => {
             indicatorSeriesRef.current['bb_lower'] = lowerSeries;
           }
         } else if (indicator.id === 'rsi') {
-          // RSI is shown in a separate pane, skip for now
-          console.log('RSI indicator selected - shown in tooltip only');
+          // RSI needs to be shown as an overlay with scaled values
+          const rsiData = calculateRSI(data, 14);
+          if (rsiData.length > 0) {
+            // Scale RSI values to fit on the price chart
+            const priceRange = Math.max(...data.map(d => d.high)) - Math.min(...data.map(d => d.low));
+            const priceMin = Math.min(...data.map(d => d.low));
+
+            // RSI oscillates between 0-100, map it to price range
+            const scaledRSI = rsiData.map(r => ({
+              time: r.time,
+              value: (priceMin + (r.value / 100) * priceRange * 0.3) * scaleFactorRef.current // Use 30% of price range for RSI
+            }));
+
+            const rsiSeries = chartRef.current.addSeries(LineSeries, {
+              color: 'rgba(156, 39, 176, 0.7)',
+              lineWidth: 2,
+              title: 'RSI (14)',
+              priceLineVisible: false,
+              lastValueVisible: false,
+              crosshairMarkerVisible: false,
+              priceScaleId: 'rsi',
+            });
+            rsiSeries.setData(scaledRSI);
+            indicatorSeriesRef.current['rsi'] = rsiSeries;
+
+            // Add overbought line (70)
+            const overboughtLevel = priceMin + (70 / 100) * priceRange * 0.3;
+            const overboughtSeries = chartRef.current.addSeries(LineSeries, {
+              color: 'rgba(255, 82, 82, 0.3)',
+              lineWidth: 1,
+              lineStyle: 2,
+              priceLineVisible: false,
+              lastValueVisible: false,
+              crosshairMarkerVisible: false,
+              priceScaleId: 'rsi',
+            });
+            overboughtSeries.setData([
+              { time: data[0].time, value: overboughtLevel * scaleFactorRef.current },
+              { time: data[data.length - 1].time, value: overboughtLevel * scaleFactorRef.current }
+            ]);
+            indicatorSeriesRef.current['rsi_overbought'] = overboughtSeries;
+
+            // Add oversold line (30)
+            const oversoldLevel = priceMin + (30 / 100) * priceRange * 0.3;
+            const oversoldSeries = chartRef.current.addSeries(LineSeries, {
+              color: 'rgba(0, 230, 118, 0.3)',
+              lineWidth: 1,
+              lineStyle: 2,
+              priceLineVisible: false,
+              lastValueVisible: false,
+              crosshairMarkerVisible: false,
+              priceScaleId: 'rsi',
+            });
+            oversoldSeries.setData([
+              { time: data[0].time, value: oversoldLevel * scaleFactorRef.current },
+              { time: data[data.length - 1].time, value: oversoldLevel * scaleFactorRef.current }
+            ]);
+            indicatorSeriesRef.current['rsi_oversold'] = oversoldSeries;
+
+            // Add middle line (50)
+            const middleLevel = priceMin + (50 / 100) * priceRange * 0.3;
+            const middleSeries = chartRef.current.addSeries(LineSeries, {
+              color: 'rgba(158, 158, 158, 0.3)',
+              lineWidth: 1,
+              lineStyle: 3,
+              priceLineVisible: false,
+              lastValueVisible: false,
+              crosshairMarkerVisible: false,
+              priceScaleId: 'rsi',
+            });
+            middleSeries.setData([
+              { time: data[0].time, value: middleLevel * scaleFactorRef.current },
+              { time: data[data.length - 1].time, value: middleLevel * scaleFactorRef.current }
+            ]);
+            indicatorSeriesRef.current['rsi_middle'] = middleSeries;
+          }
         } else if (indicator.id === 'fib') {
           // Calculate Fibonacci levels based on the data range
           if (data.length > 0) {
@@ -1032,7 +1110,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         console.error(`Error adding ${indicator.name}:`, error);
       }
     });
-  }, [indicators, data, chartType, athData, calculateSMA, calculateEMA, calculateBollingerBands, isDark]);
+  }, [indicators, data, chartType, athData, calculateSMA, calculateEMA, calculateBollingerBands, calculateRSI, isDark]);
 
   // Separate effect to update data on chart series
   useEffect(() => {
@@ -1211,6 +1289,15 @@ const PriceChartAdvanced = memo(({ token }) => {
   }, [data, holderData, chartType, isDark, range, theme, isMobile, getScaleFactor]);
 
   const handleIndicatorToggle = useCallback((indicator) => {
+    // Special handling for RSI
+    if (indicator.id === 'rsi') {
+      setShowRSI(prev => {
+        const newValue = !prev;
+        showRSIRef.current = newValue;
+        return newValue;
+      });
+    }
+
     setIndicators(prev => {
       const exists = prev.find(i => i.id === indicator.id);
       if (exists) {
