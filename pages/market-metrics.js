@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useLayoutEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo, useReducer, useLayoutEffect } from 'react';
 import dynamic from 'next/dynamic';
 
 const LightweightChart = dynamic(() => import('src/components/LightweightChart'), { ssr: false });
@@ -10,25 +10,20 @@ import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Portal from '@mui/material/Portal';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
+import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';
-import { useTheme } from '@mui/material/styles';
-import { alpha } from '@mui/material/styles'; // Add alpha import
-import useMediaQuery from '@mui/material/useMediaQuery';
-import Link from 'next/link'; // Import Link
-import useWebSocket from 'react-use-websocket'; // Add WebSocket import
-import { useDispatch } from 'react-redux'; // Add Redux dispatch import
-import { update_metrics } from 'src/redux/statusSlice'; // Add Redux action import
+import { useDispatch } from 'react-redux';
+import { update_metrics } from 'src/redux/statusSlice';
+import useWebSocket from 'react-use-websocket';
 
-// LightweightChart already imported above
-
-// Updated theme-aware colors with portfolio styling
+// Theme-aware colors
 const getThemeColors = (theme) => {
   const isDarkMode = theme.palette.mode === 'dark';
 
@@ -48,7 +43,7 @@ const getThemeColors = (theme) => {
   };
 };
 
-// Add theme-aware colors for chart elements
+// Chart colors
 const getChartColors = (theme) => {
   const isDarkMode = theme.palette.mode === 'dark';
 
@@ -100,44 +95,44 @@ const CustomTooltip = ({ active, payload, label }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const contentRef = useRef(null);
 
-  // Create tooltip root element
+  // Create tooltip root element with proper cleanup
   useEffect(() => {
-    // Create a div for the portal if it doesn't exist
-    if (!document.getElementById('tooltip-root')) {
-      const div = document.createElement('div');
+    let div = document.getElementById('tooltip-root');
+    if (!div) {
+      div = document.createElement('div');
       div.id = 'tooltip-root';
-      div.style.position = 'fixed';
-      div.style.zIndex = '9999';
-      div.style.pointerEvents = 'none';
+      div.style.cssText = 'position:fixed;z-index:9999;pointer-events:none';
       document.body.appendChild(div);
-      setTooltipRoot(div);
-    } else {
-      setTooltipRoot(document.getElementById('tooltip-root'));
     }
+    setTooltipRoot(div);
 
-    // Cleanup function
     return () => {
-      const div = document.getElementById('tooltip-root');
-      if (div && div.childElementCount === 0) {
-        document.body.removeChild(div);
+      const tooltipDiv = document.getElementById('tooltip-root');
+      if (tooltipDiv && tooltipDiv.childElementCount === 0 && tooltipDiv.parentNode) {
+        tooltipDiv.parentNode.removeChild(tooltipDiv);
       }
     };
   }, []);
 
-  // Track mouse position
+  // Track mouse position with throttling
   useEffect(() => {
+    let rafId;
     const updateTooltipPosition = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setMousePosition({ x: e.clientX, y: e.clientY });
+      });
     };
 
-    document.addEventListener('mousemove', updateTooltipPosition);
+    document.addEventListener('mousemove', updateTooltipPosition, { passive: true });
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       document.removeEventListener('mousemove', updateTooltipPosition);
     };
   }, []);
 
-  // Update tooltip position
-  useLayoutEffect(() => {
+  // Update tooltip position using useEffect instead of useLayoutEffect
+  useEffect(() => {
     if (tooltipRoot) {
       let top = mousePosition.y - 10;
       let left = mousePosition.x + 20;
@@ -175,7 +170,7 @@ const CustomTooltip = ({ active, payload, label }) => {
     const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
 
     return (
-      <Portal container={tooltipRoot}>
+      <div style={{ position: 'absolute', left: 0, top: 0 }}>
         <Paper
           ref={contentRef}
           elevation={6}
@@ -345,7 +340,7 @@ const CustomTooltip = ({ active, payload, label }) => {
             );
           })}
         </Paper>
-      </Portal>
+      </div>
     );
   }
   return null;
@@ -544,7 +539,8 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
   );
 };
 
-const tokenColorMap = {};
+// Use Map with size limit to prevent memory leaks
+const tokenColorMap = new Map();
 
 // Wrapper components to avoid nested component definitions
 const LegendWrapper = ({ payload, visibleLines, handleLegendClick }) => (
@@ -580,49 +576,46 @@ const MarketMetricsContent = () => {
   // Add state to track available tokens
   const [availableTokens, setAvailableTokens] = useState([]);
 
-  // Function to get a color for a token (either from map or generate one)
-  const getTokenColor = (tokenName) => {
-    if (tokenColorMap[tokenName]) {
-      return tokenColorMap[tokenName];
+  // Add state for selected tokens to display
+  const [selectedTokens, setSelectedTokens] = useState([]);
+
+  // Add state for max tokens to display
+  const [maxTokensToDisplay, setMaxTokensToDisplay] = useState(10);
+
+  // Add state for filter active
+  const [filterActive, setFilterActive] = useState(false);
+
+  // Add theme hook and chart colors early
+  const theme = useTheme();
+  const themeColors = getThemeColors(theme);
+  const chartColors = getChartColors(theme);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Memoized token color function with cache size limit
+  const getTokenColor = useCallback((tokenName) => {
+    if (tokenColorMap.has(tokenName)) {
+      return tokenColorMap.get(tokenName);
     }
-    // Using a more minimalist and programmatic color generation
     const colors = [
-      '#e6194B',
-      '#3cb44b',
-      '#ffe119',
-      '#4363d8',
-      '#f58231',
-      '#911eb4',
-      '#42d4f4',
-      '#f032e6',
-      '#bfef45',
-      '#fabed4',
-      '#469990',
-      '#dcbeff',
-      '#9A6324',
-      '#fffac8',
-      '#800000',
-      '#aaffc3',
-      '#808000',
-      '#ffd8b1',
-      '#000075',
-      '#a9a9a9'
+      '#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
+      '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#fabed4',
+      '#469990', '#dcbeff', '#9A6324', '#fffac8', '#800000',
+      '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'
     ];
-
-    // Use the token's index in the master list of available tokens for a consistent color.
     const tokenIndex = availableTokens.indexOf(tokenName);
-
-    // Use modulo to wrap around the color list if there are more tokens than colors.
-    // Fallback to 0 if token is not found (should not happen in normal flow).
     const colorIndex = tokenIndex !== -1 ? tokenIndex % colors.length : 0;
-
     const color = colors[colorIndex];
-    tokenColorMap[tokenName] = color;
+    // Limit cache size to prevent memory leaks
+    if (tokenColorMap.size > 100) {
+      const firstKey = tokenColorMap.keys().next().value;
+      tokenColorMap.delete(firstKey);
+    }
+    tokenColorMap.set(tokenName, color);
     return color;
-  };
+  }, [availableTokens]);
 
-  // Helper function to generate series for different chart types
-  const getChartSeries = (type) => {
+  // Memoized chart series generation
+  const getChartSeries = useCallback((type) => {
     switch (type) {
       case 'marketcap':
         return [
@@ -717,7 +710,7 @@ const MarketMetricsContent = () => {
       default:
         return [];
     }
-  };
+  }, [chartColors, visibleLines, selectedTokens, getTokenColor]);
 
   const handleLegendClick = (entry) => {
     setVisibleLines((prev) => ({
@@ -733,12 +726,6 @@ const MarketMetricsContent = () => {
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
-
-  // Add state for selected tokens to display
-  const [selectedTokens, setSelectedTokens] = useState([]);
-
-  // Add state for max tokens to display
-  const [maxTokensToDisplay, setMaxTokensToDisplay] = useState(10);
 
   // Add this function to handle token selection
   const handleTokenSelection = (event, newValue) => {
@@ -775,20 +762,10 @@ const MarketMetricsContent = () => {
   };
 
   const handleAnimationEnd = () => {
-    setIsChartReady(true); // Chart is ready after initial animation
+    // Animation end handler
   };
 
-  useEffect(() => {
-    const activeLines = Object.keys(visibleLines).filter((key) => visibleLines[key]);
-    if (activeLines.length === 0) {
-      const initialVisible = {};
-      const initialTokens = availableTokens.slice(0, 5).map((token) => token.name);
-      availableTokens.forEach((token) => {
-        initialVisible[token.name] = initialTokens.includes(token.name);
-      });
-      setVisibleLines(initialVisible);
-    }
-  }, [availableTokens, visibleLines]);
+  // Removed unnecessary useEffect for active lines to reduce re-renders
 
   // Add state for data sampling and time range
   const [sampledData, setSampledData] = useState([]);
@@ -863,25 +840,12 @@ const MarketMetricsContent = () => {
 
   // Add a new state to track the selected data point
   const [selectedDataPoint, setSelectedDataPoint] = useState(null);
-
-  // Add this state and ref at the top
-  const [animationComplete, setAnimationComplete] = useState(false);
-  const chartRef = useRef(null);
-
-  // Add this state for progressive data loading
   const [progressiveData, setProgressiveData] = useState([]);
 
   // Set progressive data without flickering
   useLayoutEffect(() => {
     setProgressiveData(sampledData);
-    setAnimationComplete(true);
   }, [sampledData]);
-
-  // Add theme hook
-  const theme = useTheme();
-  const themeColors = getThemeColors(theme);
-  const chartColors = getChartColors(theme);
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     setSampledData(sampleDataByTimeRange(data, timeRange));
@@ -893,10 +857,8 @@ const MarketMetricsContent = () => {
       try {
         // Get current date
         const endDate = format(new Date(), 'yyyy-MM-dd');
-        // Get date 10 years ago
-        const startDate = format(subYears(new Date(), 14), 'yyyy-MM-dd');
-
-        console.log('Fetching data from', startDate, 'to', endDate); // Debug log
+        // Get date 2 years ago for initial load
+        const startDate = format(subYears(new Date(), 2), 'yyyy-MM-dd');
 
         const response = await axios.get('https://api.xrpl.to/api/analytics/market-metrics', {
           params: {
@@ -1082,22 +1044,7 @@ const MarketMetricsContent = () => {
     }
   };
 
-  // Add this function to fetch token images
-  const fetchTokenImage = async (tokenId) => {
-    try {
-      // Only attempt to fetch if we have a valid tokenId (not 'Unknown')
-      if (tokenId && tokenId !== 'Unknown') {
-        const response = await axios.get(`https://s1.xrpl.to/token/${tokenId}`);
-        if (response.data && response.data.image) {
-          return response.data.image;
-        }
-      }
-      return null;
-    } catch (error) {
-      console.error('Error fetching token image:', error);
-      return null;
-    }
-  };
+  // Removed unused fetchTokenImage function to reduce bundle size
 
   // This is where the error occurred in the previous attempt.
   // Let's replace the whole useMemo.
@@ -1370,156 +1317,6 @@ const MarketMetricsContent = () => {
             </Box>
 
             <Box sx={{ height: { xs: 300, sm: 350, md: 400 } }}>
-              {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
-              {/* Recharts removed - using LightweightChart */}
-              {false && <div width="100%" height="100%">
-                <div
-                  ref={chartRef}
-                  data={progressiveData}
-                  margin={isMobile ? chartConfig.mobileMargin : chartConfig.margin}
-                  isAnimationActive={false}
-                  onClick={(data) => {
-                    if (data && data.activePayload && data.activePayload.length > 0) {
-                      handleDataPointClick(data.activePayload[0].payload);
-                    }
-                  }}
-                >
-                  <div {...chartConfig.gridStyle} />
-                  <div
-                    dataKey="date"
-                    angle={-45}
-                    textAnchor="end"
-                    height={isMobile ? 40 : 60} // Smaller height on mobile
-                    interval={
-                      isMobile
-                        ? timeRange === 'all'
-                          ? 60
-                          : timeRange === '5y'
-                            ? 40
-                            : timeRange === '1y'
-                              ? 20
-                              : 10
-                        : timeRange === 'all'
-                          ? 30
-                          : timeRange === '5y'
-                            ? 20
-                            : timeRange === '1y'
-                              ? 10
-                              : 5
-                    }
-                    tick={
-                      isMobile ? { ...chartConfig.mobileAxisStyle } : { ...chartConfig.axisStyle }
-                    }
-                  />
-                  <div
-                    domain={['auto', 'auto']}
-                    tickFormatter={
-                      (value) =>
-                        value.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
-                        }) + (isMobile ? '' : ' XRP') // Remove "XRP" text on mobile to save space
-                    }
-                    tick={
-                      isMobile ? { ...chartConfig.mobileAxisStyle } : { ...chartConfig.axisStyle }
-                    }
-                    width={isMobile ? 60 : 80} // Smaller width on mobile
-                  />
-                  <div
-                    content={<CustomTooltip />}
-                    cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
-                  />
-                  <div
-                    content={null}
-                  />
-                  <div
-                    type="monotone"
-                    dataKey="totalMarketcap"
-                    stroke={chartColors.totalLine}
-                    name="Total"
-                    strokeWidth={3}
-                    dot={false}
-                    hide={!visibleLines.totalMarketcap}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 8,
-                      strokeWidth: 2,
-                      stroke: chartColors.totalLine,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
-                    }}
-                  />
-                  <div
-                    type="monotone"
-                    dataKey="firstLedgerMarketcap"
-                    stroke={chartColors.primary.main}
-                    name="FirstLedger"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.firstLedgerMarketcap}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 6,
-                      strokeWidth: 2,
-                      stroke: chartColors.primary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
-                    }}
-                  />
-                  <div
-                    type="monotone"
-                    dataKey="magneticXMarketcap"
-                    stroke={chartColors.secondary.main}
-                    name="Magnetic X"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.magneticXMarketcap}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 6,
-                      strokeWidth: 2,
-                      stroke: chartColors.secondary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
-                    }}
-                  />
-                  <div
-                    type="monotone"
-                    dataKey="xpMarketMarketcap"
-                    stroke={chartColors.tertiary.main}
-                    name="XPMarket"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.xpMarketMarketcap}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 6,
-                      strokeWidth: 2,
-                      stroke: chartColors.tertiary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
-                    }}
-                  />
-                  <div
-                    type="monotone"
-                    dataKey="ledgerMemeMarketcap"
-                    stroke={chartColors.quaternary.main}
-                    name="LedgerMeme"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.ledgerMemeMarketcap}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 6,
-                      strokeWidth: 2,
-                      stroke: chartColors.quaternary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
-                    }}
-                  />
-                </div>
-              </div>
-              }
               <LightweightChart
                 data={progressiveData}
                 height={isMobile ? 300 : 400}
@@ -1618,6 +1415,7 @@ const MarketMetricsContent = () => {
                               {tokenId !== 'Unknown' && (
                                 <Box
                                   component="img"
+                                  loading="lazy"
                                   src={`https://s1.xrpl.to/token/${tokenId}`}
                                   alt={tokenName}
                                   sx={{
@@ -1629,7 +1427,6 @@ const MarketMetricsContent = () => {
                                     border: '1px solid rgba(255, 255, 255, 0.2)'
                                   }}
                                   onError={(e) => {
-                                    // If image fails to load, show color circle instead
                                     e.target.style.display = 'none';
                                   }}
                                 />
@@ -1864,96 +1661,7 @@ const MarketMetricsContent = () => {
               </Typography>
             )}
 
-            {/* Add the missing chart content */}
             <Box sx={{ height: { xs: 300, sm: 350, md: 400 } }}>
-              {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
-              {/* Recharts removed - using LightweightChart */}
-              {false && <div width="100%" height="100%">
-                <div
-                  data={progressiveData}
-                  margin={isMobile ? chartConfig.mobileMargin : chartConfig.margin}
-                  isAnimationActive={false}
-                  onClick={(data) => {
-                    if (data && data.activePayload && data.activePayload.length > 0) {
-                      handleDataPointClick(data.activePayload[0].payload);
-                    }
-                  }}
-                >
-                  <div {...chartConfig.gridStyle} />
-                  <div
-                    dataKey="date"
-                    angle={-45}
-                    textAnchor="end"
-                    height={isMobile ? 40 : 60}
-                    interval={
-                      isMobile
-                        ? timeRange === 'all'
-                          ? 60
-                          : timeRange === '5y'
-                            ? 40
-                            : timeRange === '1y'
-                              ? 20
-                              : 10
-                        : timeRange === 'all'
-                          ? 30
-                          : timeRange === '5y'
-                            ? 20
-                            : timeRange === '1y'
-                              ? 10
-                              : 5
-                    }
-                    tick={
-                      isMobile ? { ...chartConfig.mobileAxisStyle } : { ...chartConfig.axisStyle }
-                    }
-                  />
-                  <div
-                    domain={['auto', 'auto']}
-                    tickFormatter={(value) =>
-                      value.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                      }) + (isMobile ? '' : ' XRP')
-                    }
-                    tick={
-                      isMobile ? { ...chartConfig.mobileAxisStyle } : { ...chartConfig.axisStyle }
-                    }
-                    width={isMobile ? 60 : 80}
-                  />
-                  <div
-                    content={<CustomTooltip />}
-                    cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
-                  />
-                  <div
-                    content={null}
-                  />
-
-                  {/* Dynamically render lines for selected tokens */}
-                  {selectedTokens.map((token, index) => {
-                    const tokenKey = `${token}_marketcap`;
-                    return (
-                      <div
-                        key={tokenKey}
-                        type="monotone"
-                        dataKey={tokenKey}
-                        stroke={getTokenColor(token)}
-                        name={token}
-                        strokeWidth={2}
-                        dot={false}
-                        hide={!visibleLines[tokenKey]}
-                        isAnimationActive={false}
-                        activeDot={{
-                          r: 6,
-                          strokeWidth: 2,
-                          stroke: getTokenColor(token),
-                          fill: themeColors.background,
-                          onClick: (data) => handleDataPointClick(data.payload)
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-              }
               <LightweightChart
                 data={progressiveData}
                 height={isMobile ? 300 : 400}
@@ -3663,10 +3371,11 @@ const MarketMetricsContent = () => {
 const MarketMetricsPage = () => {
   const dispatch = useDispatch();
 
-  // Add WebSocket connection
+  // Add WebSocket connection with proper cleanup
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-  useWebSocket(WSS_FEED_URL, {
+  const { sendMessage, lastMessage, readyState } = useWebSocket(WSS_FEED_URL, {
     shouldReconnect: () => true,
+    reconnectInterval: 3000,
     onMessage: (event) => {
       try {
         const json = JSON.parse(event.data);
