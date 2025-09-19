@@ -63,6 +63,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [userTrades, setUserTrades] = useState([]);
   const [isUserZoomed, setIsUserZoomed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [chartKey, setChartKey] = useState(0);
   const zoomStateRef = useRef(null);
   const isUserZoomedRef = useRef(false);
   const crosshairPositionRef = useRef(null);
@@ -407,10 +408,11 @@ const PriceChartAdvanced = memo(({ token }) => {
     lastChartTypeRef.current = chartType;
 
 
-    // Create new chart
+    // Create new chart with current container dimensions
+    const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 380 : 550);
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: isFullscreen ? window.innerHeight - 120 : (isMobile ? 380 : 550),
+      height: containerHeight,
       layout: {
         background: {
           type: 'solid',
@@ -711,7 +713,17 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     const handleResize = () => {
       if (chartContainerRef.current && chart) {
-        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+        const container = chartContainerRef.current;
+        // Don't use isFullscreen here as it's in the dependency array
+        const containerHeight = container.clientHeight || (isMobile ? 380 : 550);
+
+        chart.applyOptions({
+          width: container.clientWidth,
+          height: containerHeight
+        });
+
+        // Also call resize method for better compatibility
+        chart.resize(container.clientWidth, containerHeight);
       }
     };
 
@@ -732,17 +744,67 @@ const PriceChartAdvanced = memo(({ token }) => {
         chartRef.current = null;
       }
     };
-  }, [chartType, isDark, isMobile, data, holderData, theme, isFullscreen, activeFiatCurrency]);
+  }, [chartType, isDark, isMobile, data, holderData, theme, activeFiatCurrency]);
 
-  // Handle fullscreen resize
+  // Handle fullscreen resize - recreate chart if needed
   useEffect(() => {
-    if (chartRef.current && chartContainerRef.current) {
+    if (!chartContainerRef.current) return;
+
+    const resizeOrRecreateChart = () => {
+      const container = chartContainerRef.current;
+      if (!container) return;
+
       const newHeight = isFullscreen ? window.innerHeight - 120 : (isMobile ? 380 : 550);
-      chartRef.current.applyOptions({ 
-        width: chartContainerRef.current.clientWidth,
-        height: newHeight 
+      const rect = container.getBoundingClientRect();
+      const newWidth = rect.width || container.clientWidth;
+
+      console.log('Fullscreen change:', {
+        isFullscreen,
+        newWidth,
+        newHeight,
+        chartExists: !!chartRef.current
       });
-    }
+
+      // Try to resize first
+      if (chartRef.current) {
+        try {
+          // Apply new size
+          chartRef.current.resize(newWidth, newHeight);
+
+          // Also update options
+          chartRef.current.applyOptions({
+            width: newWidth,
+            height: newHeight
+          });
+
+          // Restore visible range
+          const timeScale = chartRef.current.timeScale();
+          if (zoomStateRef.current) {
+            timeScale.setVisibleRange(zoomStateRef.current);
+          } else {
+            timeScale.fitContent();
+          }
+
+          console.log('Chart resized successfully');
+        } catch (error) {
+          console.error('Resize failed, forcing recreation:', error);
+          // Force chart recreation on next render
+          if (chartRef.current) {
+            try {
+              chartRef.current.remove();
+            } catch (e) {}
+            chartRef.current = null;
+          }
+          chartCreatedRef.current = false;
+          lastChartTypeRef.current = null;
+        }
+      }
+    };
+
+    // Wait for DOM to update, then resize
+    const timeoutId = setTimeout(resizeOrRecreateChart, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [isFullscreen, isMobile]);
 
   // Separate effect to update data on chart series
