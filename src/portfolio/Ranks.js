@@ -139,10 +139,24 @@ const Ranks = ({ profileAccount }) => {
   };
 
   return (
-    <Box sx={{ p: 2, minHeight: '300px' }}>
+    <Box sx={{
+      p: 3,
+      minHeight: '350px',
+      background: theme.palette.mode === 'dark'
+        ? alpha(theme.palette.background.paper, 0.4)
+        : alpha(theme.palette.background.paper, 0.8),
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      borderRadius: '16px',
+      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+      boxShadow: theme.shadows[2]
+    }}>
       {loading ? (
-        <Stack alignItems="center">
-          <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
+        <Stack alignItems="center" justifyContent="center" sx={{ height: '100%' }}>
+          <PulseLoader color={theme.palette.primary.main} size={12} />
+          <Typography variant="body2" sx={{ mt: 2, color: theme.palette.text.secondary }}>
+            Loading ranks...
+          </Typography>
         </Stack>
       ) : (
         <>
@@ -166,54 +180,58 @@ const Ranks = ({ profileAccount }) => {
                           height: '100%',
                           display: 'flex',
                           flexDirection: 'column',
-                          transition: 'transform 0.3s, box-shadow 0.3s',
+                          transition: 'all 0.3s ease',
+                          background: theme.palette.mode === 'dark'
+                            ? alpha(theme.palette.background.paper, 0.6)
+                            : theme.palette.background.paper,
+                          backdropFilter: 'blur(10px)',
                           '&:hover': {
-                            transform: 'translateY(-3px)',
-                            boxShadow: theme.shadows[5]
+                            transform: 'translateY(-4px)',
+                            boxShadow: theme.shadows[8]
                           },
                           ...(item.id === activeRank && {
                             border: `2px solid ${item.color}`,
-                            boxShadow: `0 0 10px ${alpha(item.color, 0.5)}`
+                            boxShadow: `0 0 16px ${alpha(item.color, 0.4)}`
                           }),
-                          borderRadius: 2,
+                          borderRadius: 3,
                           overflow: 'hidden',
                           cursor: 'pointer'
                         }}
                       >
                         <Box
                           sx={{
-                            bgcolor: alpha(item.color, 0.1),
-                            p: 2,
+                            bgcolor: alpha(item.color, 0.12),
+                            p: 2.5,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between'
                           }}
                         >
-                          <Avatar sx={{ bgcolor: item.color, width: 36, height: 36 }}>
-                            <item.icon sx={{ fontSize: 20 }} />
+                          <Avatar sx={{ bgcolor: item.color, width: 42, height: 42, boxShadow: theme.shadows[3] }}>
+                            <item.icon sx={{ fontSize: 24 }} />
                           </Avatar>
                           <Typography
-                            variant="subtitle1"
+                            variant="h6"
                             component="div"
-                            sx={{ fontWeight: 'bold', color: item.color }}
+                            sx={{ fontWeight: 700, color: item.color, fontSize: '1.1rem' }}
                           >
                             {item.name}
                             {item.id === 'verified' && (
-                              <VerifiedIcon sx={{ ml: 1, verticalAlign: 'middle', fontSize: 16 }} />
+                              <VerifiedIcon sx={{ ml: 1, verticalAlign: 'middle', fontSize: 18 }} />
                             )}
                           </Typography>
                         </Box>
-                        <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                        <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
                           <Typography
                             variant="body2"
                             color="text.secondary"
-                            sx={{ mb: 1, fontSize: '0.8rem' }}
+                            sx={{ mb: 1.5, fontSize: '0.9rem', lineHeight: 1.4 }}
                           >
                             {item.description}
                           </Typography>
                           <Typography
                             variant="subtitle1"
-                            sx={{ fontWeight: 'bold', color: theme.palette.secondary.main }}
+                            sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: '1rem' }}
                           >
                             Price: 0.0001 XRP
                           </Typography>
@@ -230,14 +248,14 @@ const Ranks = ({ profileAccount }) => {
               direction="row"
               alignItems="center"
               justifyContent="center"
-              spacing={1}
+              spacing={2}
               sx={{
-                py: 4,
+                py: 6,
                 opacity: 0.8
               }}
             >
-              <ErrorOutlineIcon fontSize="small" />
-              <Typography variant="body2" color="text.secondary">
+              <ErrorOutlineIcon sx={{ fontSize: '2rem', color: theme.palette.text.secondary }} />
+              <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 600 }}>
                 No Active Ranks
               </Typography>
             </Stack>

@@ -230,20 +230,24 @@ const DeFiHistory = ({ account }) => {
   return (
     <Box
       sx={{
-        background: darkMode 
-          ? 'linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.02) 100%)'
-          : 'linear-gradient(135deg, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0.02) 100%)',
-        borderRadius: '4px',
-        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
-        overflow: 'hidden'
+        background: theme.palette.mode === 'dark'
+          ? alpha(theme.palette.background.paper, 0.6)
+          : alpha(theme.palette.background.paper, 0.9),
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        borderRadius: '16px',
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        boxShadow: theme.shadows[2],
+        overflow: 'hidden',
+        transition: 'all 0.3s ease'
       }}
     >
       {loading ? (
-        <Stack alignItems="center" sx={{ py: isSmallScreen ? 6 : 10 }}>
+        <Stack alignItems="center" sx={{ py: isSmallScreen ? 8 : 12 }}>
           <Box sx={{ mb: 2 }}>
             <PulseLoader color={theme.palette.text.secondary} size={isSmallScreen ? 8 : 10} margin={3} />
           </Box>
-          <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.4) }}>
+          <Typography variant="body2" sx={{ color: alpha(theme.palette.text.primary, 0.6), fontSize: '0.9rem' }}>
             Loading transaction history...
           </Typography>
         </Stack>
@@ -259,11 +263,11 @@ const DeFiHistory = ({ account }) => {
               px: isSmallScreen ? 3 : 4
             }}
           >
-            <ErrorOutlineIcon sx={{ fontSize: isSmallScreen ? 32 : 40, color: alpha(theme.palette.text.primary, 0.2) }} />
-            <Typography variant={isSmallScreen ? 'body2' : 'body1'} sx={{ color: alpha(theme.palette.text.primary, 0.6) }}>
+            <ErrorOutlineIcon sx={{ fontSize: isSmallScreen ? 40 : 48, color: alpha(theme.palette.text.primary, 0.3) }} />
+            <Typography variant={isSmallScreen ? 'h6' : 'h5'} sx={{ color: alpha(theme.palette.text.primary, 0.7), fontWeight: 600 }}>
               No Transaction History
             </Typography>
-            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.3) }}>
+            <Typography variant="body2" sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '0.9rem' }}>
               Your DeFi transactions will appear here
             </Typography>
           </Stack>
@@ -276,30 +280,30 @@ const DeFiHistory = ({ account }) => {
             sx={{
               backgroundColor: 'transparent',
               '& .MuiTableCell-root': {
-                py: 1.5,
-                px: isSmallScreen ? 1 : 2,
-                fontSize: isSmallScreen ? '0.75rem' : '0.813rem',
-                borderBottom: darkMode ? '1px solid rgba(255,255,255,0.03)' : '1px solid rgba(0,0,0,0.03)',
+                py: 2,
+                px: isSmallScreen ? 1.5 : 2.5,
+                fontSize: isSmallScreen ? '0.8rem' : '0.9rem',
+                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                 backgroundColor: 'transparent'
               }
             }}
           >
             <TableHead>
               <TableRow sx={{ backgroundColor: 'transparent' }}>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400, backgroundColor: 'transparent' }}>
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.6), fontWeight: 600, backgroundColor: 'transparent', fontSize: '0.85rem' }}>
                   Type
                 </TableCell>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400, backgroundColor: 'transparent' }}>
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.6), fontWeight: 600, backgroundColor: 'transparent', fontSize: '0.85rem' }}>
                   {isSmallScreen ? 'Time' : 'Date'}
                 </TableCell>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400, backgroundColor: 'transparent' }}>
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.6), fontWeight: 600, backgroundColor: 'transparent', fontSize: '0.85rem' }}>
                   Amount
                 </TableCell>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400, backgroundColor: 'transparent' }}>
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.6), fontWeight: 600, backgroundColor: 'transparent', fontSize: '0.85rem' }}>
                   Source
                 </TableCell>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.4), fontWeight: 400, textAlign: 'center', backgroundColor: 'transparent' }}>
-                  <OpenInNewIcon sx={{ fontSize: '14px' }} />
+                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.6), fontWeight: 600, textAlign: 'center', backgroundColor: 'transparent', fontSize: '0.85rem' }}>
+                  <OpenInNewIcon sx={{ fontSize: '16px' }} />
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -314,14 +318,13 @@ const DeFiHistory = ({ account }) => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              p: 1.5,
-              background: darkMode 
-                ? 'rgba(255,255,255,0.01)'
-                : 'rgba(0,0,0,0.01)',
-              borderTop: darkMode ? '1px solid rgba(255,255,255,0.03)' : '1px solid rgba(0,0,0,0.03)'
+              p: 2,
+              background: alpha(theme.palette.background.default, 0.5),
+              borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+              backdropFilter: 'blur(5px)'
             }}
           >
-            <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.3) }}>
+            <Typography variant="body2" sx={{ color: alpha(theme.palette.text.primary, 0.6), fontSize: '0.8rem' }}>
               {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, activityHistory.length)} of {activityHistory.length}
             </Typography>
             <Stack direction="row" spacing={1} alignItems="center">
@@ -330,9 +333,9 @@ const DeFiHistory = ({ account }) => {
                 onChange={handleChangeRowsPerPage}
                 size="small"
                 sx={{
-                  height: '28px',
-                  fontSize: '0.75rem',
-                  color: alpha(theme.palette.text.primary, 0.6),
+                  height: '32px',
+                  fontSize: '0.8rem',
+                  color: alpha(theme.palette.text.primary, 0.7),
                   '.MuiOutlinedInput-notchedOutline': {
                     borderColor: 'transparent'
                   },
@@ -346,7 +349,7 @@ const DeFiHistory = ({ account }) => {
                 }}
               >
                 {[10, 20, 25, 50].map((option) => (
-                  <MenuItem key={option} value={option} sx={{ fontSize: '0.75rem' }}>
+                  <MenuItem key={option} value={option} sx={{ fontSize: '0.8rem' }}>
                     {option}
                   </MenuItem>
                 ))}
@@ -807,7 +810,7 @@ const HistoryRow = React.memo((props) => {
             color: getTypeColor(TransactionType, offerType),
             fontWeight: 500,
             textTransform: 'uppercase',
-            fontSize: '0.7rem',
+            fontSize: '0.8rem',
             letterSpacing: '0.5px'
           }}
         >

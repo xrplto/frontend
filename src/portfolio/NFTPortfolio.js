@@ -35,43 +35,51 @@ import { getNftCoverUrl } from 'src/utils/parse/utils';
 
 // NFT Card Wrapper
 const NFTCardWrapper = styled(Card)(({ theme }) => ({
-  borderRadius: 12,
-  background: theme.palette.background.paper,
-  boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.1)}`,
+  borderRadius: 16,
+  background: theme.palette.mode === 'dark'
+    ? alpha(theme.palette.background.paper, 0.6)
+    : theme.palette.background.paper,
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  boxShadow: theme.shadows[2],
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'all 0.3s ease',
   overflow: 'hidden',
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
   '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`,
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[6],
     '& .card-media': {
-      transform: 'scale(1.02)'
+      transform: 'scale(1.05)'
     }
   }
 }));
 
 // Collection Card Wrapper
 const CollectionCardWrapper = styled(Card)(({ theme }) => ({
-  borderRadius: 12,
-  background: theme.palette.background.paper,
-  boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.1)}`,
+  borderRadius: 16,
+  background: theme.palette.mode === 'dark'
+    ? alpha(theme.palette.background.paper, 0.6)
+    : theme.palette.background.paper,
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  boxShadow: theme.shadows[2],
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'all 0.3s ease',
   overflow: 'hidden',
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
   marginTop: '8px',
   '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`,
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[6],
     '& .card-media': {
-      transform: 'scale(1.02)'
+      transform: 'scale(1.05)'
     }
   }
 }));
@@ -102,7 +110,7 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
       underline="none"
       sx={{ display: 'block', width: '100%', height: '100%' }}
     >
-      <NFTCardWrapper sx={{ height: smallSize ? '120px' : '150px' }}>
+      <NFTCardWrapper sx={{ height: smallSize ? '140px' : '170px' }}>
         {isAdmin && (
           <IconButton
             size="small"
@@ -127,7 +135,7 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
           sx={{
             position: 'relative',
             overflow: 'hidden',
-            height: smallSize ? '75px' : '95px',
+            height: smallSize ? '85px' : '105px',
             minHeight: smallSize ? '75px' : '95px',
             maxHeight: smallSize ? '75px' : '95px',
             bgcolor: alpha(theme.palette.grey[500], 0.1)
@@ -138,7 +146,7 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
               variant="rectangular"
               sx={{
                 width: '100%',
-                height: smallSize ? '75px' : '95px',
+                height: smallSize ? '85px' : '105px',
                 position: 'absolute'
               }}
             />
@@ -151,7 +159,7 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
             onLoad={onImageLoaded}
             sx={{
               width: '100%',
-              height: smallSize ? '75px' : '95px',
+              height: smallSize ? '85px' : '105px',
               minHeight: smallSize ? '75px' : '95px',
               maxHeight: smallSize ? '75px' : '95px',
               objectFit: 'cover',
@@ -175,12 +183,12 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
             variant="subtitle2"
             sx={{
               fontWeight: 600,
-              fontSize: smallSize ? '0.7rem' : '0.8rem',
+              fontSize: smallSize ? '0.8rem' : '0.9rem',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              mb: 0.5,
-              lineHeight: 1.2
+              mb: 0.75,
+              lineHeight: 1.3
             }}
           >
             {name}
@@ -199,8 +207,8 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
                   bgcolor: theme.palette.success.main,
                   color: 'white',
                   fontWeight: 600,
-                  fontSize: smallSize ? '0.6rem' : '0.65rem',
-                  height: '20px'
+                  fontSize: smallSize ? '0.7rem' : '0.75rem',
+                  height: '24px'
                 }}
               />
             ) : costb ? (
@@ -227,7 +235,7 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
                 variant="outlined"
                 sx={{
                   height: '18px',
-                  fontSize: smallSize ? '0.6rem' : '0.65rem',
+                  fontSize: smallSize ? '0.7rem' : '0.75rem',
                   '& .MuiChip-icon': { ml: 0.5 }
                 }}
               />
@@ -307,7 +315,7 @@ function CollectionCard({ collectionData, type, account, handleRemove, smallSize
           sx={{
             position: 'relative',
             overflow: 'hidden',
-            height: smallSize ? '75px' : '95px',
+            height: smallSize ? '85px' : '105px',
             minHeight: smallSize ? '75px' : '95px',
             maxHeight: smallSize ? '75px' : '95px',
             bgcolor: alpha(theme.palette.grey[500], 0.1)
@@ -489,14 +497,18 @@ const NFTPortfolio = ({
   return (
     <Box
       sx={{
-        padding: smallSize ? '8px' : '16px',
+        padding: smallSize ? '12px' : '20px',
         pt: 0,
-        height: smallSize ? '320px' : '580px',
+        height: smallSize ? '380px' : '620px',
         overflow: 'auto',
-        background: 'transparent',
-        borderRadius: smallSize ? '12px' : '20px',
-        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-        backdropFilter: 'blur(20px)'
+        background: theme.palette.mode === 'dark'
+          ? alpha(theme.palette.background.paper, 0.4)
+          : alpha(theme.palette.background.paper, 0.8),
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRadius: smallSize ? '16px' : '24px',
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        boxShadow: theme.shadows[2]
       }}
     >
       {loading ? (
@@ -513,12 +525,12 @@ const NFTPortfolio = ({
             spacing={2}
             sx={{ py: 6, height: '100%' }}
           >
-            <ErrorOutlineIcon sx={{ fontSize: '2rem', color: theme.palette.info.main }} />
+            <ErrorOutlineIcon sx={{ fontSize: '2.5rem', color: theme.palette.info.main }} />
             <Box>
-              <Typography variant="h6" color="text.primary" sx={{ fontWeight: 600, mb: 0.5 }}>
+              <Typography variant="h5" color="text.primary" sx={{ fontWeight: 700, mb: 0.75, fontSize: '1.2rem' }}>
                 No NFTs Found
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body1" color="text.secondary" sx={{ fontSize: '0.95rem' }}>
                 This collection appears to be empty
               </Typography>
             </Box>
@@ -531,9 +543,9 @@ const NFTPortfolio = ({
           <Button
             size="medium"
             onClick={handleBack}
-            sx={{ borderRadius: '10px', textTransform: 'none' }}
+            sx={{ borderRadius: '12px', textTransform: 'none', px: 2, py: 1 }}
           >
-            <ArrowBackIcon sx={{ fontSize: '1.2rem', mr: 1 }} />
+            <ArrowBackIcon sx={{ fontSize: '1.4rem', mr: 1 }} />
             Go back
           </Button>
         </Box>
@@ -548,7 +560,7 @@ const NFTPortfolio = ({
             md: 'repeat(4, 1fr)',
             lg: 'repeat(5, 1fr)'
           },
-          gap: smallSize ? '8px' : '12px',
+          gap: smallSize ? '12px' : '16px',
           width: '100%'
         }}
       >
@@ -556,7 +568,7 @@ const NFTPortfolio = ({
           <Box
             key={nft.NFTokenID || nft.id || `nft-${index}`}
             sx={{
-              width: smallSize ? '120px' : '150px',
+              width: smallSize ? '140px' : '170px',
               flexShrink: 0
             }}
           >

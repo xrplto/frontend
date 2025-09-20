@@ -247,7 +247,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                       size="small" 
                       sx={{ 
                         height: 14, 
-                        fontSize: '0.55rem',
+                        fontSize: '0.65rem',
                         '& .MuiChip-label': { px: 0.5 }
                       }}
                     />
@@ -258,7 +258,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                   <Typography 
                     variant="caption" 
                     sx={{ 
-                      fontSize: { xs: '0.55rem', sm: '0.6rem' },
+                      fontSize: { xs: '0.65rem', sm: '0.7rem' },
                       color: theme.palette.text.secondary,
                       fontFamily: 'monospace'
                     }}
@@ -270,7 +270,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                   <Typography 
                     variant="caption" 
                     sx={{ 
-                      fontSize: { xs: '0.55rem', sm: '0.6rem' },
+                      fontSize: { xs: '0.65rem', sm: '0.7rem' },
                       color: theme.palette.text.secondary,
                       visibility: 'hidden'
                     }}
@@ -565,11 +565,14 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   return (
     <Box
       sx={{
-        background: darkMode 
-          ? 'linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.02) 100%)'
-          : 'linear-gradient(135deg, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0.02) 100%)',
-        borderRadius: '4px',
-        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
+        background: theme.palette.mode === 'dark'
+          ? alpha(theme.palette.background.paper, 0.4)
+          : alpha(theme.palette.background.paper, 0.8),
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        borderRadius: '16px',
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        boxShadow: theme.shadows[2],
         overflow: 'hidden',
         p: { xs: 2, sm: 3, md: 4 }
       }}
@@ -599,8 +602,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
               alignItems: 'center',
               justifyContent: 'center',
               position: 'relative',
-              minHeight: 220,
-              maxHeight: 240
+              minHeight: 260,
+              maxHeight: 280
             }}
           >
             {(() => {
@@ -638,7 +641,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                   <>
                     <Box sx={{ position: 'relative', width: '100%', height: '100%', zIndex: 1 }}>
                       <ReactECharts
-                        style={{ height: '220px', width: '100%' }}
+                        style={{ height: '260px', width: '100%' }}
                         option={{
                           backgroundColor: 'transparent',
                           tooltip: {
@@ -809,7 +812,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
 
         {/* Trustlines */}
         <Grid item xs={12} md={8}>
-          <Stack spacing={0.75}>
+          <Stack spacing={1}>
             {/* Summary Card */}
             <Box
               sx={{
@@ -821,20 +824,20 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
             >
               <Stack direction="row" alignItems="center" justifyContent="space-between">
                 <Stack direction="row" alignItems="center" spacing={1.5}>
-                  <TrendingIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: theme.palette.primary.main }} />
+                  <TrendingIcon sx={{ fontSize: { xs: 24, sm: 28 }, color: theme.palette.primary.main }} />
                   <Box>
-                    <Typography variant="body1" sx={{ fontWeight: 700, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.95rem', sm: '1.1rem' } }}>
                       Portfolio Overview
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
                       {totalCount > 0 ? totalCount : sortedAssets.length} assets {currentPage > 0 && `(Page ${currentPage + 1}/${totalDisplayPages})`}
                     </Typography>
                   </Box>
                 </Stack>
                 
                 <Box textAlign="right">
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>Total Value</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '0.9rem', sm: '1.1rem' } }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>Total Value</Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '1.1rem', sm: '1.3rem' } }}>
                     {currencySymbols[activeFiatCurrency]}
                     {(() => {
                       const xrpToFiat = exchRate ? 1 / exchRate : 0;
@@ -854,7 +857,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
             </Box>
 
             {/* Token List */}
-            <Stack spacing={0.25}>
+            <Stack spacing={0.5}>
               {displayedAssets.map((asset, index) => {
                 if (asset.isXRP) {
                   return (

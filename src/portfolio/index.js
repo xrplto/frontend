@@ -105,9 +105,11 @@ const StyledModal = styled(Modal)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: theme.spacing(1),
-  backdropFilter: 'none',
-  backgroundColor: alpha(theme.palette.common.black, 0.5)
+  padding: theme.spacing(2),
+  '& .MuiBackdrop-root': {
+    backdropFilter: 'blur(5px)',
+    backgroundColor: alpha(theme.palette.common.black, 0.5)
+  }
 }));
 
 const ModalContent = styled(Paper)(({ theme }) => ({
@@ -117,41 +119,37 @@ const ModalContent = styled(Paper)(({ theme }) => ({
   maxHeight: '90vh',
   overflow: 'auto',
   padding: theme.spacing(3),
-  background: 'transparent',
-  backdropFilter: 'none',
+  background: theme.palette.mode === 'dark'
+    ? alpha(theme.palette.background.paper, 0.95)
+    : theme.palette.background.paper,
+  backdropFilter: 'blur(20px)',
   borderRadius: '24px',
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  boxShadow: `
-    0 24px 48px ${alpha(theme.palette.common.black, 0.2)}, 
-    0 4px 8px ${alpha(theme.palette.common.black, 0.1)},
-    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  boxShadow: theme.shadows[24]
 }));
 
 // Styled container for consistent glass-morphism effect
 const OuterBorderContainer = styled(Box)(({ theme }) => ({
-  background: 'transparent',
-  backdropFilter: 'none',
-  WebkitBackdropFilter: 'none',
+  background: theme.palette.mode === 'dark'
+    ? alpha(theme.palette.background.paper, 0.6)
+    : alpha(theme.palette.background.paper, 0.8),
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
   borderRadius: '16px',
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   padding: theme.spacing(2),
-  boxShadow: `
-    0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-    0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+  boxShadow: theme.palette.mode === 'dark'
+    ? `0 8px 32px ${alpha(theme.palette.common.black, 0.3)}`
+    : `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
-  '&::before': {
-    display: 'none'
-  },
   '&:hover': {
     transform: 'translateY(-2px)',
-    boxShadow: `
-      0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-      0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-    border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
+    boxShadow: theme.palette.mode === 'dark'
+      ? `0 12px 40px ${alpha(theme.palette.common.black, 0.4)}`
+      : `0 8px 30px ${alpha(theme.palette.common.black, 0.12)}`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
   }
 }));
 
@@ -1394,20 +1392,7 @@ export default function Portfolio({ account, limit, collection, type }) {
     ]
   }; */
 
-  const OuterBorderContainer = styled(Box)(({ theme }) => ({
-    padding: theme.spacing(1),
-    borderRadius: '12px',
-    background: 'transparent',
-    backdropFilter: 'none',
-    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    marginBottom: theme.spacing(1),
-    boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
-    [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing(0.75),
-      marginBottom: theme.spacing(0.5),
-      borderRadius: '8px'
-    }
-  }));
+  // Remove duplicate OuterBorderContainer definition
 
   // useEffect(() => {
   //   async function fetchActiveRanks() {
@@ -1504,9 +1489,9 @@ export default function Portfolio({ account, limit, collection, type }) {
 
   return (
     <OverviewWrapper>
-      <Container maxWidth="xl" sx={{ mt: { xs: 1, sm: 3 }, px: { xs: 1, sm: 3 } }}>
+      <Container maxWidth={false} sx={{ mt: { xs: 1, sm: 3 }, px: { xs: 1, sm: 2 }, maxWidth: '100%' }}>
         <Grid container spacing={{ xs: 1.5, sm: 3 }}>
-          <Grid item xs={12} md={3} order={{ xs: 2, md: 1 }}>
+          <Grid item xs={12} lg={3} order={{ xs: 2, lg: 1 }}>
             <OuterBorderContainer>
               <Stack sx={{ height: '100%', justifyContent: 'space-between' }}>
                 <Stack
@@ -1522,8 +1507,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                       <Avatar
                         src={getHashIcon(account)}
                         sx={{
-                          width: { xs: 32, sm: 40 },
-                          height: { xs: 32, sm: 40 },
+                          width: { xs: 48, sm: 56 },
+                          height: { xs: 48, sm: 56 },
                           boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`,
                           transition: 'all 0.3s ease'
                         }}
@@ -1560,12 +1545,12 @@ export default function Portfolio({ account, limit, collection, type }) {
                           sx={{
                             color: theme.palette.text.primary,
                             fontWeight: 600,
-                            fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
                             letterSpacing: '-0.01em',
                             textOverflow: 'ellipsis',
                             overflow: 'hidden',
                             whiteSpace: 'nowrap',
-                            maxWidth: { xs: '140px', sm: '100%' }
+                            maxWidth: { xs: '160px', sm: '100%' }
                           }}
                         >
                           {isMobile ? `${account.substring(0, 8)}...${account.substring(account.length - 6)}` : account}
@@ -1582,7 +1567,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             }
                           }}
                         >
-                          <ContentCopyIcon sx={{ fontSize: '0.75rem' }} />
+                          <ContentCopyIcon sx={{ fontSize: '1rem' }} />
                         </IconButton>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -1601,8 +1586,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                               theme.palette.primary.main,
                             border: 'none',
                             fontWeight: 600,
-                            fontSize: '0.65rem',
-                            height: 20,
+                            fontSize: '0.75rem',
+                            height: 24,
                             '& .MuiChip-label': {
                               px: 1
                             }
@@ -1617,8 +1602,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                               color: theme.palette.warning.main,
                               border: 'none',
                               fontWeight: 600,
-                              fontSize: '0.65rem',
-                              height: 20,
+                              fontSize: '0.75rem',
+                              height: 24,
                               '& .MuiChip-label': {
                                 px: 1
                               }
@@ -1632,17 +1617,19 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                 <Card
                     sx={{
-                      borderRadius: '10px',
-                      background: 'transparent',
-                      backdropFilter: 'none',
-                      WebkitBackdropFilter: 'none',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
+                      borderRadius: '12px',
+                      background: theme.palette.mode === 'dark'
+                        ? alpha(theme.palette.background.paper, 0.4)
+                        : alpha(theme.palette.background.paper, 0.9),
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      boxShadow: theme.shadows[2],
                       overflow: 'hidden',
                       transition: 'all 0.2s ease',
                       '&:hover': {
-                        transform: 'translateY(-1px)',
-                        boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                        transform: 'translateY(-2px)',
+                        boxShadow: theme.shadows[4]
                       }
                     }}
                   >
@@ -1690,23 +1677,25 @@ export default function Portfolio({ account, limit, collection, type }) {
                   <Card
                     sx={{
                       mt: 1,
-                      borderRadius: '10px',
-                      background: 'transparent',
-                      backdropFilter: 'none',
-                      WebkitBackdropFilter: 'none',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
+                      borderRadius: '12px',
+                      background: theme.palette.mode === 'dark'
+                        ? alpha(theme.palette.background.paper, 0.4)
+                        : alpha(theme.palette.background.paper, 0.9),
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      boxShadow: theme.shadows[2],
                       overflow: 'hidden',
                       transition: 'all 0.2s ease',
                       '&:hover': {
-                        transform: 'translateY(-1px)',
-                        boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                        transform: 'translateY(-2px)',
+                        boxShadow: theme.shadows[4]
                       }
                     }}
                   >
-                    <Box sx={{ p: 1.5 }}>
+                    <Box sx={{ p: 2 }}>
                       {/* Main Balance Row */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 1.5 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <AccountBalanceWalletIcon
                             sx={{
@@ -1719,7 +1708,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               color: alpha(theme.palette.text.secondary, 0.9),
                               fontWeight: 600,
-                              fontSize: '0.75rem',
+                              fontSize: '0.8rem',
                               textTransform: 'uppercase',
                               letterSpacing: '0.3px'
                             }}
@@ -1735,7 +1724,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               fontWeight: 700,
                               color: theme.palette.primary.main,
-                              fontSize: '0.95rem'
+                              fontSize: '1.1rem'
                             }}
                           >
                             {xrpBalance !== null
@@ -1750,12 +1739,12 @@ export default function Portfolio({ account, limit, collection, type }) {
                       </Box>
 
                       {/* Buy/Sell Volume Row */}
-                      <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Box sx={{ display: 'flex', gap: 1.5 }}>
                         <Box
                           sx={{
                             flex: 1,
-                            p: 1,
-                            borderRadius: '6px',
+                            p: 1.5,
+                            borderRadius: '8px',
                             background: alpha(theme.palette.success.main, 0.05),
                             border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`
                           }}
@@ -1764,7 +1753,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             variant="caption"
                             sx={{
                               color: alpha(theme.palette.text.secondary, 0.8),
-                              fontSize: '0.65rem',
+                              fontSize: '0.7rem',
                               display: 'block'
                             }}
                           >
@@ -1775,7 +1764,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               color: theme.palette.success.main,
                               fontWeight: 600,
-                              fontSize: '0.75rem'
+                              fontSize: '0.85rem'
                             }}
                           >
                             {(traderStats?.buyVolume || 0).toLocaleString()}
@@ -1784,8 +1773,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                         <Box
                           sx={{
                             flex: 1,
-                            p: 1,
-                            borderRadius: '6px',
+                            p: 1.5,
+                            borderRadius: '8px',
                             background: alpha(theme.palette.error.main, 0.05),
                             border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`
                           }}
@@ -1794,7 +1783,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             variant="caption"
                             sx={{
                               color: alpha(theme.palette.text.secondary, 0.8),
-                              fontSize: '0.65rem',
+                              fontSize: '0.7rem',
                               display: 'block'
                             }}
                           >
@@ -1805,7 +1794,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             sx={{
                               color: theme.palette.error.main,
                               fontWeight: 600,
-                              fontSize: '0.75rem'
+                              fontSize: '0.85rem'
                             }}
                           >
                             {(traderStats?.sellVolume || 0).toLocaleString()}
@@ -1820,14 +1809,14 @@ export default function Portfolio({ account, limit, collection, type }) {
                     sx={{
                       mt: 1,
                       p: 1.5,
-                      borderRadius: '10px',
-                      background: 'transparent',
-                      border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
-                      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
+                      borderRadius: '12px',
+                      background: alpha(theme.palette.info.main, 0.08),
+                      border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                      boxShadow: theme.shadows[1],
                       transition: 'all 0.2s ease',
                       '&:hover': {
                         transform: 'translateY(-1px)',
-                        boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                        boxShadow: theme.shadows[2]
                       }
                     }}
                   >
@@ -1843,7 +1832,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                         sx={{
                           color: alpha(theme.palette.text.secondary, 0.9),
                           fontWeight: 600,
-                          fontSize: '0.75rem',
+                          fontSize: '0.8rem',
                           textTransform: 'uppercase',
                           letterSpacing: '0.3px'
                         }}
@@ -1855,7 +1844,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                         sx={{
                           color: theme.palette.info.main,
                           fontWeight: 700,
-                          fontSize: '0.95rem'
+                          fontSize: '1.1rem'
                         }}
                       >
                         {formatHoldingTime(traderStats?.avgHoldingTime || 0)}
@@ -1866,28 +1855,30 @@ export default function Portfolio({ account, limit, collection, type }) {
                 <Box sx={{ mt: 1 }}>
                   <Card
                     sx={{
-                      borderRadius: '10px',
-                      background: 'transparent',
-                      backdropFilter: 'none',
-                      WebkitBackdropFilter: 'none',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
+                      borderRadius: '12px',
+                      background: theme.palette.mode === 'dark'
+                        ? alpha(theme.palette.background.paper, 0.4)
+                        : alpha(theme.palette.background.paper, 0.9),
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      boxShadow: theme.shadows[2],
                       overflow: 'hidden',
                       transition: 'all 0.2s ease',
                       '&:hover': {
-                        transform: 'translateY(-1px)',
-                        boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                        transform: 'translateY(-2px)',
+                        boxShadow: theme.shadows[4]
                       }
                     }}
                   >
-                    <Box sx={{ p: 1.5 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                    <Box sx={{ p: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
                         <Typography
                           variant="caption"
                           sx={{
                             color: alpha(theme.palette.text.secondary, 0.9),
                             fontWeight: 600,
-                            fontSize: '0.75rem',
+                            fontSize: '0.85rem',
                             textTransform: 'uppercase',
                             letterSpacing: '0.3px'
                           }}
@@ -1905,17 +1896,20 @@ export default function Portfolio({ account, limit, collection, type }) {
                       ) : (
                         <Box
                           sx={{
-                            background: 'transparent',
-                            borderRadius: '6px',
-                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                            background: theme.palette.mode === 'dark'
+                              ? alpha(theme.palette.background.default, 0.3)
+                              : alpha(theme.palette.background.default, 0.5),
+                            borderRadius: '8px',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                            overflow: 'hidden'
                           }}
                         >
                           <Table
                             size="small"
                             sx={{
                               '& .MuiTableCell-root': {
-                                fontSize: '0.7rem',
-                                padding: '6px 8px',
+                                fontSize: '0.8rem',
+                                padding: '8px 10px',
                                 borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`
                               }
                             }}
@@ -1927,7 +1921,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                     fontWeight: 600,
                                     color: theme.palette.text.secondary,
                                     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                                    fontSize: '0.65rem',
+                                    fontSize: '0.75rem',
                                     textTransform: 'uppercase'
                                   }
                                 }}
@@ -1964,7 +1958,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                               : theme.palette.error.main
                                         }}
                                       />
-                                      <Typography sx={{ fontWeight: 500, fontSize: '0.7rem' }}>{token.name}</Typography>
+                                      <Typography sx={{ fontWeight: 500, fontSize: '0.8rem' }}>{token.name}</Typography>
                                     </Box>
                                   </TableCell>
                                   <TableCell
@@ -1975,7 +1969,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                           ? theme.palette.success.main
                                           : theme.palette.error.main,
                                       fontWeight: 600,
-                                      fontSize: '0.7rem'
+                                      fontSize: '0.8rem'
                                     }}
                                   >
                                     {token.roi.toFixed(2)}%
@@ -1988,7 +1982,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                           ? theme.palette.success.main
                                           : theme.palette.error.main,
                                       fontWeight: 600,
-                                      fontSize: '0.7rem'
+                                      fontSize: '0.8rem'
                                     }}
                                   >
                                     {token.profit.toFixed(0)}
@@ -2038,42 +2032,44 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                 <Card
                   sx={{
-                    borderRadius: '10px',
+                    borderRadius: '12px',
                     mt: 1,
-                    background: 'transparent',
-                    backdropFilter: 'none',
-                    WebkitBackdropFilter: 'none',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                    boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
+                    background: theme.palette.mode === 'dark'
+                      ? alpha(theme.palette.background.paper, 0.4)
+                      : alpha(theme.palette.background.paper, 0.9),
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    boxShadow: theme.shadows[2],
                     overflow: 'hidden',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      transform: 'translateY(-1px)',
-                      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                      transform: 'translateY(-2px)',
+                      boxShadow: theme.shadows[4]
                     }
                   }}
                 >
-                  <Box sx={{ p: 1.5 }}>
+                  <Box sx={{ p: 2 }}>
                     <Typography
                       variant="caption"
                       sx={{
                         color: alpha(theme.palette.text.secondary, 0.9),
                         fontWeight: 600,
-                        fontSize: '0.75rem',
+                        fontSize: '0.85rem',
                         textTransform: 'uppercase',
                         letterSpacing: '0.3px',
                         display: 'block',
-                        mb: 1
+                        mb: 1.5
                       }}
                     >
                       Trading Statistics
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 1.5 }}>
                       <Box
                         sx={{
                           flex: 1,
-                          p: 0.75,
-                          borderRadius: '6px',
+                          p: 1,
+                          borderRadius: '8px',
                           background: alpha(theme.palette.primary.main, 0.05),
                           border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
                         }}
@@ -2082,7 +2078,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                           variant="caption"
                           sx={{
                             color: alpha(theme.palette.text.secondary, 0.8),
-                            fontSize: '0.65rem',
+                            fontSize: '0.7rem',
                             display: 'block'
                           }}
                         >
@@ -2093,7 +2089,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                           sx={{
                             color: theme.palette.primary.main,
                             fontWeight: 600,
-                            fontSize: '0.75rem'
+                            fontSize: '0.85rem'
                           }}
                         >
                           {traderStats?.totalTrades || 0}
@@ -2102,8 +2098,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                       <Box
                         sx={{
                           flex: 1,
-                          p: 0.75,
-                          borderRadius: '6px',
+                          p: 1,
+                          borderRadius: '8px',
                           background: alpha(theme.palette.success.main, 0.05),
                           border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`
                         }}
@@ -2112,7 +2108,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                           variant="caption"
                           sx={{
                             color: alpha(theme.palette.text.secondary, 0.8),
-                            fontSize: '0.65rem',
+                            fontSize: '0.7rem',
                             display: 'block'
                           }}
                         >
@@ -2123,7 +2119,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                           sx={{
                             color: theme.palette.success.main,
                             fontWeight: 600,
-                            fontSize: '0.75rem'
+                            fontSize: '0.85rem'
                           }}
                         >
                           {(traderStats?.maxProfitTrade || 0).toFixed(0)}
@@ -2132,8 +2128,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                       <Box
                         sx={{
                           flex: 1,
-                          p: 0.75,
-                          borderRadius: '6px',
+                          p: 1,
+                          borderRadius: '8px',
                           background: alpha(theme.palette.error.main, 0.05),
                           border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`
                         }}
@@ -2142,7 +2138,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                           variant="caption"
                           sx={{
                             color: alpha(theme.palette.text.secondary, 0.8),
-                            fontSize: '0.65rem',
+                            fontSize: '0.7rem',
                             display: 'block'
                           }}
                         >
@@ -2153,7 +2149,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                           sx={{
                             color: theme.palette.error.main,
                             fontWeight: 600,
-                            fontSize: '0.75rem'
+                            fontSize: '0.85rem'
                           }}
                         >
                           {(traderStats?.maxLossTrade || 0).toFixed(0)}
@@ -2166,414 +2162,398 @@ export default function Portfolio({ account, limit, collection, type }) {
             </OuterBorderContainer>
           </Grid>
 
-          <Grid item xs={12} md={9} order={{ xs: 1, md: 2 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                {/* Minimalist Time Period Statistics */}
-                <Box sx={{ mb: 1.5 }}>
-                  <Box
+          <Grid item xs={12} lg={9} order={{ xs: 1, lg: 2 }}>
+            {/* Full Width Performance Section */}
+            <Box sx={{ mb: 2, width: '100%' }}>
+              <Box
+                sx={{
+                  p: { xs: 2, sm: 3 },
+                  borderRadius: '16px',
+                  background: theme.palette.mode === 'dark'
+                    ? alpha(theme.palette.background.paper, 0.6)
+                    : alpha(theme.palette.background.paper, 0.9),
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  boxShadow: theme.shadows[2],
+                  transition: 'all 0.3s ease',
+                  width: '100%'
+                }}
+              >
+                {/* Header with Time Toggle */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: 3,
+                    flexWrap: 'wrap',
+                    gap: 2
+                  }}
+                >
+                  <Typography
+                    variant="h6"
                     sx={{
-                      p: 1.5,
-                      borderRadius: '4px',
-                      background: theme.palette.mode === 'dark' 
-                        ? 'linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.02) 100%)'
-                        : 'linear-gradient(135deg, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0.02) 100%)',
-                      border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
-                      transition: 'all 0.2s ease',
-                      overflow: 'hidden'
+                      color: theme.palette.text.primary,
+                      fontWeight: 700,
+                      fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                      letterSpacing: '-0.02em'
                     }}
                   >
-                    {/* Header with Time Toggle */}
+                    Trading Performance
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 1,
+                      p: 0.5,
+                      borderRadius: '12px',
+                      background: alpha(theme.palette.background.default, 0.6),
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                    }}
+                  >
+                    {['24h', '7d', '1m', '3m'].map((period) => (
+                      <Box
+                        key={period}
+                        onClick={() => setSelectedInterval(period)}
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                          color: selectedInterval === period
+                            ? theme.palette.primary.contrastText
+                            : theme.palette.text.secondary,
+                          background: selectedInterval === period
+                            ? theme.palette.primary.main
+                            : 'transparent',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            background: selectedInterval === period
+                              ? theme.palette.primary.dark
+                              : alpha(theme.palette.primary.main, 0.1),
+                            color: selectedInterval === period
+                              ? theme.palette.primary.contrastText
+                              : theme.palette.primary.main
+                          }
+                        }}
+                      >
+                        {period.toUpperCase()}
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+
+                {/* Full Width Stats Grid */}
+                <Grid container spacing={3} sx={{ mb: 3 }}>
+                  <Grid item xs={6} sm={3}>
                     <Box
                       sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        mb: 1.5
+                        p: 2,
+                        borderRadius: '12px',
+                        background: alpha(theme.palette.primary.main, 0.08),
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                        textAlign: 'center',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: theme.shadows[3]
+                        }
                       }}
                     >
                       <Typography
-                        variant="caption"
                         sx={{
+                          fontSize: '0.8rem',
                           color: theme.palette.text.secondary,
                           fontWeight: 600,
-                          fontSize: '0.7rem',
+                          mb: 1,
                           textTransform: 'uppercase',
                           letterSpacing: '0.5px'
                         }}
                       >
-                        Performance
+                        Volume
                       </Typography>
-                      <Box
+                      <Typography
                         sx={{
-                          display: 'flex',
-                          gap: 0.5,
-                          p: 0.25,
-                          borderRadius: '6px',
-                          background: alpha(theme.palette.background.paper, 0.3),
-                          border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
+                          fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                          fontWeight: 700,
+                          color: theme.palette.primary.main,
+                          lineHeight: 1.2
                         }}
                       >
-                        {['24h', '7d', '1m', '3m'].map((period) => (
-                          <Box
-                            key={period}
-                            onClick={() => setSelectedInterval(period)}
-                            sx={{
-                              px: 1,
-                              py: 0.25,
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '0.65rem',
-                              fontWeight: 600,
-                              color: selectedInterval === period 
-                                ? theme.palette.primary.main 
-                                : alpha(theme.palette.text.secondary, 0.6),
-                              background: selectedInterval === period
-                                ? alpha(theme.palette.primary.main, 0.1)
-                                : 'transparent',
-                              transition: 'all 0.15s ease',
-                              '&:hover': {
-                                color: theme.palette.primary.main
-                              }
-                            }}
-                          >
-                            {period.toUpperCase()}
-                          </Box>
-                        ))}
-                      </Box>
+                        {loading ? '-' : `${(traderStats?.[`volume${selectedInterval}`] || 0).toLocaleString()}`}
+                        <Typography
+                          component="span"
+                          sx={{
+                            fontSize: '0.8rem',
+                            color: theme.palette.text.secondary,
+                            ml: 0.5,
+                            fontWeight: 500
+                          }}
+                        >
+                          XRP
+                        </Typography>
+                      </Typography>
                     </Box>
+                  </Grid>
 
-                    {/* Compact Stats Grid */}
-                    <Grid container spacing={1}>
-                      <Grid item xs={3}>
-                        <Box>
-                          <Typography
-                            sx={{
-                              fontSize: '0.55rem',
-                              color: alpha(theme.palette.text.secondary, 0.7),
-                              mb: 0.25
-                            }}
-                          >
-                            Volume
-                          </Typography>
-                          <Typography
-                            sx={{
-                              fontSize: '0.85rem',
-                              fontWeight: 700,
-                              color: theme.palette.text.primary
-                            }}
-                          >
-                            {loading ? '-' : `${(traderStats?.[`volume${selectedInterval}`] || 0).toFixed(0)}`}
-                            <Typography
-                              component="span"
-                              sx={{
-                                fontSize: '0.55rem',
-                                color: alpha(theme.palette.text.secondary, 0.6),
-                                ml: 0.25
-                              }}
-                            >
-                              XRP
-                            </Typography>
-                          </Typography>
-                        </Box>
-                      </Grid>
-
-                      <Grid item xs={3}>
-                        <Box>
-                          <Typography
-                            sx={{
-                              fontSize: '0.55rem',
-                              color: alpha(theme.palette.text.secondary, 0.7),
-                              mb: 0.25
-                            }}
-                          >
-                            Trades
-                          </Typography>
-                          <Typography
-                            sx={{
-                              fontSize: '0.85rem',
-                              fontWeight: 700,
-                              color: theme.palette.text.primary
-                            }}
-                          >
-                            {loading ? '-' : (traderStats?.[`trades${selectedInterval}`] || 0)}
-                          </Typography>
-                        </Box>
-                      </Grid>
-
-                      <Grid item xs={3}>
-                        <Box>
-                          <Typography
-                            sx={{
-                              fontSize: '0.55rem',
-                              color: alpha(theme.palette.text.secondary, 0.7),
-                              mb: 0.25
-                            }}
-                          >
-                            P/L
-                          </Typography>
-                          <Typography
-                            sx={{
-                              fontSize: '0.85rem',
-                              fontWeight: 700,
-                              color: (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
-                                ? theme.palette.success.main
-                                : theme.palette.error.main
-                            }}
-                          >
-                            {loading ? '-' : `${(traderStats?.[`profit${selectedInterval}`] || 0) >= 0 ? '+' : ''}${(traderStats?.[`profit${selectedInterval}`] || 0).toFixed(0)}`}
-                          </Typography>
-                        </Box>
-                      </Grid>
-
-                      <Grid item xs={3}>
-                        <Box>
-                          <Typography
-                            sx={{
-                              fontSize: '0.55rem',
-                              color: alpha(theme.palette.text.secondary, 0.7),
-                              mb: 0.25
-                            }}
-                          >
-                            Tokens
-                          </Typography>
-                          <Typography
-                            sx={{
-                              fontSize: '0.85rem',
-                              fontWeight: 700,
-                              color: theme.palette.text.primary
-                            }}
-                          >
-                            {loading ? '-' : (traderStats?.[`activeTokens${selectedInterval}`] || 0)}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                </Box>
-              </Grid>
-            </Grid>
-
-            <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: { xs: 1.5, sm: 2 } }}>
-              <Grid item xs={12}>
-                <Card
-                  sx={{
-                    p: { xs: 1, sm: 1.5 },
-                    height: '100%',
-                    borderRadius: '4px',
-                    background: theme.palette.mode === 'dark' 
-                      ? 'linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.02) 100%)'
-                      : 'linear-gradient(135deg, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0.02) 100%)',
-                    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
-                    }
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      mb: 1
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
+                  <Grid item xs={6} sm={3}>
+                    <Box
                       sx={{
-                        color: theme.palette.text.primary,
-                        fontWeight: 600,
-                        fontSize: { xs: '0.95rem', sm: '1rem' },
-                        letterSpacing: '-0.02em'
+                        p: 2,
+                        borderRadius: '12px',
+                        background: alpha(theme.palette.success.main, 0.08),
+                        border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                        textAlign: 'center',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: theme.shadows[3]
+                        }
                       }}
                     >
-                      Performance Analytics
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <ToggleButtonGroup
-                        value={chartView}
-                        exclusive
-                        onChange={handleChartViewChange}
-                        size="small"
+                      <Typography
                         sx={{
-                          bgcolor: alpha(theme.palette.background.default, 0.5),
-                          '& .MuiToggleButton-root': {
-                            px: 1.5,
-                            py: 0.25,
-                            border: 'none',
-                            borderRadius: '6px',
-                            mx: 0.25,
-                            color: theme.palette.text.secondary,
-                            fontSize: '0.75rem',
-                            fontWeight: 500,
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              bgcolor: alpha(theme.palette.primary.main, 0.08)
-                            },
-                            '&.Mui-selected': {
-                              bgcolor: theme.palette.primary.main,
-                              color: theme.palette.primary.contrastText,
-                              '&:hover': {
-                                bgcolor: theme.palette.primary.dark
-                              }
-                            }
-                          }
+                          fontSize: '0.8rem',
+                          color: theme.palette.text.secondary,
+                          fontWeight: 600,
+                          mb: 1,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
                         }}
                       >
-                        <ToggleButton value="roi">ROI</ToggleButton>
-                        <ToggleButton value="activity">Activity</ToggleButton>
-                        <ToggleButton value="volume">Volume</ToggleButton>
-                      </ToggleButtonGroup>
-                      <IconButton
-                        onClick={() => handleExpandChart(chartView)}
-                        size="small"
+                        Trades
+                      </Typography>
+                      <Typography
                         sx={{
-                          color: chartView === 'roi' ? theme.palette.primary.main : 
-                                 chartView === 'activity' ? theme.palette.success.main : 
-                                 theme.palette.info.main,
-                          bgcolor: alpha(
-                            chartView === 'roi' ? theme.palette.primary.main : 
-                            chartView === 'activity' ? theme.palette.success.main : 
-                            theme.palette.info.main, 
-                            0.08
-                          ),
+                          fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                          fontWeight: 700,
+                          color: theme.palette.success.main,
+                          lineHeight: 1.2
+                        }}
+                      >
+                        {loading ? '-' : (traderStats?.[`trades${selectedInterval}`] || 0).toLocaleString()}
+                      </Typography>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={6} sm={3}>
+                    <Box
+                      sx={{
+                        p: 2,
+                        borderRadius: '12px',
+                        background: alpha(
+                          (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
+                            ? theme.palette.success.main
+                            : theme.palette.error.main,
+                          0.08
+                        ),
+                        border: `1px solid ${alpha(
+                          (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
+                            ? theme.palette.success.main
+                            : theme.palette.error.main,
+                          0.2
+                        )}`,
+                        textAlign: 'center',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: theme.shadows[3]
+                        }
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: '0.8rem',
+                          color: theme.palette.text.secondary,
+                          fontWeight: 600,
+                          mb: 1,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        P/L
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                          fontWeight: 700,
+                          color: (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
+                            ? theme.palette.success.main
+                            : theme.palette.error.main,
+                          lineHeight: 1.2
+                        }}
+                      >
+                        {loading ? '-' : `${(traderStats?.[`profit${selectedInterval}`] || 0) >= 0 ? '+' : ''}${(traderStats?.[`profit${selectedInterval}`] || 0).toLocaleString()}`}
+                      </Typography>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={6} sm={3}>
+                    <Box
+                      sx={{
+                        p: 2,
+                        borderRadius: '12px',
+                        background: alpha(theme.palette.info.main, 0.08),
+                        border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                        textAlign: 'center',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: theme.shadows[3]
+                        }
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: '0.8rem',
+                          color: theme.palette.text.secondary,
+                          fontWeight: 600,
+                          mb: 1,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        Tokens
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                          fontWeight: 700,
+                          color: theme.palette.info.main,
+                          lineHeight: 1.2
+                        }}
+                      >
+                        {loading ? '-' : (traderStats?.[`activeTokens${selectedInterval}`] || 0)}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Box>
+
+            {/* Full Width Chart Section */}
+            <Box sx={{ mb: 2, width: '100%' }}>
+              <Box
+                sx={{
+                  p: { xs: 2, sm: 3 },
+                  borderRadius: '16px',
+                  background: theme.palette.mode === 'dark'
+                    ? alpha(theme.palette.background.paper, 0.6)
+                    : alpha(theme.palette.background.paper, 0.9),
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  boxShadow: theme.shadows[2],
+                  transition: 'all 0.3s ease',
+                  width: '100%'
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: 2,
+                    flexWrap: 'wrap',
+                    gap: 2
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: theme.palette.text.primary,
+                      fontWeight: 700,
+                      fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                      letterSpacing: '-0.02em'
+                    }}
+                  >
+                    Performance Analytics
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <ToggleButtonGroup
+                      value={chartView}
+                      exclusive
+                      onChange={handleChartViewChange}
+                      size="small"
+                      sx={{
+                        bgcolor: alpha(theme.palette.background.default, 0.6),
+                        borderRadius: '12px',
+                        '& .MuiToggleButton-root': {
+                          px: 2,
+                          py: 1,
+                          border: 'none',
                           borderRadius: '8px',
-                          p: 0.5,
+                          mx: 0.5,
+                          color: theme.palette.text.secondary,
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
                           transition: 'all 0.2s ease',
                           '&:hover': {
-                            bgcolor: alpha(
-                              chartView === 'roi' ? theme.palette.primary.main : 
-                              chartView === 'activity' ? theme.palette.success.main : 
-                              theme.palette.info.main, 
-                              0.15
-                            ),
-                            transform: 'scale(1.05)'
+                            bgcolor: alpha(theme.palette.primary.main, 0.08)
+                          },
+                          '&.Mui-selected': {
+                            bgcolor: theme.palette.primary.main,
+                            color: theme.palette.primary.contrastText,
+                            '&:hover': {
+                              bgcolor: theme.palette.primary.dark
+                            }
                           }
-                        }}
-                      >
-                        <OpenInFullIcon sx={{ fontSize: '0.9rem' }} />
-                      </IconButton>
-                    </Box>
+                        }
+                      }}
+                    >
+                      <ToggleButton value="roi">ROI</ToggleButton>
+                      <ToggleButton value="activity">Activity</ToggleButton>
+                      <ToggleButton value="volume">Volume</ToggleButton>
+                    </ToggleButtonGroup>
+                    <IconButton
+                      onClick={() => handleExpandChart(chartView)}
+                      size="small"
+                      sx={{
+                        color: chartView === 'roi' ? theme.palette.primary.main :
+                               chartView === 'activity' ? theme.palette.success.main :
+                               theme.palette.info.main,
+                        bgcolor: alpha(
+                          chartView === 'roi' ? theme.palette.primary.main :
+                          chartView === 'activity' ? theme.palette.success.main :
+                          theme.palette.info.main,
+                          0.1
+                        ),
+                        borderRadius: '8px',
+                        p: 1,
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          bgcolor: alpha(
+                            chartView === 'roi' ? theme.palette.primary.main :
+                            chartView === 'activity' ? theme.palette.success.main :
+                            theme.palette.info.main,
+                            0.2
+                          ),
+                          transform: 'scale(1.05)'
+                        }
+                      }}
+                    >
+                      <OpenInFullIcon sx={{ fontSize: '1rem' }} />
+                    </IconButton>
                   </Box>
-                  {/* Legend Section */}
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
-                    gap: 2, 
-                    mb: 2,
-                    justifyContent: 'center',
-                    px: 1
-                  }}>
-                    {chartView === 'roi' && (
-                      <>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Box sx={{ 
-                            width: 12, 
-                            height: 12, 
-                            bgcolor: theme.palette.primary.main, 
-                            borderRadius: '2px' 
-                          }} />
-                          <Typography variant="caption" color="text.secondary">
-                            Daily ROI
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Box sx={{ 
-                            width: 12, 
-                            height: 2, 
-                            bgcolor: theme.palette.secondary.main, 
-                            borderRadius: '1px' 
-                          }} />
-                          <Typography variant="caption" color="text.secondary">
-                            Cumulative ROI
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Box sx={{ 
-                            width: 12, 
-                            height: 12, 
-                            bgcolor: theme.palette.info.main, 
-                            borderRadius: '2px' 
-                          }} />
-                          <Typography variant="caption" color="text.secondary">
-                            Volume
-                          </Typography>
-                        </Box>
-                      </>
-                    )}
-                    {chartView === 'activity' && (
-                      <>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Box sx={{ 
-                            width: 12, 
-                            height: 12, 
-                            bgcolor: theme.palette.primary.main, 
-                            borderRadius: '2px' 
-                          }} />
-                          <Typography variant="caption" color="text.secondary">
-                            Daily Trades
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Box sx={{ 
-                            width: 12, 
-                            height: 2, 
-                            bgcolor: theme.palette.secondary.main, 
-                            borderRadius: '1px' 
-                          }} />
-                          <Typography variant="caption" color="text.secondary">
-                            Cumulative Trades
-                          </Typography>
-                        </Box>
-                      </>
-                    )}
-                    {chartView === 'volume' && (
-                      <>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Box sx={{ 
-                            width: 12, 
-                            height: 12, 
-                            bgcolor: theme.palette.info.main, 
-                            borderRadius: '2px' 
-                          }} />
-                          <Typography variant="caption" color="text.secondary">
-                            Daily Volume
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Box sx={{ 
-                            width: 12, 
-                            height: 2, 
-                            bgcolor: theme.palette.warning.main, 
-                            borderRadius: '1px' 
-                          }} />
-                          <Typography variant="caption" color="text.secondary">
-                            Cumulative Volume
-                          </Typography>
-                        </Box>
-                      </>
-                    )}
-                  </Box>
-                  
-                  {/* Chart Section */}
-                  <Box sx={{ height: { xs: 160, sm: 220 }, position: 'relative', minHeight: { xs: 160, sm: 220 } }}>
-                    {loading ? (
-                      <Skeleton variant="rectangular" height="100%" sx={{ borderRadius: '12px' }} />
-                    ) : (
-                      <>
-                        {chartView === 'roi' && renderChart(processChartData(), { ...chartOptions, legend: { enabled: false } })}
-                        {chartView === 'activity' && renderChart(processTradeHistoryData(), { ...tradeHistoryOptions, legend: { enabled: false } })}
-                        {chartView === 'volume' && renderChart(processVolumeHistoryData(), { ...volumeHistoryOptions, legend: { enabled: false } })}
-                      </>
-                    )}
-                  </Box>
-                </Card>
-              </Grid>
-            </Grid>
+                </Box>
+
+                {/* Chart Section */}
+                <Box sx={{ height: { xs: 300, sm: 400 }, width: '100%', position: 'relative' }}>
+                  {loading ? (
+                    <Skeleton variant="rectangular" height="100%" sx={{ borderRadius: '12px' }} />
+                  ) : (
+                    <>
+                      {chartView === 'roi' && renderChart(processChartData(), { ...chartOptions, legend: { enabled: false } })}
+                      {chartView === 'activity' && renderChart(processTradeHistoryData(), { ...tradeHistoryOptions, legend: { enabled: false } })}
+                      {chartView === 'volume' && renderChart(processVolumeHistoryData(), { ...volumeHistoryOptions, legend: { enabled: false } })}
+                    </>
+                  )}
+                </Box>
+              </Box>
+            </Box>
 
             <StyledModal
               open={Boolean(selectedChart)}
@@ -2613,8 +2593,11 @@ export default function Portfolio({ account, limit, collection, type }) {
                 sx={{
                   px: 3,
                   py: 2,
-                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                  background: 'transparent'
+                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                  background: theme.palette.mode === 'dark'
+                    ? alpha(theme.palette.background.default, 0.4)
+                    : alpha(theme.palette.background.default, 0.6),
+                  backdropFilter: 'blur(5px)'
                 }}
               >
                 <ToggleButtonGroup
@@ -2623,7 +2606,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                   onChange={(e, newValue) => newValue !== null && handleChange(e, newValue)}
                   size="medium"
                   sx={{
-                    bgcolor: 'transparent',
+                    bgcolor: alpha(theme.palette.background.default, 0.5),
                     borderRadius: '8px',
                     padding: 0,
                     border: 'none',
