@@ -189,7 +189,7 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
       // Create new chart
       const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: isMobile ? 180 : 200,
+      height: chartContainerRef.current.clientHeight || (isMobile ? 300 : 400),
       layout: {
         background: { type: 'solid', color: 'transparent' },
         textColor: theme.palette.text.primary,
@@ -334,11 +334,12 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
 
   if (!chartData || !chartData.series) {
     return (
-      <Box sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
+      <Box sx={{
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
-        height: isMobile ? 180 : 200,
+        height: '100%',
+        width: '100%',
         color: theme.palette.text.secondary
       }}>
         <Typography variant="body2">Loading chart data...</Typography>
@@ -346,7 +347,7 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
     );
   }
 
-  return <div ref={chartContainerRef} style={{ width: '100%', height: isMobile ? 180 : 200 }} />;
+  return <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />;
 });
 
 export default function Portfolio({ account, limit, collection, type }) {
@@ -2541,15 +2542,27 @@ export default function Portfolio({ account, limit, collection, type }) {
                 </Box>
 
                 {/* Chart Section */}
-                <Box sx={{ height: { xs: 300, sm: 400 }, width: '100%', position: 'relative' }}>
+                <Box sx={{ height: { xs: 300, sm: 400 }, width: '100%', position: 'relative', minHeight: { xs: 300, sm: 400 } }}>
                   {loading ? (
                     <Skeleton variant="rectangular" height="100%" sx={{ borderRadius: '12px' }} />
                   ) : (
-                    <>
-                      {chartView === 'roi' && renderChart(processChartData(), { ...chartOptions, legend: { enabled: false } })}
-                      {chartView === 'activity' && renderChart(processTradeHistoryData(), { ...tradeHistoryOptions, legend: { enabled: false } })}
-                      {chartView === 'volume' && renderChart(processVolumeHistoryData(), { ...volumeHistoryOptions, legend: { enabled: false } })}
-                    </>
+                    <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {chartView === 'roi' && (
+                        processChartData() ?
+                          renderChart(processChartData(), { ...chartOptions, legend: { enabled: false } }) :
+                          <Typography variant="body2" color="text.secondary">No ROI data available</Typography>
+                      )}
+                      {chartView === 'activity' && (
+                        processTradeHistoryData() ?
+                          renderChart(processTradeHistoryData(), { ...tradeHistoryOptions, legend: { enabled: false } }) :
+                          <Typography variant="body2" color="text.secondary">No trading activity data available</Typography>
+                      )}
+                      {chartView === 'volume' && (
+                        processVolumeHistoryData() ?
+                          renderChart(processVolumeHistoryData(), { ...volumeHistoryOptions, legend: { enabled: false } }) :
+                          <Typography variant="body2" color="text.secondary">No volume data available</Typography>
+                      )}
+                    </Box>
                   )}
                 </Box>
               </Box>
