@@ -26,8 +26,8 @@ const Wrapper = muiStyled(Box)(({ theme }) => `
 
 const Controls = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-direction: column;
+  gap: 16px;
   margin-bottom: 20px;
   padding: 20px;
   background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.95)'};
@@ -41,6 +41,39 @@ const ControlRow = styled.div`
   align-items: center;
   flex-wrap: wrap;
   width: 100%;
+`;
+
+const ActiveFilters = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 24px;
+`;
+
+const FilterChip = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: ${p => p.darkMode ? 'rgba(33,150,243,0.15)' : 'rgba(33,150,243,0.1)'};
+  color: #2196f3;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${p => p.darkMode ? 'rgba(33,150,243,0.25)' : 'rgba(33,150,243,0.2)'};
+  }
+
+  &::after {
+    content: '×';
+    font-size: 14px;
+    font-weight: bold;
+    opacity: 0.7;
+  }
 `;
 
 const SearchInput = styled.input`
@@ -315,6 +348,7 @@ function RSIAnalysisPage({ data }) {
   ];
 
   const presets = [
+    { label: 'Reset', filter: { origin: 'FirstLedger', minMarketCap: '', maxMarketCap: '', minVolume24h: '', maxVolume24h: '' } },
     { label: 'All', filter: {} },
     { label: 'Overbought', filter: { minRsi24h: '70' } },
     { label: 'Oversold', filter: { maxRsi24h: '30' } },
@@ -373,6 +407,30 @@ function RSIAnalysisPage({ data }) {
       ...preset.filter,
       start: 0
     }));
+  };
+
+  const removeFilter = (filterKey) => {
+    setParams(prev => ({
+      ...prev,
+      [filterKey]: '',
+      start: 0
+    }));
+  };
+
+  const getActiveFilters = () => {
+    const filters = [];
+    const rsiField = `minRsi${params.timeframe}`;
+    const maxRsiField = `maxRsi${params.timeframe}`;
+
+    if (params.origin) filters.push({ key: 'origin', label: `Origin: ${params.origin}`, value: params.origin });
+    if (params.minMarketCap) filters.push({ key: 'minMarketCap', label: `Min MC: $${params.minMarketCap}`, value: params.minMarketCap });
+    if (params.maxMarketCap) filters.push({ key: 'maxMarketCap', label: `Max MC: $${params.maxMarketCap}`, value: params.maxMarketCap });
+    if (params.minVolume24h) filters.push({ key: 'minVolume24h', label: `Min Vol: $${params.minVolume24h}`, value: params.minVolume24h });
+    if (params.maxVolume24h) filters.push({ key: 'maxVolume24h', label: `Max Vol: $${params.maxVolume24h}`, value: params.maxVolume24h });
+    if (params[rsiField]) filters.push({ key: rsiField, label: `Min RSI: ${params[rsiField]}`, value: params[rsiField] });
+    if (params[maxRsiField]) filters.push({ key: maxRsiField, label: `Max RSI: ${params[maxRsiField]}`, value: params[maxRsiField] });
+
+    return filters;
   };
 
   const handleSort = (field) => {
@@ -656,16 +714,17 @@ function RSIAnalysisPage({ data }) {
                     {tf.label}
                   </Button>
                 ))}
-
-                <Select
-                  darkMode={darkMode}
-                  value={params.limit}
-                  onChange={e => updateParam('limit', e.target.value)}
-                >
-                  <option value="25">25 rows</option>
-                  <option value="50">50 rows</option>
-                  <option value="100">100 rows</option>
-                </Select>
+                <div style={{ marginLeft: 'auto' }}>
+                  <Select
+                    darkMode={darkMode}
+                    value={params.limit}
+                    onChange={e => updateParam('limit', e.target.value)}
+                  >
+                    <option value="25">25 rows</option>
+                    <option value="50">50 rows</option>
+                    <option value="100">100 rows</option>
+                  </Select>
+                </div>
               </ControlRow>
 
               <ControlRow>
@@ -724,6 +783,24 @@ function RSIAnalysisPage({ data }) {
                   onChange={e => updateParam(`maxRsi${params.timeframe}`, e.target.value)}
                 />
               </ControlRow>
+
+              {getActiveFilters().length > 0 && (
+                <ControlRow>
+                  <Label darkMode={darkMode}>Active:</Label>
+                  <ActiveFilters>
+                    {getActiveFilters().map(filter => (
+                      <FilterChip
+                        key={filter.key}
+                        darkMode={darkMode}
+                        onClick={() => removeFilter(filter.key)}
+                        title="Click to remove filter"
+                      >
+                        {filter.label}
+                      </FilterChip>
+                    ))}
+                  </ActiveFilters>
+                </ControlRow>
+              )}
             </Controls>
 
             <HeatMap darkMode={darkMode}>

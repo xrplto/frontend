@@ -637,6 +637,11 @@ function Header(props) {
                             icon: <EmojiEventsIcon sx={{ fontSize: 16, color: '#ff9800' }} />
                           },
                           {
+                            path: '/rsi-analysis',
+                            name: 'RSI Analysis',
+                            icon: <TrendingUpIcon sx={{ fontSize: 16, color: '#2196f3' }} />
+                          },
+                          {
                             path: '/top-traders',
                             name: t('Top Traders'),
                             icon: <AutoAwesomeIcon sx={{ fontSize: 16, color: '#e91e63' }} />
