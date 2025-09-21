@@ -31,11 +31,13 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
-const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false });
+const ReactECharts = dynamic(() => import('echarts-for-react'), {
+  ssr: false,
+  loading: () => <div style={{ height: '400px', background: 'transparent' }} />
+});
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from '../src/components/Topbar';
-import useWebSocket from 'react-use-websocket';
 import { useDispatch, useSelector } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
 import { alpha } from '@mui/material/styles';
@@ -466,32 +468,7 @@ export default function Analytics({ initialData, initialError }) {
     [dispatch, loading]
   );
 
-  // Add WebSocket connection
-  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-  const { sendJsonMessage, lastMessage, readyState } = useWebSocket(WSS_FEED_URL, {
-    shouldReconnect: (closeEvent) => true,
-    reconnectInterval: 3000,
-    onOpen: () => {
-      console.log('WebSocket Connected');
-    },
-    onMessage: (event) => {
-      try {
-        const json = JSON.parse(event.data);
-        throttledWebSocketHandler(json);
-      } catch (err) {
-        console.error('Error processing WebSocket message:', err);
-      }
-    },
-    onError: (error) => {
-      console.error('WebSocket error:', error);
-    },
-    onClose: () => {
-      console.log('WebSocket connection closed');
-      if (throttleTimeout.current) {
-        clearTimeout(throttleTimeout.current);
-      }
-    }
-  });
+  // WebSocket handled globally in _app.js - avoid duplicate connection
 
   // Cleanup throttle timeout on unmount
   useEffect(() => {

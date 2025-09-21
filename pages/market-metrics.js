@@ -29,7 +29,7 @@ import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';
 import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
-import useWebSocket from 'react-use-websocket';
+// WebSocket handled globally in _app.js
 
 // Theme-aware colors
 const getThemeColors = (theme) => {
@@ -103,23 +103,20 @@ const CustomTooltip = ({ active, payload, label }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const contentRef = useRef(null);
 
-  // Create tooltip root element with proper cleanup
+  // Memoized tooltip root creation
+  const tooltipRootRef = useRef(null);
   useEffect(() => {
-    let div = document.getElementById('tooltip-root');
-    if (!div) {
-      div = document.createElement('div');
-      div.id = 'tooltip-root';
-      div.style.cssText = 'position:fixed;z-index:9999;pointer-events:none';
-      document.body.appendChild(div);
-    }
-    setTooltipRoot(div);
-
-    return () => {
-      const tooltipDiv = document.getElementById('tooltip-root');
-      if (tooltipDiv && tooltipDiv.childElementCount === 0 && tooltipDiv.parentNode) {
-        tooltipDiv.parentNode.removeChild(tooltipDiv);
+    if (!tooltipRootRef.current) {
+      let div = document.getElementById('tooltip-root');
+      if (!div) {
+        div = document.createElement('div');
+        div.id = 'tooltip-root';
+        div.style.cssText = 'position:fixed;z-index:9999;pointer-events:none';
+        document.body.appendChild(div);
       }
-    };
+      tooltipRootRef.current = div;
+      setTooltipRoot(div);
+    }
   }, []);
 
   // Track mouse position with throttling
@@ -562,7 +559,7 @@ const LegendWrapper = ({ payload, visibleLines, handleLegendClick }) => (
 const MarketMetricsContent = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [visibleLines, setVisibleLines] = useState({
+  const [visibleLines, setVisibleLines] = useState(() => ({
     volumeAMM: true,
     volumeNonAMM: true,
     tradesAMM: false,
@@ -579,7 +576,7 @@ const MarketMetricsContent = () => {
     ledgerMemeTokens: true,
     uniqueActiveAddressesAMM: true,
     uniqueActiveAddressesNonAMM: true
-  });
+  }));
 
   // Add state to track available tokens
   const [availableTokens, setAvailableTokens] = useState([]);
@@ -3396,23 +3393,6 @@ const MarketMetricsContent = () => {
 };
 
 const MarketMetricsPage = () => {
-  const dispatch = useDispatch();
-
-  // Add WebSocket connection with proper cleanup
-  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-  const { sendMessage, lastMessage, readyState } = useWebSocket(WSS_FEED_URL, {
-    shouldReconnect: () => true,
-    reconnectInterval: 3000,
-    onMessage: (event) => {
-      try {
-        const json = JSON.parse(event.data);
-        dispatch(update_metrics(json));
-      } catch (err) {
-        console.error('Error processing WebSocket message:', err);
-      }
-    }
-  });
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Topbar />

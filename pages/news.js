@@ -597,10 +597,13 @@ function NewsPage() {
     }
   };
 
-  const stripHtml = useCallback((html) => {
-    if (typeof window === 'undefined') return html;
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.textContent || '';
+  const stripHtml = useMemo(() => {
+    const parser = typeof window !== 'undefined' ? new DOMParser() : null;
+    return (html) => {
+      if (!parser) return html;
+      const doc = parser.parseFromString(html, 'text/html');
+      return doc.body.textContent || '';
+    };
   }, []);
 
   const extractTitle = useCallback((htmlContent) => {
@@ -942,26 +945,7 @@ function NewsPage() {
                     style={{
                       background: 'transparent',
                       border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,
-                      color: theme.palette.text.primary,
-                      transition: 'all 0.3s ease',
-                      transform: 'translateY(0)',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.12)';
-                      e.currentTarget.style.borderColor =
-                        theme.palette.mode === 'dark'
-                          ? 'rgba(255, 255, 255, 0.12)'
-                          : 'rgba(0, 0, 0, 0.12)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
-                      e.currentTarget.style.borderColor =
-                        theme.palette.mode === 'dark'
-                          ? 'rgba(255, 255, 255, 0.06)'
-                          : 'rgba(0, 0, 0, 0.06)';
+                      color: theme.palette.text.primary
                     }}
                   >
                     <div className={`${styles.cardContent} ${isDark ? styles.dark : ''}`}>

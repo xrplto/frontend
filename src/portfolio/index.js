@@ -55,17 +55,7 @@ const axiosInstance = axios.create({
   timeout: 30000 // 30 second timeout for analytics calls
 });
 
-// Lazy load chart library only when needed
-let createChart, LineSeries, HistogramSeries;
-// Dynamically import chart libraries when component mounts
-const loadChartLibraries = async () => {
-  if (!createChart) {
-    const charts = await import('lightweight-charts');
-    createChart = charts.createChart;
-    LineSeries = charts.LineSeries;
-    HistogramSeries = charts.HistogramSeries;
-  }
-};
+// Chart libraries loaded on-demand via LightweightChart component
 
 // Format holding time from seconds to human readable format
 const formatHoldingTime = (seconds) => {

@@ -5,9 +5,6 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import dynamic from 'next/dynamic';
 import { isValidClassicAddress } from 'ripple-address-codec';
-import useWebSocket from 'react-use-websocket';
-import { useDispatch } from 'react-redux';
-import { update_metrics } from 'src/redux/statusSlice';
 
 const Portfolio = dynamic(() => import('src/portfolio'), {
   loading: () => (
@@ -25,21 +22,6 @@ const OverviewWrapper = styled(Box)(
 );
 
 const OverView = ({ account, limit, collection, type, tab }) => {
-  const dispatch = useDispatch();
-
-  // Add WebSocket connection for real-time updates
-  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-  useWebSocket(WSS_FEED_URL, {
-    shouldReconnect: () => true,
-    onMessage: (event) => {
-      try {
-        const json = JSON.parse(event.data);
-        dispatch(update_metrics(json));
-      } catch (err) {
-        console.error('Error processing WebSocket message:', err);
-      }
-    }
-  });
 
   return (
     <OverviewWrapper>
