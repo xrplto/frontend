@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useCallback, useRef, memo } from 'react';
-import dynamic from 'next/dynamic';
 import PropTypes from 'prop-types';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -15,26 +14,16 @@ import Paper from '@mui/material/Paper';
 import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
-import Modal from '@mui/material/Modal';
 import { styled } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Chip from '@mui/material/Chip';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Button from '@mui/material/Button';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
-import StarOutlineIcon from '@mui/icons-material/StarOutline';
-const ReactECharts = dynamic(() => import('echarts-for-react'), {
-  ssr: false,
-  loading: () => <div style={{ height: '400px', background: 'transparent' }} />
-});
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from '../src/components/Topbar';
@@ -159,90 +148,11 @@ const PercentText = styled('span')(({ theme, value }) => ({
         : '#D32F2F'
 }));
 
-const StyledModal = styled(Modal)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: theme.spacing(2),
-  backdropFilter: 'blur(24px)',
-  '& .MuiBackdrop-root': {
-    backgroundColor: alpha(theme.palette.common.black, 0.5)
-  }
-}));
 
-const ModalContent = styled(Paper)(({ theme }) => ({
-  position: 'relative',
-  width: '95%',
-  maxWidth: 1200,
-  height: '90vh',
-  display: 'flex',
-  flexDirection: 'column',
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.95)
-      : theme.palette.background.paper,
-  borderRadius: '32px',
-  boxShadow:
-    theme.palette.mode === 'dark'
-      ? `0 24px 64px ${alpha(theme.palette.common.black, 0.4)}`
-      : `0 24px 64px ${alpha(theme.palette.common.black, 0.1)}`,
-  padding: theme.spacing(4),
-  overflow: 'hidden',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '4px',
-    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-    borderRadius: '32px 32px 0 0'
-  },
-  '& .MuiTabs-root': {
-    marginBottom: theme.spacing(3),
-    borderBottom: `2px solid ${alpha(theme.palette.divider, 0.08)}`
-  },
-  '& .tab-panel': {
-    height: 'calc(90vh - 140px)',
-    overflow: 'hidden'
-  },
-  '& .chart-section': {
-    height: '52vh',
-    borderRadius: '20px',
-    overflow: 'hidden',
-    background:
-      theme.palette.mode === 'dark'
-        ? alpha(theme.palette.background.default, 0.4)
-        : alpha(theme.palette.grey[50], 0.5),
-    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-    padding: theme.spacing(2)
-  },
-  '& .metrics-section': {
-    height: '32vh',
-    overflowY: 'auto',
-    padding: theme.spacing(3),
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? alpha(theme.palette.background.default, 0.4)
-        : alpha(theme.palette.grey[50], 0.5),
-    borderRadius: '20px',
-    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-    marginTop: theme.spacing(2)
-  }
-}));
-
-function TabPanel({ children, value, index }) {
-  return (
-    <Box role="tabpanel" hidden={value !== index} id={`tabpanel-${index}`} className="tab-panel">
-      {value === index && children}
-    </Box>
-  );
-}
 
 // Memoized TraderRow component to prevent unnecessary re-renders
 const TraderRow = memo(
-  ({ trader, onRoiClick, formatCurrency, formatPercentage, isMobile, index, scrollLeft }) => {
+  ({ trader, formatCurrency, formatPercentage, isMobile, index, scrollLeft }) => {
     const theme = useTheme();
     const stickyCellStyles = useMemo(
       () => ({
@@ -293,12 +203,9 @@ const TraderRow = memo(
 
     // Removed - using styled components instead
 
-    const handleRowClick = useCallback(() => {
-      onRoiClick(trader);
-    }, [onRoiClick, trader]);
 
     return (
-      <StyledTableRow key={trader._id} onClick={handleRowClick}>
+      <StyledTableRow key={trader._id}>
         <StyledTableCell align="center" style={{ width: '50px' }}>
           <ValueText
             style={{ fontWeight: '600', color: theme.palette.mode === 'dark' ? '#999' : '#666' }}
@@ -366,22 +273,6 @@ const TraderRow = memo(
         <StyledTableCell align="right">
           <PercentText value={trader.avgROI}>{formatPercentage(trader.avgROI)}</PercentText>
         </StyledTableCell>
-        <StyledTableCell align="center">
-          <IconButton
-            size="small"
-            onClick={(e) => onRoiClick(trader, e)}
-            title="Show trader analytics"
-            sx={{
-              color: theme.palette.primary.main,
-              padding: isMobile ? '4px' : '8px',
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.08)
-              }
-            }}
-          >
-            <ShowChartIcon sx={{ fontSize: isMobile ? '16px' : '20px' }} />
-          </IconButton>
-        </StyledTableCell>
       </StyledTableRow>
     );
   }
@@ -389,45 +280,11 @@ const TraderRow = memo(
 
 TraderRow.displayName = 'TraderRow';
 
-const MetricItem = ({ label, value, valueColor }) => (
-  <Box
-    sx={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      py: 1,
-      px: 1.5,
-      borderRadius: '8px',
-      transition: 'background 0.2s',
-      '&:hover': {
-        background: (theme) => alpha(theme.palette.primary.main, 0.04)
-      },
-      '&:not(:last-of-type)': {
-        mb: 0.5
-      }
-    }}
-  >
-    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem', fontWeight: 500 }}>
-      {label}
-    </Typography>
-    <Typography
-      variant="body2"
-      sx={{
-        fontWeight: 700,
-        fontSize: '0.85rem',
-        color: valueColor || 'text.primary'
-      }}
-    >
-      {value}
-    </Typography>
-  </Box>
-);
 
 export default function Analytics({ initialData, initialError }) {
   const dispatch = useDispatch();
   const [traders, setTraders] = useState(initialData?.data || []);
   const [loading, setLoading] = useState(false);
-  const [roiModalTrader, setRoiModalTrader] = useState(null);
   const [orderBy, setOrderBy] = useState('volume24h');
   const [order, setOrder] = useState('desc');
   const [error, setError] = useState(initialError || null);
@@ -437,7 +294,6 @@ export default function Analytics({ initialData, initialError }) {
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [searchAddress, setSearchAddress] = useState('');
   const [debouncedSearchAddress, setDebouncedSearchAddress] = useState('');
-  const [activeTab, setActiveTab] = useState(0);
   const [hideAmm, setHideAmm] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [scrollLeft, setScrollLeft] = useState(false);
@@ -496,25 +352,8 @@ export default function Analytics({ initialData, initialError }) {
     }
   }, [debouncedSearchAddress]);
 
-  // Effect to handle WebSocket connection status
-  useEffect(() => {
-    if (readyState === 1) {
-      // WebSocket.OPEN
-      console.log('WebSocket connection established');
-    }
-  }, [readyState]);
-
-  // Effect to handle incoming WebSocket messages
-  useEffect(() => {
-    if (lastMessage !== null) {
-      try {
-        const data = JSON.parse(lastMessage.data);
-        console.log('Received WebSocket data:', data);
-      } catch (err) {
-        console.error('Error parsing WebSocket message:', err);
-      }
-    }
-  }, [lastMessage]);
+  // WebSocket connection is handled globally in _app.js
+  // Removed local WebSocket effects to prevent duplicate connections
 
   // Initialize state from SSR data
   useEffect(() => {
@@ -617,16 +456,6 @@ export default function Analytics({ initialData, initialError }) {
   }, [fetchData, isFirstLoad]);
 
   // Memoize the handle functions to prevent unnecessary re-renders
-  const handleRoiClick = useCallback((trader, event) => {
-    if (event) {
-      event.stopPropagation();
-    }
-    setRoiModalTrader(trader);
-  }, []);
-
-  const handleCloseRoiModal = useCallback(() => {
-    setRoiModalTrader(null);
-  }, []);
 
   const handleRequestSort = useCallback(
     (property) => {
@@ -638,9 +467,6 @@ export default function Analytics({ initialData, initialError }) {
     [orderBy, order]
   );
 
-  const handleTabChange = useCallback((event, newValue) => {
-    setActiveTab(newValue);
-  }, []);
 
   // Memoize utility functions
   const formatCurrency = useCallback((value) => {
@@ -676,440 +502,7 @@ export default function Analytics({ initialData, initialError }) {
     return traders;
   }, [traders, hideAmm]);
 
-  // Memoize chart options to prevent recreation on every render
-  const createChartOptions = useCallback(
-    (roiHistory) => {
-      const dates = roiHistory.map((item) => formatDate(item.date));
-      const dailyRoi = roiHistory.map((item) => item.dailyRoi);
-      const cumulativeRoi = roiHistory.map((item) => item.cumulativeRoi);
-      const profits = roiHistory.map((item) => item.profit);
-      const volumes = roiHistory.map((item) => item.volume);
 
-      return {
-        grid: {
-          left: '3%',
-          right: '3%',
-          top: '8%',
-          bottom: '8%',
-          containLabel: true
-        },
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'cross'
-          },
-          formatter: function (params) {
-            const date = dates[params[0].dataIndex];
-            const dailyRoiValue = params[0].value;
-            const cumulativeRoiValue = params[1].value;
-            const profit = profits[params[0].dataIndex];
-            const volume = volumes[params[0].dataIndex];
-
-            return `
-            <div style="font-size: 14px; margin-bottom: 4px;">${date}</div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>${params[0].marker} ${params[0].seriesName}:</span>
-              <span style="color: ${
-                dailyRoiValue >= 0 ? '#4caf50' : '#f44336'
-              }">${dailyRoiValue.toFixed(2)}%</span>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>${params[1].marker} ${params[1].seriesName}:</span>
-              <span style="color: ${
-                cumulativeRoiValue >= 0 ? '#4caf50' : '#f44336'
-              }">${cumulativeRoiValue.toFixed(2)}%</span>
-            </div>
-            <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.2);">
-              <div>Profit: <span style="color: ${
-                profit >= 0 ? '#4caf50' : '#f44336'
-              }">${formatCurrency(profit)}</span></div>
-              <div>Volume: ${formatCurrency(volume)}</div>
-            </div>
-          `;
-          }
-        },
-        legend: {
-          data: ['Daily ROI', 'Cumulative ROI']
-        },
-        xAxis: {
-          type: 'category',
-          data: dates,
-          axisLabel: {
-            rotate: 45
-          }
-        },
-        yAxis: {
-          type: 'value',
-          axisLabel: {
-            formatter: '{value}%'
-          }
-        },
-        series: [
-          {
-            name: 'Daily ROI',
-            type: 'bar',
-            data: dailyRoi,
-            itemStyle: {
-              color: function (params) {
-                return params.value >= 0
-                  ? theme.palette.mode === 'dark'
-                    ? '#66BB6A'
-                    : '#388E3C'
-                  : theme.palette.mode === 'dark'
-                    ? '#FF5252'
-                    : '#D32F2F';
-              }
-            }
-          },
-          {
-            name: 'Cumulative ROI',
-            type: 'line',
-            data: cumulativeRoi,
-            smooth: true,
-            lineStyle: {
-              width: 2,
-              color: theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00'
-            },
-            itemStyle: {
-              color: theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00'
-            },
-            areaStyle: {
-              color: {
-                type: 'linear',
-                x: 0,
-                y: 0,
-                x2: 0,
-                y2: 1,
-                colorStops: [
-                  {
-                    offset: 0,
-                    color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.3)
-                  },
-                  {
-                    offset: 1,
-                    color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.05)
-                  }
-                ]
-              }
-            }
-          }
-        ]
-      };
-    },
-    [formatCurrency, formatDate]
-  );
-
-  const createTradeHistoryChartOptions = useCallback(
-    (tradeHistory) => {
-      const dates = tradeHistory.map((item) => formatDate(item.date));
-      const dailyTrades = tradeHistory.map((item) => item.trades);
-      const cumulativeTrades = tradeHistory.map((item) => item.cumulativeTrades);
-
-      return {
-        grid: {
-          left: '3%',
-          right: '4%',
-          top: '8%',
-          bottom: '8%',
-          containLabel: true
-        },
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'cross'
-          },
-          formatter: function (params) {
-            const date = dates[params[0].dataIndex];
-            const dailyTradesValue = params[0].value;
-            const cumulativeTradesValue = params[1].value;
-
-            return `
-            <div style="font-size: 14px; margin-bottom: 4px;">${date}</div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>${params[0].marker} Daily Trades:</span>
-              <span>${dailyTradesValue}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>${params[1].marker} Cumulative Trades:</span>
-              <span>${cumulativeTradesValue}</span>
-            </div>
-          `;
-          }
-        },
-        legend: {
-          data: ['Daily Trades', 'Cumulative Trades']
-        },
-        xAxis: {
-          type: 'category',
-          data: dates,
-          axisLabel: {
-            rotate: 45
-          }
-        },
-        yAxis: [
-          {
-            type: 'value',
-            name: 'Daily',
-            position: 'left'
-          },
-          {
-            type: 'value',
-            name: 'Cumulative',
-            position: 'right'
-          }
-        ],
-        series: [
-          {
-            name: 'Daily Trades',
-            type: 'bar',
-            data: dailyTrades,
-            itemStyle: {
-              color: theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C'
-            }
-          },
-          {
-            name: 'Cumulative Trades',
-            type: 'line',
-            yAxisIndex: 1,
-            data: cumulativeTrades,
-            smooth: true,
-            lineStyle: {
-              width: 2,
-              color: theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00'
-            },
-            itemStyle: {
-              color: theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00'
-            },
-            areaStyle: {
-              color: {
-                type: 'linear',
-                x: 0,
-                y: 0,
-                x2: 0,
-                y2: 1,
-                colorStops: [
-                  {
-                    offset: 0,
-                    color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.2)
-                  },
-                  {
-                    offset: 1,
-                    color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.02)
-                  }
-                ]
-              }
-            }
-          }
-        ]
-      };
-    },
-    [formatDate, formatCurrency, theme, alpha]
-  );
-
-  const createVolumeHistoryChartOptions = useCallback(
-    (volumeHistory) => {
-      const dates = volumeHistory.map((item) => formatDate(item.date));
-      const dailyVolumes = volumeHistory.map((item) => item.h24Volume);
-      const buyVolumes = volumeHistory.map((item) => item.h24BuyVolume);
-      const sellVolumes = volumeHistory.map((item) => item.h24SellVolume);
-      const cumulativeVolumes = volumeHistory.map((item) => item.cumulativeVolume);
-      const cumulativeBuyVolumes = volumeHistory.map((item) => item.cumulativeBuyVolume);
-      const cumulativeSellVolumes = volumeHistory.map((item) => item.cumulativeSellVolume);
-      const tradedTokens = volumeHistory.map((item) => item.tradedTokens || []);
-
-      return {
-        grid: {
-          left: '3%',
-          right: '4%',
-          top: '8%',
-          bottom: '8%',
-          containLabel: true
-        },
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'cross'
-          },
-          formatter: function (params) {
-            const date = dates[params[0].dataIndex];
-            const dailyVolume = dailyVolumes[params[0].dataIndex];
-            const buyVolume = buyVolumes[params[0].dataIndex];
-            const sellVolume = sellVolumes[params[0].dataIndex];
-            const cumulativeVolume = cumulativeVolumes[params[0].dataIndex];
-            const cumulativeBuy = cumulativeBuyVolumes[params[0].dataIndex];
-            const cumulativeSell = cumulativeSellVolumes[params[0].dataIndex];
-            const tokens = tradedTokens[params[0].dataIndex];
-
-            let tokenDetails = '';
-            if (tokens && tokens.length > 0) {
-              tokenDetails = tokens
-                .map(
-                  (token) => `
-              <div style="margin-left: 12px; margin-top: 2px;">
-                <span>${token.name}:</span>
-                <div style="margin-left: 12px;">
-                  <span style="color: #4caf50">Buy: ${formatCurrency(token.buyVolume)}</span>
-                  <br/>
-                  <span style="color: #f44336">Sell: ${formatCurrency(token.sellVolume)}</span>
-                  <br/>
-                  <span>Trades: ${token.trades}</span>
-                </div>
-              </div>
-            `
-                )
-                .join('');
-            }
-
-            return `
-            <div style="font-size: 14px; margin-bottom: 4px;">${date}</div>
-            <div style="margin-bottom: 8px;">
-              <div style="display: flex; justify-content: space-between;">
-                <span>Daily Volume:</span>
-                <span>${formatCurrency(dailyVolume)}</span>
-              </div>
-              <div style="margin-left: 12px;">
-                <span style="color: #4caf50">Buy: ${formatCurrency(buyVolume)}</span>
-                <br/>
-                <span style="color: #f44336">Sell: ${formatCurrency(sellVolume)}</span>
-              </div>
-            </div>
-            <div style="margin-bottom: 8px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.2);">
-              <div style="display: flex; justify-content: space-between;">
-                <span>Cumulative Volume:</span>
-                <span>${formatCurrency(cumulativeVolume)}</span>
-              </div>
-              <div style="margin-left: 12px;">
-                <span style="color: #4caf50">Buy: ${formatCurrency(cumulativeBuy)}</span>
-                <br/>
-                <span style="color: #f44336">Sell: ${formatCurrency(cumulativeSell)}</span>
-              </div>
-            </div>
-            ${
-              tokens && tokens.length > 0
-                ? `
-              <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.2);">
-                <div style="font-weight: 500;">Traded Tokens:</div>
-                ${tokenDetails}
-              </div>
-            `
-                : ''
-            }
-          `;
-          }
-        },
-        legend: {
-          data: ['Daily Volume', 'Buy Volume', 'Sell Volume', 'Cumulative Volume']
-        },
-        xAxis: {
-          type: 'category',
-          data: dates,
-          axisLabel: {
-            rotate: 45
-          }
-        },
-        yAxis: [
-          {
-            type: 'value',
-            name: 'Daily',
-            position: 'left',
-            axisLabel: {
-              formatter: function (value) {
-                return formatCurrency(value).split(' ')[0];
-              }
-            }
-          },
-          {
-            type: 'value',
-            name: 'Cumulative',
-            position: 'right',
-            axisLabel: {
-              formatter: function (value) {
-                return formatCurrency(value).split(' ')[0];
-              }
-            }
-          }
-        ],
-        series: [
-          {
-            name: 'Daily Volume',
-            type: 'bar',
-            data: dailyVolumes,
-            itemStyle: {
-              color: alpha(theme.palette.mode === 'dark' ? '#90CAF9' : '#1976D2', 0.8)
-            }
-          },
-          {
-            name: 'Buy Volume',
-            type: 'bar',
-            stack: 'daily',
-            data: buyVolumes,
-            itemStyle: {
-              color: theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C'
-            }
-          },
-          {
-            name: 'Sell Volume',
-            type: 'bar',
-            stack: 'daily',
-            data: sellVolumes,
-            itemStyle: {
-              color: theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F'
-            }
-          },
-          {
-            name: 'Cumulative Volume',
-            type: 'line',
-            yAxisIndex: 1,
-            data: cumulativeVolumes,
-            smooth: true,
-            lineStyle: {
-              width: 2,
-              color: theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00'
-            },
-            itemStyle: {
-              color: theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00'
-            },
-            areaStyle: {
-              color: {
-                type: 'linear',
-                x: 0,
-                y: 0,
-                x2: 0,
-                y2: 1,
-                colorStops: [
-                  {
-                    offset: 0,
-                    color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.2)
-                  },
-                  {
-                    offset: 1,
-                    color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.02)
-                  }
-                ]
-              }
-            }
-          }
-        ]
-      };
-    },
-    [formatDate, formatCurrency, theme, alpha]
-  );
-
-  // Memoize the chart options for the modal to prevent recreation on every render
-  const modalChartOptions = useMemo(() => {
-    if (!roiModalTrader?.roiHistory) return null;
-    return createChartOptions(roiModalTrader.roiHistory);
-  }, [roiModalTrader?.roiHistory, createChartOptions]);
-
-  const modalTradeHistoryOptions = useMemo(() => {
-    if (!roiModalTrader?.tradeHistory) return null;
-    return createTradeHistoryChartOptions(roiModalTrader.tradeHistory);
-  }, [roiModalTrader?.tradeHistory, createTradeHistoryChartOptions]);
-
-  const modalVolumeHistoryOptions = useMemo(() => {
-    if (!roiModalTrader?.volumeHistory) return null;
-    return createVolumeHistoryChartOptions(roiModalTrader.volumeHistory);
-  }, [roiModalTrader?.volumeHistory, createVolumeHistoryChartOptions]);
 
   // Memoize pagination handlers to prevent unnecessary re-renders
   const handlePrevPage = useCallback(() => {
@@ -1533,7 +926,6 @@ export default function Analytics({ initialData, initialError }) {
                               ROI
                             </TableSortLabel>
                           </TableCell>
-                          <TableCell align="right" />
                         </TableRow>
                       </StyledTableHead>
                       <TableBody>
@@ -1542,7 +934,6 @@ export default function Analytics({ initialData, initialError }) {
                             key={trader._id}
                             trader={trader}
                             index={index}
-                            onRoiClick={handleRoiClick}
                             formatCurrency={formatCurrency}
                             formatPercentage={formatPercentage}
                             isMobile={isMobile}
@@ -1811,420 +1202,6 @@ export default function Analytics({ initialData, initialError }) {
           </Container>
         </Box>
 
-        {roiModalTrader && (
-          <StyledModal
-            open={Boolean(roiModalTrader)}
-            onClose={handleCloseRoiModal}
-            aria-labelledby="roi-history-modal"
-          >
-            <ModalContent>
-              {roiModalTrader && (
-                <>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      mb: 2
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography
-                        variant="h5"
-                        component="div"
-                        sx={{
-                          fontWeight: 700,
-                          color: 'text.primary'
-                        }}
-                      >
-                        Trader Analytics
-                      </Typography>
-                      <Typography
-                        component="a"
-                        href={`/profile/${roiModalTrader.address}`}
-                        sx={{
-                          textDecoration: 'none',
-                          color: 'primary.main',
-                          fontWeight: 600,
-                          fontSize: '1rem',
-                          '&:hover': {
-                            textDecoration: 'underline'
-                          }
-                        }}
-                      >
-                        {roiModalTrader.address}
-                      </Typography>
-                      {roiModalTrader.AMM && (
-                        <Chip
-                          label="AMM"
-                          size="small"
-                          color="secondary"
-                          sx={{ height: 22, fontSize: '0.7rem' }}
-                        />
-                      )}
-                    </Box>
-
-                    <IconButton
-                      onClick={handleCloseRoiModal}
-                      sx={{
-                        borderRadius: '12px',
-                        background: 'transparent',
-                        border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                        '&:hover': {
-                          background: 'transparent',
-                          border: (theme) => `1px solid ${alpha(theme.palette.error.main, 0.2)}`
-                        }
-                      }}
-                    >
-                      <ClearIcon />
-                    </IconButton>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      mb: 2,
-                      p: 1.5,
-                      borderRadius: '12px',
-                      background: 'transparent',
-                      border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.2)}`
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'text.secondary',
-                        fontWeight: 500
-                      }}
-                    >
-                      First Trade: {new Date(roiModalTrader.firstTradeDate).toLocaleDateString()}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'text.secondary',
-                        fontWeight: 500
-                      }}
-                    >
-                      Last Trade: {new Date(roiModalTrader.lastTradeDate).toLocaleDateString()}
-                    </Typography>
-                  </Box>
-
-                  <Tabs
-                    value={activeTab}
-                    onChange={handleTabChange}
-                    variant="scrollable"
-                    scrollButtons="auto"
-                    sx={{
-                      mb: 3,
-                      '& .MuiTab-root': {
-                        borderRadius: '12px 12px 0 0',
-                        transition: 'all 0.2s ease',
-                        fontWeight: 600,
-                        textTransform: 'none',
-                        minHeight: 48,
-                        '&:hover': {
-                          background: 'transparent'
-                        },
-                        '&.Mui-selected': {
-                          background: 'transparent',
-                          color: 'primary.main',
-                          borderBottom: (theme) => `2px solid ${theme.palette.primary.main}`
-                        }
-                      }
-                    }}
-                  >
-                    <Tab label="Overview & ROI" />
-                    <Tab label="Token Performance" />
-                    <Tab label="Trade History" />
-                    <Tab label="Volume History" />
-                  </Tabs>
-
-                  <TabPanel value={activeTab} index={0}>
-                    <Box className="chart-section">
-                      {roiModalTrader.roiHistory && roiModalTrader.roiHistory.length > 0 ? (
-                        <ReactECharts
-                          option={modalChartOptions}
-                          style={{ height: '100%', width: '100%' }}
-                          opts={{ renderer: 'svg' }}
-                        />
-                      ) : (
-                        <Box
-                          sx={{
-                            height: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <Typography color="text.secondary">No ROI history available</Typography>
-                        </Box>
-                      )}
-                    </Box>
-                    <Box className="metrics-section">
-                      <Grid container spacing={3}>
-                        <Grid item xs={12} sm={6} md={3}>
-                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
-                            Volume
-                          </Typography>
-                          <MetricItem
-                            label="Total Volume"
-                            value={formatCurrency(roiModalTrader.totalVolume)}
-                          />
-                          <MetricItem
-                            label="Buy Volume"
-                            value={formatCurrency(roiModalTrader.buyVolume)}
-                            valueColor="success.main"
-                          />
-                          <MetricItem
-                            label="Sell Volume"
-                            value={formatCurrency(roiModalTrader.sellVolume)}
-                            valueColor="error.main"
-                          />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
-                            Profit
-                          </Typography>
-                          <MetricItem
-                            label="Total Profit"
-                            value={formatCurrency(roiModalTrader.totalProfit)}
-                            valueColor={
-                              roiModalTrader.totalProfit >= 0 ? 'success.main' : 'error.main'
-                            }
-                          />
-                          <MetricItem
-                            label="Unrealized Profit"
-                            value={formatCurrency(roiModalTrader.unrealizedProfit)}
-                          />
-                          <MetricItem
-                            label="Max Profit"
-                            value={formatCurrency(roiModalTrader.maxProfitTrade)}
-                            valueColor="success.main"
-                          />
-                          <MetricItem
-                            label="Max Loss"
-                            value={formatCurrency(roiModalTrader.maxLossTrade)}
-                            valueColor="error.main"
-                          />
-                          <MetricItem
-                            label="Avg. ROI"
-                            value={formatPercentage(roiModalTrader.avgROI)}
-                            valueColor={roiModalTrader.avgROI >= 0 ? 'success.main' : 'error.main'}
-                          />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
-                            Trades
-                          </Typography>
-                          <MetricItem label="Total" value={roiModalTrader.totalTrades} />
-                          <MetricItem
-                            label="Avg. Holding"
-                            value={`${(roiModalTrader.avgHoldingTime / 3600).toFixed(1)}h`}
-                          />
-                          <MetricItem
-                            label="Active Tokens (24h)"
-                            value={roiModalTrader.activeTokens24h}
-                          />
-                          <MetricItem
-                            label="Active Tokens (7d)"
-                            value={roiModalTrader.activeTokens7d}
-                          />
-                          <MetricItem
-                            label="Active Tokens (1m)"
-                            value={roiModalTrader.activeTokens1m}
-                          />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
-                            Recent Activity
-                          </Typography>
-                          <MetricItem
-                            label="24h Volume"
-                            value={formatCurrency(roiModalTrader.volume24h)}
-                          />
-                          <MetricItem
-                            label="24h Profit"
-                            value={formatCurrency(roiModalTrader.profit24h)}
-                            valueColor={
-                              roiModalTrader.profit24h >= 0 ? 'success.main' : 'error.main'
-                            }
-                          />
-                          <MetricItem label="24h Trades" value={roiModalTrader.trades24h} />
-                          <MetricItem
-                            label="7d Volume"
-                            value={formatCurrency(roiModalTrader.volume7d)}
-                          />
-                          <MetricItem
-                            label="7d Profit"
-                            value={formatCurrency(roiModalTrader.profit7d)}
-                            valueColor={
-                              roiModalTrader.profit7d >= 0 ? 'success.main' : 'error.main'
-                            }
-                          />
-                          <MetricItem label="7d Trades" value={roiModalTrader.trades7d} />
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </TabPanel>
-
-                  <TabPanel value={activeTab} index={1}>
-                    <TableContainer sx={{ height: '100%' }}>
-                      <Table size="small" stickyHeader>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>Token</TableCell>
-                            <TableCell align="right">Volume</TableCell>
-                            <TableCell align="right">Profit/Loss</TableCell>
-                            <TableCell align="right">ROI</TableCell>
-                            <TableCell align="right">Trades</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {roiModalTrader.tokenPerformance?.map((token) => (
-                            <TableRow key={token.tokenId}>
-                              <TableCell component="th" scope="row">
-                                {token.name}
-                              </TableCell>
-                              <TableCell align="right">{formatCurrency(token.volume)}</TableCell>
-                              <TableCell
-                                align="right"
-                                sx={{ color: token.profit >= 0 ? 'success.main' : 'error.main' }}
-                              >
-                                {formatCurrency(token.profit)}
-                              </TableCell>
-                              <TableCell
-                                align="right"
-                                sx={{ color: token.roi >= 0 ? 'success.main' : 'error.main' }}
-                              >
-                                {formatPercentage(token.roi)}
-                              </TableCell>
-                              <TableCell align="right">{token.trades}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </TabPanel>
-
-                  <TabPanel value={activeTab} index={2}>
-                    <Box className="chart-section">
-                      {roiModalTrader.tradeHistory && roiModalTrader.tradeHistory.length > 0 ? (
-                        <ReactECharts
-                          option={modalTradeHistoryOptions}
-                          style={{ height: '100%', width: '100%' }}
-                          opts={{ renderer: 'svg' }}
-                        />
-                      ) : (
-                        <Box
-                          sx={{
-                            height: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <Typography color="text.secondary">No trade history available</Typography>
-                        </Box>
-                      )}
-                    </Box>
-                    <Box className="metrics-section">
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6} md={3}>
-                          <Typography variant="body2" color="text.secondary">
-                            Total Trades
-                          </Typography>
-                          <Typography variant="body1">{roiModalTrader.totalTrades}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                          <Typography variant="body2" color="text.secondary">
-                            Total Tokens Traded
-                          </Typography>
-                          <Typography variant="body1">
-                            {roiModalTrader.totalTokensTraded}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </TabPanel>
-
-                  <TabPanel value={activeTab} index={3}>
-                    <Box className="chart-section">
-                      {roiModalTrader.volumeHistory && roiModalTrader.volumeHistory.length > 0 ? (
-                        <ReactECharts
-                          option={modalVolumeHistoryOptions}
-                          style={{ height: '100%', width: '100%' }}
-                          opts={{ renderer: 'svg' }}
-                        />
-                      ) : (
-                        <Box
-                          sx={{
-                            height: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <Typography color="text.secondary">
-                            No volume history available
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                    <Box className="metrics-section">
-                      <Grid container spacing={2}>
-                        <Grid item xs={6} sm={4} md={2}>
-                          <Typography variant="body2" color="text.secondary">
-                            24h Volume
-                          </Typography>
-                          <Typography variant="body1">
-                            {formatCurrency(roiModalTrader.volume24h)}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={6} sm={4} md={2}>
-                          <Typography variant="body2" color="text.secondary">
-                            7d Volume
-                          </Typography>
-                          <Typography variant="body1">
-                            {formatCurrency(roiModalTrader.volume7d)}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={6} sm={4} md={2}>
-                          <Typography variant="body2" color="text.secondary">
-                            1m Volume
-                          </Typography>
-                          <Typography variant="body1">
-                            {formatCurrency(roiModalTrader.volume1m)}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={6} sm={4} md={2}>
-                          <Typography variant="body2" color="text.secondary">
-                            24h Trades
-                          </Typography>
-                          <Typography variant="body1">{roiModalTrader.trades24h}</Typography>
-                        </Grid>
-                        <Grid item xs={6} sm={4} md={2}>
-                          <Typography variant="body2" color="text.secondary">
-                            7d Trades
-                          </Typography>
-                          <Typography variant="body1">{roiModalTrader.trades7d}</Typography>
-                        </Grid>
-                        <Grid item xs={6} sm={4} md={2}>
-                          <Typography variant="body2" color="text.secondary">
-                            1m Trades
-                          </Typography>
-                          <Typography variant="body1">{roiModalTrader.trades1m}</Typography>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </TabPanel>
-                </>
-              )}
-            </ModalContent>
-          </StyledModal>
-        )}
       </Container>
       <Footer />
     </>
