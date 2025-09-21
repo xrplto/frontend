@@ -539,14 +539,20 @@ function RSIAnalysisPage({ data }) {
       const logMinMC = Math.log10(Math.max(minMC, 1));
       const logMaxMC = Math.log10(Math.max(maxMC, 1));
 
-      validTokens.forEach(token => {
+      validTokens.forEach((token, index) => {
         const rsi = getRSIValue(token);
         const marketCap = token.marketcap || 1;
 
         const logMC = Math.log10(Math.max(marketCap, 1));
         const xNormalized = logMaxMC > logMinMC ? (logMC - logMinMC) / (logMaxMC - logMinMC) : 0.5;
-        const x = padding + (xNormalized * (width - padding * 1.5));
-        const y = height - padding - ((rsi / 100) * (height - padding * 2));
+        const baseX = padding + (xNormalized * (width - padding * 1.5));
+        const baseY = height - padding - ((rsi / 100) * (height - padding * 2));
+
+        // Add slight jitter to prevent overlap
+        const jitterX = (index % 7 - 3) * 8;
+        const jitterY = (Math.floor(index / 7) % 5 - 2) * 6;
+        const x = baseX + jitterX;
+        const y = baseY + jitterY;
 
         const size = Math.max(4, Math.min(20, Math.sqrt(marketCap / 1000000) * 3 + 3));
 
@@ -566,12 +572,36 @@ function RSIAnalysisPage({ data }) {
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        if (size > 8 && token.user) {
-          ctx.fillStyle = '#fff';
-          ctx.font = 'bold 10px Arial';
-          ctx.textAlign = 'center';
+        // Add token name as flag
+        if (token.name) {
+          const flagX = x + size + 8;
+          const flagY = y - 2;
+
+          // Flag background
+          ctx.font = '11px Arial';
+          ctx.textAlign = 'left';
+          const textWidth = ctx.measureText(token.name.substring(0, 12)).width;
+
+          ctx.fillStyle = darkMode ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)';
+          ctx.fillRect(flagX - 2, flagY - 8, textWidth + 6, 16);
+
+          // Flag border
+          ctx.strokeStyle = darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(flagX - 2, flagY - 8, textWidth + 6, 16);
+
+          // Flag text
+          ctx.fillStyle = darkMode ? '#fff' : '#333';
           ctx.textBaseline = 'middle';
-          ctx.fillText(token.user.substring(0, 3).toUpperCase(), x, y);
+          ctx.fillText(token.name.substring(0, 12), flagX, flagY);
+
+          // Connector line
+          ctx.strokeStyle = darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x + size, y);
+          ctx.lineTo(flagX - 2, flagY);
+          ctx.stroke();
         }
       });
     }
