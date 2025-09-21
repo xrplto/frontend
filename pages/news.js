@@ -382,7 +382,6 @@ function NewsPage() {
     all: { bullish: 0, bearish: 0, neutral: 0 }
   }));
   const [sourcesStats, setSourcesStats] = useState({});
-  const [expandedArticles, setExpandedArticles] = useState({});
   const [searchSentimentScore, setSearchSentimentScore] = useState(null);
 
   const filteredNews = useMemo(() => (Array.isArray(news) ? news : []), [news]);
@@ -432,12 +431,6 @@ function NewsPage() {
     [searchInput, itemsPerPage, selectedSource, router]
   );
 
-  const toggleArticleExpansion = useCallback((articleId) => {
-    setExpandedArticles((prev) => ({
-      ...prev,
-      [articleId]: !prev[articleId]
-    }));
-  }, []);
 
   // Parse URL parameters on mount and router changes
   useEffect(() => {
@@ -980,21 +973,6 @@ function NewsPage() {
                         </p>
                       </div>
                       <div className={styles.divider}></div>
-                      {expandedArticles[article._id] && (
-                        <div className={styles.expandedContent}>
-                          {article.articleBody?.split('\n').map(
-                            (paragraph, index) =>
-                              paragraph.trim() && (
-                                <p
-                                  key={`${article._id}-para-${index}`}
-                                  className={styles.articleParagraph}
-                                >
-                                  {paragraph}
-                                </p>
-                              )
-                          )}
-                        </div>
-                      )}
                       <div className={`${styles.cardFooter} ${isMobile ? styles.mobile : ''}`}>
                         <div className={styles.metaInfo}>
                           <span
@@ -1006,20 +984,6 @@ function NewsPage() {
                               {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
                             </time>
                           </span>
-                          {article.articleBody && (
-                            <button
-                              className={styles.expandButton}
-                              onClick={() => toggleArticleExpansion(article._id)}
-                              style={{
-                                transition: 'all 0.2s ease',
-                                transform: 'scale(1)'
-                              }}
-                              onMouseEnter={(e) => (e.target.style.transform = 'scale(1.05)')}
-                              onMouseLeave={(e) => (e.target.style.transform = 'scale(1)')}
-                            >
-                              {expandedArticles[article._id] ? 'Show Less' : 'Show More'}
-                            </button>
-                          )}
                         </div>
                         <a
                           href={article.sourceUrl}

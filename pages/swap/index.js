@@ -27,13 +27,14 @@ import { processOrderbookOffers } from 'src/utils/orderbookService';
 // Components
 import Logo from 'src/components/Logo';
 
-// Lazy load the heavy swap component (165KB)
+// Lazy load the heavy swap component (165KB) with prefetch
 const Swap = dynamic(() => import('src/components/SwapInterface'), {
   loading: () => (
     <Box display="flex" justifyContent="center" p={4}>
       <CircularProgress />
     </Box>
-  )
+  ),
+  ssr: false
 });
 
 import Topbar from 'src/components/Topbar';
