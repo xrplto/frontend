@@ -236,7 +236,7 @@ const Canvas = styled.canvas`
 `;
 
 const Tooltip = styled.div`
-  position: absolute;
+  position: fixed;
   background: ${p => p.darkMode ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)'};
   border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
   border-radius: 8px;
@@ -247,19 +247,8 @@ const Tooltip = styled.div`
   z-index: 1000;
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transform: translate(-50%, -100%);
-  margin-top: -8px;
   white-space: nowrap;
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    border: 4px solid transparent;
-    border-top-color: ${p => p.darkMode ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)'};
-    transform: translateX(-50%);
-  }
+  transform: translate(10px, -50%);
 `;
 
 const TableWrapper = styled.div`
@@ -572,18 +561,24 @@ function RSIAnalysisPage({ data }) {
       const logMinMC = Math.log10(Math.max(minMC, 1));
       const logMaxMC = Math.log10(Math.max(maxMC, 1));
 
-      validTokens.forEach(token => {
+      validTokens.forEach((token, index) => {
         const rsi = getRSIValue(token);
         const marketCap = token.marketcap || 1;
         const logMC = Math.log10(Math.max(marketCap, 1));
         const xNormalized = logMaxMC > logMinMC ? (logMC - logMinMC) / (logMaxMC - logMinMC) : 0.5;
-        const tokenX = padding + (xNormalized * (rect.width - padding * 1.5));
-        const tokenY = rect.height - padding - ((rsi / 100) * (rect.height - padding * 2));
+        const baseX = padding + (xNormalized * (rect.width - padding * 1.5));
+        const baseY = rect.height - padding - ((rsi / 100) * (rect.height - padding * 2));
+
+        // Add same jitter as in drawHeatMap
+        const jitterX = (index % 7 - 3) * 8;
+        const jitterY = (Math.floor(index / 7) % 5 - 2) * 6;
+        const tokenX = baseX + jitterX;
+        const tokenY = baseY + jitterY;
 
         const distance = Math.sqrt((x - tokenX) ** 2 + (y - tokenY) ** 2);
         const size = Math.max(4, Math.min(20, Math.sqrt(marketCap / 1000000) * 3 + 3));
 
-        if (distance <= size + 5 && distance < minDistance) {
+        if (distance <= size + 8 && distance < minDistance) {
           minDistance = distance;
           hoveredToken = token;
         }
