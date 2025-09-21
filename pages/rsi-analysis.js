@@ -41,6 +41,52 @@ const ControlRow = styled.div`
   align-items: center;
   flex-wrap: wrap;
   width: 100%;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+      padding-bottom: 12px;
+    }
+  }
+`;
+
+const MobileSection = styled.div`
+  @media (max-width: 768px) {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+`;
+
+const MobileButtonGrid = styled.div`
+  @media (max-width: 768px) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  @media (min-width: 769px) {
+    display: contents;
+  }
+`;
+
+const MobileFilterGrid = styled.div`
+  @media (max-width: 768px) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  @media (min-width: 769px) {
+    display: contents;
+  }
 `;
 
 const ActiveFilters = styled.div`
@@ -49,6 +95,10 @@ const ActiveFilters = styled.div`
   flex-wrap: wrap;
   align-items: center;
   min-height: 24px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const FilterChip = styled.div`
@@ -73,6 +123,11 @@ const FilterChip = styled.div`
     font-size: 14px;
     font-weight: bold;
     opacity: 0.7;
+  }
+
+  @media (max-width: 768px) {
+    padding: 6px 10px;
+    font-size: 11px;
   }
 `;
 
@@ -703,17 +758,21 @@ function RSIAnalysisPage({ data }) {
           <Grid item xs={12}>
             <Controls darkMode={darkMode}>
               <ControlRow>
-                <Label darkMode={darkMode}>Timeframe:</Label>
-                {timeframes.map(tf => (
-                  <Button
-                    key={tf.value}
-                    darkMode={darkMode}
-                    selected={params.timeframe === tf.value}
-                    onClick={() => setTimeframe(tf.value)}
-                  >
-                    {tf.label}
-                  </Button>
-                ))}
+                <MobileSection>
+                  <Label darkMode={darkMode}>Timeframe:</Label>
+                  <MobileButtonGrid>
+                    {timeframes.map(tf => (
+                      <Button
+                        key={tf.value}
+                        darkMode={darkMode}
+                        selected={params.timeframe === tf.value}
+                        onClick={() => setTimeframe(tf.value)}
+                      >
+                        {tf.label}
+                      </Button>
+                    ))}
+                  </MobileButtonGrid>
+                </MobileSection>
                 <div style={{ marginLeft: 'auto' }}>
                   <Select
                     darkMode={darkMode}
@@ -728,77 +787,86 @@ function RSIAnalysisPage({ data }) {
               </ControlRow>
 
               <ControlRow>
-                <Label darkMode={darkMode}>Presets:</Label>
-                {presets.map(preset => (
-                  <Button
-                    key={preset.label}
-                    darkMode={darkMode}
-                    onClick={() => applyPreset(preset)}
-                  >
-                    {preset.label}
-                  </Button>
-                ))}
+                <MobileSection>
+                  <Label darkMode={darkMode}>Presets:</Label>
+                  <MobileButtonGrid>
+                    {presets.map(preset => (
+                      <Button
+                        key={preset.label}
+                        darkMode={darkMode}
+                        onClick={() => applyPreset(preset)}
+                      >
+                        {preset.label}
+                      </Button>
+                    ))}
+                  </MobileButtonGrid>
+                </MobileSection>
               </ControlRow>
 
               <ControlRow>
-                <Label darkMode={darkMode}>Filters:</Label>
-                <Select
-                  darkMode={darkMode}
-                  selected={params.origin === 'FirstLedger'}
-                  value={params.origin}
-                  onChange={e => updateParam('origin', e.target.value)}
-                  style={{ width: '140px' }}
-                >
-                  <option value="">All Origins</option>
-                  <option value="FirstLedger">FirstLedger</option>
-                </Select>
-                <FilterInput
-                  darkMode={darkMode}
-                  placeholder="Min MC"
-                  value={params.minMarketCap}
-                  onChange={e => updateParam('minMarketCap', e.target.value)}
-                />
-                <FilterInput
-                  darkMode={darkMode}
-                  placeholder="Max MC"
-                  value={params.maxMarketCap}
-                  onChange={e => updateParam('maxMarketCap', e.target.value)}
-                />
-                <FilterInput
-                  darkMode={darkMode}
-                  placeholder="Min Vol"
-                  value={params.minVolume24h}
-                  onChange={e => updateParam('minVolume24h', e.target.value)}
-                />
-                <FilterInput
-                  darkMode={darkMode}
-                  placeholder={`Min RSI ${params.timeframe}`}
-                  value={params[`minRsi${params.timeframe}`] || ''}
-                  onChange={e => updateParam(`minRsi${params.timeframe}`, e.target.value)}
-                />
-                <FilterInput
-                  darkMode={darkMode}
-                  placeholder={`Max RSI ${params.timeframe}`}
-                  value={params[`maxRsi${params.timeframe}`] || ''}
-                  onChange={e => updateParam(`maxRsi${params.timeframe}`, e.target.value)}
-                />
+                <MobileSection>
+                  <Label darkMode={darkMode}>Filters:</Label>
+                  <MobileFilterGrid>
+                    <Select
+                      darkMode={darkMode}
+                      selected={params.origin === 'FirstLedger'}
+                      value={params.origin}
+                      onChange={e => updateParam('origin', e.target.value)}
+                    >
+                      <option value="">All Origins</option>
+                      <option value="FirstLedger">FirstLedger</option>
+                    </Select>
+                    <FilterInput
+                      darkMode={darkMode}
+                      placeholder="Min MC"
+                      value={params.minMarketCap}
+                      onChange={e => updateParam('minMarketCap', e.target.value)}
+                    />
+                    <FilterInput
+                      darkMode={darkMode}
+                      placeholder="Max MC"
+                      value={params.maxMarketCap}
+                      onChange={e => updateParam('maxMarketCap', e.target.value)}
+                    />
+                    <FilterInput
+                      darkMode={darkMode}
+                      placeholder="Min Vol"
+                      value={params.minVolume24h}
+                      onChange={e => updateParam('minVolume24h', e.target.value)}
+                    />
+                    <FilterInput
+                      darkMode={darkMode}
+                      placeholder={`Min RSI ${params.timeframe}`}
+                      value={params[`minRsi${params.timeframe}`] || ''}
+                      onChange={e => updateParam(`minRsi${params.timeframe}`, e.target.value)}
+                    />
+                    <FilterInput
+                      darkMode={darkMode}
+                      placeholder={`Max RSI ${params.timeframe}`}
+                      value={params[`maxRsi${params.timeframe}`] || ''}
+                      onChange={e => updateParam(`maxRsi${params.timeframe}`, e.target.value)}
+                    />
+                  </MobileFilterGrid>
+                </MobileSection>
               </ControlRow>
 
               {getActiveFilters().length > 0 && (
                 <ControlRow>
-                  <Label darkMode={darkMode}>Active:</Label>
-                  <ActiveFilters>
-                    {getActiveFilters().map(filter => (
-                      <FilterChip
-                        key={filter.key}
-                        darkMode={darkMode}
-                        onClick={() => removeFilter(filter.key)}
-                        title="Click to remove filter"
-                      >
-                        {filter.label}
-                      </FilterChip>
-                    ))}
-                  </ActiveFilters>
+                  <MobileSection>
+                    <Label darkMode={darkMode}>Active:</Label>
+                    <ActiveFilters>
+                      {getActiveFilters().map(filter => (
+                        <FilterChip
+                          key={filter.key}
+                          darkMode={darkMode}
+                          onClick={() => removeFilter(filter.key)}
+                          title="Click to remove filter"
+                        >
+                          {filter.label}
+                        </FilterChip>
+                      ))}
+                    </ActiveFilters>
+                  </MobileSection>
                 </ControlRow>
               )}
             </Controls>
