@@ -83,17 +83,23 @@ const Button = styled.button`
 const Select = styled.select`
   padding: 10px 16px;
   padding-right: 32px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
+  border: 1px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
   border-radius: 10px;
-  background: ${p => p.darkMode ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.95)'};
-  color: ${p => p.darkMode ? '#fff' : '#333'};
+  background: ${p => p.selected ? 'rgba(33,150,243,0.1)' : p.darkMode ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.95)'};
+  color: ${p => p.selected ? '#2196f3' : p.darkMode ? '#fff' : '#333'};
   font-size: 14px;
+  font-weight: ${p => p.selected ? '600' : '400'};
   cursor: pointer;
   appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 10px center;
   background-size: 16px;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: ${p => p.selected ? 'rgba(33,150,243,0.4)' : p.darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(145,158,171,0.3)'};
+  }
 `;
 
 const FilterInput = styled.input`
@@ -125,11 +131,41 @@ const HeatMap = styled.div`
   border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   margin-bottom: 20px;
   position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
 `;
 
 const Canvas = styled.canvas`
   width: 100%;
   height: 100%;
+  cursor: crosshair;
+`;
+
+const Tooltip = styled.div`
+  position: absolute;
+  background: ${p => p.darkMode ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)'};
+  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: ${p => p.darkMode ? '#fff' : '#333'};
+  pointer-events: none;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translate(-50%, -100%);
+  margin-top: -8px;
+  white-space: nowrap;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    border: 4px solid transparent;
+    border-top-color: ${p => p.darkMode ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)'};
+    transform: translateX(-50%);
+  }
 `;
 
 const TableWrapper = styled.div`
@@ -248,6 +284,7 @@ function RSIAnalysisPage({ data }) {
 
   const [tokens, setTokens] = useState(data?.tokens || []);
   const [loading, setLoading] = useState(false);
+  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, data: null });
 
   // API parameters
   const [params, setParams] = useState({
@@ -257,7 +294,7 @@ function RSIAnalysisPage({ data }) {
     sortType: 'desc',
     timeframe: '24h',
     filter: '',
-    origin: '',
+    origin: 'FirstLedger',
     minMarketCap: '',
     maxMarketCap: '',
     minVolume24h: '',
@@ -390,6 +427,64 @@ function RSIAnalysisPage({ data }) {
       border: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
     };
   };
+
+  const handleCanvasMouseMove = useCallback((e) => {
+    const canvas = canvasRef.current;
+    if (!canvas || !tokens.length) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const padding = 60;
+
+    const validTokens = tokens.filter(token => {
+      const rsi = getRSIValue(token);
+      return rsi && token.marketcap && rsi >= 0 && rsi <= 100;
+    }).slice(0, 100);
+
+    let hoveredToken = null;
+    let minDistance = Infinity;
+
+    if (validTokens.length > 0) {
+      const marketCaps = validTokens.map(t => t.marketcap);
+      const minMC = Math.min(...marketCaps);
+      const maxMC = Math.max(...marketCaps);
+      const logMinMC = Math.log10(Math.max(minMC, 1));
+      const logMaxMC = Math.log10(Math.max(maxMC, 1));
+
+      validTokens.forEach(token => {
+        const rsi = getRSIValue(token);
+        const marketCap = token.marketcap || 1;
+        const logMC = Math.log10(Math.max(marketCap, 1));
+        const xNormalized = logMaxMC > logMinMC ? (logMC - logMinMC) / (logMaxMC - logMinMC) : 0.5;
+        const tokenX = padding + (xNormalized * (rect.width - padding * 1.5));
+        const tokenY = rect.height - padding - ((rsi / 100) * (rect.height - padding * 2));
+
+        const distance = Math.sqrt((x - tokenX) ** 2 + (y - tokenY) ** 2);
+        const size = Math.max(4, Math.min(20, Math.sqrt(marketCap / 1000000) * 3 + 3));
+
+        if (distance <= size + 5 && distance < minDistance) {
+          minDistance = distance;
+          hoveredToken = token;
+        }
+      });
+    }
+
+    if (hoveredToken) {
+      setTooltip({
+        visible: true,
+        x: e.clientX,
+        y: e.clientY,
+        data: hoveredToken
+      });
+    } else {
+      setTooltip({ visible: false, x: 0, y: 0, data: null });
+    }
+  }, [tokens, getRSIValue]);
+
+  const handleCanvasMouseLeave = useCallback(() => {
+    setTooltip({ visible: false, x: 0, y: 0, data: null });
+  }, []);
 
   const drawHeatMap = useCallback(() => {
     const canvas = canvasRef.current;
@@ -568,6 +663,7 @@ function RSIAnalysisPage({ data }) {
                 <Label darkMode={darkMode}>Filters:</Label>
                 <Select
                   darkMode={darkMode}
+                  selected={params.origin === 'FirstLedger'}
                   value={params.origin}
                   onChange={e => updateParam('origin', e.target.value)}
                   style={{ width: '140px' }}
@@ -609,7 +705,11 @@ function RSIAnalysisPage({ data }) {
             </Controls>
 
             <HeatMap darkMode={darkMode}>
-              <Canvas ref={canvasRef} />
+              <Canvas
+                ref={canvasRef}
+                onMouseMove={handleCanvasMouseMove}
+                onMouseLeave={handleCanvasMouseLeave}
+              />
               <div style={{
                 position: 'absolute',
                 top: '20px',
@@ -620,6 +720,19 @@ function RSIAnalysisPage({ data }) {
               }}>
                 RSI Heatmap - {params.timeframe.toUpperCase()}
               </div>
+              {tooltip.visible && tooltip.data && (
+                <Tooltip
+                  darkMode={darkMode}
+                  style={{ left: tooltip.x, top: tooltip.y }}
+                >
+                  <div style={{ fontWeight: '600', marginBottom: '4px' }}>
+                    {tooltip.data.name}
+                  </div>
+                  <div>RSI: {getRSIValue(tooltip.data)?.toFixed(1) || 'N/A'}</div>
+                  <div>MC: ${(tooltip.data.marketcap / 1000000).toFixed(2)}M</div>
+                  <div>24h: {tooltip.data.pro24h >= 0 ? '+' : ''}{tooltip.data.pro24h?.toFixed(2) || '0.00'}%</div>
+                </Tooltip>
+              )}
             </HeatMap>
 
             <TableWrapper darkMode={darkMode}>
