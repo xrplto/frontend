@@ -6,9 +6,9 @@
   "author": "Yannier",
   "private": true,
   "dependencies": {
-    "@emotion/server": "^11.11.0",
     "@crossmarkio/sdk": "^0.4.0",
     "@emotion/react": "^11.14.0",
+    "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.14.1",
     "@gemwallet/api": "^3.8.0",
     "@mui/icons-material": "^7.3.2",
@@ -62,11 +62,12 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "15.5.3",
+    "cross-env": "^7.0.3",
     "eslint": "^9.35.0",
     "eslint-config-next": "^15.5.3",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.6.2",
-    "cross-env": "^7.0.3"
+    "puppeteer": "^24.22.0"
   }
 }

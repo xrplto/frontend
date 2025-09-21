@@ -144,7 +144,7 @@ const TrendingTokens = () => {
       }
     };
     getTrendingTokens();
-  }, []);
+  }, [BASE_URL]);
 
   const formatPrice = (price) => {
     if (!price) return `${currencySymbols[activeFiatCurrency]}0`;
