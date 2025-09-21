@@ -13,6 +13,14 @@ const Overview = dynamic(() => import('./overview'), {
   ssr: false
 });
 
+const Market = dynamic(() => import('./market/PairsList'), {
+  ssr: false
+});
+
+const Trade = dynamic(() => import('./trade/TradePanel'), {
+  ssr: false
+});
+
 const LinkCascade = dynamic(() => import('./LinkCascade'), {
   ssr: false
 });

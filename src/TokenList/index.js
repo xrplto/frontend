@@ -26,30 +26,19 @@ const MemoizedTokenRow = memo(TokenRow, (prevProps, nextProps) => {
   const prev = prevProps.token;
   const next = nextProps.token;
 
-  // Fast path: check only critical fields
-  if (prev.exch !== next.exch) return false;
-  if (prev.pro24h !== next.pro24h) return false;
-  if (prev.pro5m !== next.pro5m) return false;
-  if (prev.pro1h !== next.pro1h) return false;
-  if (prev.pro7d !== next.pro7d) return false;
-  if (prev.vol24hxrp !== next.vol24hxrp) return false;
-  if (prev.time !== next.time) return false;
-
-  // Check watchlist only if changed
-  if (prevProps.watchList !== nextProps.watchList) {
-    const prevInWatchlist = prevProps.watchList.includes(prev.md5);
-    const nextInWatchlist = nextProps.watchList.includes(next.md5);
-    if (prevInWatchlist !== nextInWatchlist) return false;
+  // Check all critical fields
+  const criticalFields = ['exch', 'pro24h', 'pro5m', 'pro1h', 'pro7d', 'vol24hxrp', 'marketcap', 'holders', 'supply', 'vol24htx'];
+  for (const field of criticalFields) {
+    if (prev[field] !== next[field]) return false;
   }
 
-  // Check currency changes
-  if (prevProps.exchRate !== nextProps.exchRate) return false;
+  // Check non-token props
+  if (prevProps.watchList !== nextProps.watchList ||
+      prevProps.exchRate !== nextProps.exchRate ||
+      prevProps.viewMode !== nextProps.viewMode ||
+      prevProps.customColumns !== nextProps.customColumns) return false;
 
-  // Check if view mode changed
-  if (prevProps.viewMode !== nextProps.viewMode) return false;
-  if (prevProps.customColumns !== nextProps.customColumns) return false;
-
-  return true; // Skip re-render
+  return true;
 });
 const LazyEditTokenDialog = lazy(
   () => import(/* webpackChunkName: "edit-token-dialog" */ 'src/components/EditTokenDialog')
@@ -325,10 +314,7 @@ export default function TokenList({
       if (typeof window !== 'undefined') {
         localStorage.setItem('customTokenColumns', JSON.stringify(newColumns));
       }
-      // Force re-render for mobile header update
-      if (isMobile) {
-        setSync((prev) => prev + 1);
-      }
+      // Mobile header will update automatically via customColumns prop
     },
     [isMobile]
   );
@@ -430,7 +416,7 @@ export default function TokenList({
     if (wsProcessing.current || wsMessageQueue.current.length === 0) return;
     wsProcessing.current = true;
 
-    const messages = wsMessageQueue.current.splice(0, 20); // Process more at once since we're optimized
+    const messages = wsMessageQueue.current.splice(0, 100);
 
     // Process in microtask to avoid blocking
     queueMicrotask(() => {
@@ -440,7 +426,13 @@ export default function TokenList({
       messages.forEach((msg) => {
         if (msg.metrics) latestMetrics = msg.metrics;
         if (msg.tokens) {
-          msg.tokens.forEach((token) => aggregatedTokens.set(token.md5, token));
+          msg.tokens.forEach((token) => {
+            // Only keep latest update per token
+            const existing = aggregatedTokens.get(token.md5);
+            if (!existing || token.time > existing.time) {
+              aggregatedTokens.set(token.md5, token);
+            }
+          });
         }
       });
 
@@ -589,6 +581,8 @@ export default function TokenList({
       if (wsProcessTimer.current) {
         clearTimeout(wsProcessTimer.current);
       }
+      wsMessageQueue.current = [];
+      wsProcessing.current = false;
     };
   }, []);
 
@@ -983,8 +977,6 @@ export default function TokenList({
                   localStorage.setItem('customTokenColumns', JSON.stringify(tempCustomColumns));
                 }
                 setCustomSettingsOpen(false);
-                // Force component re-render
-                setSync((prev) => prev + 1);
               }}
               style={{
                 padding: '10px 20px',
