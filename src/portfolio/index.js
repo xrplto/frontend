@@ -119,6 +119,74 @@ const formatNumber = (value, type = 'number') => {
   return value.toLocaleString();
 };
 
+// Calculate accurate metrics from historical data for given interval
+const calculateIntervalMetrics = (traderStats, interval) => {
+  if (!traderStats) return null;
+
+  const now = new Date();
+  const intervalMs = {
+    '24h': 1 * 24 * 60 * 60 * 1000,
+    '7d': 7 * 24 * 60 * 60 * 1000,
+    '1m': 30 * 24 * 60 * 60 * 1000,
+    '3m': 90 * 24 * 60 * 60 * 1000
+  };
+
+  const cutoffTime = new Date(now.getTime() - intervalMs[interval]);
+
+  // Calculate volume from volumeHistory
+  let intervalVolume = 0;
+  if (traderStats.volumeHistory) {
+    intervalVolume = traderStats.volumeHistory
+      .filter(item => new Date(item.date) >= cutoffTime)
+      .reduce((sum, item) => sum + (item.h24Volume || 0), 0);
+  }
+
+  // Calculate trades from tradeHistory
+  let intervalTrades = 0;
+  if (traderStats.tradeHistory) {
+    intervalTrades = traderStats.tradeHistory
+      .filter(item => new Date(item.date) >= cutoffTime)
+      .reduce((sum, item) => sum + (item.trades || 0), 0);
+  }
+
+  // Calculate ROI from roiHistory (average of daily ROIs in the period)
+  let intervalROI = 0;
+  if (traderStats.roiHistory) {
+    const roiData = traderStats.roiHistory
+      .filter(item => new Date(item.date) >= cutoffTime)
+      .filter(item => (item.dailyRoi !== null && item.dailyRoi !== undefined) || (item.dailyroi !== null && item.dailyroi !== undefined));
+
+    if (roiData.length > 0) {
+      intervalROI = roiData.reduce((sum, item) => sum + (item.dailyRoi || item.dailyroi || 0), 0) / roiData.length;
+    }
+  }
+
+  // Calculate profit from interval ROI and volume
+  const intervalProfit = intervalVolume > 0 ? (intervalVolume * intervalROI) / 100 : 0;
+
+  // Count unique tokens traded in the interval
+  let intervalActiveTokens = 0;
+  if (traderStats.volumeHistory) {
+    const tradedTokensSet = new Set();
+    traderStats.volumeHistory
+      .filter(item => new Date(item.date) >= cutoffTime)
+      .forEach(item => {
+        if (item.tradedTokens && Array.isArray(item.tradedTokens)) {
+          item.tradedTokens.forEach(token => tradedTokensSet.add(token.tokenId || token.currency));
+        }
+      });
+    intervalActiveTokens = tradedTokensSet.size;
+  }
+
+  return {
+    volume: intervalVolume,
+    trades: intervalTrades,
+    roi: intervalROI,
+    profit: intervalProfit,
+    activeTokens: intervalActiveTokens
+  };
+};
+
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
     flex: 1;
@@ -2475,23 +2543,62 @@ export default function Portfolio({ account, limit, collection, type }) {
                         p: 1,
                         borderRadius: '8px',
                         background: alpha(
-                          (traderStats?.[`roi${selectedInterval}`] || 0) >= 0
-                            ? theme.palette.success.main
-                            : theme.palette.error.main,
+                          (() => {
+                            let roiValue;
+                            if (selectedInterval === '24h') {
+                              // For 24h, calculate ROI from API profit and volume fields
+                              const profit24h = traderStats?.profit24h || 0;
+                              const volume24h = traderStats?.volume24h || 0;
+                              roiValue = volume24h > 0 ? (profit24h / volume24h) * 100 : 0;
+                            } else {
+                              // Use calculated interval metrics from historical data
+                              const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                              roiValue = intervalMetrics?.roi || 0;
+                            }
+                            return roiValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                          })(),
                           0.06
                         ),
                         border: `1px solid ${alpha(
-                          (traderStats?.[`roi${selectedInterval}`] || 0) >= 0
-                            ? theme.palette.success.main
-                            : theme.palette.error.main,
+                          (() => {
+                            let roiValue;
+                            if (selectedInterval === '24h') {
+                              // For 24h, calculate ROI from API profit and volume fields
+                              const profit24h = traderStats?.profit24h || 0;
+                              const volume24h = traderStats?.volume24h || 0;
+                              roiValue = volume24h > 0 ? (profit24h / volume24h) * 100 : 0;
+                            } else {
+                              // Use calculated interval metrics from historical data
+                              const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                              roiValue = intervalMetrics?.roi || 0;
+                            }
+                            return roiValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                          })(),
                           0.15
                         )}`,
                         transition: 'all 0.15s ease',
                         '&:hover': {
                           background: alpha(
-                            (traderStats?.[`roi${selectedInterval}`] || 0) >= 0
-                              ? theme.palette.success.main
-                              : theme.palette.error.main,
+                            (() => {
+                              let roiValue;
+                              if (selectedInterval === 'all') {
+                                roiValue = traderStats?.avgROI || 0;
+                              } else {
+                                // Calculate ROI from interval profit and volume
+                                const profitKey = `profit${selectedInterval === '7d' ? '7d' : selectedInterval === '1m' ? '1m' : selectedInterval === '3m' ? '3m' : '24h'}`;
+                                const volumeKey = `volume${selectedInterval === '7d' ? '7d' : selectedInterval === '1m' ? '1m' : selectedInterval === '3m' ? '3m' : '24h'}`;
+
+                                const profit = traderStats?.[profitKey] || 0;
+                                const volume = traderStats?.[volumeKey] || 0;
+
+                                if (volume > 0) {
+                                  roiValue = (profit / volume) * 100;
+                                } else {
+                                  roiValue = 0;
+                                }
+                              }
+                              return roiValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                            })(),
                             0.08
                           )
                         }
@@ -2513,13 +2620,35 @@ export default function Portfolio({ account, limit, collection, type }) {
                         sx={{
                           fontSize: { xs: '0.95rem', sm: '1.1rem' },
                           fontWeight: 700,
-                          color: (traderStats?.[`roi${selectedInterval}`] || 0) >= 0
-                            ? theme.palette.success.main
-                            : theme.palette.error.main,
+                          color: (() => {
+                            let roiValue;
+                            if (selectedInterval === '24h') {
+                              // For 24h, calculate ROI from API profit and volume fields
+                              const profit24h = traderStats?.profit24h || 0;
+                              const volume24h = traderStats?.volume24h || 0;
+                              roiValue = volume24h > 0 ? (profit24h / volume24h) * 100 : 0;
+                            } else {
+                              // Use calculated interval metrics from historical data
+                              const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                              roiValue = intervalMetrics?.roi || 0;
+                            }
+                            return roiValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                          })(),
                           lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : formatNumber(traderStats?.[`roi${selectedInterval}`] || 0, 'roi')}
+                        {loading ? '-' : (() => {
+                          if (selectedInterval === '24h') {
+                            // For 24h, calculate ROI from API profit and volume fields
+                            const profit24h = traderStats?.profit24h || 0;
+                            const volume24h = traderStats?.volume24h || 0;
+                            const roi24h = volume24h > 0 ? (profit24h / volume24h) * 100 : 0;
+                            return formatNumber(roi24h, 'roi');
+                          }
+                          // Use calculated interval metrics from historical data for other periods
+                          const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                          return formatNumber(intervalMetrics?.roi || 0, 'roi');
+                        })()}
                       </Typography>
                     </Box>
                   </Grid>
@@ -2557,7 +2686,15 @@ export default function Portfolio({ account, limit, collection, type }) {
                           lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : formatNumber(traderStats?.[`volume${selectedInterval}`] || 0, 'volume')}
+                        {loading ? '-' : (() => {
+                          if (selectedInterval === '24h') {
+                            // For 24h, use API volume field
+                            return formatNumber(traderStats?.volume24h || 0, 'volume');
+                          }
+                          // Use calculated interval metrics from historical data for other periods
+                          const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                          return formatNumber(intervalMetrics?.volume || 0, 'volume');
+                        })()}
                         <Typography
                           component="span"
                           sx={{
@@ -2606,7 +2743,15 @@ export default function Portfolio({ account, limit, collection, type }) {
                           lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : formatNumber(traderStats?.[`trades${selectedInterval}`] || 0, 'trades')}
+                        {loading ? '-' : (() => {
+                          if (selectedInterval === '24h') {
+                            // For 24h, use API trades field
+                            return formatNumber(traderStats?.trades24h || 0, 'trades');
+                          }
+                          // Use calculated interval metrics from historical data for other periods
+                          const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                          return formatNumber(intervalMetrics?.trades || 0, 'trades');
+                        })()}
                       </Typography>
                     </Box>
                   </Grid>
@@ -2617,23 +2762,48 @@ export default function Portfolio({ account, limit, collection, type }) {
                         p: 1,
                         borderRadius: '8px',
                         background: alpha(
-                          (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
-                            ? theme.palette.success.main
-                            : theme.palette.error.main,
+                          (() => {
+                            let profitValue;
+                            if (selectedInterval === '24h') {
+                              // For 24h, use API profit field
+                              profitValue = traderStats?.profit24h || 0;
+                            } else {
+                              // Use calculated interval metrics from historical data
+                              const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                              profitValue = intervalMetrics?.profit || 0;
+                            }
+                            return profitValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                          })(),
                           0.06
                         ),
                         border: `1px solid ${alpha(
-                          (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
-                            ? theme.palette.success.main
-                            : theme.palette.error.main,
+                          (() => {
+                            let profitValue;
+                            if (selectedInterval === '24h') {
+                              // For 24h, use API profit field
+                              profitValue = traderStats?.profit24h || 0;
+                            } else {
+                              // Use calculated interval metrics from historical data
+                              const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                              profitValue = intervalMetrics?.profit || 0;
+                            }
+                            return profitValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                          })(),
                           0.15
                         )}`,
                         transition: 'all 0.15s ease',
                         '&:hover': {
                           background: alpha(
-                            (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
-                              ? theme.palette.success.main
-                              : theme.palette.error.main,
+                            (() => {
+                              let profitValue;
+                              if (selectedInterval === 'all') {
+                                profitValue = traderStats?.totalProfit || 0;
+                              } else {
+                                const profitKey = `profit${selectedInterval === '7d' ? '7d' : selectedInterval === '1m' ? '1m' : selectedInterval === '3m' ? '3m' : '24h'}`;
+                                profitValue = traderStats?.[profitKey] || 0;
+                              }
+                              return profitValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                            })(),
                             0.08
                           )
                         }
@@ -2649,19 +2819,38 @@ export default function Portfolio({ account, limit, collection, type }) {
                           letterSpacing: '0.3px'
                         }}
                       >
-                        P/L
+                        Profit/Loss
                       </Typography>
                       <Typography
                         sx={{
                           fontSize: { xs: '0.95rem', sm: '1.1rem' },
                           fontWeight: 700,
-                          color: (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
-                            ? theme.palette.success.main
-                            : theme.palette.error.main,
+                          color: (() => {
+                            let profitValue;
+                            if (selectedInterval === '24h') {
+                              // For 24h, use API profit field
+                              profitValue = traderStats?.profit24h || 0;
+                            } else {
+                              // Use calculated interval metrics from historical data
+                              const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                              profitValue = intervalMetrics?.profit || 0;
+                            }
+                            return profitValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                          })(),
                           lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : `${(traderStats?.[`profit${selectedInterval}`] || 0) >= 0 ? '+' : ''}${formatNumber(traderStats?.[`profit${selectedInterval}`] || 0, 'currency')}`}
+                        {loading ? '-' : (() => {
+                          if (selectedInterval === '24h') {
+                            // For 24h, use API profit field
+                            const profitValue = traderStats?.profit24h || 0;
+                            return `${profitValue >= 0 ? '+' : ''}${formatNumber(profitValue, 'currency')} XRP`;
+                          }
+                          // Use calculated interval metrics from historical data for other periods
+                          const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                          const profitValue = intervalMetrics?.profit || 0;
+                          return `${profitValue >= 0 ? '+' : ''}${formatNumber(profitValue, 'currency')} XRP`;
+                        })()}
                       </Typography>
                     </Box>
                   </Grid>
@@ -2699,7 +2888,15 @@ export default function Portfolio({ account, limit, collection, type }) {
                           lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : (traderStats?.[`activeTokens${selectedInterval}`] || 0)}
+                        {loading ? '-' : (() => {
+                          if (selectedInterval === '24h') {
+                            // For 24h, use API active tokens field
+                            return traderStats?.activeTokens24h || 0;
+                          }
+                          // Use calculated interval metrics from historical data for other periods
+                          const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                          return intervalMetrics?.activeTokens || 0;
+                        })()}
                       </Typography>
                     </Box>
                   </Grid>
@@ -2831,15 +3028,11 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                   if (chartData && chartData.series && chartData.series.length > 0) {
                     const lastValues = chartData.series.map(s => s.data[s.data.length - 1]);
-                    const firstValues = chartData.series.map(s => s.data[0]);
-                    const changes = lastValues.map((last, i) => ((last - firstValues[i]) / firstValues[i]) * 100);
 
                     return (
                       <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
                         {chartData.series.map((serie, index) => {
                           const lastValue = lastValues[index];
-                          const change = changes[index];
-                          const isPositive = change > 0;
 
                           return (
                             <Box
@@ -2860,17 +3053,6 @@ export default function Portfolio({ account, limit, collection, type }) {
                                  chartView === 'activity' ? formatNumber(lastValue, 'trades') :
                                  formatNumber(lastValue, 'volume') + ' XRP'}
                               </Typography>
-                              {!isNaN(change) && (
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    color: isPositive ? theme.palette.success.main : theme.palette.error.main,
-                                    fontSize: '0.7rem'
-                                  }}
-                                >
-                                  {isPositive ? '↑' : '↓'} {Math.abs(change).toFixed(1)}%
-                                </Typography>
-                              )}
                             </Box>
                           );
                         })}
