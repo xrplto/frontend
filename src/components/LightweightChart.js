@@ -1,23 +1,27 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, LineSeries } from 'lightweight-charts';
+import { createChart, LineSeries, HistogramSeries } from 'lightweight-charts';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-const LightweightChart = ({ 
-  data = [], 
-  series = [], 
+const LightweightChart = ({
+  data = [],
+  series = [],
   height = 400,
   showLegend = true,
   onCrosshairMove,
-  onClick
+  onClick,
+  showVolume = false
 }) => {
   const theme = useTheme();
   const chartContainerRef = useRef();
   const chartRef = useRef();
   const seriesRefs = useRef([]);
   const [hoveredData, setHoveredData] = useState(null);
+  const [visibleSeries, setVisibleSeries] = useState(
+    series.reduce((acc, s, idx) => ({ ...acc, [idx]: s.visible !== false }), {})
+  );
   const isDarkMode = theme.palette.mode === 'dark';
 
   useEffect(() => {
@@ -71,7 +75,15 @@ const LightweightChart = ({
         visible: true,
         scaleMargins: {
           top: 0.1,
-          bottom: 0.1,
+          bottom: 0.25, // More space at bottom for volume bars
+        },
+      },
+      leftPriceScale: {
+        borderColor: theme.chart?.borderColor || alpha(theme.palette.divider, 0.1),
+        visible: false,
+        scaleMargins: {
+          top: 0.7, // Volume bars only use bottom 30% of chart
+          bottom: 0,
         },
       },
       timeScale: {
@@ -102,43 +114,95 @@ const LightweightChart = ({
     series.forEach((seriesConfig, index) => {
       if (!seriesConfig.visible) return;
 
-      const lineData = data
+      console.log(`Processing series ${index}: ${seriesConfig.name} (${seriesConfig.type})`);
+
+      const processedData = data
         .filter(item => item[seriesConfig.dataKey] !== null && item[seriesConfig.dataKey] !== undefined)
-        .map(item => {
+        .map((item, idx) => {
           let value = parseFloat(item[seriesConfig.dataKey] || 0);
-          
+
           // Scale down large values to fit lightweight-charts limits
-          // Max value is ~90 trillion, so scale down values > 1 billion to millions
           if (Math.abs(value) > 1000000000) {
             value = value / 1000000; // Convert to millions
           }
-          
+
+          // Parse date with better error handling
+          let timestamp;
+          const dateValue = item.date || item.time;
+
+          if (!dateValue) {
+            console.warn(`Missing date for item ${idx}:`, item);
+            return null;
+          }
+
+          const parsedDate = new Date(dateValue);
+          if (isNaN(parsedDate.getTime())) {
+            console.warn(`Invalid date at index ${idx}: ${dateValue}`);
+            return null;
+          }
+
+          timestamp = Math.floor(parsedDate.getTime() / 1000);
+
           return {
-            time: Math.floor(new Date(item.date || item.time).getTime() / 1000),
+            time: timestamp,
             value: value
           };
         })
+        .filter(item => item !== null) // Remove invalid entries
         .sort((a, b) => a.time - b.time);
 
-      if (lineData.length === 0) return;
+      if (processedData.length === 0) {
+        console.log(`No data for series ${index}`);
+        return;
+      }
 
-      const lineSeries = chart.addSeries(LineSeries, {
-        color: seriesConfig.color || theme.palette.primary.main,
-        lineWidth: seriesConfig.lineWidth || 2,
-        title: seriesConfig.name || seriesConfig.dataKey,
-        priceLineVisible: false,
-        lastValueVisible: true,
-        crosshairMarkerVisible: true,
-        crosshairMarkerRadius: 4,
-        lineStyle: 0,
-        lineType: 2,
+      console.log(`Series ${index} has ${processedData.length} data points`);
+
+      let series;
+
+      // Create the appropriate series type based on configuration
+      if (seriesConfig.type === 'histogram' || seriesConfig.type === 'column') {
+        // Check if this is a volume series in ROI view
+        const isVolumeInRoi = seriesConfig.isVolumeInRoi ||
+                              (seriesConfig.name && seriesConfig.name.toLowerCase().includes('volume') &&
+                               data.some(d => d.dailyroi !== undefined));
+
+        series = chart.addSeries(HistogramSeries, {
+          color: isVolumeInRoi ? alpha(seriesConfig.color || theme.palette.info.main, 0.3) :
+                                (seriesConfig.color || theme.palette.primary.main),
+          priceFormat: {
+            type: 'volume',
+            precision: 0,
+            minMove: 1,
+          },
+          title: seriesConfig.name || seriesConfig.dataKey,
+          priceScaleId: isVolumeInRoi ? 'left' : 'right',
+        });
+      } else {
+        // Default to line series
+        series = chart.addSeries(LineSeries, {
+          color: seriesConfig.color || theme.palette.primary.main,
+          lineWidth: seriesConfig.lineWidth || 2,
+          title: seriesConfig.name || seriesConfig.dataKey,
+          priceLineVisible: false,
+          lastValueVisible: true,
+          crosshairMarkerVisible: true,
+          crosshairMarkerRadius: 4,
+          lineStyle: 0,
+          lineType: 2,
+          priceScaleId: 'right',
+        });
+      }
+
+      console.log(`Created ${seriesConfig.type || 'line'} series for ${seriesConfig.name}`);
+
+      series.setData(processedData);
+      seriesRefs.current.push({
+        series: series,
+        config: seriesConfig
       });
 
-      lineSeries.setData(lineData);
-      seriesRefs.current.push({ 
-        series: lineSeries, 
-        config: seriesConfig 
-      });
+      console.log(`Series ${index} data set successfully`);
     });
 
     // Handle crosshair move
@@ -194,28 +258,46 @@ const LightweightChart = ({
             display: 'flex',
             flexWrap: 'wrap',
             gap: 2,
-            mb: 1,
+            mb: 1.5,
             px: 1,
           }}
         >
-          {series.filter(s => s.visible).map((seriesConfig, index) => (
+          {series.map((seriesConfig, index) => (
             <Box
               key={index}
+              onClick={() => {
+                const newVisible = { ...visibleSeries, [index]: !visibleSeries[index] };
+                setVisibleSeries(newVisible);
+                if (seriesRefs.current[index]) {
+                  const seriesRef = seriesRefs.current.find(ref => ref.config === seriesConfig);
+                  if (seriesRef) {
+                    seriesRef.series.applyOptions({
+                      visible: newVisible[index]
+                    });
+                  }
+                }
+              }}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 0.5,
+                cursor: 'pointer',
+                opacity: visibleSeries[index] ? 1 : 0.4,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  opacity: visibleSeries[index] ? 0.8 : 0.6,
+                },
               }}
             >
               <Box
                 sx={{
-                  width: 12,
-                  height: 3,
+                  width: 14,
+                  height: seriesConfig.type === 'column' || seriesConfig.type === 'histogram' ? 8 : 3,
                   backgroundColor: seriesConfig.color || theme.palette.primary.main,
-                  borderRadius: 1,
+                  borderRadius: seriesConfig.type === 'column' || seriesConfig.type === 'histogram' ? '2px' : '4px',
                 }}
               />
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.8rem', fontWeight: 500 }}>
                 {seriesConfig.name || seriesConfig.dataKey}
               </Typography>
             </Box>
@@ -231,33 +313,59 @@ const LightweightChart = ({
             position: 'absolute',
             top: 8,
             right: 8,
-            backgroundColor: alpha(theme.palette.background.paper, 0.9),
-            border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-            borderRadius: 1,
-            p: 1,
-            fontSize: '0.75rem',
+            backgroundColor: alpha(theme.palette.background.paper, 0.95),
+            border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+            borderRadius: '8px',
+            p: 1.5,
+            minWidth: 180,
+            boxShadow: theme.shadows[4],
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
             zIndex: 1000,
           }}
         >
-          <Typography variant="caption" color="text.secondary">
-            {new Date(hoveredData.time * 1000).toLocaleDateString()}
+          <Typography
+            variant="caption"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontWeight: 600,
+              display: 'block',
+              mb: 0.75,
+              fontSize: '0.75rem'
+            }}
+          >
+            {new Date(hoveredData.time * 1000).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            })}
           </Typography>
           {Object.entries(hoveredData.prices).map(([key, value]) => {
             const seriesConfig = series.find(s => s.dataKey === key);
+            const displayValue = value > 1000 ? value * 1000000 : value;
+            const formattedValue = seriesConfig?.valueFormatter
+              ? seriesConfig.valueFormatter(displayValue)
+              : displayValue.toLocaleString();
+
             return (
-              <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
                 <Box
                   sx={{
-                    width: 8,
-                    height: 8,
+                    width: 10,
+                    height: 10,
                     backgroundColor: seriesConfig?.color || theme.palette.primary.main,
-                    borderRadius: '50%',
+                    borderRadius: seriesConfig?.type === 'column' || seriesConfig?.type === 'histogram' ? '2px' : '50%',
+                    flexShrink: 0
                   }}
                 />
-                <Typography variant="caption">
-                  {seriesConfig?.name || key}: {(value > 1000 ? value * 1000000 : value).toLocaleString()}
-                  {value > 1000 ? ' (scaled)' : ''}
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
+                    {seriesConfig?.name || key}:
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.primary, fontWeight: 600, fontSize: '0.7rem', ml: 1 }}>
+                    {formattedValue}
+                  </Typography>
+                </Box>
               </Box>
             );
           })}

@@ -39,6 +39,7 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import Ranks from './Ranks';
+import LightweightChart from '../components/LightweightChart';
 // Temporary inline rank colors (previously from Chatbox/RankStyles)
 const activeRankColors = {
   verified: '#1DA1F2'
@@ -89,6 +90,33 @@ const formatHoldingTime = (seconds) => {
   }
 
   return `${minutes}m`;
+};
+
+// Format large numbers with appropriate units
+const formatNumber = (value, type = 'number') => {
+  if (type === 'roi' || type === 'percentage') {
+    return `${value.toFixed(2)}%`;
+  }
+
+  if (type === 'volume' || type === 'currency') {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(2)}M`;
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}K`;
+    }
+    return value.toFixed(0);
+  }
+
+  if (type === 'trades') {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}K`;
+    }
+    return value.toString();
+  }
+
+  return value.toLocaleString();
 };
 
 const OverviewWrapper = styled(Box)(
@@ -160,7 +188,16 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
   const isDark = theme.palette.mode === 'dark';
 
   useEffect(() => {
-    if (!chartContainerRef.current || !chartData || !chartData.series) return;
+    console.log('LightweightChart received data:', {
+      hasData: !!chartData,
+      seriesCount: chartData?.series?.length,
+      firstSeriesLength: chartData?.series?.[0]?.data?.length
+    });
+
+    if (!chartContainerRef.current || !chartData || !chartData.series || chartData.series.length === 0) {
+      console.log('LightweightChart: No data to render');
+      return;
+    }
 
     const initChart = async () => {
       // Load chart libraries first
@@ -232,30 +269,50 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
     // Add series
     const seriesRefs = [];
     chartData.series.forEach((serie, index) => {
+      console.log(`Adding series ${index}:`, serie.name, serie.type, 'with', serie.data.length, 'points');
+
       let series;
       if (serie.type === 'column') {
+        console.log(`Creating histogram series for ${serie.name}`);
         series = chart.addSeries(HistogramSeries, {
-          color: index === 0 ? theme.palette.primary.main : theme.palette.info.main,
-          priceFormat: { type: 'volume' },
+          color: index === 0 ? theme.palette.primary.main : alpha(theme.palette.info.main, 0.6),
+          priceFormat: {
+            type: 'volume',
+            precision: 0,
+            minMove: 1
+          },
         });
       } else {
+        console.log(`Creating line series for ${serie.name}`);
         series = chart.addSeries(LineSeries, {
           color: index === 0 ? theme.palette.primary.main : theme.palette.success.main,
           lineWidth: 2,
+          crosshairMarkerVisible: true,
+          crosshairMarkerRadius: 4,
+          priceFormat: {
+            type: 'price',
+            precision: 2,
+            minMove: 0.01
+          }
         });
       }
 
       // Convert data to lightweight-charts format and sort by time
       const data = serie.data
         .map((value, idx) => {
-          const timestamp = new Date(chartData.xaxis.categories[idx]).getTime() / 1000;
+          const dateStr = chartData.xaxis.categories[idx];
+          // Parse date more carefully
+          const date = new Date(dateStr);
+          const timestamp = date.getTime() / 1000;
+
           // Validate timestamp
           if (isNaN(timestamp) || !isFinite(timestamp)) {
+            console.warn('Invalid timestamp for:', dateStr);
             return null;
           }
           return {
             time: Math.floor(timestamp),
-            value: value || 0
+            value: parseFloat(value) || 0
           };
         })
         .filter(item => item !== null) // Remove invalid entries
@@ -264,9 +321,17 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
           // Remove duplicates - keep only the first occurrence of each timestamp
           return index === 0 || item.time !== array[index - 1].time;
         });
-      
+
+      console.log(`Series ${index} processed data points:`, data.length);
+
       if (data.length > 0) {
         series.setData(data);
+        series.priceScale().applyOptions({
+          scaleMargins: {
+            top: 0.1,
+            bottom: 0.2,
+          },
+        });
       }
       seriesRefs.push(series);
     });
@@ -437,6 +502,12 @@ export default function Portfolio({ account, limit, collection, type }) {
 
   // Process ROI history data for the chart
   const processChartData = () => {
+    console.log('Processing ROI chart data:', {
+      hasTraderStats: !!traderStats,
+      hasRoiHistory: !!traderStats?.roiHistory,
+      roiHistoryLength: traderStats?.roiHistory?.length || 0
+    });
+
     if (!traderStats?.roiHistory || traderStats.roiHistory.length === 0) {
       return null;
     }
@@ -445,7 +516,7 @@ export default function Portfolio({ account, limit, collection, type }) {
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
-    return {
+    const chartData = {
       series: [
         {
           name: 'Daily ROI',
@@ -460,7 +531,8 @@ export default function Portfolio({ account, limit, collection, type }) {
         {
           name: 'Volume',
           type: 'column',
-          data: sortedHistory.map((item) => item.volume || 0)
+          // Scale down volume to make bars smaller relative to ROI lines
+          data: sortedHistory.map((item) => (item.volume || 0) * 0.0001) // Scale factor for visual balance
         }
       ],
       xaxis: {
@@ -473,10 +545,24 @@ export default function Portfolio({ account, limit, collection, type }) {
         )
       }
     };
+
+    console.log('ROI Chart data processed:', {
+      seriesCount: chartData.series.length,
+      dataPoints: chartData.series[0]?.data?.length || 0,
+      categories: chartData.xaxis.categories.length
+    });
+
+    return chartData;
   };
 
   // Process trade history data for the chart
   const processTradeHistoryData = () => {
+    console.log('Processing Trade History:', {
+      hasTraderStats: !!traderStats,
+      hasTradeHistory: !!traderStats?.tradeHistory,
+      tradeHistoryLength: traderStats?.tradeHistory?.length || 0
+    });
+
     if (!traderStats?.tradeHistory || traderStats.tradeHistory.length === 0) {
       return null;
     }
@@ -485,21 +571,24 @@ export default function Portfolio({ account, limit, collection, type }) {
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
-    return {
+    // Take last 30 days for better visibility
+    const recentHistory = sortedHistory.slice(-30);
+
+    const chartData = {
       series: [
         {
           name: 'Daily Trades',
           type: 'column',
-          data: sortedHistory.map((item) => item.trades || 0)
+          data: recentHistory.map((item) => item.trades || 0)
         },
         {
           name: 'Cumulative Trades',
           type: 'line',
-          data: sortedHistory.map((item) => item.cumulativeTrades || 0)
+          data: recentHistory.map((item) => item.cumulativeTrades || 0)
         }
       ],
       xaxis: {
-        categories: sortedHistory.map((item) =>
+        categories: recentHistory.map((item) =>
           new Date(item.date).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric'
@@ -507,9 +596,22 @@ export default function Portfolio({ account, limit, collection, type }) {
         )
       }
     };
+
+    console.log('Trade History Chart data:', {
+      seriesCount: chartData.series.length,
+      dataPoints: chartData.series[0]?.data?.length || 0
+    });
+
+    return chartData;
   };
 
   const processVolumeHistoryData = () => {
+    console.log('Processing Volume History:', {
+      hasTraderStats: !!traderStats,
+      hasVolumeHistory: !!traderStats?.volumeHistory,
+      volumeHistoryLength: traderStats?.volumeHistory?.length || 0
+    });
+
     if (!traderStats?.volumeHistory || traderStats.volumeHistory.length === 0) {
       return null;
     }
@@ -518,21 +620,28 @@ export default function Portfolio({ account, limit, collection, type }) {
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
-    return {
+    // Take last 30 days for better visibility
+    const recentHistory = sortedHistory.slice(-30);
+
+    const chartData = {
       series: [
         {
           name: 'Daily Volume',
           type: 'column',
-          data: sortedHistory.map((item) => item.h24Volume || 0)
+          data: recentHistory.map((item) => {
+            const volume = item.h24Volume || 0;
+            console.log('Mapping volume:', item.date, volume);
+            return volume;
+          })
         },
         {
           name: 'Cumulative Volume',
           type: 'line',
-          data: sortedHistory.map((item) => item.cumulativeVolume || 0)
+          data: recentHistory.map((item) => item.cumulativeVolume || 0)
         }
       ],
       xaxis: {
-        categories: sortedHistory.map((item) =>
+        categories: recentHistory.map((item) =>
           new Date(item.date).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric'
@@ -540,6 +649,15 @@ export default function Portfolio({ account, limit, collection, type }) {
         )
       }
     };
+
+    console.log('Volume History Chart data:', {
+      seriesCount: chartData.series.length,
+      dataPoints: chartData.series[0]?.data?.length || 0,
+      firstVolume: chartData.series[0]?.data?.[0],
+      lastVolume: chartData.series[0]?.data?.[chartData.series[0]?.data?.length - 1]
+    });
+
+    return chartData;
   };
 
   const chartOptions = {
@@ -1457,7 +1575,84 @@ export default function Portfolio({ account, limit, collection, type }) {
 
 
   const renderChart = (chartData, options, type = 'line') => {
-    return <LightweightChartComponent chartData={chartData} isMobile={isMobile} theme={theme} />;
+    console.log('renderChart called with chartView:', chartView);
+
+    // Need to get the original date data from roiHistory for proper timestamps
+    let dateSource;
+    if (chartView === 'roi' && traderStats?.roiHistory) {
+      dateSource = [...traderStats.roiHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
+    } else if (chartView === 'activity' && traderStats?.tradeHistory) {
+      const sortedHistory = [...traderStats.tradeHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
+      dateSource = sortedHistory.slice(-30);
+    } else if (chartView === 'volume' && traderStats?.volumeHistory) {
+      const sortedHistory = [...traderStats.volumeHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
+      dateSource = sortedHistory.slice(-30);
+    }
+
+    console.log('Date source:', {
+      chartView,
+      dateSourceLength: dateSource?.length,
+      firstDate: dateSource?.[0]?.date,
+      lastDate: dateSource?.[dateSource?.length - 1]?.date
+    });
+
+    // Convert chartData format to LightweightChart component format with proper dates
+    const data = chartData.xaxis.categories.map((dateStr, index) => {
+      const item = {};
+      // Use the actual date from source data for proper timestamp
+      if (dateSource && dateSource[index]) {
+        item.date = dateSource[index].date;
+      } else {
+        // Fallback: try to parse the formatted date string
+        // Need to be more careful with date parsing
+        const currentYear = new Date().getFullYear();
+        const dateWithYear = `${dateStr} ${currentYear}`;
+        item.date = new Date(dateWithYear).toISOString();
+      }
+
+      chartData.series.forEach((serie) => {
+        item[serie.name.toLowerCase().replace(/\s+/g, '')] = serie.data[index];
+      });
+      return item;
+    });
+
+    const series = chartData.series.map((serie, index) => ({
+      name: serie.name,
+      dataKey: serie.name.toLowerCase().replace(/\s+/g, ''),
+      type: serie.type,
+      color: chartView === 'roi' && serie.name === 'Volume'
+        ? alpha(theme.palette.info.main, 0.5)  // Lighter color for volume bars in ROI view
+        : index === 0 ? theme.palette.primary.main
+        : index === 1 ? theme.palette.success.main
+        : alpha(theme.palette.info.main, 0.8),
+      visible: true,
+      isVolumeInRoi: chartView === 'roi' && serie.name === 'Volume',
+      lineWidth: chartView === 'roi' && serie.type === 'line' ? 2.5 : 2, // Thicker lines for ROI
+      valueFormatter: (value) => {
+        if (chartView === 'roi') {
+          // Volume in ROI view is scaled down, so multiply back for display
+          return serie.name.includes('Volume') ? formatNumber(value * 10000, 'volume') + ' XRP' : formatNumber(value, 'roi');
+        } else if (chartView === 'activity') {
+          return formatNumber(value, 'trades');
+        } else if (chartView === 'volume') {
+          return formatNumber(value, 'volume') + ' XRP';
+        }
+        return value.toLocaleString();
+      }
+    }));
+
+    console.log('Converting chart data for LightweightChart:', {
+      chartView,
+      originalSeries: chartData.series.length,
+      convertedSeries: series.length,
+      dataPoints: data.length,
+      firstDate: data[0]?.date,
+      lastDate: data[data.length - 1]?.date,
+      sampleDataPoint: data[0],
+      seriesConfig: series
+    });
+
+    return <LightweightChart data={data} series={series} height={isMobile ? 300 : 400} />;
   };
 
   // Commented out empty useEffect that was causing infinite reloads
@@ -2505,13 +2700,23 @@ export default function Portfolio({ account, limit, collection, type }) {
                         }
                       }}
                     >
-                      <ToggleButton value="roi">ROI</ToggleButton>
-                      <ToggleButton value="activity">Activity</ToggleButton>
-                      <ToggleButton value="volume">Volume</ToggleButton>
+                      <ToggleButton value="roi" title="Return on Investment">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <TrendingUpIcon sx={{ fontSize: '0.9rem' }} />
+                          ROI
+                        </Box>
+                      </ToggleButton>
+                      <ToggleButton value="activity" title="Trading Activity">
+                        Activity
+                      </ToggleButton>
+                      <ToggleButton value="volume" title="Trading Volume">
+                        Volume
+                      </ToggleButton>
                     </ToggleButtonGroup>
                     <IconButton
                       onClick={() => handleExpandChart(chartView)}
                       size="small"
+                      title="Expand chart"
                       sx={{
                         color: chartView === 'roi' ? theme.palette.primary.main :
                                chartView === 'activity' ? theme.palette.success.main :
@@ -2541,27 +2746,113 @@ export default function Portfolio({ account, limit, collection, type }) {
                   </Box>
                 </Box>
 
+                {/* Chart Summary Section */}
+                {!loading && (() => {
+                  const chartData = chartView === 'roi' ? processChartData() :
+                                   chartView === 'activity' ? processTradeHistoryData() :
+                                   processVolumeHistoryData();
+
+                  if (chartData && chartData.series && chartData.series.length > 0) {
+                    const lastValues = chartData.series.map(s => s.data[s.data.length - 1]);
+                    const firstValues = chartData.series.map(s => s.data[0]);
+                    const changes = lastValues.map((last, i) => ((last - firstValues[i]) / firstValues[i]) * 100);
+
+                    return (
+                      <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+                        {chartData.series.map((serie, index) => {
+                          const lastValue = lastValues[index];
+                          const change = changes[index];
+                          const isPositive = change > 0;
+
+                          return (
+                            <Box
+                              key={index}
+                              sx={{
+                                flex: '1 1 150px',
+                                p: 1.5,
+                                borderRadius: '8px',
+                                background: alpha(theme.palette.background.default, 0.5),
+                                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                              }}
+                            >
+                              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
+                                {serie.name}
+                              </Typography>
+                              <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', mb: 0.5 }}>
+                                {chartView === 'roi' ? formatNumber(lastValue, serie.name.includes('Volume') ? 'volume' : 'roi') :
+                                 chartView === 'activity' ? formatNumber(lastValue, 'trades') :
+                                 formatNumber(lastValue, 'volume') + ' XRP'}
+                              </Typography>
+                              {!isNaN(change) && (
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: isPositive ? theme.palette.success.main : theme.palette.error.main,
+                                    fontSize: '0.7rem'
+                                  }}
+                                >
+                                  {isPositive ? '↑' : '↓'} {Math.abs(change).toFixed(1)}%
+                                </Typography>
+                              )}
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    );
+                  }
+                  return null;
+                })()}
+
                 {/* Chart Section */}
                 <Box sx={{ height: { xs: 300, sm: 400 }, width: '100%', position: 'relative', minHeight: { xs: 300, sm: 400 } }}>
                   {loading ? (
                     <Skeleton variant="rectangular" height="100%" sx={{ borderRadius: '12px' }} />
                   ) : (
-                    <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {chartView === 'roi' && (
-                        processChartData() ?
-                          renderChart(processChartData(), { ...chartOptions, legend: { enabled: false } }) :
-                          <Typography variant="body2" color="text.secondary">No ROI data available</Typography>
-                      )}
-                      {chartView === 'activity' && (
-                        processTradeHistoryData() ?
-                          renderChart(processTradeHistoryData(), { ...tradeHistoryOptions, legend: { enabled: false } }) :
-                          <Typography variant="body2" color="text.secondary">No trading activity data available</Typography>
-                      )}
-                      {chartView === 'volume' && (
-                        processVolumeHistoryData() ?
-                          renderChart(processVolumeHistoryData(), { ...volumeHistoryOptions, legend: { enabled: false } }) :
-                          <Typography variant="body2" color="text.secondary">No volume data available</Typography>
-                      )}
+                    <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
+                      {(() => {
+                        let chartData = null;
+                        if (chartView === 'roi') {
+                          chartData = processChartData();
+                        } else if (chartView === 'activity') {
+                          chartData = processTradeHistoryData();
+                        } else if (chartView === 'volume') {
+                          chartData = processVolumeHistoryData();
+                        }
+
+                        if (!chartData || !chartData.series || chartData.series.length === 0) {
+                          return (
+                            <Box sx={{
+                              width: '100%',
+                              height: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexDirection: 'column',
+                              gap: 1
+                            }}>
+                              <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 600 }}>
+                                No {chartView.toUpperCase()} Data
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {chartView === 'roi' && 'No ROI history available for this account'}
+                                {chartView === 'activity' && 'No trading activity data available'}
+                                {chartView === 'volume' && 'No volume history available'}
+                              </Typography>
+                            </Box>
+                          );
+                        }
+
+                        return (
+                          <Box sx={{ width: '100%', height: '100%' }}>
+                            {renderChart(chartData, {
+                              ...(chartView === 'roi' ? chartOptions :
+                                  chartView === 'activity' ? tradeHistoryOptions :
+                                  volumeHistoryOptions),
+                              legend: { enabled: false }
+                            })}
+                          </Box>
+                        );
+                      })()}
                     </Box>
                   )}
                 </Box>
