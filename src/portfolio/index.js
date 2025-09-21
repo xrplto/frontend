@@ -571,8 +571,8 @@ export default function Portfolio({ account, limit, collection, type }) {
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
-    // Take last 30 days for better visibility
-    const recentHistory = sortedHistory.slice(-30);
+    // Use full history to match ROI chart date range
+    const recentHistory = sortedHistory;
 
     const chartData = {
       series: [
@@ -620,8 +620,8 @@ export default function Portfolio({ account, limit, collection, type }) {
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
-    // Take last 30 days for better visibility
-    const recentHistory = sortedHistory.slice(-30);
+    // Use full history to match ROI chart date range
+    const recentHistory = sortedHistory;
 
     const chartData = {
       series: [
@@ -935,6 +935,9 @@ export default function Portfolio({ account, limit, collection, type }) {
           style: {
             color: theme.palette.text.secondary,
             fontSize: '10px'
+          },
+          formatter: function() {
+            return formatNumber(this.value, 'trades');
           }
         }
       },
@@ -951,6 +954,9 @@ export default function Portfolio({ account, limit, collection, type }) {
           style: {
             color: theme.palette.text.secondary,
             fontSize: '10px'
+          },
+          formatter: function() {
+            return formatNumber(this.value, 'trades');
           }
         }
       }
@@ -1228,7 +1234,7 @@ export default function Portfolio({ account, limit, collection, type }) {
             fontSize: '10px'
           },
           formatter: function() {
-            return (this.value / 1000).toFixed(0) + 'K';
+            return formatNumber(this.value, 'volume');
           }
         }
       },
@@ -1247,7 +1253,7 @@ export default function Portfolio({ account, limit, collection, type }) {
             fontSize: '10px'
           },
           formatter: function() {
-            return (this.value / 1000).toFixed(0) + 'K';
+            return formatNumber(this.value, 'volume');
           }
         }
       }
@@ -1577,23 +1583,26 @@ export default function Portfolio({ account, limit, collection, type }) {
   const renderChart = (chartData, options, type = 'line') => {
     console.log('renderChart called with chartView:', chartView);
 
-    // Need to get the original date data from roiHistory for proper timestamps
+    // Need to get the original date data for proper timestamps
     let dateSource;
     if (chartView === 'roi' && traderStats?.roiHistory) {
       dateSource = [...traderStats.roiHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
     } else if (chartView === 'activity' && traderStats?.tradeHistory) {
+      // Use the same logic as processTradeHistoryData - full history
       const sortedHistory = [...traderStats.tradeHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
-      dateSource = sortedHistory.slice(-30);
+      dateSource = sortedHistory;
     } else if (chartView === 'volume' && traderStats?.volumeHistory) {
+      // Use the same logic as processVolumeHistoryData - full history
       const sortedHistory = [...traderStats.volumeHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
-      dateSource = sortedHistory.slice(-30);
+      dateSource = sortedHistory;
     }
 
     console.log('Date source:', {
       chartView,
       dateSourceLength: dateSource?.length,
       firstDate: dateSource?.[0]?.date,
-      lastDate: dateSource?.[dateSource?.length - 1]?.date
+      lastDate: dateSource?.[dateSource?.length - 1]?.date,
+      chartDataCategories: chartData.xaxis.categories.length
     });
 
     // Convert chartData format to LightweightChart component format with proper dates
@@ -1602,12 +1611,32 @@ export default function Portfolio({ account, limit, collection, type }) {
       // Use the actual date from source data for proper timestamp
       if (dateSource && dateSource[index]) {
         item.date = dateSource[index].date;
+        console.log(`Index ${index}: Using source date ${dateSource[index].date} for category "${dateStr}"`);
       } else {
+        console.warn(`Index ${index}: No source date for category "${dateStr}", using fallback`);
+
         // Fallback: try to parse the formatted date string
-        // Need to be more careful with date parsing
-        const currentYear = new Date().getFullYear();
-        const dateWithYear = `${dateStr} ${currentYear}`;
-        item.date = new Date(dateWithYear).toISOString();
+        // For dates without year, we need to determine the correct year based on context
+        // The data is historical, starting from Dec 2024
+        let parsedDate;
+
+        // Check if dateStr already contains a year
+        if (/\d{4}/.test(dateStr)) {
+          parsedDate = new Date(dateStr);
+        } else {
+          // For month-day format without year, assume 2024 or 2025 based on month
+          const monthMatch = dateStr.match(/^(\w+)/);
+          if (monthMatch) {
+            const month = monthMatch[1];
+            const monthsIn2024 = ['Dec'];
+            const year = monthsIn2024.includes(month) ? 2024 : 2025;
+            parsedDate = new Date(`${dateStr}, ${year}`);
+          } else {
+            parsedDate = new Date(dateStr);
+          }
+        }
+
+        item.date = parsedDate.toISOString();
       }
 
       chartData.series.forEach((serie) => {
@@ -2359,53 +2388,52 @@ export default function Portfolio({ account, limit, collection, type }) {
           </Grid>
 
           <Grid item xs={12} lg={9} order={{ xs: 1, lg: 2 }}>
-            {/* Full Width Performance Section */}
+            {/* Compact Performance Section */}
             <Box sx={{ mb: 2, width: '100%' }}>
               <Box
                 sx={{
-                  p: { xs: 2, sm: 3 },
-                  borderRadius: '16px',
+                  p: { xs: 1.5, sm: 2 },
+                  borderRadius: '12px',
                   background: theme.palette.mode === 'dark'
                     ? alpha(theme.palette.background.paper, 0.6)
                     : alpha(theme.palette.background.paper, 0.9),
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
                   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                  boxShadow: theme.shadows[2],
+                  boxShadow: theme.shadows[1],
                   transition: 'all 0.3s ease',
                   width: '100%'
                 }}
               >
-                {/* Header with Time Toggle */}
+                {/* Compact Header with inline Time Toggle */}
                 <Box
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    mb: 3,
-                    flexWrap: 'wrap',
-                    gap: 2
+                    mb: 2,
+                    gap: 1
                   }}
                 >
                   <Typography
-                    variant="h6"
+                    variant="body1"
                     sx={{
                       color: theme.palette.text.primary,
                       fontWeight: 700,
-                      fontSize: { xs: '1.2rem', sm: '1.4rem' },
-                      letterSpacing: '-0.02em'
+                      fontSize: { xs: '1rem', sm: '1.1rem' },
+                      letterSpacing: '-0.01em'
                     }}
                   >
-                    Trading Performance
+                    Performance
                   </Typography>
                   <Box
                     sx={{
                       display: 'flex',
-                      gap: 1,
-                      p: 0.5,
-                      borderRadius: '12px',
-                      background: alpha(theme.palette.background.default, 0.6),
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                      gap: 0.5,
+                      p: 0.25,
+                      borderRadius: '8px',
+                      background: alpha(theme.palette.background.default, 0.5),
+                      border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                     }}
                   >
                     {['24h', '7d', '1m', '3m'].map((period) => (
@@ -2413,11 +2441,11 @@ export default function Portfolio({ account, limit, collection, type }) {
                         key={period}
                         onClick={() => setSelectedInterval(period)}
                         sx={{
-                          px: 2,
-                          py: 1,
-                          borderRadius: '8px',
+                          px: { xs: 1, sm: 1.5 },
+                          py: 0.5,
+                          borderRadius: '6px',
                           cursor: 'pointer',
-                          fontSize: '0.8rem',
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
                           fontWeight: 600,
                           color: selectedInterval === period
                             ? theme.palette.primary.contrastText
@@ -2425,14 +2453,11 @@ export default function Portfolio({ account, limit, collection, type }) {
                           background: selectedInterval === period
                             ? theme.palette.primary.main
                             : 'transparent',
-                          transition: 'all 0.2s ease',
+                          transition: 'all 0.15s ease',
                           '&:hover': {
                             background: selectedInterval === period
                               ? theme.palette.primary.dark
-                              : alpha(theme.palette.primary.main, 0.1),
-                            color: selectedInterval === period
-                              ? theme.palette.primary.contrastText
-                              : theme.palette.primary.main
+                              : alpha(theme.palette.primary.main, 0.08)
                           }
                         }}
                       >
@@ -2442,50 +2467,103 @@ export default function Portfolio({ account, limit, collection, type }) {
                   </Box>
                 </Box>
 
-                {/* Full Width Stats Grid */}
-                <Grid container spacing={3} sx={{ mb: 3 }}>
+                {/* Compact Stats Grid */}
+                <Grid container spacing={1}>
                   <Grid item xs={6} sm={3}>
                     <Box
                       sx={{
-                        p: 2,
-                        borderRadius: '12px',
-                        background: alpha(theme.palette.primary.main, 0.08),
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                        textAlign: 'center',
-                        transition: 'all 0.2s ease',
+                        p: 1,
+                        borderRadius: '8px',
+                        background: alpha(
+                          (traderStats?.[`roi${selectedInterval}`] || 0) >= 0
+                            ? theme.palette.success.main
+                            : theme.palette.error.main,
+                          0.06
+                        ),
+                        border: `1px solid ${alpha(
+                          (traderStats?.[`roi${selectedInterval}`] || 0) >= 0
+                            ? theme.palette.success.main
+                            : theme.palette.error.main,
+                          0.15
+                        )}`,
+                        transition: 'all 0.15s ease',
                         '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: theme.shadows[3]
+                          background: alpha(
+                            (traderStats?.[`roi${selectedInterval}`] || 0) >= 0
+                              ? theme.palette.success.main
+                              : theme.palette.error.main,
+                            0.08
+                          )
                         }
                       }}
                     >
                       <Typography
                         sx={{
-                          fontSize: '0.8rem',
-                          color: theme.palette.text.secondary,
+                          fontSize: '0.65rem',
+                          color: alpha(theme.palette.text.secondary, 0.8),
                           fontWeight: 600,
-                          mb: 1,
+                          mb: 0.25,
                           textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
+                          letterSpacing: '0.3px'
+                        }}
+                      >
+                        ROI
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: { xs: '0.95rem', sm: '1.1rem' },
+                          fontWeight: 700,
+                          color: (traderStats?.[`roi${selectedInterval}`] || 0) >= 0
+                            ? theme.palette.success.main
+                            : theme.palette.error.main,
+                          lineHeight: 1
+                        }}
+                      >
+                        {loading ? '-' : formatNumber(traderStats?.[`roi${selectedInterval}`] || 0, 'roi')}
+                      </Typography>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={6} sm={3}>
+                    <Box
+                      sx={{
+                        p: 1,
+                        borderRadius: '8px',
+                        background: alpha(theme.palette.primary.main, 0.06),
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                        transition: 'all 0.15s ease',
+                        '&:hover': {
+                          background: alpha(theme.palette.primary.main, 0.08)
+                        }
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: '0.65rem',
+                          color: alpha(theme.palette.text.secondary, 0.8),
+                          fontWeight: 600,
+                          mb: 0.25,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.3px'
                         }}
                       >
                         Volume
                       </Typography>
                       <Typography
                         sx={{
-                          fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                          fontSize: { xs: '0.95rem', sm: '1.1rem' },
                           fontWeight: 700,
                           color: theme.palette.primary.main,
-                          lineHeight: 1.2
+                          lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : `${(traderStats?.[`volume${selectedInterval}`] || 0).toLocaleString()}`}
+                        {loading ? '-' : formatNumber(traderStats?.[`volume${selectedInterval}`] || 0, 'volume')}
                         <Typography
                           component="span"
                           sx={{
-                            fontSize: '0.8rem',
+                            fontSize: '0.65rem',
                             color: theme.palette.text.secondary,
-                            ml: 0.5,
+                            ml: 0.25,
                             fontWeight: 500
                           }}
                         >
@@ -2498,39 +2576,37 @@ export default function Portfolio({ account, limit, collection, type }) {
                   <Grid item xs={6} sm={3}>
                     <Box
                       sx={{
-                        p: 2,
-                        borderRadius: '12px',
-                        background: alpha(theme.palette.success.main, 0.08),
-                        border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
-                        textAlign: 'center',
-                        transition: 'all 0.2s ease',
+                        p: 1,
+                        borderRadius: '8px',
+                        background: alpha(theme.palette.success.main, 0.06),
+                        border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                        transition: 'all 0.15s ease',
                         '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: theme.shadows[3]
+                          background: alpha(theme.palette.success.main, 0.08)
                         }
                       }}
                     >
                       <Typography
                         sx={{
-                          fontSize: '0.8rem',
-                          color: theme.palette.text.secondary,
+                          fontSize: '0.65rem',
+                          color: alpha(theme.palette.text.secondary, 0.8),
                           fontWeight: 600,
-                          mb: 1,
+                          mb: 0.25,
                           textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
+                          letterSpacing: '0.3px'
                         }}
                       >
                         Trades
                       </Typography>
                       <Typography
                         sx={{
-                          fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                          fontSize: { xs: '0.95rem', sm: '1.1rem' },
                           fontWeight: 700,
                           color: theme.palette.success.main,
-                          lineHeight: 1.2
+                          lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : (traderStats?.[`trades${selectedInterval}`] || 0).toLocaleString()}
+                        {loading ? '-' : formatNumber(traderStats?.[`trades${selectedInterval}`] || 0, 'trades')}
                       </Typography>
                     </Box>
                   </Grid>
@@ -2538,51 +2614,54 @@ export default function Portfolio({ account, limit, collection, type }) {
                   <Grid item xs={6} sm={3}>
                     <Box
                       sx={{
-                        p: 2,
-                        borderRadius: '12px',
+                        p: 1,
+                        borderRadius: '8px',
                         background: alpha(
                           (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
                             ? theme.palette.success.main
                             : theme.palette.error.main,
-                          0.08
+                          0.06
                         ),
                         border: `1px solid ${alpha(
                           (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
                             ? theme.palette.success.main
                             : theme.palette.error.main,
-                          0.2
+                          0.15
                         )}`,
-                        textAlign: 'center',
-                        transition: 'all 0.2s ease',
+                        transition: 'all 0.15s ease',
                         '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: theme.shadows[3]
+                          background: alpha(
+                            (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
+                              ? theme.palette.success.main
+                              : theme.palette.error.main,
+                            0.08
+                          )
                         }
                       }}
                     >
                       <Typography
                         sx={{
-                          fontSize: '0.8rem',
-                          color: theme.palette.text.secondary,
+                          fontSize: '0.65rem',
+                          color: alpha(theme.palette.text.secondary, 0.8),
                           fontWeight: 600,
-                          mb: 1,
+                          mb: 0.25,
                           textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
+                          letterSpacing: '0.3px'
                         }}
                       >
                         P/L
                       </Typography>
                       <Typography
                         sx={{
-                          fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                          fontSize: { xs: '0.95rem', sm: '1.1rem' },
                           fontWeight: 700,
                           color: (traderStats?.[`profit${selectedInterval}`] || 0) >= 0
                             ? theme.palette.success.main
                             : theme.palette.error.main,
-                          lineHeight: 1.2
+                          lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : `${(traderStats?.[`profit${selectedInterval}`] || 0) >= 0 ? '+' : ''}${(traderStats?.[`profit${selectedInterval}`] || 0).toLocaleString()}`}
+                        {loading ? '-' : `${(traderStats?.[`profit${selectedInterval}`] || 0) >= 0 ? '+' : ''}${formatNumber(traderStats?.[`profit${selectedInterval}`] || 0, 'currency')}`}
                       </Typography>
                     </Box>
                   </Grid>
@@ -2590,36 +2669,34 @@ export default function Portfolio({ account, limit, collection, type }) {
                   <Grid item xs={6} sm={3}>
                     <Box
                       sx={{
-                        p: 2,
-                        borderRadius: '12px',
-                        background: alpha(theme.palette.info.main, 0.08),
-                        border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                        textAlign: 'center',
-                        transition: 'all 0.2s ease',
+                        p: 1,
+                        borderRadius: '8px',
+                        background: alpha(theme.palette.info.main, 0.06),
+                        border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
+                        transition: 'all 0.15s ease',
                         '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: theme.shadows[3]
+                          background: alpha(theme.palette.info.main, 0.08)
                         }
                       }}
                     >
                       <Typography
                         sx={{
-                          fontSize: '0.8rem',
-                          color: theme.palette.text.secondary,
+                          fontSize: '0.65rem',
+                          color: alpha(theme.palette.text.secondary, 0.8),
                           fontWeight: 600,
-                          mb: 1,
+                          mb: 0.25,
                           textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
+                          letterSpacing: '0.3px'
                         }}
                       >
                         Tokens
                       </Typography>
                       <Typography
                         sx={{
-                          fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                          fontSize: { xs: '0.95rem', sm: '1.1rem' },
                           fontWeight: 700,
                           color: theme.palette.info.main,
-                          lineHeight: 1.2
+                          lineHeight: 1
                         }}
                       >
                         {loading ? '-' : (traderStats?.[`activeTokens${selectedInterval}`] || 0)}

@@ -342,10 +342,9 @@ const LightweightChart = ({
           </Typography>
           {Object.entries(hoveredData.prices).map(([key, value]) => {
             const seriesConfig = series.find(s => s.dataKey === key);
-            const displayValue = value > 1000 ? value * 1000000 : value;
             const formattedValue = seriesConfig?.valueFormatter
-              ? seriesConfig.valueFormatter(displayValue)
-              : displayValue.toLocaleString();
+              ? seriesConfig.valueFormatter(value)
+              : value.toLocaleString();
 
             return (
               <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
