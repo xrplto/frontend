@@ -293,7 +293,6 @@ function RSIAnalysisPage({ data }) {
     sortBy: 'rsi24h',
     sortType: 'desc',
     timeframe: '24h',
-    filter: '',
     origin: 'FirstLedger',
     minMarketCap: '',
     maxMarketCap: '',
@@ -646,13 +645,6 @@ function RSIAnalysisPage({ data }) {
           <Grid item xs={12}>
             <Controls darkMode={darkMode}>
               <ControlRow>
-                <SearchInput
-                  darkMode={darkMode}
-                  placeholder="Search tokens..."
-                  value={params.filter}
-                  onChange={e => updateParam('filter', e.target.value)}
-                />
-
                 <Label darkMode={darkMode}>Timeframe:</Label>
                 {timeframes.map(tf => (
                   <Button
